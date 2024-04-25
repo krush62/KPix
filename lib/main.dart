@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:krush_flutter_test/kpix_theme.dart';
 import 'package:krush_flutter_test/models.dart';
+import 'package:krush_flutter_test/widgets/color_entry_widget.dart';
 import 'package:krush_flutter_test/widgets/horizontal_split_view.dart';
+import 'package:krush_flutter_test/widgets/palette_widget.dart';
 import 'package:krush_flutter_test/widgets/tools_widget.dart';
 import 'package:krush_flutter_test/preference_manager.dart';
 import 'package:krush_flutter_test/widgets/vertical_split_view.dart';
@@ -68,19 +70,45 @@ class _KPixAppState extends State<KPixApp> {
     else
     {
       return MaterialApp(
-        //home: const ListenerExample(),
         home: VerticalSplitView(
-          left: ValueListenableBuilder<ToolType>(
-            valueListenable: appState.selectedTool,
-            builder: (BuildContext context, ToolType value,child) {
-              return ToolsWidget(options: _toolsOptions,
-                changeToolFn: changeTool,
-                appState: appState,);
-            }
+          left: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                flex: 3,
+                child: ValueListenableBuilder<ToolType>(
+                  valueListenable: appState.selectedTool,
+                  builder: (BuildContext context, ToolType value,child) {
+                    //return ToolsWidget(options: _toolsOptions, changeToolFn: changeTool, appState: appState,);
+                    return PaletteWidget();
+                  }
+                ),
+              ),
+              Expanded(
+                flex: 4,
+                child: ValueListenableBuilder<ToolType>(
+                    valueListenable: appState.selectedTool,
+                    builder: (BuildContext context, ToolType value,child) {
+                      return ToolsWidget(options: _toolsOptions, changeToolFn: changeTool, appState: appState,);
+                      //return ColorEntryWidget();
+                    }
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: ValueListenableBuilder<ToolType>(
+                    valueListenable: appState.selectedTool,
+                    builder: (BuildContext context, ToolType value,child) {
+                      return ColorEntryWidget();
+                    }
+                ),
+              ),
+            ]
           ),
           right: HorizontalSplitView(
               top: ListenerExample(options: canvasOptions,),
-              bottom: const Text("ANIMATION STUFF"),
+              bottom: Text("ANIMATION STUFF", style: Theme.of(context).textTheme.headlineMedium,),
               ratio: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_Ratio),
               minRatioTop: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_TopMinRatio),
               minRatioBottom: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_BottomMinRatio)

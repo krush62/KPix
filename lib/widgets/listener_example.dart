@@ -199,21 +199,21 @@ class _ListenerExampleState extends State<ListenerExample> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
+            children: [
               Text(
                 'Pressure: ${pressure.toStringAsFixed((2))}',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
               Text(
                 _details,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
               Text(
                 'Position: (${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)})',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
             ],
           ),

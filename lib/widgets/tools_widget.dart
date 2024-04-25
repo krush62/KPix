@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:krush_flutter_test/typeDefs.dart';
+import 'package:krush_flutter_test/typedefs.dart';
 import 'package:krush_flutter_test/models.dart';
 
 

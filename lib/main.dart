@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:krush_flutter_test/kPixTheme.dart';
+import 'package:krush_flutter_test/kpix_theme.dart';
 import 'package:krush_flutter_test/models.dart';
-import 'package:krush_flutter_test/widgets/horizontalSplitView.dart';
-import 'package:krush_flutter_test/widgets/toolsWidget.dart';
-import 'package:krush_flutter_test/widgets/preferenceManager.dart';
-import 'package:krush_flutter_test/widgets/VerticalSplitView.dart';
-import 'package:krush_flutter_test/widgets/listenerExample.dart';
+import 'package:krush_flutter_test/widgets/horizontal_split_view.dart';
+import 'package:krush_flutter_test/widgets/tools_widget.dart';
+import 'package:krush_flutter_test/preference_manager.dart';
+import 'package:krush_flutter_test/widgets/vertical_split_view.dart';
+import 'package:krush_flutter_test/widgets/listener_example.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main()

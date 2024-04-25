@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:krush_flutter_test/TypeDefs.dart';
-import 'package:krush_flutter_test/Models.dart';
+import 'package:krush_flutter_test/typeDefs.dart';
+import 'package:krush_flutter_test/models.dart';
 
 
 class ToolsWidgetOptions

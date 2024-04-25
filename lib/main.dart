@@ -1,17 +1,12 @@
-
-
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:krush_flutter_test/KPixTheme.dart';
-import 'package:krush_flutter_test/Models.dart';
-import 'package:krush_flutter_test/widgets/HorizontalSplitView.dart';
-import 'package:krush_flutter_test/widgets/ToolsWidget.dart';
-import 'package:krush_flutter_test/widgets/PreferenceManager.dart';
+import 'package:krush_flutter_test/kPixTheme.dart';
+import 'package:krush_flutter_test/models.dart';
+import 'package:krush_flutter_test/widgets/horizontalSplitView.dart';
+import 'package:krush_flutter_test/widgets/toolsWidget.dart';
+import 'package:krush_flutter_test/widgets/preferenceManager.dart';
 import 'package:krush_flutter_test/widgets/VerticalSplitView.dart';
-import 'package:krush_flutter_test/widgets/ListenerExample.dart';
+import 'package:krush_flutter_test/widgets/listenerExample.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main()
@@ -31,7 +26,6 @@ class _KPixAppState extends State<KPixApp> {
   late PreferenceManager prefs;
   late CanvasOptions canvasOptions;
   late ToolsWidgetOptions _toolsOptions;
-  late ToolsWidget _toolsWidget;
   AppState appState = AppState();
   bool prefsInitialized = false;
 
@@ -80,13 +74,13 @@ class _KPixAppState extends State<KPixApp> {
             valueListenable: appState.selectedTool,
             builder: (BuildContext context, ToolType value,child) {
               return ToolsWidget(options: _toolsOptions,
-                changeToolFn: ChangeTool,
+                changeToolFn: changeTool,
                 appState: appState,);
             }
           ),
           right: HorizontalSplitView(
               top: ListenerExample(options: canvasOptions,),
-              bottom: Text("ANIMATION STUFF"),
+              bottom: const Text("ANIMATION STUFF"),
               ratio: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_Ratio),
               minRatioTop: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_TopMinRatio),
               minRatioBottom: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_BottomMinRatio)
@@ -101,7 +95,7 @@ class _KPixAppState extends State<KPixApp> {
 
   }
 
-  void ChangeTool(ToolType t)
+  void changeTool(ToolType t)
   {
     print("ChangeTool");
   }

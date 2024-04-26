@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "krush_flutter_test" "\0"
+            VALUE "FileDescription", "kpix" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "krush_flutter_test" "\0"
+            VALUE "InternalName", "kpix" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "krush_flutter_test.exe" "\0"
-            VALUE "ProductName", "krush_flutter_test" "\0"
+            VALUE "OriginalFilename", "kpix.exe" "\0"
+            VALUE "ProductName", "kpix" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -1,4 +1,4 @@
-# krush_flutter_test
+# kpix
 
 A new Flutter project.
 

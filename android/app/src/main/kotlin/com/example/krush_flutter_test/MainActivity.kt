@@ -1,4 +1,4 @@
-package com.example.krush_flutter_test
+package com.example.kpix
 
 import io.flutter.embedding.android.FlutterActivity
 

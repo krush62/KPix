@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 class PaletteWidget extends StatefulWidget
 {
+  const PaletteWidget({super.key});
+
   @override
   State<PaletteWidget> createState() => _PaletteWidgetState();
   
@@ -30,7 +32,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 flex: 1,
                 child: IconButton(
                   icon:  Icon(
-                    Icons.edit,
+                    Icons.open_in_browser_outlined,
                     size: 36,
                   ),
                   onPressed: null,

@@ -29,6 +29,7 @@ class ListenerExample extends StatefulWidget {
 }
 
 class _ListenerExampleState extends State<ListenerExample> {
+  //TODO privatize members and methods
   String _details = "";
   int pressTime = 0;
   double x = 0.0;
@@ -53,7 +54,7 @@ class _ListenerExampleState extends State<ListenerExample> {
   void initState() {
     super.initState();
     options = widget.options;
-    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: options.stylusPollRate), stylusBtnTimeout);
+    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
     timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     maxLongPressDistance = options.longPressCancelDistance;
   }
@@ -154,7 +155,7 @@ class _ListenerExampleState extends State<ListenerExample> {
     _updateLocation(details);
   }
 
-  void stylusBtnTimeout(Timer t)
+  void _stylusBtnTimeout(Timer t)
   {
     if (stylusButtonDetected && !stylusButtonDown)
     {

@@ -10,8 +10,7 @@ class CanvasOptions
   final int longPressDuration;
   final double longPressCancelDistance;
 
-  CanvasOptions(this.stylusPollRate, this.longPressDuration,
-      this.longPressCancelDistance);
+  CanvasOptions({required this.stylusPollRate, required this.longPressDuration, required this.longPressCancelDistance});
 }
 
 

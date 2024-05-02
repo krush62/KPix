@@ -10,7 +10,7 @@ class ToolsWidgetOptions
   final double spacingFactor;
   final double iconSize;
 
-  ToolsWidgetOptions(this.padding, this.buttonResizeFactor, this.spacingFactor, this.iconSize);
+  ToolsWidgetOptions({required this.padding, required this.buttonResizeFactor, required this.spacingFactor, required this.iconSize});
 
 }
 
@@ -37,24 +37,18 @@ class ToolsWidget extends StatefulWidget
 
 class _ToolsWidgetState extends State<ToolsWidget>
 {
-  late ChangeToolFn _changeToolFn;
-  late ToolsWidgetOptions _options;
-  late AppState _appState;
-
 
   void _selectionChanged(ToolType tool)
   {
-    _appState.setToolSelection(tool);
-    _changeToolFn(tool);
+    widget.appState.setToolSelection(tool);
+    widget.changeToolFn(tool); //not used
   }
 
 
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
-    _options = widget.options;
-    _changeToolFn = widget.changeToolFn;
-    _appState = widget.appState;
   }
 
   @override
@@ -74,122 +68,122 @@ class _ToolsWidgetState extends State<ToolsWidget>
         child: Align(
           alignment: const AlignmentDirectional(0.0, 0.0),
           child: Padding(
-            padding: EdgeInsetsDirectional.all(_options.padding),
+            padding: EdgeInsetsDirectional.all(widget.options.padding),
             child: GridView.count(
-              crossAxisCount: (constraints.maxWidth / _options.buttonResizeFactor).round(),
-              crossAxisSpacing: constraints.maxWidth / _options.spacingFactor,
-              mainAxisSpacing: constraints.maxWidth / _options.spacingFactor,
+              crossAxisCount: (constraints.maxWidth / widget.options.buttonResizeFactor).round(),
+              crossAxisSpacing: widget.options.padding,
+              mainAxisSpacing: widget.options.padding,
               childAspectRatio: 1,
               padding: const EdgeInsets.all(0.0),
               children: [
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Pencil),
+                  isSelected: widget.appState.toolIsSelected(ToolType.pencil),
                   icon:  Icon(
                     Icons.edit,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Pencil);
+                    _selectionChanged(ToolType.pencil);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Brush),
+                  isSelected: widget.appState.toolIsSelected(ToolType.brush),
                   icon: Icon(
                     Icons.brush,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Brush);
+                    _selectionChanged(ToolType.brush);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Shape),
+                  isSelected: widget.appState.toolIsSelected(ToolType.shape),
                   icon: Icon(
                     Icons.details,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Shape);
+                    _selectionChanged(ToolType.shape);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Gradient),
+                  isSelected: widget.appState.toolIsSelected(ToolType.gradient),
                   icon: Icon(
                     Icons.gradient,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Gradient);
+                    _selectionChanged(ToolType.gradient);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Fill),
+                  isSelected: widget.appState.toolIsSelected(ToolType.fill),
                   icon: Icon(
                     Icons.format_color_fill,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Fill);
+                    _selectionChanged(ToolType.fill);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Select),
+                  isSelected: widget.appState.toolIsSelected(ToolType.select),
                   icon: Icon(
                     Icons.select_all,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Select);
+                    _selectionChanged(ToolType.select);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Pick),
+                  isSelected: widget.appState.toolIsSelected(ToolType.pick),
                   icon: Icon(
                     Icons.colorize,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged((ToolType.Pick));
+                    _selectionChanged((ToolType.pick));
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Erase),
+                  isSelected: widget.appState.toolIsSelected(ToolType.erase),
                   icon: Icon(
                     Icons.delete,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Erase);
+                    _selectionChanged(ToolType.erase);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Font),
+                  isSelected: widget.appState.toolIsSelected(ToolType.font),
                   icon: Icon(
                     Icons.font_download,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Font);
+                    _selectionChanged(ToolType.font);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.ColorSelect),
+                  isSelected: widget.appState.toolIsSelected(ToolType.colorSelect),
                   icon: Icon(
                     Icons.blur_on,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.ColorSelect);
+                    _selectionChanged(ToolType.colorSelect);
                   },
                 ),
                 IconButton.outlined(
-                  isSelected: _appState.toolIsSelected(ToolType.Line),
+                  isSelected: widget.appState.toolIsSelected(ToolType.line),
                   icon: Icon(
                     Icons.multiline_chart,
-                    size: _options.iconSize,
+                    size: widget.options.iconSize,
                   ),
                   onPressed: () {
-                    _selectionChanged(ToolType.Line);
+                    _selectionChanged(ToolType.line);
                   },
                 ),
               ],

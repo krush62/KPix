@@ -26,8 +26,6 @@ class KPixApp extends StatefulWidget {
 
 class _KPixAppState extends State<KPixApp> {
   late PreferenceManager prefs;
-  late CanvasOptions canvasOptions;
-  late ToolsWidgetOptions _toolsOptions;
   AppState appState = AppState();
   bool prefsInitialized = false;
 
@@ -43,15 +41,9 @@ class _KPixAppState extends State<KPixApp> {
   async {
     final sPrefs = await SharedPreferences.getInstance();
     prefs = PreferenceManager(sPrefs);
-    canvasOptions = CanvasOptions(
-        prefs.getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
-        prefs.getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
-        prefs.getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance));
-    _toolsOptions = ToolsWidgetOptions(
-        prefs.getValueD(PreferenceDouble.Layout_Tools_Padding),
-        prefs.getValueD(PreferenceDouble.Layout_Tools_ButtonResizeFactor),
-        prefs.getValueD(PreferenceDouble.Layout_Tools_SpacingFactor),
-        prefs.getValueD(PreferenceDouble.Layout_Tools_IconSize));
+
+    List<Color> colors = [Colors.red, Colors.amber, Colors.green, Colors.yellow, Colors.lightBlue, Colors.white12, Colors.cyan, Colors.lightGreen];
+    appState.setColors(colors, prefs.colorEntryOptions);
     prefsInitialized = true;
     setState(() {} );
   }
@@ -80,8 +72,7 @@ class _KPixAppState extends State<KPixApp> {
                 child: ValueListenableBuilder<ToolType>(
                   valueListenable: appState.selectedTool,
                   builder: (BuildContext context, ToolType value,child) {
-                    //return ToolsWidget(options: _toolsOptions, changeToolFn: changeTool, appState: appState,);
-                    return PaletteWidget();
+                    return PaletteWidget(options: prefs.paletteOptions, appState: appState,);
                   }
                 ),
               ),
@@ -90,24 +81,16 @@ class _KPixAppState extends State<KPixApp> {
                 child: ValueListenableBuilder<ToolType>(
                     valueListenable: appState.selectedTool,
                     builder: (BuildContext context, ToolType value,child) {
-                      return ToolsWidget(options: _toolsOptions, changeToolFn: changeTool, appState: appState,);
+                      return ToolsWidget(options: prefs.toolsOptions, changeToolFn: changeTool, appState: appState,);
                       //return ColorEntryWidget();
                     }
                 ),
               ),
-              Expanded(
-                flex: 1,
-                child: ValueListenableBuilder<ToolType>(
-                    valueListenable: appState.selectedTool,
-                    builder: (BuildContext context, ToolType value,child) {
-                      return ColorEntryWidget();
-                    }
-                ),
-              ),
+
             ]
           ),
           right: HorizontalSplitView(
-              top: ListenerExample(options: canvasOptions,),
+              top: ListenerExample(options: prefs.canvasOptions,),
               bottom: Text("ANIMATION STUFF", style: Theme.of(context).textTheme.headlineMedium,),
               ratio: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_Ratio),
               minRatioTop: prefs.getValueD(PreferenceDouble.Layout_SplitViewHorizontal_TopMinRatio),
@@ -126,6 +109,12 @@ class _KPixAppState extends State<KPixApp> {
   void changeTool(ToolType t)
   {
     print("ChangeTool");
+  }
+
+  //TODO temp
+  void selectColor(ColorEntryWidget e)
+  {
+    print("cew selected");
   }
 }
 

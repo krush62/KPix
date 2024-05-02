@@ -56,9 +56,9 @@ class KPixTheme {
         labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600),
         labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600),
 
-        bodyLarge: TextStyle(fontSize: 16, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
-        bodyMedium: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
-        bodySmall: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
+        bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
+        bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
       )
     );
 
@@ -117,9 +117,9 @@ class KPixTheme {
           labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600),
           labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600),
 
-          bodyLarge: TextStyle(fontSize: 16, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
-          bodyMedium: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
-          bodySmall: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
+          bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
+          bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
+          bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
         )
     );
   }

@@ -2,18 +2,72 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:kpix/typedefs.dart';
+
+class ColorEntryWidgetOptions
+{
+  final double unselectedMargin;
+  final double selectedMargin;
+  final double roundRadius;
+  final double contrastColorThreshold;
+  final int hsvDisplayDigits;
+  final int hoverTimer;
+
+  ColorEntryWidgetOptions({required this.unselectedMargin, required this.selectedMargin, required this.roundRadius, required this.contrastColorThreshold, required this.hsvDisplayDigits, required this.hoverTimer});
+}
+
+class _ColorEntryNotifiySet
+{
+  Color color = Colors.black;
+  Color textColor = Colors.white;
+  bool isSelected = false;
+  String colorString = "0.00\n0.00\n0.00";
+
+  _ColorEntryNotifiySet(this.color, this.textColor, this.isSelected, this.colorString);
+  _ColorEntryNotifiySet.clone(_ColorEntryNotifiySet other) : this(other.color, other.textColor, other.isSelected, other.colorString);
+}
 
 class ColorEntryWidget extends StatefulWidget
 {
-  final ValueNotifier<Color> color = ValueNotifier(Colors.red);
-  ColorEntryWidget({super.key});
+  final ValueNotifier<_ColorEntryNotifiySet> _notifySet = ValueNotifier(_ColorEntryNotifiySet(Colors.black, Colors.white, false, "0.00\n0.00\n0.00"));
+  final ColorSelectedFn colorSelectedFn;
+  final ColorEntryWidgetOptions options;
+
+  ColorEntryWidget(Color c, this.colorSelectedFn, this.options, {super.key})
+  {
+    setColor(c);
+  }
+
+  Color _getContrastColor(Color color) {
+    if (HSVColor.fromColor(color).value > options.contrastColorThreshold)
+    {
+      return Colors.black;
+    }
+    else
+    {
+      return Colors.white;
+    }
+  }
+
+  String _createColorString(Color c)
+  {
+    HSVColor hsv = HSVColor.fromColor(c);
+    return "${(hsv.hue / 360.0).toStringAsFixed(options.hsvDisplayDigits)}\n"
+        "${hsv.saturation.toStringAsFixed(options.hsvDisplayDigits)}\n"
+        "${hsv.value.toStringAsFixed(options.hsvDisplayDigits)}";
+  }
+
 
   @override
   State<ColorEntryWidget> createState() => _ColorEntryWidgetState();
 
   void setColor(Color c)
   {
-    color.value = c;
+    _ColorEntryNotifiySet newSet = _ColorEntryNotifiySet.clone(_notifySet.value);
+    newSet.textColor = _getContrastColor(c);
+    newSet.color = c;
+    newSet.colorString = _createColorString(c);
+    _notifySet.value = newSet;
   }
 
   void setColorHSV(double hue, double saturation, double value)
@@ -21,8 +75,7 @@ class ColorEntryWidget extends StatefulWidget
     assert(hue >= 0.0 && hue <= 1.0, 'hue must be in range 0.0-1.0');
     assert(saturation >= 0.0 && saturation <= 1.0, 'saturation must be in range 0.0-1.0');
     assert(value >= 0.0 && value <= 1.0, 'value must be in range 0.0-1.0');
-    Color c = HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
-    color.value = c;
+    setColor(HSVColor.fromAHSV(1.0, hue, saturation, value).toColor());
   }
 
   void setColorRGB(int r, int g, int b)
@@ -30,11 +83,20 @@ class ColorEntryWidget extends StatefulWidget
     assert(r >= 0 && r < 256, 'red value must be in range 0-255');
     assert(g >= 0 && g < 256, 'green value must be in range 0-255');
     assert(b >= 0 && b < 256, 'blue value must be in range 0-255');
-    Color c = Color.fromRGBO(r, g, b, 1.0);
-    color.value = c;
+    setColor(Color.fromRGBO(r, g, b, 1.0));
   }
 
+  void setSelected(bool selected)
+  {
+    _ColorEntryNotifiySet newSet = _ColorEntryNotifiySet.clone(_notifySet.value);
+    newSet.isSelected = selected;
+    _notifySet.value = newSet;
+  }
 
+  bool isSelected()
+  {
+    return _notifySet.value.isSelected;
+  }
 }
 
 class _ColorEntryWidgetState extends State<ColorEntryWidget>
@@ -48,8 +110,7 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
   @override
   void initState() {
     super.initState();
-    //TODO options
-    _hoverPollTimer = Timer.periodic(const Duration(milliseconds: 100), _hoverPoll);
+    _hoverPollTimer = Timer.periodic(Duration(milliseconds: widget.options.hoverTimer), _hoverPoll);
   }
 
   void _hoverPoll(Timer t)
@@ -73,11 +134,6 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
     }
   }
 
-  String _stringFromColor(Color c)
-  {
-    return "${c.red}\n${c.green}\n${c.blue}";
-  }
-
   void _hover(PointerHoverEvent e)
   {
     _pointerHover = true;
@@ -93,39 +149,56 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
     _mouseOver = false;
   }
 
+  void _down(PointerDownEvent e)
+  {
+    widget.colorSelectedFn(widget);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Color>(
-        valueListenable: widget.color,
-        builder: (BuildContext context, Color value, child) {
-
+    return ValueListenableBuilder<_ColorEntryNotifiySet>(
+        valueListenable: widget._notifySet,
+        builder: (BuildContext context, _ColorEntryNotifiySet value, child) {
           return MouseRegion(
             onEnter: _mouseEnter,
             onExit: _mouseExit,
             child: Listener(
                 onPointerHover: _hover,
+                onPointerDown: _down,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Container(
-                        color: widget.color.value
+                      margin: EdgeInsets.all(value.isSelected ? widget.options.selectedMargin : widget.options.unselectedMargin),
+                      decoration: BoxDecoration(
+                        //TODO width should be configuarable
+                        border: Border.all(
+                            color: value.isSelected
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: (widget.options.unselectedMargin - widget.options.selectedMargin)
+                        ),
+                        color: value.color,
+                        borderRadius: BorderRadius.all(Radius.circular(widget.options.roundRadius))
+                      ),
                     ),
                     Visibility(
                         visible: _textIsVisible,
                         child: Text(
-                          _stringFromColor(widget.color.value),
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodySmall,
+                          value.colorString,
+                          style: TextStyle(
+                            color: value.textColor,
+                            fontSize: Theme.of(context).textTheme.bodySmall?.fontSize,
+                            fontWeight: Theme.of(context).textTheme.bodySmall?.fontWeight,
+                            letterSpacing: Theme.of(context).textTheme.bodySmall?.letterSpacing,
+                            decoration: Theme.of(context).textTheme.bodySmall?.decoration,
+                          ),
                           textAlign: TextAlign.center,
                         )
-                    )
-                  ],
+                    )],
                 )
             )
           );
-        }
-    );
+        });
   }
 }

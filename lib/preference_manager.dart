@@ -47,6 +47,8 @@ enum PreferenceInt
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
   Layout_ColorEntry_HsvDisplayDigits(defaultValue: 2),
   Layout_ColorEntry_HoverTimer(defaultValue: 100),
+  Layout_ColorEntry_Stylus_PollRate(defaultValue: 100),
+  Layout_ColorEntry_LongPressDuration(defaultValue: 1000)
   ;
   const PreferenceInt({
     required this.defaultValue
@@ -103,7 +105,9 @@ class PreferenceManager
         roundRadius: getValueD(PreferenceDouble.Layout_ColorEntry_RoundRadius),
         contrastColorThreshold: getValueD(PreferenceDouble.Layout_ColorEntry_ContrastColorThreshold),
         hsvDisplayDigits: getValueI(PreferenceInt.Layout_ColorEntry_HsvDisplayDigits),
-        hoverTimer: getValueI(PreferenceInt.Layout_ColorEntry_HoverTimer));
+        hoverTimer: getValueI(PreferenceInt.Layout_ColorEntry_HoverTimer),
+        stylusPollRate: getValueI(PreferenceInt.Layout_ColorEntry_Stylus_PollRate),
+        longPressDuration: getValueI(PreferenceInt.Layout_ColorEntry_LongPressDuration));
     colorChooserOptions = ColorChooserWidgetOptions(
         iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
         colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),

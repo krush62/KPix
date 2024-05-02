@@ -5,7 +5,6 @@ import 'package:flutter/gestures.dart';
 
 class CanvasOptions
 {
-
   final int stylusPollRate;
   final int longPressDuration;
   final double longPressCancelDistance;
@@ -47,15 +46,13 @@ class _ListenerExampleState extends State<ListenerExample> {
   bool stylusButtonDetected = false;
   bool stylusButtonDown = false;
 
-  late CanvasOptions options;
 
   @override
   void initState() {
     super.initState();
-    options = widget.options;
-    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
-    timeoutLongPress = Duration(milliseconds: options.longPressDuration);
-    maxLongPressDistance = options.longPressCancelDistance;
+    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: widget.options.stylusPollRate), _stylusBtnTimeout);
+    timeoutLongPress = Duration(milliseconds: widget.options.longPressDuration);
+    maxLongPressDistance = widget.options.longPressCancelDistance;
   }
 
   void updateDetails(String s)
@@ -72,12 +69,12 @@ class _ListenerExampleState extends State<ListenerExample> {
     });
   }
 
-  void handleTimeoutLongPress() {  // callback function
+  void handleTimeoutLongPress() {
     timerRunning = false;
     updateDetails("LONG PRESS PRIMARY");
   }
 
-  void buttonDown(PointerEvent details)
+  void _buttonDown(PointerEvent details)
   {
     pressStartLoc = details.localPosition;
     if (details.buttons == kPrimaryButton)
@@ -105,7 +102,8 @@ class _ListenerExampleState extends State<ListenerExample> {
       stylusBtnDown();
     }
   }
-  void buttonUp(PointerEvent details)
+
+  void _buttonUp(PointerEvent details)
   {
     if (primaryIsDown)
     {
@@ -118,8 +116,6 @@ class _ListenerExampleState extends State<ListenerExample> {
       stylusBtnUp();
       secondaryIsDown = false;
     }
-
-
     timerRunning = false;
   }
 
@@ -190,9 +186,9 @@ class _ListenerExampleState extends State<ListenerExample> {
   Widget build(BuildContext context) {
     return Center(
       child: Listener(
-        onPointerDown: buttonDown,
+        onPointerDown: _buttonDown,
         onPointerMove: _updateLocation,
-        onPointerUp: buttonUp,
+        onPointerUp: _buttonUp,
         onPointerHover: _hover,
         child: ColoredBox(
           color: Colors.lightBlueAccent,

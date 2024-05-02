@@ -12,8 +12,18 @@ class ColorEntryWidgetOptions
   final double contrastColorThreshold;
   final int hsvDisplayDigits;
   final int hoverTimer;
+  final int stylusPollRate;
+  final int longPressDuration;
 
-  ColorEntryWidgetOptions({required this.unselectedMargin, required this.selectedMargin, required this.roundRadius, required this.contrastColorThreshold, required this.hsvDisplayDigits, required this.hoverTimer});
+  ColorEntryWidgetOptions({
+    required this.unselectedMargin,
+    required this.selectedMargin,
+    required this.roundRadius,
+    required this.contrastColorThreshold,
+    required this.hsvDisplayDigits,
+    required this.hoverTimer,
+    required this.stylusPollRate,
+    required this.longPressDuration});
 }
 
 class _ColorEntryNotifiySet
@@ -105,12 +115,22 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
   bool _mouseOver = false;
   bool _textIsVisible = false;
   late Timer _hoverPollTimer;
-
+  bool stylusButtonDetected = false;
+  bool stylusButtonDown = false;
+  bool timerRunning = false;
+  late Duration timeoutLongPress;
+  late Timer timerLongPress;
+  bool primaryIsDown = false;
+  bool secondaryIsDown = false;
+  late Timer timerStylusBtnPoll;
+  late Timer timerStylusBtnLongPress;
 
   @override
   void initState() {
     super.initState();
     _hoverPollTimer = Timer.periodic(Duration(milliseconds: widget.options.hoverTimer), _hoverPoll);
+    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: widget.options.stylusPollRate), _stylusBtnTimeout);
+    timeoutLongPress = Duration(milliseconds: widget.options.longPressDuration);
   }
 
   void _hoverPoll(Timer t)
@@ -136,6 +156,10 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
 
   void _hover(PointerHoverEvent e)
   {
+    if (e.buttons == kSecondaryButton && !stylusButtonDetected)
+    {
+      stylusButtonDetected = true;
+    }
     _pointerHover = true;
   }
 
@@ -149,9 +173,77 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
     _mouseOver = false;
   }
 
-  void _down(PointerDownEvent e)
+
+  void _down(PointerEvent e)
   {
-    widget.colorSelectedFn(widget);
+    if (e.buttons == kPrimaryButton)
+    {
+      primaryIsDown = true;
+      if (!timerRunning) {
+        timerRunning = true;
+        timerLongPress = Timer(timeoutLongPress, handleTimeoutLongPress);
+      }
+      widget.colorSelectedFn(widget);
+      print("PRIMARY DOWN");
+    }
+    else if (e.buttons == kSecondaryButton)
+    {
+      secondaryIsDown = true;
+      stylusBtnDown();
+    }
+  }
+
+  void _up(PointerUpEvent e)
+  {
+    if (primaryIsDown)
+    {
+      timerLongPress.cancel();
+      primaryIsDown = false;
+      print("PRIMARY UP");
+    }
+    else if (secondaryIsDown)
+    {
+      stylusBtnUp();
+      secondaryIsDown = false;
+    }
+    timerRunning = false;
+  }
+
+  void _stylusBtnTimeout(Timer t)
+  {
+    if (stylusButtonDetected && !stylusButtonDown)
+    {
+      stylusButtonDown = true;
+      stylusBtnDown();
+      timerStylusBtnLongPress = Timer(timeoutLongPress, handleTimeoutStylusBtnLongPress);
+    }
+    else if (!stylusButtonDetected && stylusButtonDown)
+    {
+      stylusBtnUp();
+      stylusButtonDown = false;
+      timerStylusBtnLongPress.cancel();
+    }
+    stylusButtonDetected = false;
+  }
+
+  void handleTimeoutLongPress() {  // callback function
+    timerRunning = false;
+    print("LONG PRESS PRIMARY");
+  }
+
+  void stylusBtnDown()
+  {
+    print("SECONDARY DOWN");
+  }
+
+  void stylusBtnUp()
+  {
+    print("SECONDARY UP");
+  }
+
+  void handleTimeoutStylusBtnLongPress()
+  {
+    print("STYLUS BTN LONG PRESS");
   }
 
   @override
@@ -165,13 +257,13 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
             child: Listener(
                 onPointerHover: _hover,
                 onPointerDown: _down,
+                onPointerUp: _up,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Container(
                       margin: EdgeInsets.all(value.isSelected ? widget.options.selectedMargin : widget.options.unselectedMargin),
                       decoration: BoxDecoration(
-                        //TODO width should be configuarable
                         border: Border.all(
                             color: value.isSelected
                                 ? Colors.white

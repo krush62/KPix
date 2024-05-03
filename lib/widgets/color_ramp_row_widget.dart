@@ -10,49 +10,57 @@ class ColorRampRowWidget extends StatefulWidget {
   final AddNewColorFn addNewColorFn;
   final ColorEntryWidgetOptions colorEntryWidgetOptions;
   final AppState appState;
-  late List<Widget> widgetList = [];
+  final List<Widget> widgetList;
 
   @override
   State<ColorRampRowWidget> createState() => _ColorRampRowWidgetState();
 
-  ColorRampRowWidget({super.key, required this.colorList, required this.colorSelectedFn, required this.addNewColorFn, required this.colorEntryWidgetOptions, required this.appState})
-  {
-    _buildWidgets();
-  }
+  const ColorRampRowWidget._({required this.colorList, required this.colorSelectedFn, required this.addNewColorFn, required this.colorEntryWidgetOptions, required this.appState, required this.widgetList});
 
-  void _buildWidgets()
+  factory ColorRampRowWidget(List<IdColor>? tempColorList, ColorSelectedFn tempColorSelectedFn, AddNewColorFn tempAddNewColorFn, ColorEntryWidgetOptions tempColorEntryWidgetOptions, AppState tempAppState)
   {
-    widgetList = [];
-    if (colorList != null) {
-      for (IdColor color in colorList!) {
-        widgetList.add(ColorEntryWidget(
-            color, appState, colorSelectedFn, colorEntryWidgetOptions));
+    List<Widget> tempWidgetList = [];
+    if (tempColorList != null) {
+      for (IdColor color in tempColorList) {
+        tempWidgetList.add(ColorEntryWidget(
+            color, tempAppState, tempColorSelectedFn, tempColorEntryWidgetOptions));
       }
-      widgetList.add(IconButton (
+      tempWidgetList.add(IconButton (
         icon: Icon(
           Icons.add,
-          size: colorEntryWidgetOptions.addIconSize,
+          size: tempColorEntryWidgetOptions.addIconSize,
         ),
         onPressed: () {
-          addNewColorFn(colorList);
+          tempAddNewColorFn(tempColorList);
         },
       ));
     }
     else
     {
-      widgetList.add(Expanded(
-        child: Padding(
-          padding: EdgeInsets.all(colorEntryWidgetOptions.buttonPadding),
-          child: IconButton (
-            icon: Icon(
-              Icons.add,
-              size: colorEntryWidgetOptions.addIconSize,
-            ),
-            onPressed: () {addNewColorFn(colorList);}
+      tempWidgetList.add(Expanded(
+          child: Padding(
+              padding: EdgeInsets.all(tempColorEntryWidgetOptions.buttonPadding),
+              child: IconButton (
+                  icon: Icon(
+                    Icons.add,
+                    size: tempColorEntryWidgetOptions.addIconSize,
+                  ),
+                  onPressed: () {tempAddNewColorFn(tempColorList);}
+              )
           )
-        )
       ));
     }
+    return ColorRampRowWidget._(colorList: tempColorList, colorSelectedFn: tempColorSelectedFn, addNewColorFn: tempAddNewColorFn, colorEntryWidgetOptions: tempColorEntryWidgetOptions, appState: tempAppState, widgetList: tempWidgetList);
+  }
+
+  List<Widget> getChildren()
+  {
+    return widgetList;
+  }
+
+  void _buildWidgets()
+  {
+
 
   }
 }

@@ -134,7 +134,6 @@ class _PaletteWidgetState extends State<PaletteWidget>
               valueListenable: widget.appState.colorRampWidgetList,
               builder: (BuildContext context, List<ColorRampRowWidget> widgetRows, child)
               {
-                String? s = widgetRows[0].colorList?.length.toString();
                 return Container(
                   width: double.infinity,
                   height: double.infinity,

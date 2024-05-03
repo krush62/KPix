@@ -35,21 +35,21 @@ class ColorEntryWidgetOptions {
   });
 }
 
-class _ColorEntryNotifiySet {
+class ColorEntryNotifiySet {
   IdColor color = IdColor(color: Colors.black, uuid: "");
   Color textColor = Colors.white;
   String colorString = "0.00\n0.00\n0.00";
 
-  _ColorEntryNotifiySet(
+  ColorEntryNotifiySet(
       this.color, this.textColor, this.colorString);
 
-  _ColorEntryNotifiySet.clone(_ColorEntryNotifiySet other)
+  ColorEntryNotifiySet.clone(ColorEntryNotifiySet other)
       : this(other.color, other.textColor, other.colorString);
 }
 
 class ColorEntryWidget extends StatefulWidget {
-  final ValueNotifier<_ColorEntryNotifiySet> colorData = ValueNotifier(
-      _ColorEntryNotifiySet(
+  final ValueNotifier<ColorEntryNotifiySet> colorData = ValueNotifier(
+      ColorEntryNotifiySet(
           IdColor(color: Colors.black, uuid: ""), Colors.white, "0.00\n0.00\n0.00"));
   final ColorSelectedFn colorSelectedFn;
   final ColorEntryWidgetOptions options;
@@ -78,8 +78,8 @@ class ColorEntryWidget extends StatefulWidget {
   State<ColorEntryWidget> createState() => _ColorEntryWidgetState();
 
   void setColor(final IdColor c) {
-    _ColorEntryNotifiySet newSet =
-        _ColorEntryNotifiySet.clone(colorData.value);
+    ColorEntryNotifiySet newSet =
+        ColorEntryNotifiySet.clone(colorData.value);
     newSet.textColor = _getContrastColor(c.color);
     newSet.color = c;
     newSet.colorString = _createColorString(c.color);
@@ -221,9 +221,9 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<_ColorEntryNotifiySet>(
+    return ValueListenableBuilder<ColorEntryNotifiySet>(
       valueListenable: widget.colorData,
-      builder: (BuildContext context, _ColorEntryNotifiySet value, child) {
+      builder: (BuildContext context, ColorEntryNotifiySet value, child) {
         return ValueListenableBuilder(
             valueListenable: widget.appState.selectedColorId,
             builder: (BuildContext context2, String selectedColorId, child2)

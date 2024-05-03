@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
@@ -34,9 +33,9 @@ class AppState
     colorRampWidgetList.value = [];
     for (List<IdColor> ramp in _colorRamps)
     {
-      colorRampWidgetList.value.add(ColorRampRowWidget(colorList: ramp, appState: this, colorSelectedFn: _colorSelectionChanged, addNewColorFn: _addNew, colorEntryWidgetOptions: _colorEntryWidgetOptions));
+      colorRampWidgetList.value.add(ColorRampRowWidget(ramp, _colorSelectionChanged, _addNew, _colorEntryWidgetOptions, this));
     }
-    colorRampWidgetList.value.add(ColorRampRowWidget(colorList: null, appState: this, colorSelectedFn: _colorSelectionChanged, addNewColorFn: _addNew, colorEntryWidgetOptions: _colorEntryWidgetOptions));
+    colorRampWidgetList.value.add(ColorRampRowWidget(null, _colorSelectionChanged, _addNew, _colorEntryWidgetOptions, this));
   }
 
   void _addNew(List<IdColor>? ramp)

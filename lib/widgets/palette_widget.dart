@@ -1,23 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/widgets/color_ramp_row_widget.dart';
 
 class PaletteWidgetOptions
 {
   final double padding;
   final double columnCountResizeFactor;
-  final double topiconSize;
-  final double addIconSize;
+  final double topIconSize;
 
   PaletteWidgetOptions({
     required this.padding,
     required this.columnCountResizeFactor,
-    required this.topiconSize,
-    required this.addIconSize
+    required this.topIconSize,
   });
-
-
-
-//PaletteWidgetOptions(this.padding, this.columnCountResizeFactor, this.topiconSize, this.addIconSize);
 
 }
 
@@ -65,6 +60,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
 
   @override
   Widget build(BuildContext context) {
+
     return LayoutBuilder(
         builder: (context, BoxConstraints constraints)
     {
@@ -75,9 +71,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
           Container(
             padding: EdgeInsets.all(widget.options.padding),
               decoration: BoxDecoration(
-                color: Theme
-                    .of(context)
-                    .secondaryHeaderColor,
+                color: Theme.of(context).primaryColor,
               ),
             child:  Row(
               mainAxisSize: MainAxisSize.max,
@@ -85,73 +79,92 @@ class _PaletteWidgetState extends State<PaletteWidget>
               children: [
                 Expanded(
                   flex: 1,
-                  child: IconButton.outlined(
-                    icon:  Icon(
-                      Icons.open_in_browser_outlined,
-                      size: widget.options.topiconSize,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(0.0, 0.0, widget.options.padding / 2.0, 0.0),
+                    child: IconButton.outlined(
+                      color: Theme.of(context).primaryColorLight,
+                      icon:  Icon(
+                        Icons.open_in_browser_outlined,
+                        size: widget.options.topIconSize,
+                      ),
+                      onPressed: _loadPalettePressed,
                     ),
-                    onPressed: _loadPalettePressed,
                   )
                 ),
                 Expanded(
-                    flex: 1,
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
                     child: IconButton.outlined(
+                      color: Theme.of(context).primaryColorLight,
                       icon:  Icon(
                         Icons.save_alt,
-                        size: widget.options.topiconSize,
+                        size: widget.options.topIconSize,
                       ),
                       onPressed: _savePalettePressed,
-                    )
+                    ),
+                  )
                 ),
                 Expanded(
-                    flex: 1,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: widget._indexed,
-                      builder: (BuildContext context, bool value, child)
-                      {
-                        return IconButton.outlined(
+                  flex: 1,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: widget._indexed,
+                    builder: (BuildContext context, bool value, child)
+                    {
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
+                        child: IconButton.outlined(
+                          color: value ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                           isSelected: value,
                           icon:  Icon(
                             Icons.lock,
-                            size: widget.options.topiconSize,
+                            size: widget.options.topIconSize,
                           ),
                           onPressed: _switchIndexedPressed,
-                        );
-                      })
-
+                        ),
+                      );
+                    }
+                  )
                 ),
               ],
             )
           ),
           Expanded(
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(widget.options.padding / 2.0),
-                child: GridView.count(
-                  padding: EdgeInsets.zero,
-                  crossAxisCount: (constraints.maxWidth / widget.options.columnCountResizeFactor).round(),
-                  crossAxisSpacing: widget.options.padding / 2.0,
-                  mainAxisSpacing: widget.options.padding / 2.0,
-                  childAspectRatio: 1,
-                  scrollDirection: Axis.vertical,
-                  children: [
-                    ...widget.appState.colorList.value,
-                     IconButton(
-                      icon: Icon(
-                        Icons.add,
-                        size: widget.options.addIconSize,
-                      ),
-                      onPressed: null,
+            child: ValueListenableBuilder<List<ColorRampRowWidget>>(
+              valueListenable: widget.appState.colorRampWidgetList,
+              builder: (BuildContext context, List<ColorRampRowWidget> widgetRows, child)
+              {
+                String? s = widgetRows[0].colorList?.length.toString();
+                return Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).canvasColor,
+                  ),
+
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Padding(
+                        padding: EdgeInsets.all(widget.options.padding / 2.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            ...widgetRows
+                          ],
+                        )
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+
+
+
+
+
+
+                );
+              }
+            )
+
           )
         ],
       );

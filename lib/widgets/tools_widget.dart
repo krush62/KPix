@@ -53,7 +53,6 @@ class _ToolsWidgetState extends State<ToolsWidget>
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD TOOLS");
     return LayoutBuilder(
         builder: (context, BoxConstraints constraints)
     {
@@ -61,9 +60,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: Theme
-              .of(context)
-              .secondaryHeaderColor,
+          color: Theme.of(context).primaryColor,
         ),
         child: Align(
           alignment: const AlignmentDirectional(0.0, 0.0),
@@ -78,6 +75,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
               children: [
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.pencil),
+                  color: widget.appState.toolIsSelected(ToolType.pencil) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon:  Icon(
                     Icons.edit,
                     size: widget.options.iconSize,
@@ -88,6 +86,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.brush),
+                  color: widget.appState.toolIsSelected(ToolType.brush) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.brush,
                     size: widget.options.iconSize,
@@ -98,6 +97,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.shape),
+                  color: widget.appState.toolIsSelected(ToolType.shape) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.details,
                     size: widget.options.iconSize,
@@ -108,6 +108,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.gradient),
+                  color: widget.appState.toolIsSelected(ToolType.gradient) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.gradient,
                     size: widget.options.iconSize,
@@ -118,6 +119,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.fill),
+                  color: widget.appState.toolIsSelected(ToolType.fill) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.format_color_fill,
                     size: widget.options.iconSize,
@@ -128,6 +130,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.select),
+                  color: widget.appState.toolIsSelected(ToolType.select) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.select_all,
                     size: widget.options.iconSize,
@@ -138,6 +141,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.pick),
+                  color: widget.appState.toolIsSelected(ToolType.pick) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.colorize,
                     size: widget.options.iconSize,
@@ -148,6 +152,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.erase),
+                  color: widget.appState.toolIsSelected(ToolType.erase) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.delete,
                     size: widget.options.iconSize,
@@ -158,6 +163,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.font),
+                  color: widget.appState.toolIsSelected(ToolType.font) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.font_download,
                     size: widget.options.iconSize,
@@ -168,6 +174,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.colorSelect),
+                  color: widget.appState.toolIsSelected(ToolType.colorSelect) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.blur_on,
                     size: widget.options.iconSize,
@@ -178,6 +185,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 IconButton.outlined(
                   isSelected: widget.appState.toolIsSelected(ToolType.line),
+                  color: widget.appState.toolIsSelected(ToolType.line) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                   icon: Icon(
                     Icons.multiline_chart,
                     size: widget.options.iconSize,

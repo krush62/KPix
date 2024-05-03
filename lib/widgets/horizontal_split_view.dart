@@ -70,8 +70,10 @@ class _HorizontalSplitViewState extends State<HorizontalSplitView> {
                   height: _dividerHeight,
                   width: constraints.maxWidth,
                   child: Container (
-                      color: Theme.of(context).highlightColor,
-                      child: const Icon(Icons.drag_handle)
+                      color: Theme.of(context).primaryColor,
+                      child: Icon(
+                          Icons.drag_handle,
+                          color: Theme.of(context).primaryColorLight,)
                   ),
                 ),
                 onPanUpdate: (DragUpdateDetails details) {

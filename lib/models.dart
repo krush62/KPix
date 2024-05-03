@@ -1,33 +1,82 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
+import 'package:kpix/widgets/color_ramp_row_widget.dart';
+import 'package:uuid/uuid.dart';
 
 class AppState
 {
   final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
-  final ValueNotifier<List<ColorEntryWidget>> colorList = ValueNotifier([]);
+  final ValueNotifier<List<ColorRampRowWidget>> colorRampWidgetList = ValueNotifier([]);
+  late List<List<IdColor>> _colorRamps;
+  late ColorEntryWidgetOptions _colorEntryWidgetOptions;
+  final ValueNotifier<String> selectedColorId = ValueNotifier("");
 
-  void setColors(final List<Color> inputColors, final ColorEntryWidgetOptions options)
+  void setColors(final List<List<Color>> inputColors, final ColorEntryWidgetOptions options)
   {
-    colorList.value.clear();
-    for (Color c in inputColors)
+    Uuid uuid = const Uuid();
+    _colorRamps = [];
+    for (final List<Color> cList in inputColors)
     {
-      colorList.value.add(ColorEntryWidget(c, _colorChanged, options));
+      List<IdColor> colorList = [];
+      for (final Color c in cList)
+      {
+        colorList.add(IdColor(color: c, uuid: uuid.v1()));
+      }
+      _colorRamps.add(colorList);
     }
+    _colorEntryWidgetOptions = options;
+    _updateColorWidgets();
   }
 
-  void _colorChanged(final ColorEntryWidget colorEntry)
+  void _updateColorWidgets()
   {
-    for (int i = 0; i < colorList.value.length; i++)
+    colorRampWidgetList.value = [];
+    for (List<IdColor> ramp in _colorRamps)
     {
-      final bool shouldSelect = colorList.value[i] == colorEntry;
-      if (shouldSelect != colorList.value[i].isSelected())
+      colorRampWidgetList.value.add(ColorRampRowWidget(colorList: ramp, appState: this, colorSelectedFn: _colorSelectionChanged, addNewColorFn: _addNew, colorEntryWidgetOptions: _colorEntryWidgetOptions));
+    }
+    colorRampWidgetList.value.add(ColorRampRowWidget(colorList: null, appState: this, colorSelectedFn: _colorSelectionChanged, addNewColorFn: _addNew, colorEntryWidgetOptions: _colorEntryWidgetOptions));
+  }
+
+  void _addNew(List<IdColor>? ramp)
+  {
+    Uuid uuid = const Uuid();
+    if (ramp != null) {
+      ramp.add(IdColor(color: Colors.black, uuid: uuid.v1()));
+    }
+    else
+    {
+      _colorRamps.add([]);
+    }
+    _updateColorWidgets();
+    _colorSelectionChanged(selectedColorId.value);
+  }
+
+  void _colorSelectionChanged(final String colorUuid)
+  {
+    for (int i = 0; i < colorRampWidgetList.value.length; i++)
+    {
+      for (int j = 0; j < colorRampWidgetList.value[i].widgetList.length; j++)
       {
-        colorList.value[i].setSelected(shouldSelect);
+        Widget currentWidget = colorRampWidgetList.value[i].widgetList[j];
+        if (currentWidget is ColorEntryWidget)
+        {
+          if (currentWidget.colorData.value.color.uuid == colorUuid)
+          {
+            selectedColorId.value = colorUuid;
+            return;
+          }
+        }
       }
     }
   }
 
+  //TEMP
+  void changeTool(ToolType t)
+  {
+    print("ChangeTool");
+  }
 
   void setToolSelection(final ToolType tool)
   {
@@ -78,4 +127,11 @@ enum ToolType
   font,
   colorSelect,
   line
+}
+
+class IdColor
+{
+  final Color color;
+  final String uuid;
+  IdColor({required this.color, required this.uuid});
 }

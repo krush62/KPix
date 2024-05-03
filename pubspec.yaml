@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  uuid: ^4.4.0
+  bitsdojo_window: ^0.1.6
 
 
   # The following adds the Cupertino Icons font to your application.

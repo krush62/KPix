@@ -191,7 +191,7 @@ class _ListenerExampleState extends State<ListenerExample> {
         onPointerUp: _buttonUp,
         onPointerHover: _hover,
         child: ColoredBox(
-          color: Colors.lightBlueAccent,
+          color: Theme.of(context).canvasColor,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,

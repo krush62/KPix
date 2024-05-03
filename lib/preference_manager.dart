@@ -12,23 +12,32 @@ enum PreferenceDouble
   Layout_SplitViewHorizontal_Ratio(defaultValue: 0.75),
   Layout_SplitViewHorizontal_TopMinRatio(defaultValue: 0.5),
   Layout_SplitViewHorizontal_BottomMinRatio(defaultValue: 0.1),
+
   Layout_SplitViewVertical_Ratio(defaultValue: 0.25),
-  Layout_SplitViewVertical_LeftMinRatio(defaultValue: 0.1),
-  Layout_SplitViewVertical_RightMinRatio(defaultValue: 0.75),
+  Layout_SplitViewVertical_LeftMinRatio(defaultValue: 0.16),
+  Layout_SplitViewVertical_RightMinRatio(defaultValue: 0.6),
+
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
+
   Layout_Tools_Padding(defaultValue: 8.0),
   Layout_Tools_ButtonResizeFactor(defaultValue: 64.0),
   Layout_Tools_SpacingFactor(defaultValue: 32.0),
   Layout_Tools_IconSize(defaultValue: 28.0),
+
   Layout_Palette_Padding(defaultValue: 8.0),
   Layout_Palette_ColumnCountResizeFactor(defaultValue: 52.0),
   Layout_Palette_TopIconSize(defaultValue: 24.0),
-  Layout_Palette_AddIconSize(defaultValue: 28.0),
+
+  Layout_ColorEntry_AddIconSize(defaultValue: 28.0),
   Layout_ColorEntry_UnselectedMargin(defaultValue: 4.0),
   Layout_ColorEntry_SelectedMargin(defaultValue: 0.0),
   Layout_ColorEntry_RoundRadius(defaultValue: 8.0),
   Layout_ColorEntry_ContrastColorThreshold(defaultValue: 0.95),
-  Layout_ColorChooser_IconSize(defaultValue: 36),
+  Layout_ColorEntry_ButtonPadding(defaultValue: 4.0),
+  Layout_ColorEntry_MinSize(defaultValue: 8.0),
+  Layout_ColorEntry_MaxSize(defaultValue: 64.0),
+
+  Layout_ColorChooser_IconSize(defaultValue: 36.0),
   Layout_ColorChooser_ColorContainerBorderRadius(defaultValue: 16.0),
   Layout_ColorChooser_Padding(defaultValue: 8.0),
 
@@ -97,8 +106,7 @@ class PreferenceManager
     paletteOptions = PaletteWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Palette_Padding),
         columnCountResizeFactor: getValueD(PreferenceDouble.Layout_Palette_ColumnCountResizeFactor),
-        topiconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize),
-        addIconSize: getValueD(PreferenceDouble.Layout_Palette_AddIconSize));
+        topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize),);
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
@@ -107,12 +115,15 @@ class PreferenceManager
         hsvDisplayDigits: getValueI(PreferenceInt.Layout_ColorEntry_HsvDisplayDigits),
         hoverTimer: getValueI(PreferenceInt.Layout_ColorEntry_HoverTimer),
         stylusPollRate: getValueI(PreferenceInt.Layout_ColorEntry_Stylus_PollRate),
-        longPressDuration: getValueI(PreferenceInt.Layout_ColorEntry_LongPressDuration));
+        longPressDuration: getValueI(PreferenceInt.Layout_ColorEntry_LongPressDuration),
+        addIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
+        buttonPadding: getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
+        minSize: getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
+        maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize));
     colorChooserOptions = ColorChooserWidgetOptions(
         iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
         colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),
         padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding));
-
   }
 
   void _init()

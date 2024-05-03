@@ -70,10 +70,13 @@ class _VerticalSplitViewState extends State<VerticalSplitView> {
                   width: _dividerWidth,
                   height: constraints.maxHeight,
                   child: Container(
-                  color: Theme.of(context).highlightColor,
-                    child: const RotationTransition(
-                      turns: AlwaysStoppedAnimation(0.25),
-                      child: Icon(Icons.drag_handle),
+                  color: Theme.of(context).primaryColor,
+                    child: RotationTransition(
+                      turns: const AlwaysStoppedAnimation(0.25),
+                      child: Icon(
+                        Icons.drag_handle,
+                        color: Theme.of(context).primaryColorLight,
+                      ),
                     ),
                   ),
                 ),

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,16 +14,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
   runApp(const KPixApp());
-  doWhenWindowReady(() {
-    const initialSize = Size(1366, 768);
-    appWindow.minSize = initialSize;
-    appWindow.size = initialSize;
-    appWindow.alignment = Alignment.center;
-    appWindow.title = "KPix";
-    appWindow.show();
-  });
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    doWhenWindowReady(() {
+      const initialSize = Size(1366, 768);
+      appWindow.minSize = initialSize;
+      appWindow.size = initialSize;
+      appWindow.alignment = Alignment.center;
+      appWindow.title = "KPix";
+      appWindow.show();
+    });
+  }
+  else
+  {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
 }
 
 class KPixApp extends StatefulWidget {
@@ -103,7 +111,8 @@ class MainWidget extends StatelessWidget
       children: [
         ColoredBox(
           color: Theme.of(context).primaryColor,
-          child: Row(children: [
+          child: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ?
+          Row(children: [
             Expanded(
                 child: Stack(alignment: Alignment.centerLeft, children: [
                   WindowTitleBarBox(child: MoveWindow()),
@@ -123,7 +132,9 @@ class MainWidget extends StatelessWidget
                 CloseWindowButton(colors: windowButtonColors),
               ],
             )
-          ]),
+          ])
+              :
+          const SizedBox.shrink(),
         ),
         Expanded(
           child: VerticalSplitView(

@@ -138,7 +138,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   width: double.infinity,
                   height: double.infinity,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).canvasColor,
+                    color: Theme.of(context).primaryColorDark,
                   ),
 
                   child: SingleChildScrollView(

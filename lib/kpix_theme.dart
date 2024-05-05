@@ -4,17 +4,16 @@ class KPixTheme {
 
   static ThemeData monochromeTheme = ThemeData(
 
-    // Define color scheme
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: Colors.grey,
-      backgroundColor: Colors.grey[100],
-      errorColor: Colors.red,
+    primaryColor: Colors.grey[300],
+    primaryColorLight: Colors.grey[700],
+    primaryColorDark: Colors.grey[100],
+
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.grey,
       brightness: Brightness.light,
-      accentColor: Colors.grey[200],
-      cardColor: Colors.grey[400],
+
     ),
 
-    // Define text themes for different text styles
     textTheme: const TextTheme(
       displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
@@ -35,39 +34,6 @@ class KPixTheme {
       bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
-    ),
-
-    // Define button themes
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(Colors.grey[800]),
-        foregroundColor: MaterialStateProperty.all(Colors.grey[100]),
-        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))),
-      ),
-    ),
-
-    // Define card theme
-    cardTheme: CardTheme(
-      color: Colors.grey[200],
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-    ),
-
-    // Define scaffold background color
-    scaffoldBackgroundColor: Colors.grey[100],
-
-    // Define divider color
-    dividerColor: Colors.grey[600],
-
-    // Define icon themes
-    iconTheme: IconThemeData(color: Colors.grey[800]),
-
-    // Define app bar theme
-    appBarTheme: AppBarTheme(
-      color: Colors.grey[800],
-      iconTheme: IconThemeData(color: Colors.grey[100]),
-      // Corrected to use titleTextStyle in appBarTheme
-      titleTextStyle: TextStyle(color: Colors.grey[100], fontSize: 20.0),
     ),
   );
 
@@ -75,19 +41,17 @@ class KPixTheme {
 
 
   static ThemeData monochromeThemeDark = ThemeData(
-    // Define primary color as a shade of grey
-    primaryColor: Colors.grey[800],
 
-    // Define color scheme
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: Colors.grey,
-      backgroundColor: Colors.grey[900],
-      errorColor: Colors.red,
-      brightness: Brightness.dark
+    primaryColor: Colors.grey[800],
+    primaryColorLight: Colors.grey[400],
+    primaryColorDark: Colors.grey[900],
+    backgroundColor: Colors.red,
+
+    colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.grey,
+        brightness: Brightness.dark
     ),
 
-
-    // Define text themes for different text styles
     textTheme: const TextTheme(
       displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
@@ -109,41 +73,6 @@ class KPixTheme {
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
     ),
-
-    // Define button themes
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(Colors.grey[100]),
-        foregroundColor: MaterialStateProperty.all(Colors.grey[800]),
-        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))),
-      ),
-    ),
-
-    // Define card theme
-    cardTheme: CardTheme(
-      color: Colors.grey[800],
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-    ),
-
-    // Define scaffold background color
-    scaffoldBackgroundColor: Colors.grey[100],
-
-    // Define divider color
-    dividerColor: Colors.grey[600],
-
-    // Define icon themes
-    iconTheme: IconThemeData(color: Colors.grey[200]),
-
-    // Define app bar theme
-    appBarTheme: AppBarTheme(
-      color: Colors.grey[800],
-      iconTheme: IconThemeData(color: Colors.grey[100]),
-      // Corrected to use titleTextStyle in appBarTheme
-      titleTextStyle: TextStyle(color: Colors.grey[100], fontSize: 20.0),
-    ),
   );
-
-
 
 }

@@ -1,10 +1,12 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:flutter/cupertino.dart';
+import 'package:kpix/tool_options.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/listener_example.dart';
 import 'package:kpix/widgets/palette_widget.dart';
+import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,17 +23,17 @@ enum PreferenceDouble
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
 
   Layout_Tools_Padding(defaultValue: 8.0),
-  Layout_Tools_ButtonResizeFactor(defaultValue: 64.0),
+  Layout_Tools_ButtonResizeFactor(defaultValue: 56.0),
   Layout_Tools_SpacingFactor(defaultValue: 32.0),
-  Layout_Tools_IconSize(defaultValue: 28.0),
+  Layout_Tools_IconSize(defaultValue: 20.0),
 
   Layout_Palette_Padding(defaultValue: 8.0),
   Layout_Palette_ColumnCountResizeFactor(defaultValue: 52.0),
   Layout_Palette_TopIconSize(defaultValue: 24.0),
   Layout_Palette_SelectedColorHeightMin(defaultValue: 8.0),
-  Layout_Palette_SelectedColorHeightMax(defaultValue: 32.0),
+  Layout_Palette_SelectedColorHeightMax(defaultValue: 24.0),
 
-  Layout_ColorEntry_AddIconSize(defaultValue: 28.0),
+  Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_UnselectedMargin(defaultValue: 4.0),
   Layout_ColorEntry_SelectedMargin(defaultValue: 0.0),
   Layout_ColorEntry_RoundRadius(defaultValue: 8.0),
@@ -46,6 +48,9 @@ enum PreferenceDouble
   Layout_ColorChooser_ColorContainerBorderRadius(defaultValue: 16.0),
   Layout_ColorChooser_Padding(defaultValue: 8.0),
 
+  Layout_ToolsSettings_Padding(defaultValue: 8.0),
+
+
   ;
 
   const PreferenceDouble({
@@ -59,18 +64,46 @@ enum PreferenceInt
 {
   Layout_Canvas_LongPressDuration(defaultValue: 1000),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
+
   Layout_ColorEntry_HsvDisplayDigits(defaultValue: 2),
   Layout_ColorEntry_HoverTimer(defaultValue: 100),
   Layout_ColorEntry_Stylus_PollRate(defaultValue: 100),
   Layout_ColorEntry_LongPressDuration(defaultValue: 1000),
   Layout_ColorEntry_DragDelay(defaultValue: 100),
   Layout_ColorEntry_DragFeedbackAlpha(defaultValue: 160),
+
+  Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
+  Layout_ToolSettings_CrossFadeDuration(defaultValue: 100),
+
+  Tool_Pencil_SizeMin(defaultValue: 1),
+  Tool_Pencil_SizeMax(defaultValue: 32),
+  Tool_Pencil_SizeDefault(defaultValue: 1),
+  Tool_Pencil_ShapeDefault(defaultValue: 0),
   ;
+
+
+
+
+
+
   const PreferenceInt({
     required this.defaultValue
   });
   final int defaultValue;
 }
+
+enum PreferenceBool
+{
+  Tool_Pencil_PixelPerfect(defaultValue: true),
+  ;
+  const PreferenceBool({
+    required this.defaultValue
+  });
+  final bool defaultValue;
+}
+
+
+
 
 class _DoublePair
 {
@@ -86,16 +119,27 @@ class _IntPair
   _IntPair(int val) : value = val;
 }
 
+class _BoolPair
+{
+  final bool value;
+  bool changed = false;
+  _BoolPair(bool val) : value = val;
+}
+
 class PreferenceManager
 {
   final SharedPreferences _prefs;
   final Map<PreferenceDouble, _DoublePair> _doubleMap = {};
   final Map<PreferenceInt, _IntPair> _intMap = {};
+  final Map<PreferenceBool, _BoolPair> _boolMap = {};
   late CanvasOptions canvasOptions;
   late ToolsWidgetOptions toolsOptions;
   late PaletteWidgetOptions paletteOptions;
   late ColorEntryWidgetOptions colorEntryOptions;
   late ColorChooserWidgetOptions colorChooserOptions;
+  late ToolSettingsWidgetOptions toolSettingsWidgetOptions;
+
+  late ToolOptions toolOptions;
 
 
   PreferenceManager(SharedPreferences prefs) : _prefs = prefs
@@ -136,7 +180,18 @@ class PreferenceManager
     colorChooserOptions = ColorChooserWidgetOptions(
         iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
         colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),
-        padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding));
+        padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding),);
+    toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
+        columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
+        padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
+        crossFadeDuration: getValueI(PreferenceInt.Layout_ToolSettings_CrossFadeDuration));
+    PencilOptions pencilOptions = PencilOptions(
+        sizeMin: getValueI(PreferenceInt.Tool_Pencil_SizeMin),
+        sizeMax: getValueI(PreferenceInt.Tool_Pencil_SizeMax),
+        sizeDefault: getValueI(PreferenceInt.Tool_Pencil_SizeDefault),
+        shapeDefault: getValueI(PreferenceInt.Tool_Pencil_ShapeDefault),
+        pixelPerfectDefault: getValueB(PreferenceBool.Tool_Pencil_PixelPerfect));
+    toolOptions = ToolOptions(pencilOptions: pencilOptions);
   }
 
   void _init()
@@ -150,28 +205,26 @@ class PreferenceManager
     {
       _intMap[intEnum] = _IntPair(_prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
     }
+
+    for (PreferenceBool boolEnum in PreferenceBool.values)
+    {
+      _boolMap[boolEnum] = _BoolPair(_prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
+    }
   }
 
 double getValueD(PreferenceDouble prefName)
 {
-  double retVal = 0.0;
-  final double? val = _doubleMap[prefName]?.value;
-  if (val != null)
-  {
-    retVal = val;
-  }
-  return retVal;
+  return _doubleMap[prefName]?.value ?? 0.0;
 }
 
 int getValueI(PreferenceInt prefName)
 {
-  int retVal = 0;
-  final int? val = _intMap[prefName]?.value;
-  if (val != null)
-  {
-    retVal = val;
-  }
-  return retVal;
+  return _intMap[prefName]?.value ?? 0;
+}
+
+bool getValueB(PreferenceBool prefName)
+{
+  return _boolMap[prefName]?.value ?? false;
 }
 
 

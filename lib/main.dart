@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/widgets/horizontal_split_view.dart';
 import 'package:kpix/widgets/palette_widget.dart';
+import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/vertical_split_view.dart';
@@ -78,7 +80,7 @@ class _KPixAppState extends State<KPixApp> {
       return MaterialApp(
         home: const Text("LOADING"),
         theme: KPixTheme.monochromeTheme,
-        darkTheme: KPixTheme.monochromeThemeDark,
+        darkTheme: KPixTheme.monochromeTheme,
       );
     } else {
       return MaterialApp(
@@ -146,7 +148,8 @@ class MainWidget extends StatelessWidget
                   children: [
                     //PALETTE WIDGET
                     Expanded(
-                      flex: 3,
+                      //TODO magic numbers
+                      flex: 6,
                       child: ValueListenableBuilder<ToolType>(
                           valueListenable: appState.selectedTool,
                           builder: (BuildContext context, ToolType value,
@@ -163,9 +166,13 @@ class MainWidget extends StatelessWidget
                       thickness: 2,
                       height: 2,
                     ),
+
+
+
                     //TOOLS WIDGET
                     Expanded(
-                      flex: 4,
+                      //TODO magic number
+                      flex: 3,
                       child: ValueListenableBuilder<ToolType>(
                           valueListenable: appState.selectedTool,
                           builder: (BuildContext context, ToolType value,
@@ -178,7 +185,27 @@ class MainWidget extends StatelessWidget
                             //return ColorEntryWidget();
                           }),
                     ),
-                  ]),
+                    Divider(
+                      color: Theme.of(context).primaryColorDark,
+                      //TODO magic numbers
+                      thickness: 2,
+                      height: 2,
+                    ),
+
+                    //TOOL OPTIONS
+                    Expanded(
+                        //TODO magic numbers
+                        flex: 4,
+                        child: ValueListenableBuilder<ToolType>(
+                          valueListenable: appState.selectedTool,
+                          builder: (BuildContext context, ToolType value,
+                          child) {
+                            return ToolSettingsWidget(appState: appState, toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions, toolOptions: prefs.toolOptions,);
+                          }
+                        )
+                    )
+                  ]
+              ),
               //RIGHT SIDE
               right: HorizontalSplitView(
                   top: ListenerExample(

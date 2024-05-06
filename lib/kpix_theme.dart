@@ -35,6 +35,26 @@ class KPixTheme {
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
     ),
+    sliderTheme: SliderThemeData(
+      activeTrackColor: Colors.grey[700],
+      inactiveTrackColor: Colors.grey[100],
+      thumbColor: Colors.grey[700],
+      valueIndicatorColor: Colors.grey[700],
+      valueIndicatorStrokeColor: Colors.grey[300],
+      overlayColor: Colors.grey[100]!.withAlpha(100),
+      valueIndicatorTextStyle: TextStyle(
+          color: Colors.grey[100]
+      ),
+      showValueIndicator: ShowValueIndicator.always,
+
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[700] : Colors.grey[300]),
+      trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[300] : Colors.grey[100]),
+      trackOutlineColor: MaterialStateProperty.all(Colors.grey[700]),
+      overlayColor: MaterialStateProperty.all(Colors.grey[300]!.withAlpha(100))
+
+    )
   );
 
 
@@ -45,7 +65,7 @@ class KPixTheme {
     primaryColor: Colors.grey[800],
     primaryColorLight: Colors.grey[400],
     primaryColorDark: Colors.grey[900],
-    backgroundColor: Colors.red,
+
 
     colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.grey,
@@ -73,6 +93,28 @@ class KPixTheme {
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
     ),
+
+    sliderTheme: SliderThemeData(
+      activeTrackColor: Colors.grey[400],
+      inactiveTrackColor: Colors.grey[900],
+      thumbColor: Colors.grey[400],
+      valueIndicatorColor: Colors.grey[400],
+      valueIndicatorStrokeColor: Colors.grey[800],
+      overlayColor: Colors.grey[400]!.withAlpha(100),
+      valueIndicatorTextStyle: TextStyle(
+        color: Colors.grey[800]
+      ),
+      showValueIndicator: ShowValueIndicator.always,
+
+    ),
+
+    switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[400] : Colors.grey[800]),
+        trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[800] : Colors.grey[900]),
+        trackOutlineColor: MaterialStateProperty.all(Colors.grey[400]),
+        overlayColor: MaterialStateProperty.all(Colors.grey[400]!.withAlpha(900))
+    ),
+
   );
 
 }

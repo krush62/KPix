@@ -1,5 +1,6 @@
 
 // ignore_for_file: constant_identifier_names
+import 'package:flutter/cupertino.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/listener_example.dart';
@@ -27,6 +28,8 @@ enum PreferenceDouble
   Layout_Palette_Padding(defaultValue: 8.0),
   Layout_Palette_ColumnCountResizeFactor(defaultValue: 52.0),
   Layout_Palette_TopIconSize(defaultValue: 24.0),
+  Layout_Palette_SelectedColorHeightMin(defaultValue: 8.0),
+  Layout_Palette_SelectedColorHeightMax(defaultValue: 32.0),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 28.0),
   Layout_ColorEntry_UnselectedMargin(defaultValue: 4.0),
@@ -36,6 +39,8 @@ enum PreferenceDouble
   Layout_ColorEntry_ButtonPadding(defaultValue: 4.0),
   Layout_ColorEntry_MinSize(defaultValue: 8.0),
   Layout_ColorEntry_MaxSize(defaultValue: 64.0),
+  Layout_ColorEntry_DragFeedbackSize(defaultValue: 32.0),
+  Layout_ColorEntry_DragTargetWidth(defaultValue: 8.0),
 
   Layout_ColorChooser_IconSize(defaultValue: 36.0),
   Layout_ColorChooser_ColorContainerBorderRadius(defaultValue: 16.0),
@@ -57,7 +62,9 @@ enum PreferenceInt
   Layout_ColorEntry_HsvDisplayDigits(defaultValue: 2),
   Layout_ColorEntry_HoverTimer(defaultValue: 100),
   Layout_ColorEntry_Stylus_PollRate(defaultValue: 100),
-  Layout_ColorEntry_LongPressDuration(defaultValue: 1000)
+  Layout_ColorEntry_LongPressDuration(defaultValue: 1000),
+  Layout_ColorEntry_DragDelay(defaultValue: 100),
+  Layout_ColorEntry_DragFeedbackAlpha(defaultValue: 160),
   ;
   const PreferenceInt({
     required this.defaultValue
@@ -106,7 +113,9 @@ class PreferenceManager
     paletteOptions = PaletteWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Palette_Padding),
         columnCountResizeFactor: getValueD(PreferenceDouble.Layout_Palette_ColumnCountResizeFactor),
-        topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize),);
+        topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize),
+        selectedColorHeightMin: getValueD(PreferenceDouble.Layout_Palette_SelectedColorHeightMin),
+        selectedColorHeightMax: getValueD(PreferenceDouble.Layout_Palette_SelectedColorHeightMax));
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
@@ -119,7 +128,11 @@ class PreferenceManager
         addIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
         buttonPadding: getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
         minSize: getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
-        maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize));
+        maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),
+        dragFeedbackSize: getValueD(PreferenceDouble.Layout_ColorEntry_DragFeedbackSize),
+        dragDelay: getValueI(PreferenceInt.Layout_ColorEntry_DragDelay),
+        dragFeedbackAlpha: getValueI(PreferenceInt.Layout_ColorEntry_DragFeedbackAlpha),
+        dragTargetWidth: getValueD(PreferenceDouble.Layout_ColorEntry_DragTargetWidth));
     colorChooserOptions = ColorChooserWidgetOptions(
         iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
         colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),

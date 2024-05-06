@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/helper.dart';
 
 class ColorChooserWidgetOptions
 {
@@ -14,7 +15,6 @@ enum _SliderType { hue, saturation, value, red, green, blue }
 class ColorChooserWidget extends StatefulWidget {
   final ColorChooserWidgetOptions options;
   final Color inputColor;
-
 
   //ColorChooserWidget(this.inputColor, this.options, {super.key});
   const ColorChooserWidget({ required this.inputColor, required this.options, super.key});
@@ -33,28 +33,6 @@ class _ColorChooserWidgetState extends State<ColorChooserWidget>
     super.initState();
     _rgbColor = widget.inputColor;
     _hsvColor = HSVColor.fromColor(_rgbColor);
-  }
-
-  static String _colorToHexString(final Color c) {
-    return '#${c.red.toRadixString(16).padLeft(2, '0')}'
-        '${c.green.toRadixString(16).padLeft(2, '0')}'
-        '${c.blue.toRadixString(16).padLeft(2, '0')}';
-  }
-
-  static String _colorToRGBString(final Color c) {
-    return '${c.red.toString()} | '
-        '${c.green.toString()} | '
-        '${c.blue.toString()}';
-  }
-
-  /*static String _colorToHSVString(final Color c) {
-    return _hsvColorToHSVString(HSVColor.fromColor(c));
-  }*/
-
-  static String _hsvColorToHSVString(final HSVColor c) {
-    return "${c.hue.round().toString()}° | "
-        "${(c.saturation * 100.0).round().toString()}% | "
-        "${(c.value * 100.0).round().toString()}%";
   }
 
   void _sliderChanged(final _SliderType sliderType, final double value) {
@@ -122,19 +100,19 @@ class _ColorChooserWidgetState extends State<ColorChooserWidget>
                           Expanded(
                               flex: 1,
                               child: Text(
-                                  "HSV\n${_hsvColorToHSVString(_hsvColor)}",
+                                  "HSV\n${Helper.hsvColorToHSVString(_hsvColor)}",
                                   textAlign: TextAlign.center)),
                           VerticalDivider(
                               color: Theme.of(context).dividerColor, width: 1),
                           Expanded(
                               flex: 1,
-                              child: Text("RGB\n${_colorToRGBString(_rgbColor)}",
+                              child: Text("RGB\n${Helper.colorToRGBString(_rgbColor)}",
                                   textAlign: TextAlign.center)),
                           VerticalDivider(
                               color: Theme.of(context).dividerColor, width: 1),
                           Expanded(
                               flex: 1,
-                              child: Text("HEX\n${_colorToHexString(_rgbColor)}",
+                              child: Text("HEX\n${Helper.colorToHexString(_rgbColor)}",
                                   textAlign: TextAlign.center)),
                         ],
                       )),

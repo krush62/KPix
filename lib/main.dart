@@ -109,6 +109,7 @@ class MainWidget extends StatelessWidget
         iconMouseDown: Theme.of(context).primaryColorDark);
     return Column(
       children: [
+        //TOP BAR
         ColoredBox(
           color: Theme.of(context).primaryColor,
           child: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ?
@@ -138,10 +139,12 @@ class MainWidget extends StatelessWidget
         ),
         Expanded(
           child: VerticalSplitView(
+              //LEFT SIDE
               left: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    //PALETTE WIDGET
                     Expanded(
                       flex: 3,
                       child: ValueListenableBuilder<ToolType>(
@@ -154,6 +157,13 @@ class MainWidget extends StatelessWidget
                             );
                           }),
                     ),
+                    Divider(
+                      color: Theme.of(context).primaryColorDark,
+                      //TODO magic numbers
+                      thickness: 2,
+                      height: 2,
+                    ),
+                    //TOOLS WIDGET
                     Expanded(
                       flex: 4,
                       child: ValueListenableBuilder<ToolType>(
@@ -169,6 +179,7 @@ class MainWidget extends StatelessWidget
                           }),
                     ),
                   ]),
+              //RIGHT SIDE
               right: HorizontalSplitView(
                   top: ListenerExample(
                     options: prefs.canvasOptions,

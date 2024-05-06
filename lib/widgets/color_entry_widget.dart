@@ -18,6 +18,10 @@ class ColorEntryWidgetOptions {
   final double buttonPadding;
   final double minSize;
   final double maxSize;
+  final double dragFeedbackSize;
+  final int dragDelay;
+  final int dragFeedbackAlpha;
+  final double dragTargetWidth;
 
   ColorEntryWidgetOptions({
     required this.unselectedMargin,
@@ -32,6 +36,10 @@ class ColorEntryWidgetOptions {
     required this.buttonPadding,
     required this.minSize,
     required this.maxSize,
+    required this.dragFeedbackSize,
+    required this.dragDelay,
+    required this.dragFeedbackAlpha,
+    required this.dragTargetWidth
   });
 }
 
@@ -236,67 +244,80 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
                           onPointerHover: _hover,
                           onPointerDown: _down,
                           onPointerUp: _up,
-                          child: Container(
-                              constraints: BoxConstraints(
-                                  minHeight: widget.options.minSize,
-                                  minWidth: widget.options.minSize,
-                                  maxHeight: widget.options.maxSize,
-                                  maxWidth: widget.options.maxSize),
-                              child: AspectRatio(
-                                  aspectRatio: 1.0,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Container(
-                                        constraints: BoxConstraints(
-                                            minHeight: widget.options.minSize,
-                                            minWidth: widget.options.minSize,
-                                            maxHeight: widget.options.maxSize,
-                                            maxWidth: widget.options.maxSize),
-                                        margin: EdgeInsets.all(widget.colorData.value.color.uuid == selectedColorId
-                                            ? widget.options.selectedMargin
-                                            : widget.options.unselectedMargin),
-                                        decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: widget.colorData.value.color.uuid == selectedColorId
-                                                    ? Theme.of(context).primaryColorLight
-                                                    : Colors.transparent,
-                                                width: (widget
-                                                    .options.unselectedMargin -
-                                                    widget.options.selectedMargin)),
-                                            color: value.color.color,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(
-                                                    widget.options.roundRadius))),
-                                      ),
-                                      Visibility(
-                                          visible: _textIsVisible,
-                                          child: Text(
-                                            value.colorString,
-                                            style: TextStyle(
-                                              color: value.textColor,
-                                              fontSize: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.fontSize,
-                                              fontWeight: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.fontWeight,
-                                              letterSpacing: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.letterSpacing,
-                                              decoration: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.decoration,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ))
-                                    ],
-                                  )
-                              )
+                          child: LongPressDraggable<IdColor>(
+                            delay: Duration(milliseconds: widget.options.dragDelay),
+                            data: widget.colorData.value.color,
+                            feedback: Container(
+                              width: widget.options.dragFeedbackSize,
+                              height: widget.options.dragFeedbackSize,
+                                decoration: BoxDecoration(
+                                    color: value.color.color.withAlpha(widget.options.dragFeedbackAlpha),
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(
+                                            widget.options.roundRadius)))
+                            ),
+                            child: Container(
+                                constraints: BoxConstraints(
+                                    minHeight: widget.options.minSize,
+                                    minWidth: widget.options.minSize,
+                                    maxHeight: widget.options.maxSize,
+                                    maxWidth: widget.options.maxSize),
+                                child: AspectRatio(
+                                    aspectRatio: 1.0,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Container(
+                                          constraints: BoxConstraints(
+                                              minHeight: widget.options.minSize,
+                                              minWidth: widget.options.minSize,
+                                              maxHeight: widget.options.maxSize,
+                                              maxWidth: widget.options.maxSize),
+                                          margin: EdgeInsets.all(widget.colorData.value.color.uuid == selectedColorId
+                                              ? widget.options.selectedMargin
+                                              : widget.options.unselectedMargin),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: widget.colorData.value.color.uuid == selectedColorId
+                                                      ? Theme.of(context).primaryColorLight
+                                                      : Colors.transparent,
+                                                  width: (widget
+                                                      .options.unselectedMargin -
+                                                      widget.options.selectedMargin)),
+                                              color: value.color.color,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(
+                                                      widget.options.roundRadius))),
+                                        ),
+                                        Visibility(
+                                            visible: _textIsVisible,
+                                            child: Text(
+                                              value.colorString,
+                                              style: TextStyle(
+                                                color: value.textColor,
+                                                fontSize: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.fontSize,
+                                                fontWeight: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.fontWeight,
+                                                letterSpacing: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.letterSpacing,
+                                                decoration: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.decoration,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ))
+                                      ],
+                                    )
+                                )
+                            ),
                           )
                       )
                   )

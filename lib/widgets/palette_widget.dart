@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
 
@@ -7,11 +10,15 @@ class PaletteWidgetOptions
   final double padding;
   final double columnCountResizeFactor;
   final double topIconSize;
+  final double selectedColorHeightMin;
+  final double selectedColorHeightMax;
 
   PaletteWidgetOptions({
     required this.padding,
     required this.columnCountResizeFactor,
     required this.topIconSize,
+    required this.selectedColorHeightMin,
+    required this.selectedColorHeightMax
   });
 
 }
@@ -56,6 +63,11 @@ class _PaletteWidgetState extends State<PaletteWidget>
   void _switchIndexedPressed()
   {
     widget._indexed.value = !widget._indexed.value;
+  }
+
+  String _getColorString(final Color c)
+  {
+    return "${Helper.colorToHSVString(c)}   ${Helper.colorToRGBString(c)}   ${Helper.colorToHexString(c)}";
   }
 
   @override
@@ -129,6 +141,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
               ],
             )
           ),
+          //COLORS
           Expanded(
             child: ValueListenableBuilder<List<ColorRampRowWidget>>(
               valueListenable: widget.appState.colorRampWidgetList,
@@ -154,16 +167,50 @@ class _PaletteWidgetState extends State<PaletteWidget>
                         )
                     ),
                   )
-
-
-
-
-
-
                 );
               }
             )
-
+          ),
+          ValueListenableBuilder<Color>(
+            valueListenable: widget.appState.selectedColor,
+            builder: (BuildContext context, Color color, child)
+            {
+              return Container(
+                padding: EdgeInsets.all(widget.options.padding,),
+                color: Theme.of(context).primaryColor,
+                child: Column(
+                  children: [
+                    Container (
+                      constraints: BoxConstraints(
+                        minHeight: widget.options.selectedColorHeightMin,
+                        maxHeight: widget.options.selectedColorHeightMax
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).primaryColorLight,
+                          width: widget.options.padding / 4,
+                        ),
+                        color: color,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(
+                            widget.options.padding
+                          )
+                        )
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: widget.options.padding),
+                      child: Text(
+                        _getColorString(color),
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  ],
+                )
+              );
+            }
           )
         ],
       );

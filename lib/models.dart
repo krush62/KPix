@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
 import 'package:uuid/uuid.dart';
@@ -11,6 +12,11 @@ class AppState
   late ColorEntryWidgetOptions _colorEntryWidgetOptions;
   final ValueNotifier<String> selectedColorId = ValueNotifier("");
   final ValueNotifier<Color> selectedColor = ValueNotifier(Colors.black);
+
+  AppState()
+  {
+    setToolSelection(ToolType.pencil);
+  }
 
   void setColors(final List<List<Color>> inputColors, final ColorEntryWidgetOptions options)
   {
@@ -165,24 +171,3 @@ bool toolIsSelected(final ToolType tool)
 }
 
 
-enum ToolType
-{
-  pencil,
-  brush,
-  shape,
-  gradient,
-  fill,
-  select,
-  pick,
-  erase,
-  font,
-  colorSelect,
-  line
-}
-
-class IdColor
-{
-  final Color color;
-  final String uuid;
-  IdColor({required this.color, required this.uuid});
-}

@@ -1,5 +1,27 @@
 import 'package:flutter/material.dart';
 
+enum ToolType
+{
+  pencil,
+  brush,
+  shape,
+  gradient,
+  fill,
+  select,
+  pick,
+  erase,
+  font,
+  colorSelect,
+  line
+}
+
+class IdColor
+{
+  final Color color;
+  final String uuid;
+  IdColor({required this.color, required this.uuid});
+}
+
 class Helper
 {
 
@@ -25,3 +47,18 @@ class Helper
         "${(c.value * 100.0).round().toString()}%";
   }
 }
+
+const Map<ToolType, String> toolNameMap =
+{
+  ToolType.pencil: "Pencil",
+  ToolType.brush: "Brush",
+  ToolType.shape: "Shape",
+  ToolType.gradient: "Gradient",
+  ToolType.fill: "Fill",
+  ToolType.select: "Select",
+  ToolType.pick: "Pick",
+  ToolType.erase: "Erase",
+  ToolType.font: "Text",
+  ToolType.colorSelect: "Color Select",
+  ToolType.line: "Line",
+};

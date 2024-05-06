@@ -1,3 +1,4 @@
+import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
 

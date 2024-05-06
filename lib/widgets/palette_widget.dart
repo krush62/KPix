@@ -72,149 +72,144 @@ class _PaletteWidgetState extends State<PaletteWidget>
 
   @override
   Widget build(BuildContext context) {
-
-    return LayoutBuilder(
-        builder: (context, BoxConstraints constraints)
-    {
-      return Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: EdgeInsets.all(widget.options.padding),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-            child:  Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(0.0, 0.0, widget.options.padding / 2.0, 0.0),
-                    child: IconButton.outlined(
-                      color: Theme.of(context).primaryColorLight,
-                      icon:  Icon(
-                        Icons.open_in_browser_outlined,
-                        size: widget.options.topIconSize,
-                      ),
-                      onPressed: _loadPalettePressed,
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          padding: EdgeInsets.all(widget.options.padding),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+            ),
+          child:  Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 0.0, widget.options.padding / 2.0, 0.0),
+                  child: IconButton.outlined(
+                    color: Theme.of(context).primaryColorLight,
+                    icon:  Icon(
+                      Icons.open_in_browser_outlined,
+                      size: widget.options.topIconSize,
                     ),
-                  )
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
-                    child: IconButton.outlined(
-                      color: Theme.of(context).primaryColorLight,
-                      icon:  Icon(
-                        Icons.save_alt,
-                        size: widget.options.topIconSize,
-                      ),
-                      onPressed: _savePalettePressed,
-                    ),
-                  )
-                ),
-                Expanded(
-                  flex: 1,
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: widget._indexed,
-                    builder: (BuildContext context, bool value, child)
-                    {
-                      return Padding(
-                        padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
-                        child: IconButton.outlined(
-                          color: value ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-                          isSelected: value,
-                          icon:  Icon(
-                            Icons.lock,
-                            size: widget.options.topIconSize,
-                          ),
-                          onPressed: _switchIndexedPressed,
-                        ),
-                      );
-                    }
-                  )
-                ),
-              ],
-            )
-          ),
-          //COLORS
-          Expanded(
-            child: ValueListenableBuilder<List<ColorRampRowWidget>>(
-              valueListenable: widget.appState.colorRampWidgetList,
-              builder: (BuildContext context, List<ColorRampRowWidget> widgetRows, child)
-              {
-                return Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorDark,
+                    onPressed: _loadPalettePressed,
                   ),
-
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Padding(
-                        padding: EdgeInsets.all(widget.options.padding / 2.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            ...widgetRows
-                          ],
-                        )
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
+                  child: IconButton.outlined(
+                    color: Theme.of(context).primaryColorLight,
+                    icon:  Icon(
+                      Icons.save_alt,
+                      size: widget.options.topIconSize,
                     ),
-                  )
-                );
-              }
-            )
-          ),
-          ValueListenableBuilder<Color>(
-            valueListenable: widget.appState.selectedColor,
-            builder: (BuildContext context, Color color, child)
+                    onPressed: _savePalettePressed,
+                  ),
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: widget._indexed,
+                  builder: (BuildContext context, bool value, child)
+                  {
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
+                      child: IconButton.outlined(
+                        color: value ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                        isSelected: value,
+                        icon:  Icon(
+                          Icons.lock,
+                          size: widget.options.topIconSize,
+                        ),
+                        onPressed: _switchIndexedPressed,
+                      ),
+                    );
+                  }
+                )
+              ),
+            ],
+          )
+        ),
+        //COLORS
+        Expanded(
+          child: ValueListenableBuilder<List<ColorRampRowWidget>>(
+            valueListenable: widget.appState.colorRampWidgetList,
+            builder: (BuildContext context, List<ColorRampRowWidget> widgetRows, child)
             {
               return Container(
-                padding: EdgeInsets.all(widget.options.padding,),
-                color: Theme.of(context).primaryColor,
-                child: Column(
-                  children: [
-                    Container (
-                      constraints: BoxConstraints(
-                        minHeight: widget.options.selectedColorHeightMin,
-                        maxHeight: widget.options.selectedColorHeightMax
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context).primaryColorLight,
-                          width: widget.options.padding / 4,
-                        ),
-                        color: color,
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(
-                            widget.options.padding
-                          )
-                        )
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: widget.options.padding),
-                      child: Text(
-                        _getColorString(color),
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                      ),
-                    )
-                  ],
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorDark,
+                ),
+
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Padding(
+                      padding: EdgeInsets.all(widget.options.padding / 2.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          ...widgetRows
+                        ],
+                      )
+                  ),
                 )
               );
             }
           )
-        ],
-      );
-    });
+        ),
+        ValueListenableBuilder<Color>(
+          valueListenable: widget.appState.selectedColor,
+          builder: (BuildContext context, Color color, child)
+          {
+            return Container(
+              padding: EdgeInsets.all(widget.options.padding,),
+              color: Theme.of(context).primaryColor,
+              child: Column(
+                children: [
+                  Container (
+                    constraints: BoxConstraints(
+                      minHeight: widget.options.selectedColorHeightMin,
+                      maxHeight: widget.options.selectedColorHeightMax
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).primaryColorLight,
+                        width: widget.options.padding / 4,
+                      ),
+                      color: color,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(
+                          widget.options.padding
+                        )
+                      )
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: widget.options.padding),
+                    child: Text(
+                      _getColorString(color),
+                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                ],
+              )
+            );
+          }
+        )
+      ],
+    );
   }
   
 }

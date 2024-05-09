@@ -1,16 +1,13 @@
 # kpix
 
-A new Flutter project.
+A pixel art creation tool.
 
-## Getting Started
+## Overview
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+I started this project for fun to have a pixel art editor with features that support my usual workflow. Since I prefer drawing with a pen (on Android) but like the features of Aseprite on PC, I wanted to have something I could use on both platforms. The main differences/limitations compared to other existing tools are the following:
+- exclusive use of indexed colors
+- hsv based color representation
+- two-dimensional palettes for different hue shades (color ramps)
+- shading capabilities for all tools
+- cross-platform support 
+- pen support

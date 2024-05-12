@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/shader_options.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
+import 'package:kpix/widgets/shader_widget.dart';
 
 class PaletteWidgetOptions
 {
@@ -60,11 +62,6 @@ class _PaletteWidgetState extends State<PaletteWidget>
 
   }
 
-  void _switchIndexedPressed()
-  {
-    widget._indexed.value = !widget._indexed.value;
-  }
-
   String _getColorString(final Color c)
   {
     return "${Helper.colorToHSVString(c)}   ${Helper.colorToRGBString(c)}   ${Helper.colorToHexString(c)}";
@@ -113,27 +110,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   ),
                 )
               ),
-              Expanded(
-                flex: 1,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: widget._indexed,
-                  builder: (BuildContext context, bool value, child)
-                  {
-                    return Padding(
-                      padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
-                      child: IconButton.outlined(
-                        color: value ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-                        isSelected: value,
-                        icon:  Icon(
-                          Icons.lock,
-                          size: widget.options.topIconSize,
-                        ),
-                        onPressed: _switchIndexedPressed,
-                      ),
-                    );
-                  }
-                )
-              ),
+
             ],
           )
         ),
@@ -167,47 +144,54 @@ class _PaletteWidgetState extends State<PaletteWidget>
             }
           )
         ),
+        
+        
+        
+        
+        
+        
         ValueListenableBuilder<Color>(
           valueListenable: widget.appState.selectedColor,
           builder: (BuildContext context, Color color, child)
           {
             return Container(
-              padding: EdgeInsets.all(widget.options.padding,),
-              color: Theme.of(context).primaryColor,
-              child: Column(
-                children: [
-                  Container (
-                    constraints: BoxConstraints(
-                      minHeight: widget.options.selectedColorHeightMin,
-                      maxHeight: widget.options.selectedColorHeightMax
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Theme.of(context).primaryColorLight,
-                        width: widget.options.padding / 4,
+                padding: EdgeInsets.all(widget.options.padding,),
+                color: Theme.of(context).primaryColor,
+                child: Column(
+                  children: [
+                    Container (
+                      constraints: BoxConstraints(
+                        minHeight: widget.options.selectedColorHeightMin,
+                        maxHeight: widget.options.selectedColorHeightMax
                       ),
-                      color: color,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(
-                          widget.options.padding
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).primaryColorLight,
+                          width: widget.options.padding / 4,
+                        ),
+                        color: color,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(
+                            widget.options.padding
+                          )
                         )
-                      )
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: widget.options.padding),
-                    child: Text(
-                      _getColorString(color),
-                      style: Theme.of(context).textTheme.bodySmall,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                ],
-              )
-            );
+                    Padding(
+                      padding: EdgeInsets.only(top: widget.options.padding),
+                      child: Text(
+                        _getColorString(color),
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  ],
+                )
+              );
+
           }
-        )
+        ),
       ],
     );
   }

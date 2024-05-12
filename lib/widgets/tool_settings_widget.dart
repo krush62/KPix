@@ -1,7 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/tool_options.dart';
@@ -33,7 +30,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
 {
   String _getToolTitle()
   {
-    String toolName = toolNameMap[widget.appState.selectedTool.value] ?? "<empty>";
+    String toolName = toolList[widget.appState.selectedTool.value]!.title;
     return "Settings for $toolName";
   }
 
@@ -185,9 +182,9 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                     ),
                   ),
                   AnimatedOpacity(
-                    child: Text("BRUSH STUFF YEAH"),
+                    child: Text("SHAPE STUFF YEAH"),
                     duration: Duration(milliseconds: widget.toolSettingsWidgetOptions.crossFadeDuration),
-                    opacity: widget.appState.selectedTool.value == ToolType.brush ? 1.0 : 0.0,
+                    opacity: widget.appState.selectedTool.value == ToolType.shape ? 1.0 : 0.0,
                   )
               
                 ],

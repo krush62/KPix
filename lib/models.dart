@@ -9,12 +9,17 @@ class AppState
   final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
   final ValueNotifier<List<ColorRampRowWidget>> colorRampWidgetList = ValueNotifier([]);
   late List<List<IdColor>> _colorRamps;
+  final Map<ToolType, bool> _selectionMap = {};
   late ColorEntryWidgetOptions _colorEntryWidgetOptions;
   final ValueNotifier<String> selectedColorId = ValueNotifier("");
   final ValueNotifier<Color> selectedColor = ValueNotifier(Colors.black);
 
   AppState()
   {
+    for (ToolType tooltype in toolList.keys)
+    {
+      _selectionMap[tooltype] = false;
+    }
     setToolSelection(ToolType.pencil);
   }
 
@@ -147,27 +152,12 @@ class AppState
 
     }
     selectedTool.value = tool;
-}
+  }
 
-bool toolIsSelected(final ToolType tool)
-{
-  return _selectionMap[tool] ?? false;
-}
-
-  final Map<ToolType, bool> _selectionMap =
+  bool toolIsSelected(final ToolType tool)
   {
-    ToolType.pencil: false,
-    ToolType.brush: false,
-    ToolType.shape: false,
-    ToolType.gradient: false,
-    ToolType.fill: false,
-    ToolType.select: false,
-    ToolType.pick: false,
-    ToolType.erase: false,
-    ToolType.font: false,
-    ToolType.colorSelect: false,
-    ToolType.line: false,
-  };
+    return _selectionMap[tool] ?? false;
+  }
 }
 
 

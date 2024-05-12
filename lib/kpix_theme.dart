@@ -49,9 +49,9 @@ class KPixTheme {
 
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[700] : Colors.grey[300]),
-      trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[300] : Colors.grey[100]),
-      trackOutlineColor: MaterialStateProperty.all(Colors.grey[700]),
+      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[700] : Colors.grey[300]) : Colors.grey[300]),
+      trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[100] :Colors.grey[300]) : Colors.grey[100]),
+      trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? Colors.grey[300] : Colors.grey[700]),
       overlayColor: MaterialStateProperty.all(Colors.grey[300]!.withAlpha(100))
 
     )
@@ -109,9 +109,9 @@ class KPixTheme {
     ),
 
     switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[400] : Colors.grey[800]),
-        trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? Colors.grey[800] : Colors.grey[900]),
-        trackOutlineColor: MaterialStateProperty.all(Colors.grey[400]),
+        thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[800] : Colors.grey[400]) : Colors.grey[800]),
+        trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[900] : Colors.grey[800]) : Colors.grey[900]),
+        trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? Colors.grey[800] : Colors.grey[400]),
         overlayColor: MaterialStateProperty.all(Colors.grey[400]!.withAlpha(900))
     ),
 

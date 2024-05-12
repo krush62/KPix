@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/widgets/horizontal_split_view.dart';
+import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
@@ -19,7 +21,7 @@ void main() {
 
   runApp(const KPixApp());
 
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     doWhenWindowReady(() {
       const initialSize = Size(1366, 768);
       appWindow.minSize = initialSize;
@@ -49,8 +51,6 @@ class _KPixAppState extends State<KPixApp> {
 
   @override
   void initState() {
-    //TODO is this necessary?
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     super.initState();
     _initPrefs();
   }
@@ -80,7 +80,7 @@ class _KPixAppState extends State<KPixApp> {
       return MaterialApp(
         home: const Text("LOADING"),
         theme: KPixTheme.monochromeTheme,
-        darkTheme: KPixTheme.monochromeTheme,
+        darkTheme: KPixTheme.monochromeThemeDark,
       );
     } else {
       return MaterialApp(
@@ -114,7 +114,7 @@ class MainWidget extends StatelessWidget
         //TOP BAR
         ColoredBox(
           color: Theme.of(context).primaryColor,
-          child: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ?
+          child: (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
           Row(children: [
             Expanded(
                 child: Stack(alignment: Alignment.centerLeft, children: [
@@ -142,74 +142,20 @@ class MainWidget extends StatelessWidget
         Expanded(
           child: VerticalSplitView(
               //LEFT SIDE
-              left: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    //PALETTE WIDGET
-                    Expanded(
-                      //TODO magic numbers
-                      flex: 6,
-                      child: ValueListenableBuilder<ToolType>(
-                          valueListenable: appState.selectedTool,
-                          builder: (BuildContext context, ToolType value,
-                              child) {
-                            return PaletteWidget(
-                              options: prefs.paletteOptions,
-                              appState: appState,
-                            );
-                          }),
-                    ),
-                    Divider(
-                      color: Theme.of(context).primaryColorDark,
-                      //TODO magic numbers
-                      thickness: 2,
-                      height: 2,
-                    ),
-
-
-
-                    //TOOLS WIDGET
-                    Expanded(
-                      //TODO magic number
-                      flex: 3,
-                      child: ValueListenableBuilder<ToolType>(
-                          valueListenable: appState.selectedTool,
-                          builder: (BuildContext context, ToolType value,
-                              child) {
-                            return ToolsWidget(
-                              options: prefs.toolsOptions,
-                              changeToolFn: appState.changeTool,
-                              appState: appState,
-                            );
-                            //return ColorEntryWidget();
-                          }),
-                    ),
-                    Divider(
-                      color: Theme.of(context).primaryColorDark,
-                      //TODO magic numbers
-                      thickness: 2,
-                      height: 2,
-                    ),
-
-                    //TOOL OPTIONS
-                    Expanded(
-                        //TODO magic numbers
-                        flex: 4,
-                        child: ValueListenableBuilder<ToolType>(
-                          valueListenable: appState.selectedTool,
-                          builder: (BuildContext context, ToolType value,
-                          child) {
-                            return ToolSettingsWidget(appState: appState, toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions, toolOptions: prefs.toolOptions,);
-                          }
-                        )
-                    )
-                  ]
+              left: MainToolbarWidget(
+                appState: appState,
+                toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions,
+                toolOptions: prefs.toolOptions,
+                mainToolbarWidgetOptions: prefs.mainToolbarWidgetOptions,
+                paletteWidgetOptions: prefs.paletteWidgetOptions,
+                toolsWidgetOptions: prefs.toolsWidgetOptions,
+                shaderWidgetOptions: prefs.shaderWidgetOptions,
+                shaderOptions: prefs.shaderOptions,
               ),
               //RIGHT SIDE
               right: HorizontalSplitView(
                   top: ListenerExample(
-                    options: prefs.canvasOptions,
+                    options: prefs.canvasWidgetOptions,
                   ),
                   bottom: Text(
                     "ANIMATION STUFF",

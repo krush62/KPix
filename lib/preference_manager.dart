@@ -1,13 +1,15 @@
 
 // ignore_for_file: constant_identifier_names
-import 'package:flutter/cupertino.dart';
 import 'package:kpix/tool_options.dart';
+import 'package:kpix/shader_options.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/listener_example.dart';
+import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
+import 'package:kpix/widgets/shader_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
@@ -23,7 +25,7 @@ enum PreferenceDouble
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
 
   Layout_Tools_Padding(defaultValue: 8.0),
-  Layout_Tools_ButtonResizeFactor(defaultValue: 56.0),
+  Layout_Tools_ButtonResizeFactor(defaultValue: 52.0),
   Layout_Tools_SpacingFactor(defaultValue: 32.0),
   Layout_Tools_IconSize(defaultValue: 20.0),
 
@@ -50,6 +52,10 @@ enum PreferenceDouble
 
   Layout_ToolsSettings_Padding(defaultValue: 8.0),
 
+  Layout_MainToolbar_DividerHeight(defaultValue: 2.0),
+
+  Layout_Shader_OutsidePadding(defaultValue: 8.0),
+
 
   ;
 
@@ -75,15 +81,15 @@ enum PreferenceInt
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
   Layout_ToolSettings_CrossFadeDuration(defaultValue: 100),
 
+  Layout_MainToolbar_PaletteFlex(defaultValue: 6),
+  Layout_MainToolbar_ToolSettingsFlex(defaultValue: 4),
+
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
   Tool_Pencil_SizeDefault(defaultValue: 1),
   Tool_Pencil_ShapeDefault(defaultValue: 0),
+
   ;
-
-
-
-
 
 
   const PreferenceInt({
@@ -95,6 +101,11 @@ enum PreferenceInt
 enum PreferenceBool
 {
   Tool_Pencil_PixelPerfect(defaultValue: true),
+
+  Shader_IsEnabledDefault(defaultValue: false),
+  Shader_DirectionRightDefault(defaultValue: true),
+  Shader_CurrentRampOnlyDefault(defaultValue: false),
+
   ;
   const PreferenceBool({
     required this.defaultValue
@@ -132,29 +143,32 @@ class PreferenceManager
   final Map<PreferenceDouble, _DoublePair> _doubleMap = {};
   final Map<PreferenceInt, _IntPair> _intMap = {};
   final Map<PreferenceBool, _BoolPair> _boolMap = {};
-  late CanvasOptions canvasOptions;
-  late ToolsWidgetOptions toolsOptions;
-  late PaletteWidgetOptions paletteOptions;
+  late CanvasOptions canvasWidgetOptions;
+  late ToolsWidgetOptions toolsWidgetOptions;
+  late PaletteWidgetOptions paletteWidgetOptions;
   late ColorEntryWidgetOptions colorEntryOptions;
-  late ColorChooserWidgetOptions colorChooserOptions;
+  late ColorChooserWidgetOptions colorChooserWidgetOptions;
   late ToolSettingsWidgetOptions toolSettingsWidgetOptions;
+  late MainToolbarWidgetOptions mainToolbarWidgetOptions;
+  late ShaderWidgetOptions shaderWidgetOptions;
 
   late ToolOptions toolOptions;
+  late ShaderOptions shaderOptions;
 
 
   PreferenceManager(SharedPreferences prefs) : _prefs = prefs
   {
     _init();
-    canvasOptions = CanvasOptions(
+    canvasWidgetOptions = CanvasOptions(
         stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
         longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
         longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance));
-    toolsOptions = ToolsWidgetOptions(
+    toolsWidgetOptions = ToolsWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Tools_Padding),
         buttonResizeFactor: getValueD(PreferenceDouble.Layout_Tools_ButtonResizeFactor),
         spacingFactor: getValueD(PreferenceDouble.Layout_Tools_SpacingFactor),
         iconSize: getValueD(PreferenceDouble.Layout_Tools_IconSize));
-    paletteOptions = PaletteWidgetOptions(
+    paletteWidgetOptions = PaletteWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Palette_Padding),
         columnCountResizeFactor: getValueD(PreferenceDouble.Layout_Palette_ColumnCountResizeFactor),
         topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize),
@@ -177,7 +191,7 @@ class PreferenceManager
         dragDelay: getValueI(PreferenceInt.Layout_ColorEntry_DragDelay),
         dragFeedbackAlpha: getValueI(PreferenceInt.Layout_ColorEntry_DragFeedbackAlpha),
         dragTargetWidth: getValueD(PreferenceDouble.Layout_ColorEntry_DragTargetWidth));
-    colorChooserOptions = ColorChooserWidgetOptions(
+    colorChooserWidgetOptions = ColorChooserWidgetOptions(
         iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
         colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),
         padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding),);
@@ -185,6 +199,18 @@ class PreferenceManager
         columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
         padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
         crossFadeDuration: getValueI(PreferenceInt.Layout_ToolSettings_CrossFadeDuration));
+    mainToolbarWidgetOptions = MainToolbarWidgetOptions(
+        paletteFlex: getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
+        toolSettingsFlex: getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
+        dividerHeight: getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight));
+    shaderWidgetOptions = ShaderWidgetOptions(
+        outSidePadding: getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
+
+    shaderOptions = ShaderOptions(
+        shaderDirectionDefault: getValueB(PreferenceBool.Shader_DirectionRightDefault),
+        onlyCurrentRampEnabledDefault: getValueB(PreferenceBool.Shader_CurrentRampOnlyDefault),
+        isEnabledDefault: getValueB(PreferenceBool.Shader_IsEnabledDefault));
+
     PencilOptions pencilOptions = PencilOptions(
         sizeMin: getValueI(PreferenceInt.Tool_Pencil_SizeMin),
         sizeMax: getValueI(PreferenceInt.Tool_Pencil_SizeMax),

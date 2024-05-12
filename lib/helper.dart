@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 enum ToolType
 {
   pencil,
-  brush,
   shape,
   gradient,
   fill,
@@ -11,9 +10,37 @@ enum ToolType
   pick,
   erase,
   font,
-  colorSelect,
-  line
+  spraycan,
+  line,
+  wand,
+  stamp,
+  curve
 }
+
+class Tool
+{
+  final String title;
+  final IconData icon;
+
+  const Tool({required this.title, required this.icon});
+}
+
+const Map<ToolType, Tool> toolList =
+{
+  ToolType.pencil: Tool(icon: Icons.edit, title: "Pencil"),
+  ToolType.shape: Tool(icon: Icons.square_outlined, title: "Shapes"),
+  ToolType.gradient: Tool(icon: Icons.gradient, title: "Gradient"),
+  ToolType.fill: Tool(icon: Icons.format_color_fill, title: "Fill"),
+  ToolType.select : Tool(icon: Icons.select_all, title: "Select"),
+  ToolType.pick : Tool(icon: Icons.colorize, title: "Color Pick"),
+  ToolType.erase : Tool(icon: Icons.delete_outline, title: "Eraser"),
+  ToolType.font : Tool(icon: Icons.text_format, title: "Text"),
+  ToolType.spraycan : Tool(icon: Icons.blur_on, title: "Spray Can"),
+  ToolType.line : Tool(icon: Icons.line_axis, title: "Line"),
+  ToolType.wand : Tool(icon: Icons.star_rate_outlined, title: "Wand"),
+  ToolType.stamp : Tool(icon: Icons.approval, title: "Stamp"),
+  ToolType.curve : Tool(icon: Icons.looks, title: "Curve"),
+};
 
 class IdColor
 {
@@ -48,17 +75,3 @@ class Helper
   }
 }
 
-const Map<ToolType, String> toolNameMap =
-{
-  ToolType.pencil: "Pencil",
-  ToolType.brush: "Brush",
-  ToolType.shape: "Shape",
-  ToolType.gradient: "Gradient",
-  ToolType.fill: "Fill",
-  ToolType.select: "Select",
-  ToolType.pick: "Pick",
-  ToolType.erase: "Erase",
-  ToolType.font: "Text",
-  ToolType.colorSelect: "Color Select",
-  ToolType.line: "Line",
-};

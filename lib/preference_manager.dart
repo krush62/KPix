@@ -79,7 +79,6 @@ enum PreferenceInt
   Layout_ColorEntry_DragFeedbackAlpha(defaultValue: 160),
 
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
-  Layout_ToolSettings_CrossFadeDuration(defaultValue: 100),
 
   Layout_MainToolbar_PaletteFlex(defaultValue: 6),
   Layout_MainToolbar_ToolSettingsFlex(defaultValue: 4),
@@ -88,6 +87,13 @@ enum PreferenceInt
   Tool_Pencil_SizeMax(defaultValue: 32),
   Tool_Pencil_SizeDefault(defaultValue: 1),
   Tool_Pencil_ShapeDefault(defaultValue: 0),
+  Tool_Shape_ShapeDefault(defaultValue: 0),
+  Tool_Shape_StrokeWidthMin(defaultValue: 1),
+  Tool_Shape_StrokeWidthMax(defaultValue: 16),
+  Tool_Shape_StrokeWidthDefault(defaultValue: 1),
+  Tool_Shape_CornerRadiusMin(defaultValue: 0),
+  Tool_Shape_CornerRadiusMax(defaultValue: 16),
+  Tool_Shape_CornerRadiusDefault(defaultValue: 0),
 
   ;
 
@@ -100,11 +106,14 @@ enum PreferenceInt
 
 enum PreferenceBool
 {
-  Tool_Pencil_PixelPerfect(defaultValue: true),
-
   Shader_IsEnabledDefault(defaultValue: false),
   Shader_DirectionRightDefault(defaultValue: true),
   Shader_CurrentRampOnlyDefault(defaultValue: false),
+
+  Tool_Pencil_PixelPerfect(defaultValue: true),
+  Tool_Shape_KeepAspectRatio(defaultValue: false),
+  Tool_Shape_StrokeOnly(defaultValue: true),
+
 
   ;
   const PreferenceBool({
@@ -112,9 +121,6 @@ enum PreferenceBool
   });
   final bool defaultValue;
 }
-
-
-
 
 class _DoublePair
 {
@@ -197,8 +203,7 @@ class PreferenceManager
         padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding),);
     toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
         columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
-        padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
-        crossFadeDuration: getValueI(PreferenceInt.Layout_ToolSettings_CrossFadeDuration));
+        padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding));
     mainToolbarWidgetOptions = MainToolbarWidgetOptions(
         paletteFlex: getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
@@ -217,7 +222,17 @@ class PreferenceManager
         sizeDefault: getValueI(PreferenceInt.Tool_Pencil_SizeDefault),
         shapeDefault: getValueI(PreferenceInt.Tool_Pencil_ShapeDefault),
         pixelPerfectDefault: getValueB(PreferenceBool.Tool_Pencil_PixelPerfect));
-    toolOptions = ToolOptions(pencilOptions: pencilOptions);
+    ShapeOptions shapeOptions = ShapeOptions(
+        shapeDefault: getValueI(PreferenceInt.Tool_Shape_ShapeDefault),
+        keepRatioDefault: getValueB(PreferenceBool.Tool_Shape_KeepAspectRatio),
+        strokeOnlyDefault: getValueB(PreferenceBool.Tool_Shape_StrokeOnly),
+        strokeWidthMin: getValueI(PreferenceInt.Tool_Shape_StrokeWidthMin),
+        strokeWidthMax: getValueI(PreferenceInt.Tool_Shape_StrokeWidthMax),
+        strokeWidthDefault: getValueI(PreferenceInt.Tool_Shape_StrokeWidthDefault),
+        cornerRadiusMin: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMin),
+        cornerRadiusMax: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMax),
+        cornerRadiusDefault: getValueI(PreferenceInt.Tool_Shape_CornerRadiusDefault));
+    toolOptions = ToolOptions(pencilOptions: pencilOptions, shapeOptions: shapeOptions);
   }
 
   void _init()

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/models.dart';
@@ -60,7 +61,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
       IconButton i = IconButton.outlined(
         isSelected: widget.appState.toolIsSelected(tooltype),
         color: widget.appState.toolIsSelected(tooltype) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-        icon:  Icon(
+        icon:  FaIcon(
           toolList[tooltype]!.icon,
           size: widget.options.iconSize,
         ),

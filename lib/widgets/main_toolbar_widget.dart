@@ -33,7 +33,7 @@ class MainToolbarWidget extends StatelessWidget
   final ShaderWidgetOptions shaderWidgetOptions;
   final ShaderOptions shaderOptions;
 
-  MainToolbarWidget({
+  const MainToolbarWidget({
     required this.appState,
     required this.paletteWidgetOptions,
     required this.toolsWidgetOptions,
@@ -73,7 +73,7 @@ class MainToolbarWidget extends StatelessWidget
           Material(
             color: Theme.of(context).primaryColor,
               child: ShaderWidget(
-                titleStyle: Theme.of(context).textTheme.titleMedium,
+                titleStyle: Theme.of(context).textTheme.titleLarge,
                 labelStyle: Theme.of(context).textTheme.bodySmall,
                 shaderWidgetOptions: shaderWidgetOptions,
                 shaderOptions: shaderOptions),

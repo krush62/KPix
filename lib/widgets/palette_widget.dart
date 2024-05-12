@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/shader_options.dart';
@@ -52,12 +53,17 @@ class _PaletteWidgetState extends State<PaletteWidget>
     super.initState();
   }
 
-  void _loadPalettePressed()
+  void _loadPressed()
   {
 
   }
 
-  void _savePalettePressed()
+  void _savePressed()
+  {
+
+  }
+
+  void _settingsPressed()
   {
 
   }
@@ -85,32 +91,45 @@ class _PaletteWidgetState extends State<PaletteWidget>
               Expanded(
                 flex: 1,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(0.0, 0.0, widget.options.padding / 2.0, 0.0),
+                  padding: EdgeInsets.only(right: widget.options.padding / 2.0),
                   child: IconButton.outlined(
                     color: Theme.of(context).primaryColorLight,
-                    icon:  Icon(
-                      Icons.open_in_browser_outlined,
+                    icon:  FaIcon(
+                      FontAwesomeIcons.folderOpen,
                       size: widget.options.topIconSize,
                     ),
-                    onPressed: _loadPalettePressed,
+                    onPressed: _loadPressed,
                   ),
                 )
               ),
               Expanded(
                 flex: 1,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(widget.options.padding / 2.0, 0.0, widget.options.padding / 2.0, 0.0),
+                  padding: EdgeInsets.only(left: widget.options.padding / 2.0, right: widget.options.padding / 2.0),
                   child: IconButton.outlined(
                     color: Theme.of(context).primaryColorLight,
-                    icon:  Icon(
-                      Icons.save_alt,
+                    icon:  FaIcon(
+                      FontAwesomeIcons.floppyDisk,
                       size: widget.options.topIconSize,
                     ),
-                    onPressed: _savePalettePressed,
+                    onPressed: _savePressed,
                   ),
                 )
               ),
-
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(left: widget.options.padding / 2.0),
+                  child: IconButton.outlined(
+                    color: Theme.of(context).primaryColorLight,
+                    icon:  FaIcon(
+                      FontAwesomeIcons.sliders,
+                      size: widget.options.topIconSize,
+                    ),
+                    onPressed: _settingsPressed,
+                  ),
+                )
+              ),
             ],
           )
         ),

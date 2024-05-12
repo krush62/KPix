@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 enum ToolType
 {
@@ -27,19 +28,19 @@ class Tool
 
 const Map<ToolType, Tool> toolList =
 {
-  ToolType.pencil: Tool(icon: Icons.edit, title: "Pencil"),
-  ToolType.shape: Tool(icon: Icons.square_outlined, title: "Shapes"),
+  ToolType.pencil: Tool(icon: FontAwesomeIcons.pen, title: "Pencil"),
+  ToolType.shape: Tool(icon: FontAwesomeIcons.shapes, title: "Shapes"),
   ToolType.gradient: Tool(icon: Icons.gradient, title: "Gradient"),
-  ToolType.fill: Tool(icon: Icons.format_color_fill, title: "Fill"),
+  ToolType.fill: Tool(icon: FontAwesomeIcons.fillDrip, title: "Fill"),
   ToolType.select : Tool(icon: Icons.select_all, title: "Select"),
-  ToolType.pick : Tool(icon: Icons.colorize, title: "Color Pick"),
-  ToolType.erase : Tool(icon: Icons.delete_outline, title: "Eraser"),
-  ToolType.font : Tool(icon: Icons.text_format, title: "Text"),
-  ToolType.spraycan : Tool(icon: Icons.blur_on, title: "Spray Can"),
-  ToolType.line : Tool(icon: Icons.line_axis, title: "Line"),
-  ToolType.wand : Tool(icon: Icons.star_rate_outlined, title: "Wand"),
-  ToolType.stamp : Tool(icon: Icons.approval, title: "Stamp"),
-  ToolType.curve : Tool(icon: Icons.looks, title: "Curve"),
+  ToolType.pick : Tool(icon: FontAwesomeIcons.eyeDropper, title: "Color Pick"),
+  ToolType.erase : Tool(icon: FontAwesomeIcons.eraser, title: "Eraser"),
+  ToolType.font : Tool(icon: FontAwesomeIcons.font, title: "Text"),
+  ToolType.spraycan : Tool(icon: FontAwesomeIcons.sprayCan, title: "Spray Can"),
+  ToolType.line : Tool(icon: FontAwesomeIcons.linesLeaning, title: "Line"),
+  ToolType.wand : Tool(icon: FontAwesomeIcons.wandMagicSparkles, title: "Wand"),
+  ToolType.stamp : Tool(icon: FontAwesomeIcons.stamp, title: "Stamp"),
+  ToolType.curve : Tool(icon: FontAwesomeIcons.bezierCurve, title: "Curve"),
 };
 
 class IdColor

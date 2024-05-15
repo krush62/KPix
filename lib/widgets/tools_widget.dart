@@ -61,12 +61,13 @@ class _ToolsWidgetState extends State<ToolsWidget>
       IconButton i = IconButton.outlined(
         isSelected: widget.appState.toolIsSelected(tooltype),
         color: widget.appState.toolIsSelected(tooltype) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+        tooltip: toolList[tooltype]?.title,
         icon:  FaIcon(
           toolList[tooltype]!.icon,
           size: widget.options.iconSize,
         ),
         onPressed: () {
-          _selectionChanged(tooltype);
+          tooltype == ToolType.stamp ? null : _selectionChanged(tooltype);
         },
       );
       iconButtons.add(i);
@@ -78,10 +79,10 @@ class _ToolsWidgetState extends State<ToolsWidget>
         builder: (context, BoxConstraints constraints)
     {
       final int colCount = (constraints.maxWidth / widget.options.buttonResizeFactor).round();
-      final int rowCount = iconButtons.length ~/ colCount + 1;
+      final int rowCount = (iconButtons.length - 1) ~/ colCount + 1;
       return Container(
         width: double.infinity,
-        height: rowCount * widget.options.buttonResizeFactor + rowCount * widget.options.padding,
+        height: (rowCount * widget.options.buttonResizeFactor + rowCount * widget.options.padding) + widget.options.padding,
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
         ),

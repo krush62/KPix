@@ -55,7 +55,7 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 Expanded(
                   flex: 3,
                   child: Text("Shading",
-                      textAlign: TextAlign.center, style: widget.titleStyle),
+                      textAlign: TextAlign.start, style: widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
                 ),
                 Expanded(
                   flex: 2,
@@ -82,7 +82,7 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                   child: Padding(
                     padding: EdgeInsets.only(right: widget.shaderWidgetOptions.outSidePadding),
                     child: Text("Current Ramp Only",
-                        textAlign: TextAlign.end, style: widget.labelStyle),
+                        textAlign: TextAlign.start, style: widget.labelStyle),
                   ),
                 ),
                 Expanded(

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -5,7 +7,6 @@ enum ToolType
 {
   pencil,
   shape,
-  gradient,
   fill,
   select,
   pick,
@@ -30,7 +31,6 @@ const Map<ToolType, Tool> toolList =
 {
   ToolType.pencil: Tool(icon: FontAwesomeIcons.pen, title: "Pencil"),
   ToolType.shape: Tool(icon: FontAwesomeIcons.shapes, title: "Shapes"),
-  ToolType.gradient: Tool(icon: Icons.gradient, title: "Gradient"),
   ToolType.fill: Tool(icon: FontAwesomeIcons.fillDrip, title: "Fill"),
   ToolType.select : Tool(icon: Icons.select_all, title: "Select"),
   ToolType.pick : Tool(icon: FontAwesomeIcons.eyeDropper, title: "Color Pick"),
@@ -73,6 +73,27 @@ class Helper
     return "${c.hue.round().toString()}° | "
         "${(c.saturation * 100.0).round().toString()}% | "
         "${(c.value * 100.0).round().toString()}%";
+  }
+
+  static bool isPerfectSquare(final int number) {
+    double squareRoot = sqrt(number);
+    return squareRoot % 1 == 0;
+  }
+
+  static int gcd(final int a, final int b) {
+    if (b == 0) return a;
+    return gcd(b, a % b);
+  }
+
+  static double calculateAngle(int x1, int y1, int x2, int y2) {
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+
+    double angle = atan2(dy, dx);
+
+    double angleInDegrees = angle * (180.0 / pi);
+
+    return angleInDegrees;
   }
 }
 

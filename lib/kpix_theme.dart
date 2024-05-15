@@ -49,12 +49,24 @@ class KPixTheme {
 
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[700] : Colors.grey[300]) : Colors.grey[300]),
+      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[300] : Colors.grey[700]) : Colors.grey[300]),
       trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[100] :Colors.grey[300]) : Colors.grey[100]),
       trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? Colors.grey[300] : Colors.grey[700]),
       overlayColor: MaterialStateProperty.all(Colors.grey[300]!.withAlpha(100))
 
-    )
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+        enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors.grey[700]!
+            )
+        ),
+        focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors.grey[700]!
+            )
+        )
+    ),
   );
 
 
@@ -85,9 +97,9 @@ class KPixTheme {
       titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600),
       titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600),
 
-      labelLarge: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600),
-      labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600),
-      labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600),
+      labelLarge: TextStyle(fontSize: 14, letterSpacing: 0.1, fontWeight: FontWeight.w600),
+      labelMedium: TextStyle(fontSize: 12,letterSpacing: 0.5, fontWeight: FontWeight.w600),
+      labelSmall: TextStyle(fontSize: 11, letterSpacing: 0.5, fontWeight: FontWeight.w600),
 
       bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
@@ -114,7 +126,18 @@ class KPixTheme {
         trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? Colors.grey[800] : Colors.grey[400]),
         overlayColor: MaterialStateProperty.all(Colors.grey[400]!.withAlpha(900))
     ),
-
+    inputDecorationTheme: InputDecorationTheme(
+      enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+              color: Colors.grey[400]!
+          )
+      ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(
+          color: Colors.grey[400]!
+        )
+      )
+    ),
   );
 
 }

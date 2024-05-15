@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
-import 'package:kpix/tool_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/palette_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';

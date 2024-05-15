@@ -9,6 +9,7 @@ import 'package:kpix/models.dart';
 import 'package:kpix/widgets/horizontal_split_view.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
+import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/preference_manager.dart';
@@ -154,8 +155,24 @@ class MainWidget extends StatelessWidget
               ),
               //RIGHT SIDE
               right: HorizontalSplitView(
-                  top: ListenerExample(
-                    options: prefs.canvasWidgetOptions,
+                  top: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      ListenerExample(
+                        options: prefs.canvasWidgetOptions,
+                        appState: appState,
+                      ),
+                      StatusBarWidget(
+                          options: prefs.statusBarWidgetOptions,
+                          zoomFactorString: appState.statusBarZoomFactorString,
+                          usedColorsString: appState.statusBarUsedColorsString,
+                          cursorPositionString: appState.statusBarCursorPositionString,
+                          dimensionString: appState.statusBarDimensionString,
+                          toolDimensionString: appState.statusBarToolDimensionString,
+                          toolDiagonalString: appState.statusBarToolDiagonalString,
+                          toolAspectRatioString: appState.statusBarToolAspectRatioString,
+                          toolAngleString: appState.statusBarToolAngleString,)
+                    ],
                   ),
                   bottom: Text(
                     "ANIMATION STUFF",

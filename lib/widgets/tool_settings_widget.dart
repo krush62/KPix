@@ -1,8 +1,19 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
-import 'package:kpix/tool_options.dart';
+import 'package:kpix/tool_options/color_pick_options.dart';
+import 'package:kpix/tool_options/curve_options.dart';
+import 'package:kpix/tool_options/eraser_options.dart';
+import 'package:kpix/tool_options/fill_options.dart';
+import 'package:kpix/tool_options/line_options.dart';
+import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/tool_options/select_options.dart';
+import 'package:kpix/tool_options/shape_options.dart';
+import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/tool_options/text_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/tool_options/wand_options.dart';
+import 'package:kpix/typedefs.dart';
 
 
 class ToolSettingsWidgetOptions
@@ -34,7 +45,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
     return "Settings for $toolName";
   }
 
-  //PENCIL
+  // PENCIL CALLBACKS
   void _pencilSizeChanged(final double newVal)
   {
     setState(() {
@@ -57,7 +68,8 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   }
 
 
-  //SHAPE
+
+  // SHAPE CALLBACKS
   void _shapeShapeChanged(final ShapeShape newShape)
   {
     setState(() {
@@ -72,7 +84,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
     });
   }
 
-  void _shapeStrokOnlyChanged(final bool newVal)
+  void _shapeStrokeOnlyChanged(final bool newVal)
   {
     setState(() {
       widget.toolOptions.shapeOptions.strokeOnly = newVal;
@@ -94,294 +106,242 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   }
 
 
+  // FILL CALLBACKS
+  void _fillAdjacentChanged(final bool newVal)
+  {
+    setState(() {
+      widget.toolOptions.fillOptions.fillAdjacent = newVal;
+    });
+  }
+
+
+  // SELECT CALLBACKS
+  void _selectModeChanged(final SelectionMode newMode)
+  {
+    setState(() {
+      widget.toolOptions.selectOptions.mode = newMode;
+    });
+  }
+
+  void _selectKeepAspectRatio(final bool newVal)
+  {
+    setState(() {
+      widget.toolOptions.selectOptions.keepAspectRatio = newVal;
+    });
+  }
+
+  void _selectShapeChanged(final SelectShape newShape)
+  {
+    setState(() {
+      widget.toolOptions.selectOptions.shape = newShape;
+    });
+  }
+
+
+  // ERASE CALLBACKS
+  void _eraserSizeChanged(final double newVal)
+  {
+    setState(() {
+      widget.toolOptions.eraserOptions.size = newVal.round();
+    });
+  }
+
+  void _eraserShapeChanged(final EraserShape newShape)
+  {
+    setState(() {
+      widget.toolOptions.eraserOptions.shape = newShape;
+    });
+  }
+
+  // TEXT CALLBACKS
+  void _textFontChanged(final TextFont newFont)
+  {
+    setState(() {
+      widget.toolOptions.textOptions.font = newFont;
+    });
+  }
+
+  void _textSizeChanged(final double newSize)
+  {
+    setState(() {
+      widget.toolOptions.textOptions.size = newSize.round();
+    });
+  }
+
+  void _textTextChanged(final String newText)
+  {
+    setState(() {
+      widget.toolOptions.textOptions.text = newText;
+    });
+  }
+
+
+  // SPRAY CAN CALLBACKS
+  void _sprayCanBlobSizeChanged(final double newSize)
+  {
+    setState(() {
+      widget.toolOptions.sprayCanOptions.blobSize = newSize.round();
+    });
+  }
+
+  void _sprayCanIntensityChanged(final double newVal)
+  {
+    setState(() {
+      widget.toolOptions.sprayCanOptions.intensity = newVal.round();
+    });
+  }
+
+  void _sprayCanRadiusChanged(final double newVal)
+  {
+    setState(() {
+      widget.toolOptions.sprayCanOptions.radius = newVal.round();
+    });
+  }
+
+
+  // LINE CALLBACKS
+  void _lineWidthChanged(final double newVal)
+  {
+    setState(() {
+      widget.toolOptions.lineOptions.width = newVal.round();
+    });
+  }
+
+  void _lineIntegerAspectRatioChanged(final bool newVal)
+  {
+    setState(() {
+      widget.toolOptions.lineOptions.integerAspectRatio = newVal;
+    });
+  }
+
+
+  // WAND CALLBACK
+  void _wandSelectFromWholeRampChanged(final bool newVal)
+  {
+    setState(() {
+      widget.toolOptions.wandOptions.selectFromWholeRamp = newVal;
+    });
+  }
+
+
+  // CURVE CALLBACK
+  void _curveWidthChanged(final double newVal)
+  {
+    setState(() {
+      widget.toolOptions.curveOptions.width = newVal.round();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget toolWidget;
+    switch(widget.appState.selectedTool.value )
+    {
+      case ToolType.shape:
+        toolWidget = ShapeOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            shapeOptions: widget.toolOptions.shapeOptions,
+            shapeShapeChanged: _shapeShapeChanged,
+            shapeKeepAspectRatioChanged: _shapeKeepAspectRatioChanged,
+            shapeStrokeOnlyChanged: _shapeStrokeOnlyChanged,
+            shapeStrokeSizeChanged: _shapeStrokeSizeChanged,
+            shapeCornerRadiusChanged: _shapeCornerRadiusChanged);
+        break;
+      case ToolType.pencil:
+        toolWidget = PencilOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            pencilOptions: widget.toolOptions.pencilOptions,
+            pencilPixelPerfectChanged: _pencilPixelPerfectChanged,
+            pencilShapeChanged: _pencilShapeChanged,
+            pencilSizeChanged: _pencilSizeChanged);
+        break;
+      case ToolType.fill:
+        toolWidget = FillOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            fillOptions: widget.toolOptions.fillOptions,
+            fillAdjacentChanged: _fillAdjacentChanged);
+        break;
+      case ToolType.select:
+        toolWidget = SelectOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            selectOptions: widget.toolOptions.selectOptions,
+            selectionModeChanged: _selectModeChanged,
+            selectKeepAspectRatioChanged: _selectKeepAspectRatio,
+            selectShapeChanged: _selectShapeChanged);
+        break;
+      case ToolType.pick:
+        toolWidget = ColorPickOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            colorPickOptions: widget.toolOptions.colorPickOptions);
+        break;
+      case ToolType.erase:
+        toolWidget = EraserOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            eraserOptions: widget.toolOptions.eraserOptions,
+            eraserShapeChanged: _eraserShapeChanged,
+            eraserSizeChanged: _eraserSizeChanged);
+        break;
+      case ToolType.font:
+        toolWidget = TextOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            textOptions: widget.toolOptions.textOptions,
+            textFontChanged: _textFontChanged,
+            textSizeChanged: _textSizeChanged,
+            textTextChanged: _textTextChanged);
+        break;
+      case ToolType.spraycan:
+        toolWidget = SprayCanOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            sprayCanOptions: widget.toolOptions.sprayCanOptions,
+            sprayCanBlobSizeChanged: _sprayCanBlobSizeChanged,
+            sprayCanIntensityChanged: _sprayCanIntensityChanged,
+            sprayCanRadiusChanged: _sprayCanRadiusChanged);
+        break;
+      case ToolType.line:
+        toolWidget = LineOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            lineOptions: widget.toolOptions.lineOptions,
+            lineWidthChanged: _lineWidthChanged,
+            lineIntegerAspectRatioChanged: _lineIntegerAspectRatioChanged);
+        break;
+      case ToolType.wand:
+        toolWidget = WandOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            wandOptions: widget.toolOptions.wandOptions,
+            wandSelectFromWholeRampChanged: _wandSelectFromWholeRampChanged);
+        break;
+      case ToolType.curve:
+        toolWidget = CurveOptions.getWidget(
+            context: context,
+            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
+            curveOptions: widget.toolOptions.curveOptions,
+            curveWidthChanged: _curveWidthChanged);
+        break;
+
+      default: toolWidget = Container(width: double.infinity, child: Text("Not Implemented"));
+    }
+
+
     return Material(
       color: Theme.of(context).primaryColor,
       
       child: Padding(
         padding: EdgeInsets.all(widget.toolSettingsWidgetOptions.padding),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: widget.toolSettingsWidgetOptions.padding),
-              child: Text(
-                  _getToolTitle(),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  style: Theme.of(context).textTheme.titleMedium,
-              ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: toolWidget,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-
-                //TODO Do not use stack, instead, dynamically put the correct AnimatedOpacity here
-                child: Stack(
-                  alignment: Alignment.topCenter,
-                  children: [
-
-                    //PENCIL
-                    Visibility(
-                      visible: widget.appState.selectedTool.value == ToolType.pencil,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Size",
-                                      style: Theme.of(context).textTheme.labelLarge,
-                                    )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: Slider(
-                                  value: widget.toolOptions.pencilOptions.size.toDouble(),
-                                  min: widget.toolOptions.pencilOptions.sizeMin.toDouble(),
-                                  max: widget.toolOptions.pencilOptions.sizeMax.toDouble(),
-                                  divisions: widget.toolOptions.pencilOptions.sizeMax - widget.toolOptions.pencilOptions.sizeMin,
-                                  onChanged: _pencilSizeChanged,
-                                  label: widget.toolOptions.pencilOptions.size.round().toString(),
-                                ),
-                              ),
-
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Shape",
-                                      style: Theme.of(context).textTheme.labelLarge,
-                                    )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: DropdownButton(
-                                  value: widget.toolOptions.pencilOptions.shape,
-                                  dropdownColor: Theme.of(context).primaryColorDark,
-                                  focusColor: Theme.of(context).primaryColor,
-                                  isExpanded: true,
-                                  onChanged: (PencilShape? pShape) {_pencilShapeChanged(pShape!);},
-                                  items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((PencilShape value) {
-                                    return DropdownMenuItem<PencilShape>(
-                                      value: value,
-                                      child: Text(pencilShapeStringMap[value]!),
-                                    );
-                                  }).toList(),
-
-                                )
-                              ),
-
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Shape",
-                                      style: Theme.of(context).textTheme.labelLarge,
-                                    )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Switch(
-                                    onChanged: _pencilPixelPerfectChanged,
-                                    value: widget.toolOptions.pencilOptions.pixelPerfect
-                                  ),
-                                )
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    //Shape
-                    Visibility(
-                      visible: widget.appState.selectedTool.value == ToolType.shape,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Size",
-                                      style: Theme.of(context).textTheme.labelLarge,
-                                    )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: DropdownButton(
-                                  value: widget.toolOptions.shapeOptions.shape,
-                                  dropdownColor: Theme.of(context).primaryColorDark,
-                                  focusColor: Theme.of(context).primaryColor,
-                                  isExpanded: true,
-                                  onChanged: (ShapeShape? pShape) {_shapeShapeChanged(pShape!);},
-                                  items: shapeShapeList.map<DropdownMenuItem<ShapeShape>>((ShapeShape value) {
-                                    return DropdownMenuItem<ShapeShape>(
-                                      value: value,
-                                      child: Text(shapeShapeStringMap[value]!),
-                                    );
-                                  }).toList(),
-
-                                ),
-                              ),
-
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Keep 1:1",
-                                      style: Theme.of(context).textTheme.labelLarge,
-                                    )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Switch(
-                                    onChanged: _shapeKeepAspectRatioChanged,
-                                    value: widget.toolOptions.shapeOptions.keepRatio,
-                                  ),
-                                )
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    "Stroke Only",
-                                    style: Theme.of(context).textTheme.labelLarge,
-                                  )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Switch(
-                                    onChanged: _shapeStrokOnlyChanged,
-                                    value: widget.toolOptions.shapeOptions.strokeOnly,
-                                  ),
-                                )
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    "Stroke Width",
-                                    style: Theme.of(context).textTheme.labelLarge,
-                                  )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: Slider(
-                                  value: widget.toolOptions.shapeOptions.strokeWidth.toDouble(),
-                                  min: widget.toolOptions.shapeOptions.strokeWidthMin.toDouble(),
-                                  max: widget.toolOptions.shapeOptions.strokeWidthMax.toDouble(),
-                                  divisions: widget.toolOptions.shapeOptions.strokeWidthMax - widget.toolOptions.shapeOptions.strokeWidthMin,
-                                  onChanged: widget.toolOptions.shapeOptions.strokeOnly ? _shapeStrokeSizeChanged : null,
-                                  label: widget.toolOptions.shapeOptions.strokeWidth.round().toString(),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    "Corner Radius",
-                                    style: Theme.of(context).textTheme.labelLarge,
-                                  )
-                                ),
-                              ),
-                              Expanded(
-                                flex: widget.toolSettingsWidgetOptions.columnWidthRatio,
-                                child: Slider(
-                                  value: widget.toolOptions.shapeOptions.cornerRadius.toDouble(),
-                                  min: widget.toolOptions.shapeOptions.cornerRadiusMin.toDouble(),
-                                  max: widget.toolOptions.shapeOptions.cornerRadiusMax.toDouble(),
-                                  divisions: widget.toolOptions.shapeOptions.cornerRadiusMax - widget.toolOptions.shapeOptions.cornerRadiusMin,
-                                  onChanged: _shapeCornerRadiusChanged,
-                                  label: widget.toolOptions.shapeOptions.cornerRadius.round().toString(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
+          )
     );
   }
   

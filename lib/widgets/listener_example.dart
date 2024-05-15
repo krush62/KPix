@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
+import 'package:kpix/models.dart';
 
 
 class CanvasOptions
@@ -18,10 +19,12 @@ class ListenerExample extends StatefulWidget {
   const ListenerExample(
       {
         required this.options,
+        required this.appState,
         super.key
       });
 
   final CanvasOptions options;
+  final AppState appState;
   @override
   State<ListenerExample> createState() => _ListenerExampleState();
 }
@@ -108,6 +111,10 @@ class _ListenerExampleState extends State<ListenerExample> {
     if (primaryIsDown)
     {
       updateDetails("PRIMARY UP");
+      widget.appState.hideStatusBarToolDimension();
+      widget.appState.hideStatusBarToolDiagonal();
+      widget.appState.hideStatusBarToolAngle();
+      widget.appState.hideStatusBarToolAspectRatio();
       timerLongPress.cancel();
       primaryIsDown = false;
     }
@@ -120,9 +127,21 @@ class _ListenerExampleState extends State<ListenerExample> {
   }
 
   void _updateLocation(PointerEvent details) {
+    x = details.localPosition.dx;
+    y = details.localPosition.dy;
+    widget.appState.setStatusBarCursorPosition(x, y);
+    if (primaryIsDown)
+    {
+      widget.appState.setStatusBarToolDimension(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
+      widget.appState.setStatusBarToolDiagonal(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
+      widget.appState.setStatusBarToolAspectRatio(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
+      widget.appState.setStatusBarToolAngle(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
+
+    }
+
+
     setState(() {
-      x = details.localPosition.dx;
-      y = details.localPosition.dy;
+
       if (details.kind == PointerDeviceKind.stylus)
       {
         pressure = details.pressure;
@@ -148,6 +167,7 @@ class _ListenerExampleState extends State<ListenerExample> {
       stylusButtonDetected = true;
     }
     _updateLocation(details);
+
   }
 
   void _stylusBtnTimeout(Timer t)
@@ -184,7 +204,7 @@ class _ListenerExampleState extends State<ListenerExample> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Expanded(
       child: Listener(
         onPointerDown: _buttonDown,
         onPointerMove: _updateLocation,

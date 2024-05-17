@@ -35,12 +35,12 @@ Palettes can be saved using the project's own kpal format (documentation can be 
 #### Palette Export Formats
 - png (1x 8x 32x)
 - aseprite
-- Gimp
-- Paint.NET
-- Adobe
-- JASC
-- Corel
-- OpenOffice
+- gpl (Gimp)
+- txt (Paint.NET)
+- ase (Adobe)
+- pal (JASC)
+- xml (Corel)
+- soc (OpenOffice)
 
 ### File Format Support
 Kpix uses its own kpix format for storing project files (documentation can be found here: TBD).

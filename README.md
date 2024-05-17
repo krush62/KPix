@@ -5,7 +5,7 @@ A pixel art creation tool.
 ## Overview
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
 - exclusive use of indexed colors
-- generative color ramps
+- generative color ramps based on parameters
 - hsv based color representation
 - shading capabilities for all tools
 - cross-platform support 
@@ -36,7 +36,7 @@ A palette consists of multiple independent color ramps. Each ramp can have an ar
 
 Palettes can be saved using the project's own kpal format (documentation can be found here: TBD)
 #### Palette Export Formats
-- png (1x 8x 32x)
+- png (1x, 8x, 32x)
 - aseprite
 - gpl (Gimp)
 - txt (Paint.NET)
@@ -57,11 +57,6 @@ Kpix uses its own kpix format for storing project files (documentation can be fo
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 
 
-
-#### Import Formats
-TBD
-
- 
 ## Installation
 ### Windows
 TBD

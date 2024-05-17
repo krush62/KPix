@@ -1,4 +1,5 @@
 import 'package:kpix/helper.dart';
+import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
@@ -9,8 +10,9 @@ import 'package:kpix/widgets/color_ramp_row_widget.dart';
 
 typedef ChangeToolFn = void Function(ToolType toolType);
 typedef ColorSelectedFn = void Function(String uuid);
-typedef AddNewColorFn = void Function(List<IdColor>? ramp);
-typedef ColorMovedFn = void Function(IdColor color, ColorEntryDropTargetWidget dropTarget);
+typedef RampOptionsFn = void Function(KPalRampData? data);
+typedef AddNewRampFn = void Function();
+typedef ColorRampFn = void Function(KPalRampData ramp);
 
 
 typedef PencilSizeChanged =  void Function(double newVal);

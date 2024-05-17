@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:kpix/helper.dart';
+import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/typedefs.dart';
 
@@ -15,14 +16,11 @@ class ColorEntryWidgetOptions {
   final int hoverTimer;
   final int stylusPollRate;
   final int longPressDuration;
+  final double settingsIconSize;
   final double addIconSize;
   final double buttonPadding;
   final double minSize;
   final double maxSize;
-  final double dragFeedbackSize;
-  final int dragDelay;
-  final int dragFeedbackAlpha;
-  final double dragTargetWidth;
 
   ColorEntryWidgetOptions({
     required this.unselectedMargin,
@@ -33,14 +31,11 @@ class ColorEntryWidgetOptions {
     required this.hoverTimer,
     required this.stylusPollRate,
     required this.longPressDuration,
+    required this.settingsIconSize,
     required this.addIconSize,
     required this.buttonPadding,
     required this.minSize,
     required this.maxSize,
-    required this.dragFeedbackSize,
-    required this.dragDelay,
-    required this.dragFeedbackAlpha,
-    required this.dragTargetWidth
   });
 }
 
@@ -57,41 +52,64 @@ class ColorEntryNotifiySet {
 }
 
 class ColorEntryWidget extends StatefulWidget {
-  final ValueNotifier<ColorEntryNotifiySet> colorData = ValueNotifier(
-      ColorEntryNotifiySet(
-          IdColor(color: Colors.black, uuid: ""), Colors.white, "0.00\n0.00\n0.00"));
-  final ColorSelectedFn colorSelectedFn;
+  final ValueNotifier<ColorEntryNotifiySet> colorData;
+  final ColorSelectedFn? colorSelectedFn;
   final ColorEntryWidgetOptions options;
   final AppState appState;
 
-  ColorEntryWidget(IdColor c, this.appState, this.colorSelectedFn, this.options, {super.key}) {
-    setColor(c);
+  const ColorEntryWidget._({
+    required this.colorData,
+    required this.colorSelectedFn,
+    required this.options,
+    required this.appState
+
+  });
+
+  factory ColorEntryWidget({
+    required IdColor color,
+    required ColorEntryWidgetOptions options,
+    required ColorSelectedFn? colorSelectedFn,
+    required AppState appState,
+})
+  {
+    ValueNotifier<ColorEntryNotifiySet> colorData = ValueNotifier(
+        ColorEntryNotifiySet(
+            IdColor(color: Colors.black, uuid: ""), Colors.white, "0.00\n0.00\n0.00"));
+     _setColor(color, colorData, options.contrastColorThreshold, options.hsvDisplayDigits);
+    return ColorEntryWidget._(
+      options: options,
+      colorData: colorData,
+      appState: appState,
+      colorSelectedFn: colorSelectedFn,
+
+    );
+
   }
 
-  Color _getContrastColor(Color color) {
-    if (HSVColor.fromColor(color).value > options.contrastColorThreshold) {
+  static Color _getContrastColor(final Color color, final double threshold) {
+    if (HSVColor.fromColor(color).value > threshold) {
       return Colors.black;
     } else {
       return Colors.white;
     }
   }
 
-  String _createColorString(Color c) {
+  static String _createColorString(final Color c, final int digitCount) {
     HSVColor hsv = HSVColor.fromColor(c);
-    return "${(hsv.hue / 360.0).toStringAsFixed(options.hsvDisplayDigits)}\n"
-        "${hsv.saturation.toStringAsFixed(options.hsvDisplayDigits)}\n"
-        "${hsv.value.toStringAsFixed(options.hsvDisplayDigits)}";
+    return "${(hsv.hue / 360.0).toStringAsFixed(digitCount)}\n"
+        "${hsv.saturation.toStringAsFixed(digitCount)}\n"
+        "${hsv.value.toStringAsFixed(digitCount)}";
   }
 
   @override
   State<ColorEntryWidget> createState() => _ColorEntryWidgetState();
 
-  void setColor(final IdColor c) {
+  static void _setColor(final IdColor c, final ValueNotifier<ColorEntryNotifiySet> colorData, final double contrastThreshold, final int digitCount) {
     ColorEntryNotifiySet newSet =
         ColorEntryNotifiySet.clone(colorData.value);
-    newSet.textColor = _getContrastColor(c.color);
+    newSet.textColor = _getContrastColor(c.color, contrastThreshold);
     newSet.color = c;
-    newSet.colorString = _createColorString(c.color);
+    newSet.colorString = _createColorString(c.color, digitCount);
     colorData.value = newSet;
   }
 
@@ -100,14 +118,14 @@ class ColorEntryWidget extends StatefulWidget {
     assert(saturation >= 0.0 && saturation <= 1.0,
         'saturation must be in range 0.0-1.0');
     assert(value >= 0.0 && value <= 1.0, 'value must be in range 0.0-1.0');
-    setColor(IdColor(color: HSVColor.fromAHSV(1.0, hue, saturation, value).toColor(), uuid: uuid));
+    _setColor(IdColor(color: HSVColor.fromAHSV(1.0, hue, saturation, value).toColor(), uuid: uuid), colorData, options.contrastColorThreshold, options.hsvDisplayDigits);
   }
 
   void setColorRGB(final int r, final int g, final int b, final String uuid) {
     assert(r >= 0 && r < 256, 'red value must be in range 0-255');
     assert(g >= 0 && g < 256, 'green value must be in range 0-255');
     assert(b >= 0 && b < 256, 'blue value must be in range 0-255');
-    setColor(IdColor(color: Color.fromRGBO(r, g, b, 1.0), uuid: uuid));
+    _setColor(IdColor(color: Color.fromRGBO(r, g, b, 1.0), uuid: uuid), colorData, options.contrastColorThreshold, options.hsvDisplayDigits);
   }
 
 }
@@ -176,7 +194,7 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
         timerRunning = true;
         timerLongPress = Timer(timeoutLongPress, handleTimeoutLongPress);
       }
-      widget.colorSelectedFn(widget.colorData.value.color.uuid);
+      widget.colorSelectedFn!(widget.colorData.value.color.uuid);
       print("PRIMARY DOWN");
     } else if (e.buttons == kSecondaryButton) {
       secondaryIsDown = true;
@@ -245,80 +263,67 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
                           onPointerHover: _hover,
                           onPointerDown: _down,
                           onPointerUp: _up,
-                          child: LongPressDraggable<IdColor>(
-                            delay: Duration(milliseconds: widget.options.dragDelay),
-                            data: widget.colorData.value.color,
-                            feedback: Container(
-                              width: widget.options.dragFeedbackSize,
-                              height: widget.options.dragFeedbackSize,
-                                decoration: BoxDecoration(
-                                    color: value.color.color.withAlpha(widget.options.dragFeedbackAlpha),
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(
-                                            widget.options.roundRadius)))
-                            ),
-                            child: Container(
-                                constraints: BoxConstraints(
-                                    minHeight: widget.options.minSize,
-                                    minWidth: widget.options.minSize,
-                                    maxHeight: widget.options.maxSize,
-                                    maxWidth: widget.options.maxSize),
-                                child: AspectRatio(
-                                    aspectRatio: 1.0,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Container(
-                                          constraints: BoxConstraints(
-                                              minHeight: widget.options.minSize,
-                                              minWidth: widget.options.minSize,
-                                              maxHeight: widget.options.maxSize,
-                                              maxWidth: widget.options.maxSize),
-                                          margin: EdgeInsets.all(widget.colorData.value.color.uuid == selectedColorId
-                                              ? widget.options.selectedMargin
-                                              : widget.options.unselectedMargin),
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: widget.colorData.value.color.uuid == selectedColorId
-                                                      ? Theme.of(context).primaryColorLight
-                                                      : Colors.transparent,
-                                                  width: (widget
-                                                      .options.unselectedMargin -
-                                                      widget.options.selectedMargin)),
-                                              color: value.color.color,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(
-                                                      widget.options.roundRadius))),
-                                        ),
-                                        Visibility(
-                                            visible: _textIsVisible,
-                                            child: Text(
-                                              value.colorString,
-                                              style: TextStyle(
-                                                color: value.textColor,
-                                                fontSize: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.fontSize,
-                                                fontWeight: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.fontWeight,
-                                                letterSpacing: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.letterSpacing,
-                                                decoration: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.decoration,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ))
-                                      ],
-                                    )
-                                )
-                            ),
+                          child: Container(
+                              constraints: BoxConstraints(
+                                  minHeight: widget.options.minSize,
+                                  minWidth: widget.options.minSize,
+                                  maxHeight: widget.options.maxSize,
+                                  maxWidth: widget.options.maxSize),
+                              child: AspectRatio(
+                                  aspectRatio: 1.0,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        constraints: BoxConstraints(
+                                            minHeight: widget.options.minSize,
+                                            minWidth: widget.options.minSize,
+                                            maxHeight: widget.options.maxSize,
+                                            maxWidth: widget.options.maxSize),
+                                        margin: EdgeInsets.all(widget.colorData.value.color.uuid == selectedColorId
+                                            ? widget.options.selectedMargin
+                                            : widget.options.unselectedMargin),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: widget.colorData.value.color.uuid == selectedColorId
+                                                    ? Theme.of(context).primaryColorLight
+                                                    : Colors.transparent,
+                                                width: (widget
+                                                    .options.unselectedMargin -
+                                                    widget.options.selectedMargin)),
+                                            color: value.color.color,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(
+                                                    widget.options.roundRadius))),
+                                      ),
+                                      Visibility(
+                                          visible: _textIsVisible,
+                                          child: Text(
+                                            value.colorString,
+                                            style: TextStyle(
+                                              color: value.textColor,
+                                              fontSize: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.fontSize,
+                                              fontWeight: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.fontWeight,
+                                              letterSpacing: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.letterSpacing,
+                                              decoration: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.decoration,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ))
+                                    ],
+                                  )
+                              )
                           )
                       )
                   )

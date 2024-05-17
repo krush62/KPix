@@ -43,13 +43,6 @@ const Map<ToolType, Tool> toolList =
   ToolType.curve : Tool(icon: FontAwesomeIcons.bezierCurve, title: "Curve"),
 };
 
-class IdColor
-{
-  final Color color;
-  final String uuid;
-  IdColor({required this.color, required this.uuid});
-}
-
 class Helper
 {
 
@@ -73,6 +66,12 @@ class Helper
     return "${c.hue.round().toString()}° | "
         "${(c.saturation * 100.0).round().toString()}% | "
         "${(c.value * 100.0).round().toString()}%";
+  }
+
+  static String getColorName(final Color c)
+  {
+    //TODO
+    return "<NO COLOR NAME>";
   }
 
   static bool isPerfectSquare(final int number) {

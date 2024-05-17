@@ -13,6 +13,7 @@ import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/wand_options.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/listener_example.dart';
@@ -23,6 +24,7 @@ import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/widgets/shader_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'kpal/kpal_widget.dart';
 
 enum PreferenceDouble
 {
@@ -48,6 +50,7 @@ enum PreferenceDouble
   Layout_Palette_SelectedColorHeightMax(defaultValue: 24.0),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
+  Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
   Layout_ColorEntry_UnselectedMargin(defaultValue: 2.0),
   Layout_ColorEntry_SelectedMargin(defaultValue: 0.0),
   Layout_ColorEntry_RoundRadius(defaultValue: 4.0),
@@ -55,12 +58,17 @@ enum PreferenceDouble
   Layout_ColorEntry_ButtonPadding(defaultValue: 4.0),
   Layout_ColorEntry_MinSize(defaultValue: 8.0),
   Layout_ColorEntry_MaxSize(defaultValue: 64.0),
-  Layout_ColorEntry_DragFeedbackSize(defaultValue: 32.0),
-  Layout_ColorEntry_DragTargetWidth(defaultValue: 6.0),
 
   Layout_ColorChooser_IconSize(defaultValue: 36.0),
   Layout_ColorChooser_ColorContainerBorderRadius(defaultValue: 16.0),
   Layout_ColorChooser_Padding(defaultValue: 8.0),
+  Layout_ColorChooser_Width(defaultValue: 400.0),
+  Layout_ColorChooser_Height(defaultValue: 500.0),
+  Layout_ColorChooser_DividerWidth(defaultValue: 2.0),
+  Layout_ColorChooser_Elevation(defaultValue: 16.0),
+  Layout_ColorChooser_BorderRadius(defaultValue: 16.0),
+  Layout_ColorChooser_BorderWidth(defaultValue: 2.0),
+  Layout_ColorChooser_OutsidePadding(defaultValue: 16.0),
 
   Layout_ToolsSettings_Padding(defaultValue: 8.0),
 
@@ -71,6 +79,48 @@ enum PreferenceDouble
   Layout_StatusBar_Height(defaultValue: 20.0),
   Layout_StatusBar_Padding(defaultValue: 2.0),
   Layout_StatusBar_DividerWidth(defaultValue: 2.0),
+
+  Layout_OverlayEntrySubMenu_OffsetX(defaultValue: 0.0),
+  Layout_OverlayEntrySubMenu_OffsetY(defaultValue: 32.0),
+  Layout_OverlayEntrySubMenu_ButtonSpacing(defaultValue: 6.0),
+  Layout_OverlayEntrySubMenu_Width(defaultValue: 160.0),
+  Layout_OverlayEntrySubMenu_ButtonHeight(defaultValue: 40.0),
+
+  Layout_OverlayAlertDialog_MinWidth(defaultValue: 200.0),
+  Layout_OverlayAlertDialog_MinHeight(defaultValue: 150.0),
+  Layout_OverlayAlertDialog_MaxWidth(defaultValue: 500.0),
+  Layout_OverlayAlertDialog_MaxHeight(defaultValue: 500.0),
+  Layout_OverlayAlertDialog_Padding(defaultValue: 8.0),
+  Layout_OverlayAlertDialog_BorderWidth(defaultValue: 2.0),
+  Layout_OverlayAlertDialog_BorderRadius(defaultValue: 8.0),
+  Layout_OverlayAlertDialog_IconSize(defaultValue: 32.0),
+  Layout_OverlayAlertDialog_Elevation(defaultValue: 8.0),
+
+
+
+  KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
+  KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
+  KPal_Constraints_hueShiftExpDefault(defaultValue: 1.0),
+  KPal_Constraints_satShiftExpMin(defaultValue: 0.5),
+  KPal_Constraints_satShiftExpMax(defaultValue: 2.0),
+  KPal_Constraints_staShiftExpDefault(defaultValue: 1.0),
+
+  KPal_Layout_BorderRadius(defaultValue: 8.0),
+  KPal_Layout_BorderWidth(defaultValue: 2.0),
+  KPal_Layout_OutsidePadding(defaultValue: 16.0),
+  KPal_Layout_InsidePadding(defaultValue: 8.0),
+  KPal_Layout_IconSize(defaultValue: 32.0),
+
+  KPalRamp_Layout_OutsidePadding(defaultValue: 8.0),
+  KPalRamp_Layout_MinHeight(defaultValue: 128.0),
+  KPalRamp_Layout_MaxHeight(defaultValue: 400.0),
+  KPalRamp_Layout_BorderWidth(defaultValue: 4.0),
+  KPalRamp_Layout_DividerThickness(defaultValue: 2.0),
+  KPalRamp_Layout_BorderRadius(defaultValue: 8.0),
+
+  KPalColorCard_Layout_BorderRadius(defaultValue: 8.0),
+  KPalColorCard_Layout_BorderWidth(defaultValue: 2.0),
+  KPalColorCard_Layout_OutsidePadding(defaultValue: 8.0),
 
 
   ;
@@ -91,13 +141,15 @@ enum PreferenceInt
   Layout_ColorEntry_HoverTimer(defaultValue: 100),
   Layout_ColorEntry_Stylus_PollRate(defaultValue: 100),
   Layout_ColorEntry_LongPressDuration(defaultValue: 1000),
-  Layout_ColorEntry_DragDelay(defaultValue: 100),
-  Layout_ColorEntry_DragFeedbackAlpha(defaultValue: 160),
+
+  Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
 
   Layout_MainToolbar_PaletteFlex(defaultValue: 6),
   Layout_MainToolbar_ToolSettingsFlex(defaultValue: 4),
+
+  Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -136,6 +188,45 @@ enum PreferenceInt
   Tool_Curve_WidthMin(defaultValue: 1),
   Tool_Curve_WidthMax(defaultValue: 16),
   Tool_Curve_Width(defaultValue: 1),
+
+
+
+
+  KPal_Constraints_ColorCountMin(defaultValue: 3),
+  KPal_Constraints_ColorCountMax(defaultValue: 15),
+  KPal_Constraints_ColorCountDefault(defaultValue: 5),
+  KPal_Constraints_BaseHueMin(defaultValue: 0),
+  KPal_Constraints_BaseHueMax(defaultValue: 360),
+  KPal_Constraints_BaseHueDefault(defaultValue: 180),
+  KPal_Constraints_BaseSatMin(defaultValue: 0),
+  KPal_Constraints_BaseSatMax(defaultValue: 100),
+  KPal_Constraints_BaseSatDefault(defaultValue: 60),
+  KPal_Constraints_HueShiftMin(defaultValue: -90),
+  KPal_Constraints_HueShiftMax(defaultValue: 90),
+  KPal_Constraints_HueShiftDefault(defaultValue: -10),
+  KPal_Constraints_SatShiftMin(defaultValue: -25),
+  KPal_Constraints_SatShiftMax(defaultValue: 25),
+  KPal_Constraints_SatShiftDefault(defaultValue: -10),
+  KPal_Constraints_ValueRangeMin(defaultValue: 0),
+  KPal_Constraints_ValueRangeMinDefault(defaultValue: 15),
+  KPal_Constraints_ValueRangeMax(defaultValue: 100),
+  KPal_Constraints_ValueRangeMaxDefault(defaultValue: 95),
+  KPal_Constraints_SatCurveDefault(defaultValue: 0),
+
+  KPal_Layout_SmokeOpacity(defaultValue: 128),
+
+  KPalRamp_Layout_LeftFlex(defaultValue: 1),
+  KPalRamp_Layout_CenterFlex(defaultValue: 10),
+  KPalRamp_Layout_RightFlex(defaultValue: 4),
+  KPalRamp_Layout_RowLabelFlex(defaultValue: 2),
+  KPalRamp_Layout_RowControlFlex(defaultValue: 8),
+  KPalRamp_Layout_RowValueFlex(defaultValue: 2),
+
+  KPalColorCard_Layout_ColorNameFlex(defaultValue: 1),
+  KPalColorCard_Layout_ColorFlex(defaultValue: 6),
+  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 2),
+
+
   ;
 
 
@@ -175,9 +266,6 @@ enum PreferenceString
   });
   final String defaultValue;
 }
-
-
-
 
 
 class _DoublePair
@@ -224,14 +312,90 @@ class PreferenceManager
   late MainToolbarWidgetOptions mainToolbarWidgetOptions;
   late ShaderWidgetOptions shaderWidgetOptions;
   late StatusBarWidgetOptions statusBarWidgetOptions;
+  late OverlayEntrySubMenuOptions overlayEntryOptions;
+  late OverlayEntryAlertDialogOptions alertDialogOptions;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
+
+  late KPalConstraints kPalConstraints;
+  late KPalWidgetOptions kPalWidgetOptions;
 
 
   PreferenceManager(SharedPreferences prefs) : _prefs = prefs
   {
     _init();
+    loadWidgetOptions();
+    loadToolOptions();
+    loadKPalOptions();
+
+  }
+
+  void _init()
+  {
+    for (PreferenceDouble dblEnum in PreferenceDouble.values)
+    {
+      _doubleMap[dblEnum] = _DoublePair(_prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
+    }
+
+    for (PreferenceInt intEnum in PreferenceInt.values)
+    {
+      _intMap[intEnum] = _IntPair(_prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
+    }
+
+    for (PreferenceBool boolEnum in PreferenceBool.values)
+    {
+      _boolMap[boolEnum] = _BoolPair(_prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
+    }
+
+    for (PreferenceString stringEnum in PreferenceString.values)
+    {
+      _stringMap[stringEnum] = _StringPair(_prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
+    }
+  }
+
+  double getValueD(PreferenceDouble prefName)
+  {
+    return _doubleMap[prefName]?.value ?? 0.0;
+  }
+
+  int getValueI(PreferenceInt prefName)
+  {
+    return _intMap[prefName]?.value ?? 0;
+  }
+
+  bool getValueB(PreferenceBool prefName)
+  {
+    return _boolMap[prefName]?.value ?? false;
+  }
+
+  String getValueS(PreferenceString prefName)
+  {
+    return _stringMap[prefName]?.value ?? "";
+  }
+
+
+   Future<void> savePreferences()
+  async {
+    _doubleMap.forEach((key, value)
+    {
+      if (value.changed)
+      {
+        _prefs.setDouble(key.name, value.value);
+      }
+    });
+    _intMap.forEach((key, value)
+    {
+      if (value.changed)
+      {
+        _prefs.setInt(key.name, value.value);
+      }
+    });
+  }
+
+
+  void loadWidgetOptions()
+  {
     canvasWidgetOptions = CanvasOptions(
         stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
         longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
@@ -257,17 +421,22 @@ class PreferenceManager
         stylusPollRate: getValueI(PreferenceInt.Layout_ColorEntry_Stylus_PollRate),
         longPressDuration: getValueI(PreferenceInt.Layout_ColorEntry_LongPressDuration),
         addIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
+        settingsIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_SettingsIconSize),
         buttonPadding: getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
         minSize: getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
-        maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),
-        dragFeedbackSize: getValueD(PreferenceDouble.Layout_ColorEntry_DragFeedbackSize),
-        dragDelay: getValueI(PreferenceInt.Layout_ColorEntry_DragDelay),
-        dragFeedbackAlpha: getValueI(PreferenceInt.Layout_ColorEntry_DragFeedbackAlpha),
-        dragTargetWidth: getValueD(PreferenceDouble.Layout_ColorEntry_DragTargetWidth));
+        maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),);
     colorChooserWidgetOptions = ColorChooserWidgetOptions(
         iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
         colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),
-        padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding),);
+        padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding),
+        smokeOpacity: getValueI(PreferenceInt.Layout_ColorChooser_SmokeOpacity),
+        width: getValueD(PreferenceDouble.Layout_ColorChooser_Width),
+        height: getValueD(PreferenceDouble.Layout_ColorChooser_Height),
+        dividerThickness: getValueD(PreferenceDouble.Layout_ColorChooser_DividerWidth),
+        elevation: getValueD(PreferenceDouble.Layout_ColorChooser_Elevation),
+        borderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_BorderRadius),
+        borderWidth: getValueD(PreferenceDouble.Layout_ColorChooser_BorderWidth),
+        outsidePadding: getValueD(PreferenceDouble.Layout_ColorChooser_OutsidePadding));
     toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
         columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
         padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding));
@@ -278,15 +447,35 @@ class PreferenceManager
     shaderWidgetOptions = ShaderWidgetOptions(
         outSidePadding: getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
     statusBarWidgetOptions = StatusBarWidgetOptions(
-        height: getValueD(PreferenceDouble.Layout_StatusBar_Height),
-        padding: getValueD(PreferenceDouble.Layout_StatusBar_Padding),
-        dividerWidth: getValueD(PreferenceDouble.Layout_StatusBar_DividerWidth),
-        );
+      height: getValueD(PreferenceDouble.Layout_StatusBar_Height),
+      padding: getValueD(PreferenceDouble.Layout_StatusBar_Padding),
+      dividerWidth: getValueD(PreferenceDouble.Layout_StatusBar_DividerWidth),);
     shaderOptions = ShaderOptions(
         shaderDirectionDefault: getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: getValueB(PreferenceBool.Shader_CurrentRampOnly),
         isEnabledDefault: getValueB(PreferenceBool.Shader_IsEnabled));
+    overlayEntryOptions = OverlayEntrySubMenuOptions(
+        offsetX: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetX),
+        offsetY: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetY),
+        buttonSpacing: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
+        width: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
+        buttonHeight: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonHeight),
+        smokeOpacity: getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity));
+    alertDialogOptions = OverlayEntryAlertDialogOptions(
+        smokeOpacity: getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
+        minWidth: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinWidth),
+        minHeight: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinHeight),
+        maxWidth: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxWidth),
+        maxHeight: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxHeight),
+        padding: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Padding),
+        borderWidth: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderWidth),
+        borderRadius: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderRadius),
+        iconSize: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_IconSize),
+        elevation: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation));
+  }
 
+  void loadToolOptions()
+  {
     PencilOptions pencilOptions = PencilOptions(
         sizeMin: getValueI(PreferenceInt.Tool_Pencil_SizeMin),
         sizeMax: getValueI(PreferenceInt.Tool_Pencil_SizeMax),
@@ -357,66 +546,67 @@ class PreferenceManager
         curveOptions: curveOptions);
   }
 
-  void _init()
+  void loadKPalOptions()
   {
-    for (PreferenceDouble dblEnum in PreferenceDouble.values)
-    {
-      _doubleMap[dblEnum] = _DoublePair(_prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
-    }
+    kPalConstraints = KPalConstraints(
+        colorCountMin: getValueI(PreferenceInt.KPal_Constraints_ColorCountMin),
+        colorCountMax: getValueI(PreferenceInt.KPal_Constraints_ColorCountMax),
+        colorCountDefault: getValueI(PreferenceInt.KPal_Constraints_ColorCountDefault),
+        baseHueMin: getValueI(PreferenceInt.KPal_Constraints_BaseHueMin),
+        baseHueMax: getValueI(PreferenceInt.KPal_Constraints_BaseHueMax),
+        baseHueDefault: getValueI(PreferenceInt.KPal_Constraints_BaseHueDefault),
+        baseSatMin: getValueI(PreferenceInt.KPal_Constraints_BaseSatMin),
+        baseSatMax: getValueI(PreferenceInt.KPal_Constraints_BaseSatMax),
+        baseSatDefault: getValueI(PreferenceInt.KPal_Constraints_BaseSatDefault),
+        hueShiftMin: getValueI(PreferenceInt.KPal_Constraints_HueShiftMin),
+        hueShiftMax: getValueI(PreferenceInt.KPal_Constraints_HueShiftMax),
+        hueShiftDefault: getValueI(PreferenceInt.KPal_Constraints_HueShiftDefault),
+        hueShiftExpMin: getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMin),
+        hueShiftExpMax: getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMax),
+        hueShiftExpDefault: getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpDefault),
+        satShiftMin: getValueI(PreferenceInt.KPal_Constraints_SatShiftMin),
+        satShiftMax: getValueI(PreferenceInt.KPal_Constraints_SatShiftMax),
+        satShiftDefault: getValueI(PreferenceInt.KPal_Constraints_SatShiftDefault),
+        satShiftExpMin: getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMin),
+        satShiftExpMax: getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMax),
+        satShiftExpDefault: getValueD(PreferenceDouble.KPal_Constraints_staShiftExpDefault),
+        valueRangeMin: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMin),
+        valueRangeMinDefault: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMinDefault),
+        valueRangeMax: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMax),
+        valueRangeMaxDefault: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMaxDefault),
+        satCurveDefault: getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault));
 
-    for (PreferenceInt intEnum in PreferenceInt.values)
-    {
-      _intMap[intEnum] = _IntPair(_prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
-    }
+    KPalColorCardWidgetOptions colorCardWidgetOptions = KPalColorCardWidgetOptions(
+        borderRadius: getValueD(PreferenceDouble.KPalColorCard_Layout_BorderRadius),
+        borderWidth: getValueD(PreferenceDouble.KPalColorCard_Layout_BorderWidth),
+        outsidePadding: getValueD(PreferenceDouble.KPalColorCard_Layout_OutsidePadding),
+        colorFlex: getValueI(PreferenceInt.KPalColorCard_Layout_ColorFlex),
+        colorNameFlex: getValueI(PreferenceInt.KPalColorCard_Layout_ColorNameFlex),
+        colorNumbersFlex: getValueI(PreferenceInt.KPalColorCard_Layout_ColorNumbersFlex));
 
-    for (PreferenceBool boolEnum in PreferenceBool.values)
-    {
-      _boolMap[boolEnum] = _BoolPair(_prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
-    }
+    KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
+        padding: getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
+        leftFlex: getValueI(PreferenceInt.KPalRamp_Layout_LeftFlex),
+        centerFlex: getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
+        rightFlex: getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
+        minHeight: getValueD(PreferenceDouble.KPalRamp_Layout_MinHeight),
+        maxHeight: getValueD(PreferenceDouble.KPalRamp_Layout_MaxHeight),
+        borderWidth: getValueD(PreferenceDouble.KPalRamp_Layout_BorderWidth),
+        borderRadius: getValueD(PreferenceDouble.KPalRamp_Layout_BorderRadius),
+        dividerThickness: getValueD(PreferenceDouble.KPalRamp_Layout_DividerThickness),
+        rowControlFlex: getValueI(PreferenceInt.KPalRamp_Layout_RowControlFlex),
+        rowLabelFlex: getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
+        rowValueFlex: getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
+        colorCardWidgetOptions: colorCardWidgetOptions);
 
-    for (PreferenceString stringEnum in PreferenceString.values)
-    {
-      _stringMap[stringEnum] = _StringPair(_prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
-    }
-  }
-
-  double getValueD(PreferenceDouble prefName)
-  {
-    return _doubleMap[prefName]?.value ?? 0.0;
-  }
-
-  int getValueI(PreferenceInt prefName)
-  {
-    return _intMap[prefName]?.value ?? 0;
-  }
-
-  bool getValueB(PreferenceBool prefName)
-  {
-    return _boolMap[prefName]?.value ?? false;
-  }
-
-  String getValueS(PreferenceString prefName)
-  {
-    return _stringMap[prefName]?.value ?? "";
-  }
-
-
-   Future<void> savePreferences()
-  async {
-    _doubleMap.forEach((key, value)
-    {
-      if (value.changed)
-      {
-        _prefs.setDouble(key.name, value.value);
-      }
-    });
-    _intMap.forEach((key, value)
-    {
-      if (value.changed)
-      {
-        _prefs.setInt(key.name, value.value);
-      }
-    });
+    kPalWidgetOptions = KPalWidgetOptions(
+        borderWidth: getValueD(PreferenceDouble.KPal_Layout_BorderWidth),
+        outsidePadding: getValueD(PreferenceDouble.KPal_Layout_OutsidePadding),
+        smokeOpacity: getValueI(PreferenceInt.KPal_Layout_SmokeOpacity),
+        borderRadius: getValueD(PreferenceDouble.KPal_Layout_BorderRadius),
+        iconSize: getValueD(PreferenceDouble.KPal_Layout_IconSize),
+        insidePadding: getValueD(PreferenceDouble.KPal_Layout_InsidePadding),
+        rampOptions: rampWidgetOptions);
   }
 
 }

@@ -25,10 +25,12 @@ void main() {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     doWhenWindowReady(() {
       const initialSize = Size(1366, 768);
+      appWindow.maximize();
       appWindow.minSize = initialSize;
-      appWindow.size = initialSize;
+      //appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
       appWindow.title = "KPix";
+      appWindow.maximize();
       appWindow.show();
     });
   }
@@ -56,21 +58,10 @@ class _KPixAppState extends State<KPixApp> {
     _initPrefs();
   }
 
-
-
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
     prefs = PreferenceManager(sPrefs);
-
-    List<Color> colors1 = [
-      Colors.red,
-      Colors.amber,
-      Colors.green,
-      Colors.yellow,
-      Colors.lightBlue
-    ];
-    List<List<Color>> ramps = [colors1];
-    appState.setColors(ramps, prefs.colorEntryOptions);
+    appState.setColors(kPalConstraints: prefs.kPalConstraints, colorEntryWidgetOptions: prefs.colorEntryOptions, alertDialogOptions: prefs.alertDialogOptions, kPalWidgetOptions: prefs.kPalWidgetOptions);
     prefsInitialized = true;
     setState(() {});
   }
@@ -152,6 +143,8 @@ class MainWidget extends StatelessWidget
                 toolsWidgetOptions: prefs.toolsWidgetOptions,
                 shaderWidgetOptions: prefs.shaderWidgetOptions,
                 shaderOptions: prefs.shaderOptions,
+                overlayEntryOptions: prefs.overlayEntryOptions,
+                colorChooserWidgetOptions: prefs.colorChooserWidgetOptions,
               ),
               //RIGHT SIDE
               right: HorizontalSplitView(

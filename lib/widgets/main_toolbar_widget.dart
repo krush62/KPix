@@ -2,8 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kpix/helper.dart';
+import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
@@ -32,6 +35,8 @@ class MainToolbarWidget extends StatelessWidget
   final MainToolbarWidgetOptions mainToolbarWidgetOptions;
   final ShaderWidgetOptions shaderWidgetOptions;
   final ShaderOptions shaderOptions;
+  final OverlayEntrySubMenuOptions overlayEntryOptions;
+  final ColorChooserWidgetOptions colorChooserWidgetOptions;
 
   const MainToolbarWidget({
     required this.appState,
@@ -42,6 +47,8 @@ class MainToolbarWidget extends StatelessWidget
     required this.mainToolbarWidgetOptions,
     required this.shaderWidgetOptions,
     required this.shaderOptions,
+    required this.overlayEntryOptions,
+    required this.colorChooserWidgetOptions,
     super.key
 });
 
@@ -59,8 +66,10 @@ class MainToolbarWidget extends StatelessWidget
                 builder: (BuildContext context, ToolType value,
                     child) {
                   return PaletteWidget(
-                    options: paletteWidgetOptions,
+                    paletteOptions: paletteWidgetOptions,
                     appState: appState,
+                    overlayEntryOptions: overlayEntryOptions,
+                    colorChooserWidgetOptions: colorChooserWidgetOptions,
                   );
                 }),
           ),

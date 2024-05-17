@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
 
+class ColorSet
+{
+  final Color normal;
+  final Color light;
+  final Color dark;
+  final int alphaB;
+  final double elevation;
+
+  const ColorSet({
+    required this.normal,
+    required this.light,
+    required this.dark,
+    this.alphaB = 100,
+    this.elevation = 16.0,
+  });
+}
+
 class KPixTheme {
 
+  static ColorSet lightColors = ColorSet(normal: Colors.grey[350]!, light: Colors.grey[700]!, dark: Colors.grey[200]!);
   static ThemeData monochromeTheme = ThemeData(
 
-    primaryColor: Colors.grey[300],
-    primaryColorLight: Colors.grey[700],
-    primaryColorDark: Colors.grey[100],
+    primaryColor: lightColors.normal,
+    primaryColorLight: lightColors.light,
+    primaryColorDark: lightColors.dark,
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.grey,
@@ -36,47 +54,65 @@ class KPixTheme {
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
     ),
     sliderTheme: SliderThemeData(
-      activeTrackColor: Colors.grey[700],
-      inactiveTrackColor: Colors.grey[100],
-      thumbColor: Colors.grey[700],
-      valueIndicatorColor: Colors.grey[700],
-      valueIndicatorStrokeColor: Colors.grey[300],
-      overlayColor: Colors.grey[100]!.withAlpha(100),
+      activeTrackColor: lightColors.light,
+      inactiveTrackColor: lightColors.dark,
+      thumbColor: lightColors.light,
+      valueIndicatorColor: lightColors.light,
+      valueIndicatorStrokeColor: lightColors.normal,
+      overlayColor: lightColors.dark.withAlpha(lightColors.alphaB),
       valueIndicatorTextStyle: TextStyle(
-          color: Colors.grey[100]
+          color: lightColors.dark
       ),
       showValueIndicator: ShowValueIndicator.always,
 
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[300] : Colors.grey[700]) : Colors.grey[300]),
-      trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[100] :Colors.grey[300]) : Colors.grey[100]),
-      trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? Colors.grey[300] : Colors.grey[700]),
-      overlayColor: MaterialStateProperty.all(Colors.grey[300]!.withAlpha(100))
+      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? lightColors.normal : lightColors.light) : lightColors.normal),
+      trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? lightColors.dark :lightColors.normal) : lightColors.dark),
+      trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? lightColors.normal : lightColors.light),
+      overlayColor: MaterialStateProperty.all(lightColors.normal.withAlpha(lightColors.alphaB))
 
     ),
     inputDecorationTheme: InputDecorationTheme(
         enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-                color: Colors.grey[700]!
+                color: lightColors.light
             )
         ),
         focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-                color: Colors.grey[700]!
+                color: lightColors.light
             )
         )
     ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        elevation: MaterialStateProperty.all(lightColors.elevation),
+        shadowColor: MaterialStateProperty.all(lightColors.dark),
+        foregroundColor: MaterialStateProperty.all(lightColors.light),
+        backgroundColor: MaterialStateProperty.all(lightColors.dark),
+        overlayColor: MaterialStateProperty.all(lightColors.dark),
+        surfaceTintColor: MaterialStateProperty.all(lightColors.light),
+        side: MaterialStateProperty.all(
+          BorderSide(
+            color: lightColors.light
+          )
+        )
+      )
+    )
   );
 
 
 
 
+
+
+  static ColorSet darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
   static ThemeData monochromeThemeDark = ThemeData(
 
-    primaryColor: Colors.grey[800],
-    primaryColorLight: Colors.grey[400],
-    primaryColorDark: Colors.grey[900],
+    primaryColor: darkColors.normal,
+    primaryColorLight: darkColors.light,
+    primaryColorDark: darkColors.dark,
 
 
     colorScheme: ColorScheme.fromSeed(
@@ -107,37 +143,52 @@ class KPixTheme {
     ),
 
     sliderTheme: SliderThemeData(
-      activeTrackColor: Colors.grey[400],
-      inactiveTrackColor: Colors.grey[900],
-      thumbColor: Colors.grey[400],
-      valueIndicatorColor: Colors.grey[400],
-      valueIndicatorStrokeColor: Colors.grey[800],
-      overlayColor: Colors.grey[400]!.withAlpha(100),
+      activeTrackColor: darkColors.light,
+      inactiveTrackColor: darkColors.dark,
+      thumbColor: darkColors.light,
+      valueIndicatorColor: darkColors.light,
+      valueIndicatorStrokeColor: darkColors.normal,
+      overlayColor: darkColors.light.withAlpha(darkColors.alphaB),
       valueIndicatorTextStyle: TextStyle(
-        color: Colors.grey[800]
+        color: darkColors.normal
       ),
       showValueIndicator: ShowValueIndicator.always,
 
     ),
 
     switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[800] : Colors.grey[400]) : Colors.grey[800]),
-        trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? Colors.grey[900] : Colors.grey[800]) : Colors.grey[900]),
-        trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? Colors.grey[800] : Colors.grey[400]),
-        overlayColor: MaterialStateProperty.all(Colors.grey[400]!.withAlpha(900))
+        thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? darkColors.normal : darkColors.light) : darkColors.normal),
+        trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? darkColors.dark : darkColors.normal) : darkColors.dark),
+        trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? darkColors.normal : darkColors.light),
+        overlayColor: MaterialStateProperty.all(darkColors.light.withAlpha(darkColors.alphaB))
     ),
+
     inputDecorationTheme: InputDecorationTheme(
       enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-              color: Colors.grey[400]!
+              color: darkColors.light
           )
       ),
       focusedBorder: UnderlineInputBorder(
         borderSide: BorderSide(
-          color: Colors.grey[400]!
+          color: darkColors.light
         )
       )
     ),
+
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        elevation: MaterialStateProperty.all(darkColors.elevation),
+        shadowColor: MaterialStateProperty.all(darkColors.dark),
+        foregroundColor: MaterialStateProperty.all(darkColors.light),
+        backgroundColor: MaterialStateProperty.all(darkColors.dark),
+        overlayColor: MaterialStateProperty.all(darkColors.normal),
+        surfaceTintColor: MaterialStateProperty.all(darkColors.light),
+          side: MaterialStateProperty.all(BorderSide(
+              color: darkColors.light
+          ))
+      )
+    )
   );
 
 }

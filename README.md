@@ -18,6 +18,9 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - Text
 - Fill
 - Stamp
+- Line
+- Curve
+- Spray Can
 
 ### Shading
 The drawing tools work directly (using the selected color) or in shading mode. In shading mode, the affected colors on the canvas are brightened/darkened based on the current color ramp.

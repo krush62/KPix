@@ -1,4 +1,4 @@
-# kpix
+# KPix
 
 A pixel art creation tool.
 

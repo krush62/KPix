@@ -31,10 +31,30 @@ A palette consists of multiple independent color ramps. Each ramp can have an ar
 - saturation curve (keep darker/brighter shades constant)
 - minimum and maximum brightness
 
+Palettes can be saved using the project's own kpal format (documentation can be found here: TBD)
+#### Palette Export Formats
+- png (1x 8x 32x)
+- aseprite
+- Gimp
+- Paint.NET
+- Adobe
+- JASC
+- Corel
+- OpenOffice
+
 ### File Format Support
-Kpix uses its own file format (documentation can be found here: TBD)
+Kpix uses its own kpix format for storing project files (documentation can be found here: TBD).
 #### Export Formats
-TBD
+- png
+- gif
+- aseprite
+- psd
+- xcf
+
+#### Import Formats
+Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 
+
+
 #### Import Formats
 TBD
 

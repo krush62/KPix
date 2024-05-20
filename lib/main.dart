@@ -179,10 +179,10 @@ class MainWidget extends StatelessWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      /*ListenerExample(
+                      ListenerExample(
                         options: prefs.canvasWidgetOptions,
                         appState: appState,
-                      ),*/
+                      ),
                       StatusBarWidget(
                         options: prefs.statusBarWidgetOptions,
                         zoomFactorString: appState.statusBarZoomFactorString,

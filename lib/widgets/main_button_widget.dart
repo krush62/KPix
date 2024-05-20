@@ -61,7 +61,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-
   void _closeAllMenus()
   {
     if (loadMenuVisible)
@@ -217,16 +216,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     flex: 1,
                     child: Padding(
                       padding: EdgeInsets.only(right: widget.options.padding / 2.0),
-                      child: CompositedTransformTarget(
-                        link: saveMenulayerLink,
-                        child: IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
-                          icon:  FaIcon(
-                            FontAwesomeIcons.rotateLeft,
-                            size: widget.options.menuIconSize,
-                          ),
-                          onPressed: _undoPressed,
+                      child: IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.rotateLeft,
+                          size: widget.options.menuIconSize,
                         ),
+                        onPressed: _undoPressed,
                       ),
                     )
                 ),

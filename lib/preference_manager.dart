@@ -146,8 +146,8 @@ enum PreferenceInt
 
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
 
-  Layout_MainToolbar_PaletteFlex(defaultValue: 6),
-  Layout_MainToolbar_ToolSettingsFlex(defaultValue: 4),
+  Layout_MainToolbar_PaletteFlex(defaultValue: 2),
+  Layout_MainToolbar_ToolSettingsFlex(defaultValue: 1),
 
   Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
 

@@ -82,7 +82,7 @@ class MainToolbarWidget extends StatelessWidget
       color: Theme.of(context).primaryColor,
       child: Column(
           mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             //PALETTE WIDGET
             Expanded(

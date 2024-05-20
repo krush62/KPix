@@ -35,20 +35,19 @@ enum PreferenceDouble
   Layout_SplitView_GrooveGap(defaultValue: 8.0),
   Layout_SplitView_GrooveThickness(defaultValue: 4.0),
   Layout_SplitView_GrooveSize(defaultValue: 2.0),
-  Layout_SplitView_FlexLeftMin(defaultValue: 2.5),
+  Layout_SplitView_FlexLeftMin(defaultValue: 3),
   Layout_SplitView_FlexLeftMax(defaultValue: 4.0),
   Layout_SplitView_FlexRightMin(defaultValue: 2.0),
   Layout_SplitView_FlexRightMax(defaultValue: 3.0),
-  Layout_SplitView_FlexLeftDefault(defaultValue: 3.0),
+  Layout_SplitView_FlexLeftDefault(defaultValue: 3.5),
   Layout_SplitView_FlexCenterDefault(defaultValue: 12.0),
   Layout_SplitView_FlexRightDefault(defaultValue: 2.0),
 
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
 
   Layout_Tools_Padding(defaultValue: 8.0),
-  Layout_Tools_ButtonResizeFactor(defaultValue: 52.0),
-  Layout_Tools_SpacingFactor(defaultValue: 32.0),
-  Layout_Tools_IconSize(defaultValue: 20.0),
+  Layout_Tools_IconSize(defaultValue: 16.0),
+  Layout_Tools_ButtonSize(defaultValue: 48.0),
 
   Layout_Palette_Padding(defaultValue: 8.0),
 
@@ -148,6 +147,8 @@ enum PreferenceInt
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
+
+  Layout_Tools_ColCount(defaultValue: 6),
 
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
 
@@ -429,8 +430,8 @@ class PreferenceManager
         longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance));
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Tools_Padding),
-        buttonResizeFactor: getValueD(PreferenceDouble.Layout_Tools_ButtonResizeFactor),
-        spacingFactor: getValueD(PreferenceDouble.Layout_Tools_SpacingFactor),
+        colCount: getValueI(PreferenceInt.Layout_Tools_ColCount),
+        buttonSize: getValueD(PreferenceDouble.Layout_Tools_ButtonSize),
         iconSize: getValueD(PreferenceDouble.Layout_Tools_IconSize));
     paletteWidgetOptions = PaletteWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Palette_Padding));

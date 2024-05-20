@@ -78,14 +78,93 @@ class MainToolbarWidget extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
+    return Material(
       color: Theme.of(context).primaryColor,
       child: Column(
           mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            //PALETTE WIDGET
             Expanded(
+              child: ValueListenableBuilder<ToolType>(
+                valueListenable: appState.selectedTool,
+                builder: (BuildContext context, ToolType value, child) {
+                  return PaletteWidget(
+                    paletteOptions: paletteWidgetOptions,
+                    appState: appState,
+                    overlayEntryOptions: overlayEntryOptions,
+                    colorChooserWidgetOptions: colorChooserWidgetOptions,
+                    colorNames: colorNames,
+                    alertDialogOptions: alertDialogOptions,
+                    kPalConstraints: kPalConstraints,
+                    kPalWidgetOptions: kPalWidgetOptions,
+                    colorEntryWidgetOptions: colorEntryWidgetOptions,
+                    colorSelectedFn: colorSelectedFn,
+                    addNewRampFn: addNewRampFn,
+                    deleteRampFn: deleteRampFn,
+                    updateRampFn: updateRampFn,
+                  );
+                }
+              ),
+            ),
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              endIndent: mainToolbarWidgetOptions.dividerPadding,
+              indent: mainToolbarWidgetOptions.dividerPadding,
+              thickness: mainToolbarWidgetOptions.dividerHeight,
+              height: mainToolbarWidgetOptions.dividerHeight,
+            ),
+            ShaderWidget(
+            titleStyle: Theme.of(context).textTheme.titleLarge,
+            labelStyle: Theme.of(context).textTheme.bodySmall,
+            shaderWidgetOptions: shaderWidgetOptions,
+            shaderOptions: shaderOptions),
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              endIndent: mainToolbarWidgetOptions.dividerPadding,
+              indent: mainToolbarWidgetOptions.dividerPadding,
+              thickness: mainToolbarWidgetOptions.dividerHeight,
+              height: mainToolbarWidgetOptions.dividerHeight,
+            ),
+            ValueListenableBuilder<ToolType>(
+              valueListenable: appState.selectedTool,
+              builder: (BuildContext context, ToolType value,
+                  child) {
+                return ToolsWidget(
+                  options: toolsWidgetOptions,
+                  changeToolFn: appState.changeTool,
+                  appState: appState,
+                );
+                //return ColorEntryWidget();
+              }
+            ),
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              endIndent: mainToolbarWidgetOptions.dividerPadding,
+              indent: mainToolbarWidgetOptions.dividerPadding,
+              thickness: mainToolbarWidgetOptions.dividerHeight,
+              height: mainToolbarWidgetOptions.dividerHeight,
+            ),
+            SizedBox(
+              width: double.infinity,
+              //TODO MAGIC NUMBER
+              height: 200,
+              child: ValueListenableBuilder<ToolType>(
+                valueListenable: appState.selectedTool,
+                builder: (BuildContext context, ToolType value,child) {
+                  return ToolSettingsWidget(
+                    appState: appState,
+                    toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                    toolOptions: toolOptions,
+                  );
+                }
+                           ),
+            ),
+
+
+
+
+            //PALETTE WIDGET
+            /*Expanded(
               flex: mainToolbarWidgetOptions.paletteFlex,
               child: ValueListenableBuilder<ToolType>(
                   valueListenable: appState.selectedTool,
@@ -161,7 +240,7 @@ class MainToolbarWidget extends StatelessWidget
                       return ToolSettingsWidget(appState: appState, toolSettingsWidgetOptions: toolSettingsWidgetOptions, toolOptions: toolOptions,);
                     }
                 )
-            )
+            )*/
           ]
       ),
     );

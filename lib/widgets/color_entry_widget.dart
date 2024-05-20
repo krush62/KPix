@@ -110,7 +110,8 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
                             minHeight: widget.options.minSize,
                             minWidth: widget.options.minSize,
                             maxHeight: widget.options.maxSize,
-                            maxWidth: widget.options.maxSize),
+                            maxWidth: widget.options.maxSize
+                        ),
                         margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColorId
                             ? widget.options.selectedMargin
                             : widget.options.unselectedMargin),

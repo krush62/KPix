@@ -9,11 +9,11 @@ import 'package:kpix/models.dart';
 class ToolsWidgetOptions
 {
   final double padding;
-  final double buttonResizeFactor;
-  final double spacingFactor;
+  final double buttonSize;
+  final int colCount;
   final double iconSize;
 
-  ToolsWidgetOptions({required this.padding, required this.buttonResizeFactor, required this.spacingFactor, required this.iconSize});
+  ToolsWidgetOptions({required this.padding, required this.buttonSize, required this.colCount, required this.iconSize});
 
 }
 
@@ -78,28 +78,24 @@ class _ToolsWidgetState extends State<ToolsWidget>
     return LayoutBuilder(
         builder: (context, BoxConstraints constraints)
     {
-      final int colCount = (constraints.maxWidth / widget.options.buttonResizeFactor).round();
-      final int rowCount = (iconButtons.length - 1) ~/ colCount + 1;
+
+      final int rowCount = (iconButtons.length - 1) ~/ widget.options.colCount + 1;
       return Container(
         width: double.infinity,
-        height: (rowCount * widget.options.buttonResizeFactor + rowCount * widget.options.padding) + widget.options.padding,
+        height: (rowCount * widget.options.buttonSize + rowCount * widget.options.padding) + widget.options.padding,
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
         ),
-        child: Align(
-          alignment: const AlignmentDirectional(0.0, 0.0),
-          child: Padding(
-            padding: EdgeInsetsDirectional.all(widget.options.padding),
-            child: GridView.count(
-              crossAxisCount: colCount,
-              crossAxisSpacing: widget.options.padding,
-              mainAxisSpacing: widget.options.padding,
-              childAspectRatio: 1,
-              padding: const EdgeInsets.all(0.0),
-              children: [
-                ...iconButtons
-              ],
-            ),
+        child: Padding(
+          padding: EdgeInsetsDirectional.all(widget.options.padding),
+          child: GridView.count(
+            crossAxisCount: widget.options.colCount,
+            crossAxisSpacing: widget.options.padding,
+            mainAxisSpacing: widget.options.padding,
+            childAspectRatio: (constraints.maxWidth / widget.options.colCount) / (widget.options.buttonSize) ,
+            children: [
+              ...iconButtons
+            ],
           ),
         ),
       );

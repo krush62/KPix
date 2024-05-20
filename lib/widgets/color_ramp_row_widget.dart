@@ -87,6 +87,8 @@ class ColorRampRowWidget extends StatefulWidget {
 
       }
       widgetList.add(IconButton(
+        padding: EdgeInsets.all(colorEntryWidgetOptions.buttonPadding),
+        constraints: const BoxConstraints(),
         icon: FaIcon(
           FontAwesomeIcons.sliders,
           size: colorEntryWidgetOptions.settingsIconSize,
@@ -98,18 +100,16 @@ class ColorRampRowWidget extends StatefulWidget {
     } else {
       widgetList.add(
           Expanded(
-              child: Padding(
+              child: IconButton(
                   padding: EdgeInsets.all(colorEntryWidgetOptions.buttonPadding),
-                  child: IconButton(
-                      icon: FaIcon(
-                        FontAwesomeIcons.plus,
-                        size: colorEntryWidgetOptions.addIconSize,
-                      ),
-                      onPressed: () {
+                  icon: FaIcon(
+                    FontAwesomeIcons.plus,
+                    size: colorEntryWidgetOptions.addIconSize,
+                  ),
+                  onPressed: () {
 
-                        addNewRampFn!.call();
-                      }
-                  )
+                    addNewRampFn!.call();
+                  }
               )
           )
       );

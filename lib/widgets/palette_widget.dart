@@ -13,13 +13,9 @@ import 'package:kpix/widgets/color_ramp_row_widget.dart';
 class PaletteWidgetOptions
 {
   final double padding;
-  final double columnCountResizeFactor;
-  final double topIconSize;
 
   PaletteWidgetOptions({
     required this.padding,
-    required this.columnCountResizeFactor,
-    required this.topIconSize,
   });
 
 }

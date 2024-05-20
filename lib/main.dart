@@ -133,17 +133,17 @@ class MainWidget extends StatelessWidget {
         Expanded(
             child: MultiSplitViewTheme(
               data: MultiSplitViewThemeData(
-                dividerThickness: 8.0,
+                dividerThickness: prefs.mainLayoutOptions.splitViewDividerWidth,
                 dividerPainter: DividerPainters.grooved2(
                   backgroundColor: Theme.of(context).primaryColor,
                   color: Theme.of(context).primaryColorDark,
                   highlightedColor: Theme.of(context).primaryColorLight,
-                  count: 5,
-                  highlightedCount: 9,
-                  gap: 8,
-                  animationDuration: Duration(milliseconds: 250),
-                  thickness: 4,
-                  size: 2
+                  count: prefs.mainLayoutOptions.splitViewGrooveCountMin,
+                  highlightedCount: prefs.mainLayoutOptions.splitViewGrooveCountMax,
+                  gap: prefs.mainLayoutOptions.splitViewGrooveGap,
+                  animationDuration: Duration(milliseconds: prefs.mainLayoutOptions.splitViewAnimationLength),
+                  thickness: prefs.mainLayoutOptions.splitViewGrooveThickness,
+                  size: prefs.mainLayoutOptions.splitViewGrooveSize
                 )
               ),
               child: MultiSplitView(
@@ -172,9 +172,9 @@ class MainWidget extends StatelessWidget {
                     colorSelectedFn: appState.colorSelected,
                   );
                 },
-                flex: 2,
-                min: 2,
-                max: 3),
+                flex: prefs.mainLayoutOptions.splitViewFlexLeftDefault,
+                min: prefs.mainLayoutOptions.splitViewFlexLeftMin,
+                max: prefs.mainLayoutOptions.splitViewFlexLeftMax),
                 Area(builder: (context, area) {
                   return Column(
                     mainAxisSize: MainAxisSize.max,
@@ -199,17 +199,58 @@ class MainWidget extends StatelessWidget {
                     ],
                   );
                 },
-                flex: 12),
+                flex: prefs.mainLayoutOptions.splitViewFlexCenterDefault
+                ),
                 Area(builder: (context, area){
                  return RightBarWidget(
                    overlayEntrySubMenuOptions: prefs.overlayEntryOptions,
                    mainButtonWidgetOptions: prefs.mainButtonWidgetOptions,
                  );
-                }, flex: 1, max: 2, min: 1)
+                },
+                  flex: prefs.mainLayoutOptions.splitViewFlexRightDefault,
+                  min: prefs.mainLayoutOptions.splitViewFlexRightMin,
+                  max: prefs.mainLayoutOptions.splitViewFlexRightMax,
+
+                )
                         ],
                       ),
             )),
       ],
     );
   }
+}
+
+class MainLayoutOptions
+{
+  final double splitViewDividerWidth;
+  final double splitViewGrooveGap;
+  final double splitViewGrooveThickness;
+  final double splitViewGrooveSize;
+  final double splitViewFlexLeftMin;
+  final double splitViewFlexLeftMax;
+  final double splitViewFlexRightMin;
+  final double splitViewFlexRightMax;
+  final double splitViewFlexLeftDefault;
+  final double splitViewFlexCenterDefault;
+  final double splitViewFlexRightDefault;
+  final int splitViewGrooveCountMin;
+  final int splitViewGrooveCountMax;
+  final int splitViewAnimationLength;
+
+
+  MainLayoutOptions({
+    required this.splitViewDividerWidth,
+    required this.splitViewGrooveGap,
+    required this.splitViewGrooveThickness,
+    required this.splitViewGrooveSize,
+    required this.splitViewFlexLeftMin,
+    required this.splitViewFlexLeftMax,
+    required this.splitViewFlexRightMin,
+    required this.splitViewFlexRightMax,
+    required this.splitViewGrooveCountMin,
+    required this.splitViewGrooveCountMax,
+    required this.splitViewAnimationLength,
+    required this.splitViewFlexLeftDefault,
+    required this.splitViewFlexCenterDefault,
+    required this.splitViewFlexRightDefault});
 }

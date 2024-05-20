@@ -1,6 +1,7 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:kpix/color_names.dart';
+import 'package:kpix/main.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -30,13 +31,17 @@ import 'kpal/kpal_widget.dart';
 
 enum PreferenceDouble
 {
-  Layout_SplitViewHorizontal_Ratio(defaultValue: 0.75),
-  Layout_SplitViewHorizontal_TopMinRatio(defaultValue: 0.5),
-  Layout_SplitViewHorizontal_BottomMinRatio(defaultValue: 0.1),
-
-  Layout_SplitViewVertical_Ratio(defaultValue: 0.25),
-  Layout_SplitViewVertical_LeftMinRatio(defaultValue: 0.16),
-  Layout_SplitViewVertical_RightMinRatio(defaultValue: 0.6),
+  Layout_SplitView_DividerWidth(defaultValue: 8.0),
+  Layout_SplitView_GrooveGap(defaultValue: 8.0),
+  Layout_SplitView_GrooveThickness(defaultValue: 4.0),
+  Layout_SplitView_GrooveSize(defaultValue: 2.0),
+  Layout_SplitView_FlexLeftMin(defaultValue: 2.0),
+  Layout_SplitView_FlexLeftMax(defaultValue: 3.0),
+  Layout_SplitView_FlexRightMin(defaultValue: 1.0),
+  Layout_SplitView_FlexRightMax(defaultValue: 2.0),
+  Layout_SplitView_FlexLeftDefault(defaultValue: 2.0),
+  Layout_SplitView_FlexCenterDefault(defaultValue: 12.0),
+  Layout_SplitView_FlexRightDefault(defaultValue: 1.0),
 
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
 
@@ -46,10 +51,6 @@ enum PreferenceDouble
   Layout_Tools_IconSize(defaultValue: 20.0),
 
   Layout_Palette_Padding(defaultValue: 8.0),
-  Layout_Palette_ColumnCountResizeFactor(defaultValue: 52.0),
-  Layout_Palette_TopIconSize(defaultValue: 24.0),
-  Layout_Palette_SelectedColorHeightMin(defaultValue: 8.0),
-  Layout_Palette_SelectedColorHeightMax(defaultValue: 24.0),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
@@ -58,7 +59,7 @@ enum PreferenceDouble
   Layout_ColorEntry_RoundRadius(defaultValue: 4.0),
   Layout_ColorEntry_ButtonPadding(defaultValue: 4.0),
   Layout_ColorEntry_MinSize(defaultValue: 8.0),
-  Layout_ColorEntry_MaxSize(defaultValue: 64.0),
+  Layout_ColorEntry_MaxSize(defaultValue: 32.0),
 
   Layout_ColorChooser_IconSize(defaultValue: 36.0),
   Layout_ColorChooser_ColorContainerBorderRadius(defaultValue: 16.0),
@@ -139,6 +140,10 @@ enum PreferenceDouble
 
 enum PreferenceInt
 {
+  Layout_SplitView_GrooveCountMin(defaultValue: 5),
+  Layout_SplitView_GrooveCountMax(defaultValue: 9),
+  Layout_SplitView_AnimationLength(defaultValue: 250),
+
   Layout_Canvas_LongPressDuration(defaultValue: 1000),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
 
@@ -306,6 +311,7 @@ class PreferenceManager
   final Map<PreferenceInt, _IntPair> _intMap = {};
   final Map<PreferenceBool, _BoolPair> _boolMap = {};
   final Map<PreferenceString, _StringPair> _stringMap = {};
+  late MainLayoutOptions mainLayoutOptions;
   late CanvasOptions canvasWidgetOptions;
   late ToolsWidgetOptions toolsWidgetOptions;
   late PaletteWidgetOptions paletteWidgetOptions;
@@ -402,6 +408,21 @@ class PreferenceManager
 
   void loadWidgetOptions()
   {
+    mainLayoutOptions = MainLayoutOptions(
+        splitViewDividerWidth: getValueD(PreferenceDouble.Layout_SplitView_DividerWidth),
+        splitViewGrooveGap: getValueD(PreferenceDouble.Layout_SplitView_GrooveGap),
+        splitViewGrooveThickness: getValueD(PreferenceDouble.Layout_SplitView_GrooveThickness),
+        splitViewGrooveSize: getValueD(PreferenceDouble.Layout_SplitView_GrooveSize),
+        splitViewFlexLeftMin: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMin),
+        splitViewFlexLeftMax: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMax),
+        splitViewFlexRightMin: getValueD(PreferenceDouble.Layout_SplitView_FlexRightMin),
+        splitViewFlexRightMax: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMax),
+        splitViewGrooveCountMin: getValueI(PreferenceInt.Layout_SplitView_GrooveCountMin),
+        splitViewGrooveCountMax: getValueI(PreferenceInt.Layout_SplitView_GrooveCountMax),
+        splitViewAnimationLength: getValueI(PreferenceInt.Layout_SplitView_AnimationLength),
+        splitViewFlexLeftDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
+        splitViewFlexCenterDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexCenterDefault),
+        splitViewFlexRightDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault));
     canvasWidgetOptions = CanvasOptions(
         stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
         longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
@@ -412,9 +433,7 @@ class PreferenceManager
         spacingFactor: getValueD(PreferenceDouble.Layout_Tools_SpacingFactor),
         iconSize: getValueD(PreferenceDouble.Layout_Tools_IconSize));
     paletteWidgetOptions = PaletteWidgetOptions(
-        padding: getValueD(PreferenceDouble.Layout_Palette_Padding),
-        columnCountResizeFactor: getValueD(PreferenceDouble.Layout_Palette_ColumnCountResizeFactor),
-        topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize));
+        padding: getValueD(PreferenceDouble.Layout_Palette_Padding));
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),

@@ -129,7 +129,7 @@ class PencilOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Shape",
+                  "Smooth",
                   style: Theme.of(context).textTheme.labelLarge,
                 )
               ),

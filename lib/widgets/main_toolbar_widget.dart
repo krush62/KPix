@@ -1,10 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/typedefs.dart';
+import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
@@ -39,6 +42,16 @@ class MainToolbarWidget extends StatelessWidget
   final ShaderOptions shaderOptions;
   final OverlayEntrySubMenuOptions overlayEntryOptions;
   final ColorChooserWidgetOptions colorChooserWidgetOptions;
+  final ColorNames colorNames;
+  final OverlayEntryAlertDialogOptions alertDialogOptions;
+  final KPalConstraints kPalConstraints;
+  final KPalWidgetOptions kPalWidgetOptions;
+  final ColorEntryWidgetOptions colorEntryWidgetOptions;
+  final ColorSelectedFn colorSelectedFn;
+  final ColorRampFn updateRampFn;
+  final ColorRampFn deleteRampFn;
+  final AddNewRampFn addNewRampFn;
+
 
   const MainToolbarWidget({
     required this.appState,
@@ -51,6 +64,15 @@ class MainToolbarWidget extends StatelessWidget
     required this.shaderOptions,
     required this.overlayEntryOptions,
     required this.colorChooserWidgetOptions,
+    required this.colorNames,
+    required this.alertDialogOptions,
+    required this.kPalConstraints,
+    required this.kPalWidgetOptions,
+    required this.colorEntryWidgetOptions,
+    required this.addNewRampFn,
+    required this.updateRampFn,
+    required this.deleteRampFn,
+    required this.colorSelectedFn,
     super.key
 });
 
@@ -74,6 +96,15 @@ class MainToolbarWidget extends StatelessWidget
                       appState: appState,
                       overlayEntryOptions: overlayEntryOptions,
                       colorChooserWidgetOptions: colorChooserWidgetOptions,
+                      colorNames: colorNames,
+                      alertDialogOptions: alertDialogOptions,
+                      kPalConstraints: kPalConstraints,
+                      kPalWidgetOptions: kPalWidgetOptions,
+                      colorEntryWidgetOptions: colorEntryWidgetOptions,
+                      colorSelectedFn: colorSelectedFn,
+                      addNewRampFn: addNewRampFn,
+                      deleteRampFn: deleteRampFn,
+                      updateRampFn: updateRampFn,
                     );
                   }),
             ),

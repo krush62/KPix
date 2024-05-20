@@ -409,9 +409,7 @@ class PreferenceManager
     paletteWidgetOptions = PaletteWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Palette_Padding),
         columnCountResizeFactor: getValueD(PreferenceDouble.Layout_Palette_ColumnCountResizeFactor),
-        topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize),
-        selectedColorHeightMin: getValueD(PreferenceDouble.Layout_Palette_SelectedColorHeightMin),
-        selectedColorHeightMax: getValueD(PreferenceDouble.Layout_Palette_SelectedColorHeightMax));
+        topIconSize: getValueD(PreferenceDouble.Layout_Palette_TopIconSize));
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),

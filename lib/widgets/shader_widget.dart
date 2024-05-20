@@ -42,6 +42,11 @@ class _ShaderWidgetState extends State<ShaderWidget> {
     });
   }
 
+  void _tempPress()
+  {
+    print("SHADE PRESS");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding (
@@ -55,7 +60,7 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 Expanded(
                   flex: 3,
                   child: Text("Shading",
-                      textAlign: TextAlign.start, style: widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
+                      textAlign: TextAlign.start, style: widget.shaderOptions.isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
                 ),
                 Expanded(
                   flex: 2,

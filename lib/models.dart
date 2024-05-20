@@ -12,12 +12,9 @@ import 'package:uuid/uuid.dart';
 class AppState
 {
   final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
-  final ValueNotifier<List<ColorRampRowWidget>> colorRampWidgetList = ValueNotifier([]);
-  late List<KPalRampData> colorRamps = [];
+  final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
   final Map<ToolType, bool> _selectionMap = {};
-  late ColorEntryWidgetOptions _colorEntryWidgetOptions;
   final ValueNotifier<String> selectedColorId = ValueNotifier("");
-  final ValueNotifier<Color> selectedColor = ValueNotifier(Colors.black);
 
   //StatusBar
   final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
@@ -29,13 +26,11 @@ class AppState
   final ValueNotifier<String?> statusBarToolAspectRatioString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarToolAngleString = ValueNotifier(null);
 
-  late OverlayEntryAlertDialogOptions _alertDialogOptions;
-  late KPalConstraints _kPalConstraints;
-  late KPalWidgetOptions _kPalWidgetOptions;
 
-  late ColorNames _colorNames;
 
-  AppState()
+  final KPalConstraints kPalConstraints;
+
+  AppState({required this.kPalConstraints})
   {
     for (ToolType toolType in toolList.keys)
     {
@@ -49,95 +44,41 @@ class AppState
     setStatusBarZoomFactor(200);
   }
 
-  void setColors({
-    required final ColorEntryWidgetOptions colorEntryWidgetOptions,
-    required final KPalConstraints kPalConstraints,
-    required final OverlayEntryAlertDialogOptions alertDialogOptions,
-    required final KPalWidgetOptions kPalWidgetOptions,
-    required final ColorNames colorNames})
+
+  void deleteRamp(final KPalRampData ramp)
   {
-    _colorEntryWidgetOptions = colorEntryWidgetOptions;
-    _kPalConstraints = kPalConstraints;
-    _alertDialogOptions = alertDialogOptions;
-    _kPalWidgetOptions = kPalWidgetOptions;
-    _colorNames = colorNames;
-
-    colorRamps = [];
-
-    //TODO TEMP
-    _addNewRamp();
-    _addNewRamp();
-    _addNewRamp();
-
+    List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+    rampDataList.remove(ramp);
+    colorRamps.value = rampDataList;
   }
 
-  void _updateColorWidgets()
+  void updateRamp(final KPalRampData ramp)
   {
-    colorRampWidgetList.value = [];
-    for (KPalRampData rampData in colorRamps)
-    {
-      colorRampWidgetList.value.add(
-        ColorRampRowWidget(
-          rampData: rampData,
-          colorSelectedFn: _colorSelectionChanged,
-          colorsUpdatedFn: _updateRamp,
-          deleteRowFn: _deleteRamp,
-          colorNames: _colorNames,
-          colorEntryWidgetOptions: _colorEntryWidgetOptions,
-          appState: this,
-          alertDialogOptions: _alertDialogOptions,
-          kPalConstraints: _kPalConstraints,
-          kPalWidgetOptions: _kPalWidgetOptions,
-        )
-      );
-    }
-    colorRampWidgetList.value.add(ColorRampRowWidget(
-        addNewRampFn: _addNewRamp,
-        colorEntryWidgetOptions: _colorEntryWidgetOptions,
-    ));
+    List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+    colorRamps.value = rampDataList;
   }
 
-  void _deleteRamp(final KPalRampData ramp)
-  {
-    colorRamps.remove(ramp);
-    _updateColorWidgets();
-  }
 
-  void _updateRamp(final KPalRampData ramp)
-  {
-    _updateColorWidgets();
-  }
-
-  void _addNewRamp()
+  void addNewRamp()
   {
     const Uuid uuid = Uuid();
-    colorRamps.add(KPalRampData(uuid: uuid.v1(), settings: KPalRampSettings(
-        constraints: _kPalConstraints
-    )
-    ));
-    _updateColorWidgets();
+    List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+    rampDataList.add(
+      KPalRampData(
+        uuid: uuid.v1(),
+        settings: KPalRampSettings(
+          constraints: kPalConstraints
+        )
+      )
+    );
+    colorRamps.value = rampDataList;
   }
 
-
-  void _colorSelectionChanged(final String colorUuid)
+  void colorSelected(final String uuid)
   {
-    for (int i = 0; i < colorRampWidgetList.value.length; i++)
-    {
-      for (int j = 0; j < colorRampWidgetList.value[i].widgetList.length; j++)
-      {
-        Widget currentWidget = colorRampWidgetList.value[i].widgetList[j];
-        if (currentWidget is ColorEntryWidget)
-        {
-          if (currentWidget.colorData.value.uuid == colorUuid)
-          {
-            selectedColorId.value = colorUuid;
-            selectedColor.value = currentWidget.colorData.value.color;
-            return;
-          }
-        }
-      }
-    }
+    selectedColorId.value = uuid;
   }
+
 
   void setStatusBarDimensions(final int width, final int height)
   {

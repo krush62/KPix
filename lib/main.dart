@@ -49,7 +49,7 @@ class KPixApp extends StatefulWidget {
 
 class _KPixAppState extends State<KPixApp> {
   late PreferenceManager prefs;
-  AppState appState = AppState();
+  late AppState appState;
   bool prefsInitialized = false;
 
   @override
@@ -61,7 +61,9 @@ class _KPixAppState extends State<KPixApp> {
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
     prefs = PreferenceManager(sPrefs);
-    appState.setColors(kPalConstraints: prefs.kPalConstraints, colorEntryWidgetOptions: prefs.colorEntryOptions, alertDialogOptions: prefs.alertDialogOptions, kPalWidgetOptions: prefs.kPalWidgetOptions, colorNames: prefs.colorNames);
+    appState = AppState(kPalConstraints: prefs.kPalConstraints);
+    //TODO TEMP
+    appState.addNewRamp();
     prefsInitialized = true;
     setState(() {});
   }
@@ -145,6 +147,15 @@ class MainWidget extends StatelessWidget
                 shaderOptions: prefs.shaderOptions,
                 overlayEntryOptions: prefs.overlayEntryOptions,
                 colorChooserWidgetOptions: prefs.colorChooserWidgetOptions,
+                colorEntryWidgetOptions: prefs.colorEntryOptions,
+                kPalWidgetOptions: prefs.kPalWidgetOptions,
+                kPalConstraints: prefs.kPalConstraints,
+                alertDialogOptions: prefs.alertDialogOptions,
+                colorNames: prefs.colorNames,
+                addNewRampFn: appState.addNewRamp,
+                updateRampFn: appState.updateRamp,
+                deleteRampFn: appState.deleteRamp,
+                colorSelectedFn: appState.colorSelected,
               ),
               //RIGHT SIDE
               right: HorizontalSplitView(

@@ -1,5 +1,6 @@
 
 // ignore_for_file: constant_identifier_names
+import 'package:kpix/color_names.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -54,7 +55,6 @@ enum PreferenceDouble
   Layout_ColorEntry_UnselectedMargin(defaultValue: 2.0),
   Layout_ColorEntry_SelectedMargin(defaultValue: 0.0),
   Layout_ColorEntry_RoundRadius(defaultValue: 4.0),
-  Layout_ColorEntry_ContrastColorThreshold(defaultValue: 0.95),
   Layout_ColorEntry_ButtonPadding(defaultValue: 4.0),
   Layout_ColorEntry_MinSize(defaultValue: 8.0),
   Layout_ColorEntry_MaxSize(defaultValue: 64.0),
@@ -73,6 +73,7 @@ enum PreferenceDouble
   Layout_ToolsSettings_Padding(defaultValue: 8.0),
 
   Layout_MainToolbar_DividerHeight(defaultValue: 2.0),
+  Layout_MainToolbar_DividerPadding(defaultValue: 8.0),
 
   Layout_Shader_OutsidePadding(defaultValue: 8.0),
 
@@ -136,11 +137,6 @@ enum PreferenceInt
 {
   Layout_Canvas_LongPressDuration(defaultValue: 1000),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
-
-  Layout_ColorEntry_HsvDisplayDigits(defaultValue: 2),
-  Layout_ColorEntry_HoverTimer(defaultValue: 100),
-  Layout_ColorEntry_Stylus_PollRate(defaultValue: 100),
-  Layout_ColorEntry_LongPressDuration(defaultValue: 1000),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
@@ -215,16 +211,17 @@ enum PreferenceInt
 
   KPal_Layout_SmokeOpacity(defaultValue: 128),
 
-  KPalRamp_Layout_LeftFlex(defaultValue: 1),
-  KPalRamp_Layout_CenterFlex(defaultValue: 10),
-  KPalRamp_Layout_RightFlex(defaultValue: 4),
+  KPalRamp_Layout_CenterFlex(defaultValue: 4),
+  KPalRamp_Layout_RightFlex(defaultValue: 1),
   KPalRamp_Layout_RowLabelFlex(defaultValue: 2),
   KPalRamp_Layout_RowControlFlex(defaultValue: 8),
   KPalRamp_Layout_RowValueFlex(defaultValue: 2),
 
   KPalColorCard_Layout_ColorNameFlex(defaultValue: 1),
   KPalColorCard_Layout_ColorFlex(defaultValue: 6),
-  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 2),
+  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
+
+  ColorNames_Scheme(defaultValue: 0),
 
 
   ;
@@ -259,6 +256,8 @@ enum PreferenceBool
 enum PreferenceString
 {
   Tool_Text_TextDefault(defaultValue: "Text"),
+
+  ColorNames_ColorNamePath(defaultValue: "color_names"),
 
   ;
   const PreferenceString({
@@ -321,6 +320,7 @@ class PreferenceManager
   late KPalConstraints kPalConstraints;
   late KPalWidgetOptions kPalWidgetOptions;
 
+  late ColorNames colorNames;
 
   PreferenceManager(SharedPreferences prefs) : _prefs = prefs
   {
@@ -328,6 +328,7 @@ class PreferenceManager
     loadWidgetOptions();
     loadToolOptions();
     loadKPalOptions();
+    loadColorNames();
 
   }
 
@@ -415,11 +416,6 @@ class PreferenceManager
         unselectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
         roundRadius: getValueD(PreferenceDouble.Layout_ColorEntry_RoundRadius),
-        contrastColorThreshold: getValueD(PreferenceDouble.Layout_ColorEntry_ContrastColorThreshold),
-        hsvDisplayDigits: getValueI(PreferenceInt.Layout_ColorEntry_HsvDisplayDigits),
-        hoverTimer: getValueI(PreferenceInt.Layout_ColorEntry_HoverTimer),
-        stylusPollRate: getValueI(PreferenceInt.Layout_ColorEntry_Stylus_PollRate),
-        longPressDuration: getValueI(PreferenceInt.Layout_ColorEntry_LongPressDuration),
         addIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
         settingsIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_SettingsIconSize),
         buttonPadding: getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
@@ -443,7 +439,9 @@ class PreferenceManager
     mainToolbarWidgetOptions = MainToolbarWidgetOptions(
         paletteFlex: getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
-        dividerHeight: getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight));
+        dividerHeight: getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
+        dividerPadding: getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),
+      );
     shaderWidgetOptions = ShaderWidgetOptions(
         outSidePadding: getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
     statusBarWidgetOptions = StatusBarWidgetOptions(
@@ -586,7 +584,6 @@ class PreferenceManager
 
     KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
         padding: getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
-        leftFlex: getValueI(PreferenceInt.KPalRamp_Layout_LeftFlex),
         centerFlex: getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
         rightFlex: getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
         minHeight: getValueD(PreferenceDouble.KPalRamp_Layout_MinHeight),
@@ -607,6 +604,16 @@ class PreferenceManager
         iconSize: getValueD(PreferenceDouble.KPal_Layout_IconSize),
         insidePadding: getValueD(PreferenceDouble.KPal_Layout_InsidePadding),
         rampOptions: rampWidgetOptions);
+  }
+
+  void loadColorNames()
+  {
+    ColorNamesOptions options = ColorNamesOptions(
+        defaultNameScheme: getValueI(PreferenceInt.ColorNames_Scheme),
+        defaultColorNamePath: getValueS(PreferenceString.ColorNames_ColorNamePath));
+
+    colorNames = ColorNames(options: options);
+
   }
 
 }

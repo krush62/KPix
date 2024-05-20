@@ -61,7 +61,7 @@ class _KPixAppState extends State<KPixApp> {
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
     prefs = PreferenceManager(sPrefs);
-    appState.setColors(kPalConstraints: prefs.kPalConstraints, colorEntryWidgetOptions: prefs.colorEntryOptions, alertDialogOptions: prefs.alertDialogOptions, kPalWidgetOptions: prefs.kPalWidgetOptions);
+    appState.setColors(kPalConstraints: prefs.kPalConstraints, colorEntryWidgetOptions: prefs.colorEntryOptions, alertDialogOptions: prefs.alertDialogOptions, kPalWidgetOptions: prefs.kPalWidgetOptions, colorNames: prefs.colorNames);
     prefsInitialized = true;
     setState(() {});
   }

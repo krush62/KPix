@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kpix/color_names.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/typedefs.dart';
@@ -18,6 +19,7 @@ class ColorRampRowWidget extends StatefulWidget {
   final KPalWidgetOptions? kPalWidgetOptions;
   final KPalConstraints? kPalConstraints;
   final OverlayEntryAlertDialogOptions? alertDialogOptions;
+  final ColorNames? colorNames;
 
   @override
   State<ColorRampRowWidget> createState() => _ColorRampRowWidgetState();
@@ -35,6 +37,7 @@ class ColorRampRowWidget extends StatefulWidget {
     this.kPalWidgetOptions,
     this.alertDialogOptions,
     required this.widgetList,
+    this.colorNames,
   });
 
   factory ColorRampRowWidget({
@@ -47,7 +50,8 @@ class ColorRampRowWidget extends StatefulWidget {
     AppState? appState,
     KPalConstraints? kPalConstraints,
     KPalWidgetOptions? kPalWidgetOptions,
-    OverlayEntryAlertDialogOptions? alertDialogOptions
+    OverlayEntryAlertDialogOptions? alertDialogOptions,
+    ColorNames? colorNames,
   }){
     List<Widget> widgetList = [];
     return ColorRampRowWidget._(
@@ -62,6 +66,7 @@ class ColorRampRowWidget extends StatefulWidget {
       rampData: rampData,
       colorsUpdatedFn: colorsUpdatedFn,
       deleteRowFn: deleteRowFn,
+      colorNames: colorNames,
     );
   }
 
@@ -127,6 +132,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
       onDismiss: _closeKPal,
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
+      colorNames: widget.colorNames!,
       options: widget.kPalWidgetOptions!,
       constraints: widget.kPalConstraints!,
       alertDialogOptions: widget.alertDialogOptions!,

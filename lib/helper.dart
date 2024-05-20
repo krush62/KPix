@@ -43,6 +43,20 @@ const Map<ToolType, Tool> toolList =
   ToolType.curve : Tool(icon: FontAwesomeIcons.bezierCurve, title: "Curve"),
 };
 
+class LabColor
+{
+  static const double AB_MAX_VALUE = 128.0;
+  static const double L_MAX_VALUE = 100.0;
+
+  final double L, A, B;
+
+  LabColor({
+    required this.L,
+    required this.A,
+    required this.B,
+  });
+}
+
 class Helper
 {
 
@@ -68,12 +82,6 @@ class Helper
         "${(c.value * 100.0).round().toString()}%";
   }
 
-  static String getColorName(final Color c)
-  {
-    //TODO
-    return "<NO COLOR NAME>";
-  }
-
   static bool isPerfectSquare(final int number) {
     double squareRoot = sqrt(number);
     return squareRoot % 1 == 0;
@@ -93,6 +101,44 @@ class Helper
     double angleInDegrees = angle * (180.0 / pi);
 
     return angleInDegrees;
+  }
+
+
+
+  static LabColor rgb2lab(int red, int green, int blue)
+  {
+    double r = red.toDouble() / 255.0, g = green.toDouble() / 255.0, b = blue.toDouble() / 255.0, x, y, z;
+    r = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4).toDouble() : r / 12.92;
+    g = (g > 0.04045) ? pow((g + 0.055) / 1.055, 2.4).toDouble() : g / 12.92;
+    b = (b > 0.04045) ? pow((b + 0.055) / 1.055, 2.4).toDouble() : b / 12.92;
+    x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
+    y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
+    z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+    x = (x > 0.008856) ? pow(x, 1.0 / 3.0).toDouble() : (7.787 * x) + 16.0 / 116.0;
+    y = (y > 0.008856) ? pow(y, 1.0 / 3.0).toDouble() : (7.787 * y) + 16.0 / 116.0;
+    z = (z > 0.008856) ? pow(z, 1.0 / 3.0).toDouble() : (7.787 * z) + 16.0 / 116.0;
+    return LabColor(L: (116.0 * y) - 16.0, A: 500.0 * (x - y), B: 200.0 * (y - z));
+  }
+
+  static double getDeltaE(int redA, int greenA, int blueA, int redB, int greenB, int blueB)
+  {
+    LabColor labA = rgb2lab(redA, greenA, blueA);
+    LabColor labB = rgb2lab(redB, greenB, blueB);
+    double deltaL = labA.L - labB.L;
+    double deltaA = labA.A - labB.A;
+    double deltaB = labA.B - labB.B;
+    double c1 = sqrt(labA.A * labA.A + labA.B * labA.B);
+    double c2 = sqrt(labB.A * labB.A + labB.B * labB.B);
+    double deltaC = c1 - c2;
+    double deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+    deltaH = deltaH < 0 ? 0 : sqrt(deltaH);
+    double sc = 1.0 + 0.045 * c1;
+    double sh = 1.0 + 0.015 * c1;
+    double deltaLKlsl = deltaL / 1.0;
+    double deltaCkcsc = deltaC / sc;
+    double deltaHkhsh = deltaH / sh;
+    double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+    return i < 0.0 ? 0.0 : sqrt(i);
   }
 }
 

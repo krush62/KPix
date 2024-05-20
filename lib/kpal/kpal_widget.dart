@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -158,6 +159,7 @@ class KPal extends StatefulWidget {
   final Function() dismiss;
   final ColorRampFn accept;
   final ColorRampFn delete;
+  final ColorNames colorNames;
 
 
   const KPal({
@@ -169,6 +171,7 @@ class KPal extends StatefulWidget {
     required this.accept,
     required this.delete,
     required this.alertDialogOptions,
+    required this.colorNames
   });
 
 
@@ -230,6 +233,7 @@ class _KPalState extends State<KPal>
             borderRadius: BorderRadius.all(Radius.circular(widget.options.borderRadius)),
           ),
           child: Material(
+            color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.all(Radius.circular(widget.options.borderRadius)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -237,69 +241,59 @@ class _KPalState extends State<KPal>
                 KPalRamp(
                   options: widget.options.rampOptions,
                   rampData: widget.colorRamp,
+                  colorNames: widget.colorNames,
                 ),
-                Divider(
-                  color: Theme.of(context).primaryColorDark,
-                  thickness: widget.options.insidePadding / 2.0,
-                  height: widget.options.insidePadding / 2.0,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.all(Radius.circular(widget.options.borderRadius)),
-                  ),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
+                Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.all(widget.options.insidePadding),
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.xmark,
+                              size: widget.options.iconSize,
+                            ),
+                            onPressed: () {
+                              widget.dismiss();
+                            },
+                          ),
+                        )
+                      ),
+                      Expanded(
                           flex: 1,
                           child: Padding(
                             padding: EdgeInsets.all(widget.options.insidePadding),
                             child: IconButton.outlined(
                               icon: FaIcon(
-                                FontAwesomeIcons.xmark,
+                                FontAwesomeIcons.trash,
                                 size: widget.options.iconSize,
                               ),
                               onPressed: () {
-                                widget.dismiss();
+                                _showDeleteDialog();
                               },
                             ),
                           )
-                        ),
-                        Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: EdgeInsets.all(widget.options.insidePadding),
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.trash,
-                                  size: widget.options.iconSize,
-                                ),
-                                onPressed: () {
-                                  _showDeleteDialog();
-                                },
-                              ),
-                            )
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding: EdgeInsets.all(widget.options.insidePadding),
-                            child: IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.check,
-                                size: widget.options.iconSize,
-                              ),
-                              onPressed: () {
-                                widget.accept(widget.colorRamp);
-                              },
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.all(widget.options.insidePadding),
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.check,
+                              size: widget.options.iconSize,
                             ),
-                          )
-                        ),
-                      ]
-                  ),
+                            onPressed: () {
+                              widget.accept(widget.colorRamp);
+                            },
+                          ),
+                        )
+                      ),
+                    ]
                 ),
               ],
             )

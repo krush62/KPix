@@ -4,7 +4,6 @@ class KPalRampWidgetOptions
 {
   final KPalColorCardWidgetOptions colorCardWidgetOptions;
   final double padding;
-  final int leftFlex;
   final int centerFlex;
   final int rightFlex;
   final int rowLabelFlex;
@@ -20,7 +19,6 @@ class KPalRampWidgetOptions
   KPalRampWidgetOptions({
     required this.colorCardWidgetOptions,
     required this.padding,
-    required this.leftFlex,
     required this.centerFlex,
     required this.rightFlex,
     required this.minHeight,
@@ -40,7 +38,12 @@ class KPalRamp extends StatefulWidget
 {
   final KPalRampWidgetOptions options;
   final KPalRampData rampData;
-  const KPalRamp({super.key, required this.options, required this.rampData});
+  final ColorNames colorNames;
+  const KPalRamp({
+    super.key,
+    required this.options,
+    required this.rampData,
+    required this.colorNames});
 
   @override
   State<KPalRamp> createState() => _KPalRampState();
@@ -66,6 +69,7 @@ class _KPalRampState extends State<KPalRamp>
       colorCards.add(KPalColorCardWidget(
           options: widget.options.colorCardWidgetOptions,
           colorNotifier: notifier,
+          colorNames: widget.colorNames,
           isLast: notifier == widget.rampData.colors.last)
       );
     }
@@ -166,13 +170,6 @@ class _KPalRampState extends State<KPalRamp>
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            flex: widget.options.leftFlex,
-            child: Container(
-              color: Theme.of(context).primaryColor,
-              child: Text("This could be use to show some visualization")
-            ),
-          ),
           Expanded(
             flex: widget.options.centerFlex,
             child: ColoredBox(

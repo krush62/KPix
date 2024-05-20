@@ -25,12 +25,14 @@ class KPalColorCardWidgetOptions
 class KPalColorCardWidget extends StatefulWidget
 {
   final KPalColorCardWidgetOptions options;
+  final ColorNames colorNames;
   final ValueNotifier<IdColor> colorNotifier;
   final bool isLast;
 
   const KPalColorCardWidget({
     super.key,
     required this.options,
+    required this.colorNames,
     required this.colorNotifier,
     this.isLast = false,
   });
@@ -74,7 +76,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                        flex: widget.options.colorNameFlex,
                        child: Center(
                          child: Text(
-                           Helper.getColorName(currentColor.color),
+                           widget.colorNames.getColorName(currentColor.color.red, currentColor.color.green, currentColor.color.blue)
                          ),
                        )
                    ),
@@ -101,12 +103,6 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                          children: [
                            Text(
                              Helper.colorToHSVString(currentColor.color)
-                           ),
-                           Text(
-                               Helper.colorToHexString(currentColor.color)
-                           ),
-                           Text(
-                               Helper.colorToRGBString(currentColor.color)
                            ),
                          ]
                        )

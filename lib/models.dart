@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
@@ -32,6 +33,8 @@ class AppState
   late KPalConstraints _kPalConstraints;
   late KPalWidgetOptions _kPalWidgetOptions;
 
+  late ColorNames _colorNames;
+
   AppState()
   {
     for (ToolType toolType in toolList.keys)
@@ -46,12 +49,18 @@ class AppState
     setStatusBarZoomFactor(200);
   }
 
-  void setColors({required final ColorEntryWidgetOptions colorEntryWidgetOptions, required final KPalConstraints kPalConstraints, required final OverlayEntryAlertDialogOptions alertDialogOptions, required final KPalWidgetOptions kPalWidgetOptions})
+  void setColors({
+    required final ColorEntryWidgetOptions colorEntryWidgetOptions,
+    required final KPalConstraints kPalConstraints,
+    required final OverlayEntryAlertDialogOptions alertDialogOptions,
+    required final KPalWidgetOptions kPalWidgetOptions,
+    required final ColorNames colorNames})
   {
     _colorEntryWidgetOptions = colorEntryWidgetOptions;
     _kPalConstraints = kPalConstraints;
     _alertDialogOptions = alertDialogOptions;
     _kPalWidgetOptions = kPalWidgetOptions;
+    _colorNames = colorNames;
 
     colorRamps = [];
 
@@ -73,6 +82,7 @@ class AppState
           colorSelectedFn: _colorSelectionChanged,
           colorsUpdatedFn: _updateRamp,
           deleteRowFn: _deleteRamp,
+          colorNames: _colorNames,
           colorEntryWidgetOptions: _colorEntryWidgetOptions,
           appState: this,
           alertDialogOptions: _alertDialogOptions,
@@ -118,10 +128,10 @@ class AppState
         Widget currentWidget = colorRampWidgetList.value[i].widgetList[j];
         if (currentWidget is ColorEntryWidget)
         {
-          if (currentWidget.colorData.value.color.uuid == colorUuid)
+          if (currentWidget.colorData.value.uuid == colorUuid)
           {
             selectedColorId.value = colorUuid;
-            selectedColor.value = currentWidget.colorData.value.color.color;
+            selectedColor.value = currentWidget.colorData.value.color;
             return;
           }
         }

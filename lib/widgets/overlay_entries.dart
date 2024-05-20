@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kpix/color_names.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
@@ -230,10 +231,11 @@ class OverlayEntries
     required final Function() onDismiss,
     required final ColorRampFn onAccept,
     required final ColorRampFn onDelete,
-    required KPalWidgetOptions options,
-    required KPalConstraints constraints,
-    required KPalRampData colorRamp,
-    required OverlayEntryAlertDialogOptions alertDialogOptions,
+    required final KPalWidgetOptions options,
+    required final KPalConstraints constraints,
+    required final KPalRampData colorRamp,
+    required final OverlayEntryAlertDialogOptions alertDialogOptions,
+    required final ColorNames colorNames,
 
   })
   {
@@ -256,6 +258,7 @@ class OverlayEntries
                 accept: onAccept,
                 delete: onDelete,
                 alertDialogOptions: alertDialogOptions,
+                colorNames: colorNames,
               )
             ),
           ),

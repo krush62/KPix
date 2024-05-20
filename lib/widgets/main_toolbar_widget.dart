@@ -17,9 +17,11 @@ class MainToolbarWidgetOptions {
   final int paletteFlex;
   final int toolSettingsFlex;
   final double dividerHeight;
+  final double dividerPadding;
 
   const MainToolbarWidgetOptions({
     required this.paletteFlex,
+    required this.dividerPadding,
     required this.toolSettingsFlex,
     required this.dividerHeight});
 }
@@ -54,74 +56,83 @@ class MainToolbarWidget extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          //PALETTE WIDGET
-          Expanded(
-            flex: mainToolbarWidgetOptions.paletteFlex,
-            child: ValueListenableBuilder<ToolType>(
-                valueListenable: appState.selectedTool,
-                builder: (BuildContext context, ToolType value,
-                    child) {
-                  return PaletteWidget(
-                    paletteOptions: paletteWidgetOptions,
-                    appState: appState,
-                    overlayEntryOptions: overlayEntryOptions,
-                    colorChooserWidgetOptions: colorChooserWidgetOptions,
-                  );
-                }),
-          ),
-          Divider(
-            color: Theme.of(context).primaryColorDark,
-            thickness: mainToolbarWidgetOptions.dividerHeight,
-            height: mainToolbarWidgetOptions.dividerHeight,
-          ),
-
-          Material(
-            color: Theme.of(context).primaryColor,
-              child: ShaderWidget(
-                titleStyle: Theme.of(context).textTheme.titleLarge,
-                labelStyle: Theme.of(context).textTheme.bodySmall,
-                shaderWidgetOptions: shaderWidgetOptions,
-                shaderOptions: shaderOptions),
-            ),
-          Divider(
-            color: Theme.of(context).primaryColorDark,
-            thickness: mainToolbarWidgetOptions.dividerHeight,
-            height: mainToolbarWidgetOptions.dividerHeight,
-          ),
-          //TOOLS WIDGET
-          ValueListenableBuilder<ToolType>(
-              valueListenable: appState.selectedTool,
-              builder: (BuildContext context, ToolType value,
-                  child) {
-                return ToolsWidget(
-                  options: toolsWidgetOptions,
-                  changeToolFn: appState.changeTool,
-                  appState: appState,
-                );
-                //return ColorEntryWidget();
-              }),
-          Divider(
-            color: Theme.of(context).primaryColorDark,
-            thickness: mainToolbarWidgetOptions.dividerHeight,
-            height: mainToolbarWidgetOptions.dividerHeight,
-          ),
-
-          //TOOL OPTIONS
-          Expanded(
-              flex: mainToolbarWidgetOptions.toolSettingsFlex,
+    return ColoredBox(
+      color: Theme.of(context).primaryColor,
+      child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            //PALETTE WIDGET
+            Expanded(
+              flex: mainToolbarWidgetOptions.paletteFlex,
               child: ValueListenableBuilder<ToolType>(
                   valueListenable: appState.selectedTool,
                   builder: (BuildContext context, ToolType value,
                       child) {
-                    return ToolSettingsWidget(appState: appState, toolSettingsWidgetOptions: toolSettingsWidgetOptions, toolOptions: toolOptions,);
-                  }
-              )
-          )
-        ]
+                    return PaletteWidget(
+                      paletteOptions: paletteWidgetOptions,
+                      appState: appState,
+                      overlayEntryOptions: overlayEntryOptions,
+                      colorChooserWidgetOptions: colorChooserWidgetOptions,
+                    );
+                  }),
+            ),
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              endIndent: mainToolbarWidgetOptions.dividerPadding,
+              indent: mainToolbarWidgetOptions.dividerPadding,
+              thickness: mainToolbarWidgetOptions.dividerHeight,
+              height: mainToolbarWidgetOptions.dividerHeight,
+            ),
+
+            Material(
+              color: Theme.of(context).primaryColor,
+                child: ShaderWidget(
+                  titleStyle: Theme.of(context).textTheme.titleLarge,
+                  labelStyle: Theme.of(context).textTheme.bodySmall,
+                  shaderWidgetOptions: shaderWidgetOptions,
+                  shaderOptions: shaderOptions),
+              ),
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              endIndent: mainToolbarWidgetOptions.dividerPadding,
+              indent: mainToolbarWidgetOptions.dividerPadding,
+              thickness: mainToolbarWidgetOptions.dividerHeight,
+              height: mainToolbarWidgetOptions.dividerHeight,
+            ),
+            //TOOLS WIDGET
+            ValueListenableBuilder<ToolType>(
+                valueListenable: appState.selectedTool,
+                builder: (BuildContext context, ToolType value,
+                    child) {
+                  return ToolsWidget(
+                    options: toolsWidgetOptions,
+                    changeToolFn: appState.changeTool,
+                    appState: appState,
+                  );
+                  //return ColorEntryWidget();
+                }),
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              endIndent: mainToolbarWidgetOptions.dividerPadding,
+              indent: mainToolbarWidgetOptions.dividerPadding,
+              thickness: mainToolbarWidgetOptions.dividerHeight,
+              height: mainToolbarWidgetOptions.dividerHeight,
+            ),
+
+            //TOOL OPTIONS
+            Expanded(
+                flex: mainToolbarWidgetOptions.toolSettingsFlex,
+                child: ValueListenableBuilder<ToolType>(
+                    valueListenable: appState.selectedTool,
+                    builder: (BuildContext context, ToolType value,
+                        child) {
+                      return ToolSettingsWidget(appState: appState, toolSettingsWidgetOptions: toolSettingsWidgetOptions, toolOptions: toolOptions,);
+                    }
+                )
+            )
+          ]
+      ),
     );
   }
 

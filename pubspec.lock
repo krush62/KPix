@@ -216,6 +216,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
+  multi_split_view:
+    dependency: "direct main"
+    description:
+      name: multi_split_view
+      sha256: "596d71fd30f006a1b8878a2308e794f52bd0ea750f05bbaa0b18cb50c0f79325"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   path:
     dependency: transitive
     description:

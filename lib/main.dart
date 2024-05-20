@@ -9,12 +9,14 @@ import 'package:kpix/models.dart';
 import 'package:kpix/widgets/horizontal_split_view.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
+import 'package:kpix/widgets/right_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/vertical_split_view.dart';
 import 'package:kpix/widgets/listener_example.dart';
+import 'package:multi_split_view/multi_split_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -33,9 +35,7 @@ void main() {
       appWindow.maximize();
       appWindow.show();
     });
-  }
-  else
-  {
+  } else {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 }
@@ -86,10 +86,7 @@ class _KPixAppState extends State<KPixApp> {
   }
 }
 
-class MainWidget extends StatelessWidget
-{
-
-
+class MainWidget extends StatelessWidget {
   final AppState appState;
   final PreferenceManager prefs;
 
@@ -108,93 +105,110 @@ class MainWidget extends StatelessWidget
         //TOP BAR
         ColoredBox(
           color: Theme.of(context).primaryColor,
-          child: (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
-          Row(children: [
-            Expanded(
-                child: Stack(alignment: Alignment.centerLeft, children: [
-                  WindowTitleBarBox(child: MoveWindow()),
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(
-                      "KPix",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
+          child: (!kIsWeb &&
+                  (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
+              ? Row(children: [
+                  Expanded(
+                      child: Stack(alignment: Alignment.centerLeft, children: [
+                    WindowTitleBarBox(child: MoveWindow()),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        "KPix",
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  ])),
+                  Row(
+                    children: [
+                      MinimizeWindowButton(colors: windowButtonColors),
+                      MaximizeWindowButton(colors: windowButtonColors),
+                      CloseWindowButton(colors: windowButtonColors),
+                    ],
                   )
-                ])),
-            Row(
-              children: [
-                MinimizeWindowButton(colors: windowButtonColors),
-                MaximizeWindowButton(colors: windowButtonColors),
-                CloseWindowButton(colors: windowButtonColors),
-              ],
-            )
-          ])
-              :
-          const SizedBox.shrink(),
+                ])
+              : const SizedBox.shrink(),
         ),
         Expanded(
-          child: VerticalSplitView(
-              //LEFT SIDE
-              left: MainToolbarWidget(
-                appState: appState,
-                toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions,
-                toolOptions: prefs.toolOptions,
-                mainToolbarWidgetOptions: prefs.mainToolbarWidgetOptions,
-                paletteWidgetOptions: prefs.paletteWidgetOptions,
-                toolsWidgetOptions: prefs.toolsWidgetOptions,
-                shaderWidgetOptions: prefs.shaderWidgetOptions,
-                shaderOptions: prefs.shaderOptions,
-                overlayEntryOptions: prefs.overlayEntryOptions,
-                colorChooserWidgetOptions: prefs.colorChooserWidgetOptions,
-                colorEntryWidgetOptions: prefs.colorEntryOptions,
-                kPalWidgetOptions: prefs.kPalWidgetOptions,
-                kPalConstraints: prefs.kPalConstraints,
-                alertDialogOptions: prefs.alertDialogOptions,
-                colorNames: prefs.colorNames,
-                addNewRampFn: appState.addNewRamp,
-                updateRampFn: appState.updateRamp,
-                deleteRampFn: appState.deleteRamp,
-                colorSelectedFn: appState.colorSelected,
+            child: MultiSplitViewTheme(
+              data: MultiSplitViewThemeData(
+                dividerThickness: 8.0,
+                dividerPainter: DividerPainters.grooved2(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  color: Theme.of(context).primaryColorDark,
+                  highlightedColor: Theme.of(context).primaryColorLight,
+                  count: 5,
+                  highlightedCount: 9,
+                  gap: 8,
+                  animationDuration: Duration(milliseconds: 250),
+                  thickness: 4,
+                  size: 2
+                )
               ),
-              //RIGHT SIDE
-              right: HorizontalSplitView(
-                  top: Column(
+              child: MultiSplitView(
+                initialAreas: [
+                Area(builder: (context, area) {
+
+                  return MainToolbarWidget(
+                    appState: appState,
+                    toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions,
+                    toolOptions: prefs.toolOptions,
+                    mainToolbarWidgetOptions: prefs.mainToolbarWidgetOptions,
+                    paletteWidgetOptions: prefs.paletteWidgetOptions,
+                    toolsWidgetOptions: prefs.toolsWidgetOptions,
+                    shaderWidgetOptions: prefs.shaderWidgetOptions,
+                    shaderOptions: prefs.shaderOptions,
+                    overlayEntryOptions: prefs.overlayEntryOptions,
+                    colorChooserWidgetOptions: prefs.colorChooserWidgetOptions,
+                    colorEntryWidgetOptions: prefs.colorEntryOptions,
+                    kPalWidgetOptions: prefs.kPalWidgetOptions,
+                    kPalConstraints: prefs.kPalConstraints,
+                    alertDialogOptions: prefs.alertDialogOptions,
+                    colorNames: prefs.colorNames,
+                    addNewRampFn: appState.addNewRamp,
+                    updateRampFn: appState.updateRamp,
+                    deleteRampFn: appState.deleteRamp,
+                    colorSelectedFn: appState.colorSelected,
+                  );
+                },
+                flex: 2,
+                min: 2,
+                max: 3),
+                Area(builder: (context, area) {
+                  return Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      ListenerExample(
+                      /*ListenerExample(
                         options: prefs.canvasWidgetOptions,
                         appState: appState,
-                      ),
+                      ),*/
                       StatusBarWidget(
-                          options: prefs.statusBarWidgetOptions,
-                          zoomFactorString: appState.statusBarZoomFactorString,
-                          usedColorsString: appState.statusBarUsedColorsString,
-                          cursorPositionString: appState.statusBarCursorPositionString,
-                          dimensionString: appState.statusBarDimensionString,
-                          toolDimensionString: appState.statusBarToolDimensionString,
-                          toolDiagonalString: appState.statusBarToolDiagonalString,
-                          toolAspectRatioString: appState.statusBarToolAspectRatioString,
-                          toolAngleString: appState.statusBarToolAngleString,)
+                        options: prefs.statusBarWidgetOptions,
+                        zoomFactorString: appState.statusBarZoomFactorString,
+                        usedColorsString: appState.statusBarUsedColorsString,
+                        cursorPositionString:
+                            appState.statusBarCursorPositionString,
+                        dimensionString: appState.statusBarDimensionString,
+                        toolDimensionString: appState.statusBarToolDimensionString,
+                        toolDiagonalString: appState.statusBarToolDiagonalString,
+                        toolAspectRatioString:
+                            appState.statusBarToolAspectRatioString,
+                        toolAngleString: appState.statusBarToolAngleString,
+                      )
                     ],
-                  ),
-                  bottom: Text(
-                    "ANIMATION STUFF",
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  ratio: prefs.getValueD(
-                      PreferenceDouble.Layout_SplitViewHorizontal_Ratio),
-                  minRatioTop: prefs.getValueD(PreferenceDouble
-                      .Layout_SplitViewHorizontal_TopMinRatio),
-                  minRatioBottom: prefs.getValueD(PreferenceDouble
-                      .Layout_SplitViewHorizontal_BottomMinRatio)),
-              ratio: prefs.getValueD(
-                  PreferenceDouble.Layout_SplitViewVertical_Ratio),
-              minRatioLeft: prefs.getValueD(
-                  PreferenceDouble.Layout_SplitViewVertical_LeftMinRatio),
-              minRatioRight: prefs.getValueD(
-                  PreferenceDouble.Layout_SplitViewVertical_RightMinRatio)),
-        ),
+                  );
+                },
+                flex: 12),
+                Area(builder: (context, area){
+                 return RightBarWidget(
+                   overlayEntrySubMenuOptions: prefs.overlayEntryOptions,
+                   mainButtonWidgetOptions: prefs.mainButtonWidgetOptions,
+                 );
+                }, flex: 1, max: 2, min: 1)
+                        ],
+                      ),
+            )),
       ],
     );
   }

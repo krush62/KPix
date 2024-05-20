@@ -14,6 +14,7 @@ import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/wand_options.dart';
+import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
@@ -97,6 +98,9 @@ enum PreferenceDouble
   Layout_OverlayAlertDialog_IconSize(defaultValue: 32.0),
   Layout_OverlayAlertDialog_Elevation(defaultValue: 8.0),
 
+  Layout_MainButton_Padding(defaultValue: 8.0),
+  Layout_MainButton_MenuIconSize(defaultValue: 16.0),
+  Layout_MainButton_DividerSize(defaultValue: 2.0),
 
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
@@ -313,6 +317,7 @@ class PreferenceManager
   late StatusBarWidgetOptions statusBarWidgetOptions;
   late OverlayEntrySubMenuOptions overlayEntryOptions;
   late OverlayEntryAlertDialogOptions alertDialogOptions;
+  late MainButtonWidgetOptions mainButtonWidgetOptions;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
@@ -468,6 +473,10 @@ class PreferenceManager
         borderRadius: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderRadius),
         iconSize: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_IconSize),
         elevation: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation));
+    mainButtonWidgetOptions = MainButtonWidgetOptions(
+        padding: getValueD(PreferenceDouble.Layout_MainButton_Padding),
+        menuIconSize: getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),
+        dividerSize: getValueD(PreferenceDouble.Layout_MainButton_DividerSize));
   }
 
   void loadToolOptions()

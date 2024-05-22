@@ -49,7 +49,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -61,6 +61,100 @@ flutter:
     - family: KPixIcons
       fonts:
         - asset: fonts/KPix.ttf
+    - family: "Alkhemikal"
+      fonts:
+        - asset: fonts/Alkhemikal.ttf
+    - family: "Cartridge"
+      fonts:
+        - asset: fonts/Cartridge.ttf
+    - family: "Comicoro"
+      fonts:
+        - asset: fonts/Comicoro.ttf
+    - family: "Digital Disco"
+      fonts:
+        - asset: fonts/DigitalDisco.ttf
+    - family: "Digital Disco Thin"
+      fonts:
+        - asset: fonts/DigitalDisco-Thin.ttf
+    - family: "Enchanted Sword"
+      fonts:
+        - asset: fonts/EnchantedSword.ttf
+    - family: "Enter Command"
+      fonts:
+        - asset: fonts/EnterCommand.ttf
+    - family: "Enter Command Bold"
+      fonts:
+        - asset: fonts/EnterCommand-Bold.ttf
+    - family: "Enter Command Italic"
+      fonts:
+        - asset: fonts/EnterCommand-Italic.ttf
+    - family: "Five By Five"
+      fonts:
+        - asset: fonts/FiveByFive.ttf
+    - family: "Grape Soda"
+      fonts:
+        - asset: fonts/GrapeSoda.ttf
+    - family: "Kapel"
+      fonts:
+        - asset: fonts/Kapel.ttf
+    - family: "Kiwi Soda"
+      fonts:
+        - asset: fonts/KiwiSoda.ttf
+    - family: "Larceny"
+      fonts:
+        - asset: fonts/Larceny.ttf
+    - family: "Lunch Menu"
+      fonts:
+        - asset: fonts/LunchMenu.ttf
+    - family: "Lychee Soda"
+      fonts:
+        - asset: fonts/LycheeSoda.ttf
+    - family: "Microserif"
+      fonts:
+        - asset: fonts/Microserif.ttf
+    - family: "Mousetrap"
+      fonts:
+        - asset: fonts/mousetrap.ttf
+    - family: "Mousetrap 2"
+      fonts:
+        - asset: fonts/mousetrap2.ttf
+    - family: "Neutrino"
+      fonts:
+        - asset: fonts/Neutrino.ttf
+    - family: "Notepen"
+      fonts:
+        - asset: fonts/Notepen.ttf
+    - family: "Optixal"
+      fonts:
+        - asset: fonts/Optixal.ttf
+    - family: "Owre Kynge"
+      fonts:
+        - asset: fonts/OwreKynge.ttf
+    - family: "Pear Soda"
+      fonts:
+        - asset: fonts/PearSoda.ttf
+    - family: "Planetary Contact"
+      fonts:
+        - asset: fonts/PlanetaryContact.ttf
+    - family: "Poco"
+      fonts:
+        - asset: fonts/Poco.ttf
+    - family: "Quadrunde"
+      fonts:
+        - asset: fonts/Quadrunde.ttf
+    - family: "Root Beer"
+      fonts:
+        - asset: fonts/RootBeer.ttf
+    - family: "Scriptorium"
+      fonts:
+        - asset: fonts/Scriptorium.ttf
+    - family: "Squarewave"
+      fonts:
+        - asset: fonts/Squarewave.ttf
+    - family: "Squarewave Bold"
+      fonts:
+        - asset: fonts/Squarewave-Bold.ttf
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

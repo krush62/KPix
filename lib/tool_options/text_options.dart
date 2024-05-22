@@ -1,39 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
-
-enum TextFont
-{
-  font1,
-  font2,
-  font3,
-  font4
-}
-
-const List<TextFont> textFontList =
-[
-  TextFont.font1,
-  TextFont.font2,
-  TextFont.font3,
-  TextFont.font4
-];
-
-const Map<int, TextFont> _textFontIndexMap =
-{
-  0: TextFont.font1,
-  1: TextFont.font2,
-  2: TextFont.font3,
-  3: TextFont.font4
-};
-
-const Map<TextFont, String> textFontStringMap =
-{
-  TextFont.font1: "Font 1",
-  TextFont.font2: "Font 2",
-  TextFont.font3: "Font 3",
-  TextFont.font4: "Font 4"
-};
 
 class TextOptions
 {
@@ -43,10 +12,12 @@ class TextOptions
   final int sizeDefault;
   final String textDefault;
   final int maxLength;
+  final FontManager fontManager;
 
-  TextFont font = TextFont.font1;
   int size = 1;
+  late PixelFontType font;
   String text = "Text";
+
 
   TextOptions({
     required this.fontDefault,
@@ -54,11 +25,12 @@ class TextOptions
     required this.sizeMax,
     required this.sizeDefault,
     required this.textDefault,
-    required this.maxLength
+    required this.maxLength,
+    required this.fontManager
   })
   {
-    font = textFontList[fontDefault] ?? TextFont.font1;
     size = sizeDefault;
+    font = pixelFontIndexMap[fontDefault]!;
     text = textDefault;
   }
 
@@ -99,11 +71,11 @@ class TextOptions
                   dropdownColor: Theme.of(context).primaryColorDark,
                   focusColor: Theme.of(context).primaryColor,
                   isExpanded: true,
-                  onChanged: (TextFont? tFont) {textFontChanged!(tFont!);},
-                  items: textFontList.map<DropdownMenuItem<TextFont>>((TextFont value) {
-                    return DropdownMenuItem<TextFont>(
+                  onChanged: (PixelFontType? type) {textFontChanged!(type!);},
+                  items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType value) {
+                    return DropdownMenuItem<PixelFontType>(
                       value: value,
-                      child: Text(textFontStringMap[value]!),
+                      child: Text(FontManager.getFontName(value), style: Theme.of(context).textTheme.titleLarge?.apply(fontFamily: FontManager.getFontName(value)),),
                     );
                   }).toList(),
                 )

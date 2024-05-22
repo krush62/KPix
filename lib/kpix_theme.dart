@@ -120,6 +120,8 @@ class KPixTheme {
         brightness: Brightness.dark
     ),
 
+    fontFamily: "PixelFonts",
+
     textTheme: const TextTheme(
       displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),

@@ -1,3 +1,4 @@
+import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
@@ -31,7 +32,7 @@ typedef EraserSizeChanged =  void Function(double newVal);
 typedef EraserShapeChanged = void Function(EraserShape newShape);
 typedef TextTextChanged = void Function(String newText);
 typedef TextSizeChanged = void Function(double newVal);
-typedef TextFontChanged = void Function(TextFont newFont);
+typedef TextFontChanged = void Function(PixelFontType newFont);
 typedef SprayCanRadiusChanged = void Function(double newVal);
 typedef SprayCanBlobSizeChanged = void Function(double newVal);
 typedef SprayCanIntensityChanged = void Function(double newVal);

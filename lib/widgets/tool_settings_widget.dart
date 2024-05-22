@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
@@ -154,7 +155,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   }
 
   // TEXT CALLBACKS
-  void _textFontChanged(final TextFont newFont)
+  void _textFontChanged(final PixelFontType newFont)
   {
     setState(() {
       widget.toolOptions.textOptions.font = newFont;

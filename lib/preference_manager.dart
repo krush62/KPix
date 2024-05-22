@@ -1,6 +1,7 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:kpix/color_names.dart';
+import 'package:kpix/font_manager.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/curve_options.dart';
@@ -334,6 +335,8 @@ class PreferenceManager
 
   late ColorNames colorNames;
 
+  final FontManager fontManager = FontManager();
+
   PreferenceManager(SharedPreferences prefs) : _prefs = prefs
   {
     _init();
@@ -530,6 +533,7 @@ class PreferenceManager
         sizeDefault: getValueI(PreferenceInt.Tool_Eraser_Size),
         shapeDefault: getValueI(PreferenceInt.Tool_Eraser_Shape));
     TextOptions textOptions = TextOptions(
+        fontManager: fontManager,
         fontDefault: getValueI(PreferenceInt.Tool_Text_Font),
         sizeMin: getValueI(PreferenceInt.Tool_Text_SizeMin),
         sizeMax: getValueI(PreferenceInt.Tool_Text_SizeMax),

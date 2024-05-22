@@ -3,6 +3,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models.dart';
@@ -60,7 +61,8 @@ class _KPixAppState extends State<KPixApp> {
 
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
-    prefs = PreferenceManager(sPrefs);
+    Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
+    prefs = PreferenceManager(sPrefs, FontManager(kFontMap: fontMap));
     appState = AppState(kPalConstraints: prefs.kPalConstraints);
     //TODO TEMP
     appState.addNewRamp();

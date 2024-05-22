@@ -1,8 +1,6 @@
-
-
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:kpix/helper.dart';
 
 enum ColorNameScheme
@@ -73,17 +71,30 @@ class ColorNames
 {
   final ColorNamesOptions options;
   List<NamedColor> colorList = [];
+  bool colorsLoaded = false;
+
+  void _processColorData(final String data)
+  {
+    LineSplitter ls = LineSplitter();
+    List<String> lines = ls.convert(data);
+    for(final String line in lines)
+    {
+      _processLine(line);
+    }
+
+
+    colorsLoaded = true;
+  }
+
 
   ColorNames({
    required this.options
   })
   {
-    final String path = "${options.colorNamePath}/${options.colorFilename}";
-    File(path)
-        .openRead()
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .forEach((l) => _processLine(l));
+    rootBundle.loadString("${options.colorNamePath}/${options.colorFilename}").then((value) {
+      _processColorData(value);
+    });
+
   }
 
   void _processLine(final String line)
@@ -104,22 +115,20 @@ class ColorNames
   {
     //TODO magic string
     String bestName = "<UNKNOWN>";
-    double bestDelta = 100;
-    for (final NamedColor c in colorList)
-    {
-      if (r == c.r && g == c.g && b == c.b)
-      {
-        bestName = c.name;
-        bestDelta = 0.0;
-        break;
-      }
-      else
-      {
-        double delta = Helper.getDeltaE(r, g, b, c.r, c.g, c.b);
-        if (delta < bestDelta)
-        {
-          bestDelta = delta;
+    if (colorsLoaded) {
+      double bestDelta = 100;
+      for (final NamedColor c in colorList) {
+        if (r == c.r && g == c.g && b == c.b) {
           bestName = c.name;
+          bestDelta = 0.0;
+          break;
+        }
+        else {
+          double delta = Helper.getDeltaE(r, g, b, c.r, c.g, c.b);
+          if (delta < bestDelta) {
+            bestDelta = delta;
+            bestName = c.name;
+          }
         }
       }
     }

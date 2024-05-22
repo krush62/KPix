@@ -75,7 +75,7 @@ class TextOptions
                   items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType value) {
                     return DropdownMenuItem<PixelFontType>(
                       value: value,
-                      child: Text(FontManager.getFontName(value), style: Theme.of(context).textTheme.titleLarge?.apply(fontFamily: FontManager.getFontName(value)),),
+                      child: Text(FontManager.getFontName(value), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(value)),),
                     );
                   }).toList(),
                 )

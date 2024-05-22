@@ -335,9 +335,9 @@ class PreferenceManager
 
   late ColorNames colorNames;
 
-  final FontManager fontManager = FontManager();
+  late FontManager _fontManager;
 
-  PreferenceManager(SharedPreferences prefs) : _prefs = prefs
+  PreferenceManager(final SharedPreferences prefs, final FontManager fontManager) : _prefs = prefs, _fontManager = fontManager
   {
     _init();
     loadWidgetOptions();
@@ -533,7 +533,7 @@ class PreferenceManager
         sizeDefault: getValueI(PreferenceInt.Tool_Eraser_Size),
         shapeDefault: getValueI(PreferenceInt.Tool_Eraser_Shape));
     TextOptions textOptions = TextOptions(
-        fontManager: fontManager,
+        fontManager: _fontManager,
         fontDefault: getValueI(PreferenceInt.Tool_Text_Font),
         sizeMin: getValueI(PreferenceInt.Tool_Text_SizeMin),
         sizeMax: getValueI(PreferenceInt.Tool_Text_SizeMax),

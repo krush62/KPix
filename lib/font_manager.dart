@@ -2,6 +2,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
+
 
 //TODO FIX BROKEN FONTS
 
@@ -195,19 +197,24 @@ class FontManager
     return _pixelFontNameMap[type]!;
   }
 
-  Map<PixelFontType, KFont> kFontMap = {};
+  final Map<PixelFontType, KFont> kFontMap;
 
-  FontManager()
+  FontManager({required this.kFontMap});
+
+  static Future<Map<PixelFontType, KFont>> readFonts() async
   {
+    Map<PixelFontType, KFont> fontMap = {};
     for (final MapEntry<PixelFontType, String> mapEntry in _pixelFontFileMap.entries)
     {
-      kFontMap[mapEntry.key] = readFontFromFile(fontPath + "/" + mapEntry.value + kFontExtension, _pixelFontNameMap[mapEntry.key]!);
+     fontMap[mapEntry.key] = await _readFontFromFile(fontPath + "/" + mapEntry.value + kFontExtension, _pixelFontNameMap[mapEntry.key]!);
     }
+    return fontMap;
   }
 
-  KFont readFontFromFile(final String filename, final String fontName) {
-    final File file = File(filename);
-    final Uint8List bytes = file.readAsBytesSync();
+
+  static Future<KFont> _readFontFromFile(final String filename, final String fontName) async {
+    final ByteData byteData = await rootBundle.load(filename);
+    final Uint8List bytes = byteData.buffer.asUint8List();
 
     final ByteData data = bytes.buffer.asByteData();
 

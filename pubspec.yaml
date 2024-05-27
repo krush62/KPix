@@ -34,6 +34,7 @@ dependencies:
   bitsdojo_window: ^0.1.6
   font_awesome_flutter: ^10.7.0
   multi_split_view: ^3.1.0
+  flutter_launcher_icons: ^0.13.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -53,6 +54,7 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -158,6 +160,7 @@ flutter:
   assets:
     - color_names/
     - fonts/
+    - imgs/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -194,3 +197,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  image_path: "imgs/kpix_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "imgs/kpix_icon.png"
+    background_color: "#0c0e0f"
+    theme_color: "#dfe6e1"
+  windows:
+    generate: true
+    image_path: "imgs/kpix_icon.png"
+    icon_size: 128

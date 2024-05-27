@@ -74,7 +74,22 @@ class _KPixAppState extends State<KPixApp> {
   Widget build(BuildContext context) {
     if (!prefsInitialized) {
       return MaterialApp(
-        home: const Text("LOADING"),
+        home: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Stack(
+            children: [
+              Center(
+                child: Image.asset(
+                  "imgs/kpix_icon.png"
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Text("Loading...", style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight))
+              )
+            ]
+          ),
+        ),
         theme: KPixTheme.monochromeTheme,
         darkTheme: KPixTheme.monochromeThemeDark,
       );

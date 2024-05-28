@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/main.dart';
+import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -47,6 +48,7 @@ enum PreferenceDouble
   Layout_SplitView_FlexRightDefault(defaultValue: 2.0),
 
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
+  Layout_Canvas_StylusZoomStepDistance(defaultValue: 10.0),
 
   Layout_Tools_Padding(defaultValue: 8.0),
   Layout_Tools_IconSize(defaultValue: 16.0),
@@ -143,7 +145,6 @@ enum PreferenceDouble
   KPalColorCard_Layout_OutsidePadding(defaultValue: 8.0),
 
 
-
   ;
 
   const PreferenceDouble({
@@ -159,7 +160,7 @@ enum PreferenceInt
   Layout_SplitView_GrooveCountMax(defaultValue: 9),
   Layout_SplitView_AnimationLength(defaultValue: 250),
 
-  Layout_Canvas_LongPressDuration(defaultValue: 1000),
+  Layout_Canvas_LongPressDuration(defaultValue: 500),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
@@ -251,6 +252,8 @@ enum PreferenceInt
   KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
 
   ColorNames_Scheme(defaultValue: 0),
+
+  Painter_CheckerboardSize(defaultValue: 8),
 
 
   ;
@@ -346,6 +349,8 @@ class PreferenceManager
   late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
 
+  late KPixPainterOptions kPixPainterOptions;
+
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
 
@@ -363,6 +368,7 @@ class PreferenceManager
     loadToolOptions();
     loadKPalOptions();
     loadColorNames();
+    loadPainterOptions();
 
   }
 
@@ -449,7 +455,8 @@ class PreferenceManager
     canvasWidgetOptions = CanvasOptions(
         stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
         longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
-        longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance));
+        longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),
+        stylusZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance));
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Tools_Padding),
         colCount: getValueI(PreferenceInt.Layout_Tools_ColCount),
@@ -534,6 +541,7 @@ class PreferenceManager
         dragTargetHeight: getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
         dragTargetShowDuration: getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
         dragDelay: getValueI(PreferenceInt.Layout_LayerWidget_DragDelay));
+
   }
 
   void loadToolOptions()
@@ -679,6 +687,13 @@ class PreferenceManager
 
     colorNames = ColorNames(options: options);
 
+  }
+
+  void loadPainterOptions()
+  {
+    kPixPainterOptions = KPixPainterOptions(
+        checkerBoardSize: getValueI(PreferenceInt.Painter_CheckerboardSize)
+    );
   }
 
 }

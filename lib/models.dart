@@ -10,6 +10,7 @@ import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 
+
 class AppState
 {
   final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
@@ -18,17 +19,21 @@ class AppState
   final ValueNotifier<String> selectedColorId = ValueNotifier("");
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
 
+  static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200];
+  int _zoomLevelIndex = 0;
+
   //StatusBar
   final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarCursorPositionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarUsedColorsString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarZoomFactorString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarToolDimensionString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarToolDiagonalString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarToolAspectRatioString = ValueNotifier(null);
   final ValueNotifier<String?> statusBarToolAngleString = ValueNotifier(null);
 
-
+  int canvasWidth = 0;
+  int canvasHeight = 0;
+  //ValueNotifier<bool> shouldRepaint = ValueNotifier(false);
 
   final KPalConstraints kPalConstraints;
 
@@ -39,13 +44,58 @@ class AppState
       _selectionMap[toolType] = false;
     }
     setToolSelection(ToolType.pencil);
+    setStatusBarZoomFactor(getZoomLevel());
+
     //TODO TEMP
-    setStatusBarColorCount(123);
-    setStatusBarCursorPosition(123, 456);
     setStatusBarDimensions(200, 400);
-    setStatusBarZoomFactor(200);
+
   }
 
+  void setCanvasDimensions({required int width, required int height})
+  {
+    canvasWidth = width;
+    canvasHeight = height;
+    //shouldRepaint.value = true;
+  }
+
+  int getZoomLevel()
+  {
+    return _zoomLevels[_zoomLevelIndex];
+  }
+
+  void increaseZoomLevel()
+  {
+    if (_zoomLevelIndex < _zoomLevels.length - 1)
+    {
+      _zoomLevelIndex++;
+      setStatusBarZoomFactor(getZoomLevel());
+      //shouldRepaint.value = true;
+    }
+  }
+
+  void decreaseZoomLevel()
+  {
+    if (_zoomLevelIndex > 0)
+    {
+      _zoomLevelIndex--;
+      setStatusBarZoomFactor(getZoomLevel());
+      //shouldRepaint.value = true;
+    }
+  }
+
+  void setZoomLevelByDistance(final int startZoomLevel, final int steps)
+  {
+    if (steps != 0)
+    {
+      int endIndex = _zoomLevels.indexOf(startZoomLevel) + steps;
+      if (endIndex < _zoomLevels.length && endIndex >= 0 && endIndex != _zoomLevelIndex)
+      {
+         _zoomLevelIndex = endIndex;
+         setStatusBarZoomFactor(getZoomLevel());
+         //shouldRepaint.value = true;
+      }
+    }
+  }
 
   void deleteRamp(final KPalRampData ramp)
   {
@@ -76,12 +126,13 @@ class AppState
     colorRamps.value = rampDataList;
   }
 
-  void addNewLayer(final LayerState newState)
+  void addNewLayer()
   {
     List<LayerState> layerList = [];
-    layerList.add(newState);
+    layerList.add(LayerState(width: canvasWidth, height: canvasHeight, color: Colors.primaries[Random().nextInt(Colors.primaries.length)], appState: this));
     layerList.addAll(layers.value);
     layers.value = layerList;
+    //shouldRepaint.value = true;
   }
 
   void changeLayerOrder(final LayerState state, final int newPosition)
@@ -109,12 +160,12 @@ class AppState
         }
       layers.value = stateList;
     }
-
+    //shouldRepaint.value = true;
   }
 
   void addNewLayerPressed()
   {
-    addNewLayer(LayerState());
+    addNewLayer();
   }
 
   void layerSelected(final LayerState selectedState)
@@ -154,12 +205,15 @@ class AppState
 
       layers.value = stateList;
     }
+    //shouldRepaint.value = true;
   }
 
   void layerMerged(final LayerState mergeState)
   {
     //TODO
     print("MERGE ME");
+
+    //shouldRepaint.value= true;
   }
 
   void layerDuplicated(final LayerState duplicateState)
@@ -169,8 +223,7 @@ class AppState
     {
       if (layers.value[i] == duplicateState)
       {
-        LayerState layerState = LayerState();
-        layerState.content.value = layers.value[i].content.value;
+        LayerState layerState = LayerState(width: canvasWidth, height: canvasHeight, color: layers.value[i].color.value, appState: this);
         layerState.lockState.value = layers.value[i].lockState.value;
         layerState.visibilityState.value = layers.value[i].visibilityState.value;
         stateList.add(layerState);
@@ -178,6 +231,7 @@ class AppState
       stateList.add(layers.value[i]);
     }
     layers.value = stateList;
+    //shouldRepaint.value = true;
   }
 
   void colorSelected(final String uuid)
@@ -204,16 +258,6 @@ class AppState
   void hideStatusBarCursorPosition()
   {
     statusBarCursorPositionString.value = null;
-  }
-
-  void setStatusBarColorCount(final int colorCount)
-  {
-    statusBarUsedColorsString.value = "$colorCount colors";
-  }
-
-  void hideStatusBarColorCount()
-  {
-    statusBarUsedColorsString.value = null;
   }
 
   void setStatusBarZoomFactor(final int zoomFactor)

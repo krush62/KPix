@@ -21,7 +21,6 @@ class StatusBarWidget extends StatefulWidget
 {
   final ValueNotifier<String?> dimensionString;
   final ValueNotifier<String?> cursorPositionString;
-  final ValueNotifier<String?> usedColorsString;
   final ValueNotifier<String?> zoomFactorString;
   final ValueNotifier<String?> toolDimensionString;
   final ValueNotifier<String?> toolDiagonalString;
@@ -39,7 +38,6 @@ class StatusBarWidget extends StatefulWidget
     required this.options,
     required this.dimensionString,
     required this.cursorPositionString,
-    required this.usedColorsString,
     required this.zoomFactorString,
     required this.toolAngleString,
     required this.toolAspectRatioString,
@@ -52,7 +50,6 @@ class StatusBarWidget extends StatefulWidget
     required StatusBarWidgetOptions options,
     required ValueNotifier<String?> dimensionString,
     required ValueNotifier<String?> cursorPositionString,
-    required ValueNotifier<String?> usedColorsString,
     required ValueNotifier<String?> zoomFactorString,
     required ValueNotifier<String?> toolAngleString,
     required ValueNotifier<String?> toolAspectRatioString,
@@ -66,7 +63,6 @@ class StatusBarWidget extends StatefulWidget
         options: options,
         dimensionString: dimensionString,
         cursorPositionString: cursorPositionString,
-        usedColorsString: usedColorsString,
         zoomFactorString: zoomFactorString,
         toolAngleString: toolAngleString,
         toolAspectRatioString: toolAspectRatioString,
@@ -115,19 +111,6 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                     child: _StatusBarWidgetEntry(
                       listenable: widget.cursorPositionString,
                       icon: FontAwesomeIcons.locationCrosshairs,
-                      iconSize: widget.iconSize,
-                      padding: widget.options.padding,
-                    )
-                  ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: _StatusBarWidgetEntry(
-                      listenable: widget.usedColorsString,
-                      icon: FontAwesomeIcons.palette,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     )

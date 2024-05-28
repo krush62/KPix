@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/painting/kpix_painter.dart';
 
 
 class CanvasOptions
@@ -9,8 +11,13 @@ class CanvasOptions
   final int stylusPollRate;
   final int longPressDuration;
   final double longPressCancelDistance;
+  final double stylusZoomStepDistance;
 
-  CanvasOptions({required this.stylusPollRate, required this.longPressDuration, required this.longPressCancelDistance});
+  CanvasOptions({
+    required this.stylusPollRate,
+    required this.longPressDuration,
+    required this.longPressCancelDistance,
+    required this.stylusZoomStepDistance});
 }
 
 
@@ -20,11 +27,13 @@ class ListenerExample extends StatefulWidget {
       {
         required this.options,
         required this.appState,
+        required this.kPixPainterOptions,
         super.key
       });
 
   final CanvasOptions options;
   final AppState appState;
+  final KPixPainterOptions kPixPainterOptions;
   @override
   State<ListenerExample> createState() => _ListenerExampleState();
 }
@@ -41,13 +50,25 @@ class _ListenerExampleState extends State<ListenerExample> {
   late final double maxLongPressDistance;
   late Timer timerLongPress;
   late Offset pressStartLoc;
+  late Offset secondaryStartLoc;
+  bool needSecondaryStartLoc = false;
   bool primaryIsDown = false;
   bool secondaryIsDown = false;
+  bool stylusZoomStarted = false;
+  int stylusZoomStartLevel = 100;
 
   late Timer timerStylusBtnPoll;
   late Timer timerStylusBtnLongPress;
+  bool timerStylusRunning = false;
   bool stylusButtonDetected = false;
   bool stylusButtonDown = false;
+  bool stylusButtonLongDown = false;
+
+  late Offset dragStartLoc;
+  late Offset oldCanvasOffset;
+  bool isDragging = false;
+
+  ValueNotifier<Offset> canvasOffset = ValueNotifier(Offset(0.0, 0.0));
 
 
   @override
@@ -60,16 +81,16 @@ class _ListenerExampleState extends State<ListenerExample> {
 
   void updateDetails(String s)
   {
-    setState(() {
+    //setState(() {
       _details = s;
-    });
+    //});
   }
 
   void updatePressure(double p)
   {
-    setState(() {
+    //setState(() {
       pressure = p;
-    });
+    //});
   }
 
   void handleTimeoutLongPress() {
@@ -99,10 +120,14 @@ class _ListenerExampleState extends State<ListenerExample> {
 
       updateDetails("PRIMARY DOWN");
     }
-    else if (details.buttons == kSecondaryButton)
+    else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
-      secondaryIsDown = true;
-      stylusBtnDown();
+        secondaryIsDown = true;
+    }
+    else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
+    {
+      dragStartLoc = details.localPosition;
+      isDragging = true;
     }
   }
 
@@ -118,13 +143,18 @@ class _ListenerExampleState extends State<ListenerExample> {
       timerLongPress.cancel();
       primaryIsDown = false;
     }
-    else if (secondaryIsDown)
+    else if (secondaryIsDown && details.kind == PointerDeviceKind.mouse)
     {
-      stylusBtnUp();
       secondaryIsDown = false;
+    }
+    else if (isDragging && details.kind == PointerDeviceKind.mouse)
+    {
+      isDragging = false;
     }
     timerRunning = false;
   }
+
+
 
   void _updateLocation(PointerEvent details) {
     x = details.localPosition.dx;
@@ -139,26 +169,51 @@ class _ListenerExampleState extends State<ListenerExample> {
 
     }
 
+    if (needSecondaryStartLoc)
+    {
+      secondaryStartLoc = details.localPosition;
+      needSecondaryStartLoc = false;
+    }
 
-    setState(() {
+    if (stylusZoomStarted)
+    {
+      double yOffset = secondaryStartLoc.dy - y;
+      int zoomSteps = (yOffset / widget.options.stylusZoomStepDistance).round();
+      widget.appState.setZoomLevelByDistance(stylusZoomStartLevel, zoomSteps);
+    }
 
-      if (details.kind == PointerDeviceKind.stylus)
-      {
-        pressure = details.pressure;
-      }
-      else
-      {
-        pressure = 0.0;
-      }
+    if (details.kind == PointerDeviceKind.stylus)
+    {
+      pressure = details.pressure;
+    }
+    else
+    {
+      pressure = 0.0;
+    }
+
+    //setState(() {
 
       Offset co = Offset(x, y);
-      if (timerRunning) {
-        if ((pressStartLoc - co).distance > maxLongPressDistance) {
-          timerLongPress.cancel();
-          timerRunning = false;
-        }
+      if (timerRunning && (pressStartLoc - co).distance > maxLongPressDistance)
+      {
+        timerLongPress.cancel();
+        timerRunning = false;
       }
-    });
+      if (timerStylusRunning && (secondaryStartLoc - co).distance > maxLongPressDistance)
+      {
+        timerStylusBtnLongPress.cancel();
+        timerStylusRunning = false;
+        isDragging = true;
+        dragStartLoc = co;
+      }
+    //});
+
+    if (isDragging)
+    {
+      canvasOffset.value  = canvasOffset.value - (dragStartLoc - co);
+      dragStartLoc = co;
+    }
+
   }
 
   void _hover(PointerHoverEvent details)
@@ -170,19 +225,40 @@ class _ListenerExampleState extends State<ListenerExample> {
 
   }
 
+  void _scroll(PointerSignalEvent ev)
+  {
+    if (ev is PointerScrollEvent)
+    {
+      if (ev.scrollDelta.dy < 0.0)
+      {
+        widget.appState.increaseZoomLevel();
+      }
+      else if (ev.scrollDelta.dy > 0.0)
+      {
+        widget.appState.decreaseZoomLevel();
+      }
+    }
+  }
+
   void _stylusBtnTimeout(Timer t)
   {
     if (stylusButtonDetected && !stylusButtonDown)
     {
+      needSecondaryStartLoc = true;
       stylusButtonDown = true;
       stylusBtnDown();
       timerStylusBtnLongPress = Timer(timeoutLongPress, handleTimeoutStylusBtnLongPress);
+      timerStylusRunning = true;
     }
     else if (!stylusButtonDetected && stylusButtonDown)
     {
+      needSecondaryStartLoc = false;
       stylusBtnUp();
       stylusButtonDown = false;
       timerStylusBtnLongPress.cancel();
+      timerStylusRunning = false;
+      stylusZoomStarted = false;
+      isDragging = false;
     }
     stylusButtonDetected = false;
   }
@@ -200,6 +276,9 @@ class _ListenerExampleState extends State<ListenerExample> {
   void handleTimeoutStylusBtnLongPress()
   {
     updateDetails("STYLUS BTN LONG PRESS");
+    timerStylusRunning = false;
+    stylusZoomStarted = true;
+    stylusZoomStartLevel = widget.appState.getZoomLevel();
   }
 
   @override
@@ -210,9 +289,22 @@ class _ListenerExampleState extends State<ListenerExample> {
         onPointerMove: _updateLocation,
         onPointerUp: _buttonUp,
         onPointerHover: _hover,
-        child: ColoredBox(
+        onPointerSignal: _scroll,
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
           color: Theme.of(context).primaryColorDark,
-          child: Column(
+          child: CustomPaint(
+            painter: KPixPainter(
+              appState: widget.appState,
+              offset: canvasOffset,
+              options: widget.kPixPainterOptions,
+              checkerboardColor1: Theme.of(context).primaryColor,
+              checkerboardColor2: Theme.of(context).primaryColorLight,
+
+            )
+          )
+          /*child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -232,7 +324,7 @@ class _ListenerExampleState extends State<ListenerExample> {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ],
-          ),
+          ),*/
         ),
       ),
     );

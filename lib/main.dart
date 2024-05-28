@@ -66,19 +66,15 @@ class _KPixAppState extends State<KPixApp> {
     prefs = PreferenceManager(sPrefs, FontManager(kFontMap: fontMap));
     appState = AppState(kPalConstraints: prefs.kPalConstraints);
     //TODO TEMP
+    appState.setCanvasDimensions(width: 32, height: 32);
     appState.addNewRamp();
-    LayerState l1 = LayerState();
-    l1.setContent(Colors.red);
-    LayerState l2 = LayerState();
-    l2.setContent(Colors.green);
-    LayerState l3 = LayerState();
-    l3.setContent(Colors.blue);
-    LayerState l4 = LayerState();
-    l4.setContent(Colors.yellow);
-    appState.addNewLayer(l1);
-    appState.addNewLayer(l2);
-    appState.addNewLayer(l3);
-    appState.addNewLayer(l4);
+    appState.addNewRamp();
+    appState.addNewRamp();
+    appState.addNewRamp();
+    appState.addNewLayer();
+    appState.addNewLayer();
+    appState.addNewLayer();
+    appState.addNewLayer();
     prefsInitialized = true;
     setState(() {});
   }
@@ -179,7 +175,6 @@ class MainWidget extends StatelessWidget {
               child: MultiSplitView(
                 initialAreas: [
                 Area(builder: (context, area) {
-
                   return MainToolbarWidget(
                     appState: appState,
                     toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions,
@@ -212,11 +207,11 @@ class MainWidget extends StatelessWidget {
                       ListenerExample(
                         options: prefs.canvasWidgetOptions,
                         appState: appState,
+                        kPixPainterOptions: prefs.kPixPainterOptions,
                       ),
                       StatusBarWidget(
                         options: prefs.statusBarWidgetOptions,
                         zoomFactorString: appState.statusBarZoomFactorString,
-                        usedColorsString: appState.statusBarUsedColorsString,
                         cursorPositionString:
                             appState.statusBarCursorPositionString,
                         dimensionString: appState.statusBarDimensionString,

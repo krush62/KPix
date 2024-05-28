@@ -1,5 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/models.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -62,17 +66,46 @@ const Map<int, LayerLockState> layerLockStateValueMap =
   2: LayerLockState.locked
 };
 
+class ColorReference
+{
+  final KPalRampData ramp;
+  final int colorIndex;
+  ColorReference({required this.colorIndex, required this.ramp});
+}
+
 class LayerState
 {
+
+
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier(LayerVisibilityState.visible);
   final ValueNotifier<LayerLockState> lockState = ValueNotifier(LayerLockState.unlocked);
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
-  final ValueNotifier<Color> content = ValueNotifier(Colors.green);
+  //TODO TEMP
+  final ValueNotifier<Color> color;
 
-  void setContent(final Color c)
+  //TODO TEMP
+  final AppState appState;
+
+  final List<List<ColorReference?>> data;
+
+  LayerState._({required this.data, required this.color, required this.appState});
+
+
+  factory LayerState({required int width, required int height, required Color color, required AppState appState})
   {
-    content.value = c;
+    List<List<ColorReference?>> data = List.generate(height + 1, (i) => List.filled(width + 1, null, growable: false), growable: false);
+    
+    //TODO TEMP
+    for (int i = 0; i < 200; i++)
+    {
+      KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
+      data[Random().nextInt(width)][Random().nextInt(height)] = ColorReference(colorIndex: Random().nextInt(ramp.colors.length), ramp: ramp);
+    }
+    
+    ValueNotifier<Color> vnColor = ValueNotifier(color);
+    return LayerState._(data: data, color: vnColor, appState: appState);
   }
+
 }
 
 
@@ -326,7 +359,7 @@ class _LayerWidgetState extends State<LayerWidget>
                         child: GestureDetector(
                           onTap: () {widget.layerSelectedFn(widget.layerState);},
                           child: ValueListenableBuilder<Color>(
-                            valueListenable: widget.layerState.content,
+                            valueListenable: widget.layerState.color,
                             builder: (BuildContext context, Color color, child)
                             {
                               return ColoredBox(color: color);

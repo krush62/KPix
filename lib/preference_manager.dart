@@ -1,5 +1,6 @@
 
 // ignore_for_file: constant_identifier_names
+import 'package:flutter/material.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/main.dart';
@@ -16,6 +17,7 @@ import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/wand_options.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
@@ -83,7 +85,8 @@ enum PreferenceDouble
   Layout_StatusBar_Padding(defaultValue: 2.0),
   Layout_StatusBar_DividerWidth(defaultValue: 2.0),
 
-  Layout_OverlayEntrySubMenu_OffsetX(defaultValue: 0.0),
+  Layout_OverlayEntrySubMenu_OffsetX(defaultValue: -32.0),
+  Layout_OverlayEntrySubMenu_OffsetXLeft(defaultValue: -128.0),
   Layout_OverlayEntrySubMenu_OffsetY(defaultValue: 32.0),
   Layout_OverlayEntrySubMenu_ButtonSpacing(defaultValue: 6.0),
   Layout_OverlayEntrySubMenu_Width(defaultValue: 160.0),
@@ -103,6 +106,17 @@ enum PreferenceDouble
   Layout_MainButton_MenuIconSize(defaultValue: 16.0),
   Layout_MainButton_DividerSize(defaultValue: 2.0),
 
+  Layout_LayerWidget_OuterPadding(defaultValue: 8.0),
+  Layout_LayerWidget_InnerPadding(defaultValue: 4.0),
+  Layout_LayerWidget_BorderRadius(defaultValue: 8.0),
+  Layout_LayerWidget_ButtonSizeMin(defaultValue: 24.0),
+  Layout_LayerWidget_ButtonSizeMax(defaultValue: 32.0),
+  Layout_LayerWidget_IconSize(defaultValue: 12.0),
+  Layout_LayerWidget_Height(defaultValue: 64.0),
+  Layout_LayerWidget_DragOpacity(defaultValue: 0.75),
+  Layout_LayerWidget_BorderWidth(defaultValue: 2.0),
+  Layout_LayerWidget_DragFeedbackSize(defaultValue: 64.0),
+  Layout_LayerWidget_DragTargetHeight(defaultValue: 64.0),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -127,6 +141,7 @@ enum PreferenceDouble
   KPalColorCard_Layout_BorderRadius(defaultValue: 8.0),
   KPalColorCard_Layout_BorderWidth(defaultValue: 2.0),
   KPalColorCard_Layout_OutsidePadding(defaultValue: 8.0),
+
 
 
   ;
@@ -157,6 +172,9 @@ enum PreferenceInt
   Layout_MainToolbar_ToolSettingsFlex(defaultValue: 1),
 
   Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
+
+  Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
+  Layout_LayerWidget_DragDelay(defaultValue: 200),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -326,6 +344,7 @@ class PreferenceManager
   late OverlayEntrySubMenuOptions overlayEntryOptions;
   late OverlayEntryAlertDialogOptions alertDialogOptions;
   late MainButtonWidgetOptions mainButtonWidgetOptions;
+  late LayerWidgetOptions layerWidgetOptions;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
@@ -480,6 +499,7 @@ class PreferenceManager
         isEnabledDefault: getValueB(PreferenceBool.Shader_IsEnabled));
     overlayEntryOptions = OverlayEntrySubMenuOptions(
         offsetX: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetX),
+        offsetXLeft: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetXLeft),
         offsetY: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetY),
         buttonSpacing: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
         width: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
@@ -500,6 +520,20 @@ class PreferenceManager
         padding: getValueD(PreferenceDouble.Layout_MainButton_Padding),
         menuIconSize: getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),
         dividerSize: getValueD(PreferenceDouble.Layout_MainButton_DividerSize));
+    layerWidgetOptions = LayerWidgetOptions(
+        outerPadding: getValueD(PreferenceDouble.Layout_LayerWidget_OuterPadding),
+        innerPadding: getValueD(PreferenceDouble.Layout_LayerWidget_InnerPadding),
+        borderRadius: getValueD(PreferenceDouble.Layout_LayerWidget_BorderRadius),
+        buttonSizeMin: getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMin),
+        buttonSizeMax: getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMax),
+        iconSize: getValueD(PreferenceDouble.Layout_LayerWidget_IconSize),
+        height: getValueD(PreferenceDouble.Layout_LayerWidget_Height),
+        borderWidth: getValueD(PreferenceDouble.Layout_LayerWidget_BorderWidth),
+        dragFeedbackSize: getValueD(PreferenceDouble.Layout_LayerWidget_DragFeedbackSize),
+        dragOpacity: getValueD(PreferenceDouble.Layout_LayerWidget_DragOpacity),
+        dragTargetHeight: getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
+        dragTargetShowDuration: getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
+        dragDelay: getValueI(PreferenceInt.Layout_LayerWidget_DragDelay));
   }
 
   void loadToolOptions()

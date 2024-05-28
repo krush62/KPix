@@ -6,6 +6,7 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,6 +16,7 @@ class AppState
   final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
   final Map<ToolType, bool> _selectionMap = {};
   final ValueNotifier<String> selectedColorId = ValueNotifier("");
+  final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
 
   //StatusBar
   final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
@@ -72,6 +74,110 @@ class AppState
       )
     );
     colorRamps.value = rampDataList;
+  }
+
+  void addNewLayer(final LayerState newState)
+  {
+    List<LayerState> layerList = [];
+    layerList.add(newState);
+    layerList.addAll(layers.value);
+    layers.value = layerList;
+  }
+
+  void changeLayerOrder(final LayerState state, final int newPosition)
+  {
+    int sourcePosition = -1;
+    for (int i = 0; i < layers.value.length; i++)
+    {
+       if (layers.value[i] == state)
+       {
+          sourcePosition = i;
+          break;
+       }
+    }
+
+    if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
+    {
+      List<LayerState> stateList = List<LayerState>.from(layers.value);
+      stateList.removeAt(sourcePosition);
+      if (newPosition > sourcePosition) {
+        stateList.insert(newPosition - 1, state);
+      }
+      else
+        {
+          stateList.insert(newPosition, state);
+        }
+      layers.value = stateList;
+    }
+
+  }
+
+  void addNewLayerPressed()
+  {
+    addNewLayer(LayerState());
+  }
+
+  void layerSelected(final LayerState selectedState)
+  {
+    for (final LayerState state in layers.value)
+    {
+      state.isSelected.value = state == selectedState;
+    }
+  }
+
+  void layerDeleted(final LayerState deleteState)
+  {
+    if (layers.value.length > 1)
+    {
+      List<LayerState> stateList = [];
+      int foundIndex = 0;
+      for (int i = 0; i < layers.value.length; i++)
+      {
+        if (layers.value[i] != deleteState)
+        {
+          stateList.add(layers.value[i]);
+        }
+        else
+        {
+          foundIndex = i;
+        }
+      }
+
+      if (foundIndex > 0)
+      {
+        stateList[foundIndex - 1].isSelected.value = true;
+      }
+      else
+      {
+        stateList[0].isSelected.value = true;
+      }
+
+      layers.value = stateList;
+    }
+  }
+
+  void layerMerged(final LayerState mergeState)
+  {
+    //TODO
+    print("MERGE ME");
+  }
+
+  void layerDuplicated(final LayerState duplicateState)
+  {
+    List<LayerState> stateList = [];
+    for (int i = 0; i < layers.value.length; i++)
+    {
+      if (layers.value[i] == duplicateState)
+      {
+        LayerState layerState = LayerState();
+        layerState.content.value = layers.value[i].content.value;
+        layerState.lockState.value = layers.value[i].lockState.value;
+        layerState.visibilityState.value = layers.value[i].visibilityState.value;
+        stateList.add(layerState);
+      }
+      stateList.add(layers.value[i]);
+    }
+    layers.value = stateList;
   }
 
   void colorSelected(final String uuid)

@@ -8,6 +8,7 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/widgets/horizontal_split_view.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
@@ -66,6 +67,18 @@ class _KPixAppState extends State<KPixApp> {
     appState = AppState(kPalConstraints: prefs.kPalConstraints);
     //TODO TEMP
     appState.addNewRamp();
+    LayerState l1 = LayerState();
+    l1.setContent(Colors.red);
+    LayerState l2 = LayerState();
+    l2.setContent(Colors.green);
+    LayerState l3 = LayerState();
+    l3.setContent(Colors.blue);
+    LayerState l4 = LayerState();
+    l4.setContent(Colors.yellow);
+    appState.addNewLayer(l1);
+    appState.addNewLayer(l2);
+    appState.addNewLayer(l3);
+    appState.addNewLayer(l4);
     prefsInitialized = true;
     setState(() {});
   }
@@ -222,6 +235,14 @@ class MainWidget extends StatelessWidget {
                  return RightBarWidget(
                    overlayEntrySubMenuOptions: prefs.overlayEntryOptions,
                    mainButtonWidgetOptions: prefs.mainButtonWidgetOptions,
+                   layerWidgetOptions: prefs.layerWidgetOptions,
+                   layerList: appState.layers,
+                   changeLayerPositionFn: appState.changeLayerOrder,
+                   addNewLayerFn: appState.addNewLayerPressed,
+                   layerSelectedFn: appState.layerSelected,
+                   layerMergeDownFn: appState.layerMerged,
+                   layerDuplicateFn: appState.layerDuplicated,
+                   layerDeleteFn: appState.layerDeleted,
                  );
                 },
                   flex: prefs.mainLayoutOptions.splitViewFlexRightDefault,

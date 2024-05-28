@@ -9,6 +9,7 @@ import 'package:kpix/widgets/color_chooser_widget.dart';
 class OverlayEntrySubMenuOptions
 {
   final double offsetX;
+  final double offsetXLeft;
   final double offsetY;
   final double buttonSpacing;
   final double width;
@@ -17,6 +18,7 @@ class OverlayEntrySubMenuOptions
 
   OverlayEntrySubMenuOptions({
     required this.offsetX,
+    required this.offsetXLeft,
     required this.offsetY,
     required this.buttonSpacing,
     required this.width,
@@ -172,6 +174,84 @@ class OverlayEntries
                                   onSavePalette();
                                 },
                                 child: const Text("Save Palette")
+                            )
+                        ),
+                      ),
+                    ],
+                  )
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static OverlayEntry getLayerMenu({
+    required final Function onDismiss,
+    required Function onDelete,
+    required Function onMergeDown,
+    required Function onDuplicate,
+    required final LayerLink layerLink,
+    required final OverlayEntrySubMenuOptions options
+  })
+  {
+    return OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            onDismiss: () {onDismiss();},
+          ),
+          Positioned(
+            width: options.width,
+            child: CompositedTransformFollower(
+              link: layerLink,
+              showWhenUnlinked: false,
+              offset: Offset(
+                options.offsetXLeft,
+                options.offsetY,
+              ),
+              child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: SizedBox(
+                            height: options.buttonHeight,
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  onDelete();
+                                },
+                                child: const Text("Delete Layer")
+                            )
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: SizedBox(
+                            height: options.buttonHeight,
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  onMergeDown();
+                                },
+                                child: const Text("Merge Down")
+                            )
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: SizedBox(
+                            height: options.buttonHeight,
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  onDuplicate();
+                                },
+                                child: const Text("Duplicate Layer")
                             )
                         ),
                       ),

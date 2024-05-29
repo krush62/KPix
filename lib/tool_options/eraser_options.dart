@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -22,7 +23,7 @@ const Map<EraserShape, String> eraserShapeStringMap =
   EraserShape.square: "Square"
 };
 
-class EraserOptions
+class EraserOptions extends IToolOptions
 {
   final int sizeMin;
   final int sizeMax;

@@ -1,9 +1,19 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+
+
+class CursorCoordinates
+{
+  double x = 0;
+  double y = 0;
+
+  CursorCoordinates({required this.x, required this.y});
+}
 
 
 class CanvasOptions
@@ -12,12 +22,21 @@ class CanvasOptions
   final int longPressDuration;
   final double longPressCancelDistance;
   final double stylusZoomStepDistance;
+  final double touchZoomStepDistance;
 
   CanvasOptions({
     required this.stylusPollRate,
     required this.longPressDuration,
     required this.longPressCancelDistance,
-    required this.stylusZoomStepDistance});
+    required this.stylusZoomStepDistance,
+    required this.touchZoomStepDistance});
+}
+
+class TouchPointerStatus
+{
+  final Offset startPos;
+  Offset currentPos;
+  TouchPointerStatus({required this.startPos, required this.currentPos});
 }
 
 
@@ -40,11 +59,8 @@ class ListenerExample extends StatefulWidget {
 
 class _ListenerExampleState extends State<ListenerExample> {
   //TODO privatize members and methods
-  String _details = "";
   int pressTime = 0;
-  double x = 0.0;
-  double y = 0.0;
-  double pressure = 0.0;
+  ValueNotifier<CursorCoordinates?> cursorPos = ValueNotifier(null);
   bool timerRunning = false;
   late Duration timeoutLongPress;
   late final double maxLongPressDistance;
@@ -61,6 +77,7 @@ class _ListenerExampleState extends State<ListenerExample> {
   late Timer timerStylusBtnLongPress;
   bool timerStylusRunning = false;
   bool stylusButtonDetected = false;
+  bool stylusHoverDetected = false;
   bool stylusButtonDown = false;
   bool stylusButtonLongDown = false;
 
@@ -68,8 +85,13 @@ class _ListenerExampleState extends State<ListenerExample> {
   late Offset oldCanvasOffset;
   bool isDragging = false;
 
-  ValueNotifier<Offset> canvasOffset = ValueNotifier(Offset(0.0, 0.0));
+  ValueNotifier<Offset> canvasOffset = ValueNotifier(const Offset(0.0, 0.0));
 
+  ValueNotifier<MouseCursor> mouseCursor = ValueNotifier(SystemMouseCursors.none);
+  bool mouseIsInside = false;
+  Map<int, TouchPointerStatus> touchPointers = {};
+  double initialTouchZoomDistance = 0.0;
+  int touchZoomStartLevel = 100;
 
   @override
   void initState() {
@@ -79,63 +101,67 @@ class _ListenerExampleState extends State<ListenerExample> {
     maxLongPressDistance = widget.options.longPressCancelDistance;
   }
 
-  void updateDetails(String s)
-  {
-    //setState(() {
-      _details = s;
-    //});
-  }
-
-  void updatePressure(double p)
-  {
-    //setState(() {
-      pressure = p;
-    //});
-  }
 
   void handleTimeoutLongPress() {
     timerRunning = false;
-    updateDetails("LONG PRESS PRIMARY");
+    print("LONG PRESS PRIMARY");
   }
 
-  void _buttonDown(PointerEvent details)
+  void _buttonDown(PointerDownEvent details)
   {
-    pressStartLoc = details.localPosition;
-    if (details.buttons == kPrimaryButton)
+    if (details.kind == PointerDeviceKind.touch)
     {
+      touchPointers[details.pointer] = TouchPointerStatus(startPos: details.localPosition, currentPos: details.localPosition);
+      if (touchPointers.length == 2)
+      {
+        dragStartLoc = Offset((touchPointers.values.elementAt(0).currentPos.dx + touchPointers.values.elementAt(1).currentPos.dx) / 2, (touchPointers.values.elementAt(0).currentPos.dy + touchPointers.values.elementAt(1).currentPos.dy) / 2);
+        isDragging = true;
+        initialTouchZoomDistance = (touchPointers.values.elementAt(0).currentPos - touchPointers.values.elementAt(1).currentPos).distance;
+        touchZoomStartLevel = widget.appState.getZoomLevel();
+        setMouseCursor(SystemMouseCursors.move);
+      }
+    }
+
+
+    if (details.buttons == kPrimaryButton && touchPointers.length < 2)
+    {
+      pressStartLoc = details.localPosition;
       primaryIsDown = true;
       if (!timerRunning) {
         timerRunning = true;
         timerLongPress = Timer(timeoutLongPress, handleTimeoutLongPress);
       }
-      _updateLocation(details);
-      if (details.kind == PointerDeviceKind.stylus)
-      {
-        updatePressure(details.pressure);
-      }
-      else
-      {
-        updatePressure(0.0);
-      }
+      //_updateLocation(details);
 
-      updateDetails("PRIMARY DOWN");
+      print("PRIMARY DOWN");
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
-        secondaryIsDown = true;
+      //NOT USED ATM
+      secondaryIsDown = true;
     }
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
     {
       dragStartLoc = details.localPosition;
       isDragging = true;
+      setMouseCursor(SystemMouseCursors.move);
     }
   }
 
   void _buttonUp(PointerEvent details)
   {
+    if (details.kind == PointerDeviceKind.touch)
+    {
+      touchPointers.remove(details.pointer);
+      if (touchPointers.length != 2)
+      {
+        isDragging = false;
+      }
+    }
+
     if (primaryIsDown)
     {
-      updateDetails("PRIMARY UP");
+      print("PRIMARY UP");
       widget.appState.hideStatusBarToolDimension();
       widget.appState.hideStatusBarToolDiagonal();
       widget.appState.hideStatusBarToolAngle();
@@ -150,23 +176,44 @@ class _ListenerExampleState extends State<ListenerExample> {
     else if (isDragging && details.kind == PointerDeviceKind.mouse)
     {
       isDragging = false;
+      setMouseCursor(SystemMouseCursors.none);
     }
     timerRunning = false;
   }
 
 
 
-  void _updateLocation(PointerEvent details) {
-    x = details.localPosition.dx;
-    y = details.localPosition.dy;
-    widget.appState.setStatusBarCursorPosition(x, y);
+  void _updateLocation(PointerEvent details)
+  {
+    if (details.kind == PointerDeviceKind.touch)
+    {
+      touchPointers[details.pointer]?.currentPos = details.localPosition;
+    }
+
+    if (details.kind == PointerDeviceKind.touch && touchPointers.length == 2)
+    {
+      cursorPos.value = CursorCoordinates(x: (touchPointers.values.elementAt(0).currentPos.dx + touchPointers.values.elementAt(1).currentPos.dx) / 2, y: (touchPointers.values.elementAt(0).currentPos.dy + touchPointers.values.elementAt(1).currentPos.dy) / 2);
+    }
+    else
+    {
+      cursorPos.value = CursorCoordinates(x: details.localPosition.dx, y: details.localPosition.dy);
+    }
+
+
+
+    widget.appState.setStatusBarCursorPosition(cursorPos.value!);
     if (primaryIsDown)
     {
-      widget.appState.setStatusBarToolDimension(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
-      widget.appState.setStatusBarToolDiagonal(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
-      widget.appState.setStatusBarToolAspectRatio(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
-      widget.appState.setStatusBarToolAngle(pressStartLoc.dx.round(), pressStartLoc.dy.round(), x.round(), y.round());
+      widget.appState.setStatusBarToolDimension(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      widget.appState.setStatusBarToolDiagonal(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      widget.appState.setStatusBarToolAspectRatio(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      widget.appState.setStatusBarToolAngle(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
 
+    }
+
+    if (details.kind == PointerDeviceKind.mouse)
+    {
+      mouseIsInside = true;
     }
 
     if (needSecondaryStartLoc)
@@ -177,49 +224,52 @@ class _ListenerExampleState extends State<ListenerExample> {
 
     if (stylusZoomStarted)
     {
-      double yOffset = secondaryStartLoc.dy - y;
+      double yOffset = secondaryStartLoc.dy - cursorPos.value!.y;
       int zoomSteps = (yOffset / widget.options.stylusZoomStepDistance).round();
       widget.appState.setZoomLevelByDistance(stylusZoomStartLevel, zoomSteps);
     }
 
-    if (details.kind == PointerDeviceKind.stylus)
-    {
-      pressure = details.pressure;
-    }
-    else
-    {
-      pressure = 0.0;
-    }
+    Offset co = Offset(cursorPos.value!.x, cursorPos.value!.y);
 
-    //setState(() {
 
-      Offset co = Offset(x, y);
-      if (timerRunning && (pressStartLoc - co).distance > maxLongPressDistance)
-      {
-        timerLongPress.cancel();
-        timerRunning = false;
-      }
-      if (timerStylusRunning && (secondaryStartLoc - co).distance > maxLongPressDistance)
-      {
-        timerStylusBtnLongPress.cancel();
-        timerStylusRunning = false;
-        isDragging = true;
-        dragStartLoc = co;
-      }
-    //});
+    if (timerRunning && (pressStartLoc - co).distance > maxLongPressDistance)
+    {
+      timerLongPress.cancel();
+      timerRunning = false;
+    }
+    if (timerStylusRunning && (secondaryStartLoc - co).distance > maxLongPressDistance)
+    {
+      timerStylusBtnLongPress.cancel();
+      timerStylusRunning = false;
+      isDragging = true;
+      setMouseCursor(SystemMouseCursors.move);
+      dragStartLoc = co;
+    }
 
     if (isDragging)
     {
       canvasOffset.value  = canvasOffset.value - (dragStartLoc - co);
       dragStartLoc = co;
+
+      if (details.kind == PointerDeviceKind.touch && touchPointers.length == 2)
+      {
+        final double currentDistance = (touchPointers.values.elementAt(0).currentPos - touchPointers.values.elementAt(1).currentPos).distance;
+        final int zoomSteps = ((currentDistance - initialTouchZoomDistance) / widget.options.touchZoomStepDistance).round();
+        widget.appState.setZoomLevelByDistance(touchZoomStartLevel, zoomSteps);
+      }
     }
 
   }
 
   void _hover(PointerHoverEvent details)
   {
-    if (details.buttons == kSecondaryButton && !stylusButtonDetected) {
-      stylusButtonDetected = true;
+    if (details.kind == PointerDeviceKind.stylus)
+    {
+      if (details.buttons == kSecondaryButton && !stylusButtonDetected)
+      {
+        stylusButtonDetected = true;
+      }
+      stylusHoverDetected = true;
     }
     _updateLocation(details);
 
@@ -240,6 +290,14 @@ class _ListenerExampleState extends State<ListenerExample> {
     }
   }
 
+  void _onMouseExit(PointerExitEvent _)
+  {
+    cursorPos.value = null;
+    widget.appState.repaintNotifier.repaint();
+    mouseIsInside = false;
+  }
+
+
   void _stylusBtnTimeout(Timer t)
   {
     if (stylusButtonDetected && !stylusButtonDown)
@@ -259,73 +317,103 @@ class _ListenerExampleState extends State<ListenerExample> {
       timerStylusRunning = false;
       stylusZoomStarted = false;
       isDragging = false;
+      setMouseCursor(SystemMouseCursors.none);
     }
     stylusButtonDetected = false;
+
+    if (!stylusHoverDetected && cursorPos.value != null && !mouseIsInside)
+    {
+      cursorPos.value = null;
+      widget.appState.repaintNotifier.repaint();
+    }
+    else
+    {
+      stylusHoverDetected = false;
+    }
+
   }
 
   void stylusBtnDown()
   {
-    updateDetails("SECONDARY DOWN");
+    print("SECONDARY DOWN");
   }
 
   void stylusBtnUp()
   {
-    updateDetails("SECONDARY UP");
+    print("SECONDARY UP");
   }
 
   void handleTimeoutStylusBtnLongPress()
   {
-    updateDetails("STYLUS BTN LONG PRESS");
+    print("STYLUS BTN LONG PRESS");
     timerStylusRunning = false;
     stylusZoomStarted = true;
     stylusZoomStartLevel = widget.appState.getZoomLevel();
   }
 
+  void setMouseCursor(final MouseCursor cursor)
+  {
+    mouseCursor.value = cursor;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Listener(
-        onPointerDown: _buttonDown,
-        onPointerMove: _updateLocation,
-        onPointerUp: _buttonUp,
-        onPointerHover: _hover,
-        onPointerSignal: _scroll,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Theme.of(context).primaryColorDark,
-          child: CustomPaint(
-            painter: KPixPainter(
-              appState: widget.appState,
-              offset: canvasOffset,
-              options: widget.kPixPainterOptions,
-              checkerboardColor1: Theme.of(context).primaryColor,
-              checkerboardColor2: Theme.of(context).primaryColorLight,
+      child: ValueListenableBuilder(
+        valueListenable: mouseCursor,
+        builder: (BuildContext context, MouseCursor cursor, child)
+        {
+          return MouseRegion(
+            onExit: _onMouseExit,
+            //TODO this should depend on the tool and if user is above canvas => callback function to painter
+            cursor: cursor,
+            child: Listener(
+              onPointerDown: _buttonDown,
+              onPointerMove: _updateLocation,
+              onPointerUp: _buttonUp,
+              onPointerHover: _hover,
+              onPointerSignal: _scroll,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Theme.of(context).primaryColorDark,
+                child: CustomPaint(
+                  painter: KPixPainter(
+                    appState: widget.appState,
+                    offset: canvasOffset,
+                    options: widget.kPixPainterOptions,
+                    checkerboardColor1: Theme.of(context).primaryColor,
+                    checkerboardColor2: Theme.of(context).primaryColorLight,
+                    coords: cursorPos,
 
-            )
-          )
+                  )
+                )
+
           /*child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Pressure: ${pressure.toStringAsFixed((2))}',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Pressure: ${pressure.toStringAsFixed((2))}',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  Text(
+                    _details,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  Text(
+                    'Position: (${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)})',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),*/
               ),
-              Text(
-                _details,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              Text(
-                'Position: (${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)})',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ],
-          ),*/
-        ),
+            ),
+          );
+        }
       ),
     );
   }

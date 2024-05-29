@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -22,7 +23,7 @@ const Map<PencilShape, String> pencilShapeStringMap =
   PencilShape.square: "Square"
 };
 
-class PencilOptions
+class PencilOptions extends IToolOptions
 {
   final int sizeMin;
   final int sizeMax;

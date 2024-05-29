@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
-class FillOptions
+class FillOptions extends IToolOptions
 {
   final bool fillAdjacentDefault;
   bool fillAdjacent = true;

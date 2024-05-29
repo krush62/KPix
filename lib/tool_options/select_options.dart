@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -62,7 +63,7 @@ const Map<SelectionMode, String> selectionModeStringMap =
 };
 
 
-class SelectOptions
+class SelectOptions extends IToolOptions
 {
   final int shapeDefault;
   final bool keepAspectRatioDefault;

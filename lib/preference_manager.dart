@@ -49,6 +49,7 @@ enum PreferenceDouble
 
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
   Layout_Canvas_StylusZoomStepDistance(defaultValue: 10.0),
+  Layout_Canvas_TouchZoomStepDistance(defaultValue: 25.0),
 
   Layout_Tools_Padding(defaultValue: 8.0),
   Layout_Tools_IconSize(defaultValue: 16.0),
@@ -144,6 +145,8 @@ enum PreferenceDouble
   KPalColorCard_Layout_BorderWidth(defaultValue: 2.0),
   KPalColorCard_Layout_OutsidePadding(defaultValue: 8.0),
 
+  Painter_CursorSize(defaultValue: 4),
+  Painter_CursorBorderWidth(defaultValue: 2),
 
   ;
 
@@ -456,7 +459,8 @@ class PreferenceManager
         stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
         longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
         longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),
-        stylusZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance));
+        stylusZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance),
+        touchZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_TouchZoomStepDistance));
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Tools_Padding),
         colCount: getValueI(PreferenceInt.Layout_Tools_ColCount),
@@ -692,7 +696,9 @@ class PreferenceManager
   void loadPainterOptions()
   {
     kPixPainterOptions = KPixPainterOptions(
-        checkerBoardSize: getValueI(PreferenceInt.Painter_CheckerboardSize)
+        checkerBoardSize: getValueI(PreferenceInt.Painter_CheckerboardSize),
+        cursorSize: getValueD(PreferenceDouble.Painter_CursorSize),
+        cursorBorderWidth: getValueD(PreferenceDouble.Painter_CursorBorderWidth)
     );
   }
 

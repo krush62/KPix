@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
@@ -8,7 +9,7 @@ import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 typedef ChangeToolFn = void Function(ToolType toolType);
-typedef ColorSelectedFn = void Function(String uuid);
+typedef ColorSelectedFn = void Function(IdColor uuid);
 typedef RampOptionsFn = void Function(KPalRampData? data);
 typedef AddNewRampFn = void Function();
 typedef ColorRampFn = void Function(KPalRampData ramp);

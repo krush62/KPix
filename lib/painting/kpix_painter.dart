@@ -1,15 +1,24 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/listener_example.dart';
 
 
 class KPixPainterOptions
 {
   final int checkerBoardSize;
+  final double cursorSize;
+  final double cursorBorderWidth;
 
 
   KPixPainterOptions({
-    required this.checkerBoardSize
+    required this.checkerBoardSize,
+    required this.cursorSize,
+    required this.cursorBorderWidth
   });
 }
 
@@ -17,11 +26,20 @@ class KPixPainter extends CustomPainter
 {
   final AppState appState;
   final ValueNotifier<Offset> offset;
+  final ValueNotifier<CursorCoordinates?> coords;
   final KPixPainterOptions options;
   final Color checkerboardColor1;
   final Color checkerboardColor2;
 
-  KPixPainter({required this.appState, required this.offset, required this.checkerboardColor1, required this.checkerboardColor2, required this.options});
+
+  KPixPainter({
+    required this.appState,
+    required this.offset,
+    required this.checkerboardColor1,
+    required this.checkerboardColor2,
+    required this.options,
+    required this.coords})
+      : super(repaint: appState.repaintNotifier);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -34,6 +52,29 @@ class KPixPainter extends CustomPainter
 
     _drawCheckerboard(canvas: canvas, paint: paint, scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight);
     _drawLayers(canvas: canvas, paint: paint, pixelSize: zoomLevelFactor);
+    _drawToolOverlay(canvas: canvas, paint: paint, pixelSize: zoomLevelFactor, scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight);
+
+  }
+
+  void _drawToolOverlay({required final Canvas canvas, required final Paint paint, required final int pixelSize, required final int scaledCanvasWidth, required final int scaledCanvasHeight})
+  {
+    paint.style = PaintingStyle.fill;
+    if (coords.value != null)
+    {
+      final CursorCoordinates pos = coords.value!;
+      if (pos.x >= offset.value.dx && pos.x < offset.value.dx + scaledCanvasWidth && pos.y >= offset.value.dy && pos.y < offset.value.dy + scaledCanvasHeight)
+      {
+        paint.color = Colors.red;
+        canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), 10, paint);
+      }
+      else
+      {
+        paint.color = checkerboardColor1;
+        canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize + options.cursorBorderWidth, paint);
+        paint.color = checkerboardColor2;
+        canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize, paint);
+      }
+    }
   }
 
   void _drawLayers({required final Canvas canvas, required final Paint paint, required final int pixelSize})
@@ -59,8 +100,6 @@ class KPixPainter extends CustomPainter
         }
       }
     }
-
-
   }
 
   void _drawCheckerboard({required final Canvas canvas, required final Paint paint, required final int scaledCanvasWidth, required final int scaledCanvasHeight})

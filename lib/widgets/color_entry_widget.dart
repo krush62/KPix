@@ -89,7 +89,7 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
 
   void _colorPressed(final PointerDownEvent? event)
   {
-    widget.colorSelectedFn!(widget.colorData.value.uuid);
+    widget.colorSelectedFn!(widget.colorData.value);
   }
 
   @override
@@ -98,9 +98,9 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
       valueListenable: widget.colorData,
       builder: (BuildContext context, IdColor value, child) {
 
-        return ValueListenableBuilder(
-            valueListenable: widget.appState.selectedColorId,
-            builder: (BuildContext context2, String selectedColorId, child2)
+        return ValueListenableBuilder<IdColor?>(
+            valueListenable: widget.appState.selectedColor,
+            builder: (BuildContext context2, IdColor? selectedColor, child2)
             {
               return Expanded(
                   child: Listener(
@@ -112,12 +112,12 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
                             maxHeight: widget.options.maxSize,
                             maxWidth: widget.options.maxSize
                         ),
-                        margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColorId
+                        margin: EdgeInsets.all(widget.colorData.value == selectedColor
                             ? widget.options.selectedMargin
                             : widget.options.unselectedMargin),
                         decoration: BoxDecoration(
                             border: Border.all(
-                                color: widget.colorData.value.uuid == selectedColorId
+                                color: widget.colorData.value == selectedColor
                                     ? Theme.of(context).primaryColorLight
                                     : Colors.transparent,
                                 width: (widget

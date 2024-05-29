@@ -64,9 +64,9 @@ class _KPixAppState extends State<KPixApp> {
     final sPrefs = await SharedPreferences.getInstance();
     Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     prefs = PreferenceManager(sPrefs, FontManager(kFontMap: fontMap));
-    appState = AppState(kPalConstraints: prefs.kPalConstraints);
+    appState = AppState(kPalConstraints: prefs.kPalConstraints, toolOptions: prefs.toolOptions);
     //TODO TEMP
-    appState.setCanvasDimensions(width: 32, height: 32);
+    appState.setCanvasDimensions(width: 64, height: 32);
     appState.addNewRamp();
     appState.addNewRamp();
     appState.addNewRamp();

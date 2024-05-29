@@ -93,7 +93,7 @@ class LayerState
 
   factory LayerState({required int width, required int height, required Color color, required AppState appState})
   {
-    List<List<ColorReference?>> data = List.generate(height + 1, (i) => List.filled(width + 1, null, growable: false), growable: false);
+    List<List<ColorReference?>> data = List.generate(width + 1, (i) => List.filled(height + 1, null, growable: false), growable: false);
     
     //TODO TEMP
     for (int i = 0; i < 200; i++)

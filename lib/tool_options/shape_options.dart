@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -54,7 +55,8 @@ const Map<ShapeShape, String> shapeShapeStringMap =
   ShapeShape.eightStar : "8-Star",
 };
 
-class ShapeOptions {
+class ShapeOptions extends IToolOptions
+{
   final int shapeDefault;
   final bool keepRatioDefault;
   final bool strokeOnlyDefault;

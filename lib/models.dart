@@ -4,20 +4,32 @@ import 'package:flutter/material.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/listener_example.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 
 
+class RepaintNotifier extends ChangeNotifier
+{
+  void repaint()
+  {
+    notifyListeners();
+  }
+}
+
 class AppState
 {
   final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
+  late IToolOptions currentToolOptions;
   final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
   final Map<ToolType, bool> _selectionMap = {};
-  final ValueNotifier<String> selectedColorId = ValueNotifier("");
+  final ValueNotifier<IdColor?> selectedColor = ValueNotifier(IdColor(color: Colors.black, uuid: ""));
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
+  final RepaintNotifier repaintNotifier = RepaintNotifier();
 
   static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200];
   int _zoomLevelIndex = 0;
@@ -36,8 +48,9 @@ class AppState
   //ValueNotifier<bool> shouldRepaint = ValueNotifier(false);
 
   final KPalConstraints kPalConstraints;
+  final ToolOptions _toolOptions;
 
-  AppState({required this.kPalConstraints})
+  AppState({required this.kPalConstraints, required ToolOptions toolOptions}) : _toolOptions = toolOptions
   {
     for (ToolType toolType in toolList.keys)
     {
@@ -55,7 +68,6 @@ class AppState
   {
     canvasWidth = width;
     canvasHeight = height;
-    //shouldRepaint.value = true;
   }
 
   int getZoomLevel()
@@ -69,7 +81,6 @@ class AppState
     {
       _zoomLevelIndex++;
       setStatusBarZoomFactor(getZoomLevel());
-      //shouldRepaint.value = true;
     }
   }
 
@@ -92,13 +103,19 @@ class AppState
       {
          _zoomLevelIndex = endIndex;
          setStatusBarZoomFactor(getZoomLevel());
-         //shouldRepaint.value = true;
       }
     }
   }
 
+
+
   void deleteRamp(final KPalRampData ramp)
   {
+    IdColor? col = getSelectedColorFromRampByUuid(ramp);
+    if (col != null)
+    {
+      selectedColor.value = null;
+    }
     List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
     rampDataList.remove(ramp);
     colorRamps.value = rampDataList;
@@ -108,6 +125,26 @@ class AppState
   {
     List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
     colorRamps.value = rampDataList;
+    IdColor? col = getSelectedColorFromRampByUuid(ramp);
+    if (col != null)
+    {
+      selectedColor.value = col;
+    }
+    repaintNotifier.repaint();
+  }
+
+  IdColor? getSelectedColorFromRampByUuid(final KPalRampData ramp)
+  {
+    IdColor? col;
+    for (int j = 0; j < ramp.colors.length; j++)
+    {
+      if (selectedColor.value != null && ramp.colors[j].value.uuid == selectedColor.value!.uuid)
+      {
+        col = ramp.colors[j].value;
+        break;
+      }
+    }
+    return col;
   }
 
 
@@ -132,7 +169,6 @@ class AppState
     layerList.add(LayerState(width: canvasWidth, height: canvasHeight, color: Colors.primaries[Random().nextInt(Colors.primaries.length)], appState: this));
     layerList.addAll(layers.value);
     layers.value = layerList;
-    //shouldRepaint.value = true;
   }
 
   void changeLayerOrder(final LayerState state, final int newPosition)
@@ -160,7 +196,6 @@ class AppState
         }
       layers.value = stateList;
     }
-    //shouldRepaint.value = true;
   }
 
   void addNewLayerPressed()
@@ -205,7 +240,6 @@ class AppState
 
       layers.value = stateList;
     }
-    //shouldRepaint.value = true;
   }
 
   void layerMerged(final LayerState mergeState)
@@ -234,9 +268,9 @@ class AppState
     //shouldRepaint.value = true;
   }
 
-  void colorSelected(final String uuid)
+  void colorSelected(final IdColor color)
   {
-    selectedColorId.value = uuid;
+    selectedColor.value = color;
   }
 
 
@@ -250,9 +284,9 @@ class AppState
     statusBarDimensionString.value = null;
   }
 
-  void setStatusBarCursorPosition(final double x, final double y)
+  void setStatusBarCursorPosition(final CursorCoordinates coords)
   {
-    statusBarCursorPositionString.value = "${x.toStringAsFixed(1)},${y.toStringAsFixed(1)}";
+    statusBarCursorPositionString.value = "${coords.x.toStringAsFixed(1)},${coords.y.toStringAsFixed(1)}";
   }
 
   void hideStatusBarCursorPosition()
@@ -338,6 +372,7 @@ class AppState
 
     }
     selectedTool.value = tool;
+   currentToolOptions = _toolOptions.toolOptionMap[selectedTool.value]!;
   }
 
   bool toolIsSelected(final ToolType tool)

@@ -3,10 +3,15 @@
 A pixel art creation tool.
 
 ## Contents
+
 [Overview](#overview)
+
 [Features](#features)
+
 [Controls](#controls)
+
 [Installation](#installation)
+
 [License](#license)
 
 

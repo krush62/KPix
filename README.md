@@ -57,6 +57,15 @@ Kpix uses its own kpix format for storing project files (documentation can be fo
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 
 
+## Controls
+
+| ACTION      | MOUSE               | TOUCH                | STYLUS                      |
+|-------------|---------------------|----------------------|-----------------------------|
+| use tool    | left click          | one finger           | down                        |
+| move canvas | middle click + move | two finger move      | button press + move         |
+| zoom canvas | mouse wheel         | two finger pinch     | button long press + up/down |
+| color pick  | right click         | one finger down long | down long                   |
+
 ## Installation
 ### Windows
 TBD

@@ -59,12 +59,17 @@ Due to its unique way of having parameterized color ramps, an import of other fo
 
 ## Controls
 
+This application supports input by mouse/keyboard, touch screen and stylus.
+
 | ACTION      | MOUSE               | TOUCH                | STYLUS                      |
 |-------------|---------------------|----------------------|-----------------------------|
 | use tool    | left click          | one finger           | down                        |
 | move canvas | middle click + move | two finger move      | button press + move         |
 | zoom canvas | mouse wheel         | two finger pinch     | button long press + up/down |
 | color pick  | right click         | one finger down long | down long                   |
+
+### Keyboard Shortcuts
+TBD
 
 ## Installation
 ### Windows

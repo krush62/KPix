@@ -8,7 +8,7 @@ A pixel art creation tool.
 [Features](#features)\
 [Controls](#controls)\
 [Installation](#installation)\
-[License](#license)\
+[License](#license)
 
 ## Overview
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:

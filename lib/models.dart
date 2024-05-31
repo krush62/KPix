@@ -29,7 +29,7 @@ class AppState
   final RepaintNotifier repaintNotifier = RepaintNotifier();
 
 
-  static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200];
+  static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200, 6400];
   int _zoomLevelIndex = 0;
 
   //StatusBar

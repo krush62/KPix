@@ -360,6 +360,7 @@ class AppState
 
   void setToolSelection(final ToolType tool)
   {
+
     for (final ToolType k in _selectionMap.keys)
     {
       final bool shouldSelect = (k == tool);
@@ -370,7 +371,7 @@ class AppState
 
     }
     selectedTool.value = tool;
-   currentToolOptions = GetIt.I.get<PreferenceManager>().toolOptions.toolOptionMap[selectedTool.value]!;
+    currentToolOptions = GetIt.I.get<PreferenceManager>().toolOptions.toolOptionMap[selectedTool.value]!;
   }
 
   bool toolIsSelected(final ToolType tool)

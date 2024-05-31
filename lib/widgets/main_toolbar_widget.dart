@@ -46,13 +46,7 @@ class MainToolbarWidget extends StatelessWidget
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-              ValueListenableBuilder<ToolType>(
-                valueListenable: GetIt.I.get<AppState>().selectedTool,
-                builder: (BuildContext context, ToolType value, child) {
-                  return const PaletteWidget(
-                  );
-                }
-              ),
+            const PaletteWidget(),
             Divider(
               color: Theme.of(context).primaryColorDark,
               endIndent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
@@ -95,6 +89,7 @@ class MainToolbarWidget extends StatelessWidget
               child: ValueListenableBuilder<ToolType>(
                 valueListenable: GetIt.I.get<AppState>().selectedTool,
                 builder: (BuildContext context, ToolType value,child) {
+
                   return const ToolSettingsWidget();
                 }
              ),

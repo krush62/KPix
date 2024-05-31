@@ -16,7 +16,6 @@ import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/tool_options/wand_options.dart';
-import 'package:kpix/typedefs.dart';
 
 
 class ToolSettingsWidgetOptions
@@ -69,8 +68,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       toolOptions.pencilOptions.pixelPerfect = newVal;
     });
   }
-
-
 
   // SHAPE CALLBACKS
   void _shapeShapeChanged(final ShapeShape newShape)
@@ -236,116 +233,129 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
-    Widget toolWidget;
-    switch(appState.selectedTool.value )
-    {
-      case ToolType.shape:
-        toolWidget = ShapeOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            shapeOptions: toolOptions.shapeOptions,
-            shapeShapeChanged: _shapeShapeChanged,
-            shapeKeepAspectRatioChanged: _shapeKeepAspectRatioChanged,
-            shapeStrokeOnlyChanged: _shapeStrokeOnlyChanged,
-            shapeStrokeSizeChanged: _shapeStrokeSizeChanged,
-            shapeCornerRadiusChanged: _shapeCornerRadiusChanged);
-        break;
-      case ToolType.pencil:
-        toolWidget = PencilOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            pencilOptions: toolOptions.pencilOptions,
-            pencilPixelPerfectChanged: _pencilPixelPerfectChanged,
-            pencilShapeChanged: _pencilShapeChanged,
-            pencilSizeChanged: _pencilSizeChanged);
-        break;
-      case ToolType.fill:
-        toolWidget = FillOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            fillOptions: toolOptions.fillOptions,
-            fillAdjacentChanged: _fillAdjacentChanged);
-        break;
-      case ToolType.select:
-        toolWidget = SelectOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            selectOptions: toolOptions.selectOptions,
-            selectionModeChanged: _selectModeChanged,
-            selectKeepAspectRatioChanged: _selectKeepAspectRatio,
-            selectShapeChanged: _selectShapeChanged);
-        break;
-      case ToolType.pick:
-        toolWidget = ColorPickOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            colorPickOptions: toolOptions.colorPickOptions);
-        break;
-      case ToolType.erase:
-        toolWidget = EraserOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            eraserOptions: toolOptions.eraserOptions,
-            eraserShapeChanged: _eraserShapeChanged,
-            eraserSizeChanged: _eraserSizeChanged);
-        break;
-      case ToolType.font:
-        toolWidget = TextOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            textOptions: toolOptions.textOptions,
-            textFontChanged: _textFontChanged,
-            textSizeChanged: _textSizeChanged,
-            textTextChanged: _textTextChanged);
-        break;
-      case ToolType.spraycan:
-        toolWidget = SprayCanOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            sprayCanOptions: toolOptions.sprayCanOptions,
-            sprayCanBlobSizeChanged: _sprayCanBlobSizeChanged,
-            sprayCanIntensityChanged: _sprayCanIntensityChanged,
-            sprayCanRadiusChanged: _sprayCanRadiusChanged);
-        break;
-      case ToolType.line:
-        toolWidget = LineOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            lineOptions: toolOptions.lineOptions,
-            lineWidthChanged: _lineWidthChanged,
-            lineIntegerAspectRatioChanged: _lineIntegerAspectRatioChanged);
-        break;
-      case ToolType.wand:
-        toolWidget = WandOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            wandOptions: toolOptions.wandOptions,
-            wandSelectFromWholeRampChanged: _wandSelectFromWholeRampChanged);
-        break;
-      case ToolType.curve:
-        toolWidget = CurveOptions.getWidget(
-            context: context,
-            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-            curveOptions: toolOptions.curveOptions,
-            curveWidthChanged: _curveWidthChanged);
-        break;
+  Widget build(BuildContext context)
+  {
+    return ValueListenableBuilder<ToolType>(
+      valueListenable: appState.selectedTool,
+      builder: (BuildContext context, ToolType type, child){
+        Widget toolWidget;
 
-      default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
-    }
+        switch(type)
+        {
+          case ToolType.shape:
+            toolWidget = ShapeOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                shapeOptions: toolOptions.shapeOptions,
+                shapeShapeChanged: _shapeShapeChanged,
+                shapeKeepAspectRatioChanged: _shapeKeepAspectRatioChanged,
+                shapeStrokeOnlyChanged: _shapeStrokeOnlyChanged,
+                shapeStrokeSizeChanged: _shapeStrokeSizeChanged,
+                shapeCornerRadiusChanged: _shapeCornerRadiusChanged);
+            break;
+          case ToolType.pencil:
+            toolWidget = PencilOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                pencilOptions: toolOptions.pencilOptions,
+                pencilPixelPerfectChanged: _pencilPixelPerfectChanged,
+                pencilShapeChanged: _pencilShapeChanged,
+                pencilSizeChanged: _pencilSizeChanged);
+            break;
+          case ToolType.fill:
+            toolWidget = FillOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                fillOptions: toolOptions.fillOptions,
+                fillAdjacentChanged: _fillAdjacentChanged);
+            break;
+          case ToolType.select:
+            toolWidget = SelectOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                selectOptions: toolOptions.selectOptions,
+                selectionModeChanged: _selectModeChanged,
+                selectKeepAspectRatioChanged: _selectKeepAspectRatio,
+                selectShapeChanged: _selectShapeChanged);
+            break;
+          case ToolType.pick:
+            toolWidget = ColorPickOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                colorPickOptions: toolOptions.colorPickOptions);
+            break;
+          case ToolType.erase:
+            toolWidget = EraserOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                eraserOptions: toolOptions.eraserOptions,
+                eraserShapeChanged: _eraserShapeChanged,
+                eraserSizeChanged: _eraserSizeChanged);
+            break;
+          case ToolType.font:
+            toolWidget = TextOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                textOptions: toolOptions.textOptions,
+                textFontChanged: _textFontChanged,
+                textSizeChanged: _textSizeChanged,
+                textTextChanged: _textTextChanged);
+            break;
+          case ToolType.spraycan:
+            toolWidget = SprayCanOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                sprayCanOptions: toolOptions.sprayCanOptions,
+                sprayCanBlobSizeChanged: _sprayCanBlobSizeChanged,
+                sprayCanIntensityChanged: _sprayCanIntensityChanged,
+                sprayCanRadiusChanged: _sprayCanRadiusChanged);
+            break;
+          case ToolType.line:
+            toolWidget = LineOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                lineOptions: toolOptions.lineOptions,
+                lineWidthChanged: _lineWidthChanged,
+                lineIntegerAspectRatioChanged: _lineIntegerAspectRatioChanged);
+            break;
+          case ToolType.wand:
+            toolWidget = WandOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                wandOptions: toolOptions.wandOptions,
+                wandSelectFromWholeRampChanged: _wandSelectFromWholeRampChanged);
+            break;
+          case ToolType.curve:
+            toolWidget = CurveOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                curveOptions: toolOptions.curveOptions,
+                curveWidthChanged: _curveWidthChanged);
+            break;
+
+          default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
+        }
 
 
-    return Material(
-      color: Theme.of(context).primaryColor,
-      
-      child: Padding(
-        padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
+        return Material
+        (
+          color: Theme.of(context).primaryColor,
+          child: Padding(
+            padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: toolWidget,
             ),
           )
+        );
+      }
     );
+
+
+
+
+
+
   }
   
 }

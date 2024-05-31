@@ -5,7 +5,7 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/listener_example.dart';
+import 'package:kpix/widgets/canvas_widget.dart';
 
 
 class KPixPainterOptions

@@ -10,7 +10,7 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/listener_example.dart';
+import 'package:kpix/widgets/canvas_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 

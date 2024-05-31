@@ -4,18 +4,11 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
-
-
-class CursorCoordinates
-{
-  double x = 0;
-  double y = 0;
-
-  CursorCoordinates({required this.x, required this.y});
-}
+import 'package:kpix/widgets/selection_bar_widget.dart';
 
 
 class CanvasOptions
@@ -60,7 +53,7 @@ class _ListenerExampleState extends State<ListenerExample> {
   
   
   //TODO privatize members and methods
-  final ValueNotifier<CursorCoordinates?> _cursorPos = ValueNotifier(null);
+  final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);
   bool _timerRunning = false;
   late Duration _timeoutLongPress;
@@ -186,11 +179,11 @@ class _ListenerExampleState extends State<ListenerExample> {
 
     if (details.kind == PointerDeviceKind.touch && _touchPointers.length == 2)
     {
-      _cursorPos.value = CursorCoordinates(x: (_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, y: (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
+      _cursorPos.value = CoordinateSetD(x: (_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, y: (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
     }
     else
     {
-      _cursorPos.value = CursorCoordinates(x: details.localPosition.dx, y: details.localPosition.dy);
+      _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
     }
 
 
@@ -356,33 +349,52 @@ class _ListenerExampleState extends State<ListenerExample> {
         valueListenable: _mouseCursor,
         builder: (BuildContext context, MouseCursor cursor, child)
         {
-          return MouseRegion(
-            onExit: _onMouseExit,
-            //TODO this should depend on the tool and if user is above canvas => callback function to painter
-            cursor: cursor,
-            child: Listener(
-              onPointerDown: _buttonDown,
-              onPointerMove: _updateLocation,
-              onPointerUp: _buttonUp,
-              onPointerHover: _hover,
-              onPointerSignal: _scroll,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Theme.of(context).primaryColorDark,
-                child: CustomPaint(
-                  painter: KPixPainter(
-                    appState: appState,
-                    offset: _canvasOffset,
-                    checkerboardColor1: Theme.of(context).primaryColor,
-                    checkerboardColor2: Theme.of(context).primaryColorLight,
-                    coords: _cursorPos,
-                    isDragging: _isDragging,
-                    options: GetIt.I.get<PreferenceManager>().kPixPainterOptions
-                  )
-                )
+          return Stack(
+            children: [
+              MouseRegion(
+                onExit: _onMouseExit,
+                //TODO this should depend on the tool and if user is above canvas => callback function to painter
+                cursor: cursor,
+                child: Listener(
+                  onPointerDown: _buttonDown,
+                  onPointerMove: _updateLocation,
+                  onPointerUp: _buttonUp,
+                  onPointerHover: _hover,
+                  onPointerSignal: _scroll,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Theme.of(context).primaryColorDark,
+                    child: CustomPaint(
+                      painter: KPixPainter(
+                        appState: appState,
+                        offset: _canvasOffset,
+                        checkerboardColor1: Theme.of(context).primaryColor,
+                        checkerboardColor2: Theme.of(context).primaryColorLight,
+                        coords: _cursorPos,
+                        isDragging: _isDragging,
+                        options: GetIt.I.get<PreferenceManager>().kPixPainterOptions
+                      )
+                    )
+                  ),
+                ),
               ),
-            ),
+              ValueListenableBuilder(
+                valueListenable: GetIt.I.get<AppState>().selectedTool,
+                builder: (BuildContext context, ToolType toolType, child)
+                {
+                  return AnimatedOpacity(
+                    //TODO magic number
+                    duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+                    opacity: toolType == ToolType.select ? 1.0 : 0.0,
+                    child: const Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SelectionBarWidget()
+                    ),
+                  );
+                }
+              ),
+            ],
           );
         }
       ),

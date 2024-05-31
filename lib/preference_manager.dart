@@ -26,6 +26,7 @@ import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/canvas_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
+import 'package:kpix/widgets/selection_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
@@ -121,6 +122,9 @@ enum PreferenceDouble
   Layout_LayerWidget_DragFeedbackSize(defaultValue: 64.0),
   Layout_LayerWidget_DragTargetHeight(defaultValue: 64.0),
 
+  Layout_SelectionBar_IconHeight(defaultValue: 16.0),
+  Layout_SelectionBar_Padding(defaultValue: 4.0),
+
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
   KPal_Constraints_hueShiftExpDefault(defaultValue: 1.0),
@@ -179,6 +183,8 @@ enum PreferenceInt
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
+
+  Layout_SelectionBar_OpacityDuration(defaultValue: 100),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -351,6 +357,7 @@ class PreferenceManager
   late OverlayEntryAlertDialogOptions alertDialogOptions;
   late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
+  late SelectionBarWidgetOptions selectionBarWidgetOptions;
 
   late KPixPainterOptions kPixPainterOptions;
 
@@ -496,8 +503,7 @@ class PreferenceManager
         paletteFlex: getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
         dividerHeight: getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
-        dividerPadding: getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),
-      );
+        dividerPadding: getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),);
     shaderWidgetOptions = ShaderWidgetOptions(
         outSidePadding: getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
     statusBarWidgetOptions = StatusBarWidgetOptions(
@@ -545,6 +551,10 @@ class PreferenceManager
         dragTargetHeight: getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
         dragTargetShowDuration: getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
         dragDelay: getValueI(PreferenceInt.Layout_LayerWidget_DragDelay));
+    selectionBarWidgetOptions = SelectionBarWidgetOptions(
+        iconHeight: getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
+        padding: getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
+        opacityDuration: getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration));
 
   }
 

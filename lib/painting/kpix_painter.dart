@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/typedefs.dart';
@@ -26,7 +27,7 @@ class KPixPainter extends CustomPainter
 {
   final AppState appState;
   final ValueNotifier<Offset> offset;
-  final ValueNotifier<CursorCoordinates?> coords;
+  final ValueNotifier<CoordinateSetD?> coords;
   final ValueNotifier<bool> isDragging;
   final KPixPainterOptions options;
   final Color checkerboardColor1;
@@ -63,7 +64,7 @@ class KPixPainter extends CustomPainter
     paint.style = PaintingStyle.fill;
     if (coords.value != null)
     {
-      final CursorCoordinates pos = coords.value!;
+      final CoordinateSetD pos = coords.value!;
       if (!isDragging.value && pos.x >= offset.value.dx && pos.x < offset.value.dx + scaledCanvasWidth && pos.y >= offset.value.dy && pos.y < offset.value.dy + scaledCanvasHeight)
       {
         paint.color = Colors.red;
@@ -87,7 +88,7 @@ class KPixPainter extends CustomPainter
     {
       for (int y = 0; y < appState.canvasHeight; y++)
       {
-        for (int i = layers.length - 1; i >= 0; i--)
+        for (int i = 0; i < layers.length; i++)
         {
           if (layers[i].visibilityState.value == LayerVisibilityState.visible) {
             ColorReference? layerColor = layers[i].data[x][y];

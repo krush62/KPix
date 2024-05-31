@@ -57,6 +57,46 @@ class LabColor
   });
 }
 
+class CoordinateSetD
+{
+  double x = 0;
+  double y = 0;
+
+  CoordinateSetD({required this.x, required this.y});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is CoordinateSetD &&
+              runtimeType == other.runtimeType &&
+              x == other.x &&
+              y == other.y;
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode;
+}
+
+class CoordinateSetI
+{
+  int x = 0;
+  int y = 0;
+
+  CoordinateSetI({required this.x, required this.y});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is CoordinateSetI &&
+              runtimeType == other.runtimeType &&
+              x == other.x &&
+              y == other.y;
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode;
+}
+
+
+
 class Helper
 {
 

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
@@ -64,7 +65,8 @@ class _KPixAppState extends State<KPixApp> {
     appState.addNewRamp();
     appState.addNewRamp();
     appState.addNewRamp();
-    appState.addNewLayer();
+    LayerState firstLayer = appState.addNewLayer();
+    appState.layerSelected(firstLayer);
     appState.addNewLayer();
     appState.addNewLayer();
     appState.addNewLayer();

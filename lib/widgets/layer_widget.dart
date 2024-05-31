@@ -77,27 +77,24 @@ class ColorReference
 
 class LayerState
 {
-
-
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier(LayerVisibilityState.visible);
   final ValueNotifier<LayerLockState> lockState = ValueNotifier(LayerLockState.unlocked);
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
   //TODO TEMP
   final ValueNotifier<Color> color;
 
-  //TODO TEMP
-  final AppState appState;
 
   final List<List<ColorReference?>> data;
 
-  LayerState._({required this.data, required this.color, required this.appState});
+  LayerState._({required this.data, required this.color});
 
 
-  factory LayerState({required int width, required int height, required Color color, required AppState appState})
+  factory LayerState({required int width, required int height, required Color color})
   {
     List<List<ColorReference?>> data = List.generate(width + 1, (i) => List.filled(height + 1, null, growable: false), growable: false);
     
     //TODO TEMP
+    AppState appState = GetIt.I.get<AppState>();
     for (int i = 0; i < 200; i++)
     {
       KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
@@ -105,7 +102,7 @@ class LayerState
     }
     
     ValueNotifier<Color> vnColor = ValueNotifier(color);
-    return LayerState._(data: data, color: vnColor, appState: appState);
+    return LayerState._(data: data, color: vnColor);
   }
 
 }

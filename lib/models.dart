@@ -1,17 +1,12 @@
+import 'dart:collection';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/color_entry_widget.dart';
-import 'package:kpix/widgets/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/canvas_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -33,6 +28,7 @@ class AppState
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
   final RepaintNotifier repaintNotifier = RepaintNotifier();
 
+
   static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200];
   int _zoomLevelIndex = 0;
 
@@ -47,6 +43,7 @@ class AppState
 
   int canvasWidth = 0;
   int canvasHeight = 0;
+  late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
 
   AppState()
   {
@@ -161,12 +158,14 @@ class AppState
     colorRamps.value = rampDataList;
   }
 
-  void addNewLayer()
+  LayerState addNewLayer()
   {
     List<LayerState> layerList = [];
-    layerList.add(LayerState(width: canvasWidth, height: canvasHeight, color: Colors.primaries[Random().nextInt(Colors.primaries.length)], appState: this));
+    LayerState newLayer = LayerState(width: canvasWidth, height: canvasHeight, color: Colors.primaries[Random().nextInt(Colors.primaries.length)]);
+    layerList.add(newLayer);
     layerList.addAll(layers.value);
     layers.value = layerList;
+    return newLayer;
   }
 
   void changeLayerOrder(final LayerState state, final int newPosition)
@@ -199,6 +198,19 @@ class AppState
   void addNewLayerPressed()
   {
     addNewLayer();
+  }
+
+  LayerState? getSelectedLayer()
+  {
+    LayerState? selectedLayer;
+    for (final LayerState state in layers.value)
+    {
+      if (state.isSelected.value)
+      {
+        selectedLayer = state;
+      }
+    }
+    return selectedLayer;
   }
 
   void layerSelected(final LayerState selectedState)
@@ -255,7 +267,7 @@ class AppState
     {
       if (layers.value[i] == duplicateState)
       {
-        LayerState layerState = LayerState(width: canvasWidth, height: canvasHeight, color: layers.value[i].color.value, appState: this);
+        LayerState layerState = LayerState(width: canvasWidth, height: canvasHeight, color: layers.value[i].color.value);
         layerState.lockState.value = layers.value[i].lockState.value;
         layerState.visibilityState.value = layers.value[i].visibilityState.value;
         stateList.add(layerState);
@@ -282,7 +294,7 @@ class AppState
     statusBarDimensionString.value = null;
   }
 
-  void setStatusBarCursorPosition(final CursorCoordinates coords)
+  void setStatusBarCursorPosition(final CoordinateSetD coords)
   {
     statusBarCursorPositionString.value = "${coords.x.toStringAsFixed(1)},${coords.y.toStringAsFixed(1)}";
   }
@@ -377,6 +389,157 @@ class AppState
   bool toolIsSelected(final ToolType tool)
   {
     return _selectionMap[tool] ?? false;
+  }
+}
+
+
+
+
+class SelectionState with ChangeNotifier
+{
+  final SelectionList selection = SelectionList();
+  HashMap<CoordinateSetI, ColorReference?>? clipboard;
+  final RepaintNotifier repaintNotifier;
+
+  SelectionState({required this.repaintNotifier});
+
+  void inverse({required final int width, required final int height, final bool notify = true})
+  {
+    print("INVERSE");
+    for (int x = 0; x < width; x++)
+    {
+      for (int y = 0; y < height; y++)
+      {
+        CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+        if (selection.selectedPixels.contains(coord))
+        {
+          selection.selectedPixels.remove(coord);
+        }
+        else
+        {
+          selection.selectedPixels.add(coord);
+        }
+      }
+    }
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void deselect({final bool notify = true})
+  {
+    print("DESELECT");
+    selection.selectedPixels.clear();
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void selectAll({required final int width, required final int height, final bool notify = true})
+  {
+    print("SELECT ALL");
+    for (int x = 0; x < width; x++)
+    {
+      for (int y = 0; y < height; y++)
+      {
+        CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+        if (!selection.selectedPixels.contains(coord))
+        {
+          selection.selectedPixels.add(coord);
+        }
+      }
+    }
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void cut({required final LayerState layer, final bool notify = true})
+  {
+    print("CUT");
+    copy(layer: layer, notify: false);
+    delete(layer: layer, notify: false);
+
+    deselect(notify: false);
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void delete({required final LayerState layer, final bool notify = true})
+  {
+    print("DELETE");
+    for (final CoordinateSetI coord in selection.selectedPixels)
+    {
+      layer.data[coord.x][coord.y] = null;
+    }
+
+    deselect(notify: false);
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void copy({required final LayerState layer, final bool notify = true})
+  {
+    print("COPY");
+    clipboard = HashMap();
+    for (final CoordinateSetI coord in selection.selectedPixels)
+    {
+      clipboard![coord] = layer.data[coord.x][coord.y];
+    }
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void copyMerged({required final List<LayerState> layers, final bool notify = true})
+  {
+    print("COPY MERGED");
+    clipboard = HashMap();
+    for (final CoordinateSetI coord in selection.selectedPixels)
+    {
+      ColorReference? ref;
+      for (int i = 0; i < layers.length; i++)
+      {
+        if (layers[i].data[coord.x][coord.y] != null)
+        {
+          ref = layers[i].data[coord.x][coord.y];
+          break;
+        }
+      }
+      clipboard![coord] = ref;
+    }
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+}
+
+class SelectionList
+{
+  List<CoordinateSetI> selectedPixels = [];
+  HashMap<CoordinateSetI, ColorReference>? content;
+
+  bool hasContent()
+  {
+    return content == null;
   }
 }
 

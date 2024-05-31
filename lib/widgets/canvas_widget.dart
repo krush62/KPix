@@ -49,20 +49,16 @@ class ListenerExample extends StatefulWidget {
 class _ListenerExampleState extends State<ListenerExample> {
   CanvasOptions options = GetIt.I.get<PreferenceManager>().canvasWidgetOptions;
   AppState appState = GetIt.I.get<AppState>();
-  
-  
-  
-  //TODO privatize members and methods
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);
   bool _timerRunning = false;
   late Duration _timeoutLongPress;
   late final double _maxLongPressDistance;
   late Timer _timerLongPress;
-  late Offset _pressStartLoc;
+  final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier(Offset(0,0));
   late Offset _secondaryStartLoc;
   bool _needSecondaryStartLoc = false;
-  bool _primaryIsDown = false;
+  ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
   bool _secondaryIsDown = false;
   bool _stylusZoomStarted = false;
   int _stylusZoomStartLevel = 100;
@@ -116,8 +112,8 @@ class _ListenerExampleState extends State<ListenerExample> {
 
     if (details.buttons == kPrimaryButton && _touchPointers.length < 2)
     {
-      _pressStartLoc = details.localPosition;
-      _primaryIsDown = true;
+      _pressStartLoc.value = details.localPosition;
+      _primaryIsDown.value = true;
       if (!_timerRunning) {
         _timerRunning = true;
         _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
@@ -146,7 +142,7 @@ class _ListenerExampleState extends State<ListenerExample> {
       _isDragging.value = false;
     }
 
-    if (_primaryIsDown)
+    if (_primaryIsDown.value)
     {
       print("PRIMARY UP");
       appState.hideStatusBarToolDimension();
@@ -154,7 +150,7 @@ class _ListenerExampleState extends State<ListenerExample> {
       appState.hideStatusBarToolAngle();
       appState.hideStatusBarToolAspectRatio();
       _timerLongPress.cancel();
-      _primaryIsDown = false;
+      _primaryIsDown.value = false;
     }
     else if (_secondaryIsDown && details.kind == PointerDeviceKind.mouse)
     {
@@ -189,12 +185,12 @@ class _ListenerExampleState extends State<ListenerExample> {
 
 
     appState.setStatusBarCursorPosition(_cursorPos.value!);
-    if (_primaryIsDown)
+    if (_primaryIsDown.value)
     {
-      appState.setStatusBarToolDimension(_pressStartLoc.dx.round(), _pressStartLoc.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
-      appState.setStatusBarToolDiagonal(_pressStartLoc.dx.round(), _pressStartLoc.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
-      appState.setStatusBarToolAspectRatio(_pressStartLoc.dx.round(), _pressStartLoc.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
-      appState.setStatusBarToolAngle(_pressStartLoc.dx.round(), _pressStartLoc.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
+      appState.setStatusBarToolDimension(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
+      appState.setStatusBarToolDiagonal(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
+      appState.setStatusBarToolAspectRatio(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
+      appState.setStatusBarToolAngle(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
 
     }
 
@@ -219,7 +215,7 @@ class _ListenerExampleState extends State<ListenerExample> {
     Offset co = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
 
 
-    if (_timerRunning && (_pressStartLoc - co).distance > _maxLongPressDistance)
+    if (_timerRunning && (_pressStartLoc.value - co).distance > _maxLongPressDistance)
     {
       _timerLongPress.cancel();
       _timerRunning = false;
@@ -373,7 +369,8 @@ class _ListenerExampleState extends State<ListenerExample> {
                         checkerboardColor2: Theme.of(context).primaryColorLight,
                         coords: _cursorPos,
                         isDragging: _isDragging,
-                        options: GetIt.I.get<PreferenceManager>().kPixPainterOptions
+                        primaryDown: _primaryIsDown,
+                        primaryPressStart: _pressStartLoc,
                       )
                     )
                   ),

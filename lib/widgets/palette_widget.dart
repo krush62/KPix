@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -22,37 +24,10 @@ class PaletteWidgetOptions
 
 class PaletteWidget extends StatefulWidget
 {
-  final AppState appState;
-  final PaletteWidgetOptions paletteOptions;
-  final OverlayEntrySubMenuOptions overlayEntryOptions;
-  final ColorChooserWidgetOptions colorChooserWidgetOptions;
-  final ColorEntryWidgetOptions colorEntryWidgetOptions;
-  final ColorNames colorNames;
-  final OverlayEntryAlertDialogOptions alertDialogOptions;
-  final KPalConstraints kPalConstraints;
-  final KPalWidgetOptions kPalWidgetOptions;
-  final ColorSelectedFn colorSelectedFn;
-  final ColorRampFn updateRampFn;
-  final ColorRampFn deleteRampFn;
-  final AddNewRampFn addNewRampFn;
-
 
   const PaletteWidget(
     {
       super.key,
-      required this.appState,
-      required this.paletteOptions,
-      required this.overlayEntryOptions,
-      required this.colorChooserWidgetOptions,
-      required this.colorNames,
-      required this.colorEntryWidgetOptions,
-      required this.alertDialogOptions,
-      required this.kPalConstraints,
-      required this.kPalWidgetOptions,
-      required this.colorSelectedFn,
-      required this.addNewRampFn,
-      required this.deleteRampFn,
-      required this.updateRampFn
     }
   );
 
@@ -69,7 +44,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
   Widget build(BuildContext context) {
     return Expanded(
       child: ValueListenableBuilder<List<KPalRampData>>(
-        valueListenable: widget.appState.colorRamps,
+        valueListenable: GetIt.I.get<AppState>().colorRamps,
         builder: (BuildContext context, List<KPalRampData> rampDataSet, child)
         {
           colorRampWidgetList.value = [];
@@ -78,21 +53,14 @@ class _PaletteWidgetState extends State<PaletteWidget>
             colorRampWidgetList.value.add(
                 ColorRampRowWidget(
                   rampData: rampData,
-                  colorSelectedFn: widget.colorSelectedFn,
-                  colorsUpdatedFn: widget.updateRampFn,
-                  deleteRowFn: widget.deleteRampFn,
-                  colorNames: widget.colorNames,
-                  colorEntryWidgetOptions: widget.colorEntryWidgetOptions,
-                  appState: widget.appState,
-                  alertDialogOptions: widget.alertDialogOptions,
-                  kPalConstraints: widget.kPalConstraints,
-                  kPalWidgetOptions: widget.kPalWidgetOptions,
+                  colorSelectedFn: GetIt.I.get<AppState>().colorSelected,
+                  colorsUpdatedFn: GetIt.I.get<AppState>().updateRamp,
+                  deleteRowFn: GetIt.I.get<AppState>().deleteRamp,
                 )
             );
           }
           colorRampWidgetList.value.add(ColorRampRowWidget(
-            addNewRampFn: widget.addNewRampFn,
-            colorEntryWidgetOptions: widget.colorEntryWidgetOptions,
+            addNewRampFn: GetIt.I.get<AppState>().addNewRamp,
           ));
 
 
@@ -111,7 +79,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: Padding(
-                          padding: EdgeInsets.all(widget.paletteOptions.padding / 2.0),
+                          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.start,

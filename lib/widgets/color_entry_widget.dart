@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 
 class ColorEntryWidgetOptions {
@@ -29,30 +31,22 @@ class ColorEntryWidgetOptions {
 class ColorEntryWidget extends StatefulWidget {
   final ValueNotifier<IdColor> colorData;
   final ColorSelectedFn? colorSelectedFn;
-  final ColorEntryWidgetOptions options;
-  final AppState appState;
 
   const ColorEntryWidget._({
     required this.colorData,
     required this.colorSelectedFn,
-    required this.options,
-    required this.appState
 
   });
 
   factory ColorEntryWidget({
     required IdColor color,
-    required ColorEntryWidgetOptions options,
     required ColorSelectedFn? colorSelectedFn,
-    required AppState appState,
 })
   {
 
     ValueNotifier<IdColor> colorData = ValueNotifier(color);
     return ColorEntryWidget._(
-      options: options,
       colorData: colorData,
-      appState: appState,
       colorSelectedFn: colorSelectedFn,
     );
 
@@ -80,7 +74,10 @@ class ColorEntryWidget extends StatefulWidget {
 
 }
 
-class _ColorEntryWidgetState extends State<ColorEntryWidget> {
+class _ColorEntryWidgetState extends State<ColorEntryWidget>
+{
+  ColorEntryWidgetOptions options = GetIt.I.get<PreferenceManager>().colorEntryOptions;
+  AppState appState = GetIt.I.get<AppState>();
 
   @override
   void initState() {
@@ -99,7 +96,7 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
       builder: (BuildContext context, IdColor value, child) {
 
         return ValueListenableBuilder<IdColor?>(
-            valueListenable: widget.appState.selectedColor,
+            valueListenable: appState.selectedColor,
             builder: (BuildContext context2, IdColor? selectedColor, child2)
             {
               return Expanded(
@@ -107,26 +104,25 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget> {
                     onPointerDown: _colorPressed,
                     child: Container(
                         constraints: BoxConstraints(
-                            minHeight: widget.options.minSize,
-                            minWidth: widget.options.minSize,
-                            maxHeight: widget.options.maxSize,
-                            maxWidth: widget.options.maxSize
+                            minHeight: options.minSize,
+                            minWidth: options.minSize,
+                            maxHeight: options.maxSize,
+                            maxWidth: options.maxSize
                         ),
                         margin: EdgeInsets.all(widget.colorData.value == selectedColor
-                            ? widget.options.selectedMargin
-                            : widget.options.unselectedMargin),
+                            ? options.selectedMargin
+                            : options.unselectedMargin),
                         decoration: BoxDecoration(
                             border: Border.all(
                                 color: widget.colorData.value == selectedColor
                                     ? Theme.of(context).primaryColorLight
                                     : Colors.transparent,
-                                width: (widget
-                                    .options.unselectedMargin -
-                                    widget.options.selectedMargin)),
+                                width: (options.unselectedMargin -
+                                    options.selectedMargin)),
                             color: value.color,
                             borderRadius: BorderRadius.all(
                                 Radius.circular(
-                                    widget.options.roundRadius))),
+                                    options.roundRadius))),
                     ),
                   )
               );

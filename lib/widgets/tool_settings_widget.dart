@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
@@ -27,11 +29,7 @@ class ToolSettingsWidgetOptions
 
 class ToolSettingsWidget extends StatefulWidget
 {
-  final AppState appState;
-  final ToolOptions toolOptions;
-  final ToolSettingsWidgetOptions toolSettingsWidgetOptions;
-
-  const ToolSettingsWidget({super.key, required this.appState, required this.toolSettingsWidgetOptions, required this.toolOptions});
+  const ToolSettingsWidget({super.key});
 
   @override
   State<StatefulWidget> createState() => _ToolSettingsWidgetState();
@@ -40,9 +38,13 @@ class ToolSettingsWidget extends StatefulWidget
 
 class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
 {
+  final AppState appState = GetIt.I.get<AppState>();
+  final ToolOptions toolOptions = GetIt.I.get<PreferenceManager>().toolOptions;
+  final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
+
   String _getToolTitle()
   {
-    String toolName = toolList[widget.appState.selectedTool.value]!.title;
+    String toolName = toolList[appState.selectedTool.value]!.title;
     return "Settings for $toolName";
   }
 
@@ -50,21 +52,21 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _pencilSizeChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.pencilOptions.size = newVal.round();
+      toolOptions.pencilOptions.size = newVal.round();
     });
   }
 
   void _pencilShapeChanged(final PencilShape newShape)
   {
     setState(() {
-      widget.toolOptions.pencilOptions.shape = newShape;
+      toolOptions.pencilOptions.shape = newShape;
     });
   }
 
   void _pencilPixelPerfectChanged(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.pencilOptions.pixelPerfect = newVal;
+      toolOptions.pencilOptions.pixelPerfect = newVal;
     });
   }
 
@@ -74,35 +76,35 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _shapeShapeChanged(final ShapeShape newShape)
   {
     setState(() {
-      widget.toolOptions.shapeOptions.shape = newShape;
+      toolOptions.shapeOptions.shape = newShape;
     });
   }
 
   void _shapeKeepAspectRatioChanged(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.shapeOptions.keepRatio = newVal;
+      toolOptions.shapeOptions.keepRatio = newVal;
     });
   }
 
   void _shapeStrokeOnlyChanged(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.shapeOptions.strokeOnly = newVal;
+      toolOptions.shapeOptions.strokeOnly = newVal;
     });
   }
 
   void _shapeStrokeSizeChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.shapeOptions.strokeWidth = newVal.round();
+      toolOptions.shapeOptions.strokeWidth = newVal.round();
     });
   }
 
   void _shapeCornerRadiusChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.shapeOptions.cornerRadius = newVal.round();
+      toolOptions.shapeOptions.cornerRadius = newVal.round();
     });
   }
 
@@ -111,7 +113,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _fillAdjacentChanged(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.fillOptions.fillAdjacent = newVal;
+      toolOptions.fillOptions.fillAdjacent = newVal;
     });
   }
 
@@ -120,21 +122,21 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _selectModeChanged(final SelectionMode newMode)
   {
     setState(() {
-      widget.toolOptions.selectOptions.mode = newMode;
+      toolOptions.selectOptions.mode = newMode;
     });
   }
 
   void _selectKeepAspectRatio(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.selectOptions.keepAspectRatio = newVal;
+      toolOptions.selectOptions.keepAspectRatio = newVal;
     });
   }
 
   void _selectShapeChanged(final SelectShape newShape)
   {
     setState(() {
-      widget.toolOptions.selectOptions.shape = newShape;
+      toolOptions.selectOptions.shape = newShape;
     });
   }
 
@@ -143,14 +145,14 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _eraserSizeChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.eraserOptions.size = newVal.round();
+      toolOptions.eraserOptions.size = newVal.round();
     });
   }
 
   void _eraserShapeChanged(final EraserShape newShape)
   {
     setState(() {
-      widget.toolOptions.eraserOptions.shape = newShape;
+      toolOptions.eraserOptions.shape = newShape;
     });
   }
 
@@ -158,21 +160,21 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _textFontChanged(final PixelFontType newFont)
   {
     setState(() {
-      widget.toolOptions.textOptions.font = newFont;
+      toolOptions.textOptions.font = newFont;
     });
   }
 
   void _textSizeChanged(final double newSize)
   {
     setState(() {
-      widget.toolOptions.textOptions.size = newSize.round();
+      toolOptions.textOptions.size = newSize.round();
     });
   }
 
   void _textTextChanged(final String newText)
   {
     setState(() {
-      widget.toolOptions.textOptions.text = newText;
+      toolOptions.textOptions.text = newText;
     });
   }
 
@@ -181,21 +183,21 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _sprayCanBlobSizeChanged(final double newSize)
   {
     setState(() {
-      widget.toolOptions.sprayCanOptions.blobSize = newSize.round();
+      toolOptions.sprayCanOptions.blobSize = newSize.round();
     });
   }
 
   void _sprayCanIntensityChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.sprayCanOptions.intensity = newVal.round();
+      toolOptions.sprayCanOptions.intensity = newVal.round();
     });
   }
 
   void _sprayCanRadiusChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.sprayCanOptions.radius = newVal.round();
+      toolOptions.sprayCanOptions.radius = newVal.round();
     });
   }
 
@@ -204,14 +206,14 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _lineWidthChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.lineOptions.width = newVal.round();
+      toolOptions.lineOptions.width = newVal.round();
     });
   }
 
   void _lineIntegerAspectRatioChanged(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.lineOptions.integerAspectRatio = newVal;
+      toolOptions.lineOptions.integerAspectRatio = newVal;
     });
   }
 
@@ -220,7 +222,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _wandSelectFromWholeRampChanged(final bool newVal)
   {
     setState(() {
-      widget.toolOptions.wandOptions.selectFromWholeRamp = newVal;
+      toolOptions.wandOptions.selectFromWholeRamp = newVal;
     });
   }
 
@@ -229,20 +231,20 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   void _curveWidthChanged(final double newVal)
   {
     setState(() {
-      widget.toolOptions.curveOptions.width = newVal.round();
+      toolOptions.curveOptions.width = newVal.round();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     Widget toolWidget;
-    switch(widget.appState.selectedTool.value )
+    switch(appState.selectedTool.value )
     {
       case ToolType.shape:
         toolWidget = ShapeOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            shapeOptions: widget.toolOptions.shapeOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            shapeOptions: toolOptions.shapeOptions,
             shapeShapeChanged: _shapeShapeChanged,
             shapeKeepAspectRatioChanged: _shapeKeepAspectRatioChanged,
             shapeStrokeOnlyChanged: _shapeStrokeOnlyChanged,
@@ -252,8 +254,8 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       case ToolType.pencil:
         toolWidget = PencilOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            pencilOptions: widget.toolOptions.pencilOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            pencilOptions: toolOptions.pencilOptions,
             pencilPixelPerfectChanged: _pencilPixelPerfectChanged,
             pencilShapeChanged: _pencilShapeChanged,
             pencilSizeChanged: _pencilSizeChanged);
@@ -261,15 +263,15 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       case ToolType.fill:
         toolWidget = FillOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            fillOptions: widget.toolOptions.fillOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            fillOptions: toolOptions.fillOptions,
             fillAdjacentChanged: _fillAdjacentChanged);
         break;
       case ToolType.select:
         toolWidget = SelectOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            selectOptions: widget.toolOptions.selectOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            selectOptions: toolOptions.selectOptions,
             selectionModeChanged: _selectModeChanged,
             selectKeepAspectRatioChanged: _selectKeepAspectRatio,
             selectShapeChanged: _selectShapeChanged);
@@ -277,22 +279,22 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       case ToolType.pick:
         toolWidget = ColorPickOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            colorPickOptions: widget.toolOptions.colorPickOptions);
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            colorPickOptions: toolOptions.colorPickOptions);
         break;
       case ToolType.erase:
         toolWidget = EraserOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            eraserOptions: widget.toolOptions.eraserOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            eraserOptions: toolOptions.eraserOptions,
             eraserShapeChanged: _eraserShapeChanged,
             eraserSizeChanged: _eraserSizeChanged);
         break;
       case ToolType.font:
         toolWidget = TextOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            textOptions: widget.toolOptions.textOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            textOptions: toolOptions.textOptions,
             textFontChanged: _textFontChanged,
             textSizeChanged: _textSizeChanged,
             textTextChanged: _textTextChanged);
@@ -300,8 +302,8 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       case ToolType.spraycan:
         toolWidget = SprayCanOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            sprayCanOptions: widget.toolOptions.sprayCanOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            sprayCanOptions: toolOptions.sprayCanOptions,
             sprayCanBlobSizeChanged: _sprayCanBlobSizeChanged,
             sprayCanIntensityChanged: _sprayCanIntensityChanged,
             sprayCanRadiusChanged: _sprayCanRadiusChanged);
@@ -309,27 +311,27 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       case ToolType.line:
         toolWidget = LineOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            lineOptions: widget.toolOptions.lineOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            lineOptions: toolOptions.lineOptions,
             lineWidthChanged: _lineWidthChanged,
             lineIntegerAspectRatioChanged: _lineIntegerAspectRatioChanged);
         break;
       case ToolType.wand:
         toolWidget = WandOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            wandOptions: widget.toolOptions.wandOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            wandOptions: toolOptions.wandOptions,
             wandSelectFromWholeRampChanged: _wandSelectFromWholeRampChanged);
         break;
       case ToolType.curve:
         toolWidget = CurveOptions.getWidget(
             context: context,
-            toolSettingsWidgetOptions: widget.toolSettingsWidgetOptions,
-            curveOptions: widget.toolOptions.curveOptions,
+            toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+            curveOptions: toolOptions.curveOptions,
             curveWidthChanged: _curveWidthChanged);
         break;
 
-      default: toolWidget = Container(width: double.infinity, child: Text("Not Implemented"));
+      default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
     }
 
 
@@ -337,7 +339,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
       color: Theme.of(context).primaryColor,
       
       child: Padding(
-        padding: EdgeInsets.all(widget.toolSettingsWidgetOptions.padding),
+        padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: toolWidget,

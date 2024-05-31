@@ -3,8 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/preference_manager.dart';
 
 
 class CursorCoordinates
@@ -44,20 +46,19 @@ class TouchPointerStatus
 class ListenerExample extends StatefulWidget {
   const ListenerExample(
       {
-        required this.options,
-        required this.appState,
-        required this.kPixPainterOptions,
         super.key
       });
 
-  final CanvasOptions options;
-  final AppState appState;
-  final KPixPainterOptions kPixPainterOptions;
   @override
   State<ListenerExample> createState() => _ListenerExampleState();
 }
 
 class _ListenerExampleState extends State<ListenerExample> {
+  CanvasOptions options = GetIt.I.get<PreferenceManager>().canvasWidgetOptions;
+  AppState appState = GetIt.I.get<AppState>();
+  
+  
+  
   //TODO privatize members and methods
   int pressTime = 0;
   ValueNotifier<CursorCoordinates?> cursorPos = ValueNotifier(null);
@@ -96,9 +97,9 @@ class _ListenerExampleState extends State<ListenerExample> {
   @override
   void initState() {
     super.initState();
-    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: widget.options.stylusPollRate), _stylusBtnTimeout);
-    timeoutLongPress = Duration(milliseconds: widget.options.longPressDuration);
-    maxLongPressDistance = widget.options.longPressCancelDistance;
+    timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
+    timeoutLongPress = Duration(milliseconds: options.longPressDuration);
+    maxLongPressDistance = options.longPressCancelDistance;
   }
 
 
@@ -117,7 +118,7 @@ class _ListenerExampleState extends State<ListenerExample> {
         dragStartLoc = Offset((touchPointers.values.elementAt(0).currentPos.dx + touchPointers.values.elementAt(1).currentPos.dx) / 2, (touchPointers.values.elementAt(0).currentPos.dy + touchPointers.values.elementAt(1).currentPos.dy) / 2);
         isDragging = true;
         initialTouchZoomDistance = (touchPointers.values.elementAt(0).currentPos - touchPointers.values.elementAt(1).currentPos).distance;
-        touchZoomStartLevel = widget.appState.getZoomLevel();
+        touchZoomStartLevel = appState.getZoomLevel();
         setMouseCursor(SystemMouseCursors.move);
       }
     }
@@ -162,10 +163,10 @@ class _ListenerExampleState extends State<ListenerExample> {
     if (primaryIsDown)
     {
       print("PRIMARY UP");
-      widget.appState.hideStatusBarToolDimension();
-      widget.appState.hideStatusBarToolDiagonal();
-      widget.appState.hideStatusBarToolAngle();
-      widget.appState.hideStatusBarToolAspectRatio();
+      appState.hideStatusBarToolDimension();
+      appState.hideStatusBarToolDiagonal();
+      appState.hideStatusBarToolAngle();
+      appState.hideStatusBarToolAspectRatio();
       timerLongPress.cancel();
       primaryIsDown = false;
     }
@@ -201,13 +202,13 @@ class _ListenerExampleState extends State<ListenerExample> {
 
 
 
-    widget.appState.setStatusBarCursorPosition(cursorPos.value!);
+    appState.setStatusBarCursorPosition(cursorPos.value!);
     if (primaryIsDown)
     {
-      widget.appState.setStatusBarToolDimension(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
-      widget.appState.setStatusBarToolDiagonal(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
-      widget.appState.setStatusBarToolAspectRatio(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
-      widget.appState.setStatusBarToolAngle(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      appState.setStatusBarToolDimension(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      appState.setStatusBarToolDiagonal(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      appState.setStatusBarToolAspectRatio(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
+      appState.setStatusBarToolAngle(pressStartLoc.dx.round(), pressStartLoc.dy.round(), cursorPos.value!.x.round(), cursorPos.value!.y.round());
 
     }
 
@@ -225,8 +226,8 @@ class _ListenerExampleState extends State<ListenerExample> {
     if (stylusZoomStarted)
     {
       double yOffset = secondaryStartLoc.dy - cursorPos.value!.y;
-      int zoomSteps = (yOffset / widget.options.stylusZoomStepDistance).round();
-      widget.appState.setZoomLevelByDistance(stylusZoomStartLevel, zoomSteps);
+      int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
+      appState.setZoomLevelByDistance(stylusZoomStartLevel, zoomSteps);
     }
 
     Offset co = Offset(cursorPos.value!.x, cursorPos.value!.y);
@@ -254,8 +255,8 @@ class _ListenerExampleState extends State<ListenerExample> {
       if (details.kind == PointerDeviceKind.touch && touchPointers.length == 2)
       {
         final double currentDistance = (touchPointers.values.elementAt(0).currentPos - touchPointers.values.elementAt(1).currentPos).distance;
-        final int zoomSteps = ((currentDistance - initialTouchZoomDistance) / widget.options.touchZoomStepDistance).round();
-        widget.appState.setZoomLevelByDistance(touchZoomStartLevel, zoomSteps);
+        final int zoomSteps = ((currentDistance - initialTouchZoomDistance) / options.touchZoomStepDistance).round();
+        appState.setZoomLevelByDistance(touchZoomStartLevel, zoomSteps);
       }
     }
 
@@ -281,11 +282,11 @@ class _ListenerExampleState extends State<ListenerExample> {
     {
       if (ev.scrollDelta.dy < 0.0)
       {
-        widget.appState.increaseZoomLevel();
+        appState.increaseZoomLevel();
       }
       else if (ev.scrollDelta.dy > 0.0)
       {
-        widget.appState.decreaseZoomLevel();
+        appState.decreaseZoomLevel();
       }
     }
   }
@@ -293,7 +294,7 @@ class _ListenerExampleState extends State<ListenerExample> {
   void _onMouseExit(PointerExitEvent _)
   {
     cursorPos.value = null;
-    widget.appState.repaintNotifier.repaint();
+    appState.repaintNotifier.repaint();
     mouseIsInside = false;
   }
 
@@ -324,7 +325,7 @@ class _ListenerExampleState extends State<ListenerExample> {
     if (!stylusHoverDetected && cursorPos.value != null && !mouseIsInside)
     {
       cursorPos.value = null;
-      widget.appState.repaintNotifier.repaint();
+      appState.repaintNotifier.repaint();
     }
     else
     {
@@ -348,7 +349,7 @@ class _ListenerExampleState extends State<ListenerExample> {
     print("STYLUS BTN LONG PRESS");
     timerStylusRunning = false;
     stylusZoomStarted = true;
-    stylusZoomStartLevel = widget.appState.getZoomLevel();
+    stylusZoomStartLevel = appState.getZoomLevel();
   }
 
   void setMouseCursor(final MouseCursor cursor)
@@ -379,12 +380,12 @@ class _ListenerExampleState extends State<ListenerExample> {
                 color: Theme.of(context).primaryColorDark,
                 child: CustomPaint(
                   painter: KPixPainter(
-                    appState: widget.appState,
+                    appState: appState,
                     offset: canvasOffset,
-                    options: widget.kPixPainterOptions,
                     checkerboardColor1: Theme.of(context).primaryColor,
                     checkerboardColor2: Theme.of(context).primaryColorLight,
                     coords: cursorPos,
+                    options: GetIt.I.get<PreferenceManager>().kPixPainterOptions
 
                   )
                 )

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
@@ -7,28 +10,8 @@ import 'package:kpix/widgets/overlay_entries.dart';
 
 class RightBarWidget extends StatefulWidget
 {
-  final MainButtonWidgetOptions mainButtonWidgetOptions;
-  final OverlayEntrySubMenuOptions overlayEntrySubMenuOptions;
-  final LayerWidgetOptions layerWidgetOptions;
-  final ValueNotifier<List<LayerState>> layerList;
-  final ChangeLayerPositionFn changeLayerPositionFn;
-  final AddNewLayerFn addNewLayerFn;
-  final LayerDuplicateFn layerDuplicateFn;
-  final LayerDeleteFn layerDeleteFn;
-  final LayerMergeDownFn layerMergeDownFn;
-  final LayerSelectedFn layerSelectedFn;
   const RightBarWidget({
     super.key,
-    required this.overlayEntrySubMenuOptions,
-    required this.mainButtonWidgetOptions,
-    required this.layerWidgetOptions,
-    required this.layerList,
-    required this.changeLayerPositionFn,
-    required this.addNewLayerFn,
-    required this.layerDeleteFn,
-    required this.layerMergeDownFn,
-    required this.layerDuplicateFn,
-    required this.layerSelectedFn,
   });
 
   @override
@@ -39,11 +22,13 @@ class RightBarWidget extends StatefulWidget
 class _RightBarWidgetState extends State<RightBarWidget>
 {
   late List<Widget> widgetList;
+  AppState appState = GetIt.I.get<AppState>();
+  LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
 
   @override
   void initState() {
     super.initState();
-    _createWidgetList(widget.layerList.value);
+    _createWidgetList(appState.layers.value);
   }
 
   void _createWidgetList(final List<LayerState> states)
@@ -54,36 +39,30 @@ class _RightBarWidgetState extends State<RightBarWidget>
       widgetList.add(DragTarget<LayerState>(
         builder: (context, candidateItems, rejectedItems) {
           return AnimatedContainer(
-            height: candidateItems.isEmpty ? widget.layerWidgetOptions.outerPadding : widget.layerWidgetOptions.dragTargetHeight,
+            height: candidateItems.isEmpty ? layerWidgetOptions.outerPadding : layerWidgetOptions.dragTargetHeight,
             color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
-            duration: Duration(milliseconds: widget.layerWidgetOptions.dragTargetShowDuration)
+            duration: Duration(milliseconds: layerWidgetOptions.dragTargetShowDuration)
           );
         },
         onAcceptWithDetails: (details) {
-          widget.changeLayerPositionFn(details.data, i);
+          appState.changeLayerOrder(details.data, i);
         },
       ));
 
       widgetList.add(LayerWidget(
         layerState: states[i],
-        options: widget.layerWidgetOptions,
-        layerSelectedFn: widget.layerSelectedFn,
-        menuOptions: widget.overlayEntrySubMenuOptions,
-        layerDeleteFn: widget.layerDeleteFn,
-        layerDuplicateFn: widget.layerDuplicateFn,
-        layerMergeDownFn: widget.layerMergeDownFn,
       ));
     }
     widgetList.add(DragTarget<LayerState>(
       builder: (context, candidateItems, rejectedItems) {
         return Divider(
-          height: candidateItems.isEmpty ? widget.layerWidgetOptions.outerPadding : widget.layerWidgetOptions.dragTargetHeight,
-          thickness: candidateItems.isEmpty ? widget.layerWidgetOptions.outerPadding : widget.layerWidgetOptions.dragTargetHeight,
+          height: candidateItems.isEmpty ? layerWidgetOptions.outerPadding : layerWidgetOptions.dragTargetHeight,
+          thickness: candidateItems.isEmpty ? layerWidgetOptions.outerPadding : layerWidgetOptions.dragTargetHeight,
           color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
         );
       },
       onAcceptWithDetails: (details) {
-        widget.changeLayerPositionFn(details.data, states.length);
+        appState.changeLayerOrder(details.data, states.length);
       },
     ));
   }
@@ -97,8 +76,6 @@ class _RightBarWidgetState extends State<RightBarWidget>
       child: Column(
         children: [
           MainButtonWidget(
-            options: widget.mainButtonWidgetOptions,
-            overlayEntrySubMenuOptions: widget.overlayEntrySubMenuOptions,
           ),
           Expanded(
             child: Container(
@@ -111,14 +88,14 @@ class _RightBarWidgetState extends State<RightBarWidget>
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(top: widget.layerWidgetOptions.outerPadding, left: widget.layerWidgetOptions.outerPadding, right: widget.layerWidgetOptions.outerPadding),
+                      padding: EdgeInsets.only(top: layerWidgetOptions.outerPadding, left: layerWidgetOptions.outerPadding, right: layerWidgetOptions.outerPadding),
                       child: IconButton(
-                        onPressed: widget.addNewLayerFn,
+                        onPressed: appState.addNewLayer,
                         icon: const FaIcon(FontAwesomeIcons.plus)
                       ),
                     ),
                     ValueListenableBuilder<List<LayerState>>(
-                      valueListenable: widget.layerList,
+                      valueListenable: appState.layers,
                       builder: (BuildContext context, List<LayerState> states, child)
                       {
                         _createWidgetList(states);

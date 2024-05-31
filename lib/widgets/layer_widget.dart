@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -113,22 +115,12 @@ class LayerState
 class LayerWidget extends StatefulWidget
 {
   final LayerState layerState;
-  final LayerWidgetOptions options;
-  final LayerSelectedFn layerSelectedFn;
-  final LayerDeleteFn layerDeleteFn;
-  final LayerMergeDownFn layerMergeDownFn;
-  final LayerDuplicateFn layerDuplicateFn;
 
-  final OverlayEntrySubMenuOptions menuOptions;
+
   const LayerWidget({
     super.key,
     required this.layerState,
-    required this.options,
-    required this.layerSelectedFn,
-    required this.menuOptions,
-    required this.layerDuplicateFn,
-    required this.layerMergeDownFn,
-    required this.layerDeleteFn});
+  });
 
   @override
   State<LayerWidget> createState() => _LayerWidgetState();
@@ -137,6 +129,9 @@ class LayerWidget extends StatefulWidget
 
 class _LayerWidgetState extends State<LayerWidget>
 {
+  AppState appState = GetIt.I.get<AppState>();
+  LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+
   static const Map<LayerVisibilityState, IconData> _visibilityIconMap = {
     LayerVisibilityState.visible: FontAwesomeIcons.eye,
     LayerVisibilityState.hidden: FontAwesomeIcons.eyeSlash,
@@ -169,7 +164,6 @@ class _LayerWidgetState extends State<LayerWidget>
     settingsMenu = OverlayEntries.getLayerMenu(
       onDismiss: _closeSettingsMenu,
       layerLink: settingsLink,
-      options: widget.menuOptions,
       onDelete: _deletePressed,
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
@@ -178,19 +172,19 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _deletePressed()
   {
-    widget.layerDeleteFn(widget.layerState);
+    appState.layerDeleted(widget.layerState);
     _closeSettingsMenu();
   }
 
   void _mergeDownPressed()
   {
-    widget.layerMergeDownFn(widget.layerState);
+    appState.layerMerged(widget.layerState);
     _closeSettingsMenu();
   }
 
   void _duplicatePressed()
   {
-    widget.layerDuplicateFn(widget.layerState);
+    appState.layerDuplicated(widget.layerState);
     _closeSettingsMenu();
   }
 
@@ -251,36 +245,36 @@ class _LayerWidgetState extends State<LayerWidget>
   @override
   Widget build(BuildContext context) {
     return LongPressDraggable<LayerState>(
-      delay: Duration(milliseconds: widget.options.dragDelay),
+      delay: Duration(milliseconds: options.dragDelay),
       data: widget.layerState,
       feedback: Container(
-        width: widget.options.dragFeedbackSize,
-        height: widget.options.dragFeedbackSize,
-        color: Theme.of(context).primaryColor.withOpacity(widget.options.dragOpacity),
+        width: options.dragFeedbackSize,
+        height: options.dragFeedbackSize,
+        color: Theme.of(context).primaryColor.withOpacity(options.dragOpacity),
       ),
       //childWhenDragging: const SizedBox.shrink(),
       childWhenDragging: Container(
-        height: widget.options.dragTargetHeight,
+        height: options.dragTargetHeight,
         color: Theme.of(context).primaryColor,
       ),
       child: Padding(
-        padding: EdgeInsets.only(left: widget.options.outerPadding, right: widget.options.outerPadding),
+        padding: EdgeInsets.only(left: options.outerPadding, right: options.outerPadding),
         child: SizedBox(
-          height: widget.options.height,
+          height: options.height,
           child: ValueListenableBuilder<bool>(
             valueListenable: widget.layerState.isSelected,
             builder: (BuildContext context, bool isSelected, child) {
             return Container(
-                padding: EdgeInsets.all(widget.options.innerPadding),
+                padding: EdgeInsets.all(options.innerPadding),
 
                 decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.all(
-                        Radius.circular(widget.options.borderRadius),
+                        Radius.circular(options.borderRadius),
                     ),
                     border: isSelected ? Border.all(
                       color: Theme.of(context).primaryColorLight,
-                      width: widget.options.borderWidth,
+                      width: options.borderWidth,
                     ) : null
                 ),
                 child: Row(
@@ -290,7 +284,7 @@ class _LayerWidgetState extends State<LayerWidget>
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
-                          right: widget.options.innerPadding),
+                          right: options.innerPadding),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,10 +300,10 @@ class _LayerWidgetState extends State<LayerWidget>
                                       tooltip: _visibilityTooltipMap[visibility],
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(
-                                        maxHeight: widget.options.buttonSizeMax,
-                                        maxWidth: widget.options.buttonSizeMax,
-                                        minWidth: widget.options.buttonSizeMin,
-                                        minHeight: widget.options.buttonSizeMin,
+                                        maxHeight: options.buttonSizeMax,
+                                        maxWidth: options.buttonSizeMax,
+                                        minWidth: options.buttonSizeMin,
+                                        minHeight: options.buttonSizeMin,
                                       ),
                                       style: const ButtonStyle(
                                         tapTargetSize: MaterialTapTargetSize
@@ -318,13 +312,13 @@ class _LayerWidgetState extends State<LayerWidget>
                                       onPressed: _visibilityButtonPressed,
                                       icon: FaIcon(
                                         _visibilityIconMap[visibility],
-                                        size: widget.options.iconSize,
+                                        size: options.iconSize,
                                       )
                                   );
                                 }
                             ),
                           ),
-                          SizedBox(height: widget.options.innerPadding),
+                          SizedBox(height: options.innerPadding),
                           Expanded(
                             child: ValueListenableBuilder<LayerLockState>(
                                 valueListenable: widget.layerState.lockState,
@@ -334,10 +328,10 @@ class _LayerWidgetState extends State<LayerWidget>
                                       tooltip: _lockStringMap[lock],
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(
-                                        maxHeight: widget.options.buttonSizeMax,
-                                        maxWidth: widget.options.buttonSizeMax,
-                                        minWidth: widget.options.buttonSizeMin,
-                                        minHeight: widget.options.buttonSizeMin,
+                                        maxHeight: options.buttonSizeMax,
+                                        maxWidth: options.buttonSizeMax,
+                                        minWidth: options.buttonSizeMin,
+                                        minHeight: options.buttonSizeMin,
                                       ),
                                       style: const ButtonStyle(
                                         tapTargetSize: MaterialTapTargetSize
@@ -346,7 +340,7 @@ class _LayerWidgetState extends State<LayerWidget>
                                       onPressed: _lockButtonPressed,
                                       icon: FaIcon(
                                         _lockIconMap[lock],
-                                        size: widget.options.iconSize,
+                                        size: options.iconSize,
                                       )
                                   );
                                 }
@@ -357,7 +351,9 @@ class _LayerWidgetState extends State<LayerWidget>
                     ),
                     Expanded(
                         child: GestureDetector(
-                          onTap: () {widget.layerSelectedFn(widget.layerState);},
+                          onTap: () {
+                            appState.layerSelected(widget.layerState);
+                          },
                           child: ValueListenableBuilder<Color>(
                             valueListenable: widget.layerState.color,
                             builder: (BuildContext context, Color color, child)
@@ -368,16 +364,16 @@ class _LayerWidgetState extends State<LayerWidget>
                         )),
                     Padding(
                       padding: EdgeInsets.only(
-                          left: widget.options.innerPadding),
+                          left: options.innerPadding),
                       child: CompositedTransformTarget(
                         link: settingsLink,
                         child: IconButton.outlined(
                             tooltip: "Settings",
                             constraints: BoxConstraints(
-                              maxHeight: widget.options.buttonSizeMax,
-                              maxWidth: widget.options.buttonSizeMax,
-                              minWidth: widget.options.buttonSizeMin,
-                              minHeight: widget.options.buttonSizeMin,
+                              maxHeight: options.buttonSizeMax,
+                              maxWidth: options.buttonSizeMax,
+                              minWidth: options.buttonSizeMin,
+                              minHeight: options.buttonSizeMin,
                             ),
                             style: const ButtonStyle(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -385,7 +381,7 @@ class _LayerWidgetState extends State<LayerWidget>
                             onPressed: _settingsButtonPressed,
                             icon: FaIcon(
                               FontAwesomeIcons.bars,
-                              size: widget.options.iconSize,
+                              size: options.iconSize,
                             )
                         ),
                       ),

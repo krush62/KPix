@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -13,13 +15,7 @@ class ColorRampRowWidget extends StatefulWidget {
   final ColorRampFn? colorsUpdatedFn;
   final ColorRampFn? deleteRowFn;
   final AddNewRampFn? addNewRampFn;
-  final ColorEntryWidgetOptions colorEntryWidgetOptions;
-  final AppState? appState;
   final List<Widget> widgetList;
-  final KPalWidgetOptions? kPalWidgetOptions;
-  final KPalConstraints? kPalConstraints;
-  final OverlayEntryAlertDialogOptions? alertDialogOptions;
-  final ColorNames? colorNames;
 
   @override
   State<ColorRampRowWidget> createState() => _ColorRampRowWidgetState();
@@ -31,13 +27,7 @@ class ColorRampRowWidget extends StatefulWidget {
     this.addNewRampFn,
     this.deleteRowFn,
     this.colorsUpdatedFn,
-    required this.colorEntryWidgetOptions,
-    this.appState,
-    this.kPalConstraints,
-    this.kPalWidgetOptions,
-    this.alertDialogOptions,
     required this.widgetList,
-    this.colorNames,
   });
 
   factory ColorRampRowWidget({
@@ -46,27 +36,15 @@ class ColorRampRowWidget extends StatefulWidget {
     AddNewRampFn? addNewRampFn,
     ColorRampFn? deleteRowFn,
     ColorRampFn? colorsUpdatedFn,
-    required ColorEntryWidgetOptions colorEntryWidgetOptions,
-    AppState? appState,
-    KPalConstraints? kPalConstraints,
-    KPalWidgetOptions? kPalWidgetOptions,
-    OverlayEntryAlertDialogOptions? alertDialogOptions,
-    ColorNames? colorNames,
   }){
     List<Widget> widgetList = [];
     return ColorRampRowWidget._(
-      colorEntryWidgetOptions: colorEntryWidgetOptions,
       addNewRampFn: addNewRampFn,
       widgetList: widgetList,
-      kPalWidgetOptions: kPalWidgetOptions,
-      kPalConstraints: kPalConstraints,
-      alertDialogOptions: alertDialogOptions,
       colorSelectedFn: colorSelectedFn,
-      appState: appState,
       rampData: rampData,
       colorsUpdatedFn: colorsUpdatedFn,
       deleteRowFn: deleteRowFn,
-      colorNames: colorNames,
     );
   }
 
@@ -81,17 +59,16 @@ class ColorRampRowWidget extends StatefulWidget {
       {
         widgetList.add(ColorEntryWidget(
             color: color.value,
-            options: colorEntryWidgetOptions,
             colorSelectedFn: colorSelectedFn,
-            appState: appState!));
+            ));
 
       }
       widgetList.add(IconButton(
-        padding: EdgeInsets.all(colorEntryWidgetOptions.buttonPadding),
+        padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
         constraints: const BoxConstraints(),
         icon: FaIcon(
           FontAwesomeIcons.sliders,
-          size: colorEntryWidgetOptions.settingsIconSize,
+          size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
         ),
         onPressed: () {
           createKPal(rampData!);
@@ -101,10 +78,10 @@ class ColorRampRowWidget extends StatefulWidget {
       widgetList.add(
           Expanded(
               child: IconButton(
-                  padding: EdgeInsets.all(colorEntryWidgetOptions.buttonPadding),
+                  padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
                   icon: FaIcon(
                     FontAwesomeIcons.plus,
-                    size: colorEntryWidgetOptions.addIconSize,
+                    size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
                   ),
                   onPressed: () {
 
@@ -132,10 +109,6 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
       onDismiss: _closeKPal,
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
-      colorNames: widget.colorNames!,
-      options: widget.kPalWidgetOptions!,
-      constraints: widget.kPalConstraints!,
-      alertDialogOptions: widget.alertDialogOptions!,
       colorRamp: ramp,
     );
     if (!kPalVisible)

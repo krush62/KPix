@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/models.dart';
+import 'package:kpix/preference_manager.dart';
 
 class StatusBarWidgetOptions
 {
@@ -47,27 +50,21 @@ class StatusBarWidget extends StatefulWidget
 
   factory StatusBarWidget({
     Key? key,
-    required StatusBarWidgetOptions options,
-    required ValueNotifier<String?> dimensionString,
-    required ValueNotifier<String?> cursorPositionString,
-    required ValueNotifier<String?> zoomFactorString,
-    required ValueNotifier<String?> toolAngleString,
-    required ValueNotifier<String?> toolAspectRatioString,
-    required ValueNotifier<String?> toolDiagonalString,
-    required ValueNotifier<String?> toolDimensionString,
   })
   {
+    StatusBarWidgetOptions options = GetIt.I.get<PreferenceManager>().statusBarWidgetOptions;
+    AppState appState = GetIt.I.get<AppState>();
     double fIconSize = options.height - 2 * options.padding;
     return StatusBarWidget._(
         key: key,
         options: options,
-        dimensionString: dimensionString,
-        cursorPositionString: cursorPositionString,
-        zoomFactorString: zoomFactorString,
-        toolAngleString: toolAngleString,
-        toolAspectRatioString: toolAspectRatioString,
-        toolDiagonalString: toolDiagonalString,
-        toolDimensionString: toolDimensionString,
+        dimensionString: appState.statusBarDimensionString,
+        cursorPositionString: appState.statusBarCursorPositionString,
+        zoomFactorString: appState.statusBarZoomFactorString,
+        toolAngleString: appState.statusBarToolAngleString,
+        toolAspectRatioString: appState.statusBarToolAspectRatioString,
+        toolDiagonalString: appState.statusBarToolDiagonalString,
+        toolDimensionString: appState.statusBarToolDimensionString,
         iconSize: fIconSize,);
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/shader_options.dart';
 
 class ShaderWidgetOptions {
@@ -9,36 +11,36 @@ class ShaderWidgetOptions {
 class ShaderWidget extends StatefulWidget {
   final TextStyle? titleStyle;
   final TextStyle? labelStyle;
-  final ShaderWidgetOptions shaderWidgetOptions;
-  final ShaderOptions shaderOptions;
 
   const ShaderWidget(
       {super.key,
         required this.titleStyle,
         required this.labelStyle,
-        required this.shaderWidgetOptions,
-        required this.shaderOptions});
+});
 
   @override
   State<ShaderWidget> createState() => _ShaderWidgetState();
 }
 
 class _ShaderWidgetState extends State<ShaderWidget> {
+  final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final ShaderWidgetOptions shaderWidgetOptions = GetIt.I.get<PreferenceManager>().shaderWidgetOptions;
+
   void _enableSwitchChanged(bool newVal) {
     setState(() {
-      widget.shaderOptions.isEnabled = newVal;
+      shaderOptions.isEnabled = newVal;
     });
   }
 
   void _currentRampSwitchChanged(bool newVal) {
     setState(() {
-      widget.shaderOptions.onlyCurrentRampEnabled = newVal;
+      shaderOptions.onlyCurrentRampEnabled = newVal;
     });
   }
 
   void _directionSwitchChanged(bool newVal) {
     setState(() {
-      widget.shaderOptions.shaderDirection = newVal ? ShaderDirection.right : ShaderDirection.left;
+      shaderOptions.shaderDirection = newVal ? ShaderDirection.right : ShaderDirection.left;
     });
   }
 
@@ -50,7 +52,7 @@ class _ShaderWidgetState extends State<ShaderWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding (
-        padding: EdgeInsets.all(widget.shaderWidgetOptions.outSidePadding),
+        padding: EdgeInsets.all(shaderWidgetOptions.outSidePadding),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -60,12 +62,12 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 Expanded(
                   flex: 3,
                   child: Text("Shading",
-                      textAlign: TextAlign.start, style: widget.shaderOptions.isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
+                      textAlign: TextAlign.start, style: shaderOptions.isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
                 ),
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: EdgeInsets.only(right: widget.shaderWidgetOptions.outSidePadding),
+                    padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
                     child: Text("Enabled",
                         textAlign: TextAlign.end, style: widget.labelStyle),
                   ),
@@ -74,7 +76,7 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                     flex: 1,
                     child: Switch(
                       onChanged: _enableSwitchChanged,
-                      value: widget.shaderOptions.isEnabled,
+                      value: shaderOptions.isEnabled,
                     )
                 ),
               ],
@@ -85,7 +87,7 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: EdgeInsets.only(right: widget.shaderWidgetOptions.outSidePadding),
+                    padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
                     child: Text("Current Ramp Only",
                         textAlign: TextAlign.start, style: widget.labelStyle),
                   ),
@@ -93,16 +95,16 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 Expanded(
                     flex: 1,
                     child: Switch(
-                      onChanged: widget.shaderOptions.isEnabled
+                      onChanged: shaderOptions.isEnabled
                           ? _currentRampSwitchChanged
                           : null,
-                      value: widget.shaderOptions.onlyCurrentRampEnabled,
+                      value: shaderOptions.onlyCurrentRampEnabled,
                     )
                 ),
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: EdgeInsets.only(right: widget.shaderWidgetOptions.outSidePadding),
+                    padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
                     child: Text("Direction",
                         textAlign: TextAlign.end, style: widget.labelStyle),
                   ),
@@ -110,10 +112,10 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 Expanded(
                     flex: 1,
                     child: Switch(
-                      onChanged: widget.shaderOptions.isEnabled
+                      onChanged: shaderOptions.isEnabled
                           ? _directionSwitchChanged
                           : null,
-                      value: widget.shaderOptions.shaderDirection == ShaderDirection.right,
+                      value: shaderOptions.shaderDirection == ShaderDirection.right,
                     )
                 ),
               ],

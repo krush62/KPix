@@ -20,6 +20,7 @@ import 'package:kpix/widgets/vertical_split_view.dart';
 import 'package:kpix/widgets/listener_example.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_it/get_it.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,8 +51,6 @@ class KPixApp extends StatefulWidget {
 }
 
 class _KPixAppState extends State<KPixApp> {
-  late PreferenceManager prefs;
-  late AppState appState;
   bool prefsInitialized = false;
 
   @override
@@ -63,9 +62,10 @@ class _KPixAppState extends State<KPixApp> {
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
     Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
-    prefs = PreferenceManager(sPrefs, FontManager(kFontMap: fontMap));
-    appState = AppState(kPalConstraints: prefs.kPalConstraints, toolOptions: prefs.toolOptions);
+    GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
+    GetIt.I.registerSingleton<AppState>(AppState());
     //TODO TEMP
+    AppState appState = GetIt.I.get<AppState>();
     appState.setCanvasDimensions(width: 64, height: 32);
     appState.addNewRamp();
     appState.addNewRamp();
@@ -104,7 +104,7 @@ class _KPixAppState extends State<KPixApp> {
       );
     } else {
       return MaterialApp(
-        home: MainWidget(appState: appState, prefs: prefs),
+        home: const MainWidget(),
         theme: KPixTheme.monochromeTheme,
         darkTheme: KPixTheme.monochromeThemeDark,
       );
@@ -113,10 +113,7 @@ class _KPixAppState extends State<KPixApp> {
 }
 
 class MainWidget extends StatelessWidget {
-  final AppState appState;
-  final PreferenceManager prefs;
-
-  const MainWidget({super.key, required this.appState, required this.prefs});
+  const MainWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -159,95 +156,54 @@ class MainWidget extends StatelessWidget {
         Expanded(
             child: MultiSplitViewTheme(
               data: MultiSplitViewThemeData(
-                dividerThickness: prefs.mainLayoutOptions.splitViewDividerWidth,
+                dividerThickness: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth,
                 dividerPainter: DividerPainters.grooved2(
                   backgroundColor: Theme.of(context).primaryColor,
                   color: Theme.of(context).primaryColorDark,
                   highlightedColor: Theme.of(context).primaryColorLight,
-                  count: prefs.mainLayoutOptions.splitViewGrooveCountMin,
-                  highlightedCount: prefs.mainLayoutOptions.splitViewGrooveCountMax,
-                  gap: prefs.mainLayoutOptions.splitViewGrooveGap,
-                  animationDuration: Duration(milliseconds: prefs.mainLayoutOptions.splitViewAnimationLength),
-                  thickness: prefs.mainLayoutOptions.splitViewGrooveThickness,
-                  size: prefs.mainLayoutOptions.splitViewGrooveSize
+                  count: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveCountMin,
+                  highlightedCount: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveCountMax,
+                  gap: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveGap,
+                  animationDuration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewAnimationLength),
+                  thickness: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveThickness,
+                  size: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveSize
                 )
               ),
               child: MultiSplitView(
                 initialAreas: [
                 Area(builder: (context, area) {
-                  return MainToolbarWidget(
-                    appState: appState,
-                    toolSettingsWidgetOptions: prefs.toolSettingsWidgetOptions,
-                    toolOptions: prefs.toolOptions,
-                    mainToolbarWidgetOptions: prefs.mainToolbarWidgetOptions,
-                    paletteWidgetOptions: prefs.paletteWidgetOptions,
-                    toolsWidgetOptions: prefs.toolsWidgetOptions,
-                    shaderWidgetOptions: prefs.shaderWidgetOptions,
-                    shaderOptions: prefs.shaderOptions,
-                    overlayEntryOptions: prefs.overlayEntryOptions,
-                    colorChooserWidgetOptions: prefs.colorChooserWidgetOptions,
-                    colorEntryWidgetOptions: prefs.colorEntryOptions,
-                    kPalWidgetOptions: prefs.kPalWidgetOptions,
-                    kPalConstraints: prefs.kPalConstraints,
-                    alertDialogOptions: prefs.alertDialogOptions,
-                    colorNames: prefs.colorNames,
-                    addNewRampFn: appState.addNewRamp,
-                    updateRampFn: appState.updateRamp,
-                    deleteRampFn: appState.deleteRamp,
-                    colorSelectedFn: appState.colorSelected,
-                  );
+                  return const MainToolbarWidget();
                 },
-                flex: prefs.mainLayoutOptions.splitViewFlexLeftDefault,
-                min: prefs.mainLayoutOptions.splitViewFlexLeftMin,
-                max: prefs.mainLayoutOptions.splitViewFlexLeftMax),
+                flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault,
+                min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
+                max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax),
                 Area(builder: (context, area) {
                   return Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      ListenerExample(
-                        options: prefs.canvasWidgetOptions,
-                        appState: appState,
-                        kPixPainterOptions: prefs.kPixPainterOptions,
+                      const ListenerExample(
                       ),
                       StatusBarWidget(
-                        options: prefs.statusBarWidgetOptions,
-                        zoomFactorString: appState.statusBarZoomFactorString,
-                        cursorPositionString:
-                            appState.statusBarCursorPositionString,
-                        dimensionString: appState.statusBarDimensionString,
-                        toolDimensionString: appState.statusBarToolDimensionString,
-                        toolDiagonalString: appState.statusBarToolDiagonalString,
-                        toolAspectRatioString:
-                            appState.statusBarToolAspectRatioString,
-                        toolAngleString: appState.statusBarToolAngleString,
                       )
                     ],
                   );
                 },
-                flex: prefs.mainLayoutOptions.splitViewFlexCenterDefault
+                flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault
                 ),
-                Area(builder: (context, area){
-                 return RightBarWidget(
-                   overlayEntrySubMenuOptions: prefs.overlayEntryOptions,
-                   mainButtonWidgetOptions: prefs.mainButtonWidgetOptions,
-                   layerWidgetOptions: prefs.layerWidgetOptions,
-                   layerList: appState.layers,
-                   changeLayerPositionFn: appState.changeLayerOrder,
-                   addNewLayerFn: appState.addNewLayerPressed,
-                   layerSelectedFn: appState.layerSelected,
-                   layerMergeDownFn: appState.layerMerged,
-                   layerDuplicateFn: appState.layerDuplicated,
-                   layerDeleteFn: appState.layerDeleted,
-                 );
+                Area(builder: (context, area)
+                {
+                 return const RightBarWidget();
                 },
-                  flex: prefs.mainLayoutOptions.splitViewFlexRightDefault,
-                  min: prefs.mainLayoutOptions.splitViewFlexRightMin,
-                  max: prefs.mainLayoutOptions.splitViewFlexRightMax,
+                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault,
+                  min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
+                  max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
 
                 )
                         ],
                       ),
-            )),
+            )
+
+        ),
       ],
     );
   }

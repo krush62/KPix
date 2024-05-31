@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class MainButtonWidgetOptions
@@ -17,12 +19,8 @@ class MainButtonWidgetOptions
 
 class MainButtonWidget extends StatefulWidget
 {
-  final MainButtonWidgetOptions options;
-  final OverlayEntrySubMenuOptions overlayEntrySubMenuOptions;
   const MainButtonWidget({
     super.key,
-    required this.options,
-    required this.overlayEntrySubMenuOptions
   });
 
   @override
@@ -38,7 +36,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   final LayerLink saveMenulayerLink = LayerLink();
   bool loadMenuVisible = false;
   bool saveMenuVisible = false;
-
+  MainButtonWidgetOptions options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
   void initState()
@@ -47,14 +45,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     loadMenu = OverlayEntries.getLoadMenu(
       onDismiss: _closeAllMenus,
       layerLink: loadMenulayerLink,
-      options: widget.overlayEntrySubMenuOptions,
       onLoadFile: _loadFile,
       onLoadPalette: _loadPalette,
     );
     saveMenu = OverlayEntries.getSaveMenu(
       onDismiss: _closeAllMenus,
       layerLink: saveMenulayerLink,
-      options: widget.overlayEntrySubMenuOptions,
       onSaveFile: _saveFile,
       onSavePalette: _savePalette,
     );
@@ -137,7 +133,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.all(widget.options.padding),
+        padding: EdgeInsets.all(options.padding),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
         ),
@@ -153,14 +149,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(right: widget.options.padding / 2.0),
+                      padding: EdgeInsets.only(right: options.padding / 2.0),
                       child: CompositedTransformTarget(
                         link: loadMenulayerLink,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
                             FontAwesomeIcons.folderOpen,
-                            size: widget.options.menuIconSize,
+                            size: options.menuIconSize,
                           ),
                           onPressed: _loadPressed,
                         ),
@@ -170,14 +166,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(left: widget.options.padding / 2.0, right: widget.options.padding / 2.0),
+                      padding: EdgeInsets.only(left: options.padding / 2.0, right: options.padding / 2.0),
                       child: CompositedTransformTarget(
                         link: saveMenulayerLink,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
                             FontAwesomeIcons.floppyDisk,
-                            size: widget.options.menuIconSize,
+                            size: options.menuIconSize,
                           ),
                           onPressed: _savePressed,
                         ),
@@ -187,12 +183,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(left: widget.options.padding / 2.0),
+                      padding: EdgeInsets.only(left: options.padding / 2.0),
                       child: IconButton.outlined(
                         color: Theme.of(context).primaryColorLight,
                         icon:  FaIcon(
                           FontAwesomeIcons.gear,
-                          size: widget.options.menuIconSize,
+                          size: options.menuIconSize,
                         ),
                         onPressed: _settingsPressed,
                       ),
@@ -201,11 +197,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               ],
             ),
             Padding(
-              padding: EdgeInsets.only(top: widget.options.padding, bottom: widget.options.padding),
+              padding: EdgeInsets.only(top: options.padding, bottom: options.padding),
               child: Divider(
                 color: Theme.of(context).primaryColorDark,
-                height: widget.options.dividerSize,
-                thickness: widget.options.dividerSize,
+                height: options.dividerSize,
+                thickness: options.dividerSize,
               ),
             ),
             Row(
@@ -215,12 +211,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(right: widget.options.padding / 2.0),
+                      padding: EdgeInsets.only(right: options.padding / 2.0),
                       child: IconButton.outlined(
                         color: Theme.of(context).primaryColorLight,
                         icon:  FaIcon(
                           FontAwesomeIcons.rotateLeft,
-                          size: widget.options.menuIconSize,
+                          size: options.menuIconSize,
                         ),
                         onPressed: _undoPressed,
                       ),
@@ -229,12 +225,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(left: widget.options.padding / 2.0),
+                      padding: EdgeInsets.only(left: options.padding / 2.0),
                       child: IconButton.outlined(
                         color: Theme.of(context).primaryColorLight,
                         icon:  FaIcon(
                           FontAwesomeIcons.rotateRight,
-                          size: widget.options.menuIconSize,
+                          size: options.menuIconSize,
                         ),
                         onPressed: _redoPressed,
                       ),

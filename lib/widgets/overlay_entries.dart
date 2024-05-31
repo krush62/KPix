@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
 
@@ -62,9 +64,10 @@ class OverlayEntries
     required Function onLoadFile,
     required Function onLoadPalette,
     required final LayerLink layerLink,
-    required final OverlayEntrySubMenuOptions options
+
   })
   {
+    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -127,9 +130,9 @@ class OverlayEntries
     required Function onSaveFile,
     required Function onSavePalette,
     required final LayerLink layerLink,
-    required final OverlayEntrySubMenuOptions options
   })
   {
+    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -193,9 +196,9 @@ class OverlayEntries
     required Function onMergeDown,
     required Function onDuplicate,
     required final LayerLink layerLink,
-    required final OverlayEntrySubMenuOptions options
   })
   {
+    OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -311,11 +314,7 @@ class OverlayEntries
     required final Function() onDismiss,
     required final ColorRampFn onAccept,
     required final ColorRampFn onDelete,
-    required final KPalWidgetOptions options,
-    required final KPalConstraints constraints,
     required final KPalRampData colorRamp,
-    required final OverlayEntryAlertDialogOptions alertDialogOptions,
-    required final ColorNames colorNames,
 
   })
   {
@@ -323,22 +322,18 @@ class OverlayEntries
       builder: (context) => Stack(
         children: [
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
           Padding(
-            padding: EdgeInsets.all(options.outsidePadding),
+            padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.outsidePadding),
             child: Align(
               alignment: Alignment.center,
               child: KPal(
-                kPalConstraints: constraints,
-                options: options,
-                colorRamp: colorRamp,
                 dismiss: onDismiss,
                 accept: onAccept,
                 delete: onDelete,
-                alertDialogOptions: alertDialogOptions,
-                colorNames: colorNames,
+                colorRamp: colorRamp,
               )
             ),
           ),
@@ -351,9 +346,9 @@ class OverlayEntries
     required final Function() onDismiss,
     required final Function() onAccept,
     required final String message,
-    required final OverlayEntryAlertDialogOptions options,
 })
   {
+    OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [

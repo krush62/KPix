@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/color_ramp_row_widget.dart';
@@ -45,12 +47,8 @@ class AppState
 
   int canvasWidth = 0;
   int canvasHeight = 0;
-  //ValueNotifier<bool> shouldRepaint = ValueNotifier(false);
 
-  final KPalConstraints kPalConstraints;
-  final ToolOptions _toolOptions;
-
-  AppState({required this.kPalConstraints, required ToolOptions toolOptions}) : _toolOptions = toolOptions
+  AppState()
   {
     for (ToolType toolType in toolList.keys)
     {
@@ -156,7 +154,7 @@ class AppState
       KPalRampData(
         uuid: uuid.v1(),
         settings: KPalRampSettings(
-          constraints: kPalConstraints
+          constraints: GetIt.I.get<PreferenceManager>().kPalConstraints
         )
       )
     );
@@ -372,7 +370,7 @@ class AppState
 
     }
     selectedTool.value = tool;
-   currentToolOptions = _toolOptions.toolOptionMap[selectedTool.value]!;
+   currentToolOptions = GetIt.I.get<PreferenceManager>().toolOptions.toolOptionMap[selectedTool.value]!;
   }
 
   bool toolIsSelected(final ToolType tool)

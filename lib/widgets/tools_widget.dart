@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/models.dart';
 
@@ -22,8 +24,6 @@ class ToolsWidget extends StatefulWidget
 {
   const ToolsWidget(
       {
-        required this.appState,
-        required this.options,
         required this.changeToolFn,
         super.key
       }
@@ -32,16 +32,17 @@ class ToolsWidget extends StatefulWidget
   @override
   State<ToolsWidget> createState() => _ToolsWidgetState();
 
-  final AppState appState;
-  final ToolsWidgetOptions options;
   final ChangeToolFn changeToolFn;
 }
 
 class _ToolsWidgetState extends State<ToolsWidget>
 {
+  AppState appState = GetIt.I.get<AppState>();
+  ToolsWidgetOptions toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
+
   void _selectionChanged(ToolType tool)
   {
-    widget.appState.setToolSelection(tool);
+    appState.setToolSelection(tool);
     widget.changeToolFn(tool); //not used
   }
 
@@ -59,12 +60,12 @@ class _ToolsWidgetState extends State<ToolsWidget>
     for (final ToolType tooltype in toolList.keys)
     {
       IconButton i = IconButton.outlined(
-        isSelected: widget.appState.toolIsSelected(tooltype),
-        color: widget.appState.toolIsSelected(tooltype) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+        isSelected: appState.toolIsSelected(tooltype),
+        color: appState.toolIsSelected(tooltype) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
         tooltip: toolList[tooltype]?.title,
         icon:  FaIcon(
           toolList[tooltype]!.icon,
-          size: widget.options.iconSize,
+          size: toolsWidgetOptions.iconSize,
         ),
         onPressed: () {
           tooltype == ToolType.stamp ? null : _selectionChanged(tooltype);
@@ -79,20 +80,20 @@ class _ToolsWidgetState extends State<ToolsWidget>
         builder: (context, BoxConstraints constraints)
     {
 
-      final int rowCount = (iconButtons.length - 1) ~/ widget.options.colCount + 1;
+      final int rowCount = (iconButtons.length - 1) ~/ toolsWidgetOptions.colCount + 1;
       return Container(
         width: double.infinity,
-        height: (rowCount * widget.options.buttonSize + rowCount * widget.options.padding) + widget.options.padding,
+        height: (rowCount * toolsWidgetOptions.buttonSize + rowCount * toolsWidgetOptions.padding) + toolsWidgetOptions.padding,
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
         ),
         child: Padding(
-          padding: EdgeInsetsDirectional.all(widget.options.padding),
+          padding: EdgeInsetsDirectional.all(toolsWidgetOptions.padding),
           child: GridView.count(
-            crossAxisCount: widget.options.colCount,
-            crossAxisSpacing: widget.options.padding,
-            mainAxisSpacing: widget.options.padding,
-            childAspectRatio: (constraints.maxWidth / widget.options.colCount) / (widget.options.buttonSize) ,
+            crossAxisCount: toolsWidgetOptions.colCount,
+            crossAxisSpacing: toolsWidgetOptions.padding,
+            mainAxisSpacing: toolsWidgetOptions.padding,
+            childAspectRatio: (constraints.maxWidth / toolsWidgetOptions.colCount) / (toolsWidgetOptions.buttonSize) ,
             children: [
               ...iconButtons
             ],

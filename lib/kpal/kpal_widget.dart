@@ -5,8 +5,10 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
@@ -152,26 +154,18 @@ class KPalWidgetOptions
 }
 
 class KPal extends StatefulWidget {
-  final KPalConstraints kPalConstraints;
-  final KPalWidgetOptions options;
-  final OverlayEntryAlertDialogOptions alertDialogOptions;
   final KPalRampData colorRamp;
   final Function() dismiss;
   final ColorRampFn accept;
   final ColorRampFn delete;
-  final ColorNames colorNames;
 
 
   const KPal({
     super.key,
-    required this.kPalConstraints,
-    required this.options,
     required this.colorRamp,
     required this.dismiss,
     required this.accept,
     required this.delete,
-    required this.alertDialogOptions,
-    required this.colorNames
   });
 
 
@@ -183,6 +177,7 @@ class _KPalState extends State<KPal>
 {
   bool _alertDialogVisible = false;
   late OverlayEntry _alertDialog;
+  KPalWidgetOptions options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions;
 
   @override
   void initState() {
@@ -191,7 +186,7 @@ class _KPalState extends State<KPal>
         onDismiss: _dismissAlertDialog,
         onAccept: _acceptDeletion,
         message: "Do you really want to delete this color ramp?",
-        options: widget.alertDialogOptions);
+      );
   }
 
 
@@ -221,27 +216,25 @@ class _KPalState extends State<KPal>
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(widget.options.outsidePadding),
+      padding: EdgeInsets.all(options.outsidePadding),
       child: Align(
         alignment: Alignment.center,
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(
               color: Theme.of(context).primaryColorLight,
-              width: widget.options.borderWidth,
+              width: options.borderWidth,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(widget.options.borderRadius)),
+            borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
           ),
           child: Material(
             color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.all(Radius.circular(widget.options.borderRadius)),
+            borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 KPalRamp(
-                  options: widget.options.rampOptions,
                   rampData: widget.colorRamp,
-                  colorNames: widget.colorNames,
                 ),
                 Row(
                     mainAxisSize: MainAxisSize.max,
@@ -251,11 +244,11 @@ class _KPalState extends State<KPal>
                       Expanded(
                         flex: 1,
                         child: Padding(
-                          padding: EdgeInsets.all(widget.options.insidePadding),
+                          padding: EdgeInsets.all(options.insidePadding),
                           child: IconButton.outlined(
                             icon: FaIcon(
                               FontAwesomeIcons.xmark,
-                              size: widget.options.iconSize,
+                              size: options.iconSize,
                             ),
                             onPressed: () {
                               widget.dismiss();
@@ -266,11 +259,11 @@ class _KPalState extends State<KPal>
                       Expanded(
                           flex: 1,
                           child: Padding(
-                            padding: EdgeInsets.all(widget.options.insidePadding),
+                            padding: EdgeInsets.all(options.insidePadding),
                             child: IconButton.outlined(
                               icon: FaIcon(
                                 FontAwesomeIcons.trash,
-                                size: widget.options.iconSize,
+                                size: options.iconSize,
                               ),
                               onPressed: () {
                                 _showDeleteDialog();
@@ -281,11 +274,11 @@ class _KPalState extends State<KPal>
                       Expanded(
                         flex: 1,
                         child: Padding(
-                          padding: EdgeInsets.all(widget.options.insidePadding),
+                          padding: EdgeInsets.all(options.insidePadding),
                           child: IconButton.outlined(
                             icon: FaIcon(
                               FontAwesomeIcons.check,
-                              size: widget.options.iconSize,
+                              size: options.iconSize,
                             ),
                             onPressed: () {
                               widget.accept(widget.colorRamp);

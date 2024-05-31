@@ -2,6 +2,14 @@
 
 A pixel art creation tool.
 
+## Contents
+
+[Overview](#overview)\
+[Features](#features)\
+[Controls](#controls)\
+[Installation](#installation)\
+[License](#license)
+
 ## Overview
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
 - exclusive use of indexed colors
@@ -9,7 +17,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - hsv based color representation
 - shading capabilities for all tools
 - cross-platform support 
-- pen support
+- stylus and touch support
 
 ## Features
 ### Drawing Tools
@@ -57,6 +65,20 @@ Kpix uses its own kpix format for storing project files (documentation can be fo
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 
 
+## Controls
+
+This application supports input by mouse/keyboard, touch screen and stylus.
+
+| ACTION      | MOUSE               | TOUCH                | STYLUS                      |
+|-------------|---------------------|----------------------|-----------------------------|
+| use tool    | left click          | one finger           | down                        |
+| move canvas | middle click + move | two finger move      | button press + move         |
+| zoom canvas | mouse wheel         | two finger pinch     | button long press + up/down |
+| color pick  | right click         | one finger down long | down long                   |
+
+### Keyboard Shortcuts
+TBD
+
 ## Installation
 ### Windows
 TBD
@@ -67,5 +89,8 @@ TBD
 ### MacOS
 possible, but not planned
 ### iOS
+
+## License
+TBD
 possible, but not planned
 

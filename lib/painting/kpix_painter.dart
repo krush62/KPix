@@ -27,6 +27,7 @@ class KPixPainter extends CustomPainter
   final AppState appState;
   final ValueNotifier<Offset> offset;
   final ValueNotifier<CursorCoordinates?> coords;
+  final ValueNotifier<bool> isDragging;
   final KPixPainterOptions options;
   final Color checkerboardColor1;
   final Color checkerboardColor2;
@@ -38,7 +39,8 @@ class KPixPainter extends CustomPainter
     required this.checkerboardColor1,
     required this.checkerboardColor2,
     required this.options,
-    required this.coords})
+    required this.coords,
+    required this.isDragging})
       : super(repaint: appState.repaintNotifier);
 
   @override
@@ -62,7 +64,7 @@ class KPixPainter extends CustomPainter
     if (coords.value != null)
     {
       final CursorCoordinates pos = coords.value!;
-      if (pos.x >= offset.value.dx && pos.x < offset.value.dx + scaledCanvasWidth && pos.y >= offset.value.dy && pos.y < offset.value.dy + scaledCanvasHeight)
+      if (!isDragging.value && pos.x >= offset.value.dx && pos.x < offset.value.dx + scaledCanvasWidth && pos.y >= offset.value.dy && pos.y < offset.value.dy + scaledCanvasHeight)
       {
         paint.color = Colors.red;
         canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), 10, paint);

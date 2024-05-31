@@ -61,6 +61,7 @@ class _ListenerExampleState extends State<ListenerExample> {
   
   //TODO privatize members and methods
   final ValueNotifier<CursorCoordinates?> _cursorPos = ValueNotifier(null);
+  final ValueNotifier<bool> _isDragging = ValueNotifier(false);
   bool _timerRunning = false;
   late Duration _timeoutLongPress;
   late final double _maxLongPressDistance;
@@ -81,8 +82,6 @@ class _ListenerExampleState extends State<ListenerExample> {
   bool _stylusButtonDown = false;
 
   late Offset _dragStartLoc;
-
-  bool _isDragging = false;
 
   final ValueNotifier<Offset> _canvasOffset = ValueNotifier(const Offset(0.0, 0.0));
 
@@ -114,7 +113,7 @@ class _ListenerExampleState extends State<ListenerExample> {
       if (_touchPointers.length == 2)
       {
         _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
-        _isDragging = true;
+        _isDragging.value = true;
         _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         _touchZoomStartLevel = appState.getZoomLevel();
         setMouseCursor(SystemMouseCursors.move);
@@ -130,7 +129,6 @@ class _ListenerExampleState extends State<ListenerExample> {
         _timerRunning = true;
         _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
       }
-      //_updateLocation(details);
 
       print("PRIMARY DOWN");
     }
@@ -142,7 +140,7 @@ class _ListenerExampleState extends State<ListenerExample> {
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _dragStartLoc = details.localPosition;
-      _isDragging = true;
+      _isDragging.value = true;
       setMouseCursor(SystemMouseCursors.move);
     }
   }
@@ -151,10 +149,8 @@ class _ListenerExampleState extends State<ListenerExample> {
   {
     if (details.kind == PointerDeviceKind.touch)
     {
-      //touchPointers.remove(details.pointer);
       _touchPointers.clear();
-      _isDragging = false;
-
+      _isDragging.value = false;
     }
 
     if (_primaryIsDown)
@@ -171,9 +167,9 @@ class _ListenerExampleState extends State<ListenerExample> {
     {
       _secondaryIsDown = false;
     }
-    else if (_isDragging && details.kind == PointerDeviceKind.mouse)
+    else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
     {
-      _isDragging = false;
+      _isDragging.value = false;
       setMouseCursor(SystemMouseCursors.none);
     }
     _timerRunning = false;
@@ -239,12 +235,12 @@ class _ListenerExampleState extends State<ListenerExample> {
     {
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
-      _isDragging = true;
+      _isDragging.value = true;
       setMouseCursor(SystemMouseCursors.move);
       _dragStartLoc = co;
     }
 
-    if (_isDragging)
+    if (_isDragging.value)
     {
       _canvasOffset.value  = _canvasOffset.value - (_dragStartLoc - co);
       _dragStartLoc = co;
@@ -314,7 +310,7 @@ class _ListenerExampleState extends State<ListenerExample> {
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
       _stylusZoomStarted = false;
-      _isDragging = false;
+      _isDragging.value = false;
       setMouseCursor(SystemMouseCursors.none);
     }
     _stylusButtonDetected = false;
@@ -328,7 +324,6 @@ class _ListenerExampleState extends State<ListenerExample> {
     {
       _stylusHoverDetected = false;
     }
-
   }
 
   void stylusBtnDown()
@@ -382,32 +377,10 @@ class _ListenerExampleState extends State<ListenerExample> {
                     checkerboardColor1: Theme.of(context).primaryColor,
                     checkerboardColor2: Theme.of(context).primaryColorLight,
                     coords: _cursorPos,
+                    isDragging: _isDragging,
                     options: GetIt.I.get<PreferenceManager>().kPixPainterOptions
-
                   )
                 )
-
-          /*child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Pressure: ${pressure.toStringAsFixed((2))}',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  Text(
-                    _details,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  Text(
-                    'Position: (${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)})',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
-              ),*/
               ),
             ),
           );

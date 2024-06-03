@@ -15,37 +15,55 @@ import 'package:kpix/widgets/canvas_widget.dart';
 
 abstract class IToolPainter
 {
-  void drawTool({
-    required Canvas canvas,
-    required Paint paint,
-    required int pixelSize,
-    required int scaledCanvasWidth,
-    required int scaledCanvasHeight,
-    required Offset offset,
-    required Offset primaryPressStart,
-    required bool primaryDown,
-    required CoordinateSetD coords});
+  final AppState appState = GetIt.I.get<AppState>();
 
-  void drawCursor({required Canvas canvas,
-      required Paint paint,
-      required Offset offset,
-      required bool primaryDown,
-      required CoordinateSetD coords,
-      required int pixelSize});
+  void drawTool({
+    required DrawingParameters drawParams});
+
+  void drawCursor({required DrawingParameters drawParams});
 }
 
 class KPixPainterOptions
 {
-  final int checkerBoardSize;
   final double cursorSize;
   final double cursorBorderWidth;
 
 
   KPixPainterOptions({
-    required this.checkerBoardSize,
     required this.cursorSize,
     required this.cursorBorderWidth
   });
+}
+
+class DrawingParameters
+{
+  final Offset offset;
+  final Canvas canvas;
+  final Paint paint;
+  final int pixelSize;
+  final CoordinateSetI canvasSize;
+  final CoordinateSetI scaledCanvasSize;
+  final CoordinateSetI drawingStart;
+  final CoordinateSetI drawingEnd;
+  final Size drawingSize;
+  final CoordinateSetD? cursorPos;
+  final bool primaryDown;
+  final Offset primaryPressStart;
+  DrawingParameters({
+    required this.offset,
+    required this.canvas,
+    required this.paint,
+    required this.pixelSize,
+    required this.canvasSize,
+    required this.drawingSize,
+    required this.cursorPos,
+    required this.primaryDown,
+    required this.primaryPressStart
+}) :
+        scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
+        drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
+        drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
+                                    y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor());
 }
 
 class KPixPainter extends CustomPainter
@@ -60,6 +78,7 @@ class KPixPainter extends CustomPainter
   final Color checkerboardColor1;
   final Color checkerboardColor2;
   late Map<ToolType, IToolPainter> toolPainterMap;
+
 
 
   KPixPainter({
@@ -80,96 +99,121 @@ class KPixPainter extends CustomPainter
 
   @override
   void paint(Canvas canvas, Size size) {
-    final int zoomLevelFactor = appState.getZoomLevel() ~/ 100;
-    final paint = Paint()
-      ..style = PaintingStyle.fill;
 
-    final int scaledCanvasWidth = appState.canvasWidth * zoomLevelFactor;
-    final int scaledCanvasHeight = appState.canvasHeight * zoomLevelFactor;
+    DrawingParameters drawParams = DrawingParameters(
+        offset: offset.value,
+        canvas: canvas,
+        paint: Paint(),
+        pixelSize: appState.getZoomLevel() ~/ 100,
+        canvasSize: CoordinateSetI(x: appState.canvasWidth, y: appState.canvasHeight),
+        drawingSize: size,
+        cursorPos: coords.value,
+        primaryDown: primaryDown.value,
+        primaryPressStart: primaryPressStart.value
+        );
 
-    _drawCheckerboard(canvas: canvas, paint: paint, scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight);
-    _drawLayers(canvas: canvas, paint: paint, pixelSize: zoomLevelFactor);
-    _drawToolOverlay(canvas: canvas, paint: paint, pixelSize: zoomLevelFactor, scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight);
-    _drawCursor(canvas: canvas, paint: paint, pixelSize: zoomLevelFactor, scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight);
 
+    _drawCheckerboard(drawParams: drawParams);
+    _drawLayers(drawParams: drawParams);
+    _drawSelection(drawParams: drawParams);
+    _drawToolOverlay(drawParams: drawParams);
+    _drawCursor(drawParams: drawParams);
   }
 
-
-
-  void _drawToolOverlay({required final Canvas canvas, required final Paint paint, required final int pixelSize, required final int scaledCanvasWidth, required final int scaledCanvasHeight})
+  void _drawSelection({required final DrawingParameters drawParams})
   {
-    //TODO
+    final double pxlSzDbl = drawParams.pixelSize.toDouble();
+
+    final Iterable<CoordinateSetI> insideList = appState.selectionState.selection.selectedPixels.where((p) => p.x >= drawParams.drawingStart.x && p.x <= drawParams.drawingEnd.x && p.y >= drawParams.drawingStart.y && p.y <= drawParams.drawingEnd.y);
+
+    for (final CoordinateSetI coords in insideList)
+    {
+      final double left = offset.value.dx + (coords.x * pxlSzDbl);
+      final double top  = offset.value.dy + (coords.y * pxlSzDbl);
+      drawParams.paint.style = PaintingStyle.fill;
+      drawParams.paint.color = const Color.fromARGB(100, 255, 255, 255);
+      drawParams.canvas.drawRect(Rect.fromLTWH(left, top, pxlSzDbl, pxlSzDbl), drawParams.paint);
+      //draw borders
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.color = Colors.red;
+      //TODO magic numbers and values
+      drawParams.paint.strokeWidth = 4;
+
+      if (!insideList.contains(CoordinateSetI(x: coords.x - 1, y: coords.y))) //left
+      {
+        drawParams.canvas.drawLine(Offset(left, top), Offset(left, top + pxlSzDbl), drawParams.paint);
+      }
+      if (!insideList.contains(CoordinateSetI(x: coords.x + 1, y: coords.y))) //right
+      {
+        drawParams.canvas.drawLine(Offset(left + pxlSzDbl, top), Offset(left + pxlSzDbl, top + pxlSzDbl), drawParams.paint);
+      }
+      if (!insideList.contains(CoordinateSetI(x: coords.x, y: coords.y - 1))) //top
+      {
+        drawParams.canvas.drawLine(Offset(left, top), Offset(left + pxlSzDbl, top), drawParams.paint);
+      }
+      if (!insideList.contains(CoordinateSetI(x: coords.x, y: coords.y + 1))) //bottom
+      {
+        drawParams.canvas.drawLine(Offset(left, top + pxlSzDbl), Offset(left + pxlSzDbl, top + pxlSzDbl), drawParams.paint);
+      }
+    }
+  }
+
+  void _drawToolOverlay({required final DrawingParameters drawParams})
+  {
     if (coords.value != null)
     {
       IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
-      toolPainter?.drawTool(
-          canvas: canvas,
-          paint: paint,
-          pixelSize: pixelSize,
-          scaledCanvasWidth: scaledCanvasWidth,
-          scaledCanvasHeight: scaledCanvasHeight,
-          offset: offset.value,
-          primaryPressStart: primaryPressStart.value,
-          primaryDown: primaryDown.value,
-          coords: coords.value!);
+      toolPainter?.drawTool(drawParams: drawParams);
     }
-    //FOR SELECTION
-
   }
 
-  void _drawCursor({required final Canvas canvas, required final Paint paint, required final int pixelSize, required final int scaledCanvasWidth, required final int scaledCanvasHeight})
+  void _drawCursor({required final DrawingParameters drawParams})
   {
-
     if (coords.value != null)
     {
-      if (!isDragging.value && isOnCanvas(pos: coords.value!, scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight, offset: offset.value))
+      if (!isDragging.value && isOnCanvas(drawParams: drawParams))
       {
         IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
         if (toolPainter != null)
         {
           toolPainter.drawCursor(
-              canvas: canvas,
-              paint: paint,
-              offset: offset.value,
-              primaryDown: primaryDown.value,
-              coords: coords.value!,
-              pixelSize: pixelSize);
+              drawParams: drawParams);
         }
         else
         {
           //TODO TEMP
-          paint.style = PaintingStyle.fill;
-          paint.color = Colors.red;
-          canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), 10, paint);
+          drawParams.paint.style = PaintingStyle.fill;
+          drawParams.paint.color = Colors.red;
+          drawParams.canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), 10, drawParams.paint);
         }
       }
       else
       {
-        paint.color = checkerboardColor1;
-        canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize + options.cursorBorderWidth, paint);
-        paint.color = checkerboardColor2;
-        canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize, paint);
+        drawParams.paint.color = checkerboardColor1;
+        drawParams.canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize + options.cursorBorderWidth, drawParams.paint);
+        drawParams.paint.color = checkerboardColor2;
+        drawParams.canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize, drawParams.paint);
       }
     }
   }
 
-  void _drawLayers({required final Canvas canvas, required final Paint paint, required final int pixelSize})
+  void _drawLayers({required final DrawingParameters drawParams})
   {
-    final double pxlSzDbl = pixelSize.toDouble();
+    final double pxlSzDbl = drawParams.pixelSize.toDouble();
     final List<LayerState> layers = appState.layers.value;
-    for (int x = 0; x < appState.canvasWidth; x++)
+    for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
     {
-      for (int y = 0; y < appState.canvasHeight; y++)
+      for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
       {
         for (int i = 0; i < layers.length; i++)
         {
           if (layers[i].visibilityState.value == LayerVisibilityState.visible) {
             ColorReference? layerColor = layers[i].data[x][y];
             if (layerColor != null) {
-              paint.color =
+              drawParams.paint.color =
                   layerColor.ramp.colors[layerColor.colorIndex].value.color;
-              canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl),
-                  offset.value.dy + (y * pxlSzDbl), pxlSzDbl, pxlSzDbl), paint);
+              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl),
+                  offset.value.dy + (y * pxlSzDbl), pxlSzDbl, pxlSzDbl), drawParams.paint);
               break;
             }
           }
@@ -178,32 +222,32 @@ class KPixPainter extends CustomPainter
     }
   }
 
-  void _drawCheckerboard({required final Canvas canvas, required final Paint paint, required final int scaledCanvasWidth, required final int scaledCanvasHeight})
+  void _drawCheckerboard({required final DrawingParameters drawParams})
   {
     bool rowFlip = false;
     bool colFlip = false;
-    final double cbSizeDbl = options.checkerBoardSize.toDouble();
-    for (int i = 0; i < scaledCanvasWidth; i += options.checkerBoardSize)
+    final double cbSizeDbl = drawParams.pixelSize <= 1 ? 1.0 : drawParams.pixelSize.toDouble() / 2;
+    for (int i = drawParams.drawingStart.x * drawParams.pixelSize; i < drawParams.drawingEnd.x * drawParams.pixelSize; i += cbSizeDbl.floor())
     {
       colFlip = rowFlip;
-      for (int j = 0; j < scaledCanvasHeight; j += options.checkerBoardSize)
+      for (int j = drawParams.drawingStart.y * drawParams.pixelSize; j < drawParams.drawingEnd.y * drawParams.pixelSize; j += cbSizeDbl.floor())
       {
-        paint.color = colFlip ? checkerboardColor1 : checkerboardColor2;
+        drawParams.paint.color = colFlip ? checkerboardColor1 : checkerboardColor2;
         double width = cbSizeDbl;
         double height = cbSizeDbl;
-        if (i + cbSizeDbl > scaledCanvasWidth)
+        if (i + cbSizeDbl > drawParams.scaledCanvasSize.x)
         {
-          width = scaledCanvasWidth - i.toDouble();
+          width = drawParams.scaledCanvasSize.x - i.toDouble();
         }
 
-        if (j + cbSizeDbl > scaledCanvasHeight)
+        if (j + cbSizeDbl > drawParams.scaledCanvasSize.y)
         {
-          height = scaledCanvasHeight - j.toDouble();
+          height = drawParams.scaledCanvasSize.y - j.toDouble();
         }
 
-        canvas.drawRect(
+        drawParams.canvas.drawRect(
           Rect.fromLTWH(offset.value.dx + i, offset.value.dy + j , width, height),
-          paint,
+          drawParams.paint,
         );
 
         colFlip = !colFlip;
@@ -221,21 +265,21 @@ class KPixPainter extends CustomPainter
   }
 
 
-  static double getClosestPixel({required double value, required double pixelSize})
+  static int getClosestPixel({required double value, required double pixelSize})
   {
-    double remainder = value % pixelSize.toDouble();
+    double remainder = value % pixelSize;
     double lowerMultiple = value - remainder;
     double upperMultiple = value + (pixelSize - remainder);
-    return (value - lowerMultiple) <= (upperMultiple - value) ? lowerMultiple : upperMultiple;
+    return (value - lowerMultiple) <= (upperMultiple - value) ? (lowerMultiple / pixelSize).round()  : (upperMultiple / pixelSize).round();
   }
 
 
 
 
-  static bool isOnCanvas({required final CoordinateSetD pos, required final int scaledCanvasWidth, required final int scaledCanvasHeight, required final Offset offset})
+  static bool isOnCanvas({required final DrawingParameters drawParams})
   {
     bool isOn = false;
-    if (pos.x >= offset.dx && pos.x < offset.dx + scaledCanvasWidth && pos.y >= offset.dy && pos.y < offset.dy + scaledCanvasHeight)
+    if (drawParams.cursorPos != null && drawParams.cursorPos!.x >= drawParams.offset.dx && drawParams.cursorPos!.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && drawParams.cursorPos!.y >= drawParams.offset.dy && drawParams.cursorPos!.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)
     {
       isOn = true;
     }

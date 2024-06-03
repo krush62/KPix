@@ -1,100 +1,134 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
+import 'package:kpix/models.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 
 class SelectionPainter extends IToolPainter
 {
+  CoordinateSetI selectionStart = CoordinateSetI(x: 0, y: 0);
+  CoordinateSetI selectionEnd = CoordinateSetI(x: 0, y: 0);
+  bool hasNewSelection = false;
+  final AppState appState = GetIt.I.get<AppState>();
 
   @override
-  void drawTool({required Canvas canvas,
-    required Paint paint,
-    required int pixelSize,
-    required int scaledCanvasWidth,
-    required int scaledCanvasHeight,
-    required Offset offset,
-    required Offset primaryPressStart,
-    required bool primaryDown,
-    required CoordinateSetD coords})
+  void drawTool({required final DrawingParameters drawParams})
   {
-    if (primaryDown && KPixPainter.isOnCanvas(pos: CoordinateSetD(x: primaryPressStart.dx, y: primaryPressStart.dy), scaledCanvasWidth: scaledCanvasWidth, scaledCanvasHeight: scaledCanvasHeight, offset: offset))
+
+    if (drawParams.primaryDown && KPixPainter.isOnCanvas(drawParams: drawParams))
     {
-      paint.style = PaintingStyle.stroke;
+      drawParams.paint.style = PaintingStyle.stroke;
       //TODO magic numbers and values
-      paint.strokeWidth = 4;
+      drawParams.paint.strokeWidth = 4;
+      CoordinateSetI normalizedStart = CoordinateSetI(
+          x: KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble()).round(),
+          y: KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble()).round());
+      CoordinateSetI normalizedEnd = CoordinateSetI(
+          x: KPixPainter.getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble()).round(),
+          y: KPixPainter.getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble()).round());
+
+      selectionStart.x = normalizedStart.x < normalizedEnd.x ? normalizedStart.x : normalizedEnd.x;
+      selectionStart.y = normalizedStart.y < normalizedEnd.y ? normalizedStart.y : normalizedEnd.y;
+      selectionEnd.x = normalizedStart.x < normalizedEnd.x ? (normalizedEnd.x) : (normalizedStart.x);
+      selectionEnd.y = normalizedStart.y < normalizedEnd.y ? (normalizedEnd.y) : (normalizedStart.y);
+
+      if (selectionStart.x < 0)
+      {
+        selectionStart.x = 0;
+      }
+
+      if (selectionStart.y < 0)
+      {
+        selectionStart.y = 0;
+      }
+
+      if (selectionEnd.x > appState.canvasWidth - 1)
+      {
+        selectionEnd.x = appState.canvasWidth - 1;
+      }
+
+      if (selectionEnd.y > appState.canvasHeight - 1)
+      {
+        selectionEnd.y = appState.canvasHeight - 1;
+      }
+
+      hasNewSelection = true;
+
+
       final CoordinateSetD cursorStartPos = CoordinateSetD(
-          x: offset.dx + KPixPainter.getClosestPixel(value: primaryPressStart.dx - offset.dx, pixelSize: pixelSize.toDouble()),
-          y: offset.dy + KPixPainter.getClosestPixel(value: primaryPressStart.dy - offset.dy, pixelSize: pixelSize.toDouble()));
+          x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + selectionStart.y * drawParams.pixelSize);
       final CoordinateSetD cursorEndPos = CoordinateSetD(
-          x: offset.dx + KPixPainter.getClosestPixel(value: coords.x - offset.dx, pixelSize: pixelSize.toDouble()),
-          y: offset.dy + KPixPainter.getClosestPixel(value: coords.y - offset.dy, pixelSize: pixelSize.toDouble()));
+          x: drawParams.offset.dx + (selectionEnd.x + 1) * drawParams.pixelSize,
+          y: drawParams.offset.dy + (selectionEnd.y + 1) * drawParams.pixelSize);
 
       //TODO magic
       const double segmentLength = 8.0;
 
-      CoordinateSetD startPos = CoordinateSetD(x: cursorStartPos.x < cursorEndPos.x ? cursorStartPos.x : cursorEndPos.x, y: cursorStartPos.y < cursorEndPos.y ? cursorStartPos.y : cursorEndPos.y);
-      CoordinateSetD endPos = CoordinateSetD(x: cursorStartPos.x < cursorEndPos.x ? cursorEndPos.x : cursorStartPos.x, y: cursorStartPos.y < cursorEndPos.y ? cursorEndPos.y : cursorStartPos.y);
-
       bool colorFlip = false;
 
-      for (double i = startPos.x; i < endPos.x; i += segmentLength)
+      //DRAW DASHED LINE
+      for (double i = cursorStartPos.x; i < cursorEndPos.x; i += segmentLength)
       {
         //TODO magic
-        paint.color = colorFlip ? Colors.black : Colors.white;
-        double end = (i + segmentLength) <= endPos.x ? i + segmentLength : endPos.x;
-        canvas.drawLine(Offset(i, startPos.y), Offset(end, startPos.y), paint);
-        canvas.drawLine(Offset(i, endPos.y), Offset(end, endPos.y), paint);
+        drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
+        double end = (i + segmentLength) <= cursorEndPos.x ? i + segmentLength : cursorEndPos.x;
+        drawParams.canvas.drawLine(Offset(i, cursorStartPos.y), Offset(end, cursorStartPos.y), drawParams.paint);
+        drawParams.canvas.drawLine(Offset(i, cursorEndPos.y), Offset(end, cursorEndPos.y), drawParams.paint);
         colorFlip = !colorFlip;
       }
 
       colorFlip = false;
 
-      for (double i = startPos.y; i < endPos.y; i += segmentLength)
+      for (double i = cursorStartPos.y; i < cursorEndPos.y; i += segmentLength)
       {
         //TODO magic
-        paint.color = colorFlip ? Colors.black : Colors.white;
-        double end = (i + segmentLength) <= endPos.y ? i + segmentLength : endPos.y;
-        canvas.drawLine(Offset(startPos.x, i), Offset(startPos.x, end), paint);
-        canvas.drawLine(Offset(endPos.x, i), Offset(endPos.x, end), paint);
+        drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
+        double end = (i + segmentLength) <= cursorEndPos.y ? i + segmentLength : cursorEndPos.y;
+        drawParams.canvas.drawLine(Offset(cursorStartPos.x, i), Offset(cursorStartPos.x, end), drawParams.paint);
+        drawParams.canvas.drawLine(Offset(cursorEndPos.x, i), Offset(cursorEndPos.x, end), drawParams.paint);
         colorFlip = !colorFlip;
       }
     }
+    /*else if (hasNewSelection)
+    {
+      hasNewSelection = false;
+      appState.selectionState.newSelection(start: selectionStart, end: selectionEnd);
+      print(selectionStart.toString());
+      print(selectionEnd.toString());
+    }*/
   }
 
   @override
   void drawCursor({
-    required Canvas canvas,
-    required Paint paint,
-    required Offset offset,
-    required bool primaryDown,
-    required CoordinateSetD coords,
-    required int pixelSize})
+    required DrawingParameters drawParams})
   {
-    if (!primaryDown)
+    if (!drawParams.primaryDown)
     {
-      paint.style = PaintingStyle.stroke;
+      drawParams.paint.style = PaintingStyle.stroke;
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: offset.dx + KPixPainter.getClosestPixel(
-              value: coords.x - offset.dx,
-              pixelSize: pixelSize.toDouble()),
-          y: offset.dy + KPixPainter.getClosestPixel(
-              value: coords.y - offset.dy,
-              pixelSize: pixelSize.toDouble()));
+          x: drawParams.offset.dx + KPixPainter.getClosestPixel(
+              value: drawParams.cursorPos!.x - drawParams.offset.dx,
+              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize,
+          y: drawParams.offset.dy + KPixPainter.getClosestPixel(
+              value: drawParams.cursorPos!.y - drawParams.offset.dy,
+              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize);
       //TODO magic
-      paint.color = Colors.black;
-      canvas.drawLine(Offset(cursorPos.x, cursorPos.y),
-          Offset(cursorPos.x + pixelSize, cursorPos.y), paint);
-      canvas.drawLine(Offset(cursorPos.x, cursorPos.y + pixelSize),
-          Offset(cursorPos.x + pixelSize, cursorPos.y + pixelSize),
-          paint);
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawLine(Offset(cursorPos.x, cursorPos.y),
+          Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y), drawParams.paint);
+      drawParams.canvas.drawLine(Offset(cursorPos.x, cursorPos.y + drawParams.pixelSize),
+          Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize),
+          drawParams.paint);
       //TODO magic
-      paint.color = Colors.white;
-      canvas.drawLine(Offset(cursorPos.x, cursorPos.y),
-          Offset(cursorPos.x, cursorPos.y + pixelSize), paint);
-      canvas.drawLine(Offset(cursorPos.x + pixelSize, cursorPos.y),
-          Offset(cursorPos.x + pixelSize, cursorPos.y + pixelSize),
-          paint);
+      drawParams.paint.color = Colors.white;
+      drawParams.canvas.drawLine(Offset(cursorPos.x, cursorPos.y),
+          Offset(cursorPos.x, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+      drawParams.canvas.drawLine(Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y),
+          Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize),
+          drawParams.paint);
     }
 
   }

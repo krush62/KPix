@@ -7,7 +7,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
+import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/widgets/selection_bar_widget.dart';
 
 
@@ -36,17 +38,17 @@ class TouchPointerStatus
 
 
 
-class ListenerExample extends StatefulWidget {
-  const ListenerExample(
+class CanvasWidget extends StatefulWidget {
+  const CanvasWidget(
       {
         super.key
       });
 
   @override
-  State<ListenerExample> createState() => _ListenerExampleState();
+  State<CanvasWidget> createState() => _CanvasWidgetState();
 }
 
-class _ListenerExampleState extends State<ListenerExample> {
+class _CanvasWidgetState extends State<CanvasWidget> {
   CanvasOptions options = GetIt.I.get<PreferenceManager>().canvasWidgetOptions;
   AppState appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier(null);
@@ -58,7 +60,7 @@ class _ListenerExampleState extends State<ListenerExample> {
   final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier(Offset(0,0));
   late Offset _secondaryStartLoc;
   bool _needSecondaryStartLoc = false;
-  ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
+  final ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
   bool _secondaryIsDown = false;
   bool _stylusZoomStarted = false;
   int _stylusZoomStartLevel = 100;
@@ -79,6 +81,16 @@ class _ListenerExampleState extends State<ListenerExample> {
   final Map<int, TouchPointerStatus> _touchPointers = {};
   double _initialTouchZoomDistance = 0.0;
   int _touchZoomStartLevel = 100;
+  late KPixPainter kPixPainter = KPixPainter(
+    appState: appState,
+    offset: _canvasOffset,
+    checkerboardColor1: Theme.of(context).primaryColor,
+    checkerboardColor2: Theme.of(context).primaryColorLight,
+    coords: _cursorPos,
+    isDragging: _isDragging,
+    primaryDown: _primaryIsDown,
+    primaryPressStart: _pressStartLoc,
+  );
 
   @override
   void initState() {
@@ -86,6 +98,7 @@ class _ListenerExampleState extends State<ListenerExample> {
     _timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     _maxLongPressDistance = options.longPressCancelDistance;
+
   }
 
 
@@ -132,6 +145,7 @@ class _ListenerExampleState extends State<ListenerExample> {
       _isDragging.value = true;
       setMouseCursor(SystemMouseCursors.move);
     }
+    _updateLocation(details);
   }
 
   void _buttonUp(PointerEvent details)
@@ -162,6 +176,19 @@ class _ListenerExampleState extends State<ListenerExample> {
       setMouseCursor(SystemMouseCursors.none);
     }
     _timerRunning = false;
+
+    if (appState.selectedTool.value == ToolType.select)
+    {
+      if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
+      {
+        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
+        if (selectionPainter.hasNewSelection)
+        {
+          selectionPainter.hasNewSelection = false;
+          appState.selectionState.newSelection(start: selectionPainter.selectionStart, end: selectionPainter.selectionEnd);
+        }
+      }
+    }
   }
 
 
@@ -362,16 +389,7 @@ class _ListenerExampleState extends State<ListenerExample> {
                     height: double.infinity,
                     color: Theme.of(context).primaryColorDark,
                     child: CustomPaint(
-                      painter: KPixPainter(
-                        appState: appState,
-                        offset: _canvasOffset,
-                        checkerboardColor1: Theme.of(context).primaryColor,
-                        checkerboardColor2: Theme.of(context).primaryColorLight,
-                        coords: _cursorPos,
-                        isDragging: _isDragging,
-                        primaryDown: _primaryIsDown,
-                        primaryPressStart: _pressStartLoc,
-                      )
+                      painter: kPixPainter
                     )
                   ),
                 ),

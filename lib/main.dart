@@ -176,7 +176,7 @@ class MainWidget extends StatelessWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      const ListenerExample(
+                      const CanvasWidget(
                       ),
                       StatusBarWidget(
                       )

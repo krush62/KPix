@@ -5,8 +5,10 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/preference_manager.dart';
+import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/selection_bar_widget.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -27,6 +29,7 @@ class AppState
   final ValueNotifier<IdColor?> selectedColor = ValueNotifier(IdColor(color: Colors.black, uuid: ""));
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
   final RepaintNotifier repaintNotifier = RepaintNotifier();
+  final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
 
   static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200, 6400];
@@ -151,7 +154,7 @@ class AppState
       KPalRampData(
         uuid: uuid.v1(),
         settings: KPalRampSettings(
-          constraints: GetIt.I.get<PreferenceManager>().kPalConstraints
+          constraints: prefs.kPalConstraints
         )
       )
     );
@@ -364,7 +367,7 @@ class AppState
     statusBarToolAngleString.value = null;
   }
 
-  //TEMP
+  //TODO TEMP
   void changeTool(ToolType t)
   {
     print("ChangeTool");
@@ -383,7 +386,7 @@ class AppState
 
     }
     selectedTool.value = tool;
-    currentToolOptions = GetIt.I.get<PreferenceManager>().toolOptions.toolOptionMap[selectedTool.value]!;
+    currentToolOptions = prefs.toolOptions.toolOptionMap[selectedTool.value]!;
   }
 
   bool toolIsSelected(final ToolType tool)
@@ -392,20 +395,70 @@ class AppState
   }
 }
 
-
-
-
 class SelectionState with ChangeNotifier
 {
   final SelectionList selection = SelectionList();
   HashMap<CoordinateSetI, ColorReference?>? clipboard;
   final RepaintNotifier repaintNotifier;
+  final SelectOptions selectionOptions = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
 
   SelectionState({required this.repaintNotifier});
 
+  void newSelection({required final CoordinateSetI start, required final CoordinateSetI end, final bool notify = true})
+  {
+    if (selectionOptions.mode == SelectionMode.replace)
+    {
+      deselect(notify: false);
+    }
+
+    if (end.x > start.x && end.y > start.y)
+    {
+      for (int x = start.x; x <= end.x; x++)
+      {
+        for (int y = start.y; y <= end.y; y++)
+        {
+          CoordinateSetI selectedPixel = CoordinateSetI(x: x, y: y);
+          switch (selectionOptions.mode) {
+            case SelectionMode.replace:
+            case SelectionMode.add:
+              if (!selection.selectedPixels.contains(selectedPixel))
+              {
+                selection.selectedPixels.add(selectedPixel);
+              }
+              break;
+            case SelectionMode.intersect:
+              if (!selection.selectedPixels.contains(selectedPixel))
+              {
+                selection.selectedPixels.add(selectedPixel);
+              }
+              else
+              {
+                selection.selectedPixels.remove(selectedPixel);
+              }
+              break;
+            case SelectionMode.subtract:
+              if (selection.selectedPixels.contains(selectedPixel))
+              {
+                selection.selectedPixels.remove(selectedPixel);
+              }
+              break;
+          }
+        }
+      }
+    }
+    else
+    {
+      //DISCARD SELECTION
+    }
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
   void inverse({required final int width, required final int height, final bool notify = true})
   {
-    print("INVERSE");
     for (int x = 0; x < width; x++)
     {
       for (int y = 0; y < height; y++)
@@ -428,9 +481,9 @@ class SelectionState with ChangeNotifier
     }
   }
 
+
   void deselect({final bool notify = true})
   {
-    print("DESELECT");
     selection.selectedPixels.clear();
     if (notify)
     {
@@ -441,7 +494,6 @@ class SelectionState with ChangeNotifier
 
   void selectAll({required final int width, required final int height, final bool notify = true})
   {
-    print("SELECT ALL");
     for (int x = 0; x < width; x++)
     {
       for (int y = 0; y < height; y++)

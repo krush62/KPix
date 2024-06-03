@@ -262,9 +262,6 @@ enum PreferenceInt
 
   ColorNames_Scheme(defaultValue: 0),
 
-  Painter_CheckerboardSize(defaultValue: 8),
-
-
   ;
 
 
@@ -706,7 +703,6 @@ class PreferenceManager
   void loadPainterOptions()
   {
     kPixPainterOptions = KPixPainterOptions(
-        checkerBoardSize: getValueI(PreferenceInt.Painter_CheckerboardSize),
         cursorSize: getValueD(PreferenceDouble.Painter_CursorSize),
         cursorBorderWidth: getValueD(PreferenceDouble.Painter_CursorBorderWidth)
     );

@@ -93,6 +93,11 @@ class CoordinateSetI
 
   @override
   int get hashCode => x.hashCode ^ y.hashCode;
+
+  @override
+  String toString() {
+    return "$x|$y";
+  }
 }
 
 

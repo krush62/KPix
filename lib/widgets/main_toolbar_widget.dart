@@ -1,22 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
-import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
-import 'package:kpix/widgets/color_entry_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/palette_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/widgets/shader_widget.dart';
-import 'package:kpix/shader_options.dart';
 
 class MainToolbarWidgetOptions {
   final int paletteFlex;

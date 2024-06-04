@@ -44,11 +44,6 @@ class _ShaderWidgetState extends State<ShaderWidget> {
     });
   }
 
-  void _tempPress()
-  {
-    print("SHADE PRESS");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding (

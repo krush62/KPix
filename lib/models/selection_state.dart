@@ -10,11 +10,11 @@ import 'package:kpix/widgets/layer_widget.dart';
 
 enum SelectionDirection
 {
-  Undefined,
-  Left,
-  Right,
-  Top,
-  Bottom
+  undefined,
+  left,
+  right,
+  top,
+  bottom
 }
 
 class SelectionLine
@@ -98,7 +98,7 @@ class SelectionState with ChangeNotifier
     {
       if (coord.x == 0 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Left);
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.left);
         bool inserted = false;
         for (final SelectionLine selLine in leftLines)
         {
@@ -115,12 +115,12 @@ class SelectionState with ChangeNotifier
         }
         if (!inserted)
         {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Left, startLoc: coord, endLoc: coord));
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
         }
       }
       if (coord.x == GetIt.I.get<AppState>().canvasWidth - 1 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Right);
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.right);
         bool inserted = false;
         for (final SelectionLine selLine in leftLines)
         {
@@ -137,12 +137,12 @@ class SelectionState with ChangeNotifier
         }
         if (!inserted)
         {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Right, startLoc: coord, endLoc: coord));
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
         }
       }
       if (coord.y == 0 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Top);
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.top);
         bool inserted = false;
         for (final SelectionLine selLine in leftLines)
         {
@@ -159,12 +159,12 @@ class SelectionState with ChangeNotifier
         }
         if (!inserted)
         {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Top, startLoc: coord, endLoc: coord));
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
         }
       }
       if (coord.y == GetIt.I.get<AppState>().canvasHeight - 1 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Bottom);
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.bottom);
         bool inserted = false;
         for (final SelectionLine selLine in leftLines)
         {
@@ -181,7 +181,7 @@ class SelectionState with ChangeNotifier
         }
         if (!inserted)
         {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Bottom, startLoc: coord, endLoc: coord));
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.bottom, startLoc: coord, endLoc: coord));
         }
       }
     }
@@ -247,7 +247,6 @@ class SelectionState with ChangeNotifier
 
   void cut({required final LayerState layer, final bool notify = true})
   {
-    print("CUT");
     copy(layer: layer, notify: false);
     delete(layer: layer, notify: false);
 
@@ -262,7 +261,6 @@ class SelectionState with ChangeNotifier
 
   void delete({required final LayerState layer, final bool notify = true})
   {
-    print("DELETE");
     for (final CoordinateSetI coord in selection.selectedPixels)
     {
       layer.data[coord.x][coord.y] = null;
@@ -279,7 +277,6 @@ class SelectionState with ChangeNotifier
 
   void copy({required final LayerState layer, final bool notify = true})
   {
-    print("COPY");
     clipboard = HashMap();
     for (final CoordinateSetI coord in selection.selectedPixels)
     {
@@ -294,7 +291,6 @@ class SelectionState with ChangeNotifier
 
   void copyMerged({required final List<LayerState> layers, final bool notify = true})
   {
-    print("COPY MERGED");
     clipboard = HashMap();
     for (final CoordinateSetI coord in selection.selectedPixels)
     {
@@ -319,7 +315,7 @@ class SelectionState with ChangeNotifier
 
 class SelectionList
 {
-  Set<CoordinateSetI> selectedPixels = Set<CoordinateSetI>();
+  Set<CoordinateSetI> selectedPixels = <CoordinateSetI>{};
   HashMap<CoordinateSetI, ColorReference>? content;
 
   bool hasContent()

@@ -7,27 +7,27 @@ enum ColorNameScheme
 {
   general,
   pms,
-  ral_classic,
-  ral_complete,
-  ral_dsp
+  ralClassic,
+  ralComplete,
+  ralDsp
 }
 
 const Map<int, ColorNameScheme> _colorNameSchemeMap =
 {
   0: ColorNameScheme.general,
   1: ColorNameScheme.pms,
-  2: ColorNameScheme.ral_classic,
-  3: ColorNameScheme.ral_complete,
-  4: ColorNameScheme.ral_dsp
+  2: ColorNameScheme.ralClassic,
+  3: ColorNameScheme.ralComplete,
+  4: ColorNameScheme.ralDsp
 };
 
 const Map<ColorNameScheme, String> _colorNameFileNames =
 {
   ColorNameScheme.general: "general.csv",
   ColorNameScheme.pms: "pms.csv",
-  ColorNameScheme.ral_classic : "ral_classic.csv",
-  ColorNameScheme.ral_complete : "ral_complete.csv",
-  ColorNameScheme.ral_dsp : "ral_dsp.csv",
+  ColorNameScheme.ralClassic : "ral_classic.csv",
+  ColorNameScheme.ralComplete : "ral_complete.csv",
+  ColorNameScheme.ralDsp : "ral_dsp.csv",
 };
 
 class ColorNamesOptions{
@@ -75,7 +75,7 @@ class ColorNames
 
   void _processColorData(final String data)
   {
-    LineSplitter ls = LineSplitter();
+    LineSplitter ls = const LineSplitter();
     List<String> lines = ls.convert(data);
     for(final String line in lines)
     {

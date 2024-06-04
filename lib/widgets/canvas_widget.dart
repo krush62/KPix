@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
@@ -9,7 +7,6 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/widgets/selection_bar_widget.dart';
 
 
@@ -57,7 +54,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   late Duration _timeoutLongPress;
   late final double _maxLongPressDistance;
   late Timer _timerLongPress;
-  final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier(Offset(0,0));
+  final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier(const Offset(0,0));
   late Offset _secondaryStartLoc;
   bool _needSecondaryStartLoc = false;
   final ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
@@ -65,7 +62,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   bool _stylusZoomStarted = false;
   int _stylusZoomStartLevel = 100;
 
-  late Timer _timerStylusBtnPoll;
   late Timer _timerStylusBtnLongPress;
   bool _timerStylusRunning = false;
   bool _stylusButtonDetected = false;
@@ -95,7 +91,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   @override
   void initState() {
     super.initState();
-    _timerStylusBtnPoll = Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
+    Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     _maxLongPressDistance = options.longPressCancelDistance;
 

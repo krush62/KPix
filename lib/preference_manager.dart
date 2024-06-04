@@ -1,6 +1,5 @@
 
 // ignore_for_file: constant_identifier_names
-import 'package:flutter/material.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/main.dart';
@@ -366,7 +365,7 @@ class PreferenceManager
 
   late ColorNames colorNames;
 
-  late FontManager _fontManager;
+  final FontManager _fontManager;
 
   PreferenceManager(final SharedPreferences prefs, final FontManager fontManager) : _prefs = prefs, _fontManager = fontManager
   {

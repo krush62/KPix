@@ -1,7 +1,4 @@
-
-import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 
 
@@ -9,93 +6,93 @@ import 'package:flutter/services.dart';
 
 enum PixelFontType
 {
-  Alkhemikal,
-  Cartridge,
-  Comicoro,
-  //CyborgSister,
-  //DigitalDisco,
-  DigitalDiscoThin,
-  EnchantedSword,
-  EnterCommand,
-  EnterCommandBold,
-  EnterCommandItalic,
-  FiveByFive,
-  GrapeSoda,
-  Kapel,
-  KiwiSoda,
-  Larceny,
-  LunchMenu,
-  LycheeSoda,
-  Microserif,
-  Mousetrap,
-  Mousetrap2,
-  Neutrino,
-  Notepen,
-  Optixal,
-  OwreKynge,
-  PearSoda,
-  PlanetaryContact,
-  Poco,
-  Quadrunde,
-  RootBeer,
+  fontAlkhemikal,
+  fontCartridge,
+  fontComicoro,
+  //fontCyborgSister,
+  //fontDigitalDisco,
+  fontDigitalDiscoThin,
+  fontEnchantedSword,
+  fontEnterCommand,
+  fontEnterCommandBold,
+  fontEnterCommandItalic,
+  fontFiveByFive,
+  fontGrapeSoda,
+  fontKapel,
+  fontKiwiSoda,
+  fontLarceny,
+  fontLunchMenu,
+  fontLycheeSoda,
+  fontMicroserif,
+  fontMousetrap,
+  fontMousetrap2,
+  fontNeutrino,
+  fontNotepen,
+  fontOptixal,
+  fontOwreKynge,
+  fontPearSoda,
+  fontPlanetaryContact,
+  fontPoco,
+  fontQuadrunde,
+  fontRootBeer,
   //Scriptorium,
-  Squarewave,
-  SquarewaveBold
+  fontSquarewave,
+  fontSquarewaveBold
 }
 
 const Map<int, PixelFontType> pixelFontIndexMap =
 {
-  0: PixelFontType.Alkhemikal,
-  1: PixelFontType.Cartridge,
-  2: PixelFontType.Comicoro,
+  0: PixelFontType.fontAlkhemikal,
+  1: PixelFontType.fontCartridge,
+  2: PixelFontType.fontComicoro,
   //3: PixelFontType.CyborgSister,
   //4: PixelFontType.DigitalDisco,
-  5: PixelFontType.DigitalDiscoThin,
-  6: PixelFontType.EnchantedSword,
-  7: PixelFontType.EnterCommand,
-  8: PixelFontType.EnterCommandBold,
-  9: PixelFontType.EnterCommandItalic,
-  10: PixelFontType.FiveByFive,
-  11: PixelFontType.GrapeSoda,
-  12: PixelFontType.Kapel,
-  13: PixelFontType.KiwiSoda,
-  14: PixelFontType.Larceny,
-  15: PixelFontType.LunchMenu,
-  16: PixelFontType.LycheeSoda,
-  17: PixelFontType.Microserif,
-  18: PixelFontType.Mousetrap,
-  19: PixelFontType.Mousetrap2,
-  20: PixelFontType.Neutrino,
-  21: PixelFontType.Notepen,
-  22: PixelFontType.Optixal,
-  23: PixelFontType.OwreKynge,
-  24: PixelFontType.PearSoda,
-  25: PixelFontType.PlanetaryContact,
-  26: PixelFontType.Poco,
-  27: PixelFontType.Quadrunde,
-  28: PixelFontType.RootBeer,
+  5: PixelFontType.fontDigitalDiscoThin,
+  6: PixelFontType.fontEnchantedSword,
+  7: PixelFontType.fontEnterCommand,
+  8: PixelFontType.fontEnterCommandBold,
+  9: PixelFontType.fontEnterCommandItalic,
+  10: PixelFontType.fontFiveByFive,
+  11: PixelFontType.fontGrapeSoda,
+  12: PixelFontType.fontKapel,
+  13: PixelFontType.fontKiwiSoda,
+  14: PixelFontType.fontLarceny,
+  15: PixelFontType.fontLunchMenu,
+  16: PixelFontType.fontLycheeSoda,
+  17: PixelFontType.fontMicroserif,
+  18: PixelFontType.fontMousetrap,
+  19: PixelFontType.fontMousetrap2,
+  20: PixelFontType.fontNeutrino,
+  21: PixelFontType.fontNotepen,
+  22: PixelFontType.fontOptixal,
+  23: PixelFontType.fontOwreKynge,
+  24: PixelFontType.fontPearSoda,
+  25: PixelFontType.fontPlanetaryContact,
+  26: PixelFontType.fontPoco,
+  27: PixelFontType.fontQuadrunde,
+  28: PixelFontType.fontRootBeer,
   //29: PixelFontType.Scriptorium,
-  30: PixelFontType.Squarewave,
-  31: PixelFontType.SquarewaveBold
+  30: PixelFontType.fontSquarewave,
+  31: PixelFontType.fontSquarewaveBold
 };
 
 
-class _Glyph {
+class Glyph {
   final int width;
   final List<List<bool>> dataMatrix;
 
-  _Glyph._({
+  Glyph._({
     required this.width,
     required this.dataMatrix,
   });
 
-  factory _Glyph({
+  factory Glyph({
     required int width,
     required int height,
   }) {
     List<List<bool>> dataMatrix =
     List.generate(height + 1, (i) => List.filled(width + 1, false, growable: false), growable: false);
-    return _Glyph._(
+    return Glyph._(
       width: width,
       dataMatrix: dataMatrix,
     );
@@ -107,7 +104,7 @@ class KFont
 {
   final String name;
   final int height;
-  final Map<int, _Glyph> glyphMap;
+  final Map<int, Glyph> glyphMap;
 
   KFont({
     required this.name,
@@ -122,74 +119,74 @@ const String kFontExtension = ".kfont";
 
 class FontManager
 {
-  static Map<PixelFontType, String> _pixelFontNameMap = {
-    PixelFontType.Alkhemikal: "Alkhemikal",
-    PixelFontType.Cartridge: "Cartridge",
-    PixelFontType.Comicoro: "Comicoro",
+  static final Map<PixelFontType, String> _pixelFontNameMap = {
+    PixelFontType.fontAlkhemikal: "Alkhemikal",
+    PixelFontType.fontCartridge: "Cartridge",
+    PixelFontType.fontComicoro: "Comicoro",
     //PixelFontType.CyborgSister: "Cyborg Sister",
     //PixelFontType.DigitalDisco: "Digital Disco",
-    PixelFontType.DigitalDiscoThin: "Digital Disco Thin",
-    PixelFontType.EnchantedSword: "Enchanted Sword",
-    PixelFontType.EnterCommand: "Enter Command",
-    PixelFontType.EnterCommandBold: "Enter Command Bold",
-    PixelFontType.EnterCommandItalic: "Enter Command Italic",
-    PixelFontType.FiveByFive: "Five By Five",
-    PixelFontType.GrapeSoda: "Grape Soda",
-    PixelFontType.Kapel: "Kapel",
-    PixelFontType.KiwiSoda: "Kiwi Soda",
-    PixelFontType.Larceny: "Larceny",
-    PixelFontType.LunchMenu: "Lunch Menu",
-    PixelFontType.LycheeSoda: "Lychee Soda",
-    PixelFontType.Microserif: "Microserif",
-    PixelFontType.Mousetrap: "Mousetrap",
-    PixelFontType.Mousetrap2: "Mousetrap 2",
-    PixelFontType.Neutrino: "Neutrino",
-    PixelFontType.Notepen: "Notepen",
-    PixelFontType.Optixal: "Optixal",
-    PixelFontType.OwreKynge: "Owre Kynge",
-    PixelFontType.PearSoda: "Pear Soda",
-    PixelFontType.PlanetaryContact: "Planetary Contact",
-    PixelFontType.Poco: "Poco",
-    PixelFontType.Quadrunde: "Quadrunde",
-    PixelFontType.RootBeer: "Root Beer",
+    PixelFontType.fontDigitalDiscoThin: "Digital Disco Thin",
+    PixelFontType.fontEnchantedSword: "Enchanted Sword",
+    PixelFontType.fontEnterCommand: "Enter Command",
+    PixelFontType.fontEnterCommandBold: "Enter Command Bold",
+    PixelFontType.fontEnterCommandItalic: "Enter Command Italic",
+    PixelFontType.fontFiveByFive: "Five By Five",
+    PixelFontType.fontGrapeSoda: "Grape Soda",
+    PixelFontType.fontKapel: "Kapel",
+    PixelFontType.fontKiwiSoda: "Kiwi Soda",
+    PixelFontType.fontLarceny: "Larceny",
+    PixelFontType.fontLunchMenu: "Lunch Menu",
+    PixelFontType.fontLycheeSoda: "Lychee Soda",
+    PixelFontType.fontMicroserif: "Microserif",
+    PixelFontType.fontMousetrap: "Mousetrap",
+    PixelFontType.fontMousetrap2: "Mousetrap 2",
+    PixelFontType.fontNeutrino: "Neutrino",
+    PixelFontType.fontNotepen: "Notepen",
+    PixelFontType.fontOptixal: "Optixal",
+    PixelFontType.fontOwreKynge: "Owre Kynge",
+    PixelFontType.fontPearSoda: "Pear Soda",
+    PixelFontType.fontPlanetaryContact: "Planetary Contact",
+    PixelFontType.fontPoco: "Poco",
+    PixelFontType.fontQuadrunde: "Quadrunde",
+    PixelFontType.fontRootBeer: "Root Beer",
     //PixelFontType.Scriptorium: "Scriptorium",
-    PixelFontType.Squarewave: "Squarewave",
-    PixelFontType.SquarewaveBold: "Squarewave Bold"
+    PixelFontType.fontSquarewave: "Squarewave",
+    PixelFontType.fontSquarewaveBold: "Squarewave Bold"
   };
 
-  static Map<PixelFontType, String> _pixelFontFileMap = {
-    PixelFontType.Alkhemikal: "Alkhemikal",
-    PixelFontType.Cartridge: "Cartridge",
-    PixelFontType.Comicoro: "Comicoro",
+  static final Map<PixelFontType, String> _pixelFontFileMap = {
+    PixelFontType.fontAlkhemikal: "Alkhemikal",
+    PixelFontType.fontCartridge: "Cartridge",
+    PixelFontType.fontComicoro: "Comicoro",
     //PixelFontType.CyborgSister: "CyborgSister",
     //PixelFontType.DigitalDisco: "DigitalDisco",
-    PixelFontType.DigitalDiscoThin: "DigitalDisco-Thin",
-    PixelFontType.EnchantedSword: "EnchantedSword",
-    PixelFontType.EnterCommand: "EnterCommand",
-    PixelFontType.EnterCommandBold: "EnterCommand-Bold",
-    PixelFontType.EnterCommandItalic: "EnterCommand-Italic",
-    PixelFontType.FiveByFive: "FiveByFive",
-    PixelFontType.GrapeSoda: "GrapeSoda",
-    PixelFontType.Kapel: "Kapel",
-    PixelFontType.KiwiSoda: "KiwiSoda",
-    PixelFontType.Larceny: "Larceny",
-    PixelFontType.LunchMenu: "LunchMenu",
-    PixelFontType.LycheeSoda: "LycheeSoda",
-    PixelFontType.Microserif: "Microserif",
-    PixelFontType.Mousetrap: "mousetrap",
-    PixelFontType.Mousetrap2: "mousetrap2",
-    PixelFontType.Neutrino: "Neutrino",
-    PixelFontType.Notepen: "Notepen",
-    PixelFontType.Optixal: "Optixal",
-    PixelFontType.OwreKynge: "OwreKynge",
-    PixelFontType.PearSoda: "PearSoda",
-    PixelFontType.PlanetaryContact: "PlanetaryContact",
-    PixelFontType.Poco: "Poco",
-    PixelFontType.Quadrunde: "Quadrunde",
-    PixelFontType.RootBeer: "RootBeer",
+    PixelFontType.fontDigitalDiscoThin: "DigitalDisco-Thin",
+    PixelFontType.fontEnchantedSword: "EnchantedSword",
+    PixelFontType.fontEnterCommand: "EnterCommand",
+    PixelFontType.fontEnterCommandBold: "EnterCommand-Bold",
+    PixelFontType.fontEnterCommandItalic: "EnterCommand-Italic",
+    PixelFontType.fontFiveByFive: "FiveByFive",
+    PixelFontType.fontGrapeSoda: "GrapeSoda",
+    PixelFontType.fontKapel: "Kapel",
+    PixelFontType.fontKiwiSoda: "KiwiSoda",
+    PixelFontType.fontLarceny: "Larceny",
+    PixelFontType.fontLunchMenu: "LunchMenu",
+    PixelFontType.fontLycheeSoda: "LycheeSoda",
+    PixelFontType.fontMicroserif: "Microserif",
+    PixelFontType.fontMousetrap: "mousetrap",
+    PixelFontType.fontMousetrap2: "mousetrap2",
+    PixelFontType.fontNeutrino: "Neutrino",
+    PixelFontType.fontNotepen: "Notepen",
+    PixelFontType.fontOptixal: "Optixal",
+    PixelFontType.fontOwreKynge: "OwreKynge",
+    PixelFontType.fontPearSoda: "PearSoda",
+    PixelFontType.fontPlanetaryContact: "PlanetaryContact",
+    PixelFontType.fontPoco: "Poco",
+    PixelFontType.fontQuadrunde: "Quadrunde",
+    PixelFontType.fontRootBeer: "RootBeer",
     //PixelFontType.Scriptorium: "Scriptorium",
-    PixelFontType.Squarewave: "Squarewave",
-    PixelFontType.SquarewaveBold: "Squarewave-Bold"
+    PixelFontType.fontSquarewave: "Squarewave",
+    PixelFontType.fontSquarewaveBold: "Squarewave-Bold"
   };
 
   static String getFontName(final PixelFontType type)
@@ -206,7 +203,7 @@ class FontManager
     Map<PixelFontType, KFont> fontMap = {};
     for (final MapEntry<PixelFontType, String> mapEntry in _pixelFontFileMap.entries)
     {
-     fontMap[mapEntry.key] = await _readFontFromFile(fontPath + "/" + mapEntry.value + kFontExtension, _pixelFontNameMap[mapEntry.key]!);
+     fontMap[mapEntry.key] = await _readFontFromFile("$fontPath/${mapEntry.value}$kFontExtension", _pixelFontNameMap[mapEntry.key]!);
     }
     return fontMap;
   }
@@ -223,7 +220,7 @@ class FontManager
     final int blocksLength = data.getUint16(1, Endian.little);
     int currentIndex = 3;
 
-    final Map<int, _Glyph> glyphMap = {};
+    final Map<int, Glyph> glyphMap = {};
 
     // Read data
     for (int i = 0; i < blocksLength; i++) {
@@ -232,7 +229,7 @@ class FontManager
       final width = data.getUint8(currentIndex);
       currentIndex += 1;
 
-      final glyph = _Glyph(width: width, height: height);
+      final glyph = Glyph(width: width, height: height);
       for (int j = 0; j < height; j++) {
         int bitPosition = 0;
         for (int k = 0; k < (width + 7) ~/ 8; k++) {

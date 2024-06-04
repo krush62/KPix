@@ -81,18 +81,21 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
+  //TODO
   void _loadFile()
   {
     print("Load File");
     _closeAllMenus();
   }
 
+  //TODO
   void _loadPalette()
   {
     print("Load Palette");
     _closeAllMenus();
   }
 
+  //TODO
   void _savePressed()
   {
     if (!saveMenuVisible)
@@ -102,28 +105,33 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
+  //TODO
   void _saveFile()
   {
     print("Save File");
     _closeAllMenus();
   }
 
+  //TODO
   void _savePalette()
   {
     print("Save Palette");
     _closeAllMenus();
   }
 
+  //TODO
   void _settingsPressed()
   {
     print("SHOW SETTINGS");
   }
 
+  //TODO
   void _undoPressed()
   {
 
   }
 
+  //TODO
   void _redoPressed()
   {
 

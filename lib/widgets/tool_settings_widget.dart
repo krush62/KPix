@@ -41,12 +41,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   final ToolOptions toolOptions = GetIt.I.get<PreferenceManager>().toolOptions;
   final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
 
-  String _getToolTitle()
-  {
-    String toolName = toolList[appState.selectedTool.value]!.title;
-    return "Settings for $toolName";
-  }
-
   // PENCIL CALLBACKS
   void _pencilSizeChanged(final double newVal)
   {

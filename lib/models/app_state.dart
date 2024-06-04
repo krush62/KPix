@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -6,10 +5,8 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/selection_bar_widget.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -259,9 +256,8 @@ class AppState
   void layerMerged(final LayerState mergeState)
   {
     //TODO
-    print("MERGE ME");
 
-    //shouldRepaint.value= true;
+
   }
 
   void layerDuplicated(final LayerState duplicateState)
@@ -371,7 +367,6 @@ class AppState
   //TODO TEMP
   void changeTool(ToolType t)
   {
-    print("ChangeTool");
   }
 
   void setToolSelection(final ToolType tool)

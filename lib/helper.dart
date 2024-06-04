@@ -45,8 +45,8 @@ const Map<ToolType, Tool> toolList =
 
 class LabColor
 {
-  static const double AB_MAX_VALUE = 128.0;
-  static const double L_MAX_VALUE = 100.0;
+  static const double abMax = 128.0;
+  static const double lMax = 100.0;
 
   final double L, A, B;
 

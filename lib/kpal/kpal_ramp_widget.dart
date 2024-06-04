@@ -435,19 +435,19 @@ class _KPalRampState extends State<KPalRamp>
                                 color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.noFlat,
                                 onPressed: () {_satCurveModeChanged(SatCurve.noFlat);},
-                                icon: FaIcon(KPixIcons.no_flat, color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                icon: FaIcon(KPixIcons.noFlat, color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.darkFlat,
                                 onPressed: () {_satCurveModeChanged(SatCurve.darkFlat);},
-                                icon: FaIcon(KPixIcons.dark_flat, color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                icon: FaIcon(KPixIcons.darkFlat, color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.brightFlat,
                                 onPressed: () {_satCurveModeChanged(SatCurve.brightFlat);},
-                                icon: FaIcon(KPixIcons.bright_flat, color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                icon: FaIcon(KPixIcons.brightFlat, color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,

@@ -1,18 +1,11 @@
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
-import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/canvas_widget.dart';
 
 abstract class IToolPainter
 {
@@ -132,7 +125,7 @@ class KPixPainter extends CustomPainter
 
     for (final SelectionLine line in appState.selectionState.selectionLines)
     {
-      if (line.selectDir == SelectionDirection.Left)
+      if (line.selectDir == SelectionDirection.left)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
@@ -143,7 +136,7 @@ class KPixPainter extends CustomPainter
             Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
             Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + strokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
       }
-      else if (line.selectDir == SelectionDirection.Right)
+      else if (line.selectDir == SelectionDirection.right)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
@@ -154,7 +147,7 @@ class KPixPainter extends CustomPainter
             Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
             Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl - strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
       }
-      else if (line.selectDir == SelectionDirection.Top)
+      else if (line.selectDir == SelectionDirection.top)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
@@ -165,7 +158,7 @@ class KPixPainter extends CustomPainter
             Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + strokeWidth / 2),
             Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + strokeWidth / 2), drawParams.paint);
       }
-      else if (line.selectDir == SelectionDirection.Bottom)
+      else if (line.selectDir == SelectionDirection.bottom)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
@@ -223,7 +216,7 @@ class KPixPainter extends CustomPainter
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
     //TODO temp
-    final double extension = 0.1;
+    const double extension = 0.1;
     final List<LayerState> layers = appState.layers.value;
     for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
     {

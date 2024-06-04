@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/painting/kpix_painter.dart';

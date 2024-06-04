@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';

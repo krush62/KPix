@@ -78,10 +78,10 @@ class SelectionState with ChangeNotifier
       }
       else if (selectShape == SelectShape.ellipse)
       {
-        double centerX = (start.x + end.x) / 2;
-        double centerY = (start.y + end.y) / 2;
-        double radiusX = (end.x - start.x) / 2;
-        double radiusY = (end.y - start.y) / 2;
+        double centerX = (start.x + end.x + 1) / 2.0;
+        double centerY = (start.y + end.y + 1) / 2.0;
+        double radiusX = (end.x - start.x + 1) / 2.0;
+        double radiusY = (end.y - start.y + 1) / 2.0;
 
         for (int x = start.x; x <= end.x; x++) {
           for (int y = start.y; y <= end.y; y++) {

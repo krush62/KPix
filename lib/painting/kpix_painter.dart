@@ -10,6 +10,9 @@ import 'package:kpix/widgets/layer_widget.dart';
 abstract class IToolPainter
 {
   final AppState appState = GetIt.I.get<AppState>();
+  final KPixPainterOptions painterOptions;
+
+  IToolPainter({required this.painterOptions});
 
   void drawTool({
     required DrawingParameters drawParams});
@@ -21,11 +24,29 @@ class KPixPainterOptions
 {
   final double cursorSize;
   final double cursorBorderWidth;
+  final double selectionSolidStrokeWidth;
+  final double pixelExtensionFactor;
+  final double checkerBoardDivisor;
+  final double checkerBoardSizeMin;
+  final double checkerBoardSizeMax;
+  final double selectionDashStrokeWidth;
+  final double selectionDashSegmentLength;
+  final double selectionCircleSegmentCount;
+  final double selectionCursorStrokeWidth;
 
 
   KPixPainterOptions({
     required this.cursorSize,
-    required this.cursorBorderWidth
+    required this.cursorBorderWidth,
+    required this.selectionSolidStrokeWidth,
+    required this.pixelExtensionFactor,
+    required this.checkerBoardDivisor,
+    required this.checkerBoardSizeMin,
+    required this.checkerBoardSizeMax,
+    required this.selectionDashStrokeWidth,
+    required this.selectionDashSegmentLength,
+    required this.selectionCircleSegmentCount,
+    required this.selectionCursorStrokeWidth
   });
 }
 
@@ -87,12 +108,13 @@ class KPixPainter extends CustomPainter
       : super(repaint: appState.repaintNotifier)
   {
     toolPainterMap = {
-      ToolType.select: SelectionPainter()
+      ToolType.select: SelectionPainter(painterOptions: options)
     };
   }
 
   @override
   void paint(Canvas canvas, Size size) {
+
     latestSize = size;
     DrawingParameters drawParams = DrawingParameters(
         offset: offset.value,
@@ -119,9 +141,7 @@ class KPixPainter extends CustomPainter
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
     drawParams.paint.style = PaintingStyle.stroke;
-    //TODO magic numbers and values
-    double strokeWidth = 2;
-    drawParams.paint.strokeWidth = strokeWidth;
+    drawParams.paint.strokeWidth = options.selectionSolidStrokeWidth;
 
     for (final SelectionLine line in appState.selectionState.selectionLines)
     {
@@ -129,45 +149,45 @@ class KPixPainter extends CustomPainter
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - strokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl + strokeWidth / 2), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2), drawParams.paint);
         drawParams.paint.color = Colors.white;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + strokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
       }
       else if (line.selectDir == SelectionDirection.right)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - strokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + strokeWidth / 2), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2), drawParams.paint);
         drawParams.paint.color = Colors.white;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl - strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
       }
       else if (line.selectDir == SelectionDirection.top)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - strokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) - strokeWidth / 2), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2), drawParams.paint);
         drawParams.paint.color = Colors.white;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + strokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + strokeWidth / 2), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + options.selectionSolidStrokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + options.selectionSolidStrokeWidth / 2), drawParams.paint);
       }
       else if (line.selectDir == SelectionDirection.bottom)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl + strokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + strokeWidth / 2), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2), drawParams.paint);
         drawParams.paint.color = Colors.white;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl - strokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl - strokeWidth / 2), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2), drawParams.paint);
       }
 
     }
@@ -215,8 +235,6 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
-    //TODO temp
-    const double extension = 0.1;
     final List<LayerState> layers = appState.layers.value;
     for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
     {
@@ -229,8 +247,8 @@ class KPixPainter extends CustomPainter
             if (layerColor != null) {
               drawParams.paint.color =
                   layerColor.ramp.colors[layerColor.colorIndex].value.color;
-              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - extension,
-                  offset.value.dy + (y * pxlSzDbl) - extension, pxlSzDbl + (2.0 * extension), pxlSzDbl + (2.0 * extension)), drawParams.paint);
+              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
+                  offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
               break;
             }
           }
@@ -243,8 +261,7 @@ class KPixPainter extends CustomPainter
   {
     bool rowFlip = false;
     bool colFlip = false;
-    //TODO THIS FORMULA NEEDS TO BE ADJUSTED
-   double cbSizeDbl = (drawParams.pixelSize / 2).clamp(8.0, 64.0);
+   double cbSizeDbl = (drawParams.pixelSize / options.checkerBoardDivisor).clamp(options.checkerBoardSizeMin, options.checkerBoardSizeMax);
 
     for (int i = drawParams.drawingStart.x * drawParams.pixelSize; i < drawParams.drawingEnd.x * drawParams.pixelSize; i += cbSizeDbl.floor())
     {
@@ -273,14 +290,6 @@ class KPixPainter extends CustomPainter
       }
       rowFlip = !rowFlip;
     }
-
-    /*paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 4;
-    paint.color = Colors.black;
-    canvas.drawRect(
-      Rect.fromLTWH(offset.value.dx - 4, offset.value.dy - 4 , scaledCanvasWidth + 8, scaledCanvasHeight + 6),
-      paint,
-    );*/
   }
 
 

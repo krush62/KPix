@@ -148,9 +148,17 @@ enum PreferenceDouble
   KPalColorCard_Layout_BorderWidth(defaultValue: 2.0),
   KPalColorCard_Layout_OutsidePadding(defaultValue: 8.0),
 
-  Painter_CursorSize(defaultValue: 4),
-  Painter_CursorBorderWidth(defaultValue: 2),
-
+  Painter_CursorSize(defaultValue: 4.0),
+  Painter_CursorBorderWidth(defaultValue: 2.0),
+  Painter_SelectionSolidStrokeWidth(defaultValue: 2.0),
+  Painter_PixelExtensionFactor(defaultValue: 0.1),
+  Painter_CheckerBoardDivisor(defaultValue: 2.0),
+  Painter_CheckerBoardSizeMin(defaultValue: 8.0),
+  Painter_CheckerBoardSizeMax(defaultValue: 64.0),
+  Painter_SelectionDashStrokeWidth(defaultValue: 2.0),
+  Painter_SelectionDashSegmentLength(defaultValue: 8.0),
+  Painter_SelectionCircleSegmentCount(defaultValue: 32.0),
+  Painter_SelectionCursorStrokeWidth(defaultValue: 2.0),
   ;
 
   const PreferenceDouble({
@@ -703,7 +711,16 @@ class PreferenceManager
   {
     kPixPainterOptions = KPixPainterOptions(
         cursorSize: getValueD(PreferenceDouble.Painter_CursorSize),
-        cursorBorderWidth: getValueD(PreferenceDouble.Painter_CursorBorderWidth)
+        cursorBorderWidth: getValueD(PreferenceDouble.Painter_CursorBorderWidth),
+        checkerBoardDivisor: getValueD(PreferenceDouble.Painter_CheckerBoardDivisor),
+        checkerBoardSizeMin: getValueD(PreferenceDouble.Painter_CheckerBoardSizeMin),
+        checkerBoardSizeMax: getValueD(PreferenceDouble.Painter_CheckerBoardSizeMax),
+        pixelExtensionFactor: getValueD(PreferenceDouble.Painter_PixelExtensionFactor),
+        selectionSolidStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionSolidStrokeWidth),
+        selectionDashSegmentLength: getValueD(PreferenceDouble.Painter_SelectionDashSegmentLength),
+        selectionDashStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionDashStrokeWidth),
+        selectionCircleSegmentCount: getValueD(PreferenceDouble.Painter_SelectionCircleSegmentCount),
+        selectionCursorStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionCursorStrokeWidth)
     );
   }
 

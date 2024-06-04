@@ -14,14 +14,14 @@ class SelectionPainter extends IToolPainter
   bool hasNewSelection = false;
   final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
 
+  SelectionPainter({required super.painterOptions});
+
   @override
   void drawTool({required final DrawingParameters drawParams})
   {
-
     if (drawParams.primaryDown && drawParams.cursorPos != null && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: CoordinateSetD(x: drawParams.primaryPressStart.dx, y: drawParams.primaryPressStart.dy))) {
       drawParams.paint.style = PaintingStyle.stroke;
-      //TODO magic numbers and values
-      drawParams.paint.strokeWidth = 4;
+      drawParams.paint.strokeWidth = painterOptions.selectionDashStrokeWidth;
       CoordinateSetI normalizedStart = CoordinateSetI(
           x: KPixPainter.getClosestPixel(
               value: drawParams.primaryPressStart.dx - drawParams.offset.dx,
@@ -96,19 +96,15 @@ class SelectionPainter extends IToolPainter
           y: drawParams.offset.dy +
               (selectionEnd.y + 1) * drawParams.pixelSize);
 
-      //TODO magic
-      const double segmentLength = 8.0;
-
       bool colorFlip = false;
 
       if (options.shape == SelectShape.rectangle) {
         //DRAW DASHED LINE
         for (double i = cursorStartPos.x; i < cursorEndPos.x;
-        i += segmentLength) {
-          //TODO magic
+        i += painterOptions.selectionDashSegmentLength) {
           drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
-          double end = (i + segmentLength) <= cursorEndPos.x
-              ? i + segmentLength
+          double end = (i + painterOptions.selectionDashSegmentLength) <= cursorEndPos.x
+              ? i + painterOptions.selectionDashSegmentLength
               : cursorEndPos.x;
           drawParams.canvas.drawLine(
               Offset(i, cursorStartPos.y), Offset(end, cursorStartPos.y),
@@ -122,10 +118,10 @@ class SelectionPainter extends IToolPainter
         colorFlip = false;
 
         for (double i = cursorStartPos.y; i < cursorEndPos.y;
-        i += segmentLength) {
+        i += painterOptions.selectionDashSegmentLength) {
           drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
-          double end = (i + segmentLength) <= cursorEndPos.y
-              ? i + segmentLength
+          double end = (i + painterOptions.selectionDashSegmentLength) <= cursorEndPos.y
+              ? i + painterOptions.selectionDashSegmentLength
               : cursorEndPos.y;
           drawParams.canvas.drawLine(
               Offset(cursorStartPos.x, i), Offset(cursorStartPos.x, end),
@@ -138,12 +134,8 @@ class SelectionPainter extends IToolPainter
       }
       else if (options.shape == SelectShape.ellipse)
       {
-        //TODO magic
-        const int arcDivisions = 32;
-        final double segmentAngle = (2 * pi) / arcDivisions.floor();
-        //drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-
-        for (int i = 0; i < arcDivisions; i++) {
+        final double segmentAngle = (2 * pi) / painterOptions.selectionCircleSegmentCount;
+        for (int i = 0; i < painterOptions.selectionCircleSegmentCount; i++) {
           drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
           drawParams.canvas.drawArc(Rect.fromLTRB(
               cursorStartPos.x, cursorStartPos.y, cursorEndPos.x,
@@ -168,11 +160,9 @@ class SelectionPainter extends IToolPainter
           y: drawParams.offset.dy + KPixPainter.getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
               pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize);
-      //TODO magic
-      double strokeWidth = 2;
-      drawParams.paint.strokeWidth = strokeWidth;
+      drawParams.paint.strokeWidth = painterOptions.selectionCursorStrokeWidth;
       drawParams.paint.color = Colors.black;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x - strokeWidth, cursorPos.y - strokeWidth, cursorPos.x + drawParams.pixelSize + strokeWidth , cursorPos.y + drawParams.pixelSize + strokeWidth), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x - painterOptions.selectionCursorStrokeWidth, cursorPos.y - painterOptions.selectionCursorStrokeWidth, cursorPos.x + drawParams.pixelSize + painterOptions.selectionCursorStrokeWidth , cursorPos.y + drawParams.pixelSize + painterOptions.selectionCursorStrokeWidth), drawParams.paint);
       drawParams.paint.color = Colors.white;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize , cursorPos.y + drawParams.pixelSize), drawParams.paint);
     }

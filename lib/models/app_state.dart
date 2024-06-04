@@ -30,7 +30,7 @@ class AppState
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
 
-  static final List<int> _zoomLevels = [100, 200, 300, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2400, 2800, 3200, 4800, 6400, 8000];
+  static final List<int> zoomLevels = [100, 200, 300, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2400, 2800, 3200, 4800, 6400, 8000];
   int _zoomLevelIndex = 0;
   int _zoomFactor = 1;
 
@@ -71,15 +71,16 @@ class AppState
 
   int getZoomLevel()
   {
-    return _zoomLevels[_zoomLevelIndex];
+    return zoomLevels[_zoomLevelIndex];
   }
 
   bool increaseZoomLevel()
   {
     bool changed = false;
-    if (_zoomLevelIndex < _zoomLevels.length - 1)
+    if (_zoomLevelIndex < zoomLevels.length - 1)
     {
       _zoomLevelIndex++;
+      // TODO these two lines appear way too often -> own private method
       _zoomFactor = getZoomLevel() ~/ 100;
       setStatusBarZoomFactor(getZoomLevel());
       changed = true;
@@ -105,14 +106,27 @@ class AppState
     bool change = false;
     if (steps != 0)
     {
-      int endIndex = _zoomLevels.indexOf(startZoomLevel) + steps;
-      if (endIndex < _zoomLevels.length && endIndex >= 0 && endIndex != _zoomLevelIndex)
+      int endIndex = zoomLevels.indexOf(startZoomLevel) + steps;
+      if (endIndex < zoomLevels.length && endIndex >= 0 && endIndex != _zoomLevelIndex)
       {
          _zoomLevelIndex = endIndex;
          _zoomFactor = getZoomLevel() ~/ 100;
          setStatusBarZoomFactor(getZoomLevel());
          change = true;
       }
+    }
+    return change;
+  }
+
+  bool setZoomLevelIndex(final int index)
+  {
+    bool change = false;
+    if (index >= 0 && index < zoomLevels.length && index != _zoomLevelIndex)
+    {
+      _zoomLevelIndex = index;
+      _zoomFactor = getZoomLevel() ~/ 100;
+      setStatusBarZoomFactor(getZoomLevel());
+      change = true;
     }
     return change;
   }

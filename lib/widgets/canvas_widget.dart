@@ -94,7 +94,25 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     _maxLongPressDistance = options.longPressCancelDistance;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      int bestZoomLevel = 0;
+      for (int i = 1; i < AppState.zoomLevels.length; i++)
+      {
+        int factor = AppState.zoomLevels[i] ~/ 100;
+        if (appState.canvasWidth * factor < kPixPainter.latestSize!.width && appState.canvasHeight * factor < kPixPainter.latestSize!.height)
+        {
+          bestZoomLevel = i;
+        }
+        else
+        {
+          break;
+        }
+      }
+      appState.setZoomLevelIndex(bestZoomLevel);
 
+      final Offset centerOffset = Offset((kPixPainter.latestSize!.width - (appState.canvasWidth * appState.getZoomFactor())) / 2, (kPixPainter.latestSize!.height - (appState.canvasHeight * appState.getZoomFactor())) / 2);
+      _canvasOffset.value = centerOffset;
+    });
   }
 
 

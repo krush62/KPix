@@ -181,7 +181,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         if (selectionPainter.hasNewSelection)
         {
           selectionPainter.hasNewSelection = false;
-          appState.selectionState.newSelection(start: selectionPainter.selectionStart, end: selectionPainter.selectionEnd);
+          appState.selectionState.newSelection(start: selectionPainter.selectionStart, end: selectionPainter.selectionEnd, selectShape: selectionPainter.options.shape);
         }
       }
     }

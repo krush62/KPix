@@ -37,47 +37,84 @@ class SelectionState with ChangeNotifier
 
   SelectionState({required this.repaintNotifier});
 
-  void newSelection({required final CoordinateSetI start, required final CoordinateSetI end, final bool notify = true})
+  void newSelection({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true})
   {
     if (selectionOptions.mode == SelectionMode.replace)
     {
       deselect(notify: false);
     }
 
-    if (end.x > start.x && end.y > start.y)
+
+    if (selectionOptions.mode != SelectionMode.replace || end.x != start.x || end.y != start.y)
     {
-      for (int x = start.x; x <= end.x; x++)
-      {
-        for (int y = start.y; y <= end.y; y++)
-        {
-          CoordinateSetI selectedPixel = CoordinateSetI(x: x, y: y);
-          switch (selectionOptions.mode) {
-            case SelectionMode.replace:
-            case SelectionMode.add:
-              if (!selection.selectedPixels.contains(selectedPixel))
-              {
-                selection.selectedPixels.add(selectedPixel);
-              }
-              break;
-            case SelectionMode.intersect:
-              if (!selection.selectedPixels.contains(selectedPixel))
-              {
-                selection.selectedPixels.add(selectedPixel);
-              }
-              else
-              {
-                selection.selectedPixels.remove(selectedPixel);
-              }
-              break;
-            case SelectionMode.subtract:
-              if (selection.selectedPixels.contains(selectedPixel))
-              {
-                selection.selectedPixels.remove(selectedPixel);
-              }
-              break;
+      if (selectShape == SelectShape.rectangle) {
+        for (int x = start.x; x <= end.x; x++) {
+          for (int y = start.y; y <= end.y; y++) {
+            CoordinateSetI selectedPixel = CoordinateSetI(x: x, y: y);
+            switch (selectionOptions.mode) {
+              case SelectionMode.replace:
+              case SelectionMode.add:
+                if (!selection.selectedPixels.contains(selectedPixel)) {
+                  selection.selectedPixels.add(selectedPixel);
+                }
+                break;
+              case SelectionMode.intersect:
+                if (!selection.selectedPixels.contains(selectedPixel)) {
+                  selection.selectedPixels.add(selectedPixel);
+                }
+                else {
+                  selection.selectedPixels.remove(selectedPixel);
+                }
+                break;
+              case SelectionMode.subtract:
+                if (selection.selectedPixels.contains(selectedPixel)) {
+                  selection.selectedPixels.remove(selectedPixel);
+                }
+                break;
+            }
           }
         }
       }
+      else if (selectShape == SelectShape.ellipse)
+      {
+        double centerX = (start.x + end.x) / 2;
+        double centerY = (start.y + end.y) / 2;
+        double radiusX = (end.x - start.x) / 2;
+        double radiusY = (end.y - start.y) / 2;
+
+        for (int x = start.x; x <= end.x; x++) {
+          for (int y = start.y; y <= end.y; y++) {
+            double dx = (x + 0.5) - centerX;
+            double dy = (y + 0.5) - centerY;
+            if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
+            {
+              CoordinateSetI selectedPixel = CoordinateSetI(x: x, y: y);
+              switch (selectionOptions.mode) {
+                case SelectionMode.replace:
+                case SelectionMode.add:
+                  if (!selection.selectedPixels.contains(selectedPixel)) {
+                    selection.selectedPixels.add(selectedPixel);
+                  }
+                  break;
+                case SelectionMode.intersect:
+                  if (!selection.selectedPixels.contains(selectedPixel)) {
+                    selection.selectedPixels.add(selectedPixel);
+                  }
+                  else {
+                    selection.selectedPixels.remove(selectedPixel);
+                  }
+                  break;
+                case SelectionMode.subtract:
+                  if (selection.selectedPixels.contains(selectedPixel)) {
+                    selection.selectedPixels.remove(selectedPixel);
+                  }
+                  break;
+              }
+            }
+          }
+        }
+      }
+
       _createSelectionLines();
     }
     else

@@ -137,9 +137,9 @@ class Helper
     return gcd(b, a % b);
   }
 
-  static double calculateAngle(int x1, int y1, int x2, int y2) {
-    int dx = x2 - x1;
-    int dy = y2 - y1;
+  static double calculateAngle(final CoordinateSetI startPos, final CoordinateSetI endPos) {
+    int dx = endPos.x - startPos.x;
+    int dy = endPos.y - startPos.y;
 
     double angle = atan2(dy, dx);
 

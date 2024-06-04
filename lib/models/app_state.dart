@@ -30,8 +30,9 @@ class AppState
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
 
-  static final List<int> _zoomLevels = [100, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2400, 2800, 3200, 4800, 6400];
+  static final List<int> _zoomLevels = [100, 200, 300, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2400, 2800, 3200, 4800, 6400, 8000];
   int _zoomLevelIndex = 0;
+  int _zoomFactor = 1;
 
   //StatusBar
   final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
@@ -54,16 +55,18 @@ class AppState
     }
     setToolSelection(ToolType.pencil);
     setStatusBarZoomFactor(getZoomLevel());
-
-    //TODO TEMP
-    setStatusBarDimensions(200, 400);
-
   }
 
   void setCanvasDimensions({required int width, required int height})
   {
     canvasWidth = width;
     canvasHeight = height;
+    setStatusBarDimensions(width, height);
+  }
+
+  int getZoomFactor()
+  {
+    return _zoomFactor;
   }
 
   int getZoomLevel()
@@ -71,36 +74,47 @@ class AppState
     return _zoomLevels[_zoomLevelIndex];
   }
 
-  void increaseZoomLevel()
+  bool increaseZoomLevel()
   {
+    bool changed = false;
     if (_zoomLevelIndex < _zoomLevels.length - 1)
     {
       _zoomLevelIndex++;
+      _zoomFactor = getZoomLevel() ~/ 100;
       setStatusBarZoomFactor(getZoomLevel());
+      changed = true;
     }
+    return changed;
   }
 
-  void decreaseZoomLevel()
+  bool decreaseZoomLevel()
   {
+    bool changed = false;
     if (_zoomLevelIndex > 0)
     {
       _zoomLevelIndex--;
+      _zoomFactor = getZoomLevel() ~/ 100;
       setStatusBarZoomFactor(getZoomLevel());
-      //shouldRepaint.value = true;
+      changed = true;
     }
+    return changed;
   }
 
-  void setZoomLevelByDistance(final int startZoomLevel, final int steps)
+  bool setZoomLevelByDistance(final int startZoomLevel, final int steps)
   {
+    bool change = false;
     if (steps != 0)
     {
       int endIndex = _zoomLevels.indexOf(startZoomLevel) + steps;
       if (endIndex < _zoomLevels.length && endIndex >= 0 && endIndex != _zoomLevelIndex)
       {
          _zoomLevelIndex = endIndex;
+         _zoomFactor = getZoomLevel() ~/ 100;
          setStatusBarZoomFactor(getZoomLevel());
+         change = true;
       }
     }
+    return change;
   }
 
 
@@ -294,9 +308,9 @@ class AppState
     statusBarDimensionString.value = null;
   }
 
-  void setStatusBarCursorPosition(final CoordinateSetD coords)
+  void setStatusBarCursorPosition(final CoordinateSetI coords)
   {
-    statusBarCursorPositionString.value = "${coords.x.toStringAsFixed(1)},${coords.y.toStringAsFixed(1)}";
+    statusBarCursorPositionString.value = "${coords.x.toString()},${coords.y.toString()}";
   }
 
   void hideStatusBarCursorPosition()
@@ -314,10 +328,8 @@ class AppState
     statusBarZoomFactorString.value = null;
   }
 
-  void setStatusBarToolDimension(final int x1, final int y1, final int x2, int y2)
+  void setStatusBarToolDimension(final int width, final int height)
   {
-    final int width = (x1 - x2).abs();
-    final int height = (y1 - y2).abs();
     statusBarToolDimensionString.value = "$width,$height";
   }
 
@@ -326,10 +338,8 @@ class AppState
     statusBarToolDimensionString.value = null;
   }
 
-  void setStatusBarToolDiagonal(final int x1, final int y1, final int x2, int y2)
+  void setStatusBarToolDiagonal(final int width, final int height)
   {
-    final int width = (x1 - x2).abs();
-    final int height = (y1 - y2).abs();
     final double result = sqrt((width * width).toDouble() + (height * height).toDouble());
     statusBarToolDiagonalString.value = result.toStringAsFixed(1);  }
 
@@ -338,10 +348,8 @@ class AppState
     statusBarToolDiagonalString.value = null;
   }
 
-  void setStatusBarToolAspectRatio(final int x1, final int y1, final int x2, int y2)
+  void setStatusBarToolAspectRatio(final int width, final int height)
   {
-    final int width = (x1 - x2).abs();
-    final int height = (y1 - y2).abs();
     final int divisor = Helper.gcd(width, height);
     final int reducedWidth = divisor != 0 ? width ~/ divisor : 0;
     final int reducedHeight = divisor != 0 ? height ~/ divisor : 0;
@@ -353,9 +361,9 @@ class AppState
     statusBarToolAspectRatioString.value = null;
   }
 
-  void setStatusBarToolAngle(final int x1, final int y1, final int x2, final int y2)
+  void setStatusBarToolAngle(final CoordinateSetI startPos, final CoordinateSetI endPos)
   {
-    double angle = Helper.calculateAngle(x1, y1, x2, y2);
+    double angle = Helper.calculateAngle(startPos, endPos);
     statusBarToolAngleString.value = "${angle.toStringAsFixed(1)}°";
   }
 

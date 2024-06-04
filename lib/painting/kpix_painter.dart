@@ -72,7 +72,7 @@ class KPixPainter extends CustomPainter
   final Color checkerboardColor1;
   final Color checkerboardColor2;
   late Map<ToolType, IToolPainter> toolPainterMap;
-
+  Size? latestSize;
 
 
   KPixPainter({
@@ -93,12 +93,12 @@ class KPixPainter extends CustomPainter
 
   @override
   void paint(Canvas canvas, Size size) {
-
+    latestSize = size;
     DrawingParameters drawParams = DrawingParameters(
         offset: offset.value,
         canvas: canvas,
         paint: Paint(),
-        pixelSize: appState.getZoomLevel() ~/ 100,
+        pixelSize: appState.getZoomFactor(),
         canvasSize: CoordinateSetI(x: appState.canvasWidth, y: appState.canvasHeight),
         drawingSize: size,
         cursorPos: coords.value,

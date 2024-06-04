@@ -128,6 +128,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
       }
 
+      //deselect if outside is clicked
+      if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasWidth * appState.getZoomFactor()) ||
+          _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasHeight * appState.getZoomFactor()))
+      {
+        appState.selectionState.deselect();
+      }
+
       print("PRIMARY DOWN");
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
@@ -141,6 +148,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _isDragging.value = true;
       setMouseCursor(SystemMouseCursors.move);
     }
+
     _updateLocation(details);
   }
 
@@ -184,6 +192,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           appState.selectionState.newSelection(start: selectionPainter.selectionStart, end: selectionPainter.selectionEnd, selectShape: selectionPainter.options.shape);
         }
       }
+
+
     }
   }
 
@@ -205,16 +215,32 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
     }
 
+    appState.repaintNotifier.repaint();
 
 
-    appState.setStatusBarCursorPosition(_cursorPos.value!);
+
+    appState.setStatusBarCursorPosition(CoordinateSetI(
+        x: (_cursorPos.value!.x - _canvasOffset.value.dx) ~/ appState.getZoomFactor(),
+        y: (_cursorPos.value!.y - _canvasOffset.value.dy) ~/ appState.getZoomFactor()));
+
+    //UPDATE OF STATUS BAR
     if (_primaryIsDown.value)
     {
-      appState.setStatusBarToolDimension(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
-      appState.setStatusBarToolDiagonal(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
-      appState.setStatusBarToolAspectRatio(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
-      appState.setStatusBarToolAngle(_pressStartLoc.value.dx.round(), _pressStartLoc.value.dy.round(), _cursorPos.value!.x.round(), _cursorPos.value!.y.round());
+      if (appState.selectedTool.value == ToolType.select)
+      {
+        if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
+        {
+          final SelectionPainter selectionPainter = kPixPainter
+              .toolPainterMap[ToolType.select] as SelectionPainter;
+          int width = (selectionPainter.selectionStart.x - selectionPainter.selectionEnd.x).abs() + 1;
+          int height = (selectionPainter.selectionStart.y - selectionPainter.selectionEnd.y).abs() + 1;
 
+          appState.setStatusBarToolDimension(width, height);
+          appState.setStatusBarToolDiagonal(width, height);
+          appState.setStatusBarToolAspectRatio(width, height);
+          appState.setStatusBarToolAngle(selectionPainter.selectionStart, selectionPainter.selectionEnd);
+        }
+      }
     }
 
     if (details.kind == PointerDeviceKind.mouse)
@@ -228,40 +254,47 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _needSecondaryStartLoc = false;
     }
 
+    final Offset cursorOffset = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
+
     if (_stylusZoomStarted)
     {
+      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.getZoomFactor().toDouble();
       double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
       int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
-      appState.setZoomLevelByDistance(_stylusZoomStartLevel, zoomSteps);
+      if (appState.setZoomLevelByDistance(_stylusZoomStartLevel, zoomSteps))
+      {
+        _canvasOffset.value = cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble());
+      }
     }
 
-    Offset co = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
-
-
-    if (_timerRunning && (_pressStartLoc.value - co).distance > _maxLongPressDistance)
+    if (_timerRunning && (_pressStartLoc.value - cursorOffset).distance > _maxLongPressDistance)
     {
       _timerLongPress.cancel();
       _timerRunning = false;
     }
-    if (_timerStylusRunning && (_secondaryStartLoc - co).distance > _maxLongPressDistance)
+    if (_timerStylusRunning && (_secondaryStartLoc - cursorOffset).distance > _maxLongPressDistance)
     {
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
       _isDragging.value = true;
       setMouseCursor(SystemMouseCursors.move);
-      _dragStartLoc = co;
+      _dragStartLoc = cursorOffset;
     }
 
     if (_isDragging.value)
     {
-      _canvasOffset.value  = _canvasOffset.value - (_dragStartLoc - co);
-      _dragStartLoc = co;
+      _canvasOffset.value  = _canvasOffset.value - (_dragStartLoc - cursorOffset);
+      _dragStartLoc = cursorOffset;
 
       if (details.kind == PointerDeviceKind.touch && _touchPointers.length == 2)
       {
         final double currentDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         final int zoomSteps = ((currentDistance - _initialTouchZoomDistance) / options.touchZoomStepDistance).round();
-        appState.setZoomLevelByDistance(_touchZoomStartLevel, zoomSteps);
+        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.getZoomFactor().toDouble();
+        if (appState.setZoomLevelByDistance(_touchZoomStartLevel, zoomSteps))
+        {
+          _canvasOffset.value = cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble());
+        }
       }
     }
 
@@ -285,13 +318,21 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   {
     if (ev is PointerScrollEvent)
     {
+      final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / appState.getZoomFactor().toDouble();
+
       if (ev.scrollDelta.dy < 0.0)
       {
-        appState.increaseZoomLevel();
+        if (appState.increaseZoomLevel())
+        {
+          _canvasOffset.value = ev.localPosition - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble());
+        }
       }
       else if (ev.scrollDelta.dy > 0.0)
       {
-        appState.decreaseZoomLevel();
+        if (appState.decreaseZoomLevel())
+        {
+          _canvasOffset.value = ev.localPosition - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble());
+        }
       }
     }
   }

@@ -113,6 +113,7 @@ class KPixPainter extends CustomPainter
         );
 
 
+    //TODO this is too slow (solid color?)
     _drawCheckerboard(drawParams: drawParams);
     _drawLayers(drawParams: drawParams);
     _drawSelection(drawParams: drawParams);
@@ -123,22 +124,46 @@ class KPixPainter extends CustomPainter
   void _drawSelection({required final DrawingParameters drawParams})
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
+    drawParams.paint.style = PaintingStyle.stroke;
+    //TODO magic numbers and values
+    drawParams.paint.color = Colors.red;
+    drawParams.paint.strokeWidth = 4;
 
-    final Iterable<CoordinateSetI> insideList = appState.selectionState.selection.selectedPixels.where((p) => p.x >= drawParams.drawingStart.x && p.x <= drawParams.drawingEnd.x && p.y >= drawParams.drawingStart.y && p.y <= drawParams.drawingEnd.y);
+    for (final SelectionLine line in appState.selectionState.selectionLines)
+    {
+      if (line.selectDir == SelectionDirection.Left)
+      {
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl), offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+      }
+      else if (line.selectDir == SelectionDirection.Right)
+      {
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+      }
+      else if (line.selectDir == SelectionDirection.Top)
+      {
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl)), drawParams.paint);
+      }
+      else if (line.selectDir == SelectionDirection.Bottom)
+      {
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+      }
+
+    }
+
+    /*final Iterable<CoordinateSetI> insideList = appState.selectionState.selection.selectedPixels.where((p) => p.x >= drawParams.drawingStart.x && p.x <= drawParams.drawingEnd.x && p.y >= drawParams.drawingStart.y && p.y <= drawParams.drawingEnd.y);
 
     for (final CoordinateSetI coords in insideList)
     {
       final double left = offset.value.dx + (coords.x * pxlSzDbl);
       final double top  = offset.value.dy + (coords.y * pxlSzDbl);
-      drawParams.paint.style = PaintingStyle.fill;
-      drawParams.paint.color = const Color.fromARGB(100, 255, 255, 255);
-      drawParams.canvas.drawRect(Rect.fromLTWH(left, top, pxlSzDbl, pxlSzDbl), drawParams.paint);
-      //draw borders
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.color = Colors.red;
-      //TODO magic numbers and values
-      drawParams.paint.strokeWidth = 4;
-
       if (!insideList.contains(CoordinateSetI(x: coords.x - 1, y: coords.y))) //left
       {
         drawParams.canvas.drawLine(Offset(left, top), Offset(left, top + pxlSzDbl), drawParams.paint);
@@ -155,7 +180,7 @@ class KPixPainter extends CustomPainter
       {
         drawParams.canvas.drawLine(Offset(left, top + pxlSzDbl), Offset(left + pxlSzDbl, top + pxlSzDbl), drawParams.paint);
       }
-    }
+    }*/
   }
 
   void _drawToolOverlay({required final DrawingParameters drawParams})
@@ -171,7 +196,7 @@ class KPixPainter extends CustomPainter
   {
     if (coords.value != null)
     {
-      if (!isDragging.value && isOnCanvas(drawParams: drawParams))
+      if (!isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
       {
         IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
         if (toolPainter != null)
@@ -200,6 +225,8 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
+    //TODO temp
+    final double extension = 0.1;
     final List<LayerState> layers = appState.layers.value;
     for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
     {
@@ -212,8 +239,8 @@ class KPixPainter extends CustomPainter
             if (layerColor != null) {
               drawParams.paint.color =
                   layerColor.ramp.colors[layerColor.colorIndex].value.color;
-              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl),
-                  offset.value.dy + (y * pxlSzDbl), pxlSzDbl, pxlSzDbl), drawParams.paint);
+              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - extension,
+                  offset.value.dy + (y * pxlSzDbl) - extension, pxlSzDbl + (2.0 * extension), pxlSzDbl + (2.0 * extension)), drawParams.paint);
               break;
             }
           }
@@ -226,7 +253,9 @@ class KPixPainter extends CustomPainter
   {
     bool rowFlip = false;
     bool colFlip = false;
-    final double cbSizeDbl = drawParams.pixelSize <= 1 ? 1.0 : drawParams.pixelSize.toDouble() / 2;
+    //TODO THIS FORMULA NEEDS TO BE ADJUSTED
+   double cbSizeDbl = (drawParams.pixelSize / 2).clamp(8.0, 64.0);
+
     for (int i = drawParams.drawingStart.x * drawParams.pixelSize; i < drawParams.drawingEnd.x * drawParams.pixelSize; i += cbSizeDbl.floor())
     {
       colFlip = rowFlip;
@@ -276,10 +305,10 @@ class KPixPainter extends CustomPainter
 
 
 
-  static bool isOnCanvas({required final DrawingParameters drawParams})
+  static bool isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
   {
     bool isOn = false;
-    if (drawParams.cursorPos != null && drawParams.cursorPos!.x >= drawParams.offset.dx && drawParams.cursorPos!.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && drawParams.cursorPos!.y >= drawParams.offset.dy && drawParams.cursorPos!.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)
+    if (testCoords.x >= drawParams.offset.dx && testCoords.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && testCoords.y >= drawParams.offset.dy && testCoords.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)
     {
       isOn = true;
     }

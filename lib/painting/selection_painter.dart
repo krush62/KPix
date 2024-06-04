@@ -17,7 +17,7 @@ class SelectionPainter extends IToolPainter
   void drawTool({required final DrawingParameters drawParams})
   {
 
-    if (drawParams.primaryDown && KPixPainter.isOnCanvas(drawParams: drawParams))
+    if (drawParams.primaryDown && drawParams.cursorPos != null && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: CoordinateSetD(x: drawParams.primaryPressStart.dx, y: drawParams.primaryPressStart.dy)))
     {
       drawParams.paint.style = PaintingStyle.stroke;
       //TODO magic numbers and values

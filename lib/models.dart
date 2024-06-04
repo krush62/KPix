@@ -32,7 +32,7 @@ class AppState
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
 
-  static final List<int> _zoomLevels = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2400, 3200, 6400];
+  static final List<int> _zoomLevels = [100, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2400, 2800, 3200, 4800, 6400];
   int _zoomLevelIndex = 0;
 
   //StatusBar
@@ -395,17 +395,38 @@ class AppState
   }
 }
 
+enum SelectionDirection
+{
+  Undefined,
+  Left,
+  Right,
+  Top,
+  Bottom
+}
+
+class SelectionLine
+{
+  final SelectionDirection selectDir;
+  CoordinateSetI startLoc;
+  CoordinateSetI endLoc;
+
+  SelectionLine({required this.selectDir, required this.startLoc, required this.endLoc});
+}
+
+
 class SelectionState with ChangeNotifier
 {
   final SelectionList selection = SelectionList();
   HashMap<CoordinateSetI, ColorReference?>? clipboard;
   final RepaintNotifier repaintNotifier;
   final SelectOptions selectionOptions = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
+  final List<SelectionLine> selectionLines = [];
 
   SelectionState({required this.repaintNotifier});
 
   void newSelection({required final CoordinateSetI start, required final CoordinateSetI end, final bool notify = true})
   {
+    selectionLines.clear();
     if (selectionOptions.mode == SelectionMode.replace)
     {
       deselect(notify: false);
@@ -445,6 +466,7 @@ class SelectionState with ChangeNotifier
           }
         }
       }
+      _createSelectionLines();
     }
     else
     {
@@ -454,6 +476,101 @@ class SelectionState with ChangeNotifier
     {
       notifyListeners();
       repaintNotifier.repaint();
+    }
+  }
+
+  void _createSelectionLines()
+  {
+    for (final CoordinateSetI coord in selection.selectedPixels)
+    {
+      if (coord.x == 0 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
+      {
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Left);
+        bool inserted = false;
+        for (final SelectionLine selLine in leftLines)
+        {
+          if (selLine.startLoc.x == coord.x && selLine.startLoc.y == coord.y + 1)
+          {
+            selLine.startLoc = coord;
+            inserted = true;
+          }
+          else if (selLine.endLoc.x == coord.x && selLine.endLoc.y == coord.y - 1)
+          {
+            selLine.endLoc = coord;
+            inserted = true;
+          }
+        }
+        if (!inserted)
+        {
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Left, startLoc: coord, endLoc: coord));
+        }
+      }
+      if (coord.x == GetIt.I.get<AppState>().canvasWidth - 1 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)))
+      {
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Right);
+        bool inserted = false;
+        for (final SelectionLine selLine in leftLines)
+        {
+          if (selLine.startLoc.x == coord.x && selLine.startLoc.y == coord.y + 1)
+          {
+            selLine.startLoc = coord;
+            inserted = true;
+          }
+          else if (selLine.endLoc.x == coord.x && selLine.endLoc.y == coord.y - 1)
+          {
+            selLine.endLoc = coord;
+            inserted = true;
+          }
+        }
+        if (!inserted)
+        {
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Right, startLoc: coord, endLoc: coord));
+        }
+      }
+      if (coord.y == 0 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)))
+      {
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Top);
+        bool inserted = false;
+        for (final SelectionLine selLine in leftLines)
+        {
+          if (selLine.startLoc.x == coord.x + 1 && selLine.startLoc.y == coord.y)
+          {
+            selLine.startLoc = coord;
+            inserted = true;
+          }
+          else if (selLine.endLoc.x == coord.x - 1 && selLine.endLoc.y == coord.y)
+          {
+            selLine.endLoc = coord;
+            inserted = true;
+          }
+        }
+        if (!inserted)
+        {
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Top, startLoc: coord, endLoc: coord));
+        }
+      }
+      if (coord.y == GetIt.I.get<AppState>().canvasHeight - 1 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)))
+      {
+        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.Bottom);
+        bool inserted = false;
+        for (final SelectionLine selLine in leftLines)
+        {
+          if (selLine.startLoc.x == coord.x + 1 && selLine.startLoc.y == coord.y)
+          {
+            selLine.startLoc = coord;
+            inserted = true;
+          }
+          else if (selLine.endLoc.x == coord.x - 1 && selLine.endLoc.y == coord.y)
+          {
+            selLine.endLoc = coord;
+            inserted = true;
+          }
+        }
+        if (!inserted)
+        {
+          selectionLines.add(SelectionLine(selectDir: SelectionDirection.Bottom, startLoc: coord, endLoc: coord));
+        }
+      }
     }
   }
 
@@ -474,6 +591,7 @@ class SelectionState with ChangeNotifier
         }
       }
     }
+    _createSelectionLines();
     if (notify)
     {
       notifyListeners();
@@ -485,6 +603,7 @@ class SelectionState with ChangeNotifier
   void deselect({final bool notify = true})
   {
     selection.selectedPixels.clear();
+    _createSelectionLines();
     if (notify)
     {
       notifyListeners();
@@ -505,6 +624,7 @@ class SelectionState with ChangeNotifier
         }
       }
     }
+    _createSelectionLines();
     if (notify)
     {
       notifyListeners();
@@ -586,7 +706,7 @@ class SelectionState with ChangeNotifier
 
 class SelectionList
 {
-  List<CoordinateSetI> selectedPixels = [];
+  Set<CoordinateSetI> selectedPixels = Set<CoordinateSetI>();
   HashMap<CoordinateSetI, ColorReference>? content;
 
   bool hasContent()

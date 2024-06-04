@@ -95,7 +95,7 @@ class LayerState
     
     //TODO TEMP
     AppState appState = GetIt.I.get<AppState>();
-    for (int i = 0; i < 200; i++)
+    for (int i = 0; i < 1000; i++)
     {
       KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
       data[Random().nextInt(width)][Random().nextInt(height)] = ColorReference(colorIndex: Random().nextInt(ramp.colors.length), ramp: ramp);

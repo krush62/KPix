@@ -431,7 +431,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
             children: [
               MouseRegion(
                 onExit: _onMouseExit,
-                //TODO this should depend on the tool and if user is above canvas => callback function to painter
                 cursor: cursor,
                 child: Listener(
                   onPointerDown: _buttonDown,
@@ -453,13 +452,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                 valueListenable: GetIt.I.get<AppState>().selectedTool,
                 builder: (BuildContext context, ToolType toolType, child)
                 {
-                  return AnimatedOpacity(
-                    //TODO magic number
-                    duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                    opacity: toolType == ToolType.select ? 1.0 : 0.0,
-                    child: const Align(
-                        alignment: Alignment.bottomCenter,
-                        child: SelectionBarWidget()
+                  return IgnorePointer(
+                    ignoring: toolType != ToolType.select,
+                    child: AnimatedOpacity(
+                      duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+                      opacity: toolType == ToolType.select ? 1.0 : 0.0,
+                      child: const Align(
+                          alignment: Alignment.bottomCenter,
+                          child: SelectionBarWidget()
+                      ),
                     ),
                   );
                 }

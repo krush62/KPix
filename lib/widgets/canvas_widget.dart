@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
-import 'package:kpix/models.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';

@@ -6,7 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
-import 'package:kpix/models.dart';
+import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
@@ -126,61 +127,57 @@ class KPixPainter extends CustomPainter
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
     drawParams.paint.style = PaintingStyle.stroke;
     //TODO magic numbers and values
-    drawParams.paint.color = Colors.red;
-    drawParams.paint.strokeWidth = 4;
+    double strokeWidth = 2;
+    drawParams.paint.strokeWidth = strokeWidth;
 
     for (final SelectionLine line in appState.selectionState.selectionLines)
     {
       if (line.selectDir == SelectionDirection.Left)
       {
+        drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl), offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - strokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl + strokeWidth / 2), drawParams.paint);
+        drawParams.paint.color = Colors.white;
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + strokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
       }
       else if (line.selectDir == SelectionDirection.Right)
       {
+        drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - strokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + strokeWidth / 2), drawParams.paint);
+        drawParams.paint.color = Colors.white;
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl - strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
       }
       else if (line.selectDir == SelectionDirection.Top)
       {
+        drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl)), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - strokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) - strokeWidth / 2), drawParams.paint);
+        drawParams.paint.color = Colors.white;
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + strokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + strokeWidth / 2), drawParams.paint);
       }
       else if (line.selectDir == SelectionDirection.Bottom)
       {
+        drawParams.paint.color = Colors.black;
         drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - strokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl + strokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + strokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + strokeWidth / 2), drawParams.paint);
+        drawParams.paint.color = Colors.white;
+        drawParams.canvas.drawLine(
+            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl - strokeWidth / 2),
+            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl - strokeWidth / 2), drawParams.paint);
       }
 
     }
-
-    /*final Iterable<CoordinateSetI> insideList = appState.selectionState.selection.selectedPixels.where((p) => p.x >= drawParams.drawingStart.x && p.x <= drawParams.drawingEnd.x && p.y >= drawParams.drawingStart.y && p.y <= drawParams.drawingEnd.y);
-
-    for (final CoordinateSetI coords in insideList)
-    {
-      final double left = offset.value.dx + (coords.x * pxlSzDbl);
-      final double top  = offset.value.dy + (coords.y * pxlSzDbl);
-      if (!insideList.contains(CoordinateSetI(x: coords.x - 1, y: coords.y))) //left
-      {
-        drawParams.canvas.drawLine(Offset(left, top), Offset(left, top + pxlSzDbl), drawParams.paint);
-      }
-      if (!insideList.contains(CoordinateSetI(x: coords.x + 1, y: coords.y))) //right
-      {
-        drawParams.canvas.drawLine(Offset(left + pxlSzDbl, top), Offset(left + pxlSzDbl, top + pxlSzDbl), drawParams.paint);
-      }
-      if (!insideList.contains(CoordinateSetI(x: coords.x, y: coords.y - 1))) //top
-      {
-        drawParams.canvas.drawLine(Offset(left, top), Offset(left + pxlSzDbl, top), drawParams.paint);
-      }
-      if (!insideList.contains(CoordinateSetI(x: coords.x, y: coords.y + 1))) //bottom
-      {
-        drawParams.canvas.drawLine(Offset(left, top + pxlSzDbl), Offset(left + pxlSzDbl, top + pxlSzDbl), drawParams.paint);
-      }
-    }*/
   }
 
   void _drawToolOverlay({required final DrawingParameters drawParams})

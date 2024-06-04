@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/kpix_theme.dart';
-import 'package:kpix/models.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';

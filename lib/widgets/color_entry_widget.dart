@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
-import 'package:kpix/models.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 

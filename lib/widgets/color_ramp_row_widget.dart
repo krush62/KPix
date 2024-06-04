@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/color_names.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
-import 'package:kpix/models.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';

@@ -1,9 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
-import 'package:kpix/models.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 
 class SelectionPainter extends IToolPainter
@@ -11,7 +9,6 @@ class SelectionPainter extends IToolPainter
   CoordinateSetI selectionStart = CoordinateSetI(x: 0, y: 0);
   CoordinateSetI selectionEnd = CoordinateSetI(x: 0, y: 0);
   bool hasNewSelection = false;
-  final AppState appState = GetIt.I.get<AppState>();
 
   @override
   void drawTool({required final DrawingParameters drawParams})
@@ -92,13 +89,6 @@ class SelectionPainter extends IToolPainter
         colorFlip = !colorFlip;
       }
     }
-    /*else if (hasNewSelection)
-    {
-      hasNewSelection = false;
-      appState.selectionState.newSelection(start: selectionStart, end: selectionEnd);
-      print(selectionStart.toString());
-      print(selectionEnd.toString());
-    }*/
   }
 
   @override
@@ -116,20 +106,12 @@ class SelectionPainter extends IToolPainter
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
               pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize);
       //TODO magic
+      double strokeWidth = 2;
+      drawParams.paint.strokeWidth = strokeWidth;
       drawParams.paint.color = Colors.black;
-      drawParams.canvas.drawLine(Offset(cursorPos.x, cursorPos.y),
-          Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y), drawParams.paint);
-      drawParams.canvas.drawLine(Offset(cursorPos.x, cursorPos.y + drawParams.pixelSize),
-          Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize),
-          drawParams.paint);
-      //TODO magic
+      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x - strokeWidth, cursorPos.y - strokeWidth, cursorPos.x + drawParams.pixelSize + strokeWidth , cursorPos.y + drawParams.pixelSize + strokeWidth), drawParams.paint);
       drawParams.paint.color = Colors.white;
-      drawParams.canvas.drawLine(Offset(cursorPos.x, cursorPos.y),
-          Offset(cursorPos.x, cursorPos.y + drawParams.pixelSize), drawParams.paint);
-      drawParams.canvas.drawLine(Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y),
-          Offset(cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize),
-          drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize , cursorPos.y + drawParams.pixelSize), drawParams.paint);
     }
-
   }
 }

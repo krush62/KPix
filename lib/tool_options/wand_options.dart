@@ -5,11 +5,17 @@ import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class WandOptions extends IToolOptions
 {
+  final int modeDefault;
+  SelectionMode mode = SelectionMode.replace;
   final bool selectFromWholeRampDefault;
   bool selectFromWholeRamp = false;
-  WandOptions({required this.selectFromWholeRampDefault})
+  WandOptions({
+    required this.selectFromWholeRampDefault,
+    required this.modeDefault
+  })
   {
     selectFromWholeRamp = selectFromWholeRampDefault;
+    mode = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
   }
 
   static Column getWidget({
@@ -17,6 +23,7 @@ class WandOptions extends IToolOptions
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required WandOptions wandOptions,
     WandSelectFromWholeRampChanged? wandSelectFromWholeRampChanged,
+    SelectionModeChanged? selectionModeChanged
   })
   {
     return Column(
@@ -46,6 +53,38 @@ class WandOptions extends IToolOptions
                       onChanged: wandSelectFromWholeRampChanged,
                       value: wandOptions.selectFromWholeRamp
                   ),
+                )
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              flex: 1,
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Mode",
+                    style: Theme.of(context).textTheme.labelLarge,
+                  )
+              ),
+            ),
+            Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: DropdownButton(
+                  value: wandOptions.mode,
+                  dropdownColor: Theme.of(context).primaryColorDark,
+                  focusColor: Theme.of(context).primaryColor,
+                  isExpanded: true,
+                  onChanged: (SelectionMode? sMode) {selectionModeChanged!(sMode!);},
+                  items: selectionModeList.map<DropdownMenuItem<SelectionMode>>((SelectionMode value) {
+                    return DropdownMenuItem<SelectionMode>(
+                      value: value,
+                      child: Text(selectionModeStringMap[value]!),
+                    );
+                  }).toList(),
                 )
             ),
           ],

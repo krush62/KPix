@@ -5,6 +5,7 @@ import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/shape_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 typedef ChangeToolFn = void Function(ToolType toolType);

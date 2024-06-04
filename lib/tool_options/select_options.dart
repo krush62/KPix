@@ -30,38 +30,6 @@ const Map<SelectShape, String> selectShapeStringMap =
   SelectShape.polygon : "Polygon"
 };
 
-enum SelectionMode
-{
-  replace,
-  add,
-  subtract,
-  intersect
-}
-
-const List<SelectionMode> selectionModeList = [
-  SelectionMode.replace,
-  SelectionMode.add,
-  SelectionMode.subtract,
-  SelectionMode.intersect
-];
-
-const Map<int, SelectionMode> _selectionModeIndexMap =
-{
-  0: SelectionMode.replace,
-  1: SelectionMode.add,
-  2: SelectionMode.subtract,
-  3: SelectionMode.intersect
-};
-
-const Map<SelectionMode, String> selectionModeStringMap =
-{
-  SelectionMode.replace : "Replace",
-  SelectionMode.add : "Add",
-  SelectionMode.subtract : "Subtract",
-  SelectionMode.intersect : "Intersect"
-};
-
-
 class SelectOptions extends IToolOptions
 {
   final int shapeDefault;
@@ -80,7 +48,7 @@ class SelectOptions extends IToolOptions
   {
     keepAspectRatio = keepAspectRatioDefault;
     shape = _selectShapeIndexMap[shapeDefault] ?? SelectShape.rectangle;
-    mode = _selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
+    mode = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
   }
 
   static Column getWidget({

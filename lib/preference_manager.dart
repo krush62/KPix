@@ -230,6 +230,7 @@ enum PreferenceInt
   Tool_Curve_WidthMin(defaultValue: 1),
   Tool_Curve_WidthMax(defaultValue: 16),
   Tool_Curve_Width(defaultValue: 1),
+  Tool_Wand_Mode(defaultValue: 0),
 
 
 
@@ -616,7 +617,8 @@ class PreferenceManager
         widthDefault: getValueI(PreferenceInt.Tool_Line_Width),
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
     WandOptions wandOptions = WandOptions(
-        selectFromWholeRampDefault: getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp));
+        selectFromWholeRampDefault: getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp),
+        modeDefault: getValueI(PreferenceInt.Tool_Wand_Mode));
     CurveOptions curveOptions = CurveOptions(
         widthMin: getValueI(PreferenceInt.Tool_Curve_WidthMin),
         widthMax: getValueI(PreferenceInt.Tool_Curve_WidthMax),

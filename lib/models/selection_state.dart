@@ -6,6 +6,7 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 enum SelectionDirection

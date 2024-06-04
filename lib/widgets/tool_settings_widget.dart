@@ -217,6 +217,13 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
     });
   }
 
+  void _wandModeChanged(final SelectionMode newMode)
+  {
+    setState(() {
+      toolOptions.wandOptions.mode = newMode;
+    });
+  }
+
 
   // CURVE CALLBACK
   void _curveWidthChanged(final double newVal)
@@ -317,6 +324,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 wandOptions: toolOptions.wandOptions,
+                selectionModeChanged: _wandModeChanged,
                 wandSelectFromWholeRampChanged: _wandSelectFromWholeRampChanged);
             break;
           case ToolType.curve:

@@ -12,6 +12,37 @@ import 'package:kpix/tool_options/wand_options.dart';
 
 import '../helper.dart';
 
+enum SelectionMode
+{
+  replace,
+  add,
+  subtract,
+  intersect
+}
+
+const List<SelectionMode> selectionModeList = [
+  SelectionMode.replace,
+  SelectionMode.add,
+  SelectionMode.subtract,
+  SelectionMode.intersect
+];
+
+const Map<int, SelectionMode> selectionModeIndexMap =
+{
+  0: SelectionMode.replace,
+  1: SelectionMode.add,
+  2: SelectionMode.subtract,
+  3: SelectionMode.intersect
+};
+
+const Map<SelectionMode, String> selectionModeStringMap =
+{
+  SelectionMode.replace : "Replace",
+  SelectionMode.add : "Add",
+  SelectionMode.subtract : "Subtract",
+  SelectionMode.intersect : "Intersect"
+};
+
 abstract class IToolOptions{}
 
 class ToolOptions

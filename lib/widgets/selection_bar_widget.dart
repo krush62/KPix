@@ -37,21 +37,6 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     //TODO
   }
 
-  void _flipHPressed()
-  {
-    //TODO
-  }
-
-  void _flipVPressed()
-  {
-    //TODO
-  }
-
-  void _rotatePressed()
-  {
-    //TODO
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -157,7 +142,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Flip Horizontal",
-                      onPressed: selectionState.selection.isEmpty() ? null : _flipHPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.flipH,
                       icon: FaIcon(
                           FontAwesomeIcons.arrowsLeftRight,
                           size: options.iconHeight
@@ -168,7 +153,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Flip Vertical",
-                      onPressed: selectionState.selection.isEmpty() ? null : _flipVPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.flipV,
                       icon: FaIcon(
                           FontAwesomeIcons.arrowsUpDown,
                           size: options.iconHeight
@@ -179,7 +164,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Rotate 90°",
-                      onPressed: selectionState.selection.isEmpty() ? null : _rotatePressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.rotate,
                       icon: FaIcon(
                           FontAwesomeIcons.rotateRight,
                           size: options.iconHeight

@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -364,11 +365,61 @@ class SelectionState with ChangeNotifier
       repaintNotifier.repaint();
     }
   }
+
+  void flipH({final bool notify = true})
+  {
+    selection.flipH();
+    _createSelectionLines();
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void flipV({final bool notify = true})
+  {
+    selection.flipV();
+    _createSelectionLines();
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void rotate({final bool notify = true})
+  {
+    selection.rotate90cw();
+    _createSelectionLines();
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void setOffset(final CoordinateSetI offset)
+  {
+    selection.shiftSelection(offset);
+    _createSelectionLines();
+  }
+
+  void finishMovement()
+  {
+    selection.resetLastOffset();
+  }
+
+
 }
 
 class SelectionList
 {
-  final HashMap<CoordinateSetI, ColorReference?> _content = HashMap();
+  HashMap<CoordinateSetI, ColorReference?> _content = HashMap();
+  final CoordinateSetI _lastOffset = CoordinateSetI(x: 0, y: 0);
 
   HashMap<CoordinateSetI, ColorReference?> getSelectedPixels()
   {
@@ -391,7 +442,6 @@ class SelectionList
 
   void add(final CoordinateSetI coord, final LayerState layer)
   {
-    //TODO this might need a bound check
     _content[coord] = layer.data[coord.x][coord.y];
     layer.data[coord.x][coord.y] = null;
   }
@@ -404,8 +454,7 @@ class SelectionList
 
   void remove(final CoordinateSetI coord, final LayerState layer)
   {
-    //TODO this might need a bound check
-    if (_content[coord] != null)
+    if (_content[coord] != null && coord.x > 0 && coord.y > 0 && coord.x < GetIt.I.get<AppState>().canvasWidth && coord.y < GetIt.I.get<AppState>().canvasHeight)
     {
       layer.data[coord.x][coord.y] = _content[coord];
     }
@@ -416,8 +465,7 @@ class SelectionList
   {
     for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
     {
-      //TODO this might need a bound check
-      if (entry.value != null)
+      if (entry.value != null && entry.key.x > 0 && entry.key.y > 0 && entry.key.x < GetIt.I.get<AppState>().canvasWidth && entry.key.y < GetIt.I.get<AppState>().canvasHeight)
       {
         layer.data[entry.key.x][entry.key.y] = entry.value;
       }
@@ -437,6 +485,55 @@ class SelectionList
     {
       _content.clear();
     }
+  }
+
+  void flipH()
+  {
+    CoordinateSetI minXcoord = _content.keys.reduce((a, b) => a.x < b.x ? a : b);
+    CoordinateSetI maxXcoord = _content.keys.reduce((a, b) => a.x > b.x ? a : b);
+
+    final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
+    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    {
+      newContent[CoordinateSetI(x: maxXcoord.x - entry.key.x + minXcoord.x , y: entry.key.y)] = entry.value;
+    }
+    _content = newContent;
+  }
+
+  void flipV()
+  {
+    CoordinateSetI minYcoord = _content.keys.reduce((a, b) => a.y < b.y ? a : b);
+    CoordinateSetI maxYcoord = _content.keys.reduce((a, b) => a.y > b.y ? a : b);
+
+    final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
+    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    {
+      newContent[CoordinateSetI(x: entry.key.x, y: maxYcoord.y - entry.key.y + minYcoord.y)] = entry.value;
+    }
+    _content = newContent;
+  }
+
+  void rotate90cw()
+  {
+
+
+    CoordinateSetI minCoords = CoordinateSetI(x: GetIt.I.get<AppState>().canvasWidth, y: GetIt.I.get<AppState>().canvasHeight);
+    CoordinateSetI maxCoords = CoordinateSetI(x: 0, y: 0);
+    for (final CoordinateSetI coord in _content.keys)
+    {
+      minCoords.x = min(coord.x, minCoords.x);
+      minCoords.y = min(coord.y, minCoords.y);
+      maxCoords.x = max(coord.x, maxCoords.x);
+      maxCoords.y = max(coord.y, maxCoords.y);
+    }
+
+    final CoordinateSetI centerCoord = CoordinateSetI(x: (minCoords.x + maxCoords.x) ~/ 2, y: (minCoords.y + maxCoords.y) ~/ 2);
+    final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
+    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    {
+      newContent[CoordinateSetI(x: centerCoord.y - entry.key.y + centerCoord.x, y: entry.key.x - centerCoord.x + centerCoord.y)] = entry.value;
+    }
+    _content = newContent;
   }
 
   bool contains(final CoordinateSetI coord)
@@ -467,6 +564,26 @@ class SelectionList
     }
   }
 
+  void shiftSelection(final CoordinateSetI offset)
+  {
 
+    if (offset != _lastOffset) {
+      final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
+      for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+      {
+        newContent[CoordinateSetI(x: entry.key.x + (offset.x - _lastOffset.x), y: entry.key.y + (offset.y - _lastOffset.y))] = entry.value;
+      }
+      _content = newContent;
+      _lastOffset.x = offset.x;
+      _lastOffset.y = offset.y;
+
+    }
+  }
+
+  void resetLastOffset()
+  {
+    _lastOffset.x = 0;
+    _lastOffset.y = 0;
+  }
 }
 

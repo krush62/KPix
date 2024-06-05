@@ -454,9 +454,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                 {
                   return IgnorePointer(
                     ignoring: toolType != ToolType.select,
-                    child: AnimatedOpacity(
+                    child: AnimatedScale(
                       duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                      opacity: toolType == ToolType.select ? 1.0 : 0.0,
+                      scale: toolType == ToolType.select ? 1.0 : 0.0,
+                      alignment: Alignment.bottomCenter,
+                      //opacity: toolType == ToolType.select ? 1.0 : 0.0,
                       child: const Align(
                           alignment: Alignment.bottomCenter,
                           child: SelectionBarWidget()

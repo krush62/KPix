@@ -191,7 +191,7 @@ enum PreferenceInt
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
 
-  Layout_SelectionBar_OpacityDuration(defaultValue: 100),
+  Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),

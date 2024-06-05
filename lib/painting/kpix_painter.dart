@@ -143,53 +143,147 @@ class KPixPainter extends CustomPainter
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = options.selectionSolidStrokeWidth;
 
-    for (final SelectionLine line in appState.selectionState.selectionLines)
+    if (!appState.selectionState.selection.isEmpty())
     {
-      if (line.selectDir == SelectionDirection.left)
-      {
-        drawParams.paint.color = Colors.black;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2), drawParams.paint);
-        drawParams.paint.color = Colors.white;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y  * pxlSzDbl) + pxlSzDbl), drawParams.paint);
+      for (final SelectionLine line in appState.selectionState.selectionLines) {
+        if (line.selectDir == SelectionDirection.left) {
+          drawParams.paint.color = Colors.black;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx +
+                      (line.startLoc.x * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.startLoc.y * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2),
+              Offset(
+                  offset.value.dx +
+                      (line.endLoc.x * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.endLoc.y * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2),
+              drawParams.paint);
+          drawParams.paint.color = Colors.white;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx +
+                      (line.startLoc.x * pxlSzDbl) +
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+              Offset(
+                  offset.value.dx +
+                      (line.endLoc.x * pxlSzDbl) +
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
+              drawParams.paint);
+        } else if (line.selectDir == SelectionDirection.right) {
+          drawParams.paint.color = Colors.black;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx +
+                      (line.startLoc.x * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.startLoc.y * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2),
+              Offset(
+                  offset.value.dx +
+                      (line.endLoc.x * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.endLoc.y * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2),
+              drawParams.paint);
+          drawParams.paint.color = Colors.white;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx +
+                      (line.startLoc.x * pxlSzDbl) +
+                      pxlSzDbl -
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+              Offset(
+                  offset.value.dx +
+                      (line.endLoc.x * pxlSzDbl) +
+                      pxlSzDbl -
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
+              drawParams.paint);
+        } else if (line.selectDir == SelectionDirection.top) {
+          drawParams.paint.color = Colors.black;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx +
+                      (line.startLoc.x * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.startLoc.y * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2),
+              Offset(
+                  offset.value.dx +
+                      (line.endLoc.x * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.endLoc.y * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2),
+              drawParams.paint);
+          drawParams.paint.color = Colors.white;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx + (line.startLoc.x * pxlSzDbl),
+                  offset.value.dy +
+                      (line.startLoc.y * pxlSzDbl) +
+                      options.selectionSolidStrokeWidth / 2),
+              Offset(
+                  offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
+                  offset.value.dy +
+                      (line.endLoc.y * pxlSzDbl) +
+                      options.selectionSolidStrokeWidth / 2),
+              drawParams.paint);
+        } else if (line.selectDir == SelectionDirection.bottom) {
+          drawParams.paint.color = Colors.black;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx +
+                      (line.startLoc.x * pxlSzDbl) -
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.startLoc.y * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2),
+              Offset(
+                  offset.value.dx +
+                      (line.endLoc.x * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2,
+                  offset.value.dy +
+                      (line.endLoc.y * pxlSzDbl) +
+                      pxlSzDbl +
+                      options.selectionSolidStrokeWidth / 2),
+              drawParams.paint);
+          drawParams.paint.color = Colors.white;
+          drawParams.canvas.drawLine(
+              Offset(
+                  offset.value.dx + (line.startLoc.x * pxlSzDbl),
+                  offset.value.dy +
+                      (line.startLoc.y * pxlSzDbl) +
+                      pxlSzDbl -
+                      options.selectionSolidStrokeWidth / 2),
+              Offset(
+                  offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
+                  offset.value.dy +
+                      (line.endLoc.y * pxlSzDbl) +
+                      pxlSzDbl -
+                      options.selectionSolidStrokeWidth / 2),
+              drawParams.paint);
+        }
       }
-      else if (line.selectDir == SelectionDirection.right)
-      {
-        drawParams.paint.color = Colors.black;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2), drawParams.paint);
-        drawParams.paint.color = Colors.white;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl)),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl), drawParams.paint);
-      }
-      else if (line.selectDir == SelectionDirection.top)
-      {
-        drawParams.paint.color = Colors.black;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) - options.selectionSolidStrokeWidth / 2), drawParams.paint);
-        drawParams.paint.color = Colors.white;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + options.selectionSolidStrokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + options.selectionSolidStrokeWidth / 2), drawParams.paint);
-      }
-      else if (line.selectDir == SelectionDirection.bottom)
-      {
-        drawParams.paint.color = Colors.black;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl) - options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl + options.selectionSolidStrokeWidth / 2), drawParams.paint);
-        drawParams.paint.color = Colors.white;
-        drawParams.canvas.drawLine(
-            Offset(offset.value.dx + (line.startLoc.x * pxlSzDbl), offset.value.dy + (line.startLoc.y * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2),
-            Offset(offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl, offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl - options.selectionSolidStrokeWidth / 2), drawParams.paint);
-      }
-
     }
   }
 
@@ -243,12 +337,29 @@ class KPixPainter extends CustomPainter
         for (int i = 0; i < layers.length; i++)
         {
           if (layers[i].visibilityState.value == LayerVisibilityState.visible) {
+            bool foundInSelection = false;
+            if (layers[i].isSelected.value)
+            {
+              ColorReference? selColor = appState.selectionState.selection.getColorReference(CoordinateSetI(x: x, y: y));
+              if (selColor != null)
+              {
+                foundInSelection = true;
+                drawParams.paint.color =
+                    selColor.ramp.colors[selColor.colorIndex].value.color;
+                drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
+                    offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
+              }
+            }
             ColorReference? layerColor = layers[i].data[x][y];
-            if (layerColor != null) {
+            if (layerColor != null && !foundInSelection) {
               drawParams.paint.color =
                   layerColor.ramp.colors[layerColor.colorIndex].value.color;
               drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
                   offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
+              break;
+            }
+            if (foundInSelection)
+            {
               break;
             }
           }

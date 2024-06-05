@@ -32,37 +32,6 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   AppState appState = GetIt.I.get<AppState>();
 
 
-
-  void _selectAllPressed()
-  {
-    selectionState.selectAll(width: appState.canvasWidth, height: appState.canvasHeight);
-  }
-
-  void _deselectPressed()
-  {
-    selectionState.deselect();
-  }
-
-  void _inversePressed()
-  {
-    selectionState.inverse(width: appState.canvasWidth, height: appState.canvasHeight);
-  }
-
-  void _copyPressed()
-  {
-    selectionState.copy(layer: appState.getSelectedLayer()!);
-  }
-
-  void _copyMergedPressed()
-  {
-    selectionState.copyMerged(layers: appState.layers.value);
-  }
-
-  void _pastePressed()
-  {
-    //TODO
-  }
-
   void _pasteNewPressed()
   {
     //TODO
@@ -83,16 +52,6 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     //TODO
   }
 
-  void _cutPressed()
-  {
-    selectionState.cut(layer: appState.getSelectedLayer()!);
-  }
-
-  void _deletePressed()
-  {
-    selectionState.delete(layer: appState.getSelectedLayer()!);
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -110,7 +69,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Select All",
-                      onPressed: _selectAllPressed,
+                      onPressed: selectionState.selectAll,
                       icon: FaIcon(
                           FontAwesomeIcons.objectGroup,
                           size: options.iconHeight
@@ -121,7 +80,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Deselect",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _deselectPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.deselect,
                       icon: FaIcon(
                           FontAwesomeIcons.objectUngroup,
                           size: options.iconHeight
@@ -132,7 +91,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Inverse Selection",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _inversePressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.inverse,
                       icon: FaIcon(
                           FontAwesomeIcons.circleHalfStroke,
                           size: options.iconHeight
@@ -143,7 +102,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Copy",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _copyPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.copy,
                       icon: FaIcon(
                           FontAwesomeIcons.copy,
                           size: options.iconHeight
@@ -154,7 +113,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Copy Merged",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _copyMergedPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.copyMerged,
                       icon: FaIcon(
                           FontAwesomeIcons.clone,
                           size: options.iconHeight
@@ -165,7 +124,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Cut",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _cutPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.cut,
                       icon: FaIcon(
                           FontAwesomeIcons.scissors,
                           size: options.iconHeight
@@ -176,7 +135,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Paste",
-                      onPressed: selectionState.clipboard == null ? null : _pastePressed,
+                      onPressed: selectionState.clipboard == null ? null : selectionState.paste,
                       icon: FaIcon(
                           FontAwesomeIcons.paste,
                           size: options.iconHeight
@@ -198,7 +157,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Flip Horizontal",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _flipHPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : _flipHPressed,
                       icon: FaIcon(
                           FontAwesomeIcons.arrowsLeftRight,
                           size: options.iconHeight
@@ -209,7 +168,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Flip Vertical",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _flipVPressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : _flipVPressed,
                       icon: FaIcon(
                           FontAwesomeIcons.arrowsUpDown,
                           size: options.iconHeight
@@ -220,7 +179,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Rotate 90°",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _rotatePressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : _rotatePressed,
                       icon: FaIcon(
                           FontAwesomeIcons.rotateRight,
                           size: options.iconHeight
@@ -231,7 +190,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Delete",
-                      onPressed: selectionState.selection.selectedPixels.isEmpty ? null : _deletePressed,
+                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.delete,
                       icon: FaIcon(
                           FontAwesomeIcons.ban,
                           size: options.iconHeight

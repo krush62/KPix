@@ -65,8 +65,7 @@ class _KPixAppState extends State<KPixApp> {
     appState.addNewRamp();
     appState.addNewRamp();
     appState.addNewRamp();
-    LayerState firstLayer = appState.addNewLayer();
-    appState.layerSelected(firstLayer);
+    appState.addNewLayer(select: true);
     appState.addNewLayer();
     appState.addNewLayer();
     appState.addNewLayer();

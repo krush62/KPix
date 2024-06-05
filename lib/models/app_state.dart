@@ -80,9 +80,7 @@ class AppState
     if (_zoomLevelIndex < zoomLevels.length - 1)
     {
       _zoomLevelIndex++;
-      // TODO these two lines appear way too often -> own private method
-      _zoomFactor = getZoomLevel() ~/ 100;
-      setStatusBarZoomFactor(getZoomLevel());
+      _updateZoomFactor();
       changed = true;
     }
     return changed;
@@ -94,8 +92,7 @@ class AppState
     if (_zoomLevelIndex > 0)
     {
       _zoomLevelIndex--;
-      _zoomFactor = getZoomLevel() ~/ 100;
-      setStatusBarZoomFactor(getZoomLevel());
+      _updateZoomFactor();
       changed = true;
     }
     return changed;
@@ -110,8 +107,7 @@ class AppState
       if (endIndex < zoomLevels.length && endIndex >= 0 && endIndex != _zoomLevelIndex)
       {
          _zoomLevelIndex = endIndex;
-         _zoomFactor = getZoomLevel() ~/ 100;
-         setStatusBarZoomFactor(getZoomLevel());
+         _updateZoomFactor();
          change = true;
       }
     }
@@ -124,14 +120,17 @@ class AppState
     if (index >= 0 && index < zoomLevels.length && index != _zoomLevelIndex)
     {
       _zoomLevelIndex = index;
-      _zoomFactor = getZoomLevel() ~/ 100;
-      setStatusBarZoomFactor(getZoomLevel());
+      _updateZoomFactor();
       change = true;
     }
     return change;
   }
 
-
+  void _updateZoomFactor()
+  {
+    _zoomFactor = getZoomLevel() ~/ 100;
+    setStatusBarZoomFactor(getZoomLevel());
+  }
 
   void deleteRamp(final KPalRampData ramp)
   {
@@ -187,10 +186,11 @@ class AppState
     colorRamps.value = rampDataList;
   }
 
-  LayerState addNewLayer()
+  LayerState addNewLayer({bool select = false})
   {
     List<LayerState> layerList = [];
     LayerState newLayer = LayerState(width: canvasWidth, height: canvasHeight, color: Colors.primaries[Random().nextInt(Colors.primaries.length)]);
+    newLayer.isSelected.value = select;
     layerList.add(newLayer);
     layerList.addAll(layers.value);
     layers.value = layerList;
@@ -242,12 +242,24 @@ class AppState
     return selectedLayer;
   }
 
-  void layerSelected(final LayerState selectedState)
+  void layerSelected(final LayerState newLayer)
   {
-    for (final LayerState state in layers.value)
+    LayerState oldLayer = newLayer;
+    for (final LayerState layer in layers.value)
     {
-      state.isSelected.value = state == selectedState;
+      if (layer.isSelected.value)
+      {
+        oldLayer = layer;
+        break;
+      }
     }
+    if (oldLayer != newLayer)
+    {
+      newLayer.isSelected.value = true;
+      oldLayer.isSelected.value = false;
+      selectionState.selection.changeLayer(oldLayer, newLayer);
+    }
+
   }
 
   void layerDeleted(final LayerState deleteState)

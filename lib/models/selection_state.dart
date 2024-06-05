@@ -38,13 +38,14 @@ class SelectionState with ChangeNotifier
 
   SelectionState({required this.repaintNotifier});
 
+
   void newSelection({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true})
   {
     if (selectionOptions.mode == SelectionMode.replace)
     {
       deselect(notify: false);
     }
-
+    final LayerState currentLayer = GetIt.I.get<AppState>().getSelectedLayer()!;
 
     if (selectionOptions.mode != SelectionMode.replace || end.x != start.x || end.y != start.y)
     {
@@ -55,21 +56,21 @@ class SelectionState with ChangeNotifier
             switch (selectionOptions.mode) {
               case SelectionMode.replace:
               case SelectionMode.add:
-                if (!selection.selectedPixels.contains(selectedPixel)) {
-                  selection.selectedPixels.add(selectedPixel);
+                if (!selection.contains(selectedPixel)) {
+                  selection.add(selectedPixel, currentLayer);
                 }
                 break;
               case SelectionMode.intersect:
-                if (!selection.selectedPixels.contains(selectedPixel)) {
-                  selection.selectedPixels.add(selectedPixel);
+                if (!selection.contains(selectedPixel)) {
+                  selection.add(selectedPixel, currentLayer);
                 }
                 else {
-                  selection.selectedPixels.remove(selectedPixel);
+                  selection.remove(selectedPixel, currentLayer);
                 }
                 break;
               case SelectionMode.subtract:
-                if (selection.selectedPixels.contains(selectedPixel)) {
-                  selection.selectedPixels.remove(selectedPixel);
+                if (selection.contains(selectedPixel)) {
+                  selection.remove(selectedPixel, currentLayer);
                 }
                 break;
             }
@@ -93,21 +94,21 @@ class SelectionState with ChangeNotifier
               switch (selectionOptions.mode) {
                 case SelectionMode.replace:
                 case SelectionMode.add:
-                  if (!selection.selectedPixels.contains(selectedPixel)) {
-                    selection.selectedPixels.add(selectedPixel);
+                  if (!selection.contains(selectedPixel)) {
+                    selection.add(selectedPixel, currentLayer);
                   }
                   break;
                 case SelectionMode.intersect:
-                  if (!selection.selectedPixels.contains(selectedPixel)) {
-                    selection.selectedPixels.add(selectedPixel);
+                  if (!selection.contains(selectedPixel)) {
+                    selection.add(selectedPixel, currentLayer);
                   }
                   else {
-                    selection.selectedPixels.remove(selectedPixel);
+                    selection.remove(selectedPixel, currentLayer);
                   }
                   break;
                 case SelectionMode.subtract:
-                  if (selection.selectedPixels.contains(selectedPixel)) {
-                    selection.selectedPixels.remove(selectedPixel);
+                  if (selection.contains(selectedPixel)) {
+                    selection.remove(selectedPixel, currentLayer);
                   }
                   break;
               }
@@ -132,9 +133,10 @@ class SelectionState with ChangeNotifier
   void _createSelectionLines()
   {
     selectionLines.clear();
-    for (final CoordinateSetI coord in selection.selectedPixels)
+    final selectedCoordinates = selection.getCoordinates();
+    for (final CoordinateSetI coord in selectedCoordinates)
     {
-      if (coord.x == 0 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
+      if (coord.x == 0 || !selection.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.left);
         bool inserted = false;
@@ -156,7 +158,7 @@ class SelectionState with ChangeNotifier
           selectionLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
         }
       }
-      if (coord.x == GetIt.I.get<AppState>().canvasWidth - 1 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)))
+      if (coord.x == GetIt.I.get<AppState>().canvasWidth - 1 || !selection.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.right);
         bool inserted = false;
@@ -178,7 +180,7 @@ class SelectionState with ChangeNotifier
           selectionLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
         }
       }
-      if (coord.y == 0 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)))
+      if (coord.y == 0 || !selection.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.top);
         bool inserted = false;
@@ -200,7 +202,7 @@ class SelectionState with ChangeNotifier
           selectionLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
         }
       }
-      if (coord.y == GetIt.I.get<AppState>().canvasHeight - 1 || !selection.selectedPixels.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)))
+      if (coord.y == GetIt.I.get<AppState>().canvasHeight - 1 || !selection.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.bottom);
         bool inserted = false;
@@ -225,20 +227,21 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void inverse({required final int width, required final int height, final bool notify = true})
+  void inverse({final bool notify = true})
   {
-    for (int x = 0; x < width; x++)
+    final LayerState currentLayer = GetIt.I.get<AppState>().getSelectedLayer()!;
+    for (int x = 0; x < GetIt.I.get<AppState>().canvasWidth; x++)
     {
-      for (int y = 0; y < height; y++)
+      for (int y = 0; y < GetIt.I.get<AppState>().canvasHeight; y++)
       {
         CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        if (selection.selectedPixels.contains(coord))
+        if (selection.contains(coord))
         {
-          selection.selectedPixels.remove(coord);
+          selection.remove(coord, currentLayer);
         }
         else
         {
-          selection.selectedPixels.add(coord);
+          selection.add(coord, currentLayer);
         }
       }
     }
@@ -253,7 +256,8 @@ class SelectionState with ChangeNotifier
 
   void deselect({final bool notify = true})
   {
-    selection.selectedPixels.clear();
+    final LayerState currentLayer = GetIt.I.get<AppState>().getSelectedLayer()!;
+    selection.clear(currentLayer);
     _createSelectionLines();
     if (notify)
     {
@@ -262,16 +266,17 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void selectAll({required final int width, required final int height, final bool notify = true})
+  void selectAll({final bool notify = true})
   {
-    for (int x = 0; x < width; x++)
+    final LayerState currentLayer = GetIt.I.get<AppState>().getSelectedLayer()!;
+    for (int x = 0; x < GetIt.I.get<AppState>().canvasWidth; x++)
     {
-      for (int y = 0; y < height; y++)
+      for (int y = 0; y < GetIt.I.get<AppState>().canvasHeight; y++)
       {
         CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        if (!selection.selectedPixels.contains(coord))
+        if (!selection.contains(coord))
         {
-          selection.selectedPixels.add(coord);
+          selection.add(coord, currentLayer);
         }
       }
     }
@@ -283,12 +288,14 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void cut({required final LayerState layer, final bool notify = true})
+  void delete({final bool notify = true, bool keepSelection = true})
   {
-    copy(layer: layer, notify: false);
-    delete(layer: layer, notify: false);
-
-    deselect(notify: false);
+    final LayerState currentLayer = GetIt.I.get<AppState>().getSelectedLayer()!;
+    selection.delete(currentLayer, keepSelection);
+    if (!keepSelection)
+    {
+      _createSelectionLines();
+    }
 
     if (notify)
     {
@@ -297,14 +304,10 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void delete({required final LayerState layer, final bool notify = true})
+  void cut({final bool notify = true, final bool keepSelection = false})
   {
-    for (final CoordinateSetI coord in selection.selectedPixels)
-    {
-      layer.data[coord.x][coord.y] = null;
-    }
-
-    deselect(notify: false);
+    copy(notify: false, keepSelection: true);
+    delete(keepSelection: true, notify: false);
 
     if (notify)
     {
@@ -313,13 +316,19 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void copy({required final LayerState layer, final bool notify = true})
+  void copy({final bool notify = true, final keepSelection = false})
   {
     clipboard = HashMap();
-    for (final CoordinateSetI coord in selection.selectedPixels)
+    final Iterable<CoordinateSetI> coords = selection.getCoordinates();
+    for (final CoordinateSetI coord in coords)
     {
-      clipboard![coord] = layer.data[coord.x][coord.y];
+      clipboard![coord] = selection.getColorReference(coord);
     }
+    if (!keepSelection)
+    {
+      deselect(notify: false);
+    }
+
     if (notify)
     {
       notifyListeners();
@@ -327,22 +336,28 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void copyMerged({required final List<LayerState> layers, final bool notify = true})
+  void paste({final bool notify = true})
   {
-    clipboard = HashMap();
-    for (final CoordinateSetI coord in selection.selectedPixels)
+    if (clipboard != null) //should always be the case
     {
-      ColorReference? ref;
-      for (int i = 0; i < layers.length; i++)
-      {
-        if (layers[i].data[coord.x][coord.y] != null)
+        deselect(notify: false);
+        for (final CoordinateSetI key in clipboard!.keys)
         {
-          ref = layers[i].data[coord.x][coord.y];
-          break;
+          selection.addDirectly(key, clipboard![key]);
         }
-      }
-      clipboard![coord] = ref;
+        _createSelectionLines();
     }
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
+  void copyMerged({final bool notify = true})
+  {
+    //TODO
     if (notify)
     {
       notifyListeners();
@@ -353,12 +368,105 @@ class SelectionState with ChangeNotifier
 
 class SelectionList
 {
-  Set<CoordinateSetI> selectedPixels = <CoordinateSetI>{};
-  HashMap<CoordinateSetI, ColorReference>? content;
+  final HashMap<CoordinateSetI, ColorReference?> _content = HashMap();
 
-  bool hasContent()
+  HashMap<CoordinateSetI, ColorReference?> getSelectedPixels()
   {
-    return content == null;
+    return _content;
   }
+
+  void changeLayer(final LayerState oldLayer, final LayerState newLayer)
+  {
+    for (final CoordinateSetI key in _content.keys)
+    {
+      final ColorReference? curVal = _content[key];
+      if (curVal != null)
+      {
+        oldLayer.data[key.x][key.y] = curVal;
+      }
+      _content[key] = newLayer.data[key.x][key.y];
+      newLayer.data[key.x][key.y] = null;
+    }
+  }
+
+  void add(final CoordinateSetI coord, final LayerState layer)
+  {
+    //TODO this might need a bound check
+    _content[coord] = layer.data[coord.x][coord.y];
+    layer.data[coord.x][coord.y] = null;
+  }
+
+  void addDirectly(final CoordinateSetI coord, final ColorReference? colRef)
+  {
+    _content[coord] = colRef;
+  }
+
+
+  void remove(final CoordinateSetI coord, final LayerState layer)
+  {
+    //TODO this might need a bound check
+    if (_content[coord] != null)
+    {
+      layer.data[coord.x][coord.y] = _content[coord];
+    }
+    _content.remove(coord);
+  }
+
+  void clear(final LayerState layer)
+  {
+    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    {
+      //TODO this might need a bound check
+      if (entry.value != null)
+      {
+        layer.data[entry.key.x][entry.key.y] = entry.value;
+      }
+    }
+    _content.clear();
+  }
+
+  void delete(final LayerState layer, bool keepSelection)
+  {
+    if (keepSelection) {
+      for (final CoordinateSetI entry in _content
+          .keys) {
+          _content[entry] = null;
+      }
+    }
+    else
+    {
+      _content.clear();
+    }
+  }
+
+  bool contains(final CoordinateSetI coord)
+  {
+    return _content.containsKey(coord);
+  }
+
+  bool isEmpty()
+  {
+    return _content.isEmpty;
+  }
+
+  Iterable<CoordinateSetI> getCoordinates()
+  {
+    return _content.keys;
+  }
+
+
+  ColorReference? getColorReference(final CoordinateSetI coord)
+  {
+    if (contains(coord))
+    {
+      return _content[coord];
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+
 }
 

@@ -23,7 +23,6 @@ void main() {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     doWhenWindowReady(() {
       const initialSize = Size(1600, 900);
-      appWindow.maximize();
       appWindow.minSize = initialSize;
       //appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
@@ -44,7 +43,7 @@ class KPixApp extends StatefulWidget {
 }
 
 class _KPixAppState extends State<KPixApp> {
-  bool prefsInitialized = false;
+  ValueNotifier<bool> initialized = ValueNotifier(false);
 
   @override
   void initState() {
@@ -66,40 +65,48 @@ class _KPixAppState extends State<KPixApp> {
     appState.addNewRamp();
     appState.addNewLayer();
     appState.addNewLayer(select: true);
-    prefsInitialized = true;
-    setState(() {});
+    initialized.value = true;
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (!prefsInitialized) {
-      return MaterialApp(
-        home: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Stack(
-            children: [
-              Center(
-                child: Image.asset(
-                  "imgs/kpix_icon.png"
-                ),
+  Widget build(BuildContext context)
+  {
+    return ValueListenableBuilder<bool>(
+      valueListenable: initialized,
+      builder: (BuildContext context, bool init, child)
+      {
+        if (init)
+        {
+          return MaterialApp(
+            home: MainWidget(),
+            theme: KPixTheme.monochromeTheme,
+            darkTheme: KPixTheme.monochromeThemeDark,
+          );
+        }
+        else
+        {
+          return MaterialApp(
+            home: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Stack(
+                children: [
+                  Center(child: Image.asset("imgs/kpix_icon.png"),),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Text(
+                      "Loading...",
+                      style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight)
+                    )
+                  )
+                ]
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Text("Loading...", style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight))
-              )
-            ]
-          ),
-        ),
-        theme: KPixTheme.monochromeTheme,
-        darkTheme: KPixTheme.monochromeThemeDark,
-      );
-    } else {
-      return MaterialApp(
-        home: const MainWidget(),
-        theme: KPixTheme.monochromeTheme,
-        darkTheme: KPixTheme.monochromeThemeDark,
-      );
-    }
+            ),
+            theme: KPixTheme.monochromeTheme,
+            darkTheme: KPixTheme.monochromeThemeDark,
+          );
+        }
+      },
+    );
   }
 }
 

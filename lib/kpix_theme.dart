@@ -67,10 +67,10 @@ class KPixTheme {
 
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? lightColors.normal : lightColors.light) : lightColors.normal),
-      trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? lightColors.dark :lightColors.normal) : lightColors.dark),
-      trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? lightColors.normal : lightColors.light),
-      overlayColor: MaterialStateProperty.all(lightColors.normal.withAlpha(lightColors.alphaB))
+      thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? lightColors.normal : lightColors.light) : lightColors.normal),
+      trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? lightColors.dark :lightColors.normal) : lightColors.dark),
+      trackOutlineColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) ? lightColors.normal : lightColors.light),
+      overlayColor: WidgetStateProperty.all(lightColors.normal.withAlpha(lightColors.alphaB))
 
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -87,13 +87,13 @@ class KPixTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        elevation: MaterialStateProperty.all(lightColors.elevation),
-        shadowColor: MaterialStateProperty.all(lightColors.dark),
-        foregroundColor: MaterialStateProperty.all(lightColors.light),
-        backgroundColor: MaterialStateProperty.all(lightColors.dark),
-        overlayColor: MaterialStateProperty.all(lightColors.dark),
-        surfaceTintColor: MaterialStateProperty.all(lightColors.light),
-        side: MaterialStateProperty.all(
+        elevation: WidgetStateProperty.all(lightColors.elevation),
+        shadowColor: WidgetStateProperty.all(lightColors.dark),
+        foregroundColor: WidgetStateProperty.all(lightColors.light),
+        backgroundColor: WidgetStateProperty.all(lightColors.dark),
+        overlayColor: WidgetStateProperty.all(lightColors.dark),
+        surfaceTintColor: WidgetStateProperty.all(lightColors.light),
+        side: WidgetStateProperty.all(
           BorderSide(
             color: lightColors.light
           )
@@ -159,10 +159,10 @@ class KPixTheme {
     ),
 
     switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? darkColors.normal : darkColors.light) : darkColors.normal),
-        trackColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.selected) ? (states.contains(MaterialState.disabled) ? darkColors.dark : darkColors.normal) : darkColors.dark),
-        trackOutlineColor: MaterialStateProperty.resolveWith((states) => states.contains(MaterialState.disabled) ? darkColors.normal : darkColors.light),
-        overlayColor: MaterialStateProperty.all(darkColors.light.withAlpha(darkColors.alphaB))
+        thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light) : darkColors.normal),
+        trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.dark : darkColors.normal) : darkColors.dark),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light),
+        overlayColor: WidgetStateProperty.all(darkColors.light.withAlpha(darkColors.alphaB))
     ),
 
     inputDecorationTheme: InputDecorationTheme(
@@ -180,13 +180,13 @@ class KPixTheme {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        elevation: MaterialStateProperty.all(darkColors.elevation),
-        shadowColor: MaterialStateProperty.all(darkColors.dark),
-        foregroundColor: MaterialStateProperty.all(darkColors.light),
-        backgroundColor: MaterialStateProperty.all(darkColors.dark),
-        overlayColor: MaterialStateProperty.all(darkColors.normal),
-        surfaceTintColor: MaterialStateProperty.all(darkColors.light),
-          side: MaterialStateProperty.all(BorderSide(
+        elevation: WidgetStateProperty.all(darkColors.elevation),
+        shadowColor: WidgetStateProperty.all(darkColors.dark),
+        foregroundColor: WidgetStateProperty.all(darkColors.light),
+        backgroundColor: WidgetStateProperty.all(darkColors.dark),
+        overlayColor: WidgetStateProperty.all(darkColors.normal),
+        surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+          side: WidgetStateProperty.all(BorderSide(
               color: darkColors.light
           ))
       )

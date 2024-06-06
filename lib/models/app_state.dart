@@ -27,6 +27,7 @@ class AppState
   final Map<ToolType, bool> _selectionMap = {};
   final ValueNotifier<IdColor?> selectedColor = ValueNotifier(IdColor(color: Colors.black, uuid: ""));
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
+  final ValueNotifier<LayerState?> currentLayer = ValueNotifier(null);
   final RepaintNotifier repaintNotifier = RepaintNotifier();
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
@@ -56,6 +57,9 @@ class AppState
     }
     setToolSelection(ToolType.pencil);
     setStatusBarZoomFactor(getZoomLevel());
+    currentLayer.addListener(() {
+      selectionState.selection.setCurrentLayer(currentLayer.value);
+    });
   }
 
   void setCanvasDimensions({required int width, required int height})
@@ -190,10 +194,11 @@ class AppState
   LayerState addNewLayer({bool select = false, HashMap<CoordinateSetI, ColorReference?>? content})
   {
     List<LayerState> layerList = [];
-    LayerState newLayer = LayerState(width: canvasWidth, height: canvasHeight, content: content, color: Colors.primaries[Random().nextInt(Colors.primaries.length)]);
+    LayerState newLayer = LayerState(width: canvasWidth, height: canvasHeight, content: content);
     if (layers.value.isEmpty)
     {
       newLayer.isSelected.value = true;
+      currentLayer.value = newLayer;
     }
     layerList.add(newLayer);
     layerList.addAll(layers.value);
@@ -265,6 +270,7 @@ class AppState
     {
       newLayer.isSelected.value = true;
       oldLayer.isSelected.value = false;
+      currentLayer.value = newLayer;
       selectionState.selection.changeLayer(oldLayer, newLayer);
     }
 
@@ -315,7 +321,7 @@ class AppState
     {
       if (layers.value[i] == duplicateState)
       {
-        LayerState layerState = LayerState(width: canvasWidth, height: canvasHeight, color: layers.value[i].color.value);
+        LayerState layerState = LayerState(width: canvasWidth, height: canvasHeight);
         layerState.lockState.value = layers.value[i].lockState.value;
         layerState.visibilityState.value = layers.value[i].visibilityState.value;
         stateList.add(layerState);
@@ -323,7 +329,6 @@ class AppState
       stateList.add(layers.value[i]);
     }
     layers.value = stateList;
-    //shouldRepaint.value = true;
   }
 
   void colorSelected(final IdColor color)

@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -81,19 +83,22 @@ class LayerState
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier(LayerVisibilityState.visible);
   final ValueNotifier<LayerLockState> lockState = ValueNotifier(LayerLockState.unlocked);
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
-  //TODO TEMP
-  final ValueNotifier<Color> color;
+  final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
+  final CoordinateSetI size;
 
 
   final List<List<ColorReference?>> data;
 
-  LayerState._({required this.data, required this.color});
+  LayerState._({required this.data, required this.size})
+  {
+    createThumbnail();
+  }
 
 
-  factory LayerState({required int width, required int height, required Color color, HashMap<CoordinateSetI, ColorReference?>? content})
+  factory LayerState({required int width, required int height, final HashMap<CoordinateSetI, ColorReference?>? content})
   {
     List<List<ColorReference?>> data = List.generate(width + 1, (i) => List.filled(height + 1, null, growable: false), growable: false);
-
+    final CoordinateSetI size = CoordinateSetI(x: width, y: height);
 
     if (content != null)
     {
@@ -114,13 +119,41 @@ class LayerState
         KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
         data[Random().nextInt(width)][Random().nextInt(height)] = ColorReference(colorIndex: Random().nextInt(ramp.colors.length), ramp: ramp);
       }
+
     }
 
 
-    ValueNotifier<Color> vnColor = ValueNotifier(color);
-    return LayerState._(data: data, color: vnColor);
+    return LayerState._(data: data, size: size);
   }
 
+  Future<void> createThumbnail({SelectionList? selection}) async
+  {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    Canvas c = Canvas(recorder);
+    final Paint paint = Paint();
+    paint.style = PaintingStyle.fill;
+    for (int x = 0; x < size.x; x++)
+    {
+       for (int y = 0; y < size.y; y++)
+       {
+         ColorReference? col = data[x][y];
+         final CoordinateSetI curCor = CoordinateSetI(x: x, y: y);
+         if (selection != null && selection.currentLayer == this && selection.contains(curCor) && selection.getColorReference(curCor) != null)
+         {
+           ColorReference selCol = selection.getColorReference(curCor)!;
+           paint.color = selCol.ramp.colors[selCol.colorIndex].value.color;
+           c.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
+         }
+         else if (col != null)
+         {
+           paint.color = col.ramp.colors[col.colorIndex].value.color;
+           c.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
+         }
+       }
+    }
+    ui.Picture p = recorder.endRecording();
+    thumbnail.value = p.toImageSync(size.x, size.y);
+  }
 }
 
 
@@ -367,11 +400,11 @@ class _LayerWidgetState extends State<LayerWidget>
                           onTap: () {
                             appState.layerSelected(widget.layerState);
                           },
-                          child: ValueListenableBuilder<Color>(
-                            valueListenable: widget.layerState.color,
-                            builder: (BuildContext context, Color color, child)
+                          child: ValueListenableBuilder<ui.Image?>(
+                            valueListenable: widget.layerState.thumbnail,
+                            builder: (BuildContext context, ui.Image? img, child)
                             {
-                              return ColoredBox(color: color);
+                              return RawImage(image: img,);
                             },
                           ),
                         )),

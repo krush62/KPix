@@ -1,8 +1,10 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
@@ -88,18 +90,33 @@ class LayerState
   LayerState._({required this.data, required this.color});
 
 
-  factory LayerState({required int width, required int height, required Color color})
+  factory LayerState({required int width, required int height, required Color color, HashMap<CoordinateSetI, ColorReference?>? content})
   {
     List<List<ColorReference?>> data = List.generate(width + 1, (i) => List.filled(height + 1, null, growable: false), growable: false);
-    
-    //TODO TEMP
-    AppState appState = GetIt.I.get<AppState>();
-    for (int i = 0; i < 1000; i++)
+
+
+    if (content != null)
     {
-      KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
-      data[Random().nextInt(width)][Random().nextInt(height)] = ColorReference(colorIndex: Random().nextInt(ramp.colors.length), ramp: ramp);
+      for (final MapEntry<CoordinateSetI, ColorReference?> entry in content.entries)
+      {
+        if (entry.key.x > 0 && entry.key.y > 0 && entry.key.x < width && entry.key.y < height)
+        {
+          data[entry.key.x][entry.key.y] = entry.value;
+        }
+      }
     }
-    
+    else
+    {
+      //TODO TEMP
+      AppState appState = GetIt.I.get<AppState>();
+      for (int i = 0; i < 10000; i++)
+      {
+        KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
+        data[Random().nextInt(width)][Random().nextInt(height)] = ColorReference(colorIndex: Random().nextInt(ramp.colors.length), ramp: ramp);
+      }
+    }
+
+
     ValueNotifier<Color> vnColor = ValueNotifier(color);
     return LayerState._(data: data, color: vnColor);
   }

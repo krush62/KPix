@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
@@ -60,7 +59,7 @@ class _KPixAppState extends State<KPixApp> {
     GetIt.I.registerSingleton<AppState>(AppState());
     //TODO TEMP
     AppState appState = GetIt.I.get<AppState>();
-    appState.setCanvasDimensions(width: 64, height: 32);
+    appState.setCanvasDimensions(width: 256, height: 128);
     appState.addNewRamp();
     appState.addNewRamp();
     appState.addNewRamp();

@@ -34,7 +34,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
 
   void _pasteNewPressed()
   {
-    //TODO
+    appState.addNewLayer(select: true, content: appState.selectionState.clipboard);
   }
 
   @override

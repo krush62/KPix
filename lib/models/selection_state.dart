@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -337,6 +336,44 @@ class SelectionState with ChangeNotifier
     }
   }
 
+  void copyMerged({final bool notify = true, final keepSelection = false})
+  {
+    clipboard = HashMap();
+    final Iterable<LayerState> visibleLayers = GetIt.I.get<AppState>().layers.value.where((x) => x.visibilityState.value == LayerVisibilityState.visible);
+    final Iterable<CoordinateSetI> coords = selection.getCoordinates();
+
+    for (final CoordinateSetI coord in coords)
+    {
+      bool pixelFound = false;
+      //TODO is the order correct?
+      for (final LayerState layer in visibleLayers)
+      {
+        final ColorReference? colRef = layer.data[coord.x][coord.y];
+        if (colRef != null)
+        {
+          clipboard![coord] = colRef;
+          pixelFound = true;
+          break;
+        }
+      }
+      if (!pixelFound)
+      {
+        clipboard![coord] = null;
+      }
+    }
+
+    if (!keepSelection)
+    {
+      deselect(notify: false);
+    }
+
+    if (notify)
+    {
+      notifyListeners();
+      repaintNotifier.repaint();
+    }
+  }
+
   void paste({final bool notify = true})
   {
     if (clipboard != null) //should always be the case
@@ -349,16 +386,6 @@ class SelectionState with ChangeNotifier
         _createSelectionLines();
     }
 
-    if (notify)
-    {
-      notifyListeners();
-      repaintNotifier.repaint();
-    }
-  }
-
-  void copyMerged({final bool notify = true})
-  {
-    //TODO
     if (notify)
     {
       notifyListeners();
@@ -554,14 +581,7 @@ class SelectionList
 
   ColorReference? getColorReference(final CoordinateSetI coord)
   {
-    if (contains(coord))
-    {
-      return _content[coord];
-    }
-    else
-    {
-      return null;
-    }
+    return contains(coord) ? _content[coord] : null;
   }
 
   void shiftSelection(final CoordinateSetI offset)

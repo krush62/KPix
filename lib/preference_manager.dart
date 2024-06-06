@@ -174,7 +174,7 @@ enum PreferenceInt
   Layout_SplitView_GrooveCountMax(defaultValue: 9),
   Layout_SplitView_AnimationLength(defaultValue: 250),
 
-  Layout_Canvas_LongPressDuration(defaultValue: 500),
+  Layout_Canvas_LongPressDuration(defaultValue: 250),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -186,14 +187,21 @@ class AppState
     colorRamps.value = rampDataList;
   }
 
-  LayerState addNewLayer({bool select = false})
+  LayerState addNewLayer({bool select = false, HashMap<CoordinateSetI, ColorReference?>? content})
   {
     List<LayerState> layerList = [];
-    LayerState newLayer = LayerState(width: canvasWidth, height: canvasHeight, color: Colors.primaries[Random().nextInt(Colors.primaries.length)]);
-    newLayer.isSelected.value = select;
+    LayerState newLayer = LayerState(width: canvasWidth, height: canvasHeight, content: content, color: Colors.primaries[Random().nextInt(Colors.primaries.length)]);
+    if (layers.value.isEmpty)
+    {
+      newLayer.isSelected.value = true;
+    }
     layerList.add(newLayer);
     layerList.addAll(layers.value);
     layers.value = layerList;
+    if (select)
+    {
+      layerSelected(newLayer);
+    }
     return newLayer;
   }
 

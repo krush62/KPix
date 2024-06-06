@@ -23,7 +23,7 @@ void main() {
     doWhenWindowReady(() {
       const initialSize = Size(1600, 900);
       appWindow.minSize = initialSize;
-      //appWindow.size = initialSize;
+      appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
       appWindow.title = "KPix";
       appWindow.maximize();

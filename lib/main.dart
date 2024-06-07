@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -77,7 +78,7 @@ class _KPixAppState extends State<KPixApp> {
         if (init)
         {
           return MaterialApp(
-            home: MainWidget(),
+            home: const ToastProvider(child: MainWidget()),
             theme: KPixTheme.monochromeTheme,
             darkTheme: KPixTheme.monochromeThemeDark,
           );

@@ -1,5 +1,7 @@
 import 'dart:collection';
 import 'dart:math';
+import 'package:fl_toast/fl_toast.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -411,9 +413,10 @@ class AppState
     statusBarToolAngleString.value = null;
   }
 
-  //TODO TEMP
-  void changeTool(ToolType t)
+
+  void changeTool(ToolType type)
   {
+
   }
 
   void setToolSelection(final ToolType tool)
@@ -436,6 +439,55 @@ class AppState
   {
     return _selectionMap[tool] ?? false;
   }
+
+  void showMessage(final String text) {
+    showStyledToast(
+        alignment: Alignment.bottomCenter,
+        margin: EdgeInsets.zero,
+        contentPadding: EdgeInsets.zero,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Theme
+                .of(ToastProvider.context)
+                .primaryColorDark,
+            border: Border(
+              left: BorderSide(color: Theme
+                  .of(ToastProvider.context)
+                  .primaryColor, width: 2.0,),
+              right: BorderSide(color: Theme
+                  .of(ToastProvider.context)
+                  .primaryColor, width: 2.0,),
+              top: BorderSide(color: Theme
+                  .of(ToastProvider.context)
+                  .primaryColor, width: 2.0,),
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
+          ),
+
+          child: Text(
+            text,
+            style: Theme
+              .of(ToastProvider.context)
+              .textTheme
+              .titleMedium,),
+        ),
+        animationBuilder: (context, animation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: const Offset(0, 0),
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.fastOutSlowIn,
+            )),
+            child: child,
+          );
+        },
+        context: ToastProvider.context);
+  }
+
 }
 
 

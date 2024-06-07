@@ -45,8 +45,28 @@ class SelectionState with ChangeNotifier
     repaintNotifier.repaint();
   }
 
+  void newSelectionFromPolygon({required final List<CoordinateSetI> points, final bool notify = true})
+  {
+    if (selectionOptions.mode == SelectionMode.replace)
+    {
+      deselect(notify: false);
+    }
 
-  void newSelection({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true})
+    for (final CoordinateSetI point in points)
+    {
+      _addPixelWithMode(coord: point, mode: selectionOptions.mode);
+    }
+    _createSelectionLines();
+
+    if (notify)
+    {
+      _notify();
+    }
+
+  }
+
+
+  void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true})
   {
     if (selectionOptions.mode == SelectionMode.replace)
     {
@@ -58,28 +78,7 @@ class SelectionState with ChangeNotifier
       if (selectShape == SelectShape.rectangle) {
         for (int x = start.x; x <= end.x; x++) {
           for (int y = start.y; y <= end.y; y++) {
-            CoordinateSetI selectedPixel = CoordinateSetI(x: x, y: y);
-            switch (selectionOptions.mode) {
-              case SelectionMode.replace:
-              case SelectionMode.add:
-                if (!selection.contains(selectedPixel)) {
-                  selection.add(selectedPixel);
-                }
-                break;
-              case SelectionMode.intersect:
-                if (!selection.contains(selectedPixel)) {
-                  selection.add(selectedPixel);
-                }
-                else {
-                  selection.remove(selectedPixel);
-                }
-                break;
-              case SelectionMode.subtract:
-                if (selection.contains(selectedPixel)) {
-                  selection.remove(selectedPixel);
-                }
-                break;
-            }
+            _addPixelWithMode(coord: CoordinateSetI(x: x, y: y), mode: selectionOptions.mode);
           }
         }
       }
@@ -96,28 +95,7 @@ class SelectionState with ChangeNotifier
             double dy = (y + 0.5) - centerY;
             if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
             {
-              CoordinateSetI selectedPixel = CoordinateSetI(x: x, y: y);
-              switch (selectionOptions.mode) {
-                case SelectionMode.replace:
-                case SelectionMode.add:
-                  if (!selection.contains(selectedPixel)) {
-                    selection.add(selectedPixel);
-                  }
-                  break;
-                case SelectionMode.intersect:
-                  if (!selection.contains(selectedPixel)) {
-                    selection.add(selectedPixel);
-                  }
-                  else {
-                    selection.remove(selectedPixel);
-                  }
-                  break;
-                case SelectionMode.subtract:
-                  if (selection.contains(selectedPixel)) {
-                    selection.remove(selectedPixel);
-                  }
-                  break;
-              }
+              _addPixelWithMode(coord: CoordinateSetI(x: x, y: y), mode: selectionOptions.mode);
             }
           }
         }
@@ -132,6 +110,31 @@ class SelectionState with ChangeNotifier
     if (notify)
     {
       _notify();
+    }
+  }
+
+  void _addPixelWithMode({required CoordinateSetI coord, required SelectionMode mode})
+  {
+    switch (selectionOptions.mode) {
+      case SelectionMode.replace:
+      case SelectionMode.add:
+        if (!selection.contains(coord)) {
+          selection.add(coord);
+        }
+        break;
+      case SelectionMode.intersect:
+        if (!selection.contains(coord)) {
+          selection.add(coord);
+        }
+        else {
+          selection.remove(coord);
+        }
+        break;
+      case SelectionMode.subtract:
+        if (selection.contains(coord)) {
+          selection.remove(coord);
+        }
+        break;
     }
   }
 

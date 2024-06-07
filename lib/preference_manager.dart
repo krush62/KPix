@@ -157,9 +157,10 @@ enum PreferenceDouble
   Painter_CheckerBoardSizeMin(defaultValue: 8.0),
   Painter_CheckerBoardSizeMax(defaultValue: 64.0),
   Painter_SelectionDashStrokeWidth(defaultValue: 2.0),
-  Painter_SelectionDashSegmentLength(defaultValue: 8.0),
-  Painter_SelectionCircleSegmentCount(defaultValue: 32.0),
-  Painter_SelectionCursorStrokeWidth(defaultValue: 2.0),
+  Painter_SelectionPolygonCircleRadius(defaultValue: 16.0),
+  Painter_SelectionStrokeWidthLarge(defaultValue: 4.0),
+  Painter_SelectionStrokeWidthSmall(defaultValue: 2.0),
+
   ;
 
   const PreferenceDouble({
@@ -721,10 +722,9 @@ class PreferenceManager
         checkerBoardSizeMax: getValueD(PreferenceDouble.Painter_CheckerBoardSizeMax),
         pixelExtensionFactor: getValueD(PreferenceDouble.Painter_PixelExtensionFactor),
         selectionSolidStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionSolidStrokeWidth),
-        selectionDashSegmentLength: getValueD(PreferenceDouble.Painter_SelectionDashSegmentLength),
-        selectionDashStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionDashStrokeWidth),
-        selectionCircleSegmentCount: getValueD(PreferenceDouble.Painter_SelectionCircleSegmentCount),
-        selectionCursorStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionCursorStrokeWidth)
+        selectionPolygonCircleRadius: getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
+        selectionStrokeWidthLarge: getValueD(PreferenceDouble.Painter_SelectionStrokeWidthLarge),
+        selectionStrokeWidthSmall: getValueD(PreferenceDouble.Painter_SelectionStrokeWidthSmall),
     );
   }
 

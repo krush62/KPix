@@ -15,32 +15,31 @@ class SelectionPainter extends IToolPainter
   bool hasNewSelection = false;
   final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
   bool movementStarted = false;
+  List<CoordinateSetI> polygonPoints = [];
+  bool polygonDown = false;
+  CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
+  Offset _lastStartPos = Offset(0,0);
 
   SelectionPainter({required super.painterOptions});
 
   @override
   void drawTool({required final DrawingParameters drawParams})
   {
+    if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
+    {
+      _normStartPos.x = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+      _normStartPos.y = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+      _lastStartPos = drawParams.primaryPressStart;
+    }
+
     if (drawParams.primaryDown &&
         drawParams.cursorPos != null &&
-        KPixPainter.isOnCanvas
-        (
-          drawParams: drawParams,
-          testCoords: CoordinateSetD(
-              x: drawParams.primaryPressStart.dx,
-              y: drawParams.primaryPressStart.dy)))
+        _normStartPos.x >= 0 &&
+        _normStartPos.y >= 0 &&
+        _normStartPos.x < appState.canvasWidth &&
+        _normStartPos.y < appState.canvasHeight
+        )
     {
-      CoordinateSetI normalizedStart = CoordinateSetI(
-          x: KPixPainter.getClosestPixel(
-              value:
-              drawParams.primaryPressStart.dx - drawParams.offset.dx,
-              pixelSize: drawParams.pixelSize.toDouble())
-              .round(),
-          y: KPixPainter.getClosestPixel(
-              value:
-              drawParams.primaryPressStart.dy - drawParams.offset.dy,
-              pixelSize: drawParams.pixelSize.toDouble())
-              .round());
       CoordinateSetI normalizedEnd = CoordinateSetI(
           x: KPixPainter.getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
@@ -53,128 +52,146 @@ class SelectionPainter extends IToolPainter
 
 
       //MOVE
-      if (movementStarted || ((options.mode == SelectionMode.replace || options.mode == SelectionMode.add) && appState.selectionState.selection.contains(normalizedStart)))
+      if (movementStarted || ((options.mode == SelectionMode.replace || options.mode == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape != SelectShape.polygon || polygonPoints.isEmpty)))
       {
         movementStarted = true;
-        appState.selectionState.setOffset(CoordinateSetI(x: normalizedEnd.x - normalizedStart.x, y: normalizedEnd.y - normalizedStart.y));
+        appState.selectionState.setOffset(CoordinateSetI(x: normalizedEnd.x - _normStartPos.x, y: normalizedEnd.y - _normStartPos.y));
       }
       else //DRAW
       {
-        drawParams.paint.style = PaintingStyle.stroke;
-        drawParams.paint.strokeWidth = painterOptions.selectionDashStrokeWidth;
-
-
-        selectionStart.x = normalizedStart.x < normalizedEnd.x
-            ? normalizedStart.x
-            : normalizedEnd.x;
-        selectionStart.y = normalizedStart.y < normalizedEnd.y
-            ? normalizedStart.y
-            : normalizedEnd.y;
-        selectionEnd.x = normalizedStart.x < normalizedEnd.x
-            ? (normalizedEnd.x)
-            : (normalizedStart.x);
-        selectionEnd.y = normalizedStart.y < normalizedEnd.y
-            ? (normalizedEnd.y)
-            : (normalizedStart.y);
-
-        if (selectionStart.x < 0) {
-          selectionStart.x = 0;
+        if (options.shape == SelectShape.polygon) {
+          polygonDown = true;
         }
+        else {
+          drawParams.paint.style = PaintingStyle.stroke;
+          selectionStart.x = _normStartPos.x < normalizedEnd.x
+              ? _normStartPos.x
+              : normalizedEnd.x;
+          selectionStart.y = _normStartPos.y < normalizedEnd.y
+              ? _normStartPos.y
+              : normalizedEnd.y;
+          selectionEnd.x = _normStartPos.x < normalizedEnd.x
+              ? (normalizedEnd.x)
+              : (_normStartPos.x);
+          selectionEnd.y = _normStartPos.y < normalizedEnd.y
+              ? (normalizedEnd.y)
+              : (_normStartPos.y);
 
-        if (selectionStart.y < 0) {
-          selectionStart.y = 0;
-        }
+          if (selectionStart.x < 0) {
+            selectionStart.x = 0;
+          }
 
-        if (selectionEnd.x > appState.canvasWidth - 1) {
-          selectionEnd.x = appState.canvasWidth - 1;
-        }
+          if (selectionStart.y < 0) {
+            selectionStart.y = 0;
+          }
 
-        if (selectionEnd.y > appState.canvasHeight - 1) {
-          selectionEnd.y = appState.canvasHeight - 1;
-        }
+          if (selectionEnd.x > appState.canvasWidth - 1) {
+            selectionEnd.x = appState.canvasWidth - 1;
+          }
 
-        if (options.keepAspectRatio) {
-          final int width = selectionEnd.x - selectionStart.x;
-          final int height = selectionEnd.y - selectionStart.y;
-          if (width > height) {
-            if (normalizedStart.x < normalizedEnd.x) {
-              selectionEnd.x = selectionStart.x + height;
+          if (selectionEnd.y > appState.canvasHeight - 1) {
+            selectionEnd.y = appState.canvasHeight - 1;
+          }
+
+          if (options.keepAspectRatio) {
+            final int width = selectionEnd.x - selectionStart.x;
+            final int height = selectionEnd.y - selectionStart.y;
+            if (width > height) {
+              if (_normStartPos.x < normalizedEnd.x) {
+                selectionEnd.x = selectionStart.x + height;
+              } else {
+                selectionStart.x = selectionEnd.x - height;
+              }
             } else {
-              selectionStart.x = selectionEnd.x - height;
-            }
-          } else {
-            if (normalizedStart.y < normalizedEnd.y) {
-              selectionEnd.y = selectionStart.y + width;
-            } else {
-              selectionStart.y = selectionEnd.y - width;
+              if (_normStartPos.y < normalizedEnd.y) {
+                selectionEnd.y = selectionStart.y + width;
+              } else {
+                selectionStart.y = selectionEnd.y - width;
+              }
             }
           }
-        }
-        hasNewSelection = true;
+          hasNewSelection = true;
 
 
-        final CoordinateSetD cursorStartPos = CoordinateSetD(
-            x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
-            y: drawParams.offset.dy + selectionStart.y * drawParams.pixelSize);
-        final CoordinateSetD cursorEndPos = CoordinateSetD(
-            x: drawParams.offset.dx + (selectionEnd.x + 1) * drawParams.pixelSize,
-            y: drawParams.offset.dy +
-                (selectionEnd.y + 1) * drawParams.pixelSize);
+          final CoordinateSetD cursorStartPos = CoordinateSetD(
+              x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
+              y: drawParams.offset.dy +
+                  selectionStart.y * drawParams.pixelSize);
+          final CoordinateSetD cursorEndPos = CoordinateSetD(
+              x: drawParams.offset.dx +
+                  (selectionEnd.x + 1) * drawParams.pixelSize,
+              y: drawParams.offset.dy +
+                  (selectionEnd.y + 1) * drawParams.pixelSize);
 
-        bool colorFlip = false;
-
-        if (options.shape == SelectShape.rectangle) {
-          //DRAW DASHED LINE
-          for (double i = cursorStartPos.x; i < cursorEndPos.x;
-          i += painterOptions.selectionDashSegmentLength) {
-            drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
-            double end = (i + painterOptions.selectionDashSegmentLength) <= cursorEndPos.x
-                ? i + painterOptions.selectionDashSegmentLength
-                : cursorEndPos.x;
-            drawParams.canvas.drawLine(
-                Offset(i, cursorStartPos.y), Offset(end, cursorStartPos.y),
-                drawParams.paint);
-            drawParams.canvas.drawLine(
-                Offset(i, cursorEndPos.y), Offset(end, cursorEndPos.y),
-                drawParams.paint);
-            colorFlip = !colorFlip;
+          //RECTANGLE
+          if (options.shape == SelectShape.rectangle) {
+            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+            drawParams.paint.color = Colors.black;
+            drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+            drawParams.paint.color = Colors.white;
+            drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
           }
 
-          colorFlip = false;
-
-          for (double i = cursorStartPos.y; i < cursorEndPos.y;
-          i += painterOptions.selectionDashSegmentLength) {
-            drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
-            double end = (i + painterOptions.selectionDashSegmentLength) <= cursorEndPos.y
-                ? i + painterOptions.selectionDashSegmentLength
-                : cursorEndPos.y;
-            drawParams.canvas.drawLine(
-                Offset(cursorStartPos.x, i), Offset(cursorStartPos.x, end),
-                drawParams.paint);
-            drawParams.canvas.drawLine(
-                Offset(cursorEndPos.x, i), Offset(cursorEndPos.x, end),
-                drawParams.paint);
-            colorFlip = !colorFlip;
+          //ELLIPSE
+          else if (options.shape == SelectShape.ellipse)
+          {
+            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+            drawParams.paint.color = Colors.black;
+            drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+            drawParams.paint.color = Colors.white;
+            drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
           }
         }
-        else if (options.shape == SelectShape.ellipse)
-        {
-          final double segmentAngle = (2 * pi) / painterOptions.selectionCircleSegmentCount;
-          for (int i = 0; i < painterOptions.selectionCircleSegmentCount; i++) {
-            drawParams.paint.color = colorFlip ? Colors.black : Colors.white;
-            drawParams.canvas.drawArc(Rect.fromLTRB(
-                cursorStartPos.x, cursorStartPos.y, cursorEndPos.x,
-                cursorEndPos.y), i * segmentAngle, segmentAngle, false, drawParams.paint);
-            colorFlip = !colorFlip;
-          }
-        }
-
       }
+    }
+    else if (!drawParams.primaryDown)
+    {
+      if (movementStarted) {
+        movementStarted = false;
+        appState.selectionState.finishMovement();
+      }
+      if (polygonDown)
+      {
+        final CoordinateSetI point = CoordinateSetI(
+            x: _normStartPos.x,
+            y: _normStartPos.y);
+
+
+        bool isInsideCircle = false;
+
+        if (polygonPoints.isNotEmpty) {
+
+          final double distance = sqrt(pow(point.x - polygonPoints[0].x, 2) + pow(point.y - polygonPoints[0].y, 2));
+          if (distance <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+          {
+            isInsideCircle = true;
+          }
+        }
+
+        if (polygonPoints.isEmpty || !isInsideCircle)
+        {
+          polygonPoints.add(point);
+          polygonDown = false;
+        }
+        else
+        {
+          if (polygonPoints.length > 2)
+          {
+            hasNewSelection = true;
+          }
+          else
+          {
+            polygonDown = false;
+          }
+        }
+      }
+
     }
     else //NO BUTTON PRESS AND NOT ON CANVAS
     {
-      movementStarted = false;
-      appState.selectionState.finishMovement();
+
     }
   }
 
@@ -192,11 +209,59 @@ class SelectionPainter extends IToolPainter
           y: drawParams.offset.dy + KPixPainter.getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
               pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize);
-      drawParams.paint.strokeWidth = painterOptions.selectionCursorStrokeWidth;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = Colors.black;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x - painterOptions.selectionCursorStrokeWidth, cursorPos.y - painterOptions.selectionCursorStrokeWidth, cursorPos.x + drawParams.pixelSize + painterOptions.selectionCursorStrokeWidth , cursorPos.y + drawParams.pixelSize + painterOptions.selectionCursorStrokeWidth), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = Colors.white;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize , cursorPos.y + drawParams.pixelSize), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+
+    }
+  }
+
+  @override
+  void drawExtras({required DrawingParameters drawParams}) {
+    if (options.shape == SelectShape.polygon && polygonPoints.isNotEmpty)
+    {
+      final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
+      CoordinateSetD(
+          x: drawParams.offset.dx + KPixPainter.getClosestPixel(
+              value: drawParams.cursorPos!.x - drawParams.offset.dx,
+              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize + (drawParams.pixelSize / 2),
+          y: drawParams.offset.dy + KPixPainter.getClosestPixel(
+              value: drawParams.cursorPos!.y - drawParams.offset.dy,
+              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize + (drawParams.pixelSize / 2))
+          : null;
+
+
+      Path path = Path();
+      for (int i = 0; i < polygonPoints.length; i++)
+      {
+        if (i == 0)
+        {
+          path.moveTo((polygonPoints[i].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[i].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy);
+        }
+
+        if (i < polygonPoints.length - 1)
+        {
+          path.lineTo((polygonPoints[i + 1].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[i + 1].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy);
+        }
+        else if (cursorPos != null)
+        {
+          path.lineTo(cursorPos.x, cursorPos.y);
+        }
+      }
+
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
+      drawParams.canvas.drawPath(path, drawParams.paint);
+
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+      drawParams.paint.color = Colors.white;
+      drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
+      drawParams.canvas.drawPath(path, drawParams.paint);
     }
   }
 }

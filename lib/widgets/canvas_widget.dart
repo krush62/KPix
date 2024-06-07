@@ -9,6 +9,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
+import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/widgets/selection_bar_widget.dart';
 
 
@@ -208,12 +209,22 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
         if (selectionPainter.hasNewSelection)
         {
-          selectionPainter.hasNewSelection = false;
-          appState.selectionState.newSelection(start: selectionPainter.selectionStart, end: selectionPainter.selectionEnd, selectShape: selectionPainter.options.shape);
+          if (selectionPainter.options.shape == SelectShape.ellipse || selectionPainter.options.shape == SelectShape.rectangle) {
+            selectionPainter.hasNewSelection = false;
+            appState.selectionState.newSelectionFromShape(
+                start: selectionPainter.selectionStart,
+                end: selectionPainter.selectionEnd,
+                selectShape: selectionPainter.options.shape);
+          }
+          else //if polygon selection
+          {
+            //TODO handle polygon selection
+            print(selectionPainter.polygonPoints.length.toString() + " POLYGON POINTS");
+            selectionPainter.polygonPoints.clear();
+            selectionPainter.polygonDown = false;
+          }
         }
       }
-
-
     }
   }
 
@@ -318,6 +329,36 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
     }
 
+
+
+    if (appState.selectedTool.value == ToolType.select)
+    {
+      if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
+      {
+        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
+        if (selectionPainter.hasNewSelection && selectionPainter.options.shape == SelectShape.polygon)
+        {
+          selectionPainter.hasNewSelection = false;
+          final CoordinateSetI min = Helper.getMin(selectionPainter.polygonPoints);
+          final CoordinateSetI max = Helper.getMax(selectionPainter.polygonPoints);
+          List<CoordinateSetI> selection = [];
+          for (int x = min.x; x < max.x; x++)
+          {
+            for (int y = min.y; y < max.y; y++)
+            {
+              final CoordinateSetI checkPoint = CoordinateSetI(x: x, y: y);
+              if (Helper.isPointInPolygon(checkPoint, selectionPainter.polygonPoints))
+              {
+                  selection.add(checkPoint);
+              }
+            }
+          }
+          appState.selectionState.newSelectionFromPolygon(points: selection);
+          selectionPainter.polygonPoints.clear();
+          selectionPainter.polygonDown = false;
+        }
+      }
+    }
   }
 
   void _hover(PointerHoverEvent details)

@@ -18,6 +18,7 @@ abstract class IToolPainter
     required DrawingParameters drawParams});
 
   void drawCursor({required DrawingParameters drawParams});
+  void drawExtras({required DrawingParameters drawParams});
 }
 
 class KPixPainterOptions
@@ -29,10 +30,9 @@ class KPixPainterOptions
   final double checkerBoardDivisor;
   final double checkerBoardSizeMin;
   final double checkerBoardSizeMax;
-  final double selectionDashStrokeWidth;
-  final double selectionDashSegmentLength;
-  final double selectionCircleSegmentCount;
-  final double selectionCursorStrokeWidth;
+  final double selectionPolygonCircleRadius;
+  final double selectionStrokeWidthLarge;
+  final double selectionStrokeWidthSmall;
 
 
   KPixPainterOptions({
@@ -43,10 +43,9 @@ class KPixPainterOptions
     required this.checkerBoardDivisor,
     required this.checkerBoardSizeMin,
     required this.checkerBoardSizeMax,
-    required this.selectionDashStrokeWidth,
-    required this.selectionDashSegmentLength,
-    required this.selectionCircleSegmentCount,
-    required this.selectionCursorStrokeWidth
+    required this.selectionPolygonCircleRadius,
+    required this.selectionStrokeWidthLarge,
+    required this.selectionStrokeWidthSmall,
   });
 }
 
@@ -134,6 +133,7 @@ class KPixPainter extends CustomPainter
     _drawLayers(drawParams: drawParams);
     _drawSelection(drawParams: drawParams);
     _drawToolOverlay(drawParams: drawParams);
+    _drawToolExtras(drawParams: drawParams);
     _drawCursor(drawParams: drawParams);
   }
 
@@ -296,11 +296,21 @@ class KPixPainter extends CustomPainter
     }
   }
 
+  void _drawToolExtras({required final DrawingParameters drawParams})
+  {
+    IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
+    if (toolPainter != null)
+    {
+      toolPainter.drawExtras(
+          drawParams: drawParams);
+    }
+  }
+
   void _drawCursor({required final DrawingParameters drawParams})
   {
     if (coords.value != null)
     {
-      if (!isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+      if (!isDragging.value && _isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
       {
         IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
         if (toolPainter != null)
@@ -415,7 +425,7 @@ class KPixPainter extends CustomPainter
 
 
 
-  static bool isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
+  static bool _isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
   {
     bool isOn = false;
     if (testCoords.x >= drawParams.offset.dx && testCoords.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && testCoords.y >= drawParams.offset.dy && testCoords.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)

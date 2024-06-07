@@ -74,6 +74,11 @@ class CoordinateSetD
 
   @override
   int get hashCode => x.hashCode ^ y.hashCode;
+
+  @override
+  String toString() {
+    return "$x|$y";
+  }
 }
 
 class CoordinateSetI
@@ -150,7 +155,7 @@ class Helper
 
 
 
-  static LabColor rgb2lab(int red, int green, int blue)
+  static LabColor rgb2lab(final int red, final int green, final int blue)
   {
     double r = red.toDouble() / 255.0, g = green.toDouble() / 255.0, b = blue.toDouble() / 255.0, x, y, z;
     r = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4).toDouble() : r / 12.92;
@@ -165,7 +170,7 @@ class Helper
     return LabColor(L: (116.0 * y) - 16.0, A: 500.0 * (x - y), B: 200.0 * (y - z));
   }
 
-  static double getDeltaE(int redA, int greenA, int blueA, int redB, int greenB, int blueB)
+  static double getDeltaE(final int redA, final int greenA, final int blueA, final int redB, final int greenB, final int blueB)
   {
     LabColor labA = rgb2lab(redA, greenA, blueA);
     LabColor labB = rgb2lab(redB, greenB, blueB);
@@ -184,6 +189,34 @@ class Helper
     double deltaHkhsh = deltaH / sh;
     double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
     return i < 0.0 ? 0.0 : sqrt(i);
+  }
+
+  static bool isPointInPolygon(final CoordinateSetI point, final List<CoordinateSetI> polygon) {
+    final int n = polygon.length;
+    bool inside = false;
+
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) &&
+          (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)) {
+        inside = !inside;
+      }
+    }
+
+    return inside;
+  }
+
+  static CoordinateSetI getMin(final List<CoordinateSetI> coordList)
+  {
+    int minX = coordList.reduce((a, b) => a.x < b.x ? a : b).x;
+    int minY = coordList.reduce((a, b) => a.y < b.y ? a : b).y;
+    return CoordinateSetI(x: minX, y: minY);
+  }
+
+  static CoordinateSetI getMax(final List<CoordinateSetI> coordList)
+  {
+    int maxX = coordList.reduce((a, b) => a.x > b.x ? a : b).x;
+    int maxY = coordList.reduce((a, b) => a.y > b.y ? a : b).y;
+    return CoordinateSetI(x: maxX, y: maxY);
   }
 }
 

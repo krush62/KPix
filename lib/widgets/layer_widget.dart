@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -89,15 +90,31 @@ class LayerState
 
   final List<List<ColorReference?>> data;
 
-  LayerState._({required this.data, required this.size})
+  LayerState._({required this.data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible})
   {
     createThumbnail();
+    lockState.value = lState;
+    visibilityState.value = vState;
+
+  }
+
+  factory LayerState.from({required LayerState other})
+  {
+    List<List<ColorReference?>> data = List.generate(other.size.x, (i) => List.filled(other.size.y, null, growable: false), growable: false);
+    for (int x = 0; x < other.size.x; x++)
+    {
+      for (int y = 0; y < other.size.y; y++)
+      {
+        data[x][y] = other.data[x][y];
+      }
+    }
+    return LayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
   }
 
 
   factory LayerState({required int width, required int height, final HashMap<CoordinateSetI, ColorReference?>? content})
   {
-    List<List<ColorReference?>> data = List.generate(width + 1, (i) => List.filled(height + 1, null, growable: false), growable: false);
+    List<List<ColorReference?>> data = List.generate(width, (i) => List.filled(height, null, growable: false), growable: false);
     final CoordinateSetI size = CoordinateSetI(x: width, y: height);
 
     if (content != null)

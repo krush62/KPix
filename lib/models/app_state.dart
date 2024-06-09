@@ -1,7 +1,6 @@
 import 'dart:collection';
 import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -307,30 +306,86 @@ class AppState
 
       layers.value = stateList;
     }
+    else
+    {
+      showMessage("Cannot delete the only layer!");
+    }
   }
 
-  void layerMerged(final LayerState mergeState)
+  void layerMerged(final LayerState mergeLayer)
   {
-    //TODO
+    final int mergeLayerIndex = layers.value.indexOf(mergeLayer);
+    if (mergeLayerIndex == layers.value.length - 1)
+    {
+      showMessage("No layer below!");
+    }
+    else if (mergeLayer.visibilityState.value == LayerVisibilityState.hidden)
+    {
+      showMessage("Cannot merge from an invisible layer!");
+    }
+    else if (layers.value[mergeLayerIndex + 1].visibilityState.value == LayerVisibilityState.hidden)
+    {
+      showMessage("Cannot merge with an invisible layer!");
+    }
+    else if (mergeLayer.lockState.value == LayerLockState.locked)
+    {
+      showMessage("Cannot merge from a locked layer!");
+    }
+    else if (layers.value[mergeLayerIndex + 1].lockState.value == LayerLockState.locked)
+    {
+      showMessage("Cannot merge with a locked layer!");
+    }
+    else
+    {
+      bool lowLayerWasSelected = false;
+      List<LayerState> layerList = [];
+      selectionState.deselect();
+      for (int i = 0; i < layers.value.length; i++)
+      {
+        if (i == mergeLayerIndex)
+        {
+          for (int x = 0; x < canvasWidth; x++)
+          {
+            for (int y = 0; y < canvasHeight; y++)
+            {
+              if (mergeLayer.data[x][y] == null)
+              {
+                mergeLayer.data[x][y] = layers.value[i+1].data[x][y];
+              }
+            }
+          }
+          layerList.add(mergeLayer);
+          lowLayerWasSelected = layers.value[i+1].isSelected.value;
 
+          i++;
+        }
+        else
+        {
+          layerList.add(layers.value[i]);
+        }
 
+      }
+      if (lowLayerWasSelected)
+      {
+        layerSelected(mergeLayer);
+      }
+      layers.value = layerList;
+    }
   }
 
-  void layerDuplicated(final LayerState duplicateState)
+  void layerDuplicated(final LayerState duplicateLayer)
   {
-    List<LayerState> stateList = [];
+    List<LayerState> layerList = [];
+    selectionState.deselect();
     for (int i = 0; i < layers.value.length; i++)
     {
-      if (layers.value[i] == duplicateState)
+      if (layers.value[i] == duplicateLayer)
       {
-        LayerState layerState = LayerState(width: canvasWidth, height: canvasHeight);
-        layerState.lockState.value = layers.value[i].lockState.value;
-        layerState.visibilityState.value = layers.value[i].visibilityState.value;
-        stateList.add(layerState);
+        layerList.add(LayerState.from(other: duplicateLayer));
       }
-      stateList.add(layers.value[i]);
+      layerList.add(layers.value[i]);
     }
-    layers.value = stateList;
+    layers.value = layerList;
   }
 
   void colorSelected(final IdColor color)

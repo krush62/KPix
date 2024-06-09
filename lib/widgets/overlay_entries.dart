@@ -5,6 +5,7 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_chooser_widget.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 
 class OverlayEntrySubMenuOptions
 {
@@ -198,7 +199,10 @@ class OverlayEntries
   })
   {
     OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     const int buttonCount = 3;
+    final double width = (options.buttonHeight + (options.buttonSpacing * 3)) * buttonCount;
+    final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -207,37 +211,55 @@ class OverlayEntries
             onDismiss: () {onDismiss();},
           ),
           Positioned(
-            width: options.buttonHeight * buttonCount + (options.buttonSpacing * 2 * buttonCount),
+            width: width,
+            height: height,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
               offset: Offset(
-                -(options.buttonHeight * buttonCount + (options.buttonSpacing * 2 * buttonCount)).toDouble() - options.buttonSpacing,
-                //TODO MAGIC: check height of widget layer
-                options.offsetY - 24,
+                -width,
+                layerWidgetOptions.height/2 - height/2 - layerWidgetOptions.innerPadding,
               ),
               child: Material(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(
-                              options.buttonSpacing),
-                          onPressed: () {onDelete();},
-                          icon: FaIcon(
-                            FontAwesomeIcons.trashCan,
-                            size: options.buttonHeight),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor)),
-                      IconButton.outlined(constraints: const BoxConstraints(), padding: EdgeInsets.all(options.buttonSpacing), onPressed: () {onDuplicate();}, icon: FaIcon(FontAwesomeIcons.clone, size: options.buttonHeight,), color: Theme.of(context).primaryColorLight, style: IconButton.styleFrom(backgroundColor: Theme.of(context).primaryColor)),
-                      IconButton.outlined(constraints: const BoxConstraints(), padding: EdgeInsets.all(options.buttonSpacing), onPressed: () {onMergeDown();}, icon: FaIcon(FontAwesomeIcons.turnDown, size: options.buttonHeight,), color: Theme.of(context).primaryColorLight, style: IconButton.styleFrom(backgroundColor: Theme.of(context).primaryColor)),
-                    ],
-                  )
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onDelete();},
+                        icon: FaIcon(
+                          FontAwesomeIcons.trashCan,
+                          size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor)),
+                    IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(options.buttonSpacing),
+                        onPressed: () {onDuplicate();},
+                        icon: FaIcon(
+                          FontAwesomeIcons.clone,
+                          size: options.buttonHeight,),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor)),
+                    IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(options.buttonSpacing),
+                        onPressed: () {onMergeDown();},
+                        icon: FaIcon(
+                          FontAwesomeIcons.turnDown,
+                          size: options.buttonHeight,),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor)),
+                  ],
+                )
               ),
             ),
           ),

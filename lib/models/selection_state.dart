@@ -54,6 +54,7 @@ class SelectionState with ChangeNotifier
 
     for (final CoordinateSetI point in points)
     {
+
       _addPixelWithMode(coord: point, mode: selectionOptions.mode.value);
     }
     _createSelectionLines();
@@ -306,39 +307,50 @@ class SelectionState with ChangeNotifier
 
   void cut({final bool notify = true, final bool keepSelection = false})
   {
-    copy(notify: false, keepSelection: true);
-    delete(keepSelection: true, notify: false);
-
-    if (notify)
+    if (copy(notify: false, keepSelection: true))
     {
-      _notify();
+      delete(keepSelection: true, notify: false);
+      if (notify)
+      {
+        _notify();
+      }
     }
   }
 
-  void copy({final bool notify = true, final keepSelection = false})
+  bool copy({final bool notify = true, final keepSelection = false})
   {
-    clipboard = HashMap();
-    final Iterable<CoordinateSetI> coords = selection.getCoordinates();
-    for (final CoordinateSetI coord in coords)
+    bool hasCopied = false;
+    if (selection.hasValues())
     {
-      clipboard![coord] = selection.getColorReference(coord);
+      clipboard = HashMap();
+      final Iterable<CoordinateSetI> coords = selection.getCoordinates();
+      for (final CoordinateSetI coord in coords)
+      {
+        clipboard![coord] = selection.getColorReference(coord);
+      }
+      if (!keepSelection)
+      {
+        deselect(notify: false);
+      }
+      hasCopied = true;
+      if (notify)
+      {
+        _notify();
+      }
     }
-    if (!keepSelection)
+    else
     {
-      deselect(notify: false);
+      GetIt.I.get<AppState>().showMessage("Nothing to copy!");
     }
-
-    if (notify)
-    {
-      _notify();
-    }
+    return hasCopied;
   }
 
   void copyMerged({final bool notify = true, final keepSelection = false})
   {
-    clipboard = HashMap();
+    HashMap<CoordinateSetI, ColorReference?> tempCB = HashMap();
     final Iterable<LayerState> visibleLayers = GetIt.I.get<AppState>().layers.value.where((x) => x.visibilityState.value == LayerVisibilityState.visible);
     final Iterable<CoordinateSetI> coords = selection.getCoordinates();
+    bool hasValues = false;
 
     for (final CoordinateSetI coord in coords)
     {
@@ -349,43 +361,56 @@ class SelectionState with ChangeNotifier
         final ColorReference? colRef = layer.data[coord.x][coord.y];
         if (colRef != null)
         {
-          clipboard![coord] = colRef;
+          hasValues = true;
+          tempCB[coord] = colRef;
           pixelFound = true;
           break;
         }
       }
       if (!pixelFound)
       {
-        clipboard![coord] = null;
+        tempCB[coord] = null;
       }
     }
 
-    if (!keepSelection)
+    if (hasValues)
     {
-      deselect(notify: false);
-    }
+      clipboard = tempCB;
+      if (!keepSelection)
+      {
+        deselect(notify: false);
+      }
 
-    if (notify)
+      if (notify)
+      {
+        _notify();
+      }
+    }
+    else
     {
-      _notify();
+      GetIt.I.get<AppState>().showMessage("Nothing to copy!");
     }
   }
 
   void paste({final bool notify = true})
   {
-    if (clipboard != null) //should always be the case
+    if (clipboard != null && selection.currentLayer != null) //should always be the case
     {
+      if (selection.currentLayer!.lockState.value != LayerLockState.locked) {
         deselect(notify: false);
-        for (final CoordinateSetI key in clipboard!.keys)
-        {
+        for (final CoordinateSetI key in clipboard!.keys) {
           selection.addDirectly(key, clipboard![key]);
         }
         _createSelectionLines();
-    }
 
-    if (notify)
-    {
-      _notify();
+        if (notify) {
+          _notify();
+        }
+      }
+      else
+      {
+        GetIt.I.get<AppState>().showMessage("Cannot paste to a locked layer!");
+      }
     }
   }
 
@@ -467,8 +492,11 @@ class SelectionList
       {
         oldLayer.data[key.x][key.y] = curVal;
       }
-      _content[key] = newLayer.data[key.x][key.y];
-      newLayer.data[key.x][key.y] = null;
+      if (newLayer.lockState.value != LayerLockState.locked)
+      {
+        _content[key] = newLayer.data[key.x][key.y];
+        newLayer.data[key.x][key.y] = null;
+      }
     }
   }
 
@@ -607,5 +635,20 @@ class SelectionList
     _lastOffset.x = 0;
     _lastOffset.y = 0;
   }
+
+  bool hasValues()
+  {
+    bool has = false;
+    for (final ColorReference? colRef in _content.values)
+    {
+      if (colRef != null)
+      {
+        has = true;
+        break;
+      }
+    }
+    return has;
+  }
+
 }
 

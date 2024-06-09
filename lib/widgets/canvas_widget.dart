@@ -460,10 +460,14 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   void _setOffset(final Offset newOffset)
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    coords.x = max(coords.x, -appState.canvasWidth.toDouble() * appState.getZoomFactor() * (1.0 - options.minVisibilityFactor));
-    coords.y = max(coords.y, -appState.canvasHeight.toDouble() * appState.getZoomFactor() * (1.0 - options.minVisibilityFactor));
-    coords.x = min(coords.x, kPixPainter.latestSize!.width - (options.minVisibilityFactor * appState.canvasWidth.toDouble() * appState.getZoomFactor()));
-    coords.y = min(coords.y, kPixPainter.latestSize!.height - (options.minVisibilityFactor * appState.canvasHeight.toDouble() * appState.getZoomFactor()));
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasWidth.toDouble() * appState.getZoomFactor(), y: appState.canvasHeight.toDouble() * appState.getZoomFactor());
+    final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize!.width * options.minVisibilityFactor, y: kPixPainter.latestSize!.height * options.minVisibilityFactor);
+
+    coords.x = max(coords.x, -scaledCanvas.x + minVisibility.x);
+    coords.y = max(coords.y, -scaledCanvas.y + minVisibility.y);
+    coords.x = min(coords.x, kPixPainter.latestSize!.width - minVisibility.x);
+    coords.y = min(coords.y, kPixPainter.latestSize!.height - minVisibility.y);
+
 
     _canvasOffset.value = Offset(coords.x, coords.y);
   }

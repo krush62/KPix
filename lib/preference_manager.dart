@@ -92,9 +92,9 @@ enum PreferenceDouble
   Layout_OverlayEntrySubMenu_OffsetX(defaultValue: -32.0),
   Layout_OverlayEntrySubMenu_OffsetXLeft(defaultValue: -128.0),
   Layout_OverlayEntrySubMenu_OffsetY(defaultValue: 32.0),
-  Layout_OverlayEntrySubMenu_ButtonSpacing(defaultValue: 6.0),
+  Layout_OverlayEntrySubMenu_ButtonSpacing(defaultValue: 8.0),
   Layout_OverlayEntrySubMenu_Width(defaultValue: 160.0),
-  Layout_OverlayEntrySubMenu_ButtonHeight(defaultValue: 40.0),
+  Layout_OverlayEntrySubMenu_ButtonHeight(defaultValue: 24.0),
 
   Layout_OverlayAlertDialog_MinWidth(defaultValue: 200.0),
   Layout_OverlayAlertDialog_MinHeight(defaultValue: 150.0),

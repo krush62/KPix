@@ -99,7 +99,7 @@ class KPixTheme {
           )
         )
       )
-    )
+    ),
   );
 
 

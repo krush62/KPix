@@ -188,6 +188,7 @@ class OverlayEntries
     );
   }
 
+
   static OverlayEntry getLayerMenu({
     required final Function onDismiss,
     required Function onDelete,
@@ -197,6 +198,7 @@ class OverlayEntries
   })
   {
     OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    const int buttonCount = 3;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -205,57 +207,35 @@ class OverlayEntries
             onDismiss: () {onDismiss();},
           ),
           Positioned(
-            width: options.width,
+            width: options.buttonHeight * buttonCount + (options.buttonSpacing * 2 * buttonCount),
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
               offset: Offset(
-                options.offsetXLeft,
-                options.offsetY,
+                -(options.buttonHeight * buttonCount + (options.buttonSpacing * 2 * buttonCount)).toDouble() - options.buttonSpacing,
+                //TODO MAGIC: check height of widget layer
+                options.offsetY - 24,
               ),
               child: Material(
                   color: Colors.transparent,
-                  child: Column(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: SizedBox(
-                            height: options.buttonHeight,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  onDelete();
-                                },
-                                child: const Text("Delete Layer")
-                            )
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: SizedBox(
-                            height: options.buttonHeight,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  onMergeDown();
-                                },
-                                child: const Text("Merge Down")
-                            )
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: SizedBox(
-                            height: options.buttonHeight,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  onDuplicate();
-                                },
-                                child: const Text("Duplicate Layer")
-                            )
-                        ),
-                      ),
+                      IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(
+                              options.buttonSpacing),
+                          onPressed: () {onDelete();},
+                          icon: FaIcon(
+                            FontAwesomeIcons.trashCan,
+                            size: options.buttonHeight),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor)),
+                      IconButton.outlined(constraints: const BoxConstraints(), padding: EdgeInsets.all(options.buttonSpacing), onPressed: () {onDuplicate();}, icon: FaIcon(FontAwesomeIcons.clone, size: options.buttonHeight,), color: Theme.of(context).primaryColorLight, style: IconButton.styleFrom(backgroundColor: Theme.of(context).primaryColor)),
+                      IconButton.outlined(constraints: const BoxConstraints(), padding: EdgeInsets.all(options.buttonSpacing), onPressed: () {onMergeDown();}, icon: FaIcon(FontAwesomeIcons.turnDown, size: options.buttonHeight,), color: Theme.of(context).primaryColorLight, style: IconButton.styleFrom(backgroundColor: Theme.of(context).primaryColor)),
                     ],
                   )
               ),

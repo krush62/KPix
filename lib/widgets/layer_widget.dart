@@ -318,10 +318,10 @@ class _LayerWidgetState extends State<LayerWidget>
                     borderRadius: BorderRadius.all(
                         Radius.circular(options.borderRadius),
                     ),
-                    border: isSelected ? Border.all(
-                      color: Theme.of(context).primaryColorLight,
+                    border: Border.all(
+                      color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                       width: options.borderWidth,
-                    ) : null
+                    )
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

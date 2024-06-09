@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class LineOptions extends IToolOptions
@@ -10,8 +9,8 @@ class LineOptions extends IToolOptions
   final int widthDefault;
   final bool integerAspectRatioDefault;
 
-  int width = 1;
-  bool integerAspectRatio = false;
+  ValueNotifier<int> width = ValueNotifier(1);
+  ValueNotifier<bool> integerAspectRatio = ValueNotifier(false);
 
   LineOptions({
     required this.widthMin,
@@ -20,16 +19,14 @@ class LineOptions extends IToolOptions
     required this.integerAspectRatioDefault
   })
   {
-    width = widthDefault;
-    integerAspectRatio = integerAspectRatioDefault;
+    width.value = widthDefault;
+    integerAspectRatio.value = integerAspectRatioDefault;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required LineOptions lineOptions,
-    LineWidthChanged? lineWidthChanged,
-    LineIntegerAspectRatioChanged? lineIntegerAspectRatioChanged
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,13 +49,20 @@ class LineOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: lineOptions.width.toDouble(),
-                min: lineOptions.widthMin.toDouble(),
-                max: lineOptions.widthMax.toDouble(),
-                divisions: lineOptions.widthMax - lineOptions.widthMin,
-                onChanged: lineWidthChanged,
-                label: lineOptions.width.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: lineOptions.width,
+                builder: (BuildContext context, int width, child)
+                {
+                    return Slider(
+                    value: width.toDouble(),
+                    min: lineOptions.widthMin.toDouble(),
+                    max: lineOptions.widthMax.toDouble(),
+                    divisions: lineOptions.widthMax - lineOptions.widthMin,
+                    onChanged: (double newVal) {lineOptions.width.value = newVal.round();},
+                    label: width.round().toString(),
+                  );
+                },
+
               ),
             ),
           ],
@@ -78,14 +82,20 @@ class LineOptions extends IToolOptions
               ),
             ),
             Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Switch(
-                      onChanged: lineIntegerAspectRatioChanged,
-                      value: lineOptions.integerAspectRatio
-                  ),
-                )
+              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: lineOptions.integerAspectRatio,
+                  builder: (BuildContext context, bool keep, child)
+                  {
+                    return Switch(
+                        onChanged: (bool newVal) {lineOptions.integerAspectRatio.value = newVal;},
+                        value: keep
+                    );
+                  },
+                ),
+              )
             ),
           ],
         ),

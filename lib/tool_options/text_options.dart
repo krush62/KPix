@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class TextOptions extends IToolOptions
@@ -14,9 +13,9 @@ class TextOptions extends IToolOptions
   final int maxLength;
   final FontManager fontManager;
 
-  int size = 1;
-  late PixelFontType font;
-  String text = "Text";
+  ValueNotifier<int> size = ValueNotifier(1);
+  ValueNotifier<PixelFontType?> font = ValueNotifier(null);
+  ValueNotifier<String> text = ValueNotifier("Text");
 
 
   TextOptions({
@@ -29,22 +28,17 @@ class TextOptions extends IToolOptions
     required this.fontManager
   })
   {
-    size = sizeDefault;
-    font = pixelFontIndexMap[fontDefault]!;
-    text = textDefault;
+    size.value = sizeDefault;
+    font.value = pixelFontIndexMap[fontDefault]!;
+    text.value = textDefault;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required TextOptions textOptions,
-    TextTextChanged? textTextChanged,
-    TextSizeChanged? textSizeChanged,
-    TextFontChanged? textFontChanged,
   })
   {
-    TextEditingController controller = TextEditingController(text: textOptions.text);
-    controller.selection = TextSelection.collapsed(offset: controller.text.length);
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,
@@ -65,20 +59,26 @@ class TextOptions extends IToolOptions
               ),
             ),
             Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: DropdownButton(
-                  value: textOptions.font,
-                  dropdownColor: Theme.of(context).primaryColorDark,
-                  focusColor: Theme.of(context).primaryColor,
-                  isExpanded: true,
-                  onChanged: (PixelFontType? type) {textFontChanged!(type!);},
-                  items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType value) {
-                    return DropdownMenuItem<PixelFontType>(
-                      value: value,
-                      child: Text(FontManager.getFontName(value), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(value)),),
-                    );
-                  }).toList(),
-                )
+              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              child: ValueListenableBuilder<PixelFontType?>(
+                valueListenable: textOptions.font,
+                builder: (BuildContext context, PixelFontType? font, child)
+                {
+                  return DropdownButton(
+                    value: font,
+                    dropdownColor: Theme.of(context).primaryColorDark,
+                    focusColor: Theme.of(context).primaryColor,
+                    isExpanded: true,
+                    onChanged: (PixelFontType? type) {textOptions.font.value = type;},
+                    items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType value) {
+                      return DropdownMenuItem<PixelFontType>(
+                        value: value,
+                        child: Text(FontManager.getFontName(value), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(value)),),
+                      );
+                    }).toList(),
+                  );
+                },
+              )
             ),
           ],
         ),
@@ -98,13 +98,19 @@ class TextOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: textOptions.size.toDouble(),
-                min: textOptions.sizeMin.toDouble(),
-                max: textOptions.sizeMax.toDouble(),
-                divisions: textOptions.sizeMax - textOptions.sizeMin,
-                onChanged: textSizeChanged,
-                label: textOptions.size.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: textOptions.size,
+                builder: (BuildContext context, int size, child)
+                {
+                  return Slider(
+                    value: size.toDouble(),
+                    min: textOptions.sizeMin.toDouble(),
+                    max: textOptions.sizeMax.toDouble(),
+                    divisions: textOptions.sizeMax - textOptions.sizeMin,
+                    onChanged: (double newVal) {textOptions.size.value = newVal.round();},
+                    label: size.round().toString(),
+                  );
+                },
               ),
             ),
 
@@ -126,10 +132,18 @@ class TextOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: TextField(
-                controller: controller,
-                onChanged: textTextChanged,
-                maxLength: textOptions.maxLength,
+              child: ValueListenableBuilder<String>(
+                valueListenable: textOptions.text,
+                builder: (BuildContext context, String text, child)
+                {
+                  final TextEditingController controller = TextEditingController(text: textOptions.text.value);
+                  controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                  return TextField(
+                    controller: controller,
+                    onChanged: (String newText) {textOptions.text.value = newText;},
+                    maxLength: textOptions.maxLength,
+                  );
+                },
               )
             ),
           ],

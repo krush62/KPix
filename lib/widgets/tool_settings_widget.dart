@@ -41,197 +41,8 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   final ToolOptions toolOptions = GetIt.I.get<PreferenceManager>().toolOptions;
   final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
 
-  // PENCIL CALLBACKS
-  void _pencilSizeChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.pencilOptions.size = newVal.round();
-    });
-  }
-
-  void _pencilShapeChanged(final PencilShape newShape)
-  {
-    setState(() {
-      toolOptions.pencilOptions.shape = newShape;
-    });
-  }
-
-  void _pencilPixelPerfectChanged(final bool newVal)
-  {
-    setState(() {
-      toolOptions.pencilOptions.pixelPerfect = newVal;
-    });
-  }
-
-  // SHAPE CALLBACKS
-  void _shapeShapeChanged(final ShapeShape newShape)
-  {
-    setState(() {
-      toolOptions.shapeOptions.shape = newShape;
-    });
-  }
-
-  void _shapeKeepAspectRatioChanged(final bool newVal)
-  {
-    setState(() {
-      toolOptions.shapeOptions.keepRatio = newVal;
-    });
-  }
-
-  void _shapeStrokeOnlyChanged(final bool newVal)
-  {
-    setState(() {
-      toolOptions.shapeOptions.strokeOnly = newVal;
-    });
-  }
-
-  void _shapeStrokeSizeChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.shapeOptions.strokeWidth = newVal.round();
-    });
-  }
-
-  void _shapeCornerRadiusChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.shapeOptions.cornerRadius = newVal.round();
-    });
-  }
 
 
-  // FILL CALLBACKS
-  void _fillAdjacentChanged(final bool newVal)
-  {
-    setState(() {
-      toolOptions.fillOptions.fillAdjacent = newVal;
-    });
-  }
-
-
-  // SELECT CALLBACKS
-  void _selectModeChanged(final SelectionMode newMode)
-  {
-    setState(() {
-      toolOptions.selectOptions.mode = newMode;
-    });
-  }
-
-  void _selectKeepAspectRatio(final bool newVal)
-  {
-    setState(() {
-      toolOptions.selectOptions.keepAspectRatio = newVal;
-    });
-  }
-
-  void _selectShapeChanged(final SelectShape newShape)
-  {
-    setState(() {
-      toolOptions.selectOptions.shape = newShape;
-    });
-  }
-
-
-  // ERASE CALLBACKS
-  void _eraserSizeChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.eraserOptions.size = newVal.round();
-    });
-  }
-
-  void _eraserShapeChanged(final EraserShape newShape)
-  {
-    setState(() {
-      toolOptions.eraserOptions.shape = newShape;
-    });
-  }
-
-  // TEXT CALLBACKS
-  void _textFontChanged(final PixelFontType newFont)
-  {
-    setState(() {
-      toolOptions.textOptions.font = newFont;
-    });
-  }
-
-  void _textSizeChanged(final double newSize)
-  {
-    setState(() {
-      toolOptions.textOptions.size = newSize.round();
-    });
-  }
-
-  void _textTextChanged(final String newText)
-  {
-    setState(() {
-      toolOptions.textOptions.text = newText;
-    });
-  }
-
-
-  // SPRAY CAN CALLBACKS
-  void _sprayCanBlobSizeChanged(final double newSize)
-  {
-    setState(() {
-      toolOptions.sprayCanOptions.blobSize = newSize.round();
-    });
-  }
-
-  void _sprayCanIntensityChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.sprayCanOptions.intensity = newVal.round();
-    });
-  }
-
-  void _sprayCanRadiusChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.sprayCanOptions.radius = newVal.round();
-    });
-  }
-
-
-  // LINE CALLBACKS
-  void _lineWidthChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.lineOptions.width = newVal.round();
-    });
-  }
-
-  void _lineIntegerAspectRatioChanged(final bool newVal)
-  {
-    setState(() {
-      toolOptions.lineOptions.integerAspectRatio = newVal;
-    });
-  }
-
-
-  // WAND CALLBACK
-  void _wandSelectFromWholeRampChanged(final bool newVal)
-  {
-    setState(() {
-      toolOptions.wandOptions.selectFromWholeRamp = newVal;
-    });
-  }
-
-  void _wandModeChanged(final SelectionMode newMode)
-  {
-    setState(() {
-      toolOptions.wandOptions.mode = newMode;
-    });
-  }
-
-
-  // CURVE CALLBACK
-  void _curveWidthChanged(final double newVal)
-  {
-    setState(() {
-      toolOptions.curveOptions.width = newVal.round();
-    });
-  }
 
   @override
   Widget build(BuildContext context)
@@ -247,37 +58,25 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ShapeOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                shapeOptions: toolOptions.shapeOptions,
-                shapeShapeChanged: _shapeShapeChanged,
-                shapeKeepAspectRatioChanged: _shapeKeepAspectRatioChanged,
-                shapeStrokeOnlyChanged: _shapeStrokeOnlyChanged,
-                shapeStrokeSizeChanged: _shapeStrokeSizeChanged,
-                shapeCornerRadiusChanged: _shapeCornerRadiusChanged);
+                shapeOptions: toolOptions.shapeOptions,);
             break;
           case ToolType.pencil:
             toolWidget = PencilOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                pencilOptions: toolOptions.pencilOptions,
-                pencilPixelPerfectChanged: _pencilPixelPerfectChanged,
-                pencilShapeChanged: _pencilShapeChanged,
-                pencilSizeChanged: _pencilSizeChanged);
+                pencilOptions: toolOptions.pencilOptions,);
             break;
           case ToolType.fill:
             toolWidget = FillOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                fillOptions: toolOptions.fillOptions,
-                fillAdjacentChanged: _fillAdjacentChanged);
+                fillOptions: toolOptions.fillOptions,);
             break;
           case ToolType.select:
             toolWidget = SelectOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                selectOptions: toolOptions.selectOptions,
-                selectionModeChanged: _selectModeChanged,
-                selectKeepAspectRatioChanged: _selectKeepAspectRatio,
-                selectShapeChanged: _selectShapeChanged);
+                selectOptions: toolOptions.selectOptions,);
             break;
           case ToolType.pick:
             toolWidget = ColorPickOptions.getWidget(
@@ -289,50 +88,37 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = EraserOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                eraserOptions: toolOptions.eraserOptions,
-                eraserShapeChanged: _eraserShapeChanged,
-                eraserSizeChanged: _eraserSizeChanged);
+                eraserOptions: toolOptions.eraserOptions);
             break;
           case ToolType.font:
             toolWidget = TextOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                textOptions: toolOptions.textOptions,
-                textFontChanged: _textFontChanged,
-                textSizeChanged: _textSizeChanged,
-                textTextChanged: _textTextChanged);
+                textOptions: toolOptions.textOptions,);
             break;
           case ToolType.spraycan:
             toolWidget = SprayCanOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                sprayCanOptions: toolOptions.sprayCanOptions,
-                sprayCanBlobSizeChanged: _sprayCanBlobSizeChanged,
-                sprayCanIntensityChanged: _sprayCanIntensityChanged,
-                sprayCanRadiusChanged: _sprayCanRadiusChanged);
+                sprayCanOptions: toolOptions.sprayCanOptions,);
             break;
           case ToolType.line:
             toolWidget = LineOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                lineOptions: toolOptions.lineOptions,
-                lineWidthChanged: _lineWidthChanged,
-                lineIntegerAspectRatioChanged: _lineIntegerAspectRatioChanged);
+                lineOptions: toolOptions.lineOptions,);
             break;
           case ToolType.wand:
             toolWidget = WandOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                wandOptions: toolOptions.wandOptions,
-                selectionModeChanged: _wandModeChanged,
-                wandSelectFromWholeRampChanged: _wandSelectFromWholeRampChanged);
+                wandOptions: toolOptions.wandOptions,);
             break;
           case ToolType.curve:
             toolWidget = CurveOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                curveOptions: toolOptions.curveOptions,
-                curveWidthChanged: _curveWidthChanged);
+                curveOptions: toolOptions.curveOptions,);
             break;
 
           default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));

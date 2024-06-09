@@ -17,8 +17,8 @@ class SelectionPainter extends IToolPainter
   bool movementStarted = false;
   List<CoordinateSetI> polygonPoints = [];
   bool polygonDown = false;
-  CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
-  Offset _lastStartPos = Offset(0,0);
+  final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
+  Offset _lastStartPos = const Offset(0,0);
 
   SelectionPainter({required super.painterOptions});
 
@@ -52,14 +52,14 @@ class SelectionPainter extends IToolPainter
 
 
       //MOVE
-      if (movementStarted || ((options.mode == SelectionMode.replace || options.mode == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape != SelectShape.polygon || polygonPoints.isEmpty)))
+      if (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)))
       {
         movementStarted = true;
         appState.selectionState.setOffset(CoordinateSetI(x: normalizedEnd.x - _normStartPos.x, y: normalizedEnd.y - _normStartPos.y));
       }
       else //DRAW
       {
-        if (options.shape == SelectShape.polygon) {
+        if (options.shape.value == SelectShape.polygon) {
           polygonDown = true;
         }
         else {
@@ -93,7 +93,7 @@ class SelectionPainter extends IToolPainter
             selectionEnd.y = appState.canvasHeight - 1;
           }
 
-          if (options.keepAspectRatio) {
+          if (options.keepAspectRatio.value) {
             final int width = selectionEnd.x - selectionStart.x;
             final int height = selectionEnd.y - selectionStart.y;
             if (width > height) {
@@ -124,7 +124,7 @@ class SelectionPainter extends IToolPainter
                   (selectionEnd.y + 1) * drawParams.pixelSize);
 
           //RECTANGLE
-          if (options.shape == SelectShape.rectangle) {
+          if (options.shape.value == SelectShape.rectangle) {
             drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
             drawParams.paint.color = Colors.black;
             drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
@@ -134,7 +134,7 @@ class SelectionPainter extends IToolPainter
           }
 
           //ELLIPSE
-          else if (options.shape == SelectShape.ellipse)
+          else if (options.shape.value == SelectShape.ellipse)
           {
             drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
             drawParams.paint.color = Colors.black;
@@ -221,7 +221,7 @@ class SelectionPainter extends IToolPainter
 
   @override
   void drawExtras({required DrawingParameters drawParams}) {
-    if (options.shape == SelectShape.polygon && polygonPoints.isNotEmpty)
+    if (options.shape.value == SelectShape.polygon && polygonPoints.isNotEmpty)
     {
       final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
       CoordinateSetD(

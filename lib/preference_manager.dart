@@ -294,6 +294,7 @@ enum PreferenceBool
   Tool_Select_KeepAspectRatio(defaultValue: false),
   Tool_Line_IntegerAspectRatio(defaultValue: false),
   Tool_Wand_SelectFromWholeRamp(defaultValue: false),
+  Tool_Wand_Continuous(defaultValue: true),
   ;
   const PreferenceBool({
     required this.defaultValue
@@ -621,7 +622,8 @@ class PreferenceManager
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
     WandOptions wandOptions = WandOptions(
         selectFromWholeRampDefault: getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp),
-        modeDefault: getValueI(PreferenceInt.Tool_Wand_Mode));
+        modeDefault: getValueI(PreferenceInt.Tool_Wand_Mode),
+        continuousDefault: getValueB(PreferenceBool.Tool_Wand_Continuous));
     CurveOptions curveOptions = CurveOptions(
         widthMin: getValueI(PreferenceInt.Tool_Curve_WidthMin),
         widthMax: getValueI(PreferenceInt.Tool_Curve_WidthMax),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 enum PencilShape
@@ -31,9 +30,9 @@ class PencilOptions extends IToolOptions
   final int shapeDefault;
   final bool pixelPerfectDefault;
 
-  int size = 1;
-  PencilShape shape = PencilShape.round;
-  bool pixelPerfect = true;
+  ValueNotifier<int> size = ValueNotifier(1);
+  ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
+  ValueNotifier<bool> pixelPerfect = ValueNotifier(true);
 
   PencilOptions({
     required this.sizeMin,
@@ -42,18 +41,15 @@ class PencilOptions extends IToolOptions
     required this.shapeDefault,
     required this.pixelPerfectDefault})
   {
-    size = sizeDefault;
-    shape = _pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
-    pixelPerfect = pixelPerfectDefault;
+    size.value = sizeDefault;
+    shape.value = _pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
+    pixelPerfect.value = pixelPerfectDefault;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required PencilOptions pencilOptions,
-    PencilSizeChanged? pencilSizeChanged,
-    PencilShapeChanged? pencilShapeChanged,
-    PencilPixelPerfectChanged? pencilPixelPerfectChanged
   })
   {
     return Column(
@@ -77,13 +73,19 @@ class PencilOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: pencilOptions.size.toDouble(),
-                min: pencilOptions.sizeMin.toDouble(),
-                max: pencilOptions.sizeMax.toDouble(),
-                divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
-                onChanged: pencilSizeChanged,
-                label: pencilOptions.size.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: pencilOptions.size,
+                builder: (BuildContext context, int size, child)
+                {
+                  return Slider(
+                    value: size.toDouble(),
+                    min: pencilOptions.sizeMin.toDouble(),
+                    max: pencilOptions.sizeMax.toDouble(),
+                    divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
+                    onChanged: (double newVal) {pencilOptions.size.value = newVal.round();},
+                    label: size.round().toString(),
+                  );
+                },
               ),
             ),
 
@@ -105,18 +107,24 @@ class PencilOptions extends IToolOptions
             ),
             Expanded(
                 flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: DropdownButton(
-                  value: pencilOptions.shape,
-                  dropdownColor: Theme.of(context).primaryColorDark,
-                  focusColor: Theme.of(context).primaryColor,
-                  isExpanded: true,
-                  onChanged: (PencilShape? pShape) {pencilShapeChanged!(pShape!);},
-                  items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((PencilShape value) {
-                    return DropdownMenuItem<PencilShape>(
-                      value: value,
-                      child: Text(pencilShapeStringMap[value]!),
+                child: ValueListenableBuilder<PencilShape>(
+                  valueListenable: pencilOptions.shape,
+                  builder: (BuildContext context, PencilShape shape, child)
+                  {
+                    return DropdownButton(
+                      value: shape,
+                      dropdownColor: Theme.of(context).primaryColorDark,
+                      focusColor: Theme.of(context).primaryColor,
+                      isExpanded: true,
+                      onChanged: (PencilShape? pShape) {pencilOptions.shape.value = pShape!;},
+                      items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((PencilShape value) {
+                        return DropdownMenuItem<PencilShape>(
+                          value: value,
+                          child: Text(pencilShapeStringMap[value]!),
+                        );
+                      }).toList(),
                     );
-                  }).toList(),
+                  },
                 )
             ),
           ],
@@ -139,9 +147,15 @@ class PencilOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Switch(
-                    onChanged: pencilPixelPerfectChanged,
-                    value: pencilOptions.pixelPerfect
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: pencilOptions.pixelPerfect,
+                  builder: (BuildContext context, bool pp, child)
+                  {
+                    return Switch(
+                        onChanged: (bool newVal) {pencilOptions.pixelPerfect.value = newVal;},
+                        value: pp
+                    );
+                  },
                 ),
               )
             ),

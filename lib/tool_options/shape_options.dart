@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 enum ShapeShape
@@ -68,11 +67,11 @@ class ShapeOptions extends IToolOptions
   final int cornerRadiusDefault;
 
 
-  ShapeShape shape = ShapeShape.square;
-  bool keepRatio = false;
-  bool strokeOnly = false;
-  int strokeWidth = 1;
-  int cornerRadius = 0;
+  ValueNotifier<ShapeShape> shape = ValueNotifier(ShapeShape.square);
+  ValueNotifier<bool> keepRatio = ValueNotifier(false);
+  ValueNotifier<bool> strokeOnly = ValueNotifier(false);
+  ValueNotifier<int> strokeWidth = ValueNotifier(1);
+  ValueNotifier<int> cornerRadius = ValueNotifier(0);
 
   ShapeOptions({
     required this.shapeDefault,
@@ -85,22 +84,17 @@ class ShapeOptions extends IToolOptions
     required this.cornerRadiusMax,
     required this.cornerRadiusDefault
   }) {
-    shape = _shapeShapeIndexMap[shapeDefault] ?? ShapeShape.square;
-    keepRatio = keepRatioDefault;
-    strokeOnly = strokeOnlyDefault;
-    strokeWidth = strokeWidthDefault;
-    cornerRadius = cornerRadiusDefault;
+    shape.value = _shapeShapeIndexMap[shapeDefault] ?? ShapeShape.square;
+    keepRatio.value = keepRatioDefault;
+    strokeOnly.value = strokeOnlyDefault;
+    strokeWidth.value = strokeWidthDefault;
+    cornerRadius.value = cornerRadiusDefault;
   }
 
   static Column getWidget(
   {   required BuildContext context,
       required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-      required ShapeOptions shapeOptions,
-      ShapeShapeChanged? shapeShapeChanged,
-      ShapeKeepAspectRatioChanged? shapeKeepAspectRatioChanged,
-      ShapeStrokeOnlyChanged? shapeStrokeOnlyChanged,
-      ShapeStrokeSizeChanged? shapeStrokeSizeChanged,
-      ShapeCornerRadiusChanged? shapeCornerRadiusChanged})
+      required ShapeOptions shapeOptions})
   {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,19 +117,24 @@ class ShapeOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: DropdownButton(
-                value: shapeOptions.shape,
-                dropdownColor: Theme.of(context).primaryColorDark,
-                focusColor: Theme.of(context).primaryColor,
-                isExpanded: true,
-                onChanged: (ShapeShape? pShape) {shapeShapeChanged!(pShape!);},
-                items: shapeShapeList.map<DropdownMenuItem<ShapeShape>>((ShapeShape value) {
-                  return DropdownMenuItem<ShapeShape>(
-                    value: value,
-                    child: Text(shapeShapeStringMap[value]!),
+              child: ValueListenableBuilder<ShapeShape>(
+                valueListenable: shapeOptions.shape,
+                builder: (BuildContext context, ShapeShape shape, child)
+                {
+                  return DropdownButton(
+                    value: shape,
+                    dropdownColor: Theme.of(context).primaryColorDark,
+                    focusColor: Theme.of(context).primaryColor,
+                    isExpanded: true,
+                    onChanged: (ShapeShape? pShape) {shapeOptions.shape.value = pShape!;},
+                    items: shapeShapeList.map<DropdownMenuItem<ShapeShape>>((ShapeShape value) {
+                      return DropdownMenuItem<ShapeShape>(
+                        value: value,
+                        child: Text(shapeShapeStringMap[value]!),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
-
+                },
               ),
             ),
 
@@ -159,9 +158,15 @@ class ShapeOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Switch(
-                  onChanged: shapeKeepAspectRatioChanged,
-                  value: shapeOptions.keepRatio,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: shapeOptions.keepRatio,
+                  builder: (BuildContext context, bool keep, child)
+                  {
+                    return Switch(
+                      onChanged: (bool newVal) {shapeOptions.keepRatio.value = newVal;},
+                      value: keep,
+                    );
+                  },
                 ),
               )
             ),
@@ -189,21 +194,33 @@ class ShapeOptions extends IToolOptions
                     flex: 1,
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: Switch(
-                        onChanged: shapeStrokeOnlyChanged,
-                        value: shapeOptions.strokeOnly,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: shapeOptions.strokeOnly,
+                        builder: (BuildContext context, bool strokeOnly, child)
+                        {
+                          return Switch(
+                            onChanged: (bool newVal) {shapeOptions.strokeOnly.value = newVal;},
+                            value: strokeOnly,
+                          );
+                        },
                       ),
                     ),
                   ),
                   Expanded(
                     flex: 2,
-                    child: Slider(
-                      value: shapeOptions.strokeWidth.toDouble(),
-                      min: shapeOptions.strokeWidthMin.toDouble(),
-                      max: shapeOptions.strokeWidthMax.toDouble(),
-                      divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
-                      onChanged: shapeOptions.strokeOnly ? shapeStrokeSizeChanged : null,
-                      label: shapeOptions.strokeWidth.round().toString(),
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: shapeOptions.strokeWidth,
+                      builder: (BuildContext context, int width, child)
+                      {
+                        return Slider(
+                          value: width.toDouble(),
+                          min: shapeOptions.strokeWidthMin.toDouble(),
+                          max: shapeOptions.strokeWidthMax.toDouble(),
+                          divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
+                          onChanged: shapeOptions.strokeOnly.value ? (double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
+                          label: width.round().toString(),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -227,13 +244,19 @@ class ShapeOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: shapeOptions.cornerRadius.toDouble(),
-                min: shapeOptions.cornerRadiusMin.toDouble(),
-                max: shapeOptions.cornerRadiusMax.toDouble(),
-                divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
-                onChanged: shapeCornerRadiusChanged,
-                label: shapeOptions.cornerRadius.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: shapeOptions.cornerRadius,
+                builder: (BuildContext context, int cornerRadius, child)
+                {
+                  return Slider(
+                    value: cornerRadius.toDouble(),
+                    min: shapeOptions.cornerRadiusMin.toDouble(),
+                    max: shapeOptions.cornerRadiusMax.toDouble(),
+                    divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
+                    onChanged: (double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
+                    label: cornerRadius.round().toString(),
+                  );
+                }
               ),
             ),
           ],

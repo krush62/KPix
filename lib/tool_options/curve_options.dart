@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class CurveOptions extends IToolOptions
@@ -9,7 +8,7 @@ class CurveOptions extends IToolOptions
   final int widthMax;
   final int widthDefault;
 
-  int width = 1;
+  ValueNotifier<int> width = ValueNotifier(1);
 
   CurveOptions({
     required this.widthMin,
@@ -17,15 +16,13 @@ class CurveOptions extends IToolOptions
     required this.widthDefault,
   })
   {
-    width = widthDefault;
+    width.value = widthDefault;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required CurveOptions curveOptions,
-    CurveWidthChanged? curveWidthChanged,
-
   })
   {
     return Column(
@@ -49,13 +46,19 @@ class CurveOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: curveOptions.width.toDouble(),
-                min: curveOptions.widthMin.toDouble(),
-                max: curveOptions.widthMax.toDouble(),
-                divisions: curveOptions.widthMax - curveOptions.widthMin,
-                onChanged: curveWidthChanged,
-                label: curveOptions.width.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: curveOptions.width,
+                builder: (BuildContext context, int val, child)
+                {
+                  return Slider(
+                    value: val.toDouble(),
+                    min: curveOptions.widthMin.toDouble(),
+                    max: curveOptions.widthMax.toDouble(),
+                    divisions: curveOptions.widthMax - curveOptions.widthMin,
+                    onChanged: (double newVal) {curveOptions.width.value = newVal.round();},
+                    label: val.round().toString(),
+                  );
+                },
               ),
             ),
           ],

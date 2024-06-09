@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class SprayCanOptions extends IToolOptions
@@ -15,9 +14,9 @@ class SprayCanOptions extends IToolOptions
   final int intensityMax;
   final int intensityDefault;
 
-  int radius = 3;
-  int blobSize = 1;
-  int intensity = 8;
+  ValueNotifier<int> radius = ValueNotifier(3);
+  ValueNotifier<int> blobSize = ValueNotifier(1);
+  ValueNotifier<int> intensity = ValueNotifier(8);
 
   SprayCanOptions({
   required this.radiusMin,
@@ -31,18 +30,15 @@ class SprayCanOptions extends IToolOptions
   required this.intensityDefault
   })
   {
-    radius = radiusDefault;
-    blobSize = blobSizeDefault;
-    intensity = intensityDefault;
+    radius.value = radiusDefault;
+    blobSize.value = blobSizeDefault;
+    intensity.value = intensityDefault;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required SprayCanOptions sprayCanOptions,
-    SprayCanRadiusChanged? sprayCanRadiusChanged,
-    SprayCanBlobSizeChanged? sprayCanBlobSizeChanged,
-    SprayCanIntensityChanged? sprayCanIntensityChanged
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,13 +61,19 @@ class SprayCanOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: sprayCanOptions.radius.toDouble(),
-                min: sprayCanOptions.radiusMin.toDouble(),
-                max: sprayCanOptions.radiusMax.toDouble(),
-                divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
-                onChanged: sprayCanRadiusChanged,
-                label: sprayCanOptions.radius.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: sprayCanOptions.radius,
+                builder: (BuildContext context, int radius, child)
+                {
+                  return Slider(
+                    value: radius.toDouble(),
+                    min: sprayCanOptions.radiusMin.toDouble(),
+                    max: sprayCanOptions.radiusMax.toDouble(),
+                    divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
+                    onChanged: (double newVal) {sprayCanOptions.radius.value = newVal.round();},
+                    label: radius.round().toString(),
+                  );
+                },
               ),
             ),
           ],
@@ -92,13 +94,19 @@ class SprayCanOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: sprayCanOptions.blobSize.toDouble(),
-                min: sprayCanOptions.blobSizeMin.toDouble(),
-                max: sprayCanOptions.blobSizeMax.toDouble(),
-                divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
-                onChanged: sprayCanBlobSizeChanged,
-                label: sprayCanOptions.blobSize.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: sprayCanOptions.blobSize,
+                builder: (BuildContext context, int blobSize, child)
+                {
+                  return Slider(
+                    value: blobSize.toDouble(),
+                    min: sprayCanOptions.blobSizeMin.toDouble(),
+                    max: sprayCanOptions.blobSizeMax.toDouble(),
+                    divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
+                    onChanged: (double newVal) {sprayCanOptions.blobSize.value = newVal.round();},
+                    label: blobSize.round().toString(),
+                  );
+                },
               ),
             ),
           ],
@@ -119,13 +127,19 @@ class SprayCanOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: sprayCanOptions.intensity.toDouble(),
-                min: sprayCanOptions.intensityMin.toDouble(),
-                max: sprayCanOptions.intensityMax.toDouble(),
-                divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
-                onChanged: sprayCanIntensityChanged,
-                label: sprayCanOptions.intensity.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: sprayCanOptions.intensity,
+                builder: (BuildContext context, int intensity, child)
+                {
+                  return Slider(
+                    value: intensity.toDouble(),
+                    min: sprayCanOptions.intensityMin.toDouble(),
+                    max: sprayCanOptions.intensityMax.toDouble(),
+                    divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
+                    onChanged: (double newVal) {sprayCanOptions.intensity.value = newVal.round();},
+                    label: intensity.round().toString(),
+                  );
+                }
               ),
             ),
           ],

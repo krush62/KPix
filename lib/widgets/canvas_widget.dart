@@ -209,17 +209,16 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
         if (selectionPainter.hasNewSelection)
         {
-          if (selectionPainter.options.shape == SelectShape.ellipse || selectionPainter.options.shape == SelectShape.rectangle) {
+          if (selectionPainter.options.shape.value == SelectShape.ellipse || selectionPainter.options.shape.value == SelectShape.rectangle) {
             selectionPainter.hasNewSelection = false;
             appState.selectionState.newSelectionFromShape(
                 start: selectionPainter.selectionStart,
                 end: selectionPainter.selectionEnd,
-                selectShape: selectionPainter.options.shape);
+                selectShape: selectionPainter.options.shape.value);
           }
           else //if polygon selection
           {
             //TODO handle polygon selection
-            print(selectionPainter.polygonPoints.length.toString() + " POLYGON POINTS");
             selectionPainter.polygonPoints.clear();
             selectionPainter.polygonDown = false;
           }
@@ -336,7 +335,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
       {
         final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
-        if (selectionPainter.hasNewSelection && selectionPainter.options.shape == SelectShape.polygon)
+        if (selectionPainter.hasNewSelection && selectionPainter.options.shape.value == SelectShape.polygon)
         {
           selectionPainter.hasNewSelection = false;
           final CoordinateSetI min = Helper.getMin(selectionPainter.polygonPoints);

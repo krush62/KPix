@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 enum SelectShape
@@ -36,9 +35,9 @@ class SelectOptions extends IToolOptions
   final bool keepAspectRatioDefault;
   final int modeDefault;
 
-  SelectShape shape = SelectShape.rectangle;
-  SelectionMode mode = SelectionMode.replace;
-  bool keepAspectRatio = false;
+  ValueNotifier<SelectShape> shape = ValueNotifier(SelectShape.rectangle);
+  ValueNotifier<SelectionMode> mode = ValueNotifier(SelectionMode.replace);
+  ValueNotifier<bool> keepAspectRatio = ValueNotifier(false);
 
   SelectOptions({
   required this.shapeDefault,
@@ -46,18 +45,15 @@ class SelectOptions extends IToolOptions
   required this.modeDefault
   })
   {
-    keepAspectRatio = keepAspectRatioDefault;
-    shape = _selectShapeIndexMap[shapeDefault] ?? SelectShape.rectangle;
-    mode = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
+    keepAspectRatio.value = keepAspectRatioDefault;
+    shape.value = _selectShapeIndexMap[shapeDefault] ?? SelectShape.rectangle;
+    mode.value = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required SelectOptions selectOptions,
-    SelectShapeChanged? selectShapeChanged,
-    SelectKeepAspectRatioChanged? selectKeepAspectRatioChanged,
-    SelectionModeChanged? selectionModeChanged
   })
   {
     return Column(
@@ -81,18 +77,24 @@ class SelectOptions extends IToolOptions
             ),
             Expanded(
                 flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: DropdownButton(
-                  value: selectOptions.shape,
-                  dropdownColor: Theme.of(context).primaryColorDark,
-                  focusColor: Theme.of(context).primaryColor,
-                  isExpanded: true,
-                  onChanged: (SelectShape? sShape) {selectShapeChanged!(sShape!);},
-                  items: selectShapeList.map<DropdownMenuItem<SelectShape>>((SelectShape value) {
-                    return DropdownMenuItem<SelectShape>(
-                      value: value,
-                      child: Text(selectShapeStringMap[value]!),
+                child: ValueListenableBuilder<SelectShape>(
+                  valueListenable: selectOptions.shape,
+                  builder: (BuildContext context, SelectShape shape, child)
+                  {
+                    return DropdownButton(
+                      value: shape,
+                      dropdownColor: Theme.of(context).primaryColorDark,
+                      focusColor: Theme.of(context).primaryColor,
+                      isExpanded: true,
+                      onChanged: (SelectShape? sShape) {selectOptions.shape.value = sShape!;},
+                      items: selectShapeList.map<DropdownMenuItem<SelectShape>>((SelectShape value) {
+                        return DropdownMenuItem<SelectShape>(
+                          value: value,
+                          child: Text(selectShapeStringMap[value]!),
+                        );
+                      }).toList(),
                     );
-                  }).toList(),
+                  },
                 )
             ),
           ],
@@ -112,14 +114,20 @@ class SelectOptions extends IToolOptions
               ),
             ),
             Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Switch(
-                      onChanged: (selectOptions.shape == SelectShape.rectangle || selectOptions.shape == SelectShape.ellipse) ? selectKeepAspectRatioChanged : null,
-                      value: selectOptions.keepAspectRatio
-                  ),
-                )
+              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: selectOptions.keepAspectRatio,
+                  builder: (BuildContext context, bool keep, child)
+                  {
+                    return Switch(
+                        onChanged: (selectOptions.shape.value == SelectShape.rectangle || selectOptions.shape.value == SelectShape.ellipse) ? (bool newVal) {selectOptions.keepAspectRatio.value = newVal;} : null,
+                        value: keep
+                    );
+                  },
+                ),
+              )
             ),
           ],
         ),
@@ -139,18 +147,24 @@ class SelectOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: DropdownButton(
-                value: selectOptions.mode,
-                dropdownColor: Theme.of(context).primaryColorDark,
-                focusColor: Theme.of(context).primaryColor,
-                isExpanded: true,
-                onChanged: (SelectionMode? sMode) {selectionModeChanged!(sMode!);},
-                items: selectionModeList.map<DropdownMenuItem<SelectionMode>>((SelectionMode value) {
-                  return DropdownMenuItem<SelectionMode>(
-                    value: value,
-                    child: Text(selectionModeStringMap[value]!),
+              child: ValueListenableBuilder<SelectionMode>(
+                valueListenable: selectOptions.mode,
+                builder: (BuildContext context, SelectionMode mode, child)
+                {
+                  return DropdownButton(
+                    value: mode,
+                    dropdownColor: Theme.of(context).primaryColorDark,
+                    focusColor: Theme.of(context).primaryColor,
+                    isExpanded: true,
+                    onChanged: (SelectionMode? sMode) {selectOptions.mode.value = sMode!;},
+                    items: selectionModeList.map<DropdownMenuItem<SelectionMode>>((SelectionMode value) {
+                      return DropdownMenuItem<SelectionMode>(
+                        value: value,
+                        child: Text(selectionModeStringMap[value]!),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
+                },
               )
             ),
           ],

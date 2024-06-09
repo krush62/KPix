@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class FillOptions extends IToolOptions
 {
+  ValueNotifier<bool> fillAdjacent = ValueNotifier(true);
   final bool fillAdjacentDefault;
-  bool fillAdjacent = true;
-  FillOptions({required this.fillAdjacentDefault});
+
+  FillOptions({required this.fillAdjacentDefault})
+  {
+    fillAdjacent.value = fillAdjacentDefault;
+  }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required FillOptions fillOptions,
-    FillAdjacentChanged? fillAdjacentChanged,
   })
   {
     return Column(
@@ -37,14 +39,20 @@ class FillOptions extends IToolOptions
               ),
             ),
             Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Switch(
-                      onChanged: fillAdjacentChanged,
-                      value: fillOptions.fillAdjacent
-                  ),
-                )
+              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: fillOptions.fillAdjacent,
+                  builder: (BuildContext context, bool fill, child)
+                  {
+                    return Switch(
+                        onChanged: (bool newVal) {fillOptions.fillAdjacent.value = newVal;},
+                        value: fill
+                    );
+                  },
+                ),
+              )
             ),
           ],
         ),

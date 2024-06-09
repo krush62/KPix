@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 enum EraserShape
@@ -30,8 +29,8 @@ class EraserOptions extends IToolOptions
   final int sizeDefault;
   final int shapeDefault;
 
-  int size = 1;
-  EraserShape shape = EraserShape.round;
+  ValueNotifier<int> size = ValueNotifier(1);
+  ValueNotifier<EraserShape> shape = ValueNotifier(EraserShape.round);
 
   EraserOptions({
     required this.sizeMin,
@@ -39,16 +38,14 @@ class EraserOptions extends IToolOptions
     required this.sizeDefault,
     required this.shapeDefault})
   {
-    size = sizeDefault;
-    shape = _eraserShapeIndexMap[shapeDefault] ?? EraserShape.round;
+    size.value = sizeDefault;
+    shape.value = _eraserShapeIndexMap[shapeDefault] ?? EraserShape.round;
   }
 
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required EraserOptions eraserOptions,
-    EraserSizeChanged? eraserSizeChanged,
-    EraserShapeChanged? eraserShapeChanged,
   })
   {
     return Column(
@@ -72,13 +69,19 @@ class EraserOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Slider(
-                value: eraserOptions.size.toDouble(),
-                min: eraserOptions.sizeMin.toDouble(),
-                max: eraserOptions.sizeMax.toDouble(),
-                divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
-                onChanged: eraserSizeChanged,
-                label: eraserOptions.size.round().toString(),
+              child: ValueListenableBuilder<int>(
+                valueListenable: eraserOptions.size,
+                builder: (BuildContext context, int size, child)
+                {
+                  return Slider(
+                    value: size.toDouble(),
+                    min: eraserOptions.sizeMin.toDouble(),
+                    max: eraserOptions.sizeMax.toDouble(),
+                    divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
+                    onChanged: (double newVal) {eraserOptions.size.value = newVal.round();},
+                    label: size.round().toString(),
+                  );
+                },
               ),
             ),
 
@@ -100,18 +103,24 @@ class EraserOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: DropdownButton(
-                value: eraserOptions.shape,
-                dropdownColor: Theme.of(context).primaryColorDark,
-                focusColor: Theme.of(context).primaryColor,
-                isExpanded: true,
-                onChanged: (EraserShape? eShape) {eraserShapeChanged!(eShape!);},
-                items: eraserShapeList.map<DropdownMenuItem<EraserShape>>((EraserShape value) {
-                  return DropdownMenuItem<EraserShape>(
-                    value: value,
-                    child: Text(eraserShapeStringMap[value]!),
+              child: ValueListenableBuilder<EraserShape>(
+                valueListenable: eraserOptions.shape,
+                builder: (BuildContext context, EraserShape shape, child)
+                {
+                  return DropdownButton(
+                    value: shape,
+                    dropdownColor: Theme.of(context).primaryColorDark,
+                    focusColor: Theme.of(context).primaryColor,
+                    isExpanded: true,
+                    onChanged: (EraserShape? eShape) {eraserOptions.shape.value = eShape!;},
+                    items: eraserShapeList.map<DropdownMenuItem<EraserShape>>((EraserShape value) {
+                      return DropdownMenuItem<EraserShape>(
+                        value: value,
+                        child: Text(eraserShapeStringMap[value]!),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
+                },
               )
             ),
           ],

@@ -47,14 +47,14 @@ class SelectionState with ChangeNotifier
 
   void newSelectionFromPolygon({required final List<CoordinateSetI> points, final bool notify = true})
   {
-    if (selectionOptions.mode == SelectionMode.replace)
+    if (selectionOptions.mode.value == SelectionMode.replace)
     {
       deselect(notify: false);
     }
 
     for (final CoordinateSetI point in points)
     {
-      _addPixelWithMode(coord: point, mode: selectionOptions.mode);
+      _addPixelWithMode(coord: point, mode: selectionOptions.mode.value);
     }
     _createSelectionLines();
 
@@ -68,17 +68,17 @@ class SelectionState with ChangeNotifier
 
   void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true})
   {
-    if (selectionOptions.mode == SelectionMode.replace)
+    if (selectionOptions.mode.value == SelectionMode.replace)
     {
       deselect(notify: false);
     }
 
-    if (selectionOptions.mode != SelectionMode.replace || end.x != start.x || end.y != start.y)
+    if (selectionOptions.mode.value != SelectionMode.replace || end.x != start.x || end.y != start.y)
     {
       if (selectShape == SelectShape.rectangle) {
         for (int x = start.x; x <= end.x; x++) {
           for (int y = start.y; y <= end.y; y++) {
-            _addPixelWithMode(coord: CoordinateSetI(x: x, y: y), mode: selectionOptions.mode);
+            _addPixelWithMode(coord: CoordinateSetI(x: x, y: y), mode: selectionOptions.mode.value);
           }
         }
       }
@@ -95,7 +95,7 @@ class SelectionState with ChangeNotifier
             double dy = (y + 0.5) - centerY;
             if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
             {
-              _addPixelWithMode(coord: CoordinateSetI(x: x, y: y), mode: selectionOptions.mode);
+              _addPixelWithMode(coord: CoordinateSetI(x: x, y: y), mode: selectionOptions.mode.value);
             }
           }
         }
@@ -115,7 +115,7 @@ class SelectionState with ChangeNotifier
 
   void _addPixelWithMode({required CoordinateSetI coord, required SelectionMode mode})
   {
-    switch (selectionOptions.mode) {
+    switch (selectionOptions.mode.value) {
       case SelectionMode.replace:
       case SelectionMode.add:
         if (!selection.contains(coord)) {

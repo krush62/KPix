@@ -228,38 +228,47 @@ class ShapeOptions extends IToolOptions
             ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              flex: 1,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Corner Radius",
-                  style: Theme.of(context).textTheme.labelLarge,
-                )
+        ValueListenableBuilder(
+          valueListenable: shapeOptions.shape,
+          builder: (BuildContext context, ShapeShape shape, child)
+          {
+            return Visibility(
+              visible: shape == ShapeShape.square,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Corner Radius",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      )
+                    ),
+                  ),
+                  Expanded(
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: shapeOptions.cornerRadius,
+                      builder: (BuildContext context, int cornerRadius, child)
+                      {
+                        return Slider(
+                          value: cornerRadius.toDouble(),
+                          min: shapeOptions.cornerRadiusMin.toDouble(),
+                          max: shapeOptions.cornerRadiusMax.toDouble(),
+                          divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
+                          onChanged: (double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
+                          label: cornerRadius.round().toString(),
+                        );
+                      }
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: shapeOptions.cornerRadius,
-                builder: (BuildContext context, int cornerRadius, child)
-                {
-                  return Slider(
-                    value: cornerRadius.toDouble(),
-                    min: shapeOptions.cornerRadiusMin.toDouble(),
-                    max: shapeOptions.cornerRadiusMax.toDouble(),
-                    divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
-                    onChanged: (double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
-                    label: cornerRadius.round().toString(),
-                  );
-                }
-              ),
-            ),
-          ],
+            );
+          }
         ),
       ],
     );

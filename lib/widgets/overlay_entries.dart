@@ -149,38 +149,38 @@ class OverlayEntries
                 options.offsetY,
               ),
               child: Material(
-                  color: Colors.transparent,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: SizedBox(
-                            height: options.buttonHeight,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  onSaveFile();
-                                },
-                                child: const Text("Save Project")
-                            )
-                        ),
+                color: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(options.buttonSpacing / 2),
+                      child: SizedBox(
+                        height: options.buttonHeight,
+                        child: ElevatedButton(
+                            onPressed: () {
+                              onSaveFile();
+                            },
+                            child: const Text("Save Project")
+                        )
                       ),
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: SizedBox(
-                            height: options.buttonHeight,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  onSavePalette();
-                                },
-                                child: const Text("Save Palette")
-                            )
-                        ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(options.buttonSpacing / 2),
+                      child: SizedBox(
+                        height: options.buttonHeight,
+                        child: ElevatedButton(
+                            onPressed: () {
+                              onSavePalette();
+                            },
+                            child: const Text("Save Palette")
+                        )
                       ),
-                    ],
-                  )
+                    ),
+                  ],
+                )
               ),
             ),
           ),
@@ -201,7 +201,7 @@ class OverlayEntries
     OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     const int buttonCount = 3;
-    final double width = (options.buttonHeight + (options.buttonSpacing * 3)) * buttonCount;
+    final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
     final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return OverlayEntry(
       builder: (context) => Stack(
@@ -237,7 +237,9 @@ class OverlayEntries
                           size: options.buttonHeight),
                         color: Theme.of(context).primaryColorLight,
                         style: IconButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor)),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: Theme.of(context).primaryColor),
+                          ),
                     IconButton.outlined(
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.all(options.buttonSpacing),
@@ -247,6 +249,7 @@ class OverlayEntries
                           size: options.buttonHeight,),
                         color: Theme.of(context).primaryColorLight,
                         style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             backgroundColor: Theme.of(context).primaryColor)),
                     IconButton.outlined(
                         constraints: const BoxConstraints(),
@@ -257,6 +260,7 @@ class OverlayEntries
                           size: options.buttonHeight,),
                         color: Theme.of(context).primaryColorLight,
                         style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             backgroundColor: Theme.of(context).primaryColor)),
                   ],
                 )

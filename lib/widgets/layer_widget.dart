@@ -368,9 +368,11 @@ class _LayerWidgetState extends State<LayerWidget>
                                         minWidth: options.buttonSizeMin,
                                         minHeight: options.buttonSizeMin,
                                       ),
-                                      style: const ButtonStyle(
+                                      style: ButtonStyle(
                                         tapTargetSize: MaterialTapTargetSize
                                             .shrinkWrap,
+                                        backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : null,
+                                        iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColor) : null,
                                       ),
                                       onPressed: _visibilityButtonPressed,
                                       icon: FaIcon(
@@ -396,9 +398,11 @@ class _LayerWidgetState extends State<LayerWidget>
                                         minWidth: options.buttonSizeMin,
                                         minHeight: options.buttonSizeMin,
                                       ),
-                                      style: const ButtonStyle(
+                                      style: ButtonStyle(
                                         tapTargetSize: MaterialTapTargetSize
                                             .shrinkWrap,
+                                        backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
+                                        iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
                                       ),
                                       onPressed: _lockButtonPressed,
                                       icon: FaIcon(

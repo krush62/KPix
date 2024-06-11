@@ -157,6 +157,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
 
       print("PRIMARY DOWN");
+      appState.selectionState.notifyRepaint();
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -225,6 +226,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
+    appState.selectionState.notifyRepaint();
   }
 
 
@@ -244,9 +246,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
     }
-
-    appState.repaintNotifier.repaint();
-
 
 
     appState.setStatusBarCursorPosition(CoordinateSetI(
@@ -326,6 +325,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
         }
       }
+      appState.repaintNotifier.repaint();
     }
 
 

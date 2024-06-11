@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/painting/eraser_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -63,6 +64,7 @@ class DrawingParameters
   final CoordinateSetD? cursorPos;
   final bool primaryDown;
   final Offset primaryPressStart;
+  final LayerState currentLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -72,7 +74,8 @@ class DrawingParameters
     required this.drawingSize,
     required this.cursorPos,
     required this.primaryDown,
-    required this.primaryPressStart
+    required this.primaryPressStart,
+    required this.currentLayer
 }) :
         scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
         drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
@@ -107,7 +110,8 @@ class KPixPainter extends CustomPainter
       : super(repaint: appState.repaintNotifier)
   {
     toolPainterMap = {
-      ToolType.select: SelectionPainter(painterOptions: options)
+      ToolType.select: SelectionPainter(painterOptions: options),
+      ToolType.erase: EraserPainter(painterOptions: options),
     };
   }
 
@@ -124,7 +128,8 @@ class KPixPainter extends CustomPainter
         drawingSize: size,
         cursorPos: coords.value,
         primaryDown: primaryDown.value,
-        primaryPressStart: primaryPressStart.value
+        primaryPressStart: primaryPressStart.value,
+        currentLayer: appState.currentLayer.value!
         );
 
 

@@ -38,7 +38,7 @@ class SelectionState with ChangeNotifier
 
   SelectionState({required this.repaintNotifier});
 
-  void _notify()
+  void notifyRepaint()
   {
     selection.currentLayer!.createThumbnail(selection: selection);
     notifyListeners();
@@ -61,7 +61,7 @@ class SelectionState with ChangeNotifier
 
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
 
   }
@@ -110,7 +110,7 @@ class SelectionState with ChangeNotifier
     }
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -142,7 +142,7 @@ class SelectionState with ChangeNotifier
   void _createSelectionLines()
   {
     selectionLines.clear();
-    final selectedCoordinates = selection.getCoordinates();
+    final Iterable<CoordinateSetI> selectedCoordinates = selection.getCoordinates();
     for (final CoordinateSetI coord in selectedCoordinates)
     {
       if (coord.x == 0 || !selection.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
@@ -256,7 +256,7 @@ class SelectionState with ChangeNotifier
     _createSelectionLines();
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -267,7 +267,7 @@ class SelectionState with ChangeNotifier
     _createSelectionLines();
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -287,7 +287,7 @@ class SelectionState with ChangeNotifier
     _createSelectionLines();
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -301,7 +301,7 @@ class SelectionState with ChangeNotifier
 
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -312,7 +312,7 @@ class SelectionState with ChangeNotifier
       delete(keepSelection: true, notify: false);
       if (notify)
       {
-        _notify();
+        notifyRepaint();
       }
     }
   }
@@ -335,7 +335,7 @@ class SelectionState with ChangeNotifier
       hasCopied = true;
       if (notify)
       {
-        _notify();
+        notifyRepaint();
       }
     }
     else
@@ -383,7 +383,7 @@ class SelectionState with ChangeNotifier
 
       if (notify)
       {
-        _notify();
+        notifyRepaint();
       }
     }
     else
@@ -404,7 +404,7 @@ class SelectionState with ChangeNotifier
         _createSelectionLines();
 
         if (notify) {
-          _notify();
+          notifyRepaint();
         }
       }
       else
@@ -421,7 +421,7 @@ class SelectionState with ChangeNotifier
 
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -432,7 +432,7 @@ class SelectionState with ChangeNotifier
 
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -443,7 +443,7 @@ class SelectionState with ChangeNotifier
 
     if (notify)
     {
-      _notify();
+      notifyRepaint();
     }
   }
 
@@ -521,6 +521,7 @@ class SelectionList
     _content.remove(coord);
   }
 
+
   void clear()
   {
     for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
@@ -531,6 +532,14 @@ class SelectionList
       }
     }
     _content.clear();
+  }
+
+  void deleteDirectly(final CoordinateSetI coord)
+  {
+    if (_content.keys.contains(coord) && _content[coord] != null)
+    {
+      _content[coord] = null;
+    }
   }
 
   void delete(bool keepSelection)

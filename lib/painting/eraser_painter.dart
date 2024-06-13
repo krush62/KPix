@@ -7,7 +7,6 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class EraserPainter extends IToolPainter
@@ -97,7 +96,7 @@ class EraserPainter extends IToolPainter
   @override
   void drawTool({required DrawingParameters drawParams})
   {
-
+    //nothing to do
   }
 
 

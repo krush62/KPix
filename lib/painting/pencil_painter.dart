@@ -128,9 +128,7 @@ class PencilPainter extends IToolPainter
   }
 
   @override
-  void drawExtras({required DrawingParameters drawParams}) {
-    // TODO: implement drawExtras
-  }
+  void drawExtras({required DrawingParameters drawParams}){}
 
   @override
   void drawTool({required DrawingParameters drawParams}) {

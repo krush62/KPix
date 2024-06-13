@@ -49,6 +49,7 @@ enum PreferenceDouble
 
   Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
   Layout_Canvas_StylusZoomStepDistance(defaultValue: 10.0),
+  Layout_Canvas_StylusToolSizeDistance(defaultValue: 5.0),
   Layout_Canvas_TouchZoomStepDistance(defaultValue: 25.0),
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
@@ -476,6 +477,7 @@ class PreferenceManager
         longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),
         stylusZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance),
         touchZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_TouchZoomStepDistance),
+        stylusToolSizeDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusToolSizeDistance),
         minVisibilityFactor: getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor));
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Tools_Padding),

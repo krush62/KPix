@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -110,4 +112,15 @@ class EraserOptions extends IToolOptions
     );
   }
 
+  @override
+  void changeSize(int steps, int originalValue)
+  {
+    size.value = min(max(originalValue + steps, sizeMin), sizeMax);
+  }
+
+  @override
+  int getSize()
+  {
+    return size.value;
+  }
 }

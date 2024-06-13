@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -273,4 +275,17 @@ class ShapeOptions extends IToolOptions
       ],
     );
   }
+
+  @override
+  void changeSize(int steps, int originalValue)
+  {
+    strokeWidth.value = min(max(originalValue + steps, strokeWidthMin), strokeWidthMax);
+  }
+
+  @override
+  int getSize()
+  {
+    return strokeWidth.value;
+  }
+
 }

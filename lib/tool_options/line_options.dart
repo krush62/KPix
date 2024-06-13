@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -102,4 +104,17 @@ class LineOptions extends IToolOptions
       ],
     );
   }
+
+  @override
+  void changeSize(int steps, int originalValue)
+  {
+    width.value = min(max(originalValue + steps, widthMin), widthMax);
+  }
+
+  @override
+  int getSize()
+  {
+    return width.value;
+  }
+
 }

@@ -12,5 +12,14 @@ class ColorPickOptions extends IToolOptions
   {
     return Container();
   }
+
+  @override
+  void changeSize(int steps, int originalValue) {}
+
+  @override
+  int getSize()
+  {
+    return 0;
+  }
 }
 

@@ -172,4 +172,14 @@ class SelectOptions extends IToolOptions
       ],
     );
   }
+
+  @override
+  void changeSize(int steps, int originalValue){}
+
+  @override
+  int getSize()
+  {
+    return 0;
+  }
+
 }

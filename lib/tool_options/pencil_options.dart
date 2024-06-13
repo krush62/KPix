@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -170,4 +172,17 @@ class PencilOptions extends IToolOptions
       ],
     );
   }
+
+  @override
+  void changeSize(int steps, int originalValue)
+  {
+    size.value = min(max(originalValue + steps, sizeMin), sizeMax);
+  }
+
+  @override
+  int getSize()
+  {
+    return size.value;
+  }
+
 }

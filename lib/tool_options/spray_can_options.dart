@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -147,4 +149,17 @@ class SprayCanOptions extends IToolOptions
       ],
     );
   }
+
+  @override
+  void changeSize(int steps, int originalValue)
+  {
+    radius.value = min(max(originalValue + steps, radiusMin), radiusMax);
+  }
+
+  @override
+  int getSize()
+  {
+    return radius.value;
+  }
+
 }

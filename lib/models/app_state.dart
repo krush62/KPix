@@ -138,6 +138,17 @@ class AppState
     setStatusBarZoomFactor(getZoomLevel());
   }
 
+
+  int getCurrentToolSize()
+  {
+    return currentToolOptions.getSize();
+  }
+
+  void setToolSize(final int steps, final int originalValue)
+  {
+    currentToolOptions.changeSize(steps, originalValue);
+  }
+
   void deleteRamp(final KPalRampData ramp)
   {
     ColorReference? col = getSelectedColorFromRampByUuid(ramp);

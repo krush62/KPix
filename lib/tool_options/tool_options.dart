@@ -43,7 +43,10 @@ const Map<SelectionMode, String> selectionModeStringMap =
   SelectionMode.intersect : "Intersect"
 };
 
-abstract class IToolOptions{}
+abstract class IToolOptions{
+  int getSize();
+  void changeSize(int steps, int originalValue);
+}
 
 class ToolOptions
 {
@@ -119,7 +122,6 @@ class ToolOptions
   final LineOptions lineOptions;
   final WandOptions wandOptions;
   final CurveOptions curveOptions;
-
 
 }
 

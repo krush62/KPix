@@ -88,6 +88,11 @@ class CoordinateSetI
 
   CoordinateSetI({required this.x, required this.y});
 
+  factory CoordinateSetI.from(final CoordinateSetI other)
+  {
+    return CoordinateSetI(x: other.x, y: other.y);
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

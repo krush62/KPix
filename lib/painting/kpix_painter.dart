@@ -3,14 +3,13 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/eraser_painter.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-
-
 
 class KPixPainterOptions
 {
@@ -103,6 +102,7 @@ class KPixPainter extends CustomPainter
       ToolType.select: SelectionPainter(painterOptions: options),
       ToolType.erase: EraserPainter(painterOptions: options),
       ToolType.pencil: PencilPainter(painterOptions: options),
+      ToolType.pick: ColorPickPainter(painterOptions: options),
     };
   }
 
@@ -315,19 +315,8 @@ class KPixPainter extends CustomPainter
     {
       if (!isDragging.value && _isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
       {
-        IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
-        if (toolPainter != null)
-        {
-          toolPainter.drawCursor(
-              drawParams: drawParams);
-        }
-        else
-        {
-          //TODO TEMP
-          drawParams.paint.style = PaintingStyle.fill;
-          drawParams.paint.color = Colors.red;
-          drawParams.canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), 10, drawParams.paint);
-        }
+        final IToolPainter toolPainter = toolPainterMap[appState.selectedTool.value]!;
+        toolPainter.drawCursor(drawParams: drawParams);
       }
       else
       {

@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
@@ -162,7 +163,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
 
       print("PRIMARY DOWN");
-      appState.selectionState.notifyRepaint();
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -231,7 +231,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
-    appState.selectionState.notifyRepaint();
+    _updateLocation(details);
   }
 
 
@@ -251,7 +251,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
     }
-
 
     appState.setStatusBarCursorPosition(CoordinateSetI(
         x: (_cursorPos.value!.x - _canvasOffset.value.dx) ~/ appState.getZoomFactor(),
@@ -350,7 +349,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
         }
       }
-      appState.repaintNotifier.repaint();
     }
 
 
@@ -383,6 +381,18 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
+    else if (appState.selectedTool.value == ToolType.pick)
+    {
+      if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
+      {
+        final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
+        if (colorPickPainter.selectedColor != null)
+        {
+          appState.selectedColor.value = colorPickPainter.selectedColor!;
+        }
+      }
+    }
+    appState.repaintNotifier.repaint();
   }
 
   void _hover(PointerHoverEvent details)

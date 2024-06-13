@@ -4,23 +4,13 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/eraser_painter.dart';
+import 'package:kpix/painting/itool_painter.dart';
+import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
-abstract class IToolPainter
-{
-  final AppState appState = GetIt.I.get<AppState>();
-  final KPixPainterOptions painterOptions;
 
-  IToolPainter({required this.painterOptions});
-
-  void drawTool({
-    required DrawingParameters drawParams});
-
-  void drawCursor({required DrawingParameters drawParams});
-  void drawExtras({required DrawingParameters drawParams});
-}
 
 class KPixPainterOptions
 {
@@ -112,6 +102,7 @@ class KPixPainter extends CustomPainter
     toolPainterMap = {
       ToolType.select: SelectionPainter(painterOptions: options),
       ToolType.erase: EraserPainter(painterOptions: options),
+      ToolType.pencil: PencilPainter(painterOptions: options),
     };
   }
 
@@ -135,6 +126,7 @@ class KPixPainter extends CustomPainter
 
     //TODO this is too slow (solid color?)
     _drawCheckerboard(drawParams: drawParams);
+    _calculateTool(drawParams: drawParams);
     _drawLayers(drawParams: drawParams);
     _drawSelection(drawParams: drawParams);
     _drawToolOverlay(drawParams: drawParams);
@@ -292,6 +284,12 @@ class KPixPainter extends CustomPainter
     }
   }
 
+  void _calculateTool({required final DrawingParameters drawParams})
+  {
+    IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
+    toolPainter?.calculate(drawParams: drawParams);
+  }
+
   void _drawToolOverlay({required final DrawingParameters drawParams})
   {
     if (coords.value != null)
@@ -359,16 +357,14 @@ class KPixPainter extends CustomPainter
               if (selColor != null)
               {
                 foundInSelection = true;
-                drawParams.paint.color =
-                    selColor.ramp.colors[selColor.colorIndex].value.color;
+                drawParams.paint.color = selColor.getIdColor().color;
                 drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
                     offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
               }
             }
             ColorReference? layerColor = layers[i].data[x][y];
             if (layerColor != null && !foundInSelection) {
-              drawParams.paint.color =
-                  layerColor.ramp.colors[layerColor.colorIndex].value.color;
+              drawParams.paint.color = layerColor.getIdColor().color;
               drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
                   offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
               break;
@@ -421,10 +417,9 @@ class KPixPainter extends CustomPainter
 
   static int getClosestPixel({required double value, required double pixelSize})
   {
-    double remainder = value % pixelSize;
+    final double remainder = value % pixelSize;
     double lowerMultiple = value - remainder;
-    double upperMultiple = value + (pixelSize - remainder);
-    return (value - lowerMultiple) <= (upperMultiple - value) ? (lowerMultiple / pixelSize).round()  : (upperMultiple / pixelSize).round();
+    return (lowerMultiple / pixelSize).round();
   }
 
 

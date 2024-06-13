@@ -1,3 +1,6 @@
+
+import 'package:flutter/material.dart';
+
 enum ShaderDirection
 {
   left,
@@ -10,16 +13,15 @@ class ShaderOptions
   final bool onlyCurrentRampEnabledDefault;
   final bool isEnabledDefault;
 
-
-  ShaderDirection shaderDirection = ShaderDirection.left;
-  bool onlyCurrentRampEnabled = false;
-  bool isEnabled = true;
+  ValueNotifier<ShaderDirection> shaderDirection = ValueNotifier(ShaderDirection.left);
+  ValueNotifier<bool> onlyCurrentRampEnabled = ValueNotifier(false);
+  ValueNotifier<bool> isEnabled = ValueNotifier(true);
 
   ShaderOptions({required this.shaderDirectionDefault, required this.onlyCurrentRampEnabledDefault, required this.isEnabledDefault})
   {
-    shaderDirection = shaderDirectionDefault ? ShaderDirection.right : ShaderDirection.left;
-    onlyCurrentRampEnabled = onlyCurrentRampEnabledDefault;
-    isEnabled = isEnabledDefault;
+    shaderDirection.value = shaderDirectionDefault ? ShaderDirection.right : ShaderDirection.left;
+    onlyCurrentRampEnabled.value = onlyCurrentRampEnabledDefault;
+    isEnabled.value = isEnabledDefault;
   }
 
 }

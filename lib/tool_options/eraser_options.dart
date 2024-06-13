@@ -1,26 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
-
-enum EraserShape
-{
-  round,
-  square
-}
-
-const List<EraserShape> eraserShapeList = [ EraserShape.round, EraserShape.square];
-
-const Map<int, EraserShape> _eraserShapeIndexMap =
-{
-  0: EraserShape.round,
-  1: EraserShape.square
-};
-
-const Map<EraserShape, String> eraserShapeStringMap =
-{
-  EraserShape.round: "Round",
-  EraserShape.square: "Square"
-};
 
 class EraserOptions extends IToolOptions
 {
@@ -30,7 +11,7 @@ class EraserOptions extends IToolOptions
   final int shapeDefault;
 
   ValueNotifier<int> size = ValueNotifier(1);
-  ValueNotifier<EraserShape> shape = ValueNotifier(EraserShape.round);
+  ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
 
   EraserOptions({
     required this.sizeMin,
@@ -39,7 +20,7 @@ class EraserOptions extends IToolOptions
     required this.shapeDefault})
   {
     size.value = sizeDefault;
-    shape.value = _eraserShapeIndexMap[shapeDefault] ?? EraserShape.round;
+    shape.value = pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
   }
 
   static Column getWidget({
@@ -103,20 +84,20 @@ class EraserOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<EraserShape>(
+              child: ValueListenableBuilder<PencilShape>(
                 valueListenable: eraserOptions.shape,
-                builder: (BuildContext context, EraserShape shape, child)
+                builder: (BuildContext context, PencilShape shape, child)
                 {
                   return DropdownButton(
                     value: shape,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
-                    onChanged: (EraserShape? eShape) {eraserOptions.shape.value = eShape!;},
-                    items: eraserShapeList.map<DropdownMenuItem<EraserShape>>((EraserShape value) {
-                      return DropdownMenuItem<EraserShape>(
+                    onChanged: (PencilShape? eShape) {eraserOptions.shape.value = eShape!;},
+                    items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((PencilShape value) {
+                      return DropdownMenuItem<PencilShape>(
                         value: value,
-                        child: Text(eraserShapeStringMap[value]!),
+                        child: Text(pencilShapeStringMap[value]!),
                       );
                     }).toList(),
                   );

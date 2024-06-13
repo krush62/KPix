@@ -5,11 +5,12 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class ColorRampRowWidget extends StatefulWidget {
   final KPalRampData? rampData;
-  final ColorSelectedFn? colorSelectedFn;
+  final ColorReferenceSelectedFn? colorSelectedFn;
   final ColorRampFn? colorsUpdatedFn;
   final ColorRampFn? deleteRowFn;
   final AddNewRampFn? addNewRampFn;
@@ -30,7 +31,7 @@ class ColorRampRowWidget extends StatefulWidget {
 
   factory ColorRampRowWidget({
     KPalRampData? rampData,
-    ColorSelectedFn? colorSelectedFn,
+    ColorReferenceSelectedFn? colorSelectedFn,
     AddNewRampFn? addNewRampFn,
     ColorRampFn? deleteRowFn,
     ColorRampFn? colorsUpdatedFn,
@@ -48,6 +49,26 @@ class ColorRampRowWidget extends StatefulWidget {
     );
   }
 
+  void colorSelected(final IdColor newColor)
+  {
+    if (colorSelectedFn != null && rampData != null)
+    {
+      int index = -1;
+      for (int i = 0; i < rampData!.colors.length; i++)
+      {
+        if (rampData!.colors[i].value == newColor)
+        {
+          index = i;
+          break;
+        }
+      }
+      if (index != -1)
+      {
+        colorSelectedFn!(ColorReference(colorIndex: index, ramp: rampData!));
+      }
+    }
+  }
+
   void _createWidgetList({
     required ColorRampFn createKPal
 })
@@ -59,7 +80,7 @@ class ColorRampRowWidget extends StatefulWidget {
       {
         widgetList.add(ColorEntryWidget(
             color: color.value,
-            colorSelectedFn: colorSelectedFn,
+            colorSelectedFn: colorSelected,
             ));
 
       }

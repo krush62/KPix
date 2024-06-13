@@ -6,7 +6,7 @@ class KPalRampData
   final String uuid;
   final List<ValueNotifier<IdColor>> colors = [];
 
-  KPalRampData({
+    KPalRampData({
     required this.uuid,
     required this.settings
   })

@@ -103,6 +103,31 @@ class CoordinateSetI
   String toString() {
     return "$x|$y";
   }
+
+  bool isAdjacent(final CoordinateSetI other, final bool withDiagonal)
+  {
+    bool adj = true;
+    if (withDiagonal)
+    {
+      if (other.x < x - 1 || other.x > x + 1 || other.y < y - 1 ||other.y > y + 1)
+      {
+        adj = false;
+      }
+    }
+    else
+    {
+      if (other.x != x && other.y != y && other.x < x - 1 && other.x > x + 1 && other.y < y - 1 && other.y > y + 1)
+      {
+        adj = false;
+      }
+    }
+    return adj;
+  }
+
+  bool isDiagonal(final CoordinateSetI other)
+  {
+    return (x - other.x).abs() == 1 && (y - other.y).abs() == 1;
+  }
 }
 
 
@@ -217,6 +242,38 @@ class Helper
     int maxX = coordList.reduce((a, b) => a.x > b.x ? a : b).x;
     int maxY = coordList.reduce((a, b) => a.y > b.y ? a : b).y;
     return CoordinateSetI(x: maxX, y: maxY);
+  }
+
+
+  static List<CoordinateSetI> bresenham(CoordinateSetI start, CoordinateSetI end) {
+    List<CoordinateSetI> points = [];
+
+    int x0 = start.x;
+    int y0 = start.y;
+    int x1 = end.x;
+    int y1 = end.y;
+
+    int dx = (x1 - x0).abs();
+    int dy = (y1 - y0).abs();
+    int sx = x0 < x1 ? 1 : -1;
+    int sy = y0 < y1 ? 1 : -1;
+    int err = dx - dy;
+
+    while (true) {
+      points.add(CoordinateSetI(x: x0, y: y0));
+      if (x0 == x1 && y0 == y1) break;
+      int e2 = err * 2;
+      if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+
+    return points;
   }
 }
 

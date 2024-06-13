@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
+import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 
 class SelectionPainter extends IToolPainter
 {
@@ -18,12 +20,16 @@ class SelectionPainter extends IToolPainter
   List<CoordinateSetI> polygonPoints = [];
   bool polygonDown = false;
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _normEndPos = CoordinateSetI(x: 0, y: 0);
   Offset _lastStartPos = const Offset(0,0);
+  bool _isStartOnCanvas = false;
+  bool _shouldMove = false;
 
   SelectionPainter({required super.painterOptions});
 
+
   @override
-  void drawTool({required final DrawingParameters drawParams})
+  void calculate({required DrawingParameters drawParams})
   {
     if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
     {
@@ -31,50 +37,43 @@ class SelectionPainter extends IToolPainter
       _normStartPos.y = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
       _lastStartPos = drawParams.primaryPressStart;
     }
-
-    if (drawParams.primaryDown &&
-        drawParams.cursorPos != null &&
-        _normStartPos.x >= 0 &&
-        _normStartPos.y >= 0 &&
-        _normStartPos.x < appState.canvasWidth &&
-        _normStartPos.y < appState.canvasHeight
-        )
+    if (drawParams.cursorPos != null)
     {
-      CoordinateSetI normalizedEnd = CoordinateSetI(
-          x: KPixPainter.getClosestPixel(
-              value: drawParams.cursorPos!.x - drawParams.offset.dx,
-              pixelSize: drawParams.pixelSize.toDouble())
-              .round(),
-          y: KPixPainter.getClosestPixel(
-              value: drawParams.cursorPos!.y - drawParams.offset.dy,
-              pixelSize: drawParams.pixelSize.toDouble())
-              .round());
+      _normEndPos.x = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _normEndPos.y = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+    }
 
-
-      //MOVE
-      if (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)))
+    _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasWidth && _normStartPos.y < appState.canvasHeight;
+    if (_isStartOnCanvas)
+    {
+      _shouldMove = (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden) && (movementStarted ||
+          ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+      if (_shouldMove)
       {
         movementStarted = true;
-        appState.selectionState.setOffset(CoordinateSetI(x: normalizedEnd.x - _normStartPos.x, y: normalizedEnd.y - _normStartPos.y));
+        appState.selectionState.setOffset(CoordinateSetI(
+            x: _normEndPos.x - _normStartPos.x,
+            y: _normEndPos.y - _normStartPos.y));
       }
-      else //DRAW
+      else
       {
-        if (options.shape.value == SelectShape.polygon) {
+        if (options.shape.value == SelectShape.polygon)
+        {
           polygonDown = true;
         }
-        else {
-          drawParams.paint.style = PaintingStyle.stroke;
-          selectionStart.x = _normStartPos.x < normalizedEnd.x
+        else
+        {
+          selectionStart.x = _normStartPos.x < _normEndPos.x
               ? _normStartPos.x
-              : normalizedEnd.x;
-          selectionStart.y = _normStartPos.y < normalizedEnd.y
+              : _normEndPos.x;
+          selectionStart.y = _normStartPos.y < _normEndPos.y
               ? _normStartPos.y
-              : normalizedEnd.y;
-          selectionEnd.x = _normStartPos.x < normalizedEnd.x
-              ? (normalizedEnd.x)
+              : _normEndPos.y;
+          selectionEnd.x = _normStartPos.x < _normEndPos.x
+              ? (_normEndPos.x)
               : (_normStartPos.x);
-          selectionEnd.y = _normStartPos.y < normalizedEnd.y
-              ? (normalizedEnd.y)
+          selectionEnd.y = _normStartPos.y < _normEndPos.y
+              ? (_normEndPos.y)
               : (_normStartPos.y);
 
           if (selectionStart.x < 0) {
@@ -97,13 +96,13 @@ class SelectionPainter extends IToolPainter
             final int width = selectionEnd.x - selectionStart.x;
             final int height = selectionEnd.y - selectionStart.y;
             if (width > height) {
-              if (_normStartPos.x < normalizedEnd.x) {
+              if (_normStartPos.x < _normEndPos.x) {
                 selectionEnd.x = selectionStart.x + height;
               } else {
                 selectionStart.x = selectionEnd.x - height;
               }
             } else {
-              if (_normStartPos.y < normalizedEnd.y) {
+              if (_normStartPos.y < _normEndPos.y) {
                 selectionEnd.y = selectionStart.y + width;
               } else {
                 selectionStart.y = selectionEnd.y - width;
@@ -111,38 +110,6 @@ class SelectionPainter extends IToolPainter
             }
           }
           hasNewSelection = true;
-
-
-          final CoordinateSetD cursorStartPos = CoordinateSetD(
-              x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
-              y: drawParams.offset.dy +
-                  selectionStart.y * drawParams.pixelSize);
-          final CoordinateSetD cursorEndPos = CoordinateSetD(
-              x: drawParams.offset.dx +
-                  (selectionEnd.x + 1) * drawParams.pixelSize,
-              y: drawParams.offset.dy +
-                  (selectionEnd.y + 1) * drawParams.pixelSize);
-
-          //RECTANGLE
-          if (options.shape.value == SelectShape.rectangle) {
-            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-            drawParams.paint.color = Colors.black;
-            drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-            drawParams.paint.color = Colors.white;
-            drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-          }
-
-          //ELLIPSE
-          else if (options.shape.value == SelectShape.ellipse)
-          {
-            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-            drawParams.paint.color = Colors.black;
-            drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-            drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-            drawParams.paint.color = Colors.white;
-            drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-          }
         }
       }
     }
@@ -195,6 +162,46 @@ class SelectionPainter extends IToolPainter
     }
   }
 
+
+  @override
+  void drawTool({required final DrawingParameters drawParams})
+  {
+    if (_isStartOnCanvas && !_shouldMove && !polygonDown)
+    {
+      drawParams.paint.style = PaintingStyle.stroke;
+      final CoordinateSetD cursorStartPos = CoordinateSetD(
+          x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
+          y: drawParams.offset.dy +
+              selectionStart.y * drawParams.pixelSize);
+      final CoordinateSetD cursorEndPos = CoordinateSetD(
+          x: drawParams.offset.dx +
+              (selectionEnd.x + 1) * drawParams.pixelSize,
+          y: drawParams.offset.dy +
+              (selectionEnd.y + 1) * drawParams.pixelSize);
+
+      //RECTANGLE
+      if (options.shape.value == SelectShape.rectangle) {
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = Colors.black;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+        drawParams.paint.color = Colors.white;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+      }
+
+      //ELLIPSE
+      else if (options.shape.value == SelectShape.ellipse)
+      {
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = Colors.black;
+        drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+        drawParams.paint.color = Colors.white;
+        drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+      }
+    }
+  }
+
   @override
   void drawCursor({
     required DrawingParameters drawParams})
@@ -203,12 +210,8 @@ class SelectionPainter extends IToolPainter
     {
       drawParams.paint.style = PaintingStyle.stroke;
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + KPixPainter.getClosestPixel(
-              value: drawParams.cursorPos!.x - drawParams.offset.dx,
-              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize,
-          y: drawParams.offset.dy + KPixPainter.getClosestPixel(
-              value: drawParams.cursorPos!.y - drawParams.offset.dy,
-              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize);
+          x: drawParams.offset.dx + _normEndPos.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + _normEndPos.y * drawParams.pixelSize);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = Colors.black;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);

@@ -10,7 +10,7 @@ enum PencilShape
 
 const List<PencilShape> pencilShapeList = [ PencilShape.round, PencilShape.square];
 
-const Map<int, PencilShape> _pencilShapeIndexMap =
+const Map<int, PencilShape> pencilShapeIndexMap =
 {
   0: PencilShape.round,
   1: PencilShape.square
@@ -42,7 +42,7 @@ class PencilOptions extends IToolOptions
     required this.pixelPerfectDefault})
   {
     size.value = sizeDefault;
-    shape.value = _pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
+    shape.value = pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
     pixelPerfect.value = pixelPerfectDefault;
   }
 
@@ -147,13 +147,19 @@ class PencilOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: pencilOptions.pixelPerfect,
-                  builder: (BuildContext context, bool pp, child)
+                child: ValueListenableBuilder<int>(
+                  valueListenable: pencilOptions.size,
+                  builder: (BuildContext context, int size, child)
                   {
-                    return Switch(
-                        onChanged: (bool newVal) {pencilOptions.pixelPerfect.value = newVal;},
-                        value: pp
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: pencilOptions.pixelPerfect,
+                      builder: (BuildContext context, bool pp, child)
+                      {
+                        return Switch(
+                          onChanged: size == 1 ? (bool newVal) {pencilOptions.pixelPerfect.value = newVal;} : null,
+                          value: pp
+                        );
+                      },
                     );
                   },
                 ),

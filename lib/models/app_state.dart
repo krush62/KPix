@@ -26,7 +26,7 @@ class AppState
   late IToolOptions currentToolOptions;
   final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
   final Map<ToolType, bool> _selectionMap = {};
-  final ValueNotifier<IdColor?> selectedColor = ValueNotifier(IdColor(color: Colors.black, uuid: ""));
+  final ValueNotifier<ColorReference?> selectedColor = ValueNotifier(null);
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
   final ValueNotifier<LayerState?> currentLayer = ValueNotifier(null);
   final RepaintNotifier repaintNotifier = RepaintNotifier();
@@ -140,7 +140,7 @@ class AppState
 
   void deleteRamp(final KPalRampData ramp)
   {
-    IdColor? col = getSelectedColorFromRampByUuid(ramp);
+    ColorReference? col = getSelectedColorFromRampByUuid(ramp);
     if (col != null)
     {
       selectedColor.value = null;
@@ -154,7 +154,7 @@ class AppState
   {
     List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
     colorRamps.value = rampDataList;
-    IdColor? col = getSelectedColorFromRampByUuid(ramp);
+    ColorReference? col = getSelectedColorFromRampByUuid(ramp);
     if (col != null)
     {
       selectedColor.value = col;
@@ -162,14 +162,14 @@ class AppState
     repaintNotifier.repaint();
   }
 
-  IdColor? getSelectedColorFromRampByUuid(final KPalRampData ramp)
+  ColorReference? getSelectedColorFromRampByUuid(final KPalRampData ramp)
   {
-    IdColor? col;
+    ColorReference? col;
     for (int j = 0; j < ramp.colors.length; j++)
     {
-      if (selectedColor.value != null && ramp.colors[j].value.uuid == selectedColor.value!.uuid)
+      if (selectedColor.value != null && ramp.colors[j].value.uuid == selectedColor.value!.getIdColor().uuid)
       {
-        col = ramp.colors[j].value;
+        col = ColorReference(colorIndex: j, ramp: ramp);
         break;
       }
     }
@@ -181,15 +181,15 @@ class AppState
   {
     const Uuid uuid = Uuid();
     List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
-    rampDataList.add(
-      KPalRampData(
+    final KPalRampData newRamp = KPalRampData(
         uuid: uuid.v1(),
         settings: KPalRampSettings(
-          constraints: prefs.kPalConstraints
+            constraints: prefs.kPalConstraints
         )
-      )
     );
+    rampDataList.add(newRamp);
     colorRamps.value = rampDataList;
+    selectedColor.value ??= ColorReference(colorIndex: 0, ramp: newRamp);
   }
 
   LayerState addNewLayer({bool select = false, HashMap<CoordinateSetI, ColorReference?>? content})
@@ -388,7 +388,7 @@ class AppState
     layers.value = layerList;
   }
 
-  void colorSelected(final IdColor color)
+  void colorSelected(final ColorReference color)
   {
     selectedColor.value = color;
   }

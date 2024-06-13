@@ -9,6 +9,7 @@ class ShaderWidgetOptions {
 }
 
 class ShaderWidget extends StatefulWidget {
+
   final TextStyle? titleStyle;
   final TextStyle? labelStyle;
 
@@ -26,97 +27,106 @@ class _ShaderWidgetState extends State<ShaderWidget> {
   final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final ShaderWidgetOptions shaderWidgetOptions = GetIt.I.get<PreferenceManager>().shaderWidgetOptions;
 
-  void _enableSwitchChanged(bool newVal) {
-    setState(() {
-      shaderOptions.isEnabled = newVal;
-    });
-  }
-
-  void _currentRampSwitchChanged(bool newVal) {
-    setState(() {
-      shaderOptions.onlyCurrentRampEnabled = newVal;
-    });
-  }
-
-  void _directionSwitchChanged(bool newVal) {
-    setState(() {
-      shaderOptions.shaderDirection = newVal ? ShaderDirection.right : ShaderDirection.left;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding (
-        padding: EdgeInsets.all(shaderWidgetOptions.outSidePadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text("Shading",
-                      textAlign: TextAlign.start, style: shaderOptions.isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
-                    child: Text("Enabled",
-                        textAlign: TextAlign.end, style: widget.labelStyle),
+      padding: EdgeInsets.all(shaderWidgetOptions.outSidePadding),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: shaderOptions.isEnabled,
+        builder: (BuildContext context, bool isEnabled, child)
+        {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    //TODO magic
+                    flex: 3,
+                    child: GestureDetector(
+                      onTap: () {shaderOptions.isEnabled.value = !isEnabled;},
+                      child: Text("Shading",
+                          textAlign: TextAlign.start, style: isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
+                    ),
                   ),
-                ),
-                Expanded(
+                  Expanded(
+                    //TODO magic
+                    flex: 2,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
+                      child: Text("Enabled",
+                          textAlign: TextAlign.end, style: widget.labelStyle),
+                    ),
+                  ),
+                  Expanded(
+                    //TODO magic
                     flex: 1,
                     child: Switch(
-                      onChanged: _enableSwitchChanged,
-                      value: shaderOptions.isEnabled,
+                      onChanged: (bool newState) {
+                        shaderOptions.isEnabled.value = newState;
+                      },
+                      value: isEnabled,
                     )
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
-                    child: Text("Current Ramp Only",
-                        textAlign: TextAlign.start, style: widget.labelStyle),
                   ),
-                ),
-                Expanded(
-                    flex: 1,
-                    child: Switch(
-                      onChanged: shaderOptions.isEnabled
-                          ? _currentRampSwitchChanged
-                          : null,
-                      value: shaderOptions.onlyCurrentRampEnabled,
-                    )
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
-                    child: Text("Direction",
-                        textAlign: TextAlign.end, style: widget.labelStyle),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
+                      child: Text("Current Ramp Only",
+                          textAlign: TextAlign.start, style: widget.labelStyle),
+                    ),
                   ),
-                ),
-                Expanded(
+                  Expanded(
+                      flex: 1,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: shaderOptions.onlyCurrentRampEnabled,
+                        builder: (BuildContext context, bool onlyCurrentRampEnabled, child)
+                        {
+                          return Switch(
+                            onChanged: isEnabled
+                                ? (bool newState) { shaderOptions.onlyCurrentRampEnabled.value = newState;}
+                                : null,
+                            value: onlyCurrentRampEnabled,
+                          );
+                        },
+
+                      )
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
+                      child: Text("Direction",
+                          textAlign: TextAlign.end, style: widget.labelStyle),
+                    ),
+                  ),
+                  Expanded(
                     flex: 1,
-                    child: Switch(
-                      onChanged: shaderOptions.isEnabled
-                          ? _directionSwitchChanged
-                          : null,
-                      value: shaderOptions.shaderDirection == ShaderDirection.right,
+                    child: ValueListenableBuilder<ShaderDirection>(
+                      valueListenable: shaderOptions.shaderDirection,
+                      builder: (BuildContext context, ShaderDirection direction, child)
+                      {
+                        return Switch(
+                          onChanged: isEnabled
+                              ? (bool newState) {shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
+                              : null,
+                          value: direction == ShaderDirection.right,
+                        );
+                      },
                     )
-                ),
-              ],
-            ),
-          ],
-        )
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      )
     );
   }
 }

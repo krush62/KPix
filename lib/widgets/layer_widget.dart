@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -77,6 +76,21 @@ class ColorReference
   final KPalRampData ramp;
   final int colorIndex;
   ColorReference({required this.colorIndex, required this.ramp});
+  IdColor getIdColor()
+  {
+    return ramp.colors[colorIndex].value;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ColorReference &&
+          runtimeType == other.runtimeType &&
+          ramp == other.ramp &&
+          colorIndex == other.colorIndex;
+
+  @override
+  int get hashCode => ramp.hashCode ^ colorIndex.hashCode;
 }
 
 class LayerState

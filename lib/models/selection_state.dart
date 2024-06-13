@@ -54,7 +54,6 @@ class SelectionState with ChangeNotifier
 
     for (final CoordinateSetI point in points)
     {
-
       _addPixelWithMode(coord: point, mode: selectionOptions.mode.value);
     }
     _createSelectionLines();
@@ -293,11 +292,24 @@ class SelectionState with ChangeNotifier
 
   void delete({final bool notify = true, bool keepSelection = true})
   {
-    selection.delete(keepSelection);
-    if (!keepSelection)
+    if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      _createSelectionLines();
+      GetIt.I.get<AppState>().showMessage("Cannot delete from hidden layer!");
     }
+    else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
+    {
+      GetIt.I.get<AppState>().showMessage("Cannot delete from locked layer!");
+    }
+    else
+    {
+      selection.delete(keepSelection);
+      if (!keepSelection)
+      {
+        _createSelectionLines();
+      }
+    }
+
+
 
     if (notify)
     {
@@ -307,7 +319,15 @@ class SelectionState with ChangeNotifier
 
   void cut({final bool notify = true, final bool keepSelection = false})
   {
-    if (copy(notify: false, keepSelection: true))
+    if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+    {
+      GetIt.I.get<AppState>().showMessage("Cannot cut from hidden layer!");
+    }
+    else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
+    {
+      GetIt.I.get<AppState>().showMessage("Cannot cut from locked layer!");
+    }
+    else if (copy(notify: false, keepSelection: true))
     {
       delete(keepSelection: true, notify: false);
       if (notify)
@@ -396,7 +416,16 @@ class SelectionState with ChangeNotifier
   {
     if (clipboard != null && selection.currentLayer != null) //should always be the case
     {
-      if (selection.currentLayer!.lockState.value != LayerLockState.locked) {
+      if (selection.currentLayer!.lockState.value == LayerLockState.locked)
+      {
+        GetIt.I.get<AppState>().showMessage("Cannot paste to a locked layer!");
+      }
+      else if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+      {
+        GetIt.I.get<AppState>().showMessage("Cannot paste to a hidden layer!");
+      }
+      else
+      {
         deselect(notify: false);
         for (final CoordinateSetI key in clipboard!.keys) {
           selection.addDirectly(key, clipboard![key]);
@@ -407,43 +436,72 @@ class SelectionState with ChangeNotifier
           notifyRepaint();
         }
       }
-      else
-      {
-        GetIt.I.get<AppState>().showMessage("Cannot paste to a locked layer!");
-      }
     }
   }
 
   void flipH({final bool notify = true})
   {
-    selection.flipH();
-    _createSelectionLines();
-
-    if (notify)
+    if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      notifyRepaint();
+      GetIt.I.get<AppState>().showMessage("Cannot transform on a hidden layer!");
+    }
+    else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
+    {
+      GetIt.I.get<AppState>().showMessage("Cannot transform on a locked layer!");
+    }
+    else
+    {
+      selection.flipH();
+      _createSelectionLines();
+
+      if (notify)
+      {
+        notifyRepaint();
+      }
     }
   }
 
   void flipV({final bool notify = true})
   {
-    selection.flipV();
-    _createSelectionLines();
-
-    if (notify)
+    if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      notifyRepaint();
+      GetIt.I.get<AppState>().showMessage("Cannot transform on a hidden layer!");
+    }
+    else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
+    {
+      GetIt.I.get<AppState>().showMessage("Cannot transform on a locked layer!");
+    }
+    else
+    {
+      selection.flipV();
+      _createSelectionLines();
+
+      if (notify)
+      {
+        notifyRepaint();
+      }
     }
   }
 
   void rotate({final bool notify = true})
   {
-    selection.rotate90cw();
-    _createSelectionLines();
-
-    if (notify)
+    if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      notifyRepaint();
+      GetIt.I.get<AppState>().showMessage("Cannot transform on a hidden layer!");
+    }
+    else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
+    {
+      GetIt.I.get<AppState>().showMessage("Cannot transform on a locked layer!");
+    }
+    else
+    {
+      selection.rotate90cw();
+      _createSelectionLines();
+
+      if (notify)
+      {
+        notifyRepaint();
+      }
     }
   }
 
@@ -458,14 +516,6 @@ class SelectionState with ChangeNotifier
     selection.resetLastOffset();
   }
 }
-
-
-
-
-
-
-
-
 
 class SelectionList
 {
@@ -504,6 +554,11 @@ class SelectionList
   {
     _content[coord] = currentLayer!.data[coord.x][coord.y];
     currentLayer!.data[coord.x][coord.y] = null;
+  }
+
+  void addEmpty(final CoordinateSetI coord)
+  {
+    _content[coord] = null;
   }
 
   void addDirectly(final CoordinateSetI coord, final ColorReference? colRef)

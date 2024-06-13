@@ -61,8 +61,6 @@ class _KPixAppState extends State<KPixApp> {
     appState.setCanvasDimensions(width: 256, height: 128);
     appState.addNewRamp();
     appState.addNewRamp();
-    appState.addNewRamp();
-    appState.addNewRamp();
     appState.addNewLayer();
     appState.addNewLayer(select: true);
     initialized.value = true;

@@ -4,6 +4,7 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 
 class ColorEntryWidgetOptions {
   final double unselectedMargin;
@@ -29,7 +30,7 @@ class ColorEntryWidgetOptions {
 
 class ColorEntryWidget extends StatefulWidget {
   final ValueNotifier<IdColor> colorData;
-  final ColorSelectedFn? colorSelectedFn;
+  final IdColorSelectedFn? colorSelectedFn;
 
   const ColorEntryWidget._({
     required this.colorData,
@@ -39,7 +40,7 @@ class ColorEntryWidget extends StatefulWidget {
 
   factory ColorEntryWidget({
     required IdColor color,
-    required ColorSelectedFn? colorSelectedFn,
+    required IdColorSelectedFn? colorSelectedFn,
 })
   {
 
@@ -94,9 +95,9 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
       valueListenable: widget.colorData,
       builder: (BuildContext context, IdColor value, child) {
 
-        return ValueListenableBuilder<IdColor?>(
+        return ValueListenableBuilder<ColorReference?>(
             valueListenable: appState.selectedColor,
-            builder: (BuildContext context2, IdColor? selectedColor, child2)
+            builder: (BuildContext context2, ColorReference? selectedColor, child2)
             {
               return Expanded(
                   child: Listener(
@@ -108,12 +109,12 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
                             maxHeight: options.maxSize,
                             maxWidth: options.maxSize
                         ),
-                        margin: EdgeInsets.all(widget.colorData.value == selectedColor
+                        margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
                             ? options.selectedMargin
                             : options.unselectedMargin),
                         decoration: BoxDecoration(
                             border: Border.all(
-                                color: widget.colorData.value == selectedColor
+                                color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
                                     ? Theme.of(context).primaryColorLight
                                     : Colors.transparent,
                                 width: (options.unselectedMargin -

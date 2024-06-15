@@ -75,7 +75,7 @@ class PencilPainter extends IToolPainter
         }
         else
         {
-          drawParams.currentLayer.data[entry.key.x][entry.key.y] = entry.value;
+          drawParams.currentLayer.setData(entry.key.x, entry.key.y, entry.value);
         }
       }
       paintPositions.clear();
@@ -164,7 +164,7 @@ class PencilPainter extends IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
         {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && drawParams.currentLayer.data[coord.x][coord.y] != appState.selectedColor.value) ||
+          if ((selection.selection.isEmpty() && drawParams.currentLayer.getData(coord.x, coord.y) != appState.selectedColor.value) ||
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != appState.selectedColor.value))
           {
@@ -174,11 +174,11 @@ class PencilPainter extends IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-          if ((selection.selection.isEmpty() && drawParams.currentLayer.data[coord.x][coord.y] != null) ||
+          if ((selection.selection.isEmpty() && drawParams.currentLayer.getData(coord.x, coord.y) != null) ||
             //if selection and selection contains pixel and pixel is not null
             (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? drawParams.currentLayer.data[coord.x][coord.y]! : selection.selection.getColorReference(coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty() ? drawParams.currentLayer.getData(coord.x, coord.y)! : selection.selection.getColorReference(coord)!;
           if (layerRef.ramp.uuid == appState.selectedColor.value!.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)

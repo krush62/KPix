@@ -359,9 +359,9 @@ class AppState
           {
             for (int y = 0; y < canvasHeight; y++)
             {
-              if (mergeLayer.data[x][y] == null)
+              if (mergeLayer.getData(x, y) == null)
               {
-                mergeLayer.data[x][y] = layers.value[i+1].data[x][y];
+                mergeLayer.setData(x, y, layers.value[i+1].getData(x, y));
               }
             }
           }

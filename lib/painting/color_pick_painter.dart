@@ -41,9 +41,9 @@ class ColorPickPainter extends IToolPainter
             colRef = appState.selectionState.selection.getColorReference(cursorPosNorm);
             break;
           }
-          if (layer.data[cursorPosNorm.x][cursorPosNorm.y] != null)
+          if (layer.getData(cursorPosNorm.x, cursorPosNorm.y) != null)
           {
-            colRef = layer.data[cursorPosNorm.x][cursorPosNorm.y];
+            colRef = layer.getData(cursorPosNorm.x, cursorPosNorm.y);
             break;
           }
         }

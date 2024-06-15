@@ -40,7 +40,6 @@ class SelectionState with ChangeNotifier
 
   void notifyRepaint()
   {
-    selection.currentLayer!.createThumbnail(selection: selection);
     notifyListeners();
     repaintNotifier.repaint();
   }
@@ -378,7 +377,7 @@ class SelectionState with ChangeNotifier
       //TODO is the order correct?
       for (final LayerState layer in visibleLayers)
       {
-        final ColorReference? colRef = layer.data[coord.x][coord.y];
+        final ColorReference? colRef = layer.getData(coord.x, coord.y);
         if (colRef != null)
         {
           hasValues = true;
@@ -540,20 +539,20 @@ class SelectionList
       final ColorReference? curVal = _content[key];
       if (curVal != null)
       {
-        oldLayer.data[key.x][key.y] = curVal;
+        oldLayer.setData(key.x, key.y, curVal);
       }
       if (newLayer.lockState.value != LayerLockState.locked)
       {
-        _content[key] = newLayer.data[key.x][key.y];
-        newLayer.data[key.x][key.y] = null;
+        _content[key] = newLayer.getData(key.x, key.y);
+        newLayer.setData(key.x, key.y, null);
       }
     }
   }
 
   void add(final CoordinateSetI coord)
   {
-    _content[coord] = currentLayer!.data[coord.x][coord.y];
-    currentLayer!.data[coord.x][coord.y] = null;
+    _content[coord] = currentLayer!.getData(coord.x, coord.y);
+    currentLayer!.setData(coord.x, coord.y, null);
   }
 
   void addEmpty(final CoordinateSetI coord)
@@ -571,7 +570,7 @@ class SelectionList
   {
     if (_content[coord] != null && coord.x > 0 && coord.y > 0 && coord.x < GetIt.I.get<AppState>().canvasWidth && coord.y < GetIt.I.get<AppState>().canvasHeight)
     {
-      currentLayer!.data[coord.x][coord.y] = _content[coord];
+      currentLayer!.setData(coord.x, coord.y, _content[coord]);
     }
     _content.remove(coord);
   }
@@ -583,7 +582,7 @@ class SelectionList
     {
       if (entry.value != null && entry.key.x > 0 && entry.key.y > 0 && entry.key.x < GetIt.I.get<AppState>().canvasWidth && entry.key.y < GetIt.I.get<AppState>().canvasHeight)
       {
-        currentLayer!.data[entry.key.x][entry.key.y] = entry.value;
+        currentLayer!.setData(entry.key.x, entry.key.y, entry.value);
       }
     }
     _content.clear();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -28,6 +29,8 @@ class LayerWidgetOptions
   final double dragTargetHeight;
   final int dragTargetShowDuration;
   final int dragDelay;
+  final int thumbUpdateTimerSec;
+  final int thumbUpdateTimerMsec;
 
   LayerWidgetOptions({
     required this.outerPadding,
@@ -42,7 +45,9 @@ class LayerWidgetOptions
     required this.dragFeedbackSize,
     required this.dragTargetHeight,
     required this.dragTargetShowDuration,
-    required this.dragDelay});
+    required this.dragDelay,
+    required this.thumbUpdateTimerSec,
+    required this.thumbUpdateTimerMsec});
 }
 
 enum LayerVisibilityState
@@ -102,11 +107,12 @@ class LayerState
   final CoordinateSetI size;
 
 
-  final List<List<ColorReference?>> data;
+  final List<List<ColorReference?>> _data;
+  bool _hasNewData = false;
 
-  LayerState._({required this.data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible})
+  LayerState._({required List<List<ColorReference?>> data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
   {
-    createThumbnail();
+    _createThumbnail();
     lockState.value = lState;
     visibilityState.value = vState;
 
@@ -119,7 +125,7 @@ class LayerState
     {
       for (int y = 0; y < other.size.y; y++)
       {
-        data[x][y] = other.data[x][y];
+        data[x][y] = other.getData(x,y);
       }
     }
     return LayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
@@ -141,24 +147,21 @@ class LayerState
         }
       }
     }
-    else
-    {
-      //TODO TEMP
-      AppState appState = GetIt.I.get<AppState>();
-      for (int i = 0; i < 10000; i++)
-      {
-        KPalRampData ramp = appState.colorRamps.value[Random().nextInt(appState.colorRamps.value.length)];
-        data[Random().nextInt(width)][Random().nextInt(height)] = ColorReference(colorIndex: Random().nextInt(ramp.colors.length), ramp: ramp);
-      }
-
-    }
-
-
     return LayerState._(data: data, size: size);
   }
 
-  Future<void> createThumbnail({SelectionList? selection}) async
+  void updateTimerCallback(final Timer timer)
   {
+    if (_hasNewData)
+    {
+      _createThumbnail();
+      _hasNewData = false;
+    }
+  }
+
+  Future<void> _createThumbnail() async
+  {
+    SelectionList selection = GetIt.I.get<AppState>().selectionState.selection;
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     Canvas c = Canvas(recorder);
     final Paint paint = Paint();
@@ -167,9 +170,9 @@ class LayerState
     {
        for (int y = 0; y < size.y; y++)
        {
-         ColorReference? col = data[x][y];
+         ColorReference? col = _data[x][y];
          final CoordinateSetI curCor = CoordinateSetI(x: x, y: y);
-         if (selection != null && selection.currentLayer == this && selection.contains(curCor) && selection.getColorReference(curCor) != null)
+         if (selection.currentLayer == this && selection.contains(curCor) && selection.getColorReference(curCor) != null)
          {
            ColorReference selCol = selection.getColorReference(curCor)!;
            paint.color = selCol.ramp.colors[selCol.colorIndex].value.color;
@@ -185,6 +188,17 @@ class LayerState
     ui.Picture p = recorder.endRecording();
     thumbnail.value = p.toImageSync(size.x, size.y);
   }
+
+  ColorReference? getData(final int x, final int y)
+  {
+    return _data[x][y];
+  }
+
+  void setData(final int x, final int y, final ColorReference? ref)
+  {
+    _data[x][y] = ref;
+    _hasNewData = true;
+  }
 }
 
 
@@ -192,7 +206,7 @@ class LayerState
 class LayerWidget extends StatefulWidget
 {
   final LayerState layerState;
-
+  
 
   const LayerWidget({
     super.key,
@@ -200,8 +214,8 @@ class LayerWidget extends StatefulWidget
   });
 
   @override
-  State<LayerWidget> createState() => _LayerWidgetState();
-
+  State<LayerWidget> createState() => _LayerWidgetState();  
+  
 }
 
 class _LayerWidgetState extends State<LayerWidget>
@@ -245,6 +259,7 @@ class _LayerWidgetState extends State<LayerWidget>
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
     );
+    Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), widget.layerState.updateTimerCallback);
   }
 
   void _deletePressed()

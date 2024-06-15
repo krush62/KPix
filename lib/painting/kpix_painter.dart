@@ -350,7 +350,7 @@ class KPixPainter extends CustomPainter
                     offset.value.dy + (y * pxlSzDbl) - options.pixelExtension, pxlSzDbl + (2.0 * options.pixelExtension), pxlSzDbl + (2.0 * options.pixelExtension)), drawParams.paint);
               }
             }
-            ColorReference? layerColor = layers[i].data[x][y];
+            ColorReference? layerColor = layers[i].getData(x, y);
             if (layerColor != null && !foundInSelection) {
               drawParams.paint.color = layerColor.getIdColor().color;
               drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtension,

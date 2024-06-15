@@ -194,6 +194,8 @@ enum PreferenceInt
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
+  Layout_LayerWidget_ThumbUpdateTimerSec(defaultValue: 0),
+  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 500),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
@@ -564,7 +566,9 @@ class PreferenceManager
         dragOpacity: getValueD(PreferenceDouble.Layout_LayerWidget_DragOpacity),
         dragTargetHeight: getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
         dragTargetShowDuration: getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
-        dragDelay: getValueI(PreferenceInt.Layout_LayerWidget_DragDelay));
+        dragDelay: getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
+        thumbUpdateTimerSec: getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerSec),
+        thumbUpdateTimerMsec: getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec));
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: getValueD(PreferenceDouble.Layout_SelectionBar_Padding),

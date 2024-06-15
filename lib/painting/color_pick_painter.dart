@@ -58,13 +58,13 @@ class ColorPickPainter extends IToolPainter
   @override
   void drawCursor({required DrawingParameters drawParams})
   {
-    const double scale = 5.0;
+
     Path path = Path();
     path.moveTo(cursorStartPos.x, cursorStartPos.y);
-    path.lineTo(cursorStartPos.x + (1 * scale), cursorStartPos.y);
-    path.lineTo(cursorStartPos.x + (3 * scale), cursorStartPos.y + (-2 * scale));
-    path.lineTo(cursorStartPos.x + (2 * scale), cursorStartPos.y + (-3 * scale));
-    path.lineTo(cursorStartPos.x, cursorStartPos.y + (-1 * scale));
+    path.lineTo(cursorStartPos.x + (1 * painterOptions.cursorSize), cursorStartPos.y);
+    path.lineTo(cursorStartPos.x + (3 * painterOptions.cursorSize), cursorStartPos.y + (-2 * painterOptions.cursorSize));
+    path.lineTo(cursorStartPos.x + (2 * painterOptions.cursorSize), cursorStartPos.y + (-3 * painterOptions.cursorSize));
+    path.lineTo(cursorStartPos.x, cursorStartPos.y + (-1 * painterOptions.cursorSize));
     path.lineTo(cursorStartPos.x, cursorStartPos.y);
 
     drawParams.paint.style = PaintingStyle.stroke;

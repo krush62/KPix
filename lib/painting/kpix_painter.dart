@@ -315,8 +315,7 @@ class KPixPainter extends CustomPainter
     {
       if (!isDragging.value && _isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
       {
-        final IToolPainter toolPainter = toolPainterMap[appState.selectedTool.value]!;
-        toolPainter.drawCursor(drawParams: drawParams);
+        toolPainterMap[appState.selectedTool.value]?.drawCursor(drawParams: drawParams);
       }
       else
       {

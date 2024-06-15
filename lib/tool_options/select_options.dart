@@ -71,6 +71,59 @@ class SelectOptions extends IToolOptions
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
+                      "Mode",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    )
+                ),
+              ),
+              Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: ValueListenableBuilder<SelectionMode>(
+                  valueListenable: selectOptions.mode,
+                  builder: (BuildContext context, SelectionMode mode, child){
+                    return SegmentedButton<SelectionMode>
+                      (
+                      segments: [
+                        ButtonSegment(value: SelectionMode.replace, label: FaIcon(
+                          FontAwesomeIcons.rotate,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectionMode.add, label: FaIcon(
+                          FontAwesomeIcons.plus,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectionMode.subtract, label: FaIcon(
+                          FontAwesomeIcons.minus,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectionMode.intersect, label: FaIcon(
+                          FontAwesomeIcons.plusMinus,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ))
+                      ],
+                      selected: <SelectionMode>{selectOptions.mode.value},
+                      emptySelectionAllowed: false,
+                      multiSelectionEnabled: false,
+                      showSelectedIcon: false,
+                      onSelectionChanged: (Set<SelectionMode> modes) {selectOptions.mode.value = modes.first;},
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
                       "Shape",
                       style: Theme.of(context).textTheme.labelLarge,
                     )
@@ -151,59 +204,6 @@ class SelectOptions extends IToolOptions
             ),
           ],
         ),
-        Padding(
-          padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                flex: 1,
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Mode",
-                      style: Theme.of(context).textTheme.labelLarge,
-                    )
-                ),
-              ),
-              Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: ValueListenableBuilder<SelectionMode>(
-                  valueListenable: selectOptions.mode,
-                  builder: (BuildContext context, SelectionMode mode, child){
-                    return SegmentedButton<SelectionMode>
-                      (
-                      segments: [
-                        ButtonSegment(value: SelectionMode.replace, label: FaIcon(
-                          FontAwesomeIcons.rotate,
-                          size: toolSettingsWidgetOptions.smallIconSize,
-                        )),
-                        ButtonSegment(value: SelectionMode.add, label: FaIcon(
-                          FontAwesomeIcons.plus,
-                          size: toolSettingsWidgetOptions.smallIconSize,
-                        )),
-                        ButtonSegment(value: SelectionMode.subtract, label: FaIcon(
-                          FontAwesomeIcons.minus,
-                          size: toolSettingsWidgetOptions.smallIconSize,
-                        )),
-                        ButtonSegment(value: SelectionMode.intersect, label: FaIcon(
-                          FontAwesomeIcons.plusMinus,
-                          size: toolSettingsWidgetOptions.smallIconSize,
-                        ))
-                      ],
-                      selected: <SelectionMode>{selectOptions.mode.value},
-                      emptySelectionAllowed: false,
-                      multiSelectionEnabled: false,
-                      showSelectedIcon: false,
-                      onSelectionChanged: (Set<SelectionMode> modes) {selectOptions.mode.value = modes.first;},
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        )
       ],
     );
   }

@@ -190,7 +190,7 @@ class PencilPainter extends IToolPainter
             }
             else
             {
-              if (layerRef.colorIndex - 1 > 0)
+              if (layerRef.colorIndex > 0)
               {
                 pixelMap[coord] = ColorReference(colorIndex: layerRef.colorIndex - 1, ramp: layerRef.ramp);
               }
@@ -207,10 +207,10 @@ class PencilPainter extends IToolPainter
     drawParams.paint.color = entry.value.getIdColor().color;
     drawParams.canvas.drawRect(
         Rect.fromLTWH(
-            drawParams.offset.dx + (entry.key.x * drawParams.pixelSize.toDouble()) - kPixPainterOptions.pixelExtensionFactor,
-            drawParams.offset.dy + (entry.key.y * drawParams.pixelSize.toDouble()) - kPixPainterOptions.pixelExtensionFactor,
-            drawParams.pixelSize.toDouble() + (2.0 * kPixPainterOptions.pixelExtensionFactor),
-            drawParams.pixelSize.toDouble() + (2.0 * kPixPainterOptions.pixelExtensionFactor)),
+            drawParams.offset.dx + (entry.key.x * drawParams.pixelSize.toDouble()) - kPixPainterOptions.pixelExtension,
+            drawParams.offset.dy + (entry.key.y * drawParams.pixelSize.toDouble()) - kPixPainterOptions.pixelExtension,
+            drawParams.pixelSize.toDouble() + (2.0 * kPixPainterOptions.pixelExtension),
+            drawParams.pixelSize.toDouble() + (2.0 * kPixPainterOptions.pixelExtension)),
         drawParams.paint);
   }
 }

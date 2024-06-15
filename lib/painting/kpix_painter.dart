@@ -16,7 +16,7 @@ class KPixPainterOptions
   final double cursorSize;
   final double cursorBorderWidth;
   final double selectionSolidStrokeWidth;
-  final double pixelExtensionFactor;
+  final double pixelExtension;
   final double checkerBoardDivisor;
   final double checkerBoardSizeMin;
   final double checkerBoardSizeMax;
@@ -29,7 +29,7 @@ class KPixPainterOptions
     required this.cursorSize,
     required this.cursorBorderWidth,
     required this.selectionSolidStrokeWidth,
-    required this.pixelExtensionFactor,
+    required this.pixelExtension,
     required this.checkerBoardDivisor,
     required this.checkerBoardSizeMin,
     required this.checkerBoardSizeMax,
@@ -346,15 +346,15 @@ class KPixPainter extends CustomPainter
               {
                 foundInSelection = true;
                 drawParams.paint.color = selColor.getIdColor().color;
-                drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
-                    offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
+                drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtension,
+                    offset.value.dy + (y * pxlSzDbl) - options.pixelExtension, pxlSzDbl + (2.0 * options.pixelExtension), pxlSzDbl + (2.0 * options.pixelExtension)), drawParams.paint);
               }
             }
             ColorReference? layerColor = layers[i].data[x][y];
             if (layerColor != null && !foundInSelection) {
               drawParams.paint.color = layerColor.getIdColor().color;
-              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtensionFactor,
-                  offset.value.dy + (y * pxlSzDbl) - options.pixelExtensionFactor, pxlSzDbl + (2.0 * options.pixelExtensionFactor), pxlSzDbl + (2.0 * options.pixelExtensionFactor)), drawParams.paint);
+              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtension,
+                  offset.value.dy + (y * pxlSzDbl) - options.pixelExtension, pxlSzDbl + (2.0 * options.pixelExtension), pxlSzDbl + (2.0 * options.pixelExtension)), drawParams.paint);
               break;
             }
             if (foundInSelection)

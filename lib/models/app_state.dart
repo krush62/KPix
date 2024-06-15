@@ -479,12 +479,6 @@ class AppState
     statusBarToolAngleString.value = null;
   }
 
-
-  void changeTool(ToolType type)
-  {
-
-  }
-
   void setToolSelection(final ToolType tool)
   {
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/font_manager.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
@@ -15,14 +14,20 @@ import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/tool_options/wand_options.dart';
 
 
 class ToolSettingsWidgetOptions
 {
   final int columnWidthRatio;
   final double padding;
-  const ToolSettingsWidgetOptions({required this.columnWidthRatio, required this.padding});
+  final double smallButtonSize;
+  final double smallIconSize;
+
+  const ToolSettingsWidgetOptions({
+    required this.columnWidthRatio,
+    required this.padding,
+    required this.smallButtonSize,
+    required this.smallIconSize});
 }
 
 
@@ -107,12 +112,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 lineOptions: toolOptions.lineOptions,);
-            break;
-          case ToolType.wand:
-            toolWidget = WandOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                wandOptions: toolOptions.wandOptions,);
             break;
           case ToolType.curve:
             toolWidget = CurveOptions.getWidget(

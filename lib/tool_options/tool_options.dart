@@ -8,7 +8,6 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
-import 'package:kpix/tool_options/wand_options.dart';
 
 import '../helper.dart';
 
@@ -62,13 +61,11 @@ class ToolOptions
     required TextOptions textOptions,
     required SprayCanOptions sprayCanOptions,
     required LineOptions lineOptions,
-    required WandOptions wandOptions,
     required CurveOptions curveOptions,
 })
   {
     Map<ToolType, IToolOptions> toolOptionMap = {
       ToolType.curve: curveOptions,
-      ToolType.wand: wandOptions,
       ToolType.line: lineOptions,
       ToolType.spraycan: sprayCanOptions,
       ToolType.font: textOptions,
@@ -82,7 +79,6 @@ class ToolOptions
 
     return ToolOptions._(
       curveOptions: curveOptions,
-      wandOptions: wandOptions,
       lineOptions: lineOptions,
       sprayCanOptions: sprayCanOptions,
       textOptions: textOptions,
@@ -107,7 +103,6 @@ class ToolOptions
     required this.textOptions,
     required this.sprayCanOptions,
     required this.lineOptions,
-    required this.wandOptions,
     required this.curveOptions,
     required this.toolOptionMap});
 
@@ -120,7 +115,6 @@ class ToolOptions
   final TextOptions textOptions;
   final SprayCanOptions sprayCanOptions;
   final LineOptions lineOptions;
-  final WandOptions wandOptions;
   final CurveOptions curveOptions;
 
 }

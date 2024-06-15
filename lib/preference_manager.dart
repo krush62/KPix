@@ -16,7 +16,6 @@ import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/shader_options.dart';
-import 'package:kpix/tool_options/wand_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -54,7 +53,7 @@ enum PreferenceDouble
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
   Layout_Tools_Padding(defaultValue: 8.0),
-  Layout_Tools_IconSize(defaultValue: 16.0),
+  Layout_Tools_IconSize(defaultValue: 20.0),
   Layout_Tools_ButtonSize(defaultValue: 48.0),
 
   Layout_Palette_Padding(defaultValue: 8.0),
@@ -80,6 +79,8 @@ enum PreferenceDouble
   Layout_ColorChooser_OutsidePadding(defaultValue: 16.0),
 
   Layout_ToolsSettings_Padding(defaultValue: 8.0),
+  Layout_ToolSettings_SmallButtonSize(defaultValue: 36.0),
+  Layout_ToolSettings_SmallIconSize(defaultValue: 20),
 
   Layout_MainToolbar_DividerHeight(defaultValue: 2.0),
   Layout_MainToolbar_DividerPadding(defaultValue: 8.0),
@@ -509,7 +510,9 @@ class PreferenceManager
         outsidePadding: getValueD(PreferenceDouble.Layout_ColorChooser_OutsidePadding));
     toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
         columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
-        padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding));
+        padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
+        smallButtonSize: getValueD(PreferenceDouble.Layout_ToolSettings_SmallButtonSize),
+        smallIconSize: getValueD(PreferenceDouble.Layout_ToolSettings_SmallIconSize));
     mainToolbarWidgetOptions = MainToolbarWidgetOptions(
         paletteFlex: getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
@@ -622,10 +625,6 @@ class PreferenceManager
         widthMax: getValueI(PreferenceInt.Tool_Line_WidthMax),
         widthDefault: getValueI(PreferenceInt.Tool_Line_Width),
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
-    WandOptions wandOptions = WandOptions(
-        selectFromWholeRampDefault: getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp),
-        modeDefault: getValueI(PreferenceInt.Tool_Wand_Mode),
-        continuousDefault: getValueB(PreferenceBool.Tool_Wand_Continuous));
     CurveOptions curveOptions = CurveOptions(
         widthMin: getValueI(PreferenceInt.Tool_Curve_WidthMin),
         widthMax: getValueI(PreferenceInt.Tool_Curve_WidthMax),
@@ -640,7 +639,6 @@ class PreferenceManager
         textOptions: textOptions,
         sprayCanOptions: sprayCanOptions,
         lineOptions: lineOptions,
-        wandOptions: wandOptions,
         curveOptions: curveOptions);
   }
 

@@ -14,7 +14,6 @@ enum ToolType
   font,
   spraycan,
   line,
-  wand,
   stamp,
   curve
 }
@@ -38,7 +37,6 @@ const Map<ToolType, Tool> toolList =
   ToolType.font : Tool(icon: FontAwesomeIcons.font, title: "Text"),
   ToolType.spraycan : Tool(icon: FontAwesomeIcons.sprayCan, title: "Spray Can"),
   ToolType.line : Tool(icon: FontAwesomeIcons.linesLeaning, title: "Line"),
-  ToolType.wand : Tool(icon: FontAwesomeIcons.wandMagicSparkles, title: "Wand"),
   ToolType.stamp : Tool(icon: FontAwesomeIcons.stamp, title: "Stamp"),
   ToolType.curve : Tool(icon: FontAwesomeIcons.bezierCurve, title: "Curve"),
 };

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -6,27 +7,24 @@ enum SelectShape
 {
   rectangle,
   ellipse,
-  polygon
+  polygon,
+  wand
+
 }
 
 const List<SelectShape> selectShapeList = [
   SelectShape.rectangle,
   SelectShape.ellipse,
-  SelectShape.polygon
+  SelectShape.polygon,
+  SelectShape.wand,
 ];
 
 const Map<int, SelectShape> _selectShapeIndexMap =
 {
   0: SelectShape.rectangle,
   1: SelectShape.ellipse,
-  2: SelectShape.polygon
-};
-
-const Map<SelectShape, String> selectShapeStringMap =
-{
-  SelectShape.rectangle : "Rectangle",
-  SelectShape.ellipse : "Ellipse",
-  SelectShape.polygon : "Polygon"
+  2: SelectShape.polygon,
+  3: SelectShape.wand
 };
 
 class SelectOptions extends IToolOptions
@@ -50,6 +48,7 @@ class SelectOptions extends IToolOptions
     mode.value = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
   }
 
+
   static Column getWidget({
     required BuildContext context,
     required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
@@ -61,43 +60,58 @@ class SelectOptions extends IToolOptions
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              flex: 1,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Shape",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+        Padding(
+          padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Shape",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    )
+                ),
               ),
-            ),
-            Expanded(
+              Expanded(
                 flex: toolSettingsWidgetOptions.columnWidthRatio,
                 child: ValueListenableBuilder<SelectShape>(
                   valueListenable: selectOptions.shape,
-                  builder: (BuildContext context, SelectShape shape, child)
-                  {
-                    return DropdownButton(
-                      value: shape,
-                      dropdownColor: Theme.of(context).primaryColorDark,
-                      focusColor: Theme.of(context).primaryColor,
-                      isExpanded: true,
-                      onChanged: (SelectShape? sShape) {selectOptions.shape.value = sShape!;},
-                      items: selectShapeList.map<DropdownMenuItem<SelectShape>>((SelectShape value) {
-                        return DropdownMenuItem<SelectShape>(
-                          value: value,
-                          child: Text(selectShapeStringMap[value]!),
-                        );
-                      }).toList(),
+                  builder: (BuildContext context, SelectShape shape, child){
+                    return SegmentedButton<SelectShape>
+                      (
+                      segments: [
+                        ButtonSegment(value: SelectShape.rectangle, label: FaIcon(
+                          FontAwesomeIcons.square,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectShape.ellipse, label: FaIcon(
+                          FontAwesomeIcons.circle,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectShape.polygon, label: FaIcon(
+                          FontAwesomeIcons.drawPolygon,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectShape.wand, label: FaIcon(
+                          FontAwesomeIcons.wandMagicSparkles,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ))
+                      ],
+                      selected: <SelectShape>{selectOptions.shape.value},
+                      emptySelectionAllowed: false,
+                      multiSelectionEnabled: false,
+                      showSelectedIcon: false,
+                      onSelectionChanged: (Set<SelectShape> shapes) {selectOptions.shape.value = shapes.first;},
                     );
                   },
-                )
-            ),
-          ],
+                ),
+              ),
+            ],
+          ),
         ),
         Row(
           mainAxisSize: MainAxisSize.max,
@@ -117,13 +131,19 @@ class SelectOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: selectOptions.keepAspectRatio,
-                  builder: (BuildContext context, bool keep, child)
+                child: ValueListenableBuilder<SelectShape>(
+                  valueListenable: selectOptions.shape,
+                  builder: (BuildContext context, SelectShape shape, child)
                   {
-                    return Switch(
-                        onChanged: (selectOptions.shape.value == SelectShape.rectangle || selectOptions.shape.value == SelectShape.ellipse) ? (bool newVal) {selectOptions.keepAspectRatio.value = newVal;} : null,
-                        value: keep
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: selectOptions.keepAspectRatio,
+                      builder: (BuildContext context, bool keep, child)
+                      {
+                        return Switch(
+                          onChanged: (shape == SelectShape.rectangle || shape == SelectShape.ellipse) ? (bool newVal) {selectOptions.keepAspectRatio.value = newVal;} : null,
+                          value: keep
+                        );
+                      },
                     );
                   },
                 ),
@@ -131,44 +151,59 @@ class SelectOptions extends IToolOptions
             ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              flex: 1,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Mode",
-                  style: Theme.of(context).textTheme.labelLarge,
-                )
+        Padding(
+          padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Mode",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    )
+                ),
               ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<SelectionMode>(
-                valueListenable: selectOptions.mode,
-                builder: (BuildContext context, SelectionMode mode, child)
-                {
-                  return DropdownButton(
-                    value: mode,
-                    dropdownColor: Theme.of(context).primaryColorDark,
-                    focusColor: Theme.of(context).primaryColor,
-                    isExpanded: true,
-                    onChanged: (SelectionMode? sMode) {selectOptions.mode.value = sMode!;},
-                    items: selectionModeList.map<DropdownMenuItem<SelectionMode>>((SelectionMode value) {
-                      return DropdownMenuItem<SelectionMode>(
-                        value: value,
-                        child: Text(selectionModeStringMap[value]!),
-                      );
-                    }).toList(),
-                  );
-                },
-              )
-            ),
-          ],
-        ),
+              Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: ValueListenableBuilder<SelectionMode>(
+                  valueListenable: selectOptions.mode,
+                  builder: (BuildContext context, SelectionMode mode, child){
+                    return SegmentedButton<SelectionMode>
+                      (
+                      segments: [
+                        ButtonSegment(value: SelectionMode.replace, label: FaIcon(
+                          FontAwesomeIcons.rotate,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectionMode.add, label: FaIcon(
+                          FontAwesomeIcons.plus,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectionMode.subtract, label: FaIcon(
+                          FontAwesomeIcons.minus,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        )),
+                        ButtonSegment(value: SelectionMode.intersect, label: FaIcon(
+                          FontAwesomeIcons.plusMinus,
+                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ))
+                      ],
+                      selected: <SelectionMode>{selectOptions.mode.value},
+                      emptySelectionAllowed: false,
+                      multiSelectionEnabled: false,
+                      showSelectedIcon: false,
+                      onSelectionChanged: (Set<SelectionMode> modes) {selectOptions.mode.value = modes.first;},
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        )
       ],
     );
   }

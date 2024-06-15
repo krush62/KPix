@@ -21,30 +21,19 @@ class ToolsWidgetOptions
 
 class ToolsWidget extends StatefulWidget
 {
-  const ToolsWidget(
-      {
-        required this.changeToolFn,
-        super.key
-      }
-      );
+  const ToolsWidget({
+    super.key
+  });
 
   @override
   State<ToolsWidget> createState() => _ToolsWidgetState();
 
-  final ChangeToolFn changeToolFn;
 }
 
 class _ToolsWidgetState extends State<ToolsWidget>
 {
   AppState appState = GetIt.I.get<AppState>();
   ToolsWidgetOptions toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
-
-  void _selectionChanged(ToolType tool)
-  {
-    appState.setToolSelection(tool);
-    widget.changeToolFn(tool); //not used
-  }
-
 
   @override
   void initState()
@@ -53,52 +42,134 @@ class _ToolsWidgetState extends State<ToolsWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
-
-    List<IconButton> iconButtons = [];
-    for (final ToolType tooltype in toolList.keys)
-    {
-      IconButton i = IconButton.outlined(
-        isSelected: appState.toolIsSelected(tooltype),
-        color: appState.toolIsSelected(tooltype) ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-        tooltip: toolList[tooltype]?.title,
-        icon:  FaIcon(
-          toolList[tooltype]!.icon,
-          size: toolsWidgetOptions.iconSize,
-        ),
-        onPressed: () {
-          tooltype == ToolType.stamp ? null : _selectionChanged(tooltype);
-        },
-      );
-      iconButtons.add(i);
-    }
-
-
-
-    return LayoutBuilder(
-        builder: (context, BoxConstraints constraints)
-    {
-
-      final int rowCount = (iconButtons.length - 1) ~/ toolsWidgetOptions.colCount + 1;
-      return Container(
-        width: double.infinity,
-        height: (rowCount * toolsWidgetOptions.buttonSize + rowCount * toolsWidgetOptions.padding) + toolsWidgetOptions.padding,
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-        ),
-        child: Padding(
-          padding: EdgeInsetsDirectional.all(toolsWidgetOptions.padding),
-          child: GridView.count(
-            crossAxisCount: toolsWidgetOptions.colCount,
-            crossAxisSpacing: toolsWidgetOptions.padding,
-            mainAxisSpacing: toolsWidgetOptions.padding,
-            childAspectRatio: (constraints.maxWidth / toolsWidgetOptions.colCount) / (toolsWidgetOptions.buttonSize) ,
+  Widget build(BuildContext context)
+  {
+    return Padding(
+      padding: EdgeInsets.all(toolsWidgetOptions.padding),
+      child: ValueListenableBuilder<ToolType>(
+        valueListenable: appState.selectedTool,
+        builder: (BuildContext context, ToolType tool, child) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ...iconButtons
+              SegmentedButton<ToolType>(
+                style: const ButtonStyle(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                selected: <ToolType>{tool},
+                emptySelectionAllowed: true,
+                multiSelectionEnabled: false,
+                showSelectedIcon: false,
+                onSelectionChanged: (Set<ToolType> tools) {appState.selectedTool.value = tools.first;},
+                segments: [
+                  ButtonSegment(
+                    value: ToolType.pencil,
+                    tooltip: toolList[ToolType.pencil]?.title,
+                    label: FaIcon(
+                      toolList[ToolType.pencil]!.icon,
+                      size: toolsWidgetOptions.iconSize,
+                    )
+                  ),
+                  ButtonSegment(
+                    value: ToolType.shape,
+                    tooltip: toolList[ToolType.shape]?.title,
+                    label: FaIcon(
+                      toolList[ToolType.shape]!.icon,
+                      size: toolsWidgetOptions.iconSize,
+                    )
+                  ),
+                  ButtonSegment(
+                    value: ToolType.fill,
+                    tooltip: toolList[ToolType.fill]?.title,
+                    label: FaIcon(
+                      toolList[ToolType.fill]!.icon,
+                      size: toolsWidgetOptions.iconSize,
+                    )
+                  ),
+                  ButtonSegment(
+                    value: ToolType.select,
+                    tooltip: toolList[ToolType.select]?.title,
+                    label: FaIcon(
+                      toolList[ToolType.select]!.icon,
+                      size: toolsWidgetOptions.iconSize,
+                    )
+                  ),
+                  ButtonSegment(
+                    value: ToolType.pick,
+                    tooltip: toolList[ToolType.pick]?.title,
+                    label: FaIcon(
+                      toolList[ToolType.pick]!.icon,
+                      size: toolsWidgetOptions.iconSize,
+                    )
+                  ),
+                  ButtonSegment(
+                    value: ToolType.erase,
+                    tooltip: toolList[ToolType.erase]?.title,
+                    label: FaIcon(
+                      toolList[ToolType.erase]!.icon,
+                      size: toolsWidgetOptions.iconSize,
+                    )
+                  ),
+                ],
+              ),
+              SegmentedButton<ToolType>(
+                style: const ButtonStyle(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                selected: <ToolType>{tool},
+                emptySelectionAllowed: true,
+                multiSelectionEnabled: false,
+                showSelectedIcon: false,
+                onSelectionChanged: (Set<ToolType> tools) {appState.selectedTool.value = tools.first;},
+                segments: [
+                  ButtonSegment(
+                      value: ToolType.font,
+                      tooltip: toolList[ToolType.font]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.font]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
+                  ButtonSegment(
+                      value: ToolType.spraycan,
+                      tooltip: toolList[ToolType.spraycan]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.spraycan]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
+                  ButtonSegment(
+                      value: ToolType.line,
+                      tooltip: toolList[ToolType.line]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.line]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
+                  ButtonSegment(
+                      value: ToolType.stamp,
+                      tooltip: toolList[ToolType.stamp]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.stamp]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
+                  ButtonSegment(
+                      value: ToolType.curve,
+                      tooltip: toolList[ToolType.curve]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.curve]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
+                ],
+              ),
             ],
-          ),
-        ),
-      );
-    });
+          );
+        }
+      ),
+    );
   }
 }

@@ -36,42 +36,18 @@ class MainToolbarWidget extends StatelessWidget
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const PaletteWidget(),
             Divider(
               color: Theme.of(context).primaryColorDark,
-              endIndent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
-              indent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
               thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
               height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
             ),
             ShaderWidget(
-            titleStyle: Theme.of(context).textTheme.titleLarge,
-            labelStyle: Theme.of(context).textTheme.bodySmall,
+              titleStyle: Theme.of(context).textTheme.titleLarge,
+              labelStyle: Theme.of(context).textTheme.bodySmall,
             ),
-            Divider(
-              color: Theme.of(context).primaryColorDark,
-              endIndent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
-              indent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
-              thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-              height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            ),
-            ValueListenableBuilder<ToolType>(
-              valueListenable: GetIt.I.get<AppState>().selectedTool,
-              builder: (BuildContext context, ToolType value,
-                  child) {
-                return ToolsWidget(
-                  changeToolFn: GetIt.I.get<AppState>().changeTool,
-                );
-                //return ColorEntryWidget();
-              }
-            ),
-            Divider(
-              color: Theme.of(context).primaryColorDark,
-              endIndent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
-              indent: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerPadding,
-              thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-              height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            ),
+            const PaletteWidget(),
+            const ToolsWidget(),
+
             SizedBox(
               width: double.infinity,
               //TODO MAGIC NUMBER

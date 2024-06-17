@@ -83,8 +83,9 @@ class PencilPainter extends IToolPainter
   }
 
   @override
-  void drawCursor({required DrawingParameters drawParams}) {
-
+  void drawCursor({required DrawingParameters drawParams})
+  {
+    assert(drawParams.cursorPos != null);
 
     final Set<CoordinateSetI> contentPoints = getContentPoints(options.shape.value, options.size.value, cursorPosNorm);
     if(appState.selectedColor.value != null)
@@ -96,7 +97,6 @@ class PencilPainter extends IToolPainter
         _drawPixel(drawParams: drawParams, entry: entry);
       }
     }
-
 
     //Surrounding
     final List<CoordinateSetI> pathPoints = getBoundaryPath(contentPoints);

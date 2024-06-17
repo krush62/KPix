@@ -13,6 +13,7 @@ class EraserPainter extends IToolPainter
 {
   final EraserOptions options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
   final CoordinateSetI cursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
 
   EraserPainter({required super.painterOptions});
 
@@ -30,25 +31,42 @@ class EraserPainter extends IToolPainter
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
 
-      if (drawParams.primaryDown && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
+      if (cursorPosNorm != previousCursorPosNorm)
       {
-        Set<CoordinateSetI> content = getContentPoints(options.shape.value, options.size.value, cursorPosNorm);
-        final SelectionState selection = GetIt.I.get<AppState>().selectionState;
-        for (final CoordinateSetI coord in content)
+        if (drawParams.primaryDown && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
-          if (coord.x >= 0 && coord.y >= 0 &&
-              coord.x < drawParams.canvasSize.x &&
-              coord.y < drawParams.canvasSize.y) {
-            if (selection.selection.isEmpty()) {
-              if (drawParams.currentLayer.getData(coord.x, coord.y) != null) {
-                drawParams.currentLayer.setData(coord.x, coord.y, null);
+          List<CoordinateSetI> pixelsToDelete = [cursorPosNorm];
+          if (!cursorPosNorm.isAdjacent(previousCursorPosNorm, true))
+          {
+            pixelsToDelete.addAll(Helper.bresenham(previousCursorPosNorm, cursorPosNorm).sublist(1));
+          }
+          for (final CoordinateSetI delCoord in pixelsToDelete)
+          {
+            Set<CoordinateSetI> content = getContentPoints(options.shape.value, options.size.value, delCoord);
+            final SelectionState selection = GetIt.I.get<AppState>().selectionState;
+            for (final CoordinateSetI coord in content)
+            {
+              if (coord.x >= 0 && coord.y >= 0 &&
+                  coord.x < drawParams.canvasSize.x &&
+                  coord.y < drawParams.canvasSize.y)
+              {
+                if (selection.selection.isEmpty())
+                {
+                  if (drawParams.currentLayer.getData(coord.x, coord.y) != null)
+                  {
+                    drawParams.currentLayer.setData(coord.x, coord.y, null);
+                  }
+                }
+                else
+                {
+                  selection.selection.deleteDirectly(coord);
+                }
               }
-            }
-            else {
-              selection.selection.deleteDirectly(coord);
             }
           }
         }
+        previousCursorPosNorm.x = cursorPosNorm.x;
+        previousCursorPosNorm.y = cursorPosNorm.y;
       }
     }
   }
@@ -56,6 +74,8 @@ class EraserPainter extends IToolPainter
   @override
   void drawCursor({required DrawingParameters drawParams})
   {
+    assert(drawParams.cursorPos != null);
+
     final Set<CoordinateSetI> contentPoints = getContentPoints(options.shape.value, options.size.value, cursorPosNorm);
     final List<CoordinateSetI> pathPoints = getBoundaryPath(contentPoints);
 

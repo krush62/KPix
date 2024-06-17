@@ -122,8 +122,8 @@ class SelectionState with ChangeNotifier
     if (!selection.contains(coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
     {
       final List<CoordinateSetI> selectData = continuous ?
-        getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
-        getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
+        _getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
+        _getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
 
       for (final CoordinateSetI coord in selectData)
       {
@@ -138,7 +138,7 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  List<CoordinateSetI> getFloodReferences({
+  List<CoordinateSetI> _getFloodReferences({
     required final LayerState layer,
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp})
@@ -149,7 +149,7 @@ class SelectionState with ChangeNotifier
     final List<CoordinateSetI> result = [];
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
 
-    void fill(int x, int y) {
+    void select(int x, int y) {
       if (x < 0 || y >= numRows || y < 0 || x >= numCols) return;
       final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
       final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord.x, curCoord.y);
@@ -157,18 +157,18 @@ class SelectionState with ChangeNotifier
       {
         visited[x][y] = true;
         result.add(curCoord);
-        fill(x + 1, y);
-        fill(x - 1, y);
-        fill(x, y + 1);
-        fill(x, y - 1);
+        select(x + 1, y);
+        select(x - 1, y);
+        select(x, y + 1);
+        select(x, y - 1);
       }
     }
 
-    fill(start.x, start.y);
+    select(start.x, start.y);
     return result;
   }
 
-  List<CoordinateSetI> getSameReferences({
+  List<CoordinateSetI> _getSameReferences({
     required final LayerState layer,
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp})

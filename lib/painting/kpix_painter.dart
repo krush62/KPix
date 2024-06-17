@@ -5,6 +5,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/eraser_painter.dart';
+import 'package:kpix/painting/fill_painter.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
@@ -103,12 +104,13 @@ class KPixPainter extends CustomPainter
       ToolType.erase: EraserPainter(painterOptions: options),
       ToolType.pencil: PencilPainter(painterOptions: options),
       ToolType.pick: ColorPickPainter(painterOptions: options),
+      ToolType.fill: FillPainter(painterOptions: options),
     };
   }
 
   @override
-  void paint(Canvas canvas, Size size) {
-
+  void paint(Canvas canvas, Size size)
+  {
     latestSize = size;
     DrawingParameters drawParams = DrawingParameters(
         offset: offset.value,
@@ -313,7 +315,7 @@ class KPixPainter extends CustomPainter
   {
     if (coords.value != null)
     {
-      if (!isDragging.value && _isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+      if (!isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
       {
         toolPainterMap[appState.selectedTool.value]?.drawCursor(drawParams: drawParams);
       }
@@ -413,7 +415,7 @@ class KPixPainter extends CustomPainter
 
 
 
-  static bool _isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
+  static bool isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
   {
     bool isOn = false;
     if (testCoords.x >= drawParams.offset.dx && testCoords.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && testCoords.y >= drawParams.offset.dy && testCoords.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)

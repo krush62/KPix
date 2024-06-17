@@ -295,6 +295,7 @@ enum PreferenceBool
   Tool_Shape_KeepAspectRatio(defaultValue: false),
   Tool_Shape_StrokeOnly(defaultValue: true),
   Tool_Fill_FillAdjacent(defaultValue: true),
+  Tool_Fill_FillWholeRamp(defaultValue: false),
   Tool_Select_KeepAspectRatio(defaultValue: false),
   Tool_Select_WandContinuous(defaultValue: true),
   Tool_Select_WandWholeRamp(defaultValue: false),
@@ -597,7 +598,8 @@ class PreferenceManager
         cornerRadiusMax: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMax),
         cornerRadiusDefault: getValueI(PreferenceInt.Tool_Shape_CornerRadius));
     FillOptions fillOptions = FillOptions(
-        fillAdjacentDefault: getValueB(PreferenceBool.Tool_Fill_FillAdjacent));
+        fillAdjacentDefault: getValueB(PreferenceBool.Tool_Fill_FillAdjacent),
+        fillWholeRampDefault: getValueB(PreferenceBool.Tool_Fill_FillWholeRamp));
     SelectOptions selectOptions = SelectOptions(
         shapeDefault: getValueI(PreferenceInt.Tool_Select_Shape),
         keepAspectRatioDefault: getValueB(PreferenceBool.Tool_Select_KeepAspectRatio),

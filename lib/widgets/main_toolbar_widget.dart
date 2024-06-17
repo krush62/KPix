@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -36,11 +39,13 @@ class MainToolbarWidget extends StatelessWidget
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            (!kIsWeb &&
+                (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
             Divider(
               color: Theme.of(context).primaryColorDark,
               thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
               height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            ),
+            ) : const SizedBox.shrink(),
             ShaderWidget(
               titleStyle: Theme.of(context).textTheme.titleLarge,
               labelStyle: Theme.of(context).textTheme.bodySmall,

@@ -11,6 +11,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:uuid/uuid.dart';
 
 
 class LayerWidgetOptions
@@ -104,8 +105,6 @@ class LayerState
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
   final CoordinateSetI size;
-
-
   final List<List<ColorReference?>> _data;
   bool _hasNewData = false;
 
@@ -114,7 +113,8 @@ class LayerState
     _createThumbnail();
     lockState.value = lState;
     visibilityState.value = vState;
-
+    LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), updateTimerCallback);
   }
 
   factory LayerState.from({required LayerState other})
@@ -162,7 +162,7 @@ class LayerState
   {
     SelectionList selection = GetIt.I.get<AppState>().selectionState.selection;
     final ui.PictureRecorder recorder = ui.PictureRecorder();
-    Canvas c = Canvas(recorder);
+    final Canvas c = Canvas(recorder);
     final Paint paint = Paint();
     paint.style = PaintingStyle.fill;
     for (int x = 0; x < size.x; x++)
@@ -258,7 +258,6 @@ class _LayerWidgetState extends State<LayerWidget>
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
     );
-    Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), widget.layerState.updateTimerCallback);
   }
 
   void _deletePressed()

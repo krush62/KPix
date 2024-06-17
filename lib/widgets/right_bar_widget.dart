@@ -29,10 +29,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _createWidgetList(appState.layers.value);
   }
 
-  void _createWidgetList(final List<LayerState> states)
+  void _createWidgetList(final List<LayerState> layers)
   {
     widgetList = [];
-    for (int i = 0; i < states.length; i++)
+    for (int i = 0; i < layers.length; i++)
     {
       widgetList.add(DragTarget<LayerState>(
         builder: (context, candidateItems, rejectedItems) {
@@ -48,7 +48,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
       ));
 
       widgetList.add(LayerWidget(
-        layerState: states[i],
+        layerState: layers[i],
       ));
     }
     widgetList.add(DragTarget<LayerState>(
@@ -60,7 +60,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
         );
       },
       onAcceptWithDetails: (details) {
-        appState.changeLayerOrder(details.data, states.length);
+        appState.changeLayerOrder(details.data, layers.length);
       },
     ));
   }
@@ -88,7 +88,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                     Padding(
                       padding: EdgeInsets.only(top: layerWidgetOptions.outerPadding, left: layerWidgetOptions.outerPadding, right: layerWidgetOptions.outerPadding),
                       child: IconButton(
-                        onPressed: appState.addNewLayer,
+                        onPressed: () {appState.addNewLayer(select: true);},
                         icon: const FaIcon(FontAwesomeIcons.plus)
                       ),
                     ),

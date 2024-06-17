@@ -46,8 +46,8 @@ class SelectionPainter extends IToolPainter
     _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasWidth && _normStartPos.y < appState.canvasHeight;
     if (_isStartOnCanvas)
     {
-      _shouldMove = (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden) && (movementStarted ||
-          ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+      _shouldMove = (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden) &&
+          (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
       if (_shouldMove)
       {
         movementStarted = true;
@@ -60,6 +60,12 @@ class SelectionPainter extends IToolPainter
         if (options.shape.value == SelectShape.polygon)
         {
           polygonDown = true;
+        }
+        else if (options.shape.value == SelectShape.wand)
+        {
+          selectionEnd.x = _normEndPos.x;
+          selectionEnd.y = _normEndPos.y;
+          hasNewSelection = true;
         }
         else
         {

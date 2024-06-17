@@ -296,6 +296,8 @@ enum PreferenceBool
   Tool_Shape_StrokeOnly(defaultValue: true),
   Tool_Fill_FillAdjacent(defaultValue: true),
   Tool_Select_KeepAspectRatio(defaultValue: false),
+  Tool_Select_WandContinuous(defaultValue: true),
+  Tool_Select_WandWholeRamp(defaultValue: false),
   Tool_Line_IntegerAspectRatio(defaultValue: false),
   Tool_Wand_SelectFromWholeRamp(defaultValue: false),
   Tool_Wand_Continuous(defaultValue: true),
@@ -599,7 +601,9 @@ class PreferenceManager
     SelectOptions selectOptions = SelectOptions(
         shapeDefault: getValueI(PreferenceInt.Tool_Select_Shape),
         keepAspectRatioDefault: getValueB(PreferenceBool.Tool_Select_KeepAspectRatio),
-        modeDefault: getValueI(PreferenceInt.Tool_Select_Mode));
+        modeDefault: getValueI(PreferenceInt.Tool_Select_Mode),
+        wandContinuousDefault: getValueB(PreferenceBool.Tool_Wand_Continuous),
+        wandWholeRampDefault: getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp));
     ColorPickOptions colorPickOptions = ColorPickOptions();
     EraserOptions eraserOptions = EraserOptions(
         sizeMin: getValueI(PreferenceInt.Tool_Eraser_SizeMin),

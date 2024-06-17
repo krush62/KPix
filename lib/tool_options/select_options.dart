@@ -32,20 +32,28 @@ class SelectOptions extends IToolOptions
   final int shapeDefault;
   final bool keepAspectRatioDefault;
   final int modeDefault;
+  final bool wandContinuousDefault;
+  final bool wandWholeRampDefault;
 
   ValueNotifier<SelectShape> shape = ValueNotifier(SelectShape.rectangle);
   ValueNotifier<SelectionMode> mode = ValueNotifier(SelectionMode.replace);
   ValueNotifier<bool> keepAspectRatio = ValueNotifier(false);
+  ValueNotifier<bool> wandContinuous = ValueNotifier(true);
+  ValueNotifier<bool> wandWholeRamp = ValueNotifier(false);
 
   SelectOptions({
   required this.shapeDefault,
   required this.keepAspectRatioDefault,
-  required this.modeDefault
+  required this.modeDefault,
+  required this.wandContinuousDefault,
+  required this.wandWholeRampDefault
   })
   {
     keepAspectRatio.value = keepAspectRatioDefault;
     shape.value = _selectShapeIndexMap[shapeDefault] ?? SelectShape.rectangle;
     mode.value = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
+    wandContinuous.value = wandContinuousDefault;
+    wandWholeRamp.value = wandWholeRampDefault;
   }
 
 
@@ -166,43 +174,104 @@ class SelectOptions extends IToolOptions
             ],
           ),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 1,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Keep 1:1",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+        ValueListenableBuilder(
+          valueListenable: selectOptions.shape,
+          builder: (BuildContext context, SelectShape shape, child){
+            return Visibility(
+              visible: (shape != SelectShape.polygon),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                            (shape == SelectShape.wand) ? "Continuous" : "Keep 1:1",
+                          style: Theme.of(context).textTheme.labelLarge,
+                        )
+                    ),
+                  ),
+                  Expanded(
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Stack(
+                        children: [
+                          Visibility(
+                              visible: (shape == SelectShape.rectangle || shape == SelectShape.ellipse),
+                              child: ValueListenableBuilder<bool>(
+                                valueListenable: selectOptions.keepAspectRatio,
+                                builder: (BuildContext context, bool keep, child)
+                                {
+                                  return Switch(
+                                      onChanged:  (bool newVal) {selectOptions.keepAspectRatio.value = newVal;},
+                                      value: keep
+                                  );
+                                },
+                              )
+                          ),
+                          Visibility(
+                              visible: (shape == SelectShape.wand),
+                              child: ValueListenableBuilder<bool>(
+                                valueListenable: selectOptions.wandContinuous,
+                                builder: (BuildContext context, bool continuous, child){
+                                  return Switch(
+                                    value: continuous,
+                                    onChanged: (bool newVal) {selectOptions.wandContinuous.value = newVal;},
+                                  );
+                                },
+                              )
+                          )
+                        ],
+                      ),
+                    )
+                  ),
+                ],
               ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<SelectShape>(
-                  valueListenable: selectOptions.shape,
-                  builder: (BuildContext context, SelectShape shape, child)
-                  {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: selectOptions.keepAspectRatio,
-                      builder: (BuildContext context, bool keep, child)
-                      {
-                        return Switch(
-                          onChanged: (shape == SelectShape.rectangle || shape == SelectShape.ellipse) ? (bool newVal) {selectOptions.keepAspectRatio.value = newVal;} : null,
-                          value: keep
-                        );
-                      },
-                    );
-                  },
-                ),
-              )
-            ),
-          ],
+            );
+          },
+        ),
+        ValueListenableBuilder(
+          valueListenable: selectOptions.shape,
+          builder: (BuildContext context, SelectShape shape, child){
+            return Visibility(
+              visible: (shape == SelectShape.wand),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Whole Ramp",
+                          style: Theme.of(context).textTheme.labelLarge,
+                        )
+                    ),
+                  ),
+                  Expanded(
+                      flex: toolSettingsWidgetOptions.columnWidthRatio,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: selectOptions.wandWholeRamp,
+                          builder: (BuildContext context, bool wholeRamp, child)
+                          {
+                            return Switch(
+                              value: wholeRamp,
+                              onChanged: (bool newVal) {selectOptions.wandWholeRamp.value = newVal;},
+                            );
+                          },
+                        ),
+                      )
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
     );

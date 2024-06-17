@@ -112,6 +112,86 @@ class SelectionState with ChangeNotifier
     }
   }
 
+  void newSelectionFromWand({required final CoordinateSetI coord, required final SelectionMode mode, required final bool continuous, required final bool selectFromWholeRamp, final bool notify = true})
+  {
+    if (selectionOptions.mode.value == SelectionMode.replace)
+    {
+      deselect(notify: false);
+    }
+
+    if (!selection.contains(coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
+    {
+      final List<CoordinateSetI> selectData = continuous ?
+        getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
+        getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
+
+      for (final CoordinateSetI coord in selectData)
+      {
+        _addPixelWithMode(coord: coord, mode: mode);
+      }
+
+      _createSelectionLines();
+      if (notify)
+      {
+        notifyRepaint();
+      }
+    }
+  }
+
+  List<CoordinateSetI> getFloodReferences({
+    required final LayerState layer,
+    required final CoordinateSetI start,
+    required final bool selectFromWholeRamp})
+  {
+    final int numRows = GetIt.I.get<AppState>().canvasHeight;
+    final int numCols = GetIt.I.get<AppState>().canvasWidth;
+    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start.x, start.y);
+    final List<CoordinateSetI> result = [];
+    final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
+
+    void fill(int x, int y) {
+      if (x < 0 || y >= numRows || y < 0 || x >= numCols) return;
+      final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+      final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord.x, curCoord.y);
+      if (!visited[x][y] && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
+      {
+        visited[x][y] = true;
+        result.add(curCoord);
+        fill(x + 1, y);
+        fill(x - 1, y);
+        fill(x, y + 1);
+        fill(x, y - 1);
+      }
+    }
+
+    fill(start.x, start.y);
+    return result;
+  }
+
+  List<CoordinateSetI> getSameReferences({
+    required final LayerState layer,
+    required final CoordinateSetI start,
+    required final bool selectFromWholeRamp})
+  {
+    final List<CoordinateSetI> result = [];
+    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start.x, start.y);
+    for (int x = 0; x < GetIt.I.get<AppState>().canvasWidth; x++)
+    {
+      for (int y = 0; y < GetIt.I.get<AppState>().canvasHeight; y++)
+      {
+        final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord.x, curCoord.y);
+        if (refAtPos == targetValue || (selectFromWholeRamp && refAtPos != null && targetValue != null && refAtPos.ramp == targetValue.ramp))
+        {
+          result.add(curCoord);
+        }
+      }
+    }
+    return result;
+  }
+
+
+
   void _addPixelWithMode({required CoordinateSetI coord, required SelectionMode mode})
   {
     switch (selectionOptions.mode.value) {

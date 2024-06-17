@@ -215,18 +215,24 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
         if (selectionPainter.hasNewSelection)
         {
+          selectionPainter.hasNewSelection = false;
           if (selectionPainter.options.shape.value == SelectShape.ellipse || selectionPainter.options.shape.value == SelectShape.rectangle) {
-            selectionPainter.hasNewSelection = false;
             appState.selectionState.newSelectionFromShape(
                 start: selectionPainter.selectionStart,
                 end: selectionPainter.selectionEnd,
                 selectShape: selectionPainter.options.shape.value);
           }
+          else if (selectionPainter.options.shape.value == SelectShape.wand)
+          {
+            appState.selectionState.newSelectionFromWand(
+                coord: selectionPainter.selectionEnd,
+                mode: selectionPainter.options.mode.value,
+                selectFromWholeRamp: selectionPainter.options.wandWholeRamp.value,
+                continuous: selectionPainter.options.wandContinuous.value);
+          }
           else //if polygon selection
           {
-            //TODO handle polygon selection
             selectionPainter.polygonPoints.clear();
-            selectionPainter.polygonDown = false;
           }
         }
       }

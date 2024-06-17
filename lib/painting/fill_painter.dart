@@ -118,7 +118,8 @@ class FillPainter extends IToolPainter
           (
             refAtPos == startValue ||
             (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
-            (refAtPos != null && doShade && !shadeCurrentRampOnly)
+            (refAtPos != null && doShade && !shadeCurrentRampOnly && fillWholeRamp)
+
       ))
       {
         visited[x][y] = true;
@@ -191,9 +192,10 @@ class FillPainter extends IToolPainter
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
           final ColorReference? refAtPos = layer.getData(curCoord.x, curCoord.y);
-          if (refAtPos == startValue ||
+          if (
+              refAtPos == startValue ||
               (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
-              (refAtPos != null && doShade && !shadeCurrentRampOnly))
+              (refAtPos != null && doShade && !shadeCurrentRampOnly && fillWholeRamp))
           {
             if (!doShade || refAtPos == null)
             {
@@ -224,7 +226,7 @@ class FillPainter extends IToolPainter
         final ColorReference? refAtPos = appState.selectionState.selection.getColorReference(curCoord);
         if (refAtPos == startValue ||
             (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
-            (refAtPos != null && doShade && !shadeCurrentRampOnly))
+            (refAtPos != null && doShade && !shadeCurrentRampOnly && fillWholeRamp))
         {
           if (!doShade || refAtPos == null)
           {

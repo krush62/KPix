@@ -212,19 +212,73 @@ class SelectionPainter extends IToolPainter
   void drawCursor({
     required DrawingParameters drawParams})
   {
-    if (!drawParams.primaryDown)
+    assert(drawParams.cursorPos != null);
+
+    if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
     {
-      drawParams.paint.style = PaintingStyle.stroke;
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + _normEndPos.x * drawParams.pixelSize,
           y: drawParams.offset.dy + _normEndPos.y * drawParams.pixelSize);
+      drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = Colors.black;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = Colors.white;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+    }
+    else if (options.shape.value == SelectShape.polygon)
+    {
+      final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + (_normEndPos.x + 0.5) * drawParams.pixelSize,
+          y: drawParams.offset.dy + (_normEndPos.y + 0.5) * drawParams.pixelSize);
 
+      final Path rhombusPath = Path();
+      rhombusPath.moveTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
+      rhombusPath.lineTo(cursorPos.x, cursorPos.y - (1 * painterOptions.cursorSize));
+      rhombusPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
+      rhombusPath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
+      rhombusPath.lineTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
+
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+      drawParams.paint.color = Colors.white;
+      drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
+    }
+    else if (options.shape.value == SelectShape.wand)
+    {
+      final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + (_normEndPos.x + 0.5) * drawParams.pixelSize,
+          y: drawParams.offset.dy + (_normEndPos.y + 0.5) * drawParams.pixelSize);
+      final Path outlinePath = Path();
+      outlinePath.moveTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
+      outlinePath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
+      outlinePath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (5 * painterOptions.cursorSize));
+      outlinePath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
+      outlinePath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
+
+      final Path fillPath = Path();
+      fillPath.moveTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y + (1 * painterOptions.cursorSize));
+      fillPath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
+      fillPath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (5 * painterOptions.cursorSize));
+      fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
+
+
+      drawParams.paint.style = PaintingStyle.fill;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawPath(fillPath, drawParams.paint);
+
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+      drawParams.paint.color = Colors.white;
+      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
     }
   }
 

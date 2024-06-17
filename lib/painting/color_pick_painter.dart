@@ -59,21 +59,33 @@ class ColorPickPainter extends IToolPainter
   void drawCursor({required DrawingParameters drawParams})
   {
 
-    Path path = Path();
-    path.moveTo(cursorStartPos.x, cursorStartPos.y);
-    path.lineTo(cursorStartPos.x + (1 * painterOptions.cursorSize), cursorStartPos.y);
-    path.lineTo(cursorStartPos.x + (3 * painterOptions.cursorSize), cursorStartPos.y + (-2 * painterOptions.cursorSize));
-    path.lineTo(cursorStartPos.x + (2 * painterOptions.cursorSize), cursorStartPos.y + (-3 * painterOptions.cursorSize));
-    path.lineTo(cursorStartPos.x, cursorStartPos.y + (-1 * painterOptions.cursorSize));
-    path.lineTo(cursorStartPos.x, cursorStartPos.y);
+    final Path outlinePath = Path();
+    outlinePath.moveTo(cursorStartPos.x, cursorStartPos.y);
+    outlinePath.lineTo(cursorStartPos.x + (1 * painterOptions.cursorSize), cursorStartPos.y);
+    outlinePath.lineTo(cursorStartPos.x + (3 * painterOptions.cursorSize), cursorStartPos.y + (-2 * painterOptions.cursorSize));
+    outlinePath.lineTo(cursorStartPos.x + (2 * painterOptions.cursorSize), cursorStartPos.y + (-3 * painterOptions.cursorSize));
+    outlinePath.lineTo(cursorStartPos.x, cursorStartPos.y + (-1 * painterOptions.cursorSize));
+    outlinePath.lineTo(cursorStartPos.x, cursorStartPos.y);
+
+    final Path fillPath = Path();
+    fillPath.moveTo(cursorStartPos.x, cursorStartPos.y);
+    fillPath.lineTo(cursorStartPos.x + (1 * painterOptions.cursorSize), cursorStartPos.y);
+    fillPath.lineTo(cursorStartPos.x + (2 * painterOptions.cursorSize), cursorStartPos.y + (-1 * painterOptions.cursorSize));
+    fillPath.lineTo(cursorStartPos.x, cursorStartPos.y + (-1 * painterOptions.cursorSize));
+
+
+    drawParams.paint.style = PaintingStyle.fill;
+    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+    drawParams.paint.color = Colors.black;
+    drawParams.canvas.drawPath(fillPath, drawParams.paint);
 
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
     drawParams.paint.color = Colors.black;
-    drawParams.canvas.drawPath(path, drawParams.paint);
+    drawParams.canvas.drawPath(outlinePath, drawParams.paint);
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
     drawParams.paint.color = Colors.white;
-    drawParams.canvas.drawPath(path, drawParams.paint);
+    drawParams.canvas.drawPath(outlinePath, drawParams.paint);
   }
 
   @override

@@ -32,9 +32,9 @@ class PencilOptions extends IToolOptions
   final int shapeDefault;
   final bool pixelPerfectDefault;
 
-  ValueNotifier<int> size = ValueNotifier(1);
-  ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
-  ValueNotifier<bool> pixelPerfect = ValueNotifier(true);
+  final ValueNotifier<int> size = ValueNotifier(1);
+  final ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
+  final ValueNotifier<bool> pixelPerfect = ValueNotifier(true);
 
   PencilOptions({
     required this.sizeMin,

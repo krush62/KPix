@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -55,8 +57,9 @@ class ColorPickPainter extends IToolPainter
     }
   }
 
+
   @override
-  void drawCursor({required DrawingParameters drawParams})
+  void drawCursorOutline({required DrawingParameters drawParams})
   {
 
     final Path outlinePath = Path();
@@ -87,11 +90,5 @@ class ColorPickPainter extends IToolPainter
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(outlinePath, drawParams.paint);
   }
-
-  @override
-  void drawExtras({required DrawingParameters drawParams}) {}
-
-  @override
-  void drawTool({required DrawingParameters drawParams}) {}
 
 }

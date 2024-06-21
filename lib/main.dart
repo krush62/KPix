@@ -58,7 +58,7 @@ class _KPixAppState extends State<KPixApp> {
     GetIt.I.registerSingleton<AppState>(AppState());
     //TODO TEMP
     AppState appState = GetIt.I.get<AppState>();
-    appState.setCanvasDimensions(width: 128, height: 96);
+    appState.setCanvasDimensions(width: 1000, height: 700);
     appState.addNewRamp();
     appState.addNewRamp();
     appState.addNewLayer();
@@ -85,6 +85,7 @@ class _KPixAppState extends State<KPixApp> {
         {
           return MaterialApp(
             home: Padding(
+              //TODO magic
               padding: const EdgeInsets.all(32.0),
               child: Stack(
                 children: [

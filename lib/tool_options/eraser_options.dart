@@ -12,8 +12,8 @@ class EraserOptions extends IToolOptions
   final int sizeDefault;
   final int shapeDefault;
 
-  ValueNotifier<int> size = ValueNotifier(1);
-  ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
+  final ValueNotifier<int> size = ValueNotifier(1);
+  final ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
 
   EraserOptions({
     required this.sizeMin,

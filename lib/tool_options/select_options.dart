@@ -35,11 +35,11 @@ class SelectOptions extends IToolOptions
   final bool wandContinuousDefault;
   final bool wandWholeRampDefault;
 
-  ValueNotifier<SelectShape> shape = ValueNotifier(SelectShape.rectangle);
-  ValueNotifier<SelectionMode> mode = ValueNotifier(SelectionMode.replace);
-  ValueNotifier<bool> keepAspectRatio = ValueNotifier(false);
-  ValueNotifier<bool> wandContinuous = ValueNotifier(true);
-  ValueNotifier<bool> wandWholeRamp = ValueNotifier(false);
+  final ValueNotifier<SelectShape> shape = ValueNotifier(SelectShape.rectangle);
+  final ValueNotifier<SelectionMode> mode = ValueNotifier(SelectionMode.replace);
+  final ValueNotifier<bool> keepAspectRatio = ValueNotifier(false);
+  final ValueNotifier<bool> wandContinuous = ValueNotifier(true);
+  final ValueNotifier<bool> wandWholeRamp = ValueNotifier(false);
 
   SelectOptions({
   required this.shapeDefault,
@@ -145,24 +145,36 @@ class SelectOptions extends IToolOptions
                     return SegmentedButton<SelectShape>
                       (
                       segments: [
-                        ButtonSegment(value: SelectShape.rectangle, label: FaIcon(
-                          FontAwesomeIcons.square,
-                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ButtonSegment(
+                          value: SelectShape.rectangle,
+                          tooltip: "Rectangle",
+                          label: FaIcon(
+                            FontAwesomeIcons.square,
+                            size: toolSettingsWidgetOptions.smallIconSize,
                         )),
-                        ButtonSegment(value: SelectShape.ellipse, label: FaIcon(
-                          FontAwesomeIcons.circle,
-                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ButtonSegment(
+                          value: SelectShape.ellipse,
+                          tooltip: "Ellipse",
+                          label: FaIcon(
+                            FontAwesomeIcons.circle,
+                            size: toolSettingsWidgetOptions.smallIconSize,
                         )),
-                        ButtonSegment(value: SelectShape.polygon, label: FaIcon(
-                          FontAwesomeIcons.drawPolygon,
-                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ButtonSegment(
+                          value: SelectShape.polygon,
+                          tooltip: "Polygon",
+                          label: FaIcon(
+                            FontAwesomeIcons.drawPolygon,
+                            size: toolSettingsWidgetOptions.smallIconSize,
                         )),
-                        ButtonSegment(value: SelectShape.wand, label: FaIcon(
-                          FontAwesomeIcons.wandMagicSparkles,
-                          size: toolSettingsWidgetOptions.smallIconSize,
+                        ButtonSegment(
+                          value: SelectShape.wand,
+                          tooltip: "Wand",
+                          label: FaIcon(
+                            FontAwesomeIcons.wandMagicSparkles,
+                            size: toolSettingsWidgetOptions.smallIconSize,
                         ))
                       ],
-                      selected: <SelectShape>{selectOptions.shape.value},
+                      selected: <SelectShape>{shape},
                       emptySelectionAllowed: false,
                       multiSelectionEnabled: false,
                       showSelectedIcon: false,

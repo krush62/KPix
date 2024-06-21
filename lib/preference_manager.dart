@@ -154,10 +154,7 @@ enum PreferenceDouble
   Painter_CursorSize(defaultValue: 4.0),
   Painter_CursorBorderWidth(defaultValue: 2.0),
   Painter_SelectionSolidStrokeWidth(defaultValue: 2.0),
-  Painter_PixelExtension(defaultValue: 0.5),
-  Painter_CheckerBoardDivisor(defaultValue: 2.0),
-  Painter_CheckerBoardSizeMin(defaultValue: 8.0),
-  Painter_CheckerBoardSizeMax(defaultValue: 64.0),
+  Painter_PixelExtension(defaultValue: 0.15),
   Painter_SelectionDashStrokeWidth(defaultValue: 2.0),
   Painter_SelectionPolygonCircleRadius(defaultValue: 16.0),
   Painter_SelectionStrokeWidthLarge(defaultValue: 4.0),
@@ -195,7 +192,7 @@ enum PreferenceInt
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
   Layout_LayerWidget_ThumbUpdateTimerSec(defaultValue: 0),
-  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 500),
+  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 1000),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
@@ -210,6 +207,13 @@ enum PreferenceInt
   Tool_Shape_CornerRadiusMin(defaultValue: 0),
   Tool_Shape_CornerRadiusMax(defaultValue: 16),
   Tool_Shape_CornerRadius(defaultValue: 0),
+  Tool_Shape_CornerCountMin(defaultValue: 5),
+  Tool_Shape_CornerCountMax(defaultValue: 9),
+  Tool_Shape_CornerCount(defaultValue: 5),
+  Tool_Shape_EllipseAngleMin(defaultValue: 0),
+  Tool_Shape_EllipseAngleMax(defaultValue: 90),
+  Tool_Shape_EllipseAngle(defaultValue: 0),
+  Tool_Shape_EllipseAngleSteps(defaultValue: 5),
   Tool_Select_Shape(defaultValue: 0),
   Tool_Select_Mode(defaultValue: 0),
   Tool_Eraser_SizeMin(defaultValue: 1),
@@ -273,6 +277,8 @@ enum PreferenceInt
   KPalColorCard_Layout_ColorNameFlex(defaultValue: 1),
   KPalColorCard_Layout_ColorFlex(defaultValue: 6),
   KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
+
+  Painter_CheckerBoardSize(defaultValue: 8),
 
   ColorNames_Scheme(defaultValue: 0),
 
@@ -596,7 +602,14 @@ class PreferenceManager
         strokeWidthDefault: getValueI(PreferenceInt.Tool_Shape_StrokeWidth),
         cornerRadiusMin: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMin),
         cornerRadiusMax: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMax),
-        cornerRadiusDefault: getValueI(PreferenceInt.Tool_Shape_CornerRadius));
+        cornerRadiusDefault: getValueI(PreferenceInt.Tool_Shape_CornerRadius),
+        cornerCountMin: getValueI(PreferenceInt.Tool_Shape_CornerCountMin),
+        cornerCountMax: getValueI(PreferenceInt.Tool_Shape_CornerCountMax),
+        cornerCountDefault: getValueI(PreferenceInt.Tool_Shape_CornerCount),
+        ellipseAngleMin: getValueI(PreferenceInt.Tool_Shape_EllipseAngleMin),
+        ellipseAngleMax: getValueI(PreferenceInt.Tool_Shape_EllipseAngleMax),
+        ellipseAngleDefault: getValueI(PreferenceInt.Tool_Shape_EllipseAngle),
+        ellipseAngleSteps: getValueI(PreferenceInt.Tool_Shape_EllipseAngleSteps),);
     FillOptions fillOptions = FillOptions(
         fillAdjacentDefault: getValueB(PreferenceBool.Tool_Fill_FillAdjacent),
         fillWholeRampDefault: getValueB(PreferenceBool.Tool_Fill_FillWholeRamp));
@@ -729,9 +742,7 @@ class PreferenceManager
     kPixPainterOptions = KPixPainterOptions(
         cursorSize: getValueD(PreferenceDouble.Painter_CursorSize),
         cursorBorderWidth: getValueD(PreferenceDouble.Painter_CursorBorderWidth),
-        checkerBoardDivisor: getValueD(PreferenceDouble.Painter_CheckerBoardDivisor),
-        checkerBoardSizeMin: getValueD(PreferenceDouble.Painter_CheckerBoardSizeMin),
-        checkerBoardSizeMax: getValueD(PreferenceDouble.Painter_CheckerBoardSizeMax),
+        checkerBoardSize: getValueI(PreferenceInt.Painter_CheckerBoardSize),
         pixelExtension: getValueD(PreferenceDouble.Painter_PixelExtension),
         selectionSolidStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionSolidStrokeWidth),
         selectionPolygonCircleRadius: getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),

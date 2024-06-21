@@ -17,8 +17,10 @@ class PencilPainter extends IToolPainter
   final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final List<CoordinateSetI> paintPositions = [];
   final CoordinateSetI cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-
-
+  final CoordinateSetI previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  Set<CoordinateSetI> contentPoints = {};
+  bool waitingForRasterization = false;
+  final HashMap<CoordinateSetI, ColorReference> drawingPixels = HashMap();
 
   PencilPainter({required super.painterOptions});
 
@@ -34,68 +36,84 @@ class PencilPainter extends IToolPainter
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
+       if (cursorPosNorm != previousCursorPosNorm)
+       {
+         contentPoints = getContentPoints(options.shape.value, options.size.value, cursorPosNorm);
+         previousCursorPosNorm.x = cursorPosNorm.x;
+         previousCursorPosNorm.y = cursorPosNorm.y;
+       }
     }
-    if (drawParams.primaryDown)
+    if (!waitingForRasterization)
     {
-
-      if (paintPositions.isEmpty || cursorPosNorm.isAdjacent(paintPositions[paintPositions.length - 1], true))
+      if (drawParams.primaryDown)
       {
-        paintPositions.add(CoordinateSetI(x: cursorPosNorm.x, y: cursorPosNorm.y));
-        if (options.size.value == 1 && options.pixelPerfect.value && paintPositions.length >= 3)
+        if (paintPositions.isEmpty || cursorPosNorm.isAdjacent(paintPositions[paintPositions.length - 1], true))
         {
-          if (paintPositions[paintPositions.length-1].isDiagonal(paintPositions[paintPositions.length - 3]))
+          paintPositions.add(CoordinateSetI(x: cursorPosNorm.x, y: cursorPosNorm.y));
+          //PIXEL PERFECT
+          if (paintPositions.length >= 3)
           {
-            paintPositions.removeAt(paintPositions.length - 2);
+            if (options.pixelPerfect.value && paintPositions[paintPositions.length-1].isDiagonal(paintPositions[paintPositions.length - 3]))
+            {
+              paintPositions.removeAt(paintPositions.length - 2);
+            }
           }
-        }
-      }
-      else
-      {
-        paintPositions.addAll(Helper.bresenham(paintPositions[paintPositions.length - 1], cursorPosNorm).sublist(1));
-      }
-    }
-    else if (paintPositions.isNotEmpty)
-    {
-      final Set<CoordinateSetI> posSet = paintPositions.toSet();
-      final Set<CoordinateSetI> paintPoints = {};
-      for (final CoordinateSetI pos in posSet)
-      {
-        paintPoints.addAll(getContentPoints(options.shape.value, options.size.value, pos));
-      }
-
-      final HashMap<CoordinateSetI, ColorReference> drawMap = getPixelsToDraw(drawParams: drawParams, coords: paintPoints);
-      final bool dumpToSelection = !appState.selectionState.selection.isEmpty();
-      for (final MapEntry<CoordinateSetI, ColorReference> entry in drawMap.entries)
-      {
-        if (dumpToSelection)
-        {
-          appState.selectionState.selection.addDirectly(entry.key, entry.value);
         }
         else
         {
-          drawParams.currentLayer.setData(entry.key.x, entry.key.y, entry.value);
+          paintPositions.addAll(Helper.bresenham(paintPositions[paintPositions.length - 1], cursorPosNorm).sublist(1));
+        }
+        if (paintPositions.length > 3)
+        {
+          final Set<CoordinateSetI> posSet = paintPositions.sublist(0, paintPositions.length - 3).toSet();
+          final Set<CoordinateSetI> paintPoints = {};
+          for (final CoordinateSetI pos in posSet)
+          {
+            paintPoints.addAll(getContentPoints(options.shape.value, options.size.value, pos));
+          }
+          drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize));
+          paintPositions.removeRange(0, paintPositions.length - 3);
         }
       }
-      paintPositions.clear();
+      else if (paintPositions.isNotEmpty) //final dumping
+      {
+        final Set<CoordinateSetI> posSet = paintPositions.toSet();
+        final Set<CoordinateSetI> paintPoints = {};
+        for (final CoordinateSetI pos in posSet)
+        {
+          paintPoints.addAll(getContentPoints(options.shape.value, options.size.value, pos));
+        }
+        drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize));
+        _dump(currentLayer: drawParams.currentLayer);
+        waitingForRasterization = true;
+        paintPositions.clear();
+      }
+    }
+    else if (!drawParams.currentLayer.isRasterizing && drawingPixels.isNotEmpty)
+    {
+      drawingPixels.clear();
+      waitingForRasterization = false;
+    }
+  }
+
+  void _dump({required final LayerState currentLayer})
+  {
+    if (drawingPixels.isNotEmpty)
+    {
+      if (!appState.selectionState.selection.isEmpty())
+      {
+        appState.selectionState.selection.addDirectlyAll(drawingPixels);
+      }
+      else
+      {
+        currentLayer.setDataAll(drawingPixels.entries);
+      }
     }
   }
 
   @override
-  void drawCursor({required DrawingParameters drawParams})
+  void drawCursorOutline({required DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPos != null);
-
-    final Set<CoordinateSetI> contentPoints = getContentPoints(options.shape.value, options.size.value, cursorPosNorm);
-    if(appState.selectedColor.value != null)
-    {
-      HashMap<CoordinateSetI, ColorReference> drawMap =  getPixelsToDraw(drawParams: drawParams, coords: contentPoints);
-      drawParams.paint.style = PaintingStyle.fill;
-      for (final MapEntry<CoordinateSetI, ColorReference> entry in drawMap.entries)
-      {
-        _drawPixel(drawParams: drawParams, entry: entry);
-      }
-    }
-
     //Surrounding
     final List<CoordinateSetI> pathPoints = getBoundaryPath(contentPoints);
     Path path = Path();
@@ -124,45 +142,46 @@ class PencilPainter extends IToolPainter
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
   }
-
-  @override
-  void drawExtras({required DrawingParameters drawParams}){}
-
-  @override
-  void drawTool({required DrawingParameters drawParams}) {
-    if (drawParams.primaryDown)
+ @override
+  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars})
+  {
+    if(appState.selectedColor.value != null && drawPars.cursorPos != null)
     {
-      final Set<CoordinateSetI> posSet = paintPositions.toSet();
-      final Set<CoordinateSetI> paintPoints = {};
-      for (final CoordinateSetI pos in posSet)
-      {
-        paintPoints.addAll(getContentPoints(options.shape.value, options.size.value, pos));
-      }
-
-      final HashMap<CoordinateSetI, ColorReference> drawMap = getPixelsToDraw(drawParams: drawParams, coords: paintPoints);
-      drawParams.paint.style = PaintingStyle.fill;
-      for (final MapEntry<CoordinateSetI, ColorReference> entry in drawMap.entries)
-      {
-         _drawPixel(drawParams: drawParams, entry: entry);
-      }
+      return getPixelsToDraw(coords: contentPoints, canvasSize: drawPars.canvasSize, currentLayer: drawPars.currentLayer);
+    }
+    else
+    {
+      return super.getCursorContent(drawPars: drawPars);
     }
   }
 
+  @override
+  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawPars})
+  {
+    if (drawPars.primaryDown || waitingForRasterization)
+    {
+      return drawingPixels;
+    }
+    else
+    {
+      return super.getToolContent(drawPars: drawPars);
+    }
+  }
 
-  HashMap<CoordinateSetI, ColorReference> getPixelsToDraw({required DrawingParameters drawParams, required Set<CoordinateSetI> coords})
+  HashMap<CoordinateSetI, ColorReference> getPixelsToDraw({required CoordinateSetI canvasSize, required LayerState currentLayer, required Set<CoordinateSetI> coords})
   {
     final HashMap<CoordinateSetI, ColorReference> pixelMap = HashMap();
     final SelectionState selection = appState.selectionState;
     for (final CoordinateSetI coord in coords)
     {
       if (coord.x >= 0 && coord.y >= 0 &&
-          coord.x < drawParams.canvasSize.x &&
-          coord.y < drawParams.canvasSize.y)
+          coord.x < canvasSize.x &&
+          coord.y < canvasSize.y)
       {
         if (!shaderOptions.isEnabled.value) //without shading
         {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && drawParams.currentLayer.getData(coord.x, coord.y) != appState.selectedColor.value) ||
+          if ((selection.selection.isEmpty() && currentLayer.getData(coord.x, coord.y) != appState.selectedColor.value) ||
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != appState.selectedColor.value))
           {
@@ -172,11 +191,11 @@ class PencilPainter extends IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-          if ((selection.selection.isEmpty() && drawParams.currentLayer.getData(coord.x, coord.y) != null) ||
+          if ((selection.selection.isEmpty() && currentLayer.getData(coord.x, coord.y) != null) ||
             //if selection and selection contains pixel and pixel is not null
             (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? drawParams.currentLayer.getData(coord.x, coord.y)! : selection.selection.getColorReference(coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getData(coord.x, coord.y)! : selection.selection.getColorReference(coord)!;
           if (layerRef.ramp.uuid == appState.selectedColor.value!.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
@@ -198,17 +217,5 @@ class PencilPainter extends IToolPainter
       }
     }
     return pixelMap;
-  }
-
-  void _drawPixel({required DrawingParameters drawParams, required MapEntry<CoordinateSetI, ColorReference> entry})
-  {
-    drawParams.paint.color = entry.value.getIdColor().color;
-    drawParams.canvas.drawRect(
-        Rect.fromLTWH(
-            drawParams.offset.dx + (entry.key.x * drawParams.pixelSize.toDouble()) - kPixPainterOptions.pixelExtension,
-            drawParams.offset.dy + (entry.key.y * drawParams.pixelSize.toDouble()) - kPixPainterOptions.pixelExtension,
-            drawParams.pixelSize.toDouble() + (2.0 * kPixPainterOptions.pixelExtension),
-            drawParams.pixelSize.toDouble() + (2.0 * kPixPainterOptions.pixelExtension)),
-        drawParams.paint);
   }
 }

@@ -645,6 +645,12 @@ class SelectionList
     _content[coord] = colRef;
   }
 
+  void addDirectlyAll(final HashMap<CoordinateSetI, ColorReference> list)
+  {
+    _content.addAll(list);
+
+  }
+
 
   void remove(final CoordinateSetI coord)
   {

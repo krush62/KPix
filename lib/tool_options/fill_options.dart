@@ -4,8 +4,8 @@ import 'package:kpix/widgets/tool_settings_widget.dart';
 
 class FillOptions extends IToolOptions
 {
-  ValueNotifier<bool> fillAdjacent = ValueNotifier(true);
-  ValueNotifier<bool> fillWholeRamp = ValueNotifier(false);
+  final ValueNotifier<bool> fillAdjacent = ValueNotifier(true);
+  final ValueNotifier<bool> fillWholeRamp = ValueNotifier(false);
 
   final bool fillAdjacentDefault;
   final bool fillWholeRampDefault;

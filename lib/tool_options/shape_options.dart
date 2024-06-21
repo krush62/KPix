@@ -1,60 +1,41 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
 enum ShapeShape
 {
-  square,
-  ellipse,
   triangle,
-  pentagon,
-  hexagon,
-  octagon,
-  fiveStar,
-  sixStar,
-  eightStar,
+  rectangle,
+  diamond,
+  ellipse,
+  ngon,
+  star
 }
 
 const List<ShapeShape> shapeShapeList =
 [
-  ShapeShape.square,
-  ShapeShape.ellipse,
   ShapeShape.triangle,
-  ShapeShape.pentagon,
-  ShapeShape.hexagon,
-  ShapeShape.octagon,
-  ShapeShape.fiveStar,
-  ShapeShape.sixStar,
-  ShapeShape.eightStar,
+  ShapeShape.rectangle,
+  ShapeShape.diamond,
+  ShapeShape.ellipse,
+  ShapeShape.ngon,
+  ShapeShape.star
+
 ];
 
 const Map<int, ShapeShape> _shapeShapeIndexMap =
 {
-  0: ShapeShape.square,
-  1: ShapeShape.ellipse,
-  2: ShapeShape.triangle,
-  3: ShapeShape.pentagon,
-  4: ShapeShape.hexagon,
-  5: ShapeShape.octagon,
-  6: ShapeShape.fiveStar,
-  7: ShapeShape.sixStar,
-  8: ShapeShape.eightStar,
+  0: ShapeShape.triangle,
+  1: ShapeShape.rectangle,
+  2: ShapeShape.diamond,
+  3: ShapeShape.ellipse,
+  4: ShapeShape.ngon,
+  5: ShapeShape.star,
 };
 
-const Map<ShapeShape, String> shapeShapeStringMap =
-{
-  ShapeShape.square : "Rectangle",
-  ShapeShape.ellipse : "Ellipse",
-  ShapeShape.triangle : "Triangle",
-  ShapeShape.pentagon : "Pentagon",
-  ShapeShape.hexagon : "Hexagon",
-  ShapeShape.octagon : "Octagon",
-  ShapeShape.fiveStar : "5-Star",
-  ShapeShape.sixStar : "6-Star",
-  ShapeShape.eightStar : "8-Star",
-};
 
 class ShapeOptions extends IToolOptions
 {
@@ -67,13 +48,22 @@ class ShapeOptions extends IToolOptions
   final int cornerRadiusMin;
   final int cornerRadiusMax;
   final int cornerRadiusDefault;
+  final int ellipseAngleMin;
+  final int ellipseAngleMax;
+  final int ellipseAngleDefault;
+  final int ellipseAngleSteps;
+  final int cornerCountMin;
+  final int cornerCountMax;
+  final int cornerCountDefault;
 
 
-  ValueNotifier<ShapeShape> shape = ValueNotifier(ShapeShape.square);
-  ValueNotifier<bool> keepRatio = ValueNotifier(false);
-  ValueNotifier<bool> strokeOnly = ValueNotifier(false);
-  ValueNotifier<int> strokeWidth = ValueNotifier(1);
-  ValueNotifier<int> cornerRadius = ValueNotifier(0);
+  final ValueNotifier<ShapeShape> shape = ValueNotifier(ShapeShape.rectangle);
+  final ValueNotifier<bool> keepRatio = ValueNotifier(false);
+  final ValueNotifier<bool> strokeOnly = ValueNotifier(false);
+  final ValueNotifier<int> strokeWidth = ValueNotifier(1);
+  final ValueNotifier<int> cornerRadius = ValueNotifier(0);
+  final ValueNotifier<int> cornerCount= ValueNotifier(5);
+  final ValueNotifier<int> ellipseAngle = ValueNotifier(0);
 
   ShapeOptions({
     required this.shapeDefault,
@@ -84,13 +74,22 @@ class ShapeOptions extends IToolOptions
     required this.strokeWidthDefault,
     required this.cornerRadiusMin,
     required this.cornerRadiusMax,
-    required this.cornerRadiusDefault
+    required this.cornerRadiusDefault,
+    required this.cornerCountMin,
+    required this.cornerCountMax,
+    required this.cornerCountDefault,
+    required this.ellipseAngleMin,
+    required this.ellipseAngleMax,
+    required this.ellipseAngleDefault,
+    required this.ellipseAngleSteps,
   }) {
-    shape.value = _shapeShapeIndexMap[shapeDefault] ?? ShapeShape.square;
+    shape.value = _shapeShapeIndexMap[shapeDefault] ?? ShapeShape.rectangle;
     keepRatio.value = keepRatioDefault;
     strokeOnly.value = strokeOnlyDefault;
     strokeWidth.value = strokeWidthDefault;
     cornerRadius.value = cornerRadiusDefault;
+    cornerCount.value = cornerCountDefault;
+    ellipseAngle.value = ellipseAngleDefault;
   }
 
   static Column getWidget(
@@ -123,18 +122,51 @@ class ShapeOptions extends IToolOptions
                 valueListenable: shapeOptions.shape,
                 builder: (BuildContext context, ShapeShape shape, child)
                 {
-                  return DropdownButton(
-                    value: shape,
-                    dropdownColor: Theme.of(context).primaryColorDark,
-                    focusColor: Theme.of(context).primaryColor,
-                    isExpanded: true,
-                    onChanged: (ShapeShape? pShape) {shapeOptions.shape.value = pShape!;},
-                    items: shapeShapeList.map<DropdownMenuItem<ShapeShape>>((ShapeShape value) {
-                      return DropdownMenuItem<ShapeShape>(
-                        value: value,
-                        child: Text(shapeShapeStringMap[value]!),
-                      );
-                    }).toList(),
+                  return SegmentedButton<ShapeShape>(
+                    segments: [
+                      ButtonSegment(
+                        value: ShapeShape.triangle,
+                        label: Icon(
+                          Icons.change_history,
+                          size: toolSettingsWidgetOptions.smallIconSize)),
+                      ButtonSegment(
+                        value: ShapeShape.rectangle,
+                        tooltip: "Rectangle",
+                        label: Icon(
+                          Icons.check_box_outline_blank,
+                          size: toolSettingsWidgetOptions.smallIconSize,)),
+                      ButtonSegment(
+                        value: ShapeShape.diamond,
+                        tooltip: "Mid-Angle Rectangle",
+                        label: Transform.rotate(
+                          angle: -pi / 4,
+                          child: Icon(
+                            Icons.check_box_outline_blank,
+                            size: toolSettingsWidgetOptions.smallIconSize,),)),
+                      ButtonSegment(
+                        value: ShapeShape.ellipse,
+                        tooltip: "Ellipse",
+                        label: Icon(
+                          Icons.circle_outlined,
+                          size: toolSettingsWidgetOptions.smallIconSize,)),
+                      ButtonSegment(
+                        value: ShapeShape.ngon,
+                        tooltip: "Regular Polygon",
+                        label: Icon(
+                          Icons.hexagon_outlined,
+                          size: toolSettingsWidgetOptions.smallIconSize,)),
+                      ButtonSegment(
+                        value: ShapeShape.star,
+                        tooltip: "Star",
+                        label: Icon(
+                          Icons.star_outline,
+                          size: toolSettingsWidgetOptions.smallIconSize,)),
+                    ],
+                    selected: <ShapeShape>{shape},
+                    emptySelectionAllowed: false,
+                    multiSelectionEnabled: false,
+                    showSelectedIcon: false,
+                    onSelectionChanged: (Set<ShapeShape> shapes) {shapeOptions.shape.value = shapes.first;},
                   );
                 },
               ),
@@ -190,42 +222,41 @@ class ShapeOptions extends IToolOptions
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: shapeOptions.strokeOnly,
-                        builder: (BuildContext context, bool strokeOnly, child)
-                        {
-                          return Switch(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: shapeOptions.strokeOnly,
+                builder: (BuildContext context, bool strokeOnly, child){
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Switch(
                             onChanged: (bool newVal) {shapeOptions.strokeOnly.value = newVal;},
                             value: strokeOnly,
-                          );
-                        },
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: shapeOptions.strokeWidth,
-                      builder: (BuildContext context, int width, child)
-                      {
-                        return Slider(
-                          value: width.toDouble(),
-                          min: shapeOptions.strokeWidthMin.toDouble(),
-                          max: shapeOptions.strokeWidthMax.toDouble(),
-                          divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
-                          onChanged: shapeOptions.strokeOnly.value ? (double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
-                          label: width.round().toString(),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                      Expanded(
+                        flex: 2,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: shapeOptions.strokeWidth,
+                          builder: (BuildContext context, int width, child)
+                          {
+                            return Slider(
+                              value: width.toDouble(),
+                              min: shapeOptions.strokeWidthMin.toDouble(),
+                              max: shapeOptions.strokeWidthMax.toDouble(),
+                              divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
+                              onChanged: strokeOnly ? (double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
+                              label: width.round().toString(),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               )
             ),
           ],
@@ -234,41 +265,117 @@ class ShapeOptions extends IToolOptions
           valueListenable: shapeOptions.shape,
           builder: (BuildContext context, ShapeShape shape, child)
           {
-            return Visibility(
-              visible: shape == ShapeShape.square,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Corner Radius",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      )
-                    ),
+            return Stack(
+              children: [
+                Visibility(
+                  visible: (shape == ShapeShape.rectangle || shape == ShapeShape.triangle || shape == ShapeShape.diamond),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Corner Radius",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          )
+                        ),
+                      ),
+                      Expanded(
+                        flex: toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: shapeOptions.cornerRadius,
+                          builder: (BuildContext context, int cornerRadius, child)
+                          {
+                            return Slider(
+                              value: cornerRadius.toDouble(),
+                              min: shapeOptions.cornerRadiusMin.toDouble(),
+                              max: shapeOptions.cornerRadiusMax.toDouble(),
+                              divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
+                              onChanged: (double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
+                              label: cornerRadius.round().toString(),
+                            );
+                          }
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: shapeOptions.cornerRadius,
-                      builder: (BuildContext context, int cornerRadius, child)
-                      {
-                        return Slider(
-                          value: cornerRadius.toDouble(),
-                          min: shapeOptions.cornerRadiusMin.toDouble(),
-                          max: shapeOptions.cornerRadiusMax.toDouble(),
-                          divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
-                          onChanged: (double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
-                          label: cornerRadius.round().toString(),
-                        );
-                      }
-                    ),
+                ),
+                Visibility(
+                  visible: (shape == ShapeShape.ellipse),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Angle",
+                              style: Theme.of(context).textTheme.labelLarge,
+                            )
+                        ),
+                      ),
+                      Expanded(
+                        flex: toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                            valueListenable: shapeOptions.ellipseAngle,
+                            builder: (BuildContext context, int angle, child)
+                            {
+                              return Slider(
+                                value: angle.toDouble(),
+                                min: shapeOptions.ellipseAngleMin.toDouble(),
+                                max: shapeOptions.ellipseAngleMax.toDouble(),
+                                divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
+                                onChanged: (double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
+                                label: angle.round().toString(),
+                              );
+                            }
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Visibility(
+                  visible: (shape == ShapeShape.ngon || shape == ShapeShape.star),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Corner Count",
+                              style: Theme.of(context).textTheme.labelLarge,
+                            )
+                        ),
+                      ),
+                      Expanded(
+                        flex: toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                            valueListenable: shapeOptions.cornerCount,
+                            builder: (BuildContext context, int corners, child)
+                            {
+                              return Slider(
+                                value: corners.toDouble(),
+                                min: shapeOptions.cornerCountMin.toDouble(),
+                                max: shapeOptions.cornerCountMax.toDouble(),
+                                divisions: (shapeOptions.cornerCountMax - shapeOptions.cornerCountMin),
+                                onChanged: (double newVal) {shapeOptions.cornerCount.value = newVal.round();},
+                                label: corners.round().toString(),
+                              );
+                            }
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             );
           }
         ),

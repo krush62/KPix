@@ -102,8 +102,8 @@ class KPixTheme {
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? darkColors.normal : darkColors.light),
-          backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? darkColors.light : darkColors.normal),
+          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? lightColors.normal : lightColors.light),
+          backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? lightColors.light : lightColors.normal),
         )
     )
 

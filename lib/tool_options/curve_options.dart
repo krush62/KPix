@@ -10,7 +10,7 @@ class CurveOptions extends IToolOptions
   final int widthMax;
   final int widthDefault;
 
-  ValueNotifier<int> width = ValueNotifier(1);
+  final ValueNotifier<int> width = ValueNotifier(1);
 
   CurveOptions({
     required this.widthMin,

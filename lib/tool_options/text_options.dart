@@ -15,9 +15,9 @@ class TextOptions extends IToolOptions
   final int maxLength;
   final FontManager fontManager;
 
-  ValueNotifier<int> size = ValueNotifier(1);
-  ValueNotifier<PixelFontType?> font = ValueNotifier(null);
-  ValueNotifier<String> text = ValueNotifier("Text");
+  final ValueNotifier<int> size = ValueNotifier(1);
+  final ValueNotifier<PixelFontType?> font = ValueNotifier(null);
+  final ValueNotifier<String> text = ValueNotifier("Text");
 
 
   TextOptions({

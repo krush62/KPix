@@ -37,8 +37,9 @@ class FillPainter extends IToolPainter
     }
   }
 
+
   @override
-  void drawCursor({required DrawingParameters drawParams}) {
+  void drawCursorOutline({required DrawingParameters drawParams}) {
     assert(drawParams.cursorPos != null);
     final CoordinateSetD cursorPos = CoordinateSetD(
         x: drawParams.offset.dx + (_normCursorPos.x + 0.5) * drawParams.pixelSize,
@@ -76,11 +77,6 @@ class FillPainter extends IToolPainter
 
   @override
   void drawExtras({required DrawingParameters drawParams}) {
-    // TODO: implement drawExtras
-  }
-
-  @override
-  void drawTool({required DrawingParameters drawParams}) {
     if (shouldDraw)
     {
       if (options.fillAdjacent.value)

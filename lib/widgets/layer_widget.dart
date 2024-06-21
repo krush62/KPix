@@ -11,7 +11,6 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:uuid/uuid.dart';
 
 
 class LayerWidgetOptions
@@ -106,7 +105,9 @@ class LayerState
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
   final CoordinateSetI size;
   final List<List<ColorReference?>> _data;
-  bool _hasNewData = false;
+  bool hasNonRasterizedData = false;
+  ui.Image? raster;
+  bool isRasterizing = false;
 
   LayerState._({required List<List<ColorReference?>> data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
   {
@@ -151,11 +152,18 @@ class LayerState
 
   void updateTimerCallback(final Timer timer)
   {
-    if (_hasNewData)
+    if (hasNonRasterizedData && !isRasterizing)
     {
-      _createThumbnail();
-      _hasNewData = false;
+      isRasterizing = true;
+      _createThumbnail().then((void _) => rasterizingDone());
     }
+  }
+
+  void rasterizingDone()
+  {
+    isRasterizing = false;
+    thumbnail.value = raster;
+    hasNonRasterizedData = false;
   }
 
   Future<void> _createThumbnail() async
@@ -163,6 +171,7 @@ class LayerState
     SelectionList selection = GetIt.I.get<AppState>().selectionState.selection;
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas c = Canvas(recorder);
+
     final Paint paint = Paint();
     paint.style = PaintingStyle.fill;
     for (int x = 0; x < size.x; x++)
@@ -171,13 +180,13 @@ class LayerState
        {
          ColorReference? col = _data[x][y];
          final CoordinateSetI curCor = CoordinateSetI(x: x, y: y);
-         if (selection.currentLayer == this && selection.contains(curCor) && selection.getColorReference(curCor) != null)
+         /*if (selection.currentLayer == this && selection.contains(curCor) && selection.getColorReference(curCor) != null)
          {
            ColorReference selCol = selection.getColorReference(curCor)!;
            paint.color = selCol.ramp.colors[selCol.colorIndex].value.color;
            c.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
          }
-         else if (col != null)
+         else*/ if (col != null)
          {
            paint.color = col.ramp.colors[col.colorIndex].value.color;
            c.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
@@ -185,7 +194,7 @@ class LayerState
        }
     }
     ui.Picture p = recorder.endRecording();
-    thumbnail.value = p.toImageSync(size.x, size.y);
+    raster = await p.toImage(size.x, size.y);
   }
 
   ColorReference? getData(final int x, final int y)
@@ -196,7 +205,16 @@ class LayerState
   void setData(final int x, final int y, final ColorReference? ref)
   {
     _data[x][y] = ref;
-    _hasNewData = true;
+    hasNonRasterizedData = true;
+  }
+
+  void setDataAll(final Iterable<MapEntry<CoordinateSetI, ColorReference>> list)
+  {
+    for (final MapEntry<CoordinateSetI, ColorReference> entry in list)
+    {
+      _data[entry.key.x][entry.key.y] = entry.value;
+    }
+    hasNonRasterizedData = true;
   }
 }
 

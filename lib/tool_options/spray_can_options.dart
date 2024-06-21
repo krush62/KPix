@@ -16,9 +16,9 @@ class SprayCanOptions extends IToolOptions
   final int intensityMax;
   final int intensityDefault;
 
-  ValueNotifier<int> radius = ValueNotifier(3);
-  ValueNotifier<int> blobSize = ValueNotifier(1);
-  ValueNotifier<int> intensity = ValueNotifier(8);
+  final ValueNotifier<int> radius = ValueNotifier(3);
+  final ValueNotifier<int> blobSize = ValueNotifier(1);
+  final ValueNotifier<int> intensity = ValueNotifier(8);
 
   SprayCanOptions({
   required this.radiusMin,

@@ -72,7 +72,7 @@ class EraserPainter extends IToolPainter
   }
 
   @override
-  void drawCursor({required DrawingParameters drawParams})
+  void drawCursorOutline({required DrawingParameters drawParams})
   {
     assert(drawParams.cursorPos != null);
 
@@ -107,20 +107,6 @@ class EraserPainter extends IToolPainter
 
 
   }
-
-  @override
-  void drawExtras({required DrawingParameters drawParams}) {
-    //nothing to do
-  }
-
-  @override
-  void drawTool({required DrawingParameters drawParams})
-  {
-    //nothing to do
-  }
-
-
-
 
 }
 

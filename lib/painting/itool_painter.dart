@@ -1,8 +1,11 @@
+import 'dart:collection';
+
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 
 class BorderCoordinateSetI
 {
@@ -94,10 +97,11 @@ abstract class IToolPainter
 
   IToolPainter({required this.painterOptions});
 
-  void calculate({required DrawingParameters drawParams});
-  void drawTool({required DrawingParameters drawParams});
-  void drawExtras({required DrawingParameters drawParams});
-  void drawCursor({required DrawingParameters drawParams});
+  void calculate({required DrawingParameters drawParams}){}
+  void drawExtras({required DrawingParameters drawParams}){}
+  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars}){return HashMap();}
+  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawPars}){return HashMap();}
+  void drawCursorOutline({required DrawingParameters drawParams});
 
 
 

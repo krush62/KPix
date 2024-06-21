@@ -11,8 +11,8 @@ class LineOptions extends IToolOptions
   final int widthDefault;
   final bool integerAspectRatioDefault;
 
-  ValueNotifier<int> width = ValueNotifier(1);
-  ValueNotifier<bool> integerAspectRatio = ValueNotifier(false);
+  final ValueNotifier<int> width = ValueNotifier(1);
+  final ValueNotifier<bool> integerAspectRatio = ValueNotifier(false);
 
   LineOptions({
     required this.widthMin,

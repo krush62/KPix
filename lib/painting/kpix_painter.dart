@@ -1,3 +1,7 @@
+import 'dart:collection';
+import 'dart:math';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -18,9 +22,7 @@ class KPixPainterOptions
   final double cursorBorderWidth;
   final double selectionSolidStrokeWidth;
   final double pixelExtension;
-  final double checkerBoardDivisor;
-  final double checkerBoardSizeMin;
-  final double checkerBoardSizeMax;
+  final int checkerBoardSize;
   final double selectionPolygonCircleRadius;
   final double selectionStrokeWidthLarge;
   final double selectionStrokeWidthSmall;
@@ -31,9 +33,7 @@ class KPixPainterOptions
     required this.cursorBorderWidth,
     required this.selectionSolidStrokeWidth,
     required this.pixelExtension,
-    required this.checkerBoardDivisor,
-    required this.checkerBoardSizeMin,
-    required this.checkerBoardSizeMax,
+    required this.checkerBoardSize,
     required this.selectionPolygonCircleRadius,
     required this.selectionStrokeWidthLarge,
     required this.selectionStrokeWidthSmall,
@@ -75,63 +75,69 @@ class DrawingParameters
 
 class KPixPainter extends CustomPainter
 {
-  final AppState appState;
-  final ValueNotifier<Offset> offset;
-  final ValueNotifier<CoordinateSetD?> coords;
-  final ValueNotifier<bool> isDragging;
-  final ValueNotifier<bool> primaryDown;
-  final ValueNotifier<Offset> primaryPressStart;
-  final KPixPainterOptions options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
+  final AppState _appState;
+  final ValueNotifier<Offset> _offset;
+  final ValueNotifier<CoordinateSetD?> _coords;
+  final ValueNotifier<bool> _isDragging;
+  final ValueNotifier<bool> _primaryDown;
+  final ValueNotifier<Offset> _primaryPressStart;
+  final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
   final Color checkerboardColor1;
   final Color checkerboardColor2;
   late Map<ToolType, IToolPainter> toolPainterMap;
-  Size? latestSize;
+  late Size latestSize = const Size(0,0);
+  IToolPainter? _toolPainter;
+  late ui.Image _checkerboardImage;
 
 
   KPixPainter({
-    required this.appState,
-    required this.offset,
+    required AppState appState,
+    required ValueNotifier<Offset> offset,
     required this.checkerboardColor1,
     required this.checkerboardColor2,
-    required this.coords,
-    required this.primaryDown,
-    required this.primaryPressStart,
-    required this.isDragging})
-      : super(repaint: appState.repaintNotifier)
+    required ValueNotifier<CoordinateSetD?> coords,
+    required ValueNotifier<bool> primaryDown,
+    required ValueNotifier<Offset> primaryPressStart,
+    required ValueNotifier<bool> isDragging})
+      : _appState = appState, _offset = offset, _coords = coords, _isDragging = isDragging, _primaryDown = primaryDown, _primaryPressStart = primaryPressStart, super(repaint: appState.repaintNotifier)
   {
     toolPainterMap = {
-      ToolType.select: SelectionPainter(painterOptions: options),
-      ToolType.erase: EraserPainter(painterOptions: options),
-      ToolType.pencil: PencilPainter(painterOptions: options),
-      ToolType.pick: ColorPickPainter(painterOptions: options),
-      ToolType.fill: FillPainter(painterOptions: options),
+      ToolType.select: SelectionPainter(painterOptions: _options),
+      ToolType.erase: EraserPainter(painterOptions: _options),
+      ToolType.pencil: PencilPainter(painterOptions: _options),
+      ToolType.pick: ColorPickPainter(painterOptions: _options),
+      ToolType.fill: FillPainter(painterOptions: _options),
     };
   }
 
   @override
   void paint(Canvas canvas, Size size)
   {
-    latestSize = size;
+    _toolPainter = toolPainterMap[_appState.selectedTool.value];
+    if (size != latestSize)
+    {
+      latestSize = size;
+      _createCheckerboard();
+    }
+
     DrawingParameters drawParams = DrawingParameters(
-        offset: offset.value,
+        offset: _offset.value,
         canvas: canvas,
         paint: Paint(),
-        pixelSize: appState.getZoomFactor(),
-        canvasSize: CoordinateSetI(x: appState.canvasWidth, y: appState.canvasHeight),
+        pixelSize: _appState.getZoomFactor(),
+        canvasSize: CoordinateSetI(x: _appState.canvasWidth, y: _appState.canvasHeight),
         drawingSize: size,
-        cursorPos: coords.value,
-        primaryDown: primaryDown.value,
-        primaryPressStart: primaryPressStart.value,
-        currentLayer: appState.currentLayer.value!
+        cursorPos: _coords.value,
+        primaryDown: _primaryDown.value,
+        primaryPressStart: _primaryPressStart.value,
+        currentLayer: _appState.currentLayer.value!
         );
 
 
-    //TODO this is too slow (solid color?)
     _drawCheckerboard(drawParams: drawParams);
     _calculateTool(drawParams: drawParams);
     _drawLayers(drawParams: drawParams);
     _drawSelection(drawParams: drawParams);
-    _drawToolOverlay(drawParams: drawParams);
     _drawToolExtras(drawParams: drawParams);
     _drawCursor(drawParams: drawParams);
   }
@@ -140,146 +146,146 @@ class KPixPainter extends CustomPainter
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
     drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = options.selectionSolidStrokeWidth;
+    drawParams.paint.strokeWidth = _options.selectionSolidStrokeWidth;
 
-    if (!appState.selectionState.selection.isEmpty())
+    if (!_appState.selectionState.selection.isEmpty())
     {
-      for (final SelectionLine line in appState.selectionState.selectionLines) {
+      for (final SelectionLine line in _appState.selectionState.selectionLines) {
         if (line.selectDir == SelectionDirection.left) {
           drawParams.paint.color = Colors.black;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
           drawParams.paint.color = Colors.white;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) +
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy + (line.startLoc.y * pxlSzDbl)),
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
               drawParams.paint);
         } else if (line.selectDir == SelectionDirection.right) {
           drawParams.paint.color = Colors.black;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
           drawParams.paint.color = Colors.white;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) +
                       pxlSzDbl -
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy + (line.startLoc.y * pxlSzDbl)),
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
                       pxlSzDbl -
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
               drawParams.paint);
         } else if (line.selectDir == SelectionDirection.top) {
           drawParams.paint.color = Colors.black;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
           drawParams.paint.color = Colors.white;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx + (line.startLoc.x * pxlSzDbl),
-                  offset.value.dy +
+                  _offset.value.dx + (line.startLoc.x * pxlSzDbl),
+                  _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) +
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               Offset(
-                  offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
-                  offset.value.dy +
+                  _offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
+                  _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
         } else if (line.selectDir == SelectionDirection.bottom) {
           drawParams.paint.color = Colors.black;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) -
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               Offset(
-                  offset.value.dx +
+                  _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2,
-                  offset.value.dy +
+                      _options.selectionSolidStrokeWidth / 2,
+                  _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
           drawParams.paint.color = Colors.white;
           drawParams.canvas.drawLine(
               Offset(
-                  offset.value.dx + (line.startLoc.x * pxlSzDbl),
-                  offset.value.dy +
+                  _offset.value.dx + (line.startLoc.x * pxlSzDbl),
+                  _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) +
                       pxlSzDbl -
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               Offset(
-                  offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
-                  offset.value.dy +
+                  _offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
+                  _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl -
-                      options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
         }
       }
@@ -288,43 +294,33 @@ class KPixPainter extends CustomPainter
 
   void _calculateTool({required final DrawingParameters drawParams})
   {
-    IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
+    IToolPainter? toolPainter = toolPainterMap[_appState.selectedTool.value];
     toolPainter?.calculate(drawParams: drawParams);
-  }
-
-  void _drawToolOverlay({required final DrawingParameters drawParams})
-  {
-    if (coords.value != null)
-    {
-      IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
-      toolPainter?.drawTool(drawParams: drawParams);
-    }
   }
 
   void _drawToolExtras({required final DrawingParameters drawParams})
   {
-    IToolPainter? toolPainter = toolPainterMap[appState.selectedTool.value];
-    if (toolPainter != null)
+    if (_toolPainter != null)
     {
-      toolPainter.drawExtras(
+      _toolPainter!.drawExtras(
           drawParams: drawParams);
     }
   }
 
   void _drawCursor({required final DrawingParameters drawParams})
   {
-    if (coords.value != null)
+    if (_coords.value != null)
     {
-      if (!isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && _toolPainter != null)
       {
-        toolPainterMap[appState.selectedTool.value]?.drawCursor(drawParams: drawParams);
+        _toolPainter!.drawCursorOutline(drawParams: drawParams);
       }
       else
       {
         drawParams.paint.color = checkerboardColor1;
-        drawParams.canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize + options.cursorBorderWidth, drawParams.paint);
+        drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize + _options.cursorBorderWidth, drawParams.paint);
         drawParams.paint.color = checkerboardColor2;
-        drawParams.canvas.drawCircle(Offset(coords.value!.x, coords.value!.y), options.cursorSize, drawParams.paint);
+        drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize, drawParams.paint);
       }
     }
   }
@@ -332,76 +328,165 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
-    final List<LayerState> layers = appState.layers.value;
-    for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+
+    final List<LayerState> layers = _appState.layers.value;
+    for (int i = layers.length - 1; i >= 0; i--)
     {
-      for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
+      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
       {
-        for (int i = 0; i < layers.length; i++)
+
+        if (layers[i].raster != null && !layers[i].isRasterizing && !layers[i].hasNonRasterizedData)
         {
-          if (layers[i].visibilityState.value == LayerVisibilityState.visible) {
-            bool foundInSelection = false;
-            if (layers[i].isSelected.value)
+          paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                  drawParams.scaledCanvasSize.x.toDouble(),
+                  drawParams.scaledCanvasSize.y.toDouble()),
+              image: layers[i].raster!,
+              scale: 1.0 / pxlSzDbl,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none);
+        }
+        else //alternative drawing when rasterizing
+        {
+          for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+          {
+            for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
             {
-              ColorReference? selColor = appState.selectionState.selection.getColorReference(CoordinateSetI(x: x, y: y));
-              if (selColor != null)
+              bool foundInSelection = false;
+              if (layers[i].isSelected.value)
               {
-                foundInSelection = true;
-                drawParams.paint.color = selColor.getIdColor().color;
-                drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtension,
-                    offset.value.dy + (y * pxlSzDbl) - options.pixelExtension, pxlSzDbl + (2.0 * options.pixelExtension), pxlSzDbl + (2.0 * options.pixelExtension)), drawParams.paint);
+                ColorReference? selColor = _appState.selectionState.selection.getColorReference(CoordinateSetI(x: x, y: y));
+                if (selColor != null)
+                {
+                  foundInSelection = true;
+                  drawParams.paint.color = selColor
+                      .getIdColor()
+                      .color;
+                  drawParams.canvas.drawRect(Rect.fromLTWH(
+                      _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
+                      _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
+                      pxlSzDbl + (2.0 * _options.pixelExtension),
+                      pxlSzDbl + (2.0 * _options.pixelExtension)),
+                      drawParams.paint);
+                }
+              }
+              ColorReference? layerColor = layers[i].getData(x, y);
+              if (layerColor != null && !foundInSelection)
+              {
+                drawParams.paint.color = layerColor.getIdColor().color;
+                drawParams.canvas.drawRect(Rect.fromLTWH(
+                    _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
+                    _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
+                    pxlSzDbl + (2.0 * _options.pixelExtension),
+                    pxlSzDbl + (2.0 * _options.pixelExtension)),
+                    drawParams.paint);
               }
             }
-            ColorReference? layerColor = layers[i].getData(x, y);
-            if (layerColor != null && !foundInSelection) {
-              drawParams.paint.color = layerColor.getIdColor().color;
-              drawParams.canvas.drawRect(Rect.fromLTWH(offset.value.dx + (x * pxlSzDbl) - options.pixelExtension,
-                  offset.value.dy + (y * pxlSzDbl) - options.pixelExtension, pxlSzDbl + (2.0 * options.pixelExtension), pxlSzDbl + (2.0 * options.pixelExtension)), drawParams.paint);
-              break;
-            }
-            if (foundInSelection)
+          }
+
+        }
+
+        if (layers[i].isSelected.value)
+        {
+          final HashMap<CoordinateSetI, ColorReference> selectedLayerCursorContent = _toolPainter != null ? _toolPainter!.getCursorContent(drawPars: drawParams) : HashMap();
+          final HashMap<CoordinateSetI, ColorReference> toolContent = _toolPainter != null ? _toolPainter!.getToolContent(drawPars: drawParams) : HashMap();
+          for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+          {
+            for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
             {
-              break;
+              Color? drawColor;
+              //DRAW CURSOR CONTENT PIXEL
+              final selLayerCoord = CoordinateSetI(x: x, y: y);
+              if (selectedLayerCursorContent.keys.contains(selLayerCoord))
+              {
+                drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
+              }
+
+              //DRAW TOOL CONTENT
+              if (drawColor == null && toolContent.keys.contains(selLayerCoord))
+              {
+                drawColor = toolContent[selLayerCoord]!.getIdColor().color;
+              }
+
+              //DRAW SELECTION PIXEL
+              if (drawColor == null)
+              {
+                ColorReference? selColor = _appState.selectionState.selection.getColorReference(CoordinateSetI(x: x, y: y));
+                if (selColor != null)
+                {
+                  drawColor = selColor.getIdColor().color;
+                }
+              }
+              if (drawColor != null)
+              {
+                drawParams.paint.color = drawColor;
+                drawParams.canvas.drawRect(Rect.fromLTWH(
+                    _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
+                    _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
+                    pxlSzDbl + (2.0 * _options.pixelExtension),
+                    pxlSzDbl + (2.0 * _options.pixelExtension)),
+                    drawParams.paint);
+              }
             }
           }
         }
       }
     }
+
   }
 
-  void _drawCheckerboard({required final DrawingParameters drawParams})
+  void _createCheckerboard()
   {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+    final Paint paint = Paint();
     bool rowFlip = false;
     bool colFlip = false;
-   double cbSizeDbl = (drawParams.pixelSize / options.checkerBoardDivisor).clamp(options.checkerBoardSizeMin, options.checkerBoardSizeMax);
 
-    for (int i = drawParams.drawingStart.x * drawParams.pixelSize; i < drawParams.drawingEnd.x * drawParams.pixelSize; i += cbSizeDbl.floor())
+
+
+    for (int x = 0; x < latestSize.width; x += _options.checkerBoardSize)
     {
       colFlip = rowFlip;
-      for (int j = drawParams.drawingStart.y * drawParams.pixelSize; j < drawParams.drawingEnd.y * drawParams.pixelSize; j += cbSizeDbl.floor())
+      for (int y = 0; y < latestSize.height; y += _options.checkerBoardSize)
       {
-        drawParams.paint.color = colFlip ? checkerboardColor1 : checkerboardColor2;
-        double width = cbSizeDbl;
-        double height = cbSizeDbl;
-        if (i + cbSizeDbl > drawParams.scaledCanvasSize.x)
+        paint.color = colFlip ? checkerboardColor1 : checkerboardColor2;
+        int width = _options.checkerBoardSize;
+        int height = _options.checkerBoardSize;
+        if (x + _options.checkerBoardSize > latestSize.width.floor())
         {
-          width = drawParams.scaledCanvasSize.x - i.toDouble();
+          width = latestSize.width.floor() - x;
         }
 
-        if (j + cbSizeDbl > drawParams.scaledCanvasSize.y)
+        if (y + _options.checkerBoardSize > latestSize.height.floor())
         {
-          height = drawParams.scaledCanvasSize.y - j.toDouble();
+          height = latestSize.height.floor() - y;
         }
-
-        drawParams.canvas.drawRect(
-          Rect.fromLTWH(offset.value.dx + i, offset.value.dy + j , width, height),
-          drawParams.paint,
+        canvas.drawRect(
+          Rect.fromLTWH(x.toDouble(), y.toDouble() , width.toDouble(), height.toDouble()),
+          paint,
         );
-
         colFlip = !colFlip;
       }
       rowFlip = !rowFlip;
     }
+    final ui.Picture picture = recorder.endRecording();
+    _checkerboardImage = picture.toImageSync(latestSize.width.floor(), latestSize.height.floor());
+  }
+
+  void _drawCheckerboard({required final DrawingParameters drawParams})
+  {
+    final double pxlSzDbl = drawParams.pixelSize.toDouble();
+    paintImage(
+        canvas: drawParams.canvas,
+        rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy, drawParams.scaledCanvasSize.x.toDouble(), drawParams.scaledCanvasSize.y.toDouble()),
+        image: _checkerboardImage,
+        scale: 1.0 / pxlSzDbl,
+        fit: BoxFit.none,
+        alignment: Alignment.topLeft,
+        filterQuality: FilterQuality.none);
   }
 
 

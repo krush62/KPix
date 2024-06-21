@@ -168,10 +168,11 @@ class SelectionPainter extends IToolPainter
     }
   }
 
-
   @override
-  void drawTool({required final DrawingParameters drawParams})
+  void drawCursorOutline({required DrawingParameters drawParams})
   {
+    assert(drawParams.cursorPos != null);
+
     if (_isStartOnCanvas && !_shouldMove && !polygonDown)
     {
       drawParams.paint.style = PaintingStyle.stroke;
@@ -206,13 +207,8 @@ class SelectionPainter extends IToolPainter
         drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
       }
     }
-  }
 
-  @override
-  void drawCursor({
-    required DrawingParameters drawParams})
-  {
-    assert(drawParams.cursorPos != null);
+
 
     if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
     {
@@ -267,7 +263,7 @@ class SelectionPainter extends IToolPainter
       fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
 
 
-      drawParams.paint.style = PaintingStyle.fill;
+      drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = Colors.black;
       drawParams.canvas.drawPath(fillPath, drawParams.paint);

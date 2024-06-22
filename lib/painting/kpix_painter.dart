@@ -12,6 +12,7 @@ import 'package:kpix/painting/fill_painter.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
+import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
@@ -106,6 +107,7 @@ class KPixPainter extends CustomPainter
       ToolType.pencil: PencilPainter(painterOptions: _options),
       ToolType.pick: ColorPickPainter(painterOptions: _options),
       ToolType.fill: FillPainter(painterOptions: _options),
+      ToolType.shape: ShapePainter(painterOptions: _options),
     };
   }
 

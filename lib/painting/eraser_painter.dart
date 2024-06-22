@@ -45,7 +45,7 @@ class EraserPainter extends IToolPainter
           final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
           for (final CoordinateSetI delCoord in pixelsToDelete)
           {
-            Set<CoordinateSetI> content = getContentPoints(options.shape.value, options.size.value, delCoord);
+            Set<CoordinateSetI> content = getRoundSquareContentPoints(options.shape.value, options.size.value, delCoord);
             final SelectionState selection = GetIt.I.get<AppState>().selectionState;
             for (final CoordinateSetI coord in content)
             {
@@ -81,7 +81,7 @@ class EraserPainter extends IToolPainter
   {
     assert(drawParams.cursorPos != null);
 
-    final Set<CoordinateSetI> contentPoints = getContentPoints(options.shape.value, options.size.value, cursorPosNorm);
+    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(options.shape.value, options.size.value, cursorPosNorm);
     final List<CoordinateSetI> pathPoints = getBoundaryPath(contentPoints);
 
     Path path = Path();

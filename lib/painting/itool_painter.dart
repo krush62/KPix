@@ -3,7 +3,9 @@ import 'dart:collection';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
@@ -105,7 +107,7 @@ abstract class IToolPainter
 
 
 
-  Set<CoordinateSetI> getContentPoints(final PencilShape shape, final int size, final CoordinateSetI position)
+  Set<CoordinateSetI> getRoundSquareContentPoints(final PencilShape shape, final int size, final CoordinateSetI position)
   {
     final CoordinateSetI startPos = CoordinateSetI(x: position.x - ((size - 1) ~/ 2), y: position.y - ((size - 1) ~/ 2));
     final CoordinateSetI endPos = CoordinateSetI(x: position.x + (size ~/ 2), y: position.y + (size ~/ 2));
@@ -231,5 +233,55 @@ abstract class IToolPainter
 
 
     return path;
+  }
+
+  HashMap<CoordinateSetI, ColorReference> getPixelsToDraw({required CoordinateSetI canvasSize, required LayerState currentLayer, required Set<CoordinateSetI> coords, required SelectionState selection, required ShaderOptions shaderOptions, required ColorReference selectedColor})
+  {
+    final HashMap<CoordinateSetI, ColorReference> pixelMap = HashMap();
+    for (final CoordinateSetI coord in coords)
+    {
+      if (coord.x >= 0 && coord.y >= 0 &&
+          coord.x < canvasSize.x &&
+          coord.y < canvasSize.y)
+      {
+        if (!shaderOptions.isEnabled.value) //without shading
+            {
+          //if no selection and current pixel is different
+          if ((selection.selection.isEmpty() && currentLayer.getData(coord) != selectedColor) ||
+              //if selection and selection contains pixel and selection pixel is different
+              (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != selectedColor))
+          {
+            pixelMap[coord] = selectedColor;
+          }
+        }
+        //with shading
+        else
+          //if no selection and pixel is not null
+        if ((selection.selection.isEmpty() && currentLayer.getData(coord) != null) ||
+            //if selection and selection contains pixel and pixel is not null
+            (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
+        {
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getData(coord)! : selection.selection.getColorReference(coord)!;
+          if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
+          {
+            if (shaderOptions.shaderDirection.value == ShaderDirection.right)
+            {
+              if (layerRef.colorIndex + 1 < layerRef.ramp.colors.length)
+              {
+                pixelMap[coord] = ColorReference(colorIndex: layerRef.colorIndex + 1, ramp: layerRef.ramp);
+              }
+            }
+            else
+            {
+              if (layerRef.colorIndex > 0)
+              {
+                pixelMap[coord] = ColorReference(colorIndex: layerRef.colorIndex - 1, ramp: layerRef.ramp);
+              }
+            }
+          }
+        }
+      }
+    }
+    return pixelMap;
   }
 }

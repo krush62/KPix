@@ -235,11 +235,13 @@ class Helper
     return i < 0.0 ? 0.0 : sqrt(i);
   }
 
-  static bool isPointInPolygon(final CoordinateSetI point, final List<CoordinateSetI> polygon) {
+  static bool isPointInPolygon(final CoordinateSetI point, final List<CoordinateSetI> polygon)
+  {
     final int n = polygon.length;
     bool inside = false;
 
-    for (int i = 0, j = n - 1; i < n; j = i++) {
+    for (int i = 0, j = n - 1; i < n; j = i++)
+    {
       if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) &&
           (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)) {
         inside = !inside;
@@ -248,6 +250,56 @@ class Helper
 
     return inside;
   }
+
+
+  static double getPointToEdgeDistance(CoordinateSetI point, List<CoordinateSetI> polygon)
+  {
+    // Initialize minimum distance to a large value
+    double minDistance = double.infinity;
+
+    // Iterate through each edge of the polygon
+    for (int i = 0; i < polygon.length; i++) {
+      // Get current and next points in the polygon (loop back to start for last point)
+      CoordinateSetI p1 = polygon[i];
+      CoordinateSetI p2 = polygon[(i + 1) % polygon.length];
+
+      // Calculate vector components of the edge
+      int dx = p2.x - p1.x;
+      int dy = p2.y - p1.y;
+
+      // Calculate squared length of the edge segment
+      int edgeLengthSquared = dx * dx + dy * dy;
+
+      // Calculate vector from point to the start of the edge
+      int vx = point.x - p1.x;
+      int vy = point.y - p1.y;
+
+      // Calculate dot product of edge vector and vector to point from p1
+      int dotProduct = vx * dx + vy * dy;
+
+      // Calculate the parameter t of the closest point on the edge segment
+      double t = dotProduct / edgeLengthSquared;
+
+      // Clamp t to ensure the closest point is within the segment bounds
+      t = max(0, min(1, t));
+
+      // Calculate the closest point on the edge segment to the point
+      double closestX = p1.x + t * dx;
+      double closestY = p1.y + t * dy;
+
+      // Calculate distance squared from point to closest point on the edge
+      double distanceSquared = (point.x - closestX) * (point.x - closestX) +
+          (point.y - closestY) * (point.y - closestY);
+
+      // Update minimum distance if this edge is closer
+      minDistance = min(minDistance, sqrt(distanceSquared));
+    }
+
+    // Return the minimum distance found
+    return minDistance;
+  }
+
+
 
   static CoordinateSetI getMin(final List<CoordinateSetI> coordList)
   {

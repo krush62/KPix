@@ -86,15 +86,15 @@ class SelectionState with ChangeNotifier
       else if (selectShape == SelectShape.ellipse)
       {
         final Set<CoordinateSetI> coords = {};
-        double centerX = (start.x + end.x + 1) / 2.0;
-        double centerY = (start.y + end.y + 1) / 2.0;
-        double radiusX = (end.x - start.x + 1) / 2.0;
-        double radiusY = (end.y - start.y + 1) / 2.0;
+        final double centerX = (start.x + end.x + 1) / 2.0;
+        final double centerY = (start.y + end.y + 1) / 2.0;
+        final double radiusX = (end.x - start.x + 1) / 2.0;
+        final double radiusY = (end.y - start.y + 1) / 2.0;
 
         for (int x = start.x; x <= end.x; x++) {
           for (int y = start.y; y <= end.y; y++) {
-            double dx = (x + 0.5) - centerX;
-            double dy = (y + 0.5) - centerY;
+            final double dx = (x + 0.5) - centerX;
+            final double dy = (y + 0.5) - centerY;
             if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
             {
               coords.add(CoordinateSetI(x: x, y: y));

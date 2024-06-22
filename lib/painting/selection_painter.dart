@@ -69,34 +69,11 @@ class SelectionPainter extends IToolPainter
         }
         else
         {
-          selectionStart.x = _normStartPos.x < _normEndPos.x
-              ? _normStartPos.x
-              : _normEndPos.x;
-          selectionStart.y = _normStartPos.y < _normEndPos.y
-              ? _normStartPos.y
-              : _normEndPos.y;
-          selectionEnd.x = _normStartPos.x < _normEndPos.x
-              ? (_normEndPos.x)
-              : (_normStartPos.x);
-          selectionEnd.y = _normStartPos.y < _normEndPos.y
-              ? (_normEndPos.y)
-              : (_normStartPos.y);
+          selectionStart.x = max(_normStartPos.x < _normEndPos.x ? _normStartPos.x: _normEndPos.x, 0);
+          selectionStart.y = max(_normStartPos.y < _normEndPos.y ? _normStartPos.y : _normEndPos.y, 0);
+          selectionEnd.x = min(_normStartPos.x < _normEndPos.x ? (_normEndPos.x) : (_normStartPos.x), appState.canvasWidth - 1);
+          selectionEnd.y = min(_normStartPos.y < _normEndPos.y ? (_normEndPos.y) : (_normStartPos.y), appState.canvasHeight - 1);
 
-          if (selectionStart.x < 0) {
-            selectionStart.x = 0;
-          }
-
-          if (selectionStart.y < 0) {
-            selectionStart.y = 0;
-          }
-
-          if (selectionEnd.x > appState.canvasWidth - 1) {
-            selectionEnd.x = appState.canvasWidth - 1;
-          }
-
-          if (selectionEnd.y > appState.canvasHeight - 1) {
-            selectionEnd.y = appState.canvasHeight - 1;
-          }
 
           if (options.keepAspectRatio.value) {
             final int width = selectionEnd.x - selectionStart.x;
@@ -173,7 +150,7 @@ class SelectionPainter extends IToolPainter
   {
     assert(drawParams.cursorPos != null);
 
-    if (_isStartOnCanvas && !_shouldMove && !polygonDown)
+    if (_isStartOnCanvas && !_shouldMove && !polygonDown && (options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse))
     {
       drawParams.paint.style = PaintingStyle.stroke;
       final CoordinateSetD cursorStartPos = CoordinateSetD(
@@ -186,10 +163,12 @@ class SelectionPainter extends IToolPainter
           y: drawParams.offset.dy +
               (selectionEnd.y + 1) * drawParams.pixelSize);
 
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+
       //RECTANGLE
-      if (options.shape.value == SelectShape.rectangle) {
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-        drawParams.paint.color = Colors.black;
+      if (options.shape.value == SelectShape.rectangle)
+      {
         drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
         drawParams.paint.color = Colors.white;
@@ -199,8 +178,6 @@ class SelectionPainter extends IToolPainter
       //ELLIPSE
       else if (options.shape.value == SelectShape.ellipse)
       {
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-        drawParams.paint.color = Colors.black;
         drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
         drawParams.paint.color = Colors.white;

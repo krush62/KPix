@@ -268,7 +268,8 @@ class ShapeOptions extends IToolOptions
             return Stack(
               children: [
                 Visibility(
-                  visible: (shape == ShapeShape.rectangle || shape == ShapeShape.triangle || shape == ShapeShape.diamond),
+                  //TODO this might be an option for triangle and diamond as well
+                  visible: (shape == ShapeShape.rectangle),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

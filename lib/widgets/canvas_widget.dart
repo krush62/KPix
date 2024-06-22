@@ -369,7 +369,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           selectionPainter.hasNewSelection = false;
           final CoordinateSetI min = Helper.getMin(selectionPainter.polygonPoints);
           final CoordinateSetI max = Helper.getMax(selectionPainter.polygonPoints);
-          List<CoordinateSetI> selection = [];
+          Set<CoordinateSetI> selection = {};
           for (int x = min.x; x < max.x; x++)
           {
             for (int y = min.y; y < max.y; y++)

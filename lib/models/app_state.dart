@@ -325,6 +325,7 @@ class AppState
 
   void layerMerged(final LayerState mergeLayer)
   {
+    print("MERGING LAYER");
     final int mergeLayerIndex = layers.value.indexOf(mergeLayer);
     if (mergeLayerIndex == layers.value.length - 1)
     {
@@ -349,8 +350,9 @@ class AppState
     else
     {
       bool lowLayerWasSelected = false;
-      List<LayerState> layerList = [];
+      final List<LayerState> layerList = [];
       selectionState.deselect();
+      final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
       for (int i = 0; i < layers.value.length; i++)
       {
         if (i == mergeLayerIndex)
@@ -361,15 +363,17 @@ class AppState
             {
               final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
 
-              if (mergeLayer.getData(curCoord) == null)
+              //if transparent pixel -> use value from layer below
+              if (mergeLayer.getData(curCoord) == null && layers.value[i+1].getData(curCoord) != null)
               {
-                mergeLayer.setData(curCoord, layers.value[i+1].getData(curCoord));
+                refs[curCoord] = layers.value[i+1].getData(curCoord);
               }
             }
           }
           layerList.add(mergeLayer);
           lowLayerWasSelected = layers.value[i+1].isSelected.value;
           i++;
+          mergeLayer.setDataAll(refs);
         }
         else
         {

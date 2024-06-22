@@ -213,6 +213,7 @@ class FillPainter extends IToolPainter
     if (appState.selectionState.selection.isEmpty())
     {
       final ColorReference? startValue = layer.getData(start);
+      final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
       for (int x = 0; x < appState.canvasWidth; x++)
       {
         for (int y = 0; y < appState.canvasHeight; y++)
@@ -226,22 +227,26 @@ class FillPainter extends IToolPainter
           {
             if (!doShade || refAtPos == null)
             {
-              layer.setData(curCoord, fillColor);
+              //layer.setData(curCoord, fillColor);
+              refs[curCoord] = fillColor;
             }
             else
             {
               if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
               {
-                layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+                //layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+                refs[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp);
               }
               else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
               {
-                layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+                //layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+                refs[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp);
               }
             }
           }
         }
       }
+      layer.setDataAll(refs);
     }
     //on selection
     else if (!appState.selectionState.selection.isEmpty() && appState.selectionState.selection.contains(start))

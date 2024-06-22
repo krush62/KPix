@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -40,6 +42,7 @@ class EraserPainter extends IToolPainter
           {
             pixelsToDelete.addAll(Helper.bresenham(previousCursorPosNorm, cursorPosNorm).sublist(1));
           }
+          final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
           for (final CoordinateSetI delCoord in pixelsToDelete)
           {
             Set<CoordinateSetI> content = getContentPoints(options.shape.value, options.size.value, delCoord);
@@ -54,7 +57,8 @@ class EraserPainter extends IToolPainter
                 {
                   if (drawParams.currentLayer.getData(coord) != null)
                   {
-                    drawParams.currentLayer.setData(coord, null);
+                    //drawParams.currentLayer.setData(coord, null);
+                    refs[coord] = null;
                   }
                 }
                 else
@@ -64,6 +68,7 @@ class EraserPainter extends IToolPainter
               }
             }
           }
+          drawParams.currentLayer.setDataAll(refs);
         }
         previousCursorPosNorm.x = cursorPosNorm.x;
         previousCursorPosNorm.y = cursorPosNorm.y;

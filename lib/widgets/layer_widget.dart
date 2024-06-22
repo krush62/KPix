@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -117,6 +116,7 @@ class LayerState
     visibilityState.value = vState;
     LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), updateTimerCallback);
+
   }
 
   factory LayerState.from({required LayerState other})
@@ -171,6 +171,7 @@ class LayerState
   //TODO thumbnail is rasterized without selection data
   Future<ui.Image> _createRaster() async
   {
+    print("RASTERIZING");
     while(rasterQueue.isNotEmpty)
     {
       (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();
@@ -221,21 +222,18 @@ class LayerState
     }
   }
 
-  void setData(final CoordinateSetI coord, final ColorReference? ref)
-  {
-    rasterQueue.add((coord, ref));
-
-  }
-
-
   void setDataAll(final HashMap<CoordinateSetI, ColorReference?> list)
   {
     List<(CoordinateSetI, ColorReference?)> it = [];
-    for (final MapEntry<CoordinateSetI, ColorReference?> entrry in list.entries)
+    for (final MapEntry<CoordinateSetI, ColorReference?> entry in list.entries)
     {
-      it.add((entrry.key, entrry.value));
+      it.add((entry.key, entry.value));
     }
-    rasterQueue.addAll(it);
+    if (it.isNotEmpty)
+    {
+      rasterQueue.addAll(it);
+    }
+
   }
 }
 

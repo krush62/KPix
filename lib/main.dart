@@ -58,7 +58,7 @@ class _KPixAppState extends State<KPixApp> {
     GetIt.I.registerSingleton<AppState>(AppState());
     //TODO TEMP
     AppState appState = GetIt.I.get<AppState>();
-    appState.setCanvasDimensions(width: 256, height: 128);
+    appState.setCanvasDimensions(width: 256, height: 160);
     appState.addNewRamp();
     appState.addNewRamp();
     appState.addNewLayer();

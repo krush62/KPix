@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -43,9 +41,9 @@ class ColorPickPainter extends IToolPainter
             colRef = appState.selectionState.selection.getColorReference(cursorPosNorm);
             break;
           }
-          if (layer.getData(cursorPosNorm.x, cursorPosNorm.y) != null)
+          if (layer.getData(cursorPosNorm) != null)
           {
-            colRef = layer.getData(cursorPosNorm.x, cursorPosNorm.y);
+            colRef = layer.getData(cursorPosNorm);
             break;
           }
         }

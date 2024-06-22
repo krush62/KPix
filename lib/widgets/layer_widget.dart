@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:isolate';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -104,14 +104,15 @@ class LayerState
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
   final CoordinateSetI size;
-  final List<List<ColorReference?>> _data;
-  bool hasNonRasterizedData = false;
+  final HashMap<CoordinateSetI, ColorReference> _data;
   ui.Image? raster;
   bool isRasterizing = false;
+  bool _doManualRaster = false;
+  Queue<(CoordinateSetI, ColorReference?)> rasterQueue = Queue();
 
-  LayerState._({required List<List<ColorReference?>> data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
+  LayerState._({required HashMap<CoordinateSetI, ColorReference> data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
   {
-    _createThumbnail();
+    _createRaster().then((final ui.Image image) => _rasterizingDone(image));
     lockState.value = lState;
     visibilityState.value = vState;
     LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
@@ -120,101 +121,121 @@ class LayerState
 
   factory LayerState.from({required LayerState other})
   {
-    List<List<ColorReference?>> data = List.generate(other.size.x, (i) => List.filled(other.size.y, null, growable: false), growable: false);
-    for (int x = 0; x < other.size.x; x++)
+    HashMap<CoordinateSetI, ColorReference> data2 = HashMap();
+    for (final MapEntry<CoordinateSetI, ColorReference> ref in other._data.entries)
     {
-      for (int y = 0; y < other.size.y; y++)
-      {
-        data[x][y] = other.getData(x,y);
-      }
+      data2[ref.key] = ref.value;
     }
-    return LayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
+    return LayerState._(size: other.size, data2: data2, lState: other.lockState.value, vState: other.visibilityState.value);
   }
 
 
   factory LayerState({required int width, required int height, final HashMap<CoordinateSetI, ColorReference?>? content})
   {
-    List<List<ColorReference?>> data = List.generate(width, (i) => List.filled(height, null, growable: false), growable: false);
+    HashMap<CoordinateSetI, ColorReference> data2 = HashMap();
     final CoordinateSetI size = CoordinateSetI(x: width, y: height);
 
     if (content != null)
     {
       for (final MapEntry<CoordinateSetI, ColorReference?> entry in content.entries)
       {
-        if (entry.key.x > 0 && entry.key.y > 0 && entry.key.x < width && entry.key.y < height)
+        if (entry.key.x > 0 && entry.key.y > 0 && entry.key.x < width && entry.key.y < height && entry.value != null)
         {
-          data[entry.key.x][entry.key.y] = entry.value;
+          data2[entry.key] = entry.value!;
         }
       }
     }
-    return LayerState._(data: data, size: size);
+    return LayerState._(data2: data2, size: size);
   }
 
-  void updateTimerCallback(final Timer timer)
+  void updateTimerCallback(final Timer timer) async
   {
-    if (hasNonRasterizedData && !isRasterizing)
+    if ((rasterQueue.isNotEmpty || _doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
-      _createThumbnail().then((void _) => rasterizingDone());
+      _createRaster().then((final ui.Image image) => _rasterizingDone(image));
+
     }
   }
 
-  void rasterizingDone()
+
+  void _rasterizingDone(final ui.Image image)
   {
     isRasterizing = false;
+    raster = image;
     thumbnail.value = raster;
-    hasNonRasterizedData = false;
+    _doManualRaster = false;
+    GetIt.I.get<AppState>().repaintNotifier.repaint();
   }
 
-  Future<void> _createThumbnail() async
+  //TODO thumbnail is rasterized without selection data
+  Future<ui.Image> _createRaster() async
   {
-    SelectionList selection = GetIt.I.get<AppState>().selectionState.selection;
-    final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas c = Canvas(recorder);
-
-    final Paint paint = Paint();
-    paint.style = PaintingStyle.fill;
-    for (int x = 0; x < size.x; x++)
+    while(rasterQueue.isNotEmpty)
     {
-       for (int y = 0; y < size.y; y++)
-       {
-         ColorReference? col = _data[x][y];
-         final CoordinateSetI curCor = CoordinateSetI(x: x, y: y);
-         /*if (selection.currentLayer == this && selection.contains(curCor) && selection.getColorReference(curCor) != null)
-         {
-           ColorReference selCol = selection.getColorReference(curCor)!;
-           paint.color = selCol.ramp.colors[selCol.colorIndex].value.color;
-           c.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
-         }
-         else*/ if (col != null)
-         {
-           paint.color = col.ramp.colors[col.colorIndex].value.color;
-           c.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
-         }
-       }
+      (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();
+      if (entry.$2 == null)
+      {
+        _data.remove(entry.$1);
+      }
+      else
+      {
+        _data[entry.$1] = entry.$2!;
+      }
     }
-    ui.Picture p = recorder.endRecording();
-    raster = await p.toImage(size.x, size.y);
-  }
 
-  ColorReference? getData(final int x, final int y)
-  {
-    return _data[x][y];
-  }
-
-  void setData(final int x, final int y, final ColorReference? ref)
-  {
-    _data[x][y] = ref;
-    hasNonRasterizedData = true;
-  }
-
-  void setDataAll(final Iterable<MapEntry<CoordinateSetI, ColorReference>> list)
-  {
-    for (final MapEntry<CoordinateSetI, ColorReference> entry in list)
+    final ByteData byteData = ByteData(size.x * size.y * 4);
+    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _data.entries)
     {
-      _data[entry.key.x][entry.key.y] = entry.value;
+      if (entry.value != null) {
+        final Color dColor = entry.value!.ramp.colors[entry.value!.colorIndex]
+            .value.color;
+        byteData.setUint32((entry.key.y * size.x + entry.key.x) * 4,
+            Helper.argbToRgba(dColor.value));
+      }
+
     }
-    hasNonRasterizedData = true;
+    final Completer<ui.Image> c = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      byteData.buffer.asUint8List(),
+      size.x,
+      size.y,
+      ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+      {
+        c.complete(convertedImage);
+      }
+    );
+    return c.future;
+  }
+
+
+  ColorReference? getData(final CoordinateSetI coord)
+  {
+    if (_data.containsKey(coord))
+    {
+      return _data[coord];
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+  void setData(final CoordinateSetI coord, final ColorReference? ref)
+  {
+    rasterQueue.add((coord, ref));
+
+  }
+
+
+  void setDataAll(final HashMap<CoordinateSetI, ColorReference?> list)
+  {
+    List<(CoordinateSetI, ColorReference?)> it = [];
+    for (final MapEntry<CoordinateSetI, ColorReference?> entrry in list.entries)
+    {
+      it.add((entrry.key, entrry.value));
+    }
+    rasterQueue.addAll(it);
   }
 }
 

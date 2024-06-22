@@ -1,4 +1,6 @@
 
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -103,39 +105,46 @@ class FillPainter extends IToolPainter
     final int numRows = appState.canvasHeight;
     final int numCols = appState.canvasWidth;
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
-    final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(start)) ? appState.selectionState.selection.getColorReference(start) : layer.getData(start.x, start.y);
+    final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(start)) ? appState.selectionState.selection.getColorReference(start) : layer.getData(start);
+    final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
+    pointStack.push(start);
+    final HashMap<CoordinateSetI, ColorReference> layerPixels = HashMap();
+    final HashMap<CoordinateSetI, ColorReference> selectionPixels = HashMap();
 
-    void fill(int x, int y) {
-      if (x < 0 || y >= numRows || y < 0 || x >= numCols) return;
-      final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-      final ColorReference? refAtPos = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(curCoord)) ? appState.selectionState.selection.getColorReference(curCoord) : layer.getData(curCoord.x, curCoord.y);
-      if (!visited[x][y] &&
+    while(pointStack.isNotEmpty)
+    {
+      final CoordinateSetI curCoord = pointStack.pop();
+      final ColorReference? refAtPos = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(curCoord)) ? appState.selectionState.selection.getColorReference(curCoord) : layer.getData(curCoord);
+      if (!visited[curCoord.x][curCoord.y] &&
           (appState.selectionState.selection.isEmpty() || (!appState.selectionState.selection.isEmpty() && appState.selectionState.selection.contains(curCoord))) &&
           (
-            refAtPos == startValue ||
-            (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
-            (refAtPos != null && doShade && !shadeCurrentRampOnly && fillWholeRamp)
+              refAtPos == startValue ||
+                  (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
+                  (refAtPos != null && doShade && !shadeCurrentRampOnly && fillWholeRamp)
 
-      ))
+          ))
       {
-        visited[x][y] = true;
+        visited[curCoord.x][curCoord.y] = true;
 
         //draw on selection
         if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(curCoord))
         {
           if (!doShade || refAtPos == null)
           {
-            appState.selectionState.selection.addDirectly(curCoord, fillColor);
+            selectionPixels[curCoord] = fillColor;
+            //appState.selectionState.selection.addDirectly(curCoord, fillColor);
           }
           else
           {
             if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
             {
-              appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+              selectionPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp);
+              //appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
             }
             else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
             {
-              appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+              selectionPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp);
+              //appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
             }
           }
         }
@@ -143,29 +152,51 @@ class FillPainter extends IToolPainter
         {
           if (!doShade || refAtPos == null)
           {
-            layer.setData(x, y, fillColor);
+            layerPixels[curCoord] = fillColor;
+            //layer.setData(curCoord.x, curCoord.y, fillColor);
           }
           else
           {
             if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
             {
-              layer.setData(x, y, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+              layerPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp);
+              //layer.setData(curCoord.x, curCoord.y, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
             }
             else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
             {
-              layer.setData(x, y, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+              layerPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp);
+              //layer.setData(curCoord.x, curCoord.y, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
             }
           }
         }
-
-        fill(x + 1, y);
-        fill(x - 1, y);
-        fill(x, y + 1);
-        fill(x, y - 1);
+        if (curCoord.x + 1 < numCols)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
+        }
+        if (curCoord.x > 0)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
+        }
+        if (curCoord.y + 1 < numRows)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
+        }
+        if (curCoord.y > 0)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
+        }
       }
     }
 
-    fill(start.x, start.y);
+    if (layerPixels.isNotEmpty)
+    {
+      layer.setDataAll(layerPixels);
+    }
+    if (selectionPixels.isNotEmpty)
+    {
+      appState.selectionState.selection.addDirectlyAll(selectionPixels);
+    }
+
   }
 
   void _wholeFill({
@@ -181,13 +212,13 @@ class FillPainter extends IToolPainter
     //on layer
     if (appState.selectionState.selection.isEmpty())
     {
-      final ColorReference? startValue = layer.getData(start.x, start.y);
+      final ColorReference? startValue = layer.getData(start);
       for (int x = 0; x < appState.canvasWidth; x++)
       {
         for (int y = 0; y < appState.canvasHeight; y++)
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          final ColorReference? refAtPos = layer.getData(curCoord.x, curCoord.y);
+          final ColorReference? refAtPos = layer.getData(curCoord);
           if (
               refAtPos == startValue ||
               (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
@@ -195,17 +226,17 @@ class FillPainter extends IToolPainter
           {
             if (!doShade || refAtPos == null)
             {
-              layer.setData(x, y, fillColor);
+              layer.setData(curCoord, fillColor);
             }
             else
             {
               if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
               {
-                layer.setData(x, y, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+                layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
               }
               else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
               {
-                layer.setData(x, y, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+                layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
               }
             }
           }

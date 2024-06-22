@@ -52,9 +52,9 @@ class EraserPainter extends IToolPainter
               {
                 if (selection.selection.isEmpty())
                 {
-                  if (drawParams.currentLayer.getData(coord.x, coord.y) != null)
+                  if (drawParams.currentLayer.getData(coord) != null)
                   {
-                    drawParams.currentLayer.setData(coord.x, coord.y, null);
+                    drawParams.currentLayer.setData(coord, null);
                   }
                 }
                 else

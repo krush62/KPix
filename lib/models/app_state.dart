@@ -359,15 +359,16 @@ class AppState
           {
             for (int y = 0; y < canvasHeight; y++)
             {
-              if (mergeLayer.getData(x, y) == null)
+              final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+
+              if (mergeLayer.getData(curCoord) == null)
               {
-                mergeLayer.setData(x, y, layers.value[i+1].getData(x, y));
+                mergeLayer.setData(curCoord, layers.value[i+1].getData(curCoord));
               }
             }
           }
           layerList.add(mergeLayer);
           lowLayerWasSelected = layers.value[i+1].isSelected.value;
-
           i++;
         }
         else

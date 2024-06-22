@@ -43,6 +43,7 @@ dependencies:
   get_it: ^7.7.0
   fl_toast: ^3.2.0
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

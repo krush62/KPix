@@ -133,6 +133,22 @@ class CoordinateSetI
   }
 }
 
+class StackCol<T> {
+  final _list = <T>[];
+
+  void push(T value) => _list.add(value);
+
+  T pop() => _list.removeLast();
+
+  T get peek => _list.last;
+
+  bool get isEmpty => _list.isEmpty;
+
+  bool get isNotEmpty => _list.isNotEmpty;
+
+  int get length => _list.length;
+}
+
 
 
 class Helper
@@ -248,7 +264,8 @@ class Helper
   }
 
 
-  static List<CoordinateSetI> bresenham(CoordinateSetI start, CoordinateSetI end) {
+  static List<CoordinateSetI> bresenham(CoordinateSetI start, CoordinateSetI end)
+  {
     List<CoordinateSetI> points = [];
 
     int x0 = start.x;
@@ -277,6 +294,17 @@ class Helper
     }
 
     return points;
+  }
+
+  static int argbToRgba(int argb) {
+    int a = (argb & 0xFF000000) >> 24; // Extract alpha component
+    int r = (argb & 0x00FF0000) >> 16; // Extract red component
+    int g = (argb & 0x0000FF00) >> 8;  // Extract green component
+    int b = (argb & 0x000000FF);       // Extract blue component
+
+    // Combine components into RGBA format
+    int rgba = (r << 24) | (g << 16) | (b << 8) | a;
+    return rgba;
   }
 }
 

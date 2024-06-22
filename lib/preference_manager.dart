@@ -192,7 +192,7 @@ enum PreferenceInt
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
   Layout_LayerWidget_ThumbUpdateTimerSec(defaultValue: 0),
-  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 1000),
+  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 50),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 

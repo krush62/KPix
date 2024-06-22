@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -335,7 +334,7 @@ class KPixPainter extends CustomPainter
       if (layers[i].visibilityState.value == LayerVisibilityState.visible)
       {
 
-        if (layers[i].raster != null && !layers[i].isRasterizing && !layers[i].hasNonRasterizedData)
+        if (layers[i].raster != null)
         {
           paintImage(
               canvas: drawParams.canvas,
@@ -347,45 +346,6 @@ class KPixPainter extends CustomPainter
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none);
-        }
-        else //alternative drawing when rasterizing
-        {
-          for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
-          {
-            for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
-            {
-              bool foundInSelection = false;
-              if (layers[i].isSelected.value)
-              {
-                ColorReference? selColor = _appState.selectionState.selection.getColorReference(CoordinateSetI(x: x, y: y));
-                if (selColor != null)
-                {
-                  foundInSelection = true;
-                  drawParams.paint.color = selColor
-                      .getIdColor()
-                      .color;
-                  drawParams.canvas.drawRect(Rect.fromLTWH(
-                      _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
-                      _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
-                      pxlSzDbl + (2.0 * _options.pixelExtension),
-                      pxlSzDbl + (2.0 * _options.pixelExtension)),
-                      drawParams.paint);
-                }
-              }
-              ColorReference? layerColor = layers[i].getData(x, y);
-              if (layerColor != null && !foundInSelection)
-              {
-                drawParams.paint.color = layerColor.getIdColor().color;
-                drawParams.canvas.drawRect(Rect.fromLTWH(
-                    _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
-                    _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
-                    pxlSzDbl + (2.0 * _options.pixelExtension),
-                    pxlSzDbl + (2.0 * _options.pixelExtension)),
-                    drawParams.paint);
-              }
-            }
-          }
-
         }
 
         if (layers[i].isSelected.value)

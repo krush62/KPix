@@ -144,7 +144,7 @@ abstract class IToolPainter
 
 
 
-  List<CoordinateSetI> getBoundaryPath(final Set<CoordinateSetI> coords)
+  static List<CoordinateSetI> getBoundaryPath(final Set<CoordinateSetI> coords)
   {
     final List<CoordinateSetI> path = [];
     if (coords.length == 1)

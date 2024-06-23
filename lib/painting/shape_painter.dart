@@ -12,17 +12,18 @@ import 'package:kpix/widgets/layer_widget.dart';
 
 class ShapePainter extends IToolPainter
 {
-  final ShapeOptions options = GetIt.I.get<PreferenceManager>().toolOptions.shapeOptions;
-  final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
-  final CoordinateSetI selectionStart = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI selectionEnd = CoordinateSetI(x: 0, y: 0);
+  final ShapeOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.shapeOptions;
+  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final CoordinateSetI _selectionStart = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _selectionEnd = CoordinateSetI(x: 0, y: 0);
   Offset _lastStartPos = const Offset(0,0);
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _normEndPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormEndPos = CoordinateSetI(x: 0, y: 0);
   bool _isStartOnCanvas = false;
-  Set<CoordinateSetI> contentPoints = {};
+  bool _waitingForRasterization = false;
+  HashMap<CoordinateSetI, ColorReference> _drawingPixels = HashMap();
 
 
   ShapePainter({required super.painterOptions});
@@ -57,37 +58,67 @@ class ShapePainter extends IToolPainter
       selectionChanged = true;
     }
 
-    _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasWidth && _normStartPos.y < appState.canvasHeight;
-    if (_isStartOnCanvas)
+    if (!_waitingForRasterization)
     {
-      selectionStart.x = max(_normStartPos.x < _normEndPos.x ? _normStartPos.x: _normEndPos.x, 0);
-      selectionStart.y = max(_normStartPos.y < _normEndPos.y ? _normStartPos.y : _normEndPos.y, 0);
-      selectionEnd.x = min(_normStartPos.x < _normEndPos.x ? (_normEndPos.x) : (_normStartPos.x), appState.canvasWidth - 1);
-      selectionEnd.y = min(_normStartPos.y < _normEndPos.y ? (_normEndPos.y) : (_normStartPos.y), appState.canvasHeight - 1);
-
-
-      if (options.keepRatio.value)
+      _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasWidth && _normStartPos.y < appState.canvasHeight;
+      if (_isStartOnCanvas)
       {
-        final int width = selectionEnd.x - selectionStart.x;
-        final int height = selectionEnd.y - selectionStart.y;
-        if (width > height) {
-          if (_normStartPos.x < _normEndPos.x) {
-            selectionEnd.x = selectionStart.x + height;
+        _selectionStart.x = max(_normStartPos.x < _normEndPos.x ? _normStartPos.x: _normEndPos.x, 0);
+        _selectionStart.y = max(_normStartPos.y < _normEndPos.y ? _normStartPos.y : _normEndPos.y, 0);
+        _selectionEnd.x = min(_normStartPos.x < _normEndPos.x ? (_normEndPos.x) : (_normStartPos.x), appState.canvasWidth - 1);
+        _selectionEnd.y = min(_normStartPos.y < _normEndPos.y ? (_normEndPos.y) : (_normStartPos.y), appState.canvasHeight - 1);
+
+
+        if (_options.keepRatio.value)
+        {
+          final int width = _selectionEnd.x - _selectionStart.x;
+          final int height = _selectionEnd.y - _selectionStart.y;
+          if (width > height) {
+            if (_normStartPos.x < _normEndPos.x) {
+              _selectionEnd.x = _selectionStart.x + height;
+            } else {
+              _selectionStart.x = _selectionEnd.x - height;
+            }
           } else {
-            selectionStart.x = selectionEnd.x - height;
-          }
-        } else {
-          if (_normStartPos.y < _normEndPos.y) {
-            selectionEnd.y = selectionStart.y + width;
-          } else {
-            selectionStart.y = selectionEnd.y - width;
+            if (_normStartPos.y < _normEndPos.y) {
+              _selectionEnd.y = _selectionStart.y + width;
+            } else {
+              _selectionStart.y = _selectionEnd.y - width;
+            }
           }
         }
-      }
 
-      if (selectionChanged)
+        if (selectionChanged)
+        {
+          final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
+          _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions);
+
+        }
+      }
+      if (!drawParams.primaryDown && _drawingPixels.isNotEmpty)
       {
-        contentPoints = _calculateSelectionContent(options: options, selectionStart: selectionStart, selectionEnd: selectionEnd);
+        _dump(layer: drawParams.currentLayer, canvasSize: drawParams.canvasSize);
+        _waitingForRasterization = true;
+      }
+    }
+    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _drawingPixels.isNotEmpty && _waitingForRasterization)
+    {
+      _drawingPixels.clear();
+      _waitingForRasterization = false;
+    }
+  }
+
+  void _dump({required final LayerState layer, required CoordinateSetI canvasSize})
+  {
+    if (_drawingPixels.isNotEmpty)
+    {
+      if (!appState.selectionState.selection.isEmpty())
+      {
+        appState.selectionState.selection.addDirectlyAll(_drawingPixels);
+      }
+      else
+      {
+        layer.setDataAll(_drawingPixels);
       }
     }
   }
@@ -95,9 +126,9 @@ class ShapePainter extends IToolPainter
   @override
   HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars})
   {
-    if (appState.selectedColor.value != null && drawPars.cursorPos != null && _isStartOnCanvas && contentPoints.isNotEmpty)
+    if (drawPars.primaryDown || _waitingForRasterization)
     {
-      return getPixelsToDraw(coords: contentPoints, currentLayer: drawPars.currentLayer, canvasSize: drawPars.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      return _drawingPixels;
     }
     else
     {
@@ -115,14 +146,14 @@ class ShapePainter extends IToolPainter
     {
       drawParams.paint.style = PaintingStyle.stroke;
       final CoordinateSetD cursorStartPos = CoordinateSetD(
-          x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
+          x: drawParams.offset.dx + _selectionStart.x * drawParams.pixelSize,
           y: drawParams.offset.dy +
-              selectionStart.y * drawParams.pixelSize);
+              _selectionStart.y * drawParams.pixelSize);
       final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
-              (selectionEnd.x + 1) * drawParams.pixelSize,
+              (_selectionEnd.x + 1) * drawParams.pixelSize,
           y: drawParams.offset.dy +
-              (selectionEnd.y + 1) * drawParams.pixelSize);
+              (_selectionEnd.y + 1) * drawParams.pixelSize);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = Colors.black;
@@ -163,6 +194,40 @@ class ShapePainter extends IToolPainter
           }
         }
       }
+
+      if (options.strokeOnly.value)
+      {
+        Set<CoordinateSetI> boundaryPoints = {};
+        for (final CoordinateSetI coord in content)
+        {
+          if (!content.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)) ||
+              !content.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)) ||
+              !content.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)) ||
+              !content.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
+          {
+            boundaryPoints.add(coord);
+          }
+        }
+        Set<CoordinateSetI> strokeContent = {};
+        for (final CoordinateSetI coordContent in content)
+        {
+          int minDistance = 1000000000;
+          for (final CoordinateSetI coordBoundary in boundaryPoints)
+          {
+            final int dSquaredDist = ((coordBoundary.x - coordContent.x) * (coordBoundary.x - coordContent.x)) + ((coordBoundary.y - coordContent.y) * (coordBoundary.y - coordContent.y));
+            if (dSquaredDist < minDistance)
+            {
+              minDistance = dSquaredDist;
+            }
+          }
+          if (minDistance < (options.strokeWidth.value * options.strokeWidth.value))
+          {
+            strokeContent.add(coordContent);
+          }
+        }
+        content = strokeContent;
+      }
+
     }
     //ELLIPSE
     else if (options.shape.value == ShapeShape.ellipse)
@@ -171,6 +236,7 @@ class ShapePainter extends IToolPainter
       final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
       final double radiusX = (selectionEnd.x - selectionStart.x + 1) / 2.0;
       final double radiusY = (selectionEnd.y - selectionStart.y + 1) / 2.0;
+
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
         for (int y = selectionStart.y; y <= selectionEnd.y; y++)
@@ -179,7 +245,10 @@ class ShapePainter extends IToolPainter
           final double dy = (y + 0.5) - centerY;
           if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
           {
-            content.add(CoordinateSetI(x: x, y: y));
+            if (!options.strokeOnly.value || ((dx * dx) / ((radiusX - options.strokeWidth.value) * (radiusX - options.strokeWidth.value)) + (dy * dy) / ((radiusY - options.strokeWidth.value) * (radiusY - options.strokeWidth.value)) > 1))
+            {
+              content.add(CoordinateSetI(x: x, y: y));
+            }
           }
         }
       }
@@ -201,7 +270,6 @@ class ShapePainter extends IToolPainter
             {
               content.add(point);
             }
-
           }
         }
       }
@@ -267,12 +335,11 @@ class ShapePainter extends IToolPainter
 
   static bool _isPointInRoundedRectangle(CoordinateSetI testPoint, CoordinateSetI topLeft, CoordinateSetI bottomRight, int radius)
   {
-    if ((testPoint.x >= topLeft.x + radius && testPoint.x <= bottomRight.x - radius) ||
-        (testPoint.y >= topLeft.y + radius && testPoint.y <= bottomRight.y - radius))
+    if ((testPoint.x >= topLeft.x + radius && testPoint.x <= bottomRight.x - radius && testPoint.y >= topLeft.y && testPoint.y <= bottomRight.y) ||
+        (testPoint.y >= topLeft.y + radius && testPoint.y <= bottomRight.y - radius && testPoint.x >= topLeft.x && testPoint.x <= bottomRight.x))
     {
       return true;
     }
-
 
     final CoordinateSetI topLeftCorner = CoordinateSetI(x: topLeft.x + radius, y: topLeft.y + radius);
     final CoordinateSetI topRightCorner = CoordinateSetI(x: bottomRight.x - radius, y: topLeft.y + radius);
@@ -288,6 +355,7 @@ class ShapePainter extends IToolPainter
 
     return false;
   }
+
 
   static bool _isPointInCircle(final CoordinateSetI pt, final CoordinateSetI center, final int radius)
   {

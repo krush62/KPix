@@ -82,7 +82,7 @@ class EraserPainter extends IToolPainter
     assert(drawParams.cursorPos != null);
 
     final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(options.shape.value, options.size.value, cursorPosNorm);
-    final List<CoordinateSetI> pathPoints = getBoundaryPath(contentPoints);
+    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(contentPoints);
 
     Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)

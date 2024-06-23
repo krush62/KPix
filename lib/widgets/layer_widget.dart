@@ -171,7 +171,6 @@ class LayerState
   //TODO thumbnail is rasterized without selection data
   Future<ui.Image> _createRaster() async
   {
-    print("RASTERIZING");
     while(rasterQueue.isNotEmpty)
     {
       (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();

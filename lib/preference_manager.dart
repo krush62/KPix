@@ -200,7 +200,7 @@ enum PreferenceInt
   Tool_Pencil_SizeMax(defaultValue: 32),
   Tool_Pencil_Size(defaultValue: 1),
   Tool_Pencil_Shape(defaultValue: 0),
-  Tool_Shape_Shape(defaultValue: 0),
+  Tool_Shape_Shape(defaultValue: 1),
   Tool_Shape_StrokeWidthMin(defaultValue: 1),
   Tool_Shape_StrokeWidthMax(defaultValue: 16),
   Tool_Shape_StrokeWidth(defaultValue: 1),
@@ -299,7 +299,7 @@ enum PreferenceBool
 
   Tool_Pencil_PixelPerfect(defaultValue: true),
   Tool_Shape_KeepAspectRatio(defaultValue: false),
-  Tool_Shape_StrokeOnly(defaultValue: true),
+  Tool_Shape_StrokeOnly(defaultValue: false),
   Tool_Fill_FillAdjacent(defaultValue: true),
   Tool_Fill_FillWholeRamp(defaultValue: false),
   Tool_Select_KeepAspectRatio(defaultValue: false),

@@ -305,7 +305,9 @@ class ShapeOptions extends IToolOptions
                   ),
                 ),
                 Visibility(
-                  visible: (shape == ShapeShape.ellipse),
+                  //TODO this is a feature for the future
+                  /*visible: (shape == ShapeShape.ellipse),*/
+                  visible: false,
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

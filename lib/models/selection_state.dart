@@ -127,8 +127,8 @@ class SelectionState with ChangeNotifier
     {
       final Set<CoordinateSetI> selectData = continuous ?
           //TODO this needs to be made stackoverflow safe!! (and both should return a set directly)
-        _getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp).toSet() :
-        _getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp).toSet();
+        _getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
+        _getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
 
       _addPixelsWithMode(coords: selectData, mode: mode);
       _createSelectionLines();
@@ -139,7 +139,7 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  List<CoordinateSetI> _getFloodReferences({
+  Set<CoordinateSetI> _getFloodReferences({
     required final LayerState layer,
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp})
@@ -147,34 +147,48 @@ class SelectionState with ChangeNotifier
     final int numRows = GetIt.I.get<AppState>().canvasHeight;
     final int numCols = GetIt.I.get<AppState>().canvasWidth;
     final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start);
-    final List<CoordinateSetI> result = [];
+    final Set<CoordinateSetI> result = {};
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
+    final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
+    pointStack.push(start);
 
-    void select(int x, int y) {
-      if (x < 0 || y >= numRows || y < 0 || x >= numCols) return;
-      final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+    while (pointStack.isNotEmpty)
+    {
+      final CoordinateSetI curCoord = pointStack.pop();
+      if (curCoord.x < 0 || curCoord.y >= numRows || curCoord.y < 0 || curCoord.x >= numCols) continue;
       final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord);
-      if (!visited[x][y] && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
+      if (!visited[curCoord.x][curCoord.y] && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
       {
-        visited[x][y] = true;
+        visited[curCoord.x][curCoord.y] = true;
         result.add(curCoord);
-        select(x + 1, y);
-        select(x - 1, y);
-        select(x, y + 1);
-        select(x, y - 1);
+        if (curCoord.x + 1 < numCols)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
+        }
+        if (curCoord.x > 0)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
+        }
+        if (curCoord.y + 1 < numRows)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
+        }
+        if (curCoord.y > 0)
+        {
+          pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
+        }
       }
     }
 
-    select(start.x, start.y);
     return result;
   }
 
-  List<CoordinateSetI> _getSameReferences({
+  Set<CoordinateSetI> _getSameReferences({
     required final LayerState layer,
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp})
   {
-    final List<CoordinateSetI> result = [];
+    final Set<CoordinateSetI> result = {};
     final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start);
     for (int x = 0; x < GetIt.I.get<AppState>().canvasWidth; x++)
     {

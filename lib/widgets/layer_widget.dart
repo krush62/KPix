@@ -173,7 +173,7 @@ class LayerState
   {
     while(rasterQueue.isNotEmpty)
     {
-      (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();
+      final (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();
       if (entry.$2 == null)
       {
         _data.remove(entry.$1);
@@ -215,23 +215,52 @@ class LayerState
     {
       return _data[coord];
     }
-    else
+    else if (rasterQueue.isNotEmpty)
     {
-      return null;
+      for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
+      {
+        if (entry.$1 == coord)
+        {
+          return entry.$2;
+        }
+      }
     }
+    return null;
   }
 
   void setDataAll(final HashMap<CoordinateSetI, ColorReference?> list)
   {
-    List<(CoordinateSetI, ColorReference?)> it = [];
+    final Set<(CoordinateSetI, ColorReference?)> it = {};
     for (final MapEntry<CoordinateSetI, ColorReference?> entry in list.entries)
     {
-      it.add((entry.key, entry.value));
+      bool foundInRaster = false;
+      for (int i = 0; i < rasterQueue.length; i++)
+      {
+        final (CoordinateSetI, ColorReference?) rasterEntry = rasterQueue.elementAt(i);
+        if (rasterEntry.$1 == entry.key && rasterEntry.$2 != entry.value)
+        {
+          rasterQueue.remove(rasterEntry);
+          it.add((entry.key, entry.value));
+          foundInRaster = true;
+          break;
+        }
+      }
+
+      if (entry.value != _data[entry.key] && !foundInRaster)
+      {
+        it.add((entry.key, entry.value));
+      }
     }
     if (it.isNotEmpty)
     {
+      print("RASTERIZING " + it.length.toString() + " pixels");
+      for (int i = 0; i < it.length; i++)
+      {
+        print(it.elementAt(i).$1.toString() + " " + it.elementAt(i).$2.hashCode.toString());
+      }
       rasterQueue.addAll(it);
     }
+
 
   }
 }

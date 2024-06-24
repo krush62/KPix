@@ -107,9 +107,10 @@ class FillPainter extends IToolPainter
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
     final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(start)) ? appState.selectionState.selection.getColorReference(start) : layer.getData(start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
-    pointStack.push(start);
     final HashMap<CoordinateSetI, ColorReference> layerPixels = HashMap();
     final HashMap<CoordinateSetI, ColorReference> selectionPixels = HashMap();
+
+    pointStack.push(CoordinateSetI(x: start.x, y: start.y));
 
     while(pointStack.isNotEmpty)
     {

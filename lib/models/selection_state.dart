@@ -121,14 +121,21 @@ class SelectionState with ChangeNotifier
     if (selectionOptions.mode.value == SelectionMode.replace)
     {
       deselect(notify: false);
+      print("DESELECT");
     }
+
 
     if (!selection.contains(coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
     {
       final Set<CoordinateSetI> selectData = continuous ?
-          //TODO this needs to be made stackoverflow safe!! (and both should return a set directly)
         _getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
         _getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
+
+      for (int i = 0; i < selectData.length; i++)
+      {
+        print(selectData.elementAt(i).toString());
+      }
+
 
       _addPixelsWithMode(coords: selectData, mode: mode);
       _createSelectionLines();
@@ -148,35 +155,38 @@ class SelectionState with ChangeNotifier
     final int numCols = GetIt.I.get<AppState>().canvasWidth;
     final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start);
     final Set<CoordinateSetI> result = {};
-    final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
+    final Set<CoordinateSetI> visited = {};
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
-    pointStack.push(start);
+
+    pointStack.push(CoordinateSetI(x: start.x, y: start.y));
 
     while (pointStack.isNotEmpty)
     {
       final CoordinateSetI curCoord = pointStack.pop();
-      if (curCoord.x < 0 || curCoord.y >= numRows || curCoord.y < 0 || curCoord.x >= numCols) continue;
-      final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord);
-      if (!visited[curCoord.x][curCoord.y] && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
+      if (curCoord.x >= 0 && curCoord.y < numRows && curCoord.y >= 0 && curCoord.x < numCols)
       {
-        visited[curCoord.x][curCoord.y] = true;
-        result.add(curCoord);
-        if (curCoord.x + 1 < numCols)
+        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord);
+        if (!visited.contains(curCoord) && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
         {
-          pointStack.push(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
+          result.add(curCoord);
+          if (curCoord.x + 1 < numCols)
+          {
+            pointStack.push(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
+          }
+          if (curCoord.x > 0)
+          {
+            pointStack.push(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
+          }
+          if (curCoord.y + 1 < numRows)
+          {
+            pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
+          }
+          if (curCoord.y > 0)
+          {
+            pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
+          }
         }
-        if (curCoord.x > 0)
-        {
-          pointStack.push(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
-        }
-        if (curCoord.y + 1 < numRows)
-        {
-          pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
-        }
-        if (curCoord.y > 0)
-        {
-          pointStack.push(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
-        }
+        visited.add(curCoord);
       }
     }
 
@@ -207,6 +217,7 @@ class SelectionState with ChangeNotifier
 
   void _addPixelsWithMode({required Set<CoordinateSetI> coords, required SelectionMode mode})
   {
+    print("ADD PIXELS WITH MODE: " + coords.length.toString());
     Set<CoordinateSetI> addCoords = {};
     Set<CoordinateSetI> removeCoords = {};
 
@@ -236,7 +247,9 @@ class SelectionState with ChangeNotifier
       }
     }
     selection.addAll(addCoords);
+    print("ADD TO SELECTION " + addCoords.length.toString() + " entries");
     selection.removeAll(removeCoords);
+    print("REMOVE FROM SELECTION " + removeCoords.length.toString() + " entries");
 
   }
 
@@ -697,7 +710,7 @@ class SelectionList
     final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
     for (final CoordinateSetI coord in coords)
     {
-      if (_content[coord] != null && coord.x > 0 && coord.y > 0 && coord.x < GetIt.I.get<AppState>().canvasWidth && coord.y < GetIt.I.get<AppState>().canvasHeight)
+      if (_content[coord] != null && coord.x >= 0 && coord.y >= 0 && coord.x < GetIt.I.get<AppState>().canvasWidth && coord.y < GetIt.I.get<AppState>().canvasHeight)
       {
         refs[coord] = _content[coord];
         _content.remove(coord);
@@ -711,11 +724,12 @@ class SelectionList
     final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
     for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
     {
-      if (entry.value != null && entry.key.x > 0 && entry.key.y > 0 && entry.key.x < GetIt.I.get<AppState>().canvasWidth && entry.key.y < GetIt.I.get<AppState>().canvasHeight)
+      if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < GetIt.I.get<AppState>().canvasWidth && entry.key.y < GetIt.I.get<AppState>().canvasHeight)
       {
         refs[entry.key] = entry.value;
       }
     }
+    print("DESELECT, SET " + refs.length.toString() + " pixels");
     currentLayer!.setDataAll(refs);
     _content.clear();
   }

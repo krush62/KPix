@@ -23,6 +23,7 @@ class CanvasOptions
   final double stylusToolSizeDistance;
   final double touchZoomStepDistance;
   final double minVisibilityFactor;
+  final int singleTouchDelay;
 
   CanvasOptions({
     required this.stylusPollRate,
@@ -31,6 +32,7 @@ class CanvasOptions
     required this.stylusZoomStepDistance,
     required this.stylusToolSizeDistance,
     required this.minVisibilityFactor,
+    required this.singleTouchDelay,
     required this.touchZoomStepDistance});
 }
 
@@ -135,7 +137,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (details.kind == PointerDeviceKind.touch)
     {
       _touchPointers[details.pointer] = TouchPointerStatus(startPos: details.localPosition, currentPos: details.localPosition);
-      if (_touchPointers.length == 2)
+      if (_touchPointers.length == 1)
+      {
+        Timer(Duration(milliseconds: options.singleTouchDelay), checkTouchDraw);
+      }
+      else if (_touchPointers.length == 2)
       {
         _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
         _isDragging.value = true;
@@ -146,23 +152,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
 
-    if (details.buttons == kPrimaryButton && _touchPointers.length < 2)
+    if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
-      _pressStartLoc.value = details.localPosition;
-      _primaryIsDown.value = true;
-      if (!_timerRunning) {
-        _timerRunning = true;
-        _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
-      }
-
-      //deselect if outside is clicked
-      if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasWidth * appState.getZoomFactor()) ||
-          _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasHeight * appState.getZoomFactor()))
-      {
-        appState.selectionState.deselect();
-      }
-
-      print("PRIMARY DOWN");
+      _startDown(details.localPosition);
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -177,6 +169,33 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
     _updateLocation(details);
+  }
+
+  void _startDown(final Offset position)
+  {
+    _pressStartLoc.value = position;
+    _primaryIsDown.value = true;
+    if (!_timerRunning) {
+      _timerRunning = true;
+      _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
+    }
+
+    //deselect if outside is clicked
+    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasWidth * appState.getZoomFactor()) ||
+        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasHeight * appState.getZoomFactor()))
+    {
+      appState.selectionState.deselect();
+    }
+
+    print("PRIMARY DOWN");
+  }
+
+  void checkTouchDraw()
+  {
+    if (_touchPointers.length == 1)
+    {
+      _startDown(_touchPointers.values.toList().first.startPos);
+    }
   }
 
   void _buttonUp(PointerEvent details)
@@ -356,8 +375,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
-
-
 
     if (appState.selectedTool.value == ToolType.select)
     {

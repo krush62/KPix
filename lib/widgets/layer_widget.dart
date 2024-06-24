@@ -253,11 +253,6 @@ class LayerState
     }
     if (it.isNotEmpty)
     {
-      print("RASTERIZING " + it.length.toString() + " pixels");
-      for (int i = 0; i < it.length; i++)
-      {
-        print(it.elementAt(i).$1.toString() + " " + it.elementAt(i).$2.hashCode.toString());
-      }
       rasterQueue.addAll(it);
     }
 

@@ -325,7 +325,6 @@ class AppState
 
   void layerMerged(final LayerState mergeLayer)
   {
-    print("MERGING LAYER");
     final int mergeLayerIndex = layers.value.indexOf(mergeLayer);
     if (mergeLayerIndex == layers.value.length - 1)
     {

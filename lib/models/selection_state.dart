@@ -121,9 +121,7 @@ class SelectionState with ChangeNotifier
     if (selectionOptions.mode.value == SelectionMode.replace)
     {
       deselect(notify: false);
-      print("DESELECT");
     }
-
 
     if (!selection.contains(coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
     {
@@ -217,7 +215,6 @@ class SelectionState with ChangeNotifier
 
   void _addPixelsWithMode({required Set<CoordinateSetI> coords, required SelectionMode mode})
   {
-    print("ADD PIXELS WITH MODE: " + coords.length.toString());
     Set<CoordinateSetI> addCoords = {};
     Set<CoordinateSetI> removeCoords = {};
 
@@ -247,10 +244,7 @@ class SelectionState with ChangeNotifier
       }
     }
     selection.addAll(addCoords);
-    print("ADD TO SELECTION " + addCoords.length.toString() + " entries");
     selection.removeAll(removeCoords);
-    print("REMOVE FROM SELECTION " + removeCoords.length.toString() + " entries");
-
   }
 
   void _createSelectionLines()
@@ -729,7 +723,6 @@ class SelectionList
         refs[entry.key] = entry.value;
       }
     }
-    print("DESELECT, SET " + refs.length.toString() + " pixels");
     currentLayer!.setDataAll(refs);
     _content.clear();
   }

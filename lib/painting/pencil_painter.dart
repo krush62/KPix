@@ -12,6 +12,7 @@ import 'package:kpix/widgets/layer_widget.dart';
 class PencilPainter extends IToolPainter
 {
   final PencilOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.pencilOptions;
+  //TODO put this into iToolPainter and remove from subclasses
   final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final List<CoordinateSetI> _paintPositions = [];
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);

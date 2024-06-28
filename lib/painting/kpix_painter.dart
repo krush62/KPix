@@ -9,6 +9,7 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/eraser_painter.dart';
 import 'package:kpix/painting/fill_painter.dart';
+import 'package:kpix/painting/font_painter.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
@@ -108,6 +109,7 @@ class KPixPainter extends CustomPainter
       ToolType.pick: ColorPickPainter(painterOptions: _options),
       ToolType.fill: FillPainter(painterOptions: _options),
       ToolType.shape: ShapePainter(painterOptions: _options),
+      ToolType.font: FontPainter(painterOptions: _options)
     };
   }
 

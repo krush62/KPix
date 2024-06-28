@@ -13,9 +13,9 @@ import 'package:kpix/widgets/layer_widget.dart';
 
 class EraserPainter extends IToolPainter
 {
-  final EraserOptions options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
-  final CoordinateSetI cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final EraserOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
+  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
 
   EraserPainter({required super.painterOptions});
 
@@ -24,28 +24,28 @@ class EraserPainter extends IToolPainter
   {
     if (drawParams.cursorPos != null)
     {
-      cursorPosNorm.x = KPixPainter.getClosestPixel(
+      _cursorPosNorm.x = KPixPainter.getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
-      cursorPosNorm.y = KPixPainter.getClosestPixel(
+      _cursorPosNorm.y = KPixPainter.getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
 
-      if (cursorPosNorm != previousCursorPosNorm)
+      if (_cursorPosNorm != _previousCursorPosNorm)
       {
         if (drawParams.primaryDown && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
-          List<CoordinateSetI> pixelsToDelete = [cursorPosNorm];
-          if (!cursorPosNorm.isAdjacent(previousCursorPosNorm, true))
+          List<CoordinateSetI> pixelsToDelete = [_cursorPosNorm];
+          if (!_cursorPosNorm.isAdjacent(_previousCursorPosNorm, true))
           {
-            pixelsToDelete.addAll(Helper.bresenham(previousCursorPosNorm, cursorPosNorm).sublist(1));
+            pixelsToDelete.addAll(Helper.bresenham(_previousCursorPosNorm, _cursorPosNorm).sublist(1));
           }
           final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
           for (final CoordinateSetI delCoord in pixelsToDelete)
           {
-            Set<CoordinateSetI> content = getRoundSquareContentPoints(options.shape.value, options.size.value, delCoord);
+            Set<CoordinateSetI> content = getRoundSquareContentPoints(_options.shape.value, _options.size.value, delCoord);
             final SelectionState selection = GetIt.I.get<AppState>().selectionState;
             for (final CoordinateSetI coord in content)
             {
@@ -70,8 +70,8 @@ class EraserPainter extends IToolPainter
           }
           drawParams.currentLayer.setDataAll(refs);
         }
-        previousCursorPosNorm.x = cursorPosNorm.x;
-        previousCursorPosNorm.y = cursorPosNorm.y;
+        _previousCursorPosNorm.x = _cursorPosNorm.x;
+        _previousCursorPosNorm.y = _cursorPosNorm.y;
       }
     }
   }
@@ -81,7 +81,7 @@ class EraserPainter extends IToolPainter
   {
     assert(drawParams.cursorPos != null);
 
-    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(options.shape.value, options.size.value, cursorPosNorm);
+    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(_options.shape.value, _options.size.value, _cursorPosNorm);
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(contentPoints);
 
     Path path = Path();

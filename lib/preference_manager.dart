@@ -222,7 +222,7 @@ enum PreferenceInt
   Tool_Eraser_Size(defaultValue: 1),
   Tool_Eraser_Shape(defaultValue: 0),
   Tool_Text_SizeMin(defaultValue: 1),
-  Tool_Text_SizeMax(defaultValue: 16),
+  Tool_Text_SizeMax(defaultValue: 8),
   Tool_Text_Size(defaultValue: 1),
   Tool_Text_Font(defaultValue: 0),
   Tool_Text_MaxLength(defaultValue: 32),

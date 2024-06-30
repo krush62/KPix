@@ -62,6 +62,8 @@ class SelectionState with ChangeNotifier
   }
 
 
+
+
   void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true})
   {
     if (selectionOptions.mode.value == SelectionMode.replace)
@@ -543,9 +545,15 @@ class SelectionState with ChangeNotifier
       else
       {
         deselect(notify: false);
-        for (final CoordinateSetI key in clipboard!.keys) {
-          selection.addDirectly(key, clipboard![key]);
+        final HashMap<CoordinateSetI, ColorReference> addCoords = HashMap();
+        for (final CoordinateSetI key in clipboard!.keys)
+        {
+          if (clipboard![key] != null)
+          {
+            addCoords[key] = clipboard![key]!;
+          }
         }
+        selection.addDirectlyAll(addCoords);
         _createSelectionLines();
 
         if (notify) {
@@ -630,6 +638,16 @@ class SelectionState with ChangeNotifier
   void finishMovement()
   {
     selection.resetLastOffset();
+  }
+
+  void add({final bool notify = true, required final HashMap<CoordinateSetI, ColorReference> data})
+  {
+    selection.addDirectlyAll(data);
+    _createSelectionLines();
+    if (notify)
+    {
+      notifyRepaint();
+    }
   }
 }
 
@@ -737,9 +755,10 @@ class SelectionList
 
   void delete(bool keepSelection)
   {
-    if (keepSelection) {
-      for (final CoordinateSetI entry in _content
-          .keys) {
+    if (keepSelection)
+    {
+      for (final CoordinateSetI entry in _content.keys)
+      {
           _content[entry] = null;
       }
     }

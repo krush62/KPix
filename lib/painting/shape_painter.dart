@@ -116,6 +116,10 @@ class ShapePainter extends IToolPainter
       {
         appState.selectionState.selection.addDirectlyAll(_drawingPixels);
       }
+      else if (!_shaderOptions.isEnabled.value)
+      {
+        appState.selectionState.add(data: _drawingPixels, notify: false);
+      }
       else
       {
         layer.setDataAll(_drawingPixels);

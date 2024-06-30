@@ -80,6 +80,9 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<Offset> _offset;
   final ValueNotifier<CoordinateSetD?> _coords;
   final ValueNotifier<bool> _isDragging;
+  final ValueNotifier<bool> _stylusLongMoveStarted;
+  final ValueNotifier<bool> _stylusLongMoveVertical;
+  final ValueNotifier<bool> _stylusLongMoveHorizontal;
   final ValueNotifier<bool> _primaryDown;
   final ValueNotifier<Offset> _primaryPressStart;
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
@@ -99,8 +102,20 @@ class KPixPainter extends CustomPainter
     required ValueNotifier<CoordinateSetD?> coords,
     required ValueNotifier<bool> primaryDown,
     required ValueNotifier<Offset> primaryPressStart,
-    required ValueNotifier<bool> isDragging})
-      : _appState = appState, _offset = offset, _coords = coords, _isDragging = isDragging, _primaryDown = primaryDown, _primaryPressStart = primaryPressStart, super(repaint: appState.repaintNotifier)
+    required ValueNotifier<bool> isDragging,
+    required ValueNotifier<bool> stylusLongMoveStarted,
+    required ValueNotifier<bool> stylusLongMoveVertical,
+    required ValueNotifier<bool> stylusLongMoveHorizontal})
+      : _appState = appState,
+        _offset = offset,
+        _coords = coords,
+        _isDragging = isDragging,
+        _stylusLongMoveStarted = stylusLongMoveStarted,
+        _stylusLongMoveVertical = stylusLongMoveVertical,
+        _stylusLongMoveHorizontal = stylusLongMoveHorizontal,
+        _primaryDown = primaryDown,
+        _primaryPressStart = primaryPressStart,
+        super(repaint: appState.repaintNotifier)
   {
     toolPainterMap = {
       ToolType.select: SelectionPainter(painterOptions: _options),
@@ -324,6 +339,50 @@ class KPixPainter extends CustomPainter
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize + _options.cursorBorderWidth, drawParams.paint);
         drawParams.paint.color = checkerboardColor2;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize, drawParams.paint);
+      }
+
+      if (_stylusLongMoveStarted.value)
+      {
+        if (_stylusLongMoveHorizontal.value)
+        {
+          Path path1 = Path();
+          path1.moveTo(_coords.value!.x + (-1 * _options.cursorSize), _coords.value!.y + (-1 * _options.cursorSize));
+          path1.lineTo(_coords.value!.x + (-2 * _options.cursorSize), _coords.value!.y);
+          path1.lineTo(_coords.value!.x + (-1 * _options.cursorSize), _coords.value!.y + (1 * _options.cursorSize));
+
+          Path path2 = Path();
+          path1.moveTo(_coords.value!.x + (1 * _options.cursorSize), _coords.value!.y + (-1 * _options.cursorSize));
+          path1.lineTo(_coords.value!.x + (2 * _options.cursorSize), _coords.value!.y);
+          path1.lineTo(_coords.value!.x + (1 * _options.cursorSize), _coords.value!.y + (1 * _options.cursorSize));
+
+          drawParams.paint.style = PaintingStyle.stroke;
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthLarge;
+          drawParams.paint.color = Colors.black;
+          drawParams.canvas.drawPath(path1, drawParams.paint);
+          drawParams.canvas.drawPath(path2, drawParams.paint);
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthSmall;
+          drawParams.paint.color = Colors.white;
+          drawParams.canvas.drawPath(path1, drawParams.paint);
+          drawParams.canvas.drawPath(path2, drawParams.paint);
+
+        }
+        else if (_stylusLongMoveVertical.value)
+        {
+          Path path = Path();
+          path.moveTo(_coords.value!.x + (-2 * _options.cursorSize), _coords.value!.y + (2 * _options.cursorSize));
+          path.lineTo(_coords.value!.x, _coords.value!.y);
+          path.lineTo(_coords.value!.x + (2 * _options.cursorSize), _coords.value!.y);
+          path.lineTo(_coords.value!.x + (2 * _options.cursorSize), _coords.value!.y + (-2 * _options.cursorSize));
+          path.lineTo(_coords.value!.x, _coords.value!.y + (-2 * _options.cursorSize));
+          path.lineTo(_coords.value!.x, _coords.value!.y);
+          drawParams.paint.style = PaintingStyle.stroke;
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthLarge;
+          drawParams.paint.color = Colors.black;
+          drawParams.canvas.drawPath(path, drawParams.paint);
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthSmall;
+          drawParams.paint.color = Colors.white;
+          drawParams.canvas.drawPath(path, drawParams.paint);
+        }
       }
     }
   }

@@ -60,6 +60,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   AppState appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);
+  final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier(false);
+  final ValueNotifier<bool> _stylusLongMoveVertical = ValueNotifier(false);
+  final ValueNotifier<bool> _stylusLongMoveHorizontal = ValueNotifier(false);
   bool _timerRunning = false;
   late Duration _timeoutLongPress;
   late final double _maxLongPressDistance;
@@ -69,11 +72,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   bool _needSecondaryStartLoc = false;
   final ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
   bool _secondaryIsDown = false;
-  bool _stylusLongMoveStarted = false;
   int _stylusZoomStartLevel = 100;
   int _stylusToolStartSize = 1;
-  bool _stylusLongMoveVertical = false;
-  bool _stylusLongMoveHorizontal = false;
+
 
   late Timer _timerStylusBtnLongPress;
   bool _timerStylusRunning = false;
@@ -97,6 +98,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     checkerboardColor2: Theme.of(context).primaryColorLight,
     coords: _cursorPos,
     isDragging: _isDragging,
+    stylusLongMoveStarted: _stylusLongMoveStarted,
+    stylusLongMoveVertical: _stylusLongMoveVertical,
+    stylusLongMoveHorizontal: _stylusLongMoveHorizontal,
     primaryDown: _primaryIsDown,
     primaryPressStart: _pressStartLoc,
   );
@@ -314,32 +318,32 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     final Offset cursorOffset = Offset(_cursorPos.value!.x, _cursorPos.value!.y);
 
-    if (_stylusLongMoveStarted)
+    if (_stylusLongMoveStarted.value)
     {
       final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.getZoomFactor().toDouble();
       double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
       double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
       int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
       final int toolSizeSteps = (xOffset / options.stylusToolSizeDistance).round();
-      if (!_stylusLongMoveVertical && !_stylusLongMoveHorizontal)
+      if (!_stylusLongMoveVertical.value && !_stylusLongMoveHorizontal.value)
       {
         if (zoomSteps != 0)
         {
-          _stylusLongMoveVertical = true;
+          _stylusLongMoveVertical.value = true;
         }
         else if (toolSizeSteps != 0)
         {
-          _stylusLongMoveHorizontal = true;
+          _stylusLongMoveHorizontal.value = true;
         }
       }
 
 
-      if (_stylusLongMoveHorizontal)
+      if (_stylusLongMoveHorizontal.value)
       {
         appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
       }
 
-      if (_stylusLongMoveVertical && appState.setZoomLevelByDistance(_stylusZoomStartLevel, zoomSteps))
+      if (_stylusLongMoveVertical.value && appState.setZoomLevelByDistance(_stylusZoomStartLevel, zoomSteps))
       {
         _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
       }
@@ -474,9 +478,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _stylusButtonDown = false;
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
-      _stylusLongMoveStarted = false;
-      _stylusLongMoveVertical = false;
-      _stylusLongMoveHorizontal = false;
+      _stylusLongMoveStarted.value = false;
+      _stylusLongMoveVertical.value = false;
+      _stylusLongMoveHorizontal.value = false;
       _isDragging.value = false;
       setMouseCursor(SystemMouseCursors.none);
     }
@@ -507,7 +511,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   {
     print("STYLUS BTN LONG PRESS");
     _timerStylusRunning = false;
-    _stylusLongMoveStarted = true;
+    _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = appState.getZoomLevel();
     _stylusToolStartSize = appState.getCurrentToolSize();
   }

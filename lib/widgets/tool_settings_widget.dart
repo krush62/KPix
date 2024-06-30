@@ -4,7 +4,6 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
-import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
@@ -113,13 +112,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 lineOptions: toolOptions.lineOptions,);
             break;
-          case ToolType.curve:
-            toolWidget = CurveOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                curveOptions: toolOptions.curveOptions,);
-            break;
-
           default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
         }
 

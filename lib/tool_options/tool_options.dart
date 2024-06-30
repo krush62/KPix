@@ -1,5 +1,4 @@
 import 'package:kpix/tool_options/color_pick_options.dart';
-import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
@@ -61,11 +60,9 @@ class ToolOptions
     required TextOptions textOptions,
     required SprayCanOptions sprayCanOptions,
     required LineOptions lineOptions,
-    required CurveOptions curveOptions,
 })
   {
     Map<ToolType, IToolOptions> toolOptionMap = {
-      ToolType.curve: curveOptions,
       ToolType.line: lineOptions,
       ToolType.spraycan: sprayCanOptions,
       ToolType.font: textOptions,
@@ -78,7 +75,6 @@ class ToolOptions
     };
 
     return ToolOptions._(
-      curveOptions: curveOptions,
       lineOptions: lineOptions,
       sprayCanOptions: sprayCanOptions,
       textOptions: textOptions,
@@ -103,7 +99,6 @@ class ToolOptions
     required this.textOptions,
     required this.sprayCanOptions,
     required this.lineOptions,
-    required this.curveOptions,
     required this.toolOptionMap});
 
   final PencilOptions pencilOptions;
@@ -115,7 +110,6 @@ class ToolOptions
   final TextOptions textOptions;
   final SprayCanOptions sprayCanOptions;
   final LineOptions lineOptions;
-  final CurveOptions curveOptions;
 
 }
 

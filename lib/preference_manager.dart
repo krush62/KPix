@@ -5,7 +5,6 @@ import 'package:kpix/font_manager.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
-import 'package:kpix/tool_options/curve_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
@@ -650,10 +649,6 @@ class PreferenceManager
         widthMax: getValueI(PreferenceInt.Tool_Line_WidthMax),
         widthDefault: getValueI(PreferenceInt.Tool_Line_Width),
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
-    CurveOptions curveOptions = CurveOptions(
-        widthMin: getValueI(PreferenceInt.Tool_Curve_WidthMin),
-        widthMax: getValueI(PreferenceInt.Tool_Curve_WidthMax),
-        widthDefault: getValueI(PreferenceInt.Tool_Curve_Width));
     toolOptions = ToolOptions(
         pencilOptions: pencilOptions,
         shapeOptions: shapeOptions,
@@ -663,8 +658,7 @@ class PreferenceManager
         eraserOptions: eraserOptions,
         textOptions: textOptions,
         sprayCanOptions: sprayCanOptions,
-        lineOptions: lineOptions,
-        curveOptions: curveOptions);
+        lineOptions: lineOptions,);
   }
 
   void loadKPalOptions()

@@ -72,18 +72,10 @@ class _ToolsWidgetState extends State<ToolsWidget>
                     )
                   ),
                   ButtonSegment(
-                    value: ToolType.shape,
-                    tooltip: toolList[ToolType.shape]?.title,
+                    value: ToolType.erase,
+                    tooltip: toolList[ToolType.erase]?.title,
                     label: FaIcon(
-                      toolList[ToolType.shape]!.icon,
-                      size: toolsWidgetOptions.iconSize,
-                    )
-                  ),
-                  ButtonSegment(
-                    value: ToolType.fill,
-                    tooltip: toolList[ToolType.fill]?.title,
-                    label: FaIcon(
-                      toolList[ToolType.fill]!.icon,
+                      toolList[ToolType.erase]!.icon,
                       size: toolsWidgetOptions.iconSize,
                     )
                   ),
@@ -96,18 +88,18 @@ class _ToolsWidgetState extends State<ToolsWidget>
                     )
                   ),
                   ButtonSegment(
-                    value: ToolType.pick,
-                    tooltip: toolList[ToolType.pick]?.title,
+                    value: ToolType.fill,
+                    tooltip: toolList[ToolType.fill]?.title,
                     label: FaIcon(
-                      toolList[ToolType.pick]!.icon,
+                      toolList[ToolType.fill]!.icon,
                       size: toolsWidgetOptions.iconSize,
                     )
                   ),
                   ButtonSegment(
-                    value: ToolType.erase,
-                    tooltip: toolList[ToolType.erase]?.title,
+                    value: ToolType.pick,
+                    tooltip: toolList[ToolType.pick]?.title,
                     label: FaIcon(
-                      toolList[ToolType.erase]!.icon,
+                      toolList[ToolType.pick]!.icon,
                       size: toolsWidgetOptions.iconSize,
                     )
                   ),
@@ -123,6 +115,22 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 showSelectedIcon: false,
                 onSelectionChanged: (Set<ToolType> tools) {appState.selectedTool.value = tools.first;},
                 segments: [
+                  ButtonSegment(
+                      value: ToolType.line,
+                      tooltip: toolList[ToolType.line]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.line]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
+                  ButtonSegment(
+                      value: ToolType.shape,
+                      tooltip: toolList[ToolType.shape]?.title,
+                      label: FaIcon(
+                        toolList[ToolType.shape]!.icon,
+                        size: toolsWidgetOptions.iconSize,
+                      )
+                  ),
                   ButtonSegment(
                       value: ToolType.font,
                       tooltip: toolList[ToolType.font]?.title,
@@ -140,26 +148,10 @@ class _ToolsWidgetState extends State<ToolsWidget>
                       )
                   ),
                   ButtonSegment(
-                      value: ToolType.line,
-                      tooltip: toolList[ToolType.line]?.title,
-                      label: FaIcon(
-                        toolList[ToolType.line]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
-                  ),
-                  ButtonSegment(
                       value: ToolType.stamp,
                       tooltip: toolList[ToolType.stamp]?.title,
                       label: FaIcon(
                         toolList[ToolType.stamp]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
-                  ),
-                  ButtonSegment(
-                      value: ToolType.curve,
-                      tooltip: toolList[ToolType.curve]?.title,
-                      label: FaIcon(
-                        toolList[ToolType.curve]!.icon,
                         size: toolsWidgetOptions.iconSize,
                       )
                   ),

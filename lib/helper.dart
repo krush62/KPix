@@ -15,7 +15,6 @@ enum ToolType
   spraycan,
   line,
   stamp,
-  curve
 }
 
 class Tool
@@ -36,9 +35,8 @@ const Map<ToolType, Tool> toolList =
   ToolType.erase : Tool(icon: FontAwesomeIcons.eraser, title: "Eraser"),
   ToolType.font : Tool(icon: FontAwesomeIcons.font, title: "Text"),
   ToolType.spraycan : Tool(icon: FontAwesomeIcons.sprayCan, title: "Spray Can"),
-  ToolType.line : Tool(icon: FontAwesomeIcons.linesLeaning, title: "Line"),
+  ToolType.line : Tool(icon: Icons.multiline_chart, title: "Line"),
   ToolType.stamp : Tool(icon: FontAwesomeIcons.stamp, title: "Stamp"),
-  ToolType.curve : Tool(icon: FontAwesomeIcons.bezierCurve, title: "Curve"),
 };
 
 class LabColor

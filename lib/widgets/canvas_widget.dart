@@ -112,11 +112,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     _maxLongPressDistance = options.longPressCancelDistance;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      int bestZoomLevel = 0;
-      for (int i = 1; i < AppState.zoomLevels.length; i++)
+      int bestZoomLevel = AppState.zoomLevelMin;
+      for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
       {
-        int factor = AppState.zoomLevels[i] ~/ 100;
-        if (appState.canvasWidth * factor < kPixPainter.latestSize!.width && appState.canvasHeight * factor < kPixPainter.latestSize!.height)
+        if (appState.canvasWidth * i < kPixPainter.latestSize.width && appState.canvasHeight * i < kPixPainter.latestSize.height)
         {
           bestZoomLevel = i;
         }
@@ -125,8 +124,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           break;
         }
       }
-      appState.setZoomLevelIndex(bestZoomLevel);
-      _setOffset(Offset((kPixPainter.latestSize!.width - (appState.canvasWidth * appState.getZoomFactor())) / 2, (kPixPainter.latestSize!.height - (appState.canvasHeight * appState.getZoomFactor())) / 2));
+      appState.setZoomLevel(bestZoomLevel);
+      _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasWidth * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize!.height - (appState.canvasHeight * appState.zoomFactor.value)) / 2));
     });
   }
 
@@ -150,7 +149,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
         _isDragging.value = true;
         _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
-        _touchZoomStartLevel = appState.getZoomLevel();
+        _touchZoomStartLevel = appState.zoomFactor.value;
         setMouseCursor(SystemMouseCursors.move);
       }
     }
@@ -185,8 +184,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
     //deselect if outside is clicked
-    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasWidth * appState.getZoomFactor()) ||
-        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasHeight * appState.getZoomFactor()))
+    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasWidth * appState.zoomFactor.value) ||
+        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasHeight * appState.zoomFactor.value))
     {
       appState.selectionState.deselect();
     }
@@ -282,8 +281,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
     appState.setStatusBarCursorPosition(CoordinateSetI(
-        x: (_cursorPos.value!.x - _canvasOffset.value.dx) ~/ appState.getZoomFactor(),
-        y: (_cursorPos.value!.y - _canvasOffset.value.dy) ~/ appState.getZoomFactor()));
+        x: (_cursorPos.value!.x - _canvasOffset.value.dx) ~/ appState.zoomFactor.value,
+        y: (_cursorPos.value!.y - _canvasOffset.value.dy) ~/ appState.zoomFactor.value));
 
     //UPDATE OF STATUS BAR
     if (_primaryIsDown.value)
@@ -320,7 +319,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     if (_stylusLongMoveStarted.value)
     {
-      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.getZoomFactor().toDouble();
+      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
       double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
       double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
       int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
@@ -345,7 +344,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
       if (_stylusLongMoveVertical.value && appState.setZoomLevelByDistance(_stylusZoomStartLevel, zoomSteps))
       {
-        _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
+        _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
       }
     }
 
@@ -372,10 +371,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         final double currentDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         final int zoomSteps = ((currentDistance - _initialTouchZoomDistance) / options.touchZoomStepDistance).round();
-        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.getZoomFactor().toDouble();
+        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
         if (appState.setZoomLevelByDistance(_touchZoomStartLevel, zoomSteps))
         {
-          _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
+          _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
         }
       }
     }
@@ -440,15 +439,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   {
     if (ev is PointerScrollEvent)
     {
-      final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / appState.getZoomFactor().toDouble();
+      final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
 
       if (ev.scrollDelta.dy < 0.0 && appState.increaseZoomLevel())
       {
-        _setOffset(ev.localPosition - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
+        _setOffset(ev.localPosition - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
       }
       else if (ev.scrollDelta.dy > 0.0 && appState.decreaseZoomLevel())
       {
-        _setOffset(ev.localPosition - (cursorPositionBeforeZoom * appState.getZoomFactor().toDouble()));
+        _setOffset(ev.localPosition - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
       }
     }
   }
@@ -512,7 +511,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     print("STYLUS BTN LONG PRESS");
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
-    _stylusZoomStartLevel = appState.getZoomLevel();
+    _stylusZoomStartLevel = appState.zoomFactor.value;
     _stylusToolStartSize = appState.getCurrentToolSize();
   }
 
@@ -524,13 +523,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   void _setOffset(final Offset newOffset)
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasWidth.toDouble() * appState.getZoomFactor(), y: appState.canvasHeight.toDouble() * appState.getZoomFactor());
-    final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize!.width * options.minVisibilityFactor, y: kPixPainter.latestSize!.height * options.minVisibilityFactor);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasWidth.toDouble() * appState.zoomFactor.value, y: appState.canvasHeight.toDouble() * appState.zoomFactor.value);
+    final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * options.minVisibilityFactor, y: kPixPainter.latestSize.height * options.minVisibilityFactor);
 
     coords.x = max(coords.x, -scaledCanvas.x + minVisibility.x);
     coords.y = max(coords.y, -scaledCanvas.y + minVisibility.y);
-    coords.x = min(coords.x, kPixPainter.latestSize!.width - minVisibility.x);
-    coords.y = min(coords.y, kPixPainter.latestSize!.height - minVisibility.y);
+    coords.x = min(coords.x, kPixPainter.latestSize.width - minVisibility.x);
+    coords.y = min(coords.y, kPixPainter.latestSize.height - minVisibility.y);
 
 
     _canvasOffset.value = Offset(coords.x, coords.y);

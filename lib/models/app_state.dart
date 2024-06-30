@@ -32,10 +32,9 @@ class AppState
   final RepaintNotifier repaintNotifier = RepaintNotifier();
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
-
-  static final List<int> zoomLevels = [100, 200, 300, 400, 600, 800, 1000, 1200, 1400, 1600, 2000, 2400, 2800, 3200, 4800, 6400, 8000];
-  int _zoomLevelIndex = 0;
-  int _zoomFactor = 1;
+  final ValueNotifier<int> zoomFactor = ValueNotifier(1);
+  static const int zoomLevelMin = 1;
+  static const int zoomLevelMax = 80;
 
   //StatusBar
   final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
@@ -57,7 +56,7 @@ class AppState
       _selectionMap[toolType] = false;
     }
     setToolSelection(ToolType.pencil);
-    setStatusBarZoomFactor(getZoomLevel());
+    setStatusBarZoomFactor(zoomFactor.value * 100);
     currentLayer.addListener(() {
       selectionState.selection.setCurrentLayer(currentLayer.value);
     });
@@ -70,23 +69,13 @@ class AppState
     setStatusBarDimensions(width, height);
   }
 
-  int getZoomFactor()
-  {
-    return _zoomFactor;
-  }
-
-  int getZoomLevel()
-  {
-    return zoomLevels[_zoomLevelIndex];
-  }
-
   bool increaseZoomLevel()
   {
     bool changed = false;
-    if (_zoomLevelIndex < zoomLevels.length - 1)
+    if (zoomFactor.value < zoomLevelMax)
     {
-      _zoomLevelIndex++;
-      _updateZoomFactor();
+      zoomFactor.value = zoomFactor.value + 1;
+      setStatusBarZoomFactor(zoomFactor.value * 100);
       changed = true;
     }
     return changed;
@@ -95,10 +84,10 @@ class AppState
   bool decreaseZoomLevel()
   {
     bool changed = false;
-    if (_zoomLevelIndex > 0)
+    if (zoomFactor.value > zoomLevelMin)
     {
-      _zoomLevelIndex--;
-      _updateZoomFactor();
+      zoomFactor.value = zoomFactor.value - 1;
+      setStatusBarZoomFactor(zoomFactor.value * 100);
       changed = true;
     }
     return changed;
@@ -109,33 +98,27 @@ class AppState
     bool change = false;
     if (steps != 0)
     {
-      int endIndex = zoomLevels.indexOf(startZoomLevel) + steps;
-      if (endIndex < zoomLevels.length && endIndex >= 0 && endIndex != _zoomLevelIndex)
+      final int endIndex = zoomFactor.value + steps;
+      if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != zoomFactor.value)
       {
-         _zoomLevelIndex = endIndex;
-         _updateZoomFactor();
+         zoomFactor.value = endIndex;
+         setStatusBarZoomFactor(zoomFactor.value * 100);
          change = true;
       }
     }
     return change;
   }
 
-  bool setZoomLevelIndex(final int index)
+  bool setZoomLevel(final int val)
   {
     bool change = false;
-    if (index >= 0 && index < zoomLevels.length && index != _zoomLevelIndex)
+    if (val <= zoomLevelMax && val >= zoomLevelMin && val != zoomFactor.value)
     {
-      _zoomLevelIndex = index;
-      _updateZoomFactor();
+      zoomFactor.value = val;
+      setStatusBarZoomFactor(zoomFactor.value * 100);
       change = true;
     }
     return change;
-  }
-
-  void _updateZoomFactor()
-  {
-    _zoomFactor = getZoomLevel() ~/ 100;
-    setStatusBarZoomFactor(getZoomLevel());
   }
 
 
@@ -429,9 +412,9 @@ class AppState
     statusBarCursorPositionString.value = null;
   }
 
-  void setStatusBarZoomFactor(final int zoomFactor)
+  void setStatusBarZoomFactor(final int val)
   {
-    statusBarZoomFactorString.value = "$zoomFactor%";
+    statusBarZoomFactorString.value = "$val%";
   }
 
   void hideStatusBarZoomFactor()

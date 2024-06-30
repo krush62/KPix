@@ -142,7 +142,7 @@ class KPixPainter extends CustomPainter
         offset: _offset.value,
         canvas: canvas,
         paint: Paint(),
-        pixelSize: _appState.getZoomFactor(),
+        pixelSize: _appState.zoomFactor.value,
         canvasSize: CoordinateSetI(x: _appState.canvasWidth, y: _appState.canvasHeight),
         drawingSize: size,
         cursorPos: _coords.value,

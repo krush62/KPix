@@ -229,7 +229,7 @@ class FontManager
 
     if (imgData != null)
     {
-      for (int i = 5; i < lines.length; i++)
+      for (int i = 4; i < lines.length; i++)
       {
         final List<String> splits = lines[i].split(' ');
         if (splits.length >= 4)
@@ -260,6 +260,7 @@ class FontManager
               {
                 glyph.dataMatrix[0][b] = false;
               }
+              glyphMap[id] = glyph;
             }
           }
           else

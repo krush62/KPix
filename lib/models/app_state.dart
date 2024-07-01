@@ -49,6 +49,9 @@ class AppState
   int canvasHeight = 0;
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
 
+  //NOT USED ATM
+  double devicePixelRatio = 1.0;
+
   AppState()
   {
     for (ToolType toolType in toolList.keys)
@@ -414,7 +417,14 @@ class AppState
 
   void setStatusBarZoomFactor(final int val)
   {
-    statusBarZoomFactorString.value = "$val%";
+    int realVal = (val / devicePixelRatio).round();
+    String suffix = "";
+    if (realVal % 100 != 0)
+    {
+       suffix = " *";
+    }
+
+    statusBarZoomFactorString.value = "$val%$suffix";
   }
 
   void hideStatusBarZoomFactor()

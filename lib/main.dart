@@ -56,8 +56,13 @@ class _KPixAppState extends State<KPixApp> {
     Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
     GetIt.I.registerSingleton<AppState>(AppState());
-    //TODO TEMP
     AppState appState = GetIt.I.get<AppState>();
+    if (context.mounted)
+    {
+      final BuildContext c = context;
+      appState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+    }
+    //TODO TEMP
     appState.setCanvasDimensions(width: 256, height: 160);
     appState.addNewRamp();
     appState.addNewRamp();

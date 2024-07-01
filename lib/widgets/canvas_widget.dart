@@ -95,6 +95,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   int _touchZoomStartLevel = 1;
 
   late Timer _idleTimer;
+  bool _idleTimerInitialized = false;
 
   late KPixPainter kPixPainter = KPixPainter(
     appState: appState,
@@ -111,7 +112,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   );
 
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
     Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
@@ -130,12 +132,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
       appState.setZoomLevel(bestZoomLevel);
-      _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasWidth * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize!.height - (appState.canvasHeight * appState.zoomFactor.value)) / 2));
+      _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasWidth * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize.height - (appState.canvasHeight * appState.zoomFactor.value)) / 2));
     });
   }
 
 
-  void handleTimeoutLongPress() {
+  void handleTimeoutLongPress()
+  {
     _timerRunning = false;
     print("LONG PRESS PRIMARY");
   }
@@ -166,6 +169,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       if (appState.selectedTool.value == ToolType.spraycan)
       {
         _idleTimer = Timer.periodic(Duration(milliseconds: options.idleTimerRate), _idleTimeout);
+        _idleTimerInitialized = true;
       }
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
@@ -232,7 +236,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       appState.hideStatusBarToolAspectRatio();
       _timerLongPress.cancel();
       _primaryIsDown.value = false;
-      _idleTimer.cancel();
+      if (_idleTimerInitialized)
+      {
+        _idleTimer.cancel();
+      }
     }
     else if (_secondaryIsDown && details.kind == PointerDeviceKind.mouse)
     {

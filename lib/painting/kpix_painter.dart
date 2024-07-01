@@ -14,6 +14,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/pencil_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shape_painter.dart';
+import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
@@ -124,7 +125,8 @@ class KPixPainter extends CustomPainter
       ToolType.pick: ColorPickPainter(painterOptions: _options),
       ToolType.fill: FillPainter(painterOptions: _options),
       ToolType.shape: ShapePainter(painterOptions: _options),
-      ToolType.font: FontPainter(painterOptions: _options)
+      ToolType.font: FontPainter(painterOptions: _options),
+      ToolType.spraycan: SprayCanPainter(painterOptions: _options),
     };
   }
 

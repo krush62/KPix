@@ -24,6 +24,7 @@ class CanvasOptions
   final double touchZoomStepDistance;
   final double minVisibilityFactor;
   final int singleTouchDelay;
+  final int idleTimerRate;
 
   CanvasOptions({
     required this.stylusPollRate,
@@ -33,6 +34,7 @@ class CanvasOptions
     required this.stylusToolSizeDistance,
     required this.minVisibilityFactor,
     required this.singleTouchDelay,
+    required this.idleTimerRate,
     required this.touchZoomStepDistance});
 }
 
@@ -90,7 +92,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   bool _mouseIsInside = false;
   final Map<int, TouchPointerStatus> _touchPointers = {};
   double _initialTouchZoomDistance = 0.0;
-  int _touchZoomStartLevel = 100;
+  int _touchZoomStartLevel = 1;
+
+  late Timer _idleTimer;
+
   late KPixPainter kPixPainter = KPixPainter(
     appState: appState,
     offset: _canvasOffset,
@@ -158,6 +163,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
       _startDown(details.localPosition);
+      if (appState.selectedTool.value == ToolType.spraycan)
+      {
+        _idleTimer = Timer.periodic(Duration(milliseconds: options.idleTimerRate), _idleTimeout);
+      }
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -172,6 +181,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
     _updateLocation(details);
+  }
+
+  void _idleTimeout(final Timer _)
+  {
+    appState.repaintNotifier.repaint();
   }
 
   void _startDown(final Offset position)
@@ -218,6 +232,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       appState.hideStatusBarToolAspectRatio();
       _timerLongPress.cancel();
       _primaryIsDown.value = false;
+      _idleTimer.cancel();
     }
     else if (_secondaryIsDown && details.kind == PointerDeviceKind.mouse)
     {

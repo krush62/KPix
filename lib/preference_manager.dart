@@ -177,6 +177,7 @@ enum PreferenceInt
   Layout_Canvas_LongPressDuration(defaultValue: 250),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
   Layout_Canvas_SingleTouchDelay(defaultValue: 50),
+  Layout_Canvas_IdleTimerRate(defaultValue: 15),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
@@ -491,7 +492,8 @@ class PreferenceManager
         stylusZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance),
         touchZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_TouchZoomStepDistance),
         stylusToolSizeDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusToolSizeDistance),
-        minVisibilityFactor: getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor));
+        minVisibilityFactor: getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor),
+        idleTimerRate: getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate));
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: getValueD(PreferenceDouble.Layout_Tools_Padding),
         colCount: getValueI(PreferenceInt.Layout_Tools_ColCount),

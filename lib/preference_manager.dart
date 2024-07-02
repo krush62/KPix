@@ -12,6 +12,7 @@ import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/shader_options.dart';
@@ -242,7 +243,10 @@ enum PreferenceInt
   Tool_Curve_WidthMax(defaultValue: 16),
   Tool_Curve_Width(defaultValue: 1),
   Tool_Wand_Mode(defaultValue: 0),
-
+  Tool_Stamp_ScaleMin(defaultValue: 1),
+  Tool_Stamp_ScaleMax(defaultValue: 8),
+  Tool_Stamp_ScaleDefault(defaultValue: 1),
+  Tool_Stamp_StampDefault(defaultValue: 0),
 
 
 
@@ -309,6 +313,8 @@ enum PreferenceBool
   Tool_Line_IntegerAspectRatio(defaultValue: false),
   Tool_Wand_SelectFromWholeRamp(defaultValue: false),
   Tool_Wand_Continuous(defaultValue: true),
+  Tool_Stamp_FlipH(defaultValue: false),
+  Tool_Stamp_FlipV(defaultValue: false),
   ;
   const PreferenceBool({
     required this.defaultValue
@@ -651,6 +657,13 @@ class PreferenceManager
         widthMax: getValueI(PreferenceInt.Tool_Line_WidthMax),
         widthDefault: getValueI(PreferenceInt.Tool_Line_Width),
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
+    StampOptions stampOptions = StampOptions(
+        scaleMin: getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
+        scaleMax: getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
+        scaleDefault: getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
+        stampDefault: getValueI(PreferenceInt.Tool_Stamp_StampDefault),
+        flipHDefault: getValueB(PreferenceBool.Tool_Stamp_FlipH),
+        flipVDefault: getValueB(PreferenceBool.Tool_Stamp_FlipH));
     toolOptions = ToolOptions(
         pencilOptions: pencilOptions,
         shapeOptions: shapeOptions,
@@ -660,6 +673,7 @@ class PreferenceManager
         eraserOptions: eraserOptions,
         textOptions: textOptions,
         sprayCanOptions: sprayCanOptions,
+        stampOptions: stampOptions,
         lineOptions: lineOptions,);
   }
 

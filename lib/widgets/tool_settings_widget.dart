@@ -11,6 +11,7 @@ import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 
@@ -112,6 +113,13 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 lineOptions: toolOptions.lineOptions,);
             break;
+          case ToolType.stamp:
+            toolWidget = StampOptions.getWidget(
+                context: context,
+                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                stampOptions: toolOptions.stampOptions);
+            break;
+
           default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
         }
 

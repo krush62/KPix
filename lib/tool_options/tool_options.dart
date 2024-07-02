@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -6,6 +7,7 @@ import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 
 import '../helper.dart';
@@ -60,6 +62,7 @@ class ToolOptions
     required TextOptions textOptions,
     required SprayCanOptions sprayCanOptions,
     required LineOptions lineOptions,
+    required StampOptions stampOptions
 })
   {
     Map<ToolType, IToolOptions> toolOptionMap = {
@@ -71,7 +74,8 @@ class ToolOptions
       ToolType.select: selectOptions,
       ToolType.shape: shapeOptions,
       ToolType.fill: fillOptions,
-      ToolType.pencil: pencilOptions
+      ToolType.pencil: pencilOptions,
+      ToolType.stamp: stampOptions
     };
 
     return ToolOptions._(
@@ -84,7 +88,8 @@ class ToolOptions
       shapeOptions: shapeOptions,
       fillOptions: fillOptions,
       pencilOptions: pencilOptions,
-      toolOptionMap: toolOptionMap
+      stampOptions: stampOptions,
+      toolOptionMap: toolOptionMap,
     );
   }
 
@@ -99,6 +104,7 @@ class ToolOptions
     required this.textOptions,
     required this.sprayCanOptions,
     required this.lineOptions,
+    required this.stampOptions,
     required this.toolOptionMap});
 
   final PencilOptions pencilOptions;
@@ -110,6 +116,7 @@ class ToolOptions
   final TextOptions textOptions;
   final SprayCanOptions sprayCanOptions;
   final LineOptions lineOptions;
+  final StampOptions stampOptions;
 
 }
 

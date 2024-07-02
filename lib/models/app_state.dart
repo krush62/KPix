@@ -49,11 +49,11 @@ class AppState
   int canvasHeight = 0;
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
 
-  //NOT USED ATM
   double devicePixelRatio = 1.0;
 
   AppState()
   {
+
     for (ToolType toolType in toolList.keys)
     {
       _selectionMap[toolType] = false;

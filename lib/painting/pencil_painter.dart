@@ -141,6 +141,8 @@ class PencilPainter extends IToolPainter
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
   }
+
+
  @override
   HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars})
   {

@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -48,24 +49,127 @@ class LinePainter extends IToolPainter
 
         if (_lineStarted)
         {
-          if (!_dragStarted || _lineEndPos1 == _lineEndPos2)
+          if (!_dragStarted || _lineEndPos1 == _lineEndPos2) // STRAIGHT LINE
           {
-            final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(_lineStartPos, _cursorPosNorm).toSet();
-            if (_options.width.value == 1)
+            if (_options.integerAspectRatio.value)
             {
-              _linePoints = bresenhamPoints;
+              assert(_options.angles.isNotEmpty);
+              final double currentAngle = atan2(_cursorPosNorm.x - _lineStartPos.x, _cursorPosNorm.y - _lineStartPos.y);
+              AngleData? closestAngle;
+              double closestDist = 0.0;
+              for (final AngleData aData in _options.angles)
+              {
+                final double currentDist = (Helper.normAngle(aData.angle) - Helper.normAngle(currentAngle)).abs();
+                if (closestAngle == null || currentDist < closestDist)
+                {
+                  closestAngle = aData;
+                  closestDist = (Helper.normAngle(currentAngle) - Helper.normAngle(closestAngle.angle)).abs();
+                }
+              }
+
+
+              if (closestAngle != null) //should never happen
+              {
+               double shortestDist = double.maxFinite;
+               CoordinateSetI currentPos = CoordinateSetI.from(_lineStartPos);
+               final Set<CoordinateSetI> lPoints = {};
+               do
+               {
+                 final Set<CoordinateSetI> currPoints = {};
+                 if (closestAngle.x.abs() > closestAngle.y.abs())
+                 {
+                    for (int i = 0; i < closestAngle.x.abs(); i++)
+                    {
+                      if (closestAngle.x > 0)
+                      {
+                        currentPos.x++;
+                      }
+                      else
+                      {
+                        currentPos.x--;
+                      }
+                      currPoints.add(CoordinateSetI.from(currentPos));
+                    }
+                    if (closestAngle.y > 0)
+                    {
+                       currentPos.y++;
+                    }
+                    else if (closestAngle.y < 0)
+                    {
+                       currentPos.y--;
+                    }
+                 }
+                 else
+                 {
+                   for (int i = 0; i < closestAngle.y.abs(); i++)
+                   {
+                     if (closestAngle.y > 0)
+                     {
+                       currentPos.y++;
+                     }
+                     else
+                     {
+                       currentPos.y--;
+                     }
+                     currPoints.add(CoordinateSetI.from(currentPos));
+                   }
+                   if (closestAngle.x > 0)
+                   {
+                     currentPos.x++;
+                   }
+                   else if (closestAngle.x < 0)
+                   {
+                     currentPos.x--;
+                   }
+                 }
+
+                 final dist = Helper.getDistance(_cursorPosNorm, currentPos);
+                 if (dist < shortestDist)
+                 {
+                    shortestDist = dist;
+                    lPoints.addAll(currPoints);
+                 }
+                 else
+                 {
+                    break;
+                 }
+               } while(true);
+
+
+               if (_options.width.value == 1)
+               {
+                 _linePoints = lPoints;
+               }
+               else
+               {
+                 final Set<CoordinateSetI> widePoints = {};
+                 for (final CoordinateSetI coord in lPoints)
+                 {
+                   widePoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                 }
+                 _linePoints = widePoints;
+               }
+              }
             }
             else
             {
-              Set<CoordinateSetI> lPoints = {};
-              for (final CoordinateSetI coord in bresenhamPoints)
+              final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(_lineStartPos, _cursorPosNorm).toSet();
+              if (_options.width.value == 1)
               {
-               lPoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                _linePoints = bresenhamPoints;
               }
-              _linePoints = lPoints;
+              else
+              {
+                Set<CoordinateSetI> lPoints = {};
+                for (final CoordinateSetI coord in bresenhamPoints)
+                {
+                  lPoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                }
+                _linePoints = lPoints;
+              }
             }
           }
-          else
+          else // CURVE
           {
             final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(_lineStartPos, _lineEndPos2, _lineEndPos1, 1000);
             if (_options.width.value == 1)
@@ -107,6 +211,7 @@ class LinePainter extends IToolPainter
     }
     else if (!drawParams.primaryDown && _isDown)
     {
+      //FIRST (set starting point)
       if (!_lineStarted)
       {
         _lineStartPos.x = _cursorPosNorm.x;

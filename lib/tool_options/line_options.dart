@@ -1,8 +1,35 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/helper.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
+
+
+class AngleData
+{
+  final int x;
+  final int y;
+  final double angle;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is AngleData &&
+              runtimeType == other.runtimeType &&
+              angle == other.angle;
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode;
+
+  @override
+  String toString() {
+    return "$x|$y|$angle";
+  }
+
+  AngleData({required this.x, required this.y}) : angle = atan2(x.toDouble(), y.toDouble());
+}
+
 
 class LineOptions extends IToolOptions
 {
@@ -10,6 +37,7 @@ class LineOptions extends IToolOptions
   final int widthMax;
   final int widthDefault;
   final bool integerAspectRatioDefault;
+  final Set<AngleData> angles = {};
 
   final ValueNotifier<int> width = ValueNotifier(1);
   final ValueNotifier<bool> integerAspectRatio = ValueNotifier(false);
@@ -23,6 +51,22 @@ class LineOptions extends IToolOptions
   {
     width.value = widthDefault;
     integerAspectRatio.value = integerAspectRatioDefault;
+
+    for (int i = -1; i <= 1; i+=2)
+    {
+      for (int j = -1; j <= 1; j+=2)
+      {
+        angles.add(AngleData(x: i * 1, y: j * 0));
+        angles.add(AngleData(x: i * 4, y: j * 1));
+        angles.add(AngleData(x: i * 3, y: j * 1));
+        angles.add(AngleData(x: i * 2, y: j * 1));
+        angles.add(AngleData(x: i * 1, y: j * 1));
+        angles.add(AngleData(x: i * 1, y: j * 2));
+        angles.add(AngleData(x: i * 1, y: j * 3));
+        angles.add(AngleData(x: i * 1, y: j * 4));
+        angles.add(AngleData(x: i * 0, y: j * 1));
+      }
+    }
   }
 
   static Column getWidget({
@@ -53,8 +97,7 @@ class LineOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: lineOptions.width,
-                builder: (BuildContext context, int width, child)
-                {
+                builder: (BuildContext context, int width, child){
                     return Slider(
                     value: width.toDouble(),
                     min: lineOptions.widthMin.toDouble(),
@@ -64,7 +107,6 @@ class LineOptions extends IToolOptions
                     label: width.round().toString(),
                   );
                 },
-
               ),
             ),
           ],
@@ -89,11 +131,10 @@ class LineOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: lineOptions.integerAspectRatio,
-                  builder: (BuildContext context, bool keep, child)
-                  {
+                  builder: (BuildContext context, bool keep, child){
                     return Switch(
-                        onChanged: (bool newVal) {lineOptions.integerAspectRatio.value = newVal;},
-                        value: keep
+                      onChanged: (bool newVal) {lineOptions.integerAspectRatio.value = newVal;},
+                      value: keep
                     );
                   },
                 ),

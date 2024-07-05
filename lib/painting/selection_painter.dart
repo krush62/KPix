@@ -113,8 +113,7 @@ class SelectionPainter extends IToolPainter
 
         if (polygonPoints.isNotEmpty) {
 
-          final double distance = sqrt(pow(point.x - polygonPoints[0].x, 2) + pow(point.y - polygonPoints[0].y, 2));
-          if (distance <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+          if (Helper.getDistance(point, polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
           {
             isInsideCircle = true;
           }

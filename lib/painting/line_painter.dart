@@ -171,19 +171,19 @@ class LinePainter extends IToolPainter
           }
           else // CURVE
           {
-            final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(_lineStartPos, _lineEndPos2, _lineEndPos1, 1000);
+            final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(_lineStartPos, _lineEndPos2, _lineEndPos1, _options.bezierCalculationPoints);
             if (_options.width.value == 1)
             {
               _linePoints = curvePoints;
             }
             else
             {
-              Set<CoordinateSetI> lPoints = {};
+              Set<CoordinateSetI> widePoints = {};
               for (final CoordinateSetI coord in curvePoints)
               {
-                lPoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                widePoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
               }
-              _linePoints = lPoints;
+              _linePoints = widePoints;
             }
           }
         }

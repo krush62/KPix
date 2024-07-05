@@ -239,6 +239,7 @@ enum PreferenceInt
   Tool_Line_WidthMin(defaultValue: 1),
   Tool_Line_WidthMax(defaultValue: 16),
   Tool_Line_Width(defaultValue: 1),
+  Tool_Line_BezierCalculationPoints(defaultValue: 1000),
   Tool_Curve_WidthMin(defaultValue: 1),
   Tool_Curve_WidthMax(defaultValue: 16),
   Tool_Curve_Width(defaultValue: 1),
@@ -656,6 +657,7 @@ class PreferenceManager
         widthMin: getValueI(PreferenceInt.Tool_Line_WidthMin),
         widthMax: getValueI(PreferenceInt.Tool_Line_WidthMax),
         widthDefault: getValueI(PreferenceInt.Tool_Line_Width),
+        bezierCalculationPoints: getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
     StampOptions stampOptions = StampOptions(
         scaleMin: getValueI(PreferenceInt.Tool_Stamp_ScaleMin),

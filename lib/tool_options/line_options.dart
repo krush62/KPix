@@ -37,6 +37,7 @@ class LineOptions extends IToolOptions
   final int widthMax;
   final int widthDefault;
   final bool integerAspectRatioDefault;
+  final int bezierCalculationPoints;
   final Set<AngleData> angles = {};
 
   final ValueNotifier<int> width = ValueNotifier(1);
@@ -46,7 +47,8 @@ class LineOptions extends IToolOptions
     required this.widthMin,
     required this.widthMax,
     required this.widthDefault,
-    required this.integerAspectRatioDefault
+    required this.integerAspectRatioDefault,
+    required this.bezierCalculationPoints,
   })
   {
     width.value = widthDefault;

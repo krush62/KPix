@@ -152,46 +152,50 @@ class StackCol<T> {
 class Helper
 {
 
-  static String colorToHexString(final Color c) {
+  static String colorToHexString(final Color c)
+  {
     return '#${c.red.toRadixString(16).padLeft(2, '0')}'
         '${c.green.toRadixString(16).padLeft(2, '0')}'
         '${c.blue.toRadixString(16).padLeft(2, '0')}';
   }
 
-  static String colorToRGBString(final Color c) {
+  static String colorToRGBString(final Color c)
+  {
     return '${c.red.toString()} | '
         '${c.green.toString()} | '
         '${c.blue.toString()}';
   }
 
-  static String colorToHSVString(final Color c) {
+  static String colorToHSVString(final Color c)
+  {
     return hsvColorToHSVString(HSVColor.fromColor(c));
   }
 
-  static String hsvColorToHSVString(final HSVColor c) {
+  static String hsvColorToHSVString(final HSVColor c)
+  {
     return "${c.hue.round().toString()}° | "
         "${(c.saturation * 100.0).round().toString()}% | "
         "${(c.value * 100.0).round().toString()}%";
   }
 
-  static bool isPerfectSquare(final int number) {
+  static bool isPerfectSquare(final int number)
+  {
     double squareRoot = sqrt(number);
     return squareRoot % 1 == 0;
   }
 
-  static int gcd(final int a, final int b) {
+  static int gcd(final int a, final int b)
+  {
     if (b == 0) return a;
     return gcd(b, a % b);
   }
 
-  static double calculateAngle(final CoordinateSetI startPos, final CoordinateSetI endPos) {
-    int dx = endPos.x - startPos.x;
-    int dy = endPos.y - startPos.y;
-
-    double angle = atan2(dy, dx);
-
-    double angleInDegrees = angle * (180.0 / pi);
-
+  static double calculateAngle(final CoordinateSetI startPos, final CoordinateSetI endPos)
+  {
+    final int dx = endPos.x - startPos.x;
+    final int dy = endPos.y - startPos.y;
+    final double angle = atan2(dy, dx);
+    final double angleInDegrees = angle * (180.0 / pi);
     return angleInDegrees;
   }
 
@@ -214,22 +218,22 @@ class Helper
 
   static double getDeltaE(final int redA, final int greenA, final int blueA, final int redB, final int greenB, final int blueB)
   {
-    LabColor labA = rgb2lab(redA, greenA, blueA);
-    LabColor labB = rgb2lab(redB, greenB, blueB);
-    double deltaL = labA.L - labB.L;
-    double deltaA = labA.A - labB.A;
-    double deltaB = labA.B - labB.B;
-    double c1 = sqrt(labA.A * labA.A + labA.B * labA.B);
-    double c2 = sqrt(labB.A * labB.A + labB.B * labB.B);
-    double deltaC = c1 - c2;
+    final LabColor labA = rgb2lab(redA, greenA, blueA);
+    final LabColor labB = rgb2lab(redB, greenB, blueB);
+    final double deltaL = labA.L - labB.L;
+    final double deltaA = labA.A - labB.A;
+    final double deltaB = labA.B - labB.B;
+    final double c1 = sqrt(labA.A * labA.A + labA.B * labA.B);
+    final double c2 = sqrt(labB.A * labB.A + labB.B * labB.B);
+    final double deltaC = c1 - c2;
     double deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
     deltaH = deltaH < 0 ? 0 : sqrt(deltaH);
-    double sc = 1.0 + 0.045 * c1;
-    double sh = 1.0 + 0.015 * c1;
-    double deltaLKlsl = deltaL / 1.0;
-    double deltaCkcsc = deltaC / sc;
-    double deltaHkhsh = deltaH / sh;
-    double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+    final double sc = 1.0 + 0.045 * c1;
+    final double sh = 1.0 + 0.015 * c1;
+    final double deltaLKlsl = deltaL / 1.0;
+    final double deltaCkcsc = deltaC / sc;
+    final double deltaHkhsh = deltaH / sh;
+    final double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
     return i < 0.0 ? 0.0 : sqrt(i);
   }
 
@@ -250,50 +254,35 @@ class Helper
   }
 
 
-  static double getPointToEdgeDistance(CoordinateSetI point, List<CoordinateSetI> polygon)
+  static double getPointToEdgeDistance(final CoordinateSetI point, final List<CoordinateSetI> polygon)
   {
-    // Initialize minimum distance to a large value
     double minDistance = double.infinity;
 
-    // Iterate through each edge of the polygon
-    for (int i = 0; i < polygon.length; i++) {
-      // Get current and next points in the polygon (loop back to start for last point)
-      CoordinateSetI p1 = polygon[i];
-      CoordinateSetI p2 = polygon[(i + 1) % polygon.length];
+    for (int i = 0; i < polygon.length; i++)
+    {
+      final CoordinateSetI p1 = polygon[i];
+      final CoordinateSetI p2 = polygon[(i + 1) % polygon.length];
 
-      // Calculate vector components of the edge
-      int dx = p2.x - p1.x;
-      int dy = p2.y - p1.y;
+      final int dx = p2.x - p1.x;
+      final int dy = p2.y - p1.y;
 
-      // Calculate squared length of the edge segment
-      int edgeLengthSquared = dx * dx + dy * dy;
+      final int edgeLengthSquared = dx * dx + dy * dy;
 
-      // Calculate vector from point to the start of the edge
-      int vx = point.x - p1.x;
-      int vy = point.y - p1.y;
+      final int vx = point.x - p1.x;
+      final int vy = point.y - p1.y;
 
-      // Calculate dot product of edge vector and vector to point from p1
-      int dotProduct = vx * dx + vy * dy;
+      final int dotProduct = vx * dx + vy * dy;
 
-      // Calculate the parameter t of the closest point on the edge segment
-      double t = dotProduct / edgeLengthSquared;
+      final double t = max(0, min(1, (dotProduct / edgeLengthSquared)));
 
-      // Clamp t to ensure the closest point is within the segment bounds
-      t = max(0, min(1, t));
+      final double closestX = p1.x + t * dx;
+      final double closestY = p1.y + t * dy;
 
-      // Calculate the closest point on the edge segment to the point
-      double closestX = p1.x + t * dx;
-      double closestY = p1.y + t * dy;
+      final double distanceSquared = (point.x - closestX) * (point.x - closestX) + (point.y - closestY) * (point.y - closestY);
 
-      // Calculate distance squared from point to closest point on the edge
-      double distanceSquared = (point.x - closestX) * (point.x - closestX) +
-          (point.y - closestY) * (point.y - closestY);
-
-      // Update minimum distance if this edge is closer
       minDistance = min(minDistance, sqrt(distanceSquared));
     }
 
-    // Return the minimum distance found
     return minDistance;
   }
 
@@ -301,50 +290,48 @@ class Helper
 
   static CoordinateSetI getMin(final List<CoordinateSetI> coordList)
   {
-    int minX = coordList.reduce((a, b) => a.x < b.x ? a : b).x;
-    int minY = coordList.reduce((a, b) => a.y < b.y ? a : b).y;
+    final int minX = coordList.reduce((a, b) => a.x < b.x ? a : b).x;
+    final int minY = coordList.reduce((a, b) => a.y < b.y ? a : b).y;
     return CoordinateSetI(x: minX, y: minY);
   }
 
   static CoordinateSetI getMax(final List<CoordinateSetI> coordList)
   {
-    int maxX = coordList.reduce((a, b) => a.x > b.x ? a : b).x;
-    int maxY = coordList.reduce((a, b) => a.y > b.y ? a : b).y;
+    final int maxX = coordList.reduce((a, b) => a.x > b.x ? a : b).x;
+    final int maxY = coordList.reduce((a, b) => a.y > b.y ? a : b).y;
     return CoordinateSetI(x: maxX, y: maxY);
   }
 
 
-  static List<CoordinateSetI> bresenham(CoordinateSetI start, CoordinateSetI end)
+  static List<CoordinateSetI> bresenham(final CoordinateSetI start, final CoordinateSetI end)
   {
-    List<CoordinateSetI> points = [];
+    final List<CoordinateSetI> points = [];
+    final CoordinateSetI d = CoordinateSetI(x: (end.x - start.x).abs(), y: (end.y - start.y).abs());
+    final CoordinateSetI s = CoordinateSetI(x: start.x < end.x ? 1 : -1, y: start.y < end.y ? 1 : -1);
 
-    int x0 = start.x;
-    int y0 = start.y;
-    int x1 = end.x;
-    int y1 = end.y;
+    int err = d.x - d.y;
+    final CoordinateSetI currentPoint = CoordinateSetI.from(start);
 
-    int dx = (x1 - x0).abs();
-    int dy = (y1 - y0).abs();
-    int sx = x0 < x1 ? 1 : -1;
-    int sy = y0 < y1 ? 1 : -1;
-    int err = dx - dy;
-
-    while (true) {
-      points.add(CoordinateSetI(x: x0, y: y0));
-      if (x0 == x1 && y0 == y1) break;
-      int e2 = err * 2;
-      if (e2 > -dy) {
-        err -= dy;
-        x0 += sx;
+    while (true)
+    {
+      points.add(CoordinateSetI.from(currentPoint));
+      if (currentPoint.x == end.x && currentPoint.y == end.y) break;
+      final int e2 = err * 2;
+      if (e2 > -d.y)
+      {
+        err -= d.y;
+        currentPoint.x += s.x;
       }
-      if (e2 < dx) {
-        err += dx;
-        y0 += sy;
+      if (e2 < d.x) {
+        err += d.x;
+        currentPoint.y += s.y;
       }
     }
 
     return points;
   }
+
+
 
   static int argbToRgba(int argb) {
     int a = (argb & 0xFF000000) >> 24; // Extract alpha component
@@ -355,6 +342,27 @@ class Helper
     // Combine components into RGBA format
     int rgba = (r << 24) | (g << 16) | (b << 8) | a;
     return rgba;
+  }
+
+  static const double twoPi = 2 * pi;
+  static double normAngle(final double angle)
+  {
+    return angle - (twoPi * (angle / twoPi).floor());
+  }
+
+  static double deg2rad(final double angle)
+  {
+    return angle * (pi / 180.0);
+  }
+
+  static double rad2deg(final double angle)
+  {
+    return angle * (180.0 / pi);
+  }
+  
+  static double getDistance(final CoordinateSetI a, final CoordinateSetI b)
+  {
+    return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
   }
 }
 

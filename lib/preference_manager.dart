@@ -4,6 +4,7 @@ import 'package:kpix/color_names.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/stamp_manager.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -399,8 +400,9 @@ class PreferenceManager
   late ColorNames colorNames;
 
   final FontManager _fontManager;
+  final StampManager _stampManager;
 
-  PreferenceManager(final SharedPreferences prefs, final FontManager fontManager) : _prefs = prefs, _fontManager = fontManager
+  PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
   {
     _init();
     loadWidgetOptions();
@@ -660,6 +662,7 @@ class PreferenceManager
         bezierCalculationPoints: getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
         integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
     StampOptions stampOptions = StampOptions(
+        stampManager: _stampManager,
         scaleMin: getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
         scaleMax: getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
         scaleDefault: getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),

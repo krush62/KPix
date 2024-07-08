@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
@@ -6,6 +7,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/shader_options.dart';
+import 'package:kpix/stamp_manager.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
@@ -235,7 +237,7 @@ abstract class IToolPainter
     return path;
   }
 
-  HashMap<CoordinateSetI, ColorReference> getPixelsToDraw({required CoordinateSetI canvasSize, required LayerState currentLayer, required Set<CoordinateSetI> coords, required SelectionState selection, required ShaderOptions shaderOptions, required ColorReference selectedColor})
+  HashMap<CoordinateSetI, ColorReference> getPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
     final HashMap<CoordinateSetI, ColorReference> pixelMap = HashMap();
     for (final CoordinateSetI coord in coords)
@@ -277,6 +279,56 @@ abstract class IToolPainter
               {
                 pixelMap[coord] = ColorReference(colorIndex: layerRef.colorIndex - 1, ramp: layerRef.ramp);
               }
+            }
+          }
+        }
+      }
+    }
+    return pixelMap;
+  }
+
+  HashMap<CoordinateSetI, ColorReference> getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
+  {
+    final HashMap<CoordinateSetI, ColorReference> pixelMap = HashMap();
+    for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
+    {
+      final CoordinateSetI coord = stampEntry.key;
+
+      if (coord.x >= 0 && coord.y >= 0 &&
+          coord.x < canvasSize.x &&
+          coord.y < canvasSize.y)
+      {
+        if (!shaderOptions.isEnabled.value) //without shading
+        {
+          final int index = min(max(selectedColor.colorIndex + stampEntry.value, 0), selectedColor.ramp.colors.length - 1);
+          final ColorReference drawColor = ColorReference(colorIndex: index, ramp: selectedColor.ramp);
+          //if no selection and current pixel is different
+          if ((selection.selection.isEmpty() && currentLayer.getData(coord) != drawColor) ||
+              //if selection and selection contains pixel and selection pixel is different
+              (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != drawColor))
+          {
+            pixelMap[coord] = drawColor;
+          }
+        }
+        //with shading
+        else
+          //if no selection and pixel is not null
+        if ((selection.selection.isEmpty() && currentLayer.getData(coord) != null) ||
+            //if selection and selection contains pixel and pixel is not null
+            (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
+        {
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getData(coord)! : selection.selection.getColorReference(coord)!;
+          if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value) //all ramps
+          {
+            if (shaderOptions.shaderDirection.value == ShaderDirection.right)
+            {
+              final int index = min(max(layerRef.colorIndex + stampEntry.value + 1, 0), layerRef.ramp.colors.length - 1);
+              pixelMap[coord] = ColorReference(colorIndex: index, ramp: layerRef.ramp);
+            }
+            else
+            {
+              final int index = min(max(layerRef.colorIndex - stampEntry.value - 1, 0), layerRef.ramp.colors.length - 1);
+              pixelMap[coord] = ColorReference(colorIndex: index, ramp: layerRef.ramp);
             }
           }
         }

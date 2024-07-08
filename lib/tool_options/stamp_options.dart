@@ -1,55 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:kpix/stamp_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
-enum StampType
-{
-  stamp0,
-  stamp1,
-  stamp2,
-  stamp3,
-  stamp4,
-  stamp5,
-  stamp6,
-  stamp7
-}
-
-const List<StampType> stampList =
-[
-  StampType.stamp0,
-  StampType.stamp1,
-  StampType.stamp2,
-  StampType.stamp3,
-  StampType.stamp4,
-  StampType.stamp5,
-  StampType.stamp6,
-  StampType.stamp7,
-];
-
-const Map<int, StampType> stampIndexMap =
-{
-  0:StampType.stamp0,
-  1:StampType.stamp1,
-  2:StampType.stamp2,
-  3:StampType.stamp3,
-  4:StampType.stamp4,
-  5:StampType.stamp5,
-  6:StampType.stamp6,
-  7:StampType.stamp7,
-};
-
-const Map<StampType, String> stampNames =
-{
-  StampType.stamp0:"Stamp0",
-  StampType.stamp1:"Stamp1",
-  StampType.stamp2:"Stamp2",
-  StampType.stamp3:"Stamp3",
-  StampType.stamp4:"Stamp4",
-  StampType.stamp5:"Stamp5",
-  StampType.stamp6:"Stamp6",
-  StampType.stamp7:"Stamp7",
-};
 
 class StampOptions extends IToolOptions
 {
@@ -60,13 +14,16 @@ class StampOptions extends IToolOptions
   final bool flipHDefault;
   final bool flipVDefault;
 
+  final StampManager stampManager;
+
   final ValueNotifier<int> scale = ValueNotifier(1);
-  final ValueNotifier<StampType> stamp = ValueNotifier(StampType.stamp0);
+  final ValueNotifier<StampType> stamp = ValueNotifier(StampType.stampCircle15);
   final ValueNotifier<bool> flipH = ValueNotifier(false);
   final ValueNotifier<bool> flipV = ValueNotifier(false);
 
 
   StampOptions({
+    required this.stampManager,
     required this.scaleMin,
     required this.scaleMax,
     required this.scaleDefault,
@@ -78,7 +35,7 @@ class StampOptions extends IToolOptions
     scale.value = scaleDefault;
     flipH.value = flipHDefault;
     flipV.value = flipVDefault;
-    stamp.value = stampIndexMap[stampDefault] ?? StampType.stamp0;
+    stamp.value = stampIndexMap[stampDefault] ?? StampType.stampCircle15;
   }
 
   static Column getWidget({
@@ -117,10 +74,10 @@ class StampOptions extends IToolOptions
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
                     onChanged: (StampType? type) {stampOptions.stamp.value = type!;},
-                    items: stampList.map<DropdownMenuItem<StampType>>((StampType value) {
+                    items: stampIndexMap.values.map<DropdownMenuItem<StampType>>((StampType value) {
                       return DropdownMenuItem<StampType>(
                         value: value,
-                        child: Text(stampNames[value]!),
+                        child: Text(stampNameMap[value]!),
                       );
                     }).toList(),
                   );

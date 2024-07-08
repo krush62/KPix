@@ -101,7 +101,7 @@ class AppState
     bool change = false;
     if (steps != 0)
     {
-      final int endIndex = zoomFactor.value + steps;
+      final int endIndex = startZoomLevel + steps;
       if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != zoomFactor.value)
       {
          zoomFactor.value = endIndex;

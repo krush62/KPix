@@ -100,10 +100,10 @@ class FontPainter extends IToolPainter
       {
         appState.selectionState.selection.addDirectlyAll(drawingPixels);
       }
-      else if (!_shaderOptions.isEnabled.value)
+      /*else if (!_shaderOptions.isEnabled.value)
       {
         appState.selectionState.add(data: drawingPixels, notify: false);
-      }
+      }*/
       else
       {
         drawParams.currentLayer.setDataAll(drawingPixels);

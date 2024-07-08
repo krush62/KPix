@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fl_toast/fl_toast.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:kpix/font_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/stamp_manager.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
@@ -53,8 +55,9 @@ class _KPixAppState extends State<KPixApp> {
 
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
-    Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
-    GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
+    final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
+    final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
+    GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
     GetIt.I.registerSingleton<AppState>(AppState());
     AppState appState = GetIt.I.get<AppState>();
     if (context.mounted)

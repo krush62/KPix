@@ -133,19 +133,16 @@ class FillPainter extends IToolPainter
           if (!doShade || refAtPos == null)
           {
             selectionPixels[curCoord] = fillColor;
-            //appState.selectionState.selection.addDirectly(curCoord, fillColor);
           }
           else
           {
             if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
             {
-              selectionPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp);
-              //appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+              selectionPixels[curCoord] = refAtPos.ramp.references[refAtPos.colorIndex + 1];
             }
             else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
             {
-              selectionPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp);
-              //appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+              selectionPixels[curCoord] = refAtPos.ramp.references[refAtPos.colorIndex - 1];
             }
           }
         }
@@ -154,19 +151,16 @@ class FillPainter extends IToolPainter
           if (!doShade || refAtPos == null)
           {
             layerPixels[curCoord] = fillColor;
-            //layer.setData(curCoord.x, curCoord.y, fillColor);
           }
           else
           {
             if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
             {
-              layerPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp);
-              //layer.setData(curCoord.x, curCoord.y, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+              layerPixels[curCoord] = refAtPos.ramp.references[refAtPos.colorIndex + 1];
             }
             else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
             {
-              layerPixels[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp);
-              //layer.setData(curCoord.x, curCoord.y, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+              layerPixels[curCoord] = refAtPos.ramp.references[refAtPos.colorIndex - 1];
             }
           }
         }
@@ -228,20 +222,17 @@ class FillPainter extends IToolPainter
           {
             if (!doShade || refAtPos == null)
             {
-              //layer.setData(curCoord, fillColor);
               refs[curCoord] = fillColor;
             }
             else
             {
               if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
               {
-                //layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
-                refs[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp);
+                refs[curCoord] = refAtPos.ramp.references[refAtPos.colorIndex + 1];
               }
               else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
               {
-                //layer.setData(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
-                refs[curCoord] = ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp);
+                refs[curCoord] = refAtPos.ramp.references[refAtPos.colorIndex - 1];
               }
             }
           }
@@ -269,11 +260,11 @@ class FillPainter extends IToolPainter
           {
             if (shadeDirection == ShaderDirection.right && refAtPos.colorIndex + 1 < refAtPos.ramp.colors.length)
             {
-              appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex + 1, ramp: refAtPos.ramp));
+              appState.selectionState.selection.addDirectly(curCoord, refAtPos.ramp.references[refAtPos.colorIndex + 1]);
             }
             else if (shadeDirection == ShaderDirection.left && refAtPos.colorIndex - 1 >= 0)
             {
-              appState.selectionState.selection.addDirectly(curCoord, ColorReference(colorIndex: refAtPos.colorIndex - 1, ramp: refAtPos.ramp));
+              appState.selectionState.selection.addDirectly(curCoord, refAtPos.ramp.references[refAtPos.colorIndex - 1]);
             }
           }
         }

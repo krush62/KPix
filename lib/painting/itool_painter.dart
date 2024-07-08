@@ -268,14 +268,14 @@ abstract class IToolPainter
             {
               if (layerRef.colorIndex + 1 < layerRef.ramp.colors.length)
               {
-                pixelMap[coord] = ColorReference(colorIndex: layerRef.colorIndex + 1, ramp: layerRef.ramp);
+                pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex  + 1];
               }
             }
             else
             {
               if (layerRef.colorIndex > 0)
               {
-                pixelMap[coord] = ColorReference(colorIndex: layerRef.colorIndex - 1, ramp: layerRef.ramp);
+                pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex  - 1];
               }
             }
           }
@@ -299,7 +299,7 @@ abstract class IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
         {
           final int index = min(max(selectedColor.colorIndex + stampEntry.value, 0), selectedColor.ramp.colors.length - 1);
-          final ColorReference drawColor = ColorReference(colorIndex: index, ramp: selectedColor.ramp);
+          final ColorReference drawColor = selectedColor.ramp.references[index];
           //if no selection and current pixel is different
           if ((selection.selection.isEmpty() && currentLayer.getData(coord) != drawColor) ||
               //if selection and selection contains pixel and selection pixel is different
@@ -321,12 +321,12 @@ abstract class IToolPainter
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
               final int index = min(max(layerRef.colorIndex + stampEntry.value + 1, 0), layerRef.ramp.colors.length - 1);
-              pixelMap[coord] = ColorReference(colorIndex: index, ramp: layerRef.ramp);
+              pixelMap[coord] = layerRef.ramp.references[index];
             }
             else
             {
               final int index = min(max(layerRef.colorIndex - stampEntry.value - 1, 0), layerRef.ramp.colors.length - 1);
-              pixelMap[coord] = ColorReference(colorIndex: index, ramp: layerRef.ramp);
+              pixelMap[coord] = layerRef.ramp.references[index];
             }
           }
         }

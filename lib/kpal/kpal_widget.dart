@@ -9,6 +9,7 @@ import 'package:kpix/color_names.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

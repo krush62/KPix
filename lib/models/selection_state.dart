@@ -131,11 +131,6 @@ class SelectionState with ChangeNotifier
         _getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
         _getSameReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
 
-      for (int i = 0; i < selectData.length; i++)
-      {
-        print(selectData.elementAt(i).toString());
-      }
-
 
       _addPixelsWithMode(coords: selectData, mode: mode);
       _createSelectionLines();

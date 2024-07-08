@@ -5,6 +5,7 @@ class KPalRampData
   final KPalRampSettings settings;
   final String uuid;
   final List<ValueNotifier<IdColor>> colors = [];
+  final List<ColorReference> references = [];
 
     KPalRampData({
     required this.uuid,
@@ -20,10 +21,12 @@ class KPalRampData
     {
       Uuid uuid = const Uuid();
       colors.clear();
+      references.clear();
       for (int i = 0; i < settings.colorCount; i++)
       {
-         colors.add(ValueNotifier(IdColor(color: Colors.black, uuid: uuid.v1())));
-
+        final IdColor color = IdColor(color: Colors.black, uuid: uuid.v1());
+        colors.add(ValueNotifier(color));
+        references.add(ColorReference(colorIndex: i, ramp: this));
       }
     }
 

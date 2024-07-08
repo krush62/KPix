@@ -25,8 +25,8 @@ class AppState
   final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
   late IToolOptions currentToolOptions;
   final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
-  final Map<ToolType, bool> _selectionMap = {};
   final ValueNotifier<ColorReference?> selectedColor = ValueNotifier(null);
+  final Map<ToolType, bool> _selectionMap = {};
   final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
   final ValueNotifier<LayerState?> currentLayer = ValueNotifier(null);
   final RepaintNotifier repaintNotifier = RepaintNotifier();
@@ -166,7 +166,7 @@ class AppState
     {
       if (selectedColor.value != null && ramp.colors[j].value.uuid == selectedColor.value!.getIdColor().uuid)
       {
-        col = ColorReference(colorIndex: j, ramp: ramp);
+        col = ramp.references[j];
         break;
       }
     }
@@ -186,7 +186,7 @@ class AppState
     );
     rampDataList.add(newRamp);
     colorRamps.value = rampDataList;
-    selectedColor.value ??= ColorReference(colorIndex: 0, ramp: newRamp);
+    selectedColor.value = newRamp.references[0];
   }
 
   LayerState addNewLayer({bool select = false, HashMap<CoordinateSetI, ColorReference?>? content})

@@ -5,7 +5,6 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class ColorRampRowWidget extends StatefulWidget {
@@ -64,7 +63,7 @@ class ColorRampRowWidget extends StatefulWidget {
       }
       if (index != -1)
       {
-        colorSelectedFn!(ColorReference(colorIndex: index, ramp: rampData!));
+        colorSelectedFn!(rampData!.references[index]);
       }
     }
   }

@@ -1,13 +1,11 @@
 import 'dart:collection';
 import 'dart:math';
-
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/shader_options.dart';
-import 'package:kpix/stamp_manager.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 

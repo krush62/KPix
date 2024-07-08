@@ -478,7 +478,6 @@ class AppState
 
   void setToolSelection(final ToolType tool)
   {
-
     for (final ToolType k in _selectionMap.keys)
     {
       final bool shouldSelect = (k == tool);

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -9,8 +8,7 @@ import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
-
-import '../helper.dart';
+import 'package:kpix/helper.dart';
 
 enum SelectionMode
 {

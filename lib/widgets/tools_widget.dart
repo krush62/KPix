@@ -61,7 +61,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 emptySelectionAllowed: true,
                 multiSelectionEnabled: false,
                 showSelectedIcon: false,
-                onSelectionChanged: (Set<ToolType> tools) {appState.selectedTool.value = tools.first;},
+                onSelectionChanged: (final Set<ToolType> tools) {appState.setToolSelection(tools.first);},
                 segments: [
                   ButtonSegment(
                     value: ToolType.pencil,
@@ -113,7 +113,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 emptySelectionAllowed: true,
                 multiSelectionEnabled: false,
                 showSelectedIcon: false,
-                onSelectionChanged: (Set<ToolType> tools) {appState.selectedTool.value = tools.first;},
+                onSelectionChanged: (final Set<ToolType> tools) {appState.setToolSelection(tools.first);},
                 segments: [
                   ButtonSegment(
                       value: ToolType.line,

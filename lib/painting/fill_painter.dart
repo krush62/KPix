@@ -13,29 +13,28 @@ import 'package:kpix/widgets/layer_widget.dart';
 
 class FillPainter extends IToolPainter
 {
-  final CoordinateSetI _normCursorPos = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
 
   FillPainter({required super.painterOptions});
-  final FillOptions options = GetIt.I.get<PreferenceManager>().toolOptions.fillOptions;
-  final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
-  bool isDown = false;
-  bool shouldDraw = false;
+  final FillOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.fillOptions;
+  bool _isDown = false;
+  bool _shouldDraw = false;
 
   @override
   void calculate({required DrawingParameters drawParams}) {
     if (drawParams.cursorPos != null && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
     {
-      _normCursorPos.x = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-      _normCursorPos.y = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.x = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.y = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
     }
-    if (drawParams.primaryDown && !isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+    if (drawParams.primaryDown && !_isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
     {
-      shouldDraw = true;
-      isDown = true;
+      _shouldDraw = true;
+      _isDown = true;
     }
-    else if (isDown && !drawParams.primaryDown)
+    else if (_isDown && !drawParams.primaryDown)
     {
-      isDown = false;
+      _isDown = false;
     }
   }
 
@@ -44,8 +43,8 @@ class FillPainter extends IToolPainter
   void drawCursorOutline({required DrawingParameters drawParams}) {
     assert(drawParams.cursorPos != null);
     final CoordinateSetD cursorPos = CoordinateSetD(
-        x: drawParams.offset.dx + (_normCursorPos.x + 0.5) * drawParams.pixelSize,
-        y: drawParams.offset.dy + (_normCursorPos.y + 0.5) * drawParams.pixelSize);
+        x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
+        y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
 
     final Path outlinePath = Path();
     outlinePath.moveTo(cursorPos.x, cursorPos.y);
@@ -79,17 +78,17 @@ class FillPainter extends IToolPainter
 
   @override
   void drawExtras({required DrawingParameters drawParams}) {
-    if (shouldDraw)
+    if (_shouldDraw)
     {
-      if (options.fillAdjacent.value)
+      if (_options.fillAdjacent.value)
       {
-        _floodFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _normCursorPos, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: options.fillWholeRamp.value);
+        _floodFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
       }
       else
       {
-        _wholeFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _normCursorPos, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: options.fillWholeRamp.value);
+        _wholeFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
       }
-      shouldDraw = false;
+      _shouldDraw = false;
     }
   }
 
@@ -270,6 +269,13 @@ class FillPainter extends IToolPainter
         }
       }
     }
+  }
+
+  @override
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+    super.setStatusBarData(drawParams: drawParams);
+    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
   
 }

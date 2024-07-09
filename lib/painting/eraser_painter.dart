@@ -109,8 +109,13 @@ class EraserPainter extends IToolPainter
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
+  }
 
-
+  @override
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+    super.setStatusBarData(drawParams: drawParams);
+    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
 }

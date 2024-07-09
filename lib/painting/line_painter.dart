@@ -6,7 +6,6 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -15,7 +14,6 @@ class LinePainter extends IToolPainter
 {
   LinePainter({required super.painterOptions});
   final LineOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
-  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   Set<CoordinateSetI> _contentPoints = {};
   Set<CoordinateSetI> _linePoints = {};
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
@@ -220,7 +218,7 @@ class LinePainter extends IToolPainter
       }
       else
       {
-        final HashMap<CoordinateSetI, ColorReference> drawingPixels =  getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions);
+        final HashMap<CoordinateSetI, ColorReference> drawingPixels =  getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
         if (!appState.selectionState.selection.isEmpty())
         {
           appState.selectionState.selection.addDirectlyAll(drawingPixels);
@@ -271,15 +269,15 @@ class LinePainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars})
+  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor.value != null && drawPars.cursorPos != null && _lineStarted)
+    if(appState.selectedColor.value != null && drawParams.cursorPos != null && _lineStarted)
     {
-      return getPixelsToDraw(coords: _linePoints, canvasSize: drawPars.canvasSize, currentLayer: drawPars.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions);
+      return getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {
-      return super.getCursorContent(drawPars: drawPars);
+      return super.getCursorContent(drawParams: drawParams);
     }
   }
 
@@ -351,6 +349,20 @@ class LinePainter extends IToolPainter
     return points;
   }
 
-
-
+  @override
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+    super.setStatusBarData(drawParams: drawParams);
+    if (drawParams.cursorPos != null)
+    {
+      statusBarData.cursorPos = _cursorPosNorm;
+      if (_lineStarted)
+      {
+        final int width = (_cursorPosNorm.x - _lineStartPos.x).abs() + 1;
+        final int height =(_cursorPosNorm.y - _lineStartPos.y).abs() + 1;
+        statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
+        statusBarData.angle = _lineStartPos;
+      }
+    }
+  }
 }

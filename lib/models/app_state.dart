@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -36,21 +37,10 @@ class AppState
   static const int zoomLevelMin = 1;
   static const int zoomLevelMax = 80;
 
-  //StatusBar
-  final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarCursorPositionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarZoomFactorString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolDimensionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolDiagonalString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolAspectRatioString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolAngleString = ValueNotifier(null);
-
   int canvasWidth = 0;
   int canvasHeight = 0;
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
-
-  double devicePixelRatio = 1.0;
-
+  final StatusBarState statusBarState = StatusBarState();
 
   AppState()
   {
@@ -60,7 +50,7 @@ class AppState
       _selectionMap[toolType] = false;
     }
     setToolSelection(ToolType.pencil);
-    setStatusBarZoomFactor(zoomFactor.value * 100);
+    statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
     currentLayer.addListener(() {
       selectionState.selection.setCurrentLayer(currentLayer.value);
     });
@@ -70,7 +60,7 @@ class AppState
   {
     canvasWidth = width;
     canvasHeight = height;
-    setStatusBarDimensions(width, height);
+    statusBarState.setStatusBarDimensions(width, height);
   }
 
   bool increaseZoomLevel()
@@ -79,7 +69,7 @@ class AppState
     if (zoomFactor.value < zoomLevelMax)
     {
       zoomFactor.value = zoomFactor.value + 1;
-      setStatusBarZoomFactor(zoomFactor.value * 100);
+      statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
       changed = true;
     }
     return changed;
@@ -91,7 +81,7 @@ class AppState
     if (zoomFactor.value > zoomLevelMin)
     {
       zoomFactor.value = zoomFactor.value - 1;
-      setStatusBarZoomFactor(zoomFactor.value * 100);
+      statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
       changed = true;
     }
     return changed;
@@ -106,7 +96,7 @@ class AppState
       if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != zoomFactor.value)
       {
          zoomFactor.value = endIndex;
-         setStatusBarZoomFactor(zoomFactor.value * 100);
+         statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
          change = true;
       }
     }
@@ -119,7 +109,7 @@ class AppState
     if (val <= zoomLevelMax && val >= zoomLevelMin && val != zoomFactor.value)
     {
       zoomFactor.value = val;
-      setStatusBarZoomFactor(zoomFactor.value * 100);
+      statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
       change = true;
     }
     return change;
@@ -428,87 +418,6 @@ class AppState
     selectedColor.value = color;
   }
 
-
-  void setStatusBarDimensions(final int width, final int height)
-  {
-    statusBarDimensionString.value = "$width,$height";
-  }
-
-  void hideStatusBarDimension()
-  {
-    statusBarDimensionString.value = null;
-  }
-
-  void setStatusBarCursorPosition(final CoordinateSetI coords)
-  {
-    statusBarCursorPositionString.value = "${coords.x.toString()},${coords.y.toString()}";
-  }
-
-  void hideStatusBarCursorPosition()
-  {
-    statusBarCursorPositionString.value = null;
-  }
-
-  void setStatusBarZoomFactor(final int val)
-  {
-    int realVal = (val / devicePixelRatio).round();
-    String suffix = "";
-    if (realVal % 100 != 0)
-    {
-       suffix = " *";
-    }
-
-    statusBarZoomFactorString.value = "$val%$suffix";
-  }
-
-  void hideStatusBarZoomFactor()
-  {
-    statusBarZoomFactorString.value = null;
-  }
-
-  void setStatusBarToolDimension(final int width, final int height)
-  {
-    statusBarToolDimensionString.value = "$width,$height";
-  }
-
-  void hideStatusBarToolDimension()
-  {
-    statusBarToolDimensionString.value = null;
-  }
-
-  void setStatusBarToolDiagonal(final int width, final int height)
-  {
-    final double result = sqrt((width * width).toDouble() + (height * height).toDouble());
-    statusBarToolDiagonalString.value = result.toStringAsFixed(1);  }
-
-  void hideStatusBarToolDiagonal()
-  {
-    statusBarToolDiagonalString.value = null;
-  }
-
-  void setStatusBarToolAspectRatio(final int width, final int height)
-  {
-    final int divisor = Helper.gcd(width, height);
-    final int reducedWidth = divisor != 0 ? width ~/ divisor : 0;
-    final int reducedHeight = divisor != 0 ? height ~/ divisor : 0;
-    statusBarToolAspectRatioString.value = '$reducedWidth:$reducedHeight';
-  }
-
-  void hideStatusBarToolAspectRatio()
-  {
-    statusBarToolAspectRatioString.value = null;
-  }
-
-  void setStatusBarToolAngle(final CoordinateSetI startPos, final CoordinateSetI endPos)
-  {
-    double angle = Helper.calculateAngle(startPos, endPos);
-    statusBarToolAngleString.value = "${angle.toStringAsFixed(1)}°";
-  }
-
-  void hideStatusBarToolAngle()
-  {
-    statusBarToolAngleString.value = null;
-  }
 
   void setToolSelection(final ToolType tool)
   {

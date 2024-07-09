@@ -63,7 +63,7 @@ class _KPixAppState extends State<KPixApp> {
     if (context.mounted)
     {
       final BuildContext c = context;
-      appState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+      appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
     }
     //TODO TEMP
     appState.setCanvasDimensions(width: 256, height: 160);

@@ -57,13 +57,13 @@ class StatusBarWidget extends StatefulWidget
     return StatusBarWidget._(
         key: key,
         options: options,
-        dimensionString: appState.statusBarDimensionString,
-        cursorPositionString: appState.statusBarCursorPositionString,
-        zoomFactorString: appState.statusBarZoomFactorString,
-        toolAngleString: appState.statusBarToolAngleString,
-        toolAspectRatioString: appState.statusBarToolAspectRatioString,
-        toolDiagonalString: appState.statusBarToolDiagonalString,
-        toolDimensionString: appState.statusBarToolDimensionString,
+        dimensionString: appState.statusBarState.statusBarDimensionString,
+        cursorPositionString: appState.statusBarState.statusBarCursorPositionString,
+        zoomFactorString: appState.statusBarState.statusBarZoomFactorString,
+        toolAngleString: appState.statusBarState.statusBarToolAngleString,
+        toolAspectRatioString: appState.statusBarState.statusBarToolAspectRatioString,
+        toolDiagonalString: appState.statusBarState.statusBarToolDiagonalString,
+        toolDimensionString: appState.statusBarState.statusBarToolDimensionString,
         iconSize: fIconSize,);
   }
 }

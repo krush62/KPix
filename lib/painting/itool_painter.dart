@@ -5,6 +5,7 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/preference_manager.dart';
 import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -92,18 +93,37 @@ class BorderCoordinateSetI
 
 }
 
+class StatusBarData
+{
+  CoordinateSetI? cursorPos;
+  CoordinateSetI? dimension;
+  CoordinateSetI? diagonal;
+  CoordinateSetI? aspectRatio;
+  CoordinateSetI? angle;
+}
+
 abstract class IToolPainter
 {
   final AppState appState = GetIt.I.get<AppState>();
+  final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final KPixPainterOptions painterOptions;
+  final StatusBarData statusBarData = StatusBarData();
 
   IToolPainter({required this.painterOptions});
 
   void calculate({required DrawingParameters drawParams}){}
   void drawExtras({required DrawingParameters drawParams}){}
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars}){return HashMap();}
-  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawPars}){return HashMap();}
+  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams}){return HashMap();}
+  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawParams}){return HashMap();}
   void drawCursorOutline({required DrawingParameters drawParams});
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+    statusBarData.cursorPos = null;
+    statusBarData.dimension = null;
+    statusBarData.diagonal = null;
+    statusBarData.aspectRatio = null;
+    statusBarData.angle = null;
+  }
 
 
 

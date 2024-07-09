@@ -8,7 +8,6 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -17,7 +16,6 @@ class SprayCanPainter extends IToolPainter
 {
   SprayCanPainter({required super.painterOptions});
 
-  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final SprayCanOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.sprayCanOptions;
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final HashMap<CoordinateSetI, ColorReference> _drawingPixels = HashMap();
@@ -61,7 +59,7 @@ class SprayCanPainter extends IToolPainter
         }
         if (_paintPositions.isNotEmpty)
         {
-          _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions));
+          _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
           _paintPositions.clear();
         }
       }
@@ -139,16 +137,23 @@ class SprayCanPainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawPars})
+  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawParams})
   {
-    if (drawPars.primaryDown || _waitingForRasterization)
+    if (drawParams.primaryDown || _waitingForRasterization)
     {
       return _drawingPixels;
     }
     else
     {
-      return super.getToolContent(drawPars: drawPars);
+      return super.getToolContent(drawParams: drawParams);
     }
+  }
+
+  @override
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+    super.setStatusBarData(drawParams: drawParams);
+    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
 }

@@ -230,10 +230,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (_primaryIsDown.value)
     {
       print("PRIMARY UP");
-      appState.hideStatusBarToolDimension();
-      appState.hideStatusBarToolDiagonal();
-      appState.hideStatusBarToolAngle();
-      appState.hideStatusBarToolAspectRatio();
       _timerLongPress.cancel();
       _primaryIsDown.value = false;
       if (_idleTimerInitialized)
@@ -302,28 +298,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
     }
 
-    appState.setStatusBarCursorPosition(CoordinateSetI(
-        x: (_cursorPos.value!.x - _canvasOffset.value.dx) ~/ appState.zoomFactor.value,
-        y: (_cursorPos.value!.y - _canvasOffset.value.dy) ~/ appState.zoomFactor.value));
-
-    //UPDATE OF STATUS BAR
-    if (_primaryIsDown.value)
+    if (kPixPainter.toolPainter != null)
     {
-      if (appState.selectedTool.value == ToolType.select)
-      {
-        if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
-        {
-          final SelectionPainter selectionPainter = kPixPainter
-              .toolPainterMap[ToolType.select] as SelectionPainter;
-          int width = (selectionPainter.selectionStart.x - selectionPainter.selectionEnd.x).abs() + 1;
-          int height = (selectionPainter.selectionStart.y - selectionPainter.selectionEnd.y).abs() + 1;
+      appState.statusBarState.updateFromPaint(kPixPainter.toolPainter!.statusBarData);
 
-          appState.setStatusBarToolDimension(width, height);
-          appState.setStatusBarToolDiagonal(width, height);
-          appState.setStatusBarToolAspectRatio(width, height);
-          appState.setStatusBarToolAngle(selectionPainter.selectionStart, selectionPainter.selectionEnd);
-        }
-      }
     }
 
     if (details.kind == PointerDeviceKind.mouse)
@@ -556,6 +534,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     _canvasOffset.value = Offset(coords.x, coords.y);
   }
+
+
 
   @override
   Widget build(BuildContext context) {

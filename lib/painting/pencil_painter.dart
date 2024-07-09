@@ -5,15 +5,12 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class PencilPainter extends IToolPainter
 {
   final PencilOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.pencilOptions;
-  //TODO put this into iToolPainter and remove from subclasses
-  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final List<CoordinateSetI> _paintPositions = [];
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
@@ -70,7 +67,7 @@ class PencilPainter extends IToolPainter
           {
             paintPoints.addAll(getRoundSquareContentPoints(_options.shape.value, _options.size.value, pos));
           }
-          _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions));
+          _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
           _paintPositions.removeRange(0, _paintPositions.length - 3);
         }
       }
@@ -82,7 +79,7 @@ class PencilPainter extends IToolPainter
         {
           paintPoints.addAll(getRoundSquareContentPoints(_options.shape.value, _options.size.value, pos));
         }
-        _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions));
+        _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
         _dump(currentLayer: drawParams.currentLayer);
         _waitingForRasterization = true;
         _paintPositions.clear();
@@ -144,30 +141,35 @@ class PencilPainter extends IToolPainter
 
 
  @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars})
+  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor.value != null && drawPars.cursorPos != null)
+    if(appState.selectedColor.value != null && drawParams.cursorPos != null)
     {
-      return getPixelsToDraw(coords: _contentPoints, canvasSize: drawPars.canvasSize, currentLayer: drawPars.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions);
+      return getPixelsToDraw(coords: _contentPoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {
-      return super.getCursorContent(drawPars: drawPars);
+      return super.getCursorContent(drawParams: drawParams);
     }
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawPars})
+  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawParams})
   {
-    if (drawPars.primaryDown || _waitingForRasterization)
+    if (drawParams.primaryDown || _waitingForRasterization)
     {
       return _drawingPixels;
     }
     else
     {
-      return super.getToolContent(drawPars: drawPars);
+      return super.getToolContent(drawParams: drawParams);
     }
   }
 
-
+  @override
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+      super.setStatusBarData(drawParams: drawParams);
+      statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+  }
 }

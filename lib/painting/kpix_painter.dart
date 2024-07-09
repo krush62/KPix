@@ -93,7 +93,7 @@ class KPixPainter extends CustomPainter
   final Color checkerboardColor2;
   late Map<ToolType, IToolPainter> toolPainterMap;
   late Size latestSize = const Size(0,0);
-  IToolPainter? _toolPainter;
+  IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
 
 
@@ -137,7 +137,7 @@ class KPixPainter extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    _toolPainter = toolPainterMap[_appState.selectedTool.value];
+    toolPainter = toolPainterMap[_appState.selectedTool.value];
     if (size != latestSize)
     {
       latestSize = size;
@@ -159,11 +159,12 @@ class KPixPainter extends CustomPainter
 
 
     _drawCheckerboard(drawParams: drawParams);
-    _calculateTool(drawParams: drawParams);
+    toolPainter?.calculate(drawParams: drawParams);
     _drawLayers(drawParams: drawParams);
     _drawSelection(drawParams: drawParams);
-    _drawToolExtras(drawParams: drawParams);
+    toolPainter?.drawExtras(drawParams: drawParams);
     _drawCursor(drawParams: drawParams);
+    toolPainter?.setStatusBarData(drawParams: drawParams);
   }
 
   void _drawSelection({required final DrawingParameters drawParams})
@@ -316,28 +317,13 @@ class KPixPainter extends CustomPainter
     }
   }
 
-  void _calculateTool({required final DrawingParameters drawParams})
-  {
-    IToolPainter? toolPainter = toolPainterMap[_appState.selectedTool.value];
-    toolPainter?.calculate(drawParams: drawParams);
-  }
-
-  void _drawToolExtras({required final DrawingParameters drawParams})
-  {
-    if (_toolPainter != null)
-    {
-      _toolPainter!.drawExtras(
-          drawParams: drawParams);
-    }
-  }
-
   void _drawCursor({required final DrawingParameters drawParams})
   {
     if (_coords.value != null)
     {
-      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && _toolPainter != null)
+      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter != null)
       {
-        _toolPainter!.drawCursorOutline(drawParams: drawParams);
+        toolPainter!.drawCursorOutline(drawParams: drawParams);
       }
       else
       {
@@ -419,8 +405,8 @@ class KPixPainter extends CustomPainter
 
         if (layers[i].isSelected.value)
         {
-          final HashMap<CoordinateSetI, ColorReference> selectedLayerCursorContent = _toolPainter != null ? _toolPainter!.getCursorContent(drawPars: drawParams) : HashMap();
-          final HashMap<CoordinateSetI, ColorReference> toolContent = _toolPainter != null ? _toolPainter!.getToolContent(drawPars: drawParams) : HashMap();
+          final HashMap<CoordinateSetI, ColorReference> selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
+          final HashMap<CoordinateSetI, ColorReference> toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
           for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
           {
             for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)

@@ -7,7 +7,6 @@ import 'package:kpix/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preference_manager.dart';
-import 'package:kpix/shader_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
@@ -16,7 +15,6 @@ class FontPainter extends IToolPainter
   FontPainter({required super.painterOptions});
 
   final TextOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.textOptions;
-  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
@@ -95,7 +93,7 @@ class FontPainter extends IToolPainter
   {
     if (_textContent.isNotEmpty)
     {
-      final HashMap<CoordinateSetI, ColorReference> drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions);
+      final HashMap<CoordinateSetI, ColorReference> drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
       if (!appState.selectionState.selection.isEmpty())
       {
         appState.selectionState.selection.addDirectlyAll(drawingPixels);
@@ -128,16 +126,23 @@ class FontPainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawPars})
+  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor.value != null && drawPars.cursorPos != null)
+    if(appState.selectedColor.value != null && drawParams.cursorPos != null)
     {
-      return getPixelsToDraw(coords: _textContent, canvasSize: drawPars.canvasSize, currentLayer: drawPars.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: _shaderOptions);
+      return getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {
-      return super.getCursorContent(drawPars: drawPars);
+      return super.getCursorContent(drawParams: drawParams);
     }
+  }
+
+  @override
+  void setStatusBarData({required DrawingParameters drawParams})
+  {
+    super.setStatusBarData(drawParams: drawParams);
+    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
 }

@@ -15,11 +15,18 @@ class KPalRampData
     updateColors(colorCountChanged: true);
   }
 
+  factory KPalRampData.from({required KPalRampData other})
+  {
+    const Uuid uuid = Uuid();
+    final KPalRampSettings newSettings = KPalRampSettings.from(other: other.settings);
+    return KPalRampData(uuid: uuid.v1(), settings: newSettings);
+  }
+
   void updateColors({required bool colorCountChanged})
   {
     if (colorCountChanged)
     {
-      Uuid uuid = const Uuid();
+      const Uuid uuid = Uuid();
       colors.clear();
       references.clear();
       for (int i = 0; i < settings.colorCount; i++)

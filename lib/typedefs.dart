@@ -8,6 +8,7 @@ typedef ColorReferenceSelectedFn = void Function(ColorReference uuid);
 typedef RampOptionsFn = void Function(KPalRampData? data);
 typedef AddNewRampFn = void Function();
 typedef ColorRampFn = void Function(KPalRampData ramp);
+typedef ColorRampUpdateFn = void Function(KPalRampData ramp, KPalRampData originalData);
 typedef ChangeLayerPositionFn = void Function(LayerState state, int newPosition);
 typedef AddNewLayerFn = void Function();
 typedef LayerSelectedFn = void Function(LayerState state);

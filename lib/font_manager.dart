@@ -33,7 +33,7 @@ enum PixelFontType
   fontPoco,
   fontQuadrunde,
   fontRootBeer,
-  Scriptorium,
+  fontScriptorium,
   fontSquarewave,
   fontSquarewaveBold
 }
@@ -69,7 +69,7 @@ const Map<int, PixelFontType> pixelFontIndexMap =
   26: PixelFontType.fontPoco,
   27: PixelFontType.fontQuadrunde,
   28: PixelFontType.fontRootBeer,
-  29: PixelFontType.Scriptorium,
+  29: PixelFontType.fontScriptorium,
   30: PixelFontType.fontSquarewave,
   31: PixelFontType.fontSquarewaveBold
 };
@@ -148,7 +148,7 @@ class FontManager
     PixelFontType.fontPoco: "Poco",
     PixelFontType.fontQuadrunde: "Quadrunde",
     PixelFontType.fontRootBeer: "Root Beer",
-    PixelFontType.Scriptorium: "Scriptorium",
+    PixelFontType.fontScriptorium: "Scriptorium",
     PixelFontType.fontSquarewave: "Squarewave",
     PixelFontType.fontSquarewaveBold: "Squarewave Bold"
   };
@@ -183,7 +183,7 @@ class FontManager
     PixelFontType.fontPoco: "Poco",
     PixelFontType.fontQuadrunde: "Quadrunde",
     PixelFontType.fontRootBeer: "RootBeer",
-    PixelFontType.Scriptorium: "Scriptorium",
+    PixelFontType.fontScriptorium: "Scriptorium",
     PixelFontType.fontSquarewave: "Squarewave",
     PixelFontType.fontSquarewaveBold: "Squarewave-Bold"
   };

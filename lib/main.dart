@@ -68,8 +68,6 @@ class _KPixAppState extends State<KPixApp> {
     //TODO TEMP
     appState.setCanvasDimensions(width: 256, height: 160);
     appState.addNewRamp();
-    appState.addNewRamp();
-    appState.addNewLayer();
     appState.addNewLayer(select: true);
     initialized.value = true;
   }

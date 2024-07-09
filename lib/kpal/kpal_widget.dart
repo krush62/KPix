@@ -69,6 +69,22 @@ class KPalRampSettings
     valueRangeMax = constraints.valueRangeMaxDefault;
     satCurve = satCurveMap[constraints.satCurveDefault] ?? SatCurve.noFlat;
   }
+
+  factory KPalRampSettings.from({required KPalRampSettings other})
+  {
+    KPalRampSettings newSettings = KPalRampSettings(constraints: other.constraints);
+    newSettings.colorCount = other.colorCount;
+    newSettings.baseHue = other.baseHue;
+    newSettings.baseSat = other.baseSat;
+    newSettings.hueShift = other.hueShift;
+    newSettings.hueShiftExp = other.hueShiftExp;
+    newSettings.satShift = other.satShift;
+    newSettings.satShiftExp = other.satShiftExp;
+    newSettings.valueRangeMin = other.valueRangeMin;
+    newSettings.valueRangeMax = other.valueRangeMax;
+    newSettings.satCurve = other.satCurve;
+    return newSettings;
+  }
 }
 
 class KPalConstraints
@@ -156,7 +172,7 @@ class KPalWidgetOptions
 class KPal extends StatefulWidget {
   final KPalRampData colorRamp;
   final Function() dismiss;
-  final ColorRampFn accept;
+  final ColorRampUpdateFn accept;
   final ColorRampFn delete;
 
 
@@ -169,6 +185,7 @@ class KPal extends StatefulWidget {
   });
 
 
+
   @override
   State<KPal> createState() => _KPalState();
 }
@@ -177,11 +194,15 @@ class _KPalState extends State<KPal>
 {
   bool _alertDialogVisible = false;
   late OverlayEntry _alertDialog;
-  KPalWidgetOptions options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions;
+  final KPalWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions;
+  late KPalRampData _originalData;
 
   @override
   void initState() {
     super.initState();
+    widget.colorRamp;
+    _originalData = KPalRampData.from(other: widget.colorRamp);
+
     _alertDialog = OverlayEntries.getAlertDialog(
         onDismiss: _dismissAlertDialog,
         onAccept: _acceptDeletion,
@@ -216,20 +237,20 @@ class _KPalState extends State<KPal>
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(options.outsidePadding),
+      padding: EdgeInsets.all(_options.outsidePadding),
       child: Align(
         alignment: Alignment.center,
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(
               color: Theme.of(context).primaryColorLight,
-              width: options.borderWidth,
+              width: _options.borderWidth,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
           ),
           child: Material(
             color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -244,11 +265,11 @@ class _KPalState extends State<KPal>
                       Expanded(
                         flex: 1,
                         child: Padding(
-                          padding: EdgeInsets.all(options.insidePadding),
+                          padding: EdgeInsets.all(_options.insidePadding),
                           child: IconButton.outlined(
                             icon: FaIcon(
                               FontAwesomeIcons.xmark,
-                              size: options.iconSize,
+                              size: _options.iconSize,
                             ),
                             onPressed: () {
                               widget.dismiss();
@@ -259,11 +280,11 @@ class _KPalState extends State<KPal>
                       Expanded(
                           flex: 1,
                           child: Padding(
-                            padding: EdgeInsets.all(options.insidePadding),
+                            padding: EdgeInsets.all(_options.insidePadding),
                             child: IconButton.outlined(
                               icon: FaIcon(
                                 FontAwesomeIcons.trash,
-                                size: options.iconSize,
+                                size: _options.iconSize,
                               ),
                               onPressed: () {
                                 _showDeleteDialog();
@@ -274,14 +295,14 @@ class _KPalState extends State<KPal>
                       Expanded(
                         flex: 1,
                         child: Padding(
-                          padding: EdgeInsets.all(options.insidePadding),
+                          padding: EdgeInsets.all(_options.insidePadding),
                           child: IconButton.outlined(
                             icon: FaIcon(
                               FontAwesomeIcons.check,
-                              size: options.iconSize,
+                              size: _options.iconSize,
                             ),
                             onPressed: () {
-                              widget.accept(widget.colorRamp);
+                              widget.accept(widget.colorRamp, _originalData);
                             },
                           ),
                         )

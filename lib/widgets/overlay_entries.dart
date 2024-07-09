@@ -316,7 +316,7 @@ class OverlayEntries
 
   static OverlayEntry getKPal({
     required final Function() onDismiss,
-    required final ColorRampFn onAccept,
+    required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
     required final KPalRampData colorRamp,
 

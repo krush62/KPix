@@ -10,7 +10,7 @@ import 'package:kpix/widgets/overlay_entries.dart';
 class ColorRampRowWidget extends StatefulWidget {
   final KPalRampData? rampData;
   final ColorReferenceSelectedFn? colorSelectedFn;
-  final ColorRampFn? colorsUpdatedFn;
+  final ColorRampUpdateFn? colorsUpdatedFn;
   final ColorRampFn? deleteRowFn;
   final AddNewRampFn? addNewRampFn;
   final List<Widget> widgetList;
@@ -33,7 +33,7 @@ class ColorRampRowWidget extends StatefulWidget {
     ColorReferenceSelectedFn? colorSelectedFn,
     AddNewRampFn? addNewRampFn,
     ColorRampFn? deleteRowFn,
-    ColorRampFn? colorsUpdatedFn,
+    ColorRampUpdateFn? colorsUpdatedFn,
     Key? key,
   }){
     List<Widget> widgetList = [];
@@ -96,19 +96,19 @@ class ColorRampRowWidget extends StatefulWidget {
       ));
     } else {
       widgetList.add(
-          Expanded(
-              child: IconButton(
-                  padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
-                  icon: FaIcon(
-                    FontAwesomeIcons.plus,
-                    size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
-                  ),
-                  onPressed: () {
+        Expanded(
+          child: IconButton(
+            padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
+            icon: FaIcon(
+              FontAwesomeIcons.plus,
+              size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
+            ),
+            onPressed: () {
 
-                    addNewRampFn!.call();
-                  }
-              )
+              addNewRampFn!.call();
+            }
           )
+        )
       );
     }
   }
@@ -138,10 +138,10 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
     }
   }
 
-  void _colorRampUpdate(final KPalRampData ramp)
+  void _colorRampUpdate(final KPalRampData ramp, final KPalRampData originalData)
   {
     _closeKPal();
-    widget.colorsUpdatedFn!(ramp);
+    widget.colorsUpdatedFn!(ramp, originalData);
   }
 
   void _colorRampDelete(final KPalRampData ramp)

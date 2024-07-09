@@ -106,7 +106,7 @@ class LayerState
   final HashMap<CoordinateSetI, ColorReference> _data;
   ui.Image? raster;
   bool isRasterizing = false;
-  bool _doManualRaster = false;
+  bool doManualRaster = false;
   Queue<(CoordinateSetI, ColorReference?)> rasterQueue = Queue();
 
   LayerState._({required HashMap<CoordinateSetI, ColorReference> data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
@@ -122,7 +122,7 @@ class LayerState
   factory LayerState.from({required LayerState other})
   {
     HashMap<CoordinateSetI, ColorReference> data2 = HashMap();
-    for (final MapEntry<CoordinateSetI, ColorReference> ref in other._data.entries)
+  for (final MapEntry<CoordinateSetI, ColorReference> ref in other._data.entries)
     {
       data2[ref.key] = ref.value;
     }
@@ -150,12 +150,45 @@ class LayerState
 
   void updateTimerCallback(final Timer timer) async
   {
-    if ((rasterQueue.isNotEmpty || _doManualRaster) && !isRasterizing)
+    if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
       _createRaster().then((final ui.Image image) => _rasterizingDone(image));
 
     }
+  }
+
+  void deleteRamp({required final KPalRampData ramp})
+  {
+    isRasterizing = true;
+    final Set<CoordinateSetI> deleteData = {};
+    for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)
+    {
+      if (entry.value.ramp == ramp)
+      {
+        deleteData.add(entry.key);
+      }
+    }
+
+    for (final CoordinateSetI coord in deleteData)
+    {
+      _data.remove(coord);
+    }
+
+    isRasterizing = false;
+  }
+
+  void remapColors({required final KPalRampData newData, required final HashMap<int, int> map})
+  {
+    isRasterizing = true;
+    for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)
+    {
+      if (entry.value.ramp == newData)
+      {
+        _data[entry.key] = newData.references[map[entry.value.colorIndex]!];
+      }
+    }
+    isRasterizing = false;
   }
 
 
@@ -164,7 +197,7 @@ class LayerState
     isRasterizing = false;
     raster = image;
     thumbnail.value = raster;
-    _doManualRaster = false;
+    doManualRaster = false;
     GetIt.I.get<AppState>().repaintNotifier.repaint();
   }
 

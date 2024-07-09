@@ -51,6 +51,7 @@ class AppState
 
   double devicePixelRatio = 1.0;
 
+
   AppState()
   {
 
@@ -137,42 +138,36 @@ class AppState
 
   void deleteRamp(final KPalRampData ramp)
   {
-    ColorReference? col = getSelectedColorFromRampByUuid(ramp);
-    if (col != null)
+    if (colorRamps.value.length > 1)
     {
-      selectedColor.value = null;
+      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+      rampDataList.remove(ramp);
+      selectedColor.value = rampDataList[0].references[0];
+      colorRamps.value = rampDataList;
+      _deleteRampFromLayers(ramp: ramp);
+      _reRaster();
+      repaintNotifier.repaint();
     }
-    List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
-    rampDataList.remove(ramp);
-    colorRamps.value = rampDataList;
+    else
+    {
+      showMessage("Cannot delete the only color ramp!");
+    }
   }
 
-  void updateRamp(final KPalRampData ramp)
+  void updateRamp(final KPalRampData ramp, final KPalRampData originalData)
   {
-    List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+    final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
     colorRamps.value = rampDataList;
-    ColorReference? col = getSelectedColorFromRampByUuid(ramp);
-    if (col != null)
+
+    if (ramp.colors.length != originalData.colors.length)
     {
-      selectedColor.value = col;
+      HashMap<int, int> indexMap = _remapIndices(originalData.colors.length, ramp.colors.length);
+      selectedColor.value = ramp.references[indexMap[selectedColor.value!.colorIndex]!];
+      _remapLayers(newData: ramp, map: indexMap);
     }
+    _reRaster();
     repaintNotifier.repaint();
   }
-
-  ColorReference? getSelectedColorFromRampByUuid(final KPalRampData ramp)
-  {
-    ColorReference? col;
-    for (int j = 0; j < ramp.colors.length; j++)
-    {
-      if (selectedColor.value != null && ramp.colors[j].value.uuid == selectedColor.value!.getIdColor().uuid)
-      {
-        col = ramp.references[j];
-        break;
-      }
-    }
-    return col;
-  }
-
 
   void addNewRamp()
   {
@@ -274,17 +269,17 @@ class AppState
 
   }
 
-  void layerDeleted(final LayerState deleteState)
+  void layerDeleted(final LayerState deleteLayer)
   {
     if (layers.value.length > 1)
     {
-      List<LayerState> stateList = [];
+      final List<LayerState> layerList = [];
       int foundIndex = 0;
       for (int i = 0; i < layers.value.length; i++)
       {
-        if (layers.value[i] != deleteState)
+        if (layers.value[i] != deleteLayer)
         {
-          stateList.add(layers.value[i]);
+          layerList.add(layers.value[i]);
         }
         else
         {
@@ -294,14 +289,14 @@ class AppState
 
       if (foundIndex > 0)
       {
-        stateList[foundIndex - 1].isSelected.value = true;
+        layerSelected(layerList[foundIndex - 1]);
       }
       else
       {
-        stateList[0].isSelected.value = true;
+        layerSelected(layerList[0]);
       }
 
-      layers.value = stateList;
+      layers.value = layerList;
     }
     else
     {
@@ -387,6 +382,45 @@ class AppState
       layerList.add(layers.value[i]);
     }
     layers.value = layerList;
+  }
+
+  HashMap<int, int> _remapIndices(final int oldLength, final int newLength)
+  {
+    final HashMap<int, int> indexMap = HashMap();
+    final int centerOld = oldLength ~/ 2;
+    final int centerNew = newLength ~/ 2;
+    for (int i = 0; i < oldLength; i++)
+    {
+      final int dist = i - centerOld;
+      final int newIndex = min(max(0, centerNew + dist), newLength - 1);
+      indexMap[i] = newIndex;
+    }
+
+    return indexMap;
+  }
+
+  void _deleteRampFromLayers({required final KPalRampData ramp})
+  {
+    for (final LayerState layer in layers.value)
+    {
+      layer.deleteRamp(ramp: ramp);
+    }
+  }
+
+  void _remapLayers({required final KPalRampData newData, required final HashMap<int, int> map})
+  {
+    for (final LayerState layer in layers.value)
+    {
+     layer.remapColors(newData: newData, map: map);
+    }
+  }
+
+  void _reRaster()
+  {
+    for (final LayerState layer in layers.value)
+    {
+      layer.doManualRaster = true;
+    }
   }
 
   void colorSelected(final ColorReference color)

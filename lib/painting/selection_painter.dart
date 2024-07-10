@@ -31,7 +31,7 @@ class SelectionPainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
+    if (_lastStartPos != drawParams.primaryPressStart)
     {
       _normStartPos.x = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
       _normStartPos.y = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
@@ -75,19 +75,29 @@ class SelectionPainter extends IToolPainter
           selectionEnd.y = min(_normStartPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (_normStartPos.y), appState.canvasHeight - 1);
 
 
-          if (options.keepAspectRatio.value) {
+          if (options.keepAspectRatio.value)
+          {
             final int width = selectionEnd.x - selectionStart.x;
             final int height = selectionEnd.y - selectionStart.y;
-            if (width > height) {
-              if (_normStartPos.x < _cursorPosNorm.x) {
+            if (width > height)
+            {
+              if (_normStartPos.x < _cursorPosNorm.x)
+              {
                 selectionEnd.x = selectionStart.x + height;
-              } else {
+              }
+              else
+              {
                 selectionStart.x = selectionEnd.x - height;
               }
-            } else {
-              if (_normStartPos.y < _cursorPosNorm.y) {
+            }
+            else
+            {
+              if (_normStartPos.y < _cursorPosNorm.y)
+              {
                 selectionEnd.y = selectionStart.y + width;
-              } else {
+              }
+              else
+              {
                 selectionStart.y = selectionEnd.y - width;
               }
             }
@@ -98,21 +108,17 @@ class SelectionPainter extends IToolPainter
     }
     else if (!drawParams.primaryDown)
     {
-      if (movementStarted) {
+      if (movementStarted)
+      {
         movementStarted = false;
         appState.selectionState.finishMovement();
       }
       if (polygonDown)
       {
-        final CoordinateSetI point = CoordinateSetI(
-            x: _normStartPos.x,
-            y: _normStartPos.y);
-
-
+        final CoordinateSetI point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
         bool isInsideCircle = false;
-
-        if (polygonPoints.isNotEmpty) {
-
+        if (polygonPoints.isNotEmpty)
+        {
           if (Helper.getDistance(point, polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
           {
             isInsideCircle = true;
@@ -136,7 +142,6 @@ class SelectionPainter extends IToolPainter
           }
         }
       }
-
     }
     else //NO BUTTON PRESS AND NOT ON CANVAS
     {

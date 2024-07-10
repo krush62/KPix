@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ColorSet
 {
@@ -31,8 +32,8 @@ class KPixTheme {
       brightness: Brightness.light,
 
     ),
+    textTheme: GoogleFonts.oxaniumTextTheme(const TextTheme(
 
-    textTheme: const TextTheme(
       displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
@@ -52,7 +53,8 @@ class KPixTheme {
       bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
-    ),
+    )),
+
     sliderTheme: SliderThemeData(
       activeTrackColor: lightColors.light,
       inactiveTrackColor: lightColors.dark,
@@ -125,9 +127,9 @@ class KPixTheme {
         brightness: Brightness.dark
     ),
 
-    fontFamily: "PixelFonts",
+    //fontFamily: "PixelFonts",
 
-    textTheme: const TextTheme(
+    textTheme: GoogleFonts.oxaniumTextTheme(const TextTheme(
       displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
       displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400),
@@ -147,7 +149,7 @@ class KPixTheme {
       bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400),
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600),
-    ),
+    )),
 
     sliderTheme: SliderThemeData(
       activeTrackColor: darkColors.light,

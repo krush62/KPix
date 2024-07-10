@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Platform:**
- - Operating System: [Mobile, Desktop, Web]
+ - Variant: [Mobile, Desktop, Web]
  - Version [e.g. 13]
  - Operating System: [e.g.: Windows, Android, Linux, MacOs]
  - Browser [e.g. Chrome, Safari]

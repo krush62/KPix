@@ -85,7 +85,7 @@ class PencilPainter extends IToolPainter
         _paintPositions.clear();
       }
     }
-    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _drawingPixels.isNotEmpty && _waitingForRasterization)
+    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _waitingForRasterization)
     {
       _drawingPixels.clear();
       _waitingForRasterization = false;

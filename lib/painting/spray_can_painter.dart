@@ -43,13 +43,14 @@ class SprayCanPainter extends IToolPainter
       _contentPoints = getRoundSquareContentPoints(PencilShape.round, _options.radius.value * 2, _cursorPosNorm);
 
     }
+
     if (!_waitingForRasterization)
     {
       if (drawParams.primaryDown)
       {
         if (!timerInitialized || !timer.isActive)
         {
-          timer = Timer.periodic(Duration(milliseconds: 1000 ~/ _options.intensity.value), _timeout);
+          timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), _timeout);
           timerInitialized = true;
         }
 
@@ -72,7 +73,7 @@ class SprayCanPainter extends IToolPainter
         _isDown = false;
       }
     }
-    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _drawingPixels.isNotEmpty && _waitingForRasterization)
+    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _waitingForRasterization)
     {
       _drawingPixels.clear();
       _waitingForRasterization = false;

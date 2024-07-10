@@ -242,7 +242,7 @@ class LayerState
   }
 
 
-  ColorReference? getData(final CoordinateSetI coord)
+  ColorReference? getDataEntry(final CoordinateSetI coord)
   {
     if (_data.containsKey(coord))
     {
@@ -259,6 +259,11 @@ class LayerState
       }
     }
     return null;
+  }
+
+  HashMap<CoordinateSetI, ColorReference> getData()
+  {
+    return _data;
   }
 
   void setDataAll(final HashMap<CoordinateSetI, ColorReference?> list)

@@ -148,7 +148,7 @@ class SelectionState with ChangeNotifier
   {
     final int numRows = GetIt.I.get<AppState>().canvasHeight;
     final int numCols = GetIt.I.get<AppState>().canvasWidth;
-    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start);
+    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getDataEntry(start);
     final Set<CoordinateSetI> result = {};
     final Set<CoordinateSetI> visited = {};
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
@@ -160,7 +160,7 @@ class SelectionState with ChangeNotifier
       final CoordinateSetI curCoord = pointStack.pop();
       if (curCoord.x >= 0 && curCoord.y < numRows && curCoord.y >= 0 && curCoord.x < numCols)
       {
-        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord);
+        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getDataEntry(curCoord);
         if (!visited.contains(curCoord) && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
         {
           result.add(curCoord);
@@ -194,13 +194,13 @@ class SelectionState with ChangeNotifier
     required final bool selectFromWholeRamp})
   {
     final Set<CoordinateSetI> result = {};
-    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getData(start);
+    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getDataEntry(start);
     for (int x = 0; x < GetIt.I.get<AppState>().canvasWidth; x++)
     {
       for (int y = 0; y < GetIt.I.get<AppState>().canvasHeight; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getData(curCoord);
+        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getDataEntry(curCoord);
         if (refAtPos == targetValue || (selectFromWholeRamp && refAtPos != null && targetValue != null && refAtPos.ramp == targetValue.ramp))
         {
           result.add(curCoord);
@@ -491,7 +491,7 @@ class SelectionState with ChangeNotifier
       //TODO is the order correct?
       for (final LayerState layer in visibleLayers)
       {
-        final ColorReference? colRef = layer.getData(coord);
+        final ColorReference? colRef = layer.getDataEntry(coord);
         if (colRef != null)
         {
           hasValues = true;
@@ -676,7 +676,7 @@ class SelectionList
       }
       if (newLayer.lockState.value != LayerLockState.locked)
       {
-        _content[key] = newLayer.getData(key);
+        _content[key] = newLayer.getDataEntry(key);
         //newLayer.setData(key, null);
         refsNew[key] = null;
       }
@@ -690,7 +690,7 @@ class SelectionList
     final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
     for (final CoordinateSetI coord in coords)
     {
-      _content[coord] = currentLayer!.getData(coord);
+      _content[coord] = currentLayer!.getDataEntry(coord);
       refs[coord] = null;
     }
     currentLayer!.setDataAll(refs);

@@ -334,9 +334,9 @@ class AppState
               final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
 
               //if transparent pixel -> use value from layer below
-              if (mergeLayer.getData(curCoord) == null && layers.value[i+1].getData(curCoord) != null)
+              if (mergeLayer.getDataEntry(curCoord) == null && layers.value[i+1].getDataEntry(curCoord) != null)
               {
-                refs[curCoord] = layers.value[i+1].getData(curCoord);
+                refs[curCoord] = layers.value[i+1].getDataEntry(curCoord);
               }
             }
           }

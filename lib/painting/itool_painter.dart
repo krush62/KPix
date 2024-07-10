@@ -267,7 +267,7 @@ abstract class IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
             {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && currentLayer.getData(coord) != selectedColor) ||
+          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != selectedColor) ||
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != selectedColor))
           {
@@ -277,11 +277,11 @@ abstract class IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-        if ((selection.selection.isEmpty() && currentLayer.getData(coord) != null) ||
+        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != null) ||
             //if selection and selection contains pixel and pixel is not null
             (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getData(coord)! : selection.selection.getColorReference(coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord)! : selection.selection.getColorReference(coord)!;
           if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
@@ -321,7 +321,7 @@ abstract class IToolPainter
           final int index = min(max(selectedColor.colorIndex + stampEntry.value, 0), selectedColor.ramp.colors.length - 1);
           final ColorReference drawColor = selectedColor.ramp.references[index];
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && currentLayer.getData(coord) != drawColor) ||
+          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != drawColor) ||
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != drawColor))
           {
@@ -331,11 +331,11 @@ abstract class IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-        if ((selection.selection.isEmpty() && currentLayer.getData(coord) != null) ||
+        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != null) ||
             //if selection and selection contains pixel and pixel is not null
             (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getData(coord)! : selection.selection.getColorReference(coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord)! : selection.selection.getColorReference(coord)!;
           if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value) //all ramps
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)

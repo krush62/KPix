@@ -20,7 +20,6 @@ import 'package:kpix/shader_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/canvas_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
@@ -68,18 +67,7 @@ enum PreferenceDouble
   Layout_ColorEntry_MinSize(defaultValue: 8.0),
   Layout_ColorEntry_MaxSize(defaultValue: 32.0),
 
-  Layout_ColorChooser_IconSize(defaultValue: 36.0),
-  Layout_ColorChooser_ColorContainerBorderRadius(defaultValue: 16.0),
-  Layout_ColorChooser_Padding(defaultValue: 8.0),
-  Layout_ColorChooser_Width(defaultValue: 400.0),
-  Layout_ColorChooser_Height(defaultValue: 500.0),
-  Layout_ColorChooser_DividerWidth(defaultValue: 2.0),
-  Layout_ColorChooser_Elevation(defaultValue: 16.0),
-  Layout_ColorChooser_BorderRadius(defaultValue: 16.0),
-  Layout_ColorChooser_BorderWidth(defaultValue: 2.0),
-  Layout_ColorChooser_OutsidePadding(defaultValue: 16.0),
-
-  Layout_ToolsSettings_Padding(defaultValue: 8.0),
+    Layout_ToolsSettings_Padding(defaultValue: 8.0),
   Layout_ToolSettings_SmallButtonSize(defaultValue: 36.0),
   Layout_ToolSettings_SmallIconSize(defaultValue: 20),
 
@@ -378,7 +366,6 @@ class PreferenceManager
   late ToolsWidgetOptions toolsWidgetOptions;
   late PaletteWidgetOptions paletteWidgetOptions;
   late ColorEntryWidgetOptions colorEntryOptions;
-  late ColorChooserWidgetOptions colorChooserWidgetOptions;
   late ToolSettingsWidgetOptions toolSettingsWidgetOptions;
   late MainToolbarWidgetOptions mainToolbarWidgetOptions;
   late ShaderWidgetOptions shaderWidgetOptions;
@@ -519,18 +506,6 @@ class PreferenceManager
         buttonPadding: getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
         minSize: getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
         maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),);
-    colorChooserWidgetOptions = ColorChooserWidgetOptions(
-        iconButtonSize: getValueD(PreferenceDouble.Layout_ColorChooser_IconSize),
-        colorContainerBorderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_ColorContainerBorderRadius),
-        padding: getValueD(PreferenceDouble.Layout_ColorChooser_Padding),
-        smokeOpacity: getValueI(PreferenceInt.Layout_ColorChooser_SmokeOpacity),
-        width: getValueD(PreferenceDouble.Layout_ColorChooser_Width),
-        height: getValueD(PreferenceDouble.Layout_ColorChooser_Height),
-        dividerThickness: getValueD(PreferenceDouble.Layout_ColorChooser_DividerWidth),
-        elevation: getValueD(PreferenceDouble.Layout_ColorChooser_Elevation),
-        borderRadius: getValueD(PreferenceDouble.Layout_ColorChooser_BorderRadius),
-        borderWidth: getValueD(PreferenceDouble.Layout_ColorChooser_BorderWidth),
-        outsidePadding: getValueD(PreferenceDouble.Layout_ColorChooser_OutsidePadding));
     toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
         columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
         padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),

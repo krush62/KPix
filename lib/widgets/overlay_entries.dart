@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/typedefs.dart';
-import 'package:kpix/widgets/color_chooser_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class OverlayEntrySubMenuOptions
@@ -273,46 +272,6 @@ class OverlayEntries
   }
 
 
-  static OverlayEntry getColorChooser({
-    required final Function() onDismiss,
-    required Function(Color) onSelected,
-    required ColorChooserWidgetOptions options,
-  })
-  {
-    return OverlayEntry(
-      builder: (context) => Stack(
-        children: [
-          ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-            onDismiss: () {onDismiss();},
-          ),
-          Padding(
-            padding: EdgeInsets.all(options.outsidePadding),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                width: options.width,
-                height: options.height,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Theme.of(context).primaryColorLight,
-                    width: options.borderWidth,
-                  ),
-                  borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                ),
-                child: ColorChooserWidget(
-                  inputColor: Colors.red,
-                  options: options,
-                  colorSelected: onSelected,
-                  dismiss: onDismiss,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   static OverlayEntry getKPal({
     required final Function() onDismiss,

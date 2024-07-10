@@ -104,7 +104,7 @@ class FillPainter extends IToolPainter
     final int numRows = appState.canvasHeight;
     final int numCols = appState.canvasWidth;
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
-    final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(start)) ? appState.selectionState.selection.getColorReference(start) : layer.getData(start);
+    final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(start)) ? appState.selectionState.selection.getColorReference(start) : layer.getDataEntry(start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
     final HashMap<CoordinateSetI, ColorReference> layerPixels = HashMap();
     final HashMap<CoordinateSetI, ColorReference> selectionPixels = HashMap();
@@ -114,7 +114,7 @@ class FillPainter extends IToolPainter
     while(pointStack.isNotEmpty)
     {
       final CoordinateSetI curCoord = pointStack.pop();
-      final ColorReference? refAtPos = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(curCoord)) ? appState.selectionState.selection.getColorReference(curCoord) : layer.getData(curCoord);
+      final ColorReference? refAtPos = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(curCoord)) ? appState.selectionState.selection.getColorReference(curCoord) : layer.getDataEntry(curCoord);
       if (!visited[curCoord.x][curCoord.y] &&
           (appState.selectionState.selection.isEmpty() || (!appState.selectionState.selection.isEmpty() && appState.selectionState.selection.contains(curCoord))) &&
           (
@@ -206,14 +206,14 @@ class FillPainter extends IToolPainter
     //on layer
     if (appState.selectionState.selection.isEmpty())
     {
-      final ColorReference? startValue = layer.getData(start);
+      final ColorReference? startValue = layer.getDataEntry(start);
       final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
       for (int x = 0; x < appState.canvasWidth; x++)
       {
         for (int y = 0; y < appState.canvasHeight; y++)
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          final ColorReference? refAtPos = layer.getData(curCoord);
+          final ColorReference? refAtPos = layer.getDataEntry(curCoord);
           if (
               refAtPos == startValue ||
               (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||

@@ -38,15 +38,7 @@ class HistoryLayer
     final HashMap<CoordinateSetI, ColorReference> lData = layerState.getData();
     for (final MapEntry<CoordinateSetI, ColorReference> entry in lData.entries)
     {
-      int? rampIndex;
-      for (int i = 0; i < ramps.length; i++)
-      {
-        if (ramps[i].uuid == entry.value.ramp.uuid)
-        {
-          rampIndex = i;
-          break;
-        }
-      }
+      final int? rampIndex = getRampIndex(uuid: entry.value.ramp.uuid, ramps: ramps);
       if (rampIndex != null)
       {
         dt[CoordinateSetI.from(entry.key)] = HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
@@ -70,15 +62,7 @@ class HistorySelectionState
     {
       if (entry.value != null)
       {
-        int? rampIndex;
-        for (int i = 0; i < ramps.length; i++)
-        {
-          if (ramps[i].uuid == entry.value!.ramp.uuid)
-          {
-            rampIndex = i;
-            break;
-          }
-        }
+        final int? rampIndex = getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
         if (rampIndex != null)
         {
           cnt[CoordinateSetI.from(entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
@@ -99,7 +83,7 @@ class HistoryState
   final List<HistoryRampData> rampList;
   final HistoryColorReference selectedColor;
   final List<HistoryLayer> layerList;
-  final bool selectedLayerIndex;
+  final int selectedLayerIndex;
   final CoordinateSetI canvasSize;
   final HistorySelectionState selectionState;
 
@@ -107,12 +91,47 @@ class HistoryState
 
   factory HistoryState({required final AppState appState})
   {
-    //TODORefactoring
-  }
+    List<HistoryRampData> rampList = [];
+    for (final KPalRampData rampData in appState.colorRamps.value)
+    {
+      rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid));
+    }
+    final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor.value!.ramp.uuid, ramps: rampList);
+    final HistoryColorReference selectedColor = HistoryColorReference(colorIndex: appState.selectedColor.value!.colorIndex, rampIndex: selectedColorRampIndex!);
+    final List<HistoryLayer> layerList = [];
+    int selectedLayerIndex = 0;
+    for (int i = 0; i < appState.layers.value.length; i++)
+    {
+      final LayerState layerState = appState.layers.value[i];
+      layerList.add(HistoryLayer(layerState: layerState, ramps: rampList));
+      if (layerState.isSelected.value)
+      {
+        selectedLayerIndex = i;
+      }
+    }
 
+    final CoordinateSetI canvasSize = CoordinateSetI(x: appState.canvasWidth, y: appState.canvasHeight);
+    final HistorySelectionState selectionState = HistorySelectionState(sState: appState.selectionState, ramps: rampList);
+
+    return HistoryState._(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex);
+  }
 }
 
 class HistoryManager
 {
   final Queue<HistoryState> _states = Queue();
+}
+
+int? getRampIndex({required String uuid, required final List<HistoryRampData> ramps})
+{
+  int? rampIndex;
+  for (int i = 0; i < ramps.length; i++)
+  {
+    if (ramps[i].uuid == uuid)
+    {
+      rampIndex = i;
+      break;
+    }
+  }
+  return rampIndex;
 }

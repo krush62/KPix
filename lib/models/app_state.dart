@@ -217,12 +217,20 @@ class AppState
 
   void undoPressed()
   {
-    _restoreState(historyState: GetIt.I.get<HistoryManager>().undo());
+    if (GetIt.I.get<HistoryManager>().hasUndo.value)
+    {
+      showMessage("Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+      _restoreState(historyState: GetIt.I.get<HistoryManager>().undo());
+    }
   }
 
   void redoPressed()
   {
-    _restoreState(historyState: GetIt.I.get<HistoryManager>().redo());
+    if (GetIt.I.get<HistoryManager>().hasRedo.value)
+    {
+      _restoreState(historyState: GetIt.I.get<HistoryManager>().redo());
+      showMessage("Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+    }
   }
 
   void _restoreState({required final HistoryState? historyState})
@@ -307,7 +315,6 @@ class AppState
       selectionState.selection.delete(false);
       selectionState.selection.addDirectlyAll(selectionContent);
       selectionState.selection.currentLayer = curSelLayer?? getSelectedLayer();
-      //TODO SELECTION RESTORE IS NOT WORKING WELL...OR AT ALL
       selectionState.createSelectionLines();
       selectionState.notifyRepaint();
     }

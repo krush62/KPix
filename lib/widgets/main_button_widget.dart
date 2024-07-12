@@ -129,13 +129,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     print("SHOW SETTINGS");
   }
 
-  //TODO
   void _undoPressed()
   {
     _appState.undoPressed();
   }
 
-  //TODO
   void _redoPressed()
   {
     _appState.redoPressed();

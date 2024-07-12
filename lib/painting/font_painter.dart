@@ -106,6 +106,7 @@ class FontPainter extends IToolPainter
       {
         drawParams.currentLayer.setDataAll(drawingPixels);
       }
+      hasHistoryData = true;
     }
   }
 

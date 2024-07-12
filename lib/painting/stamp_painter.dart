@@ -94,6 +94,7 @@ class StampPainter extends IToolPainter
     {
       drawParams.currentLayer.setDataAll(drawingPixels);
     }
+    hasHistoryData = true;
   }
 
   @override

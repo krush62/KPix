@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/helper.dart';
+import 'package:kpix/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -17,6 +18,7 @@ import 'package:kpix/widgets/selection_bar_widget.dart';
 class CanvasOptions
 {
   final int stylusPollRate;
+  final int historyCHeckPollRate;
   final int longPressDuration;
   final double longPressCancelDistance;
   final double stylusZoomStepDistance;
@@ -28,6 +30,7 @@ class CanvasOptions
 
   CanvasOptions({
     required this.stylusPollRate,
+    required this.historyCHeckPollRate,
     required this.longPressDuration,
     required this.longPressCancelDistance,
     required this.stylusZoomStepDistance,
@@ -116,6 +119,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   {
     super.initState();
     Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
+    Timer.periodic(Duration(milliseconds: options.historyCHeckPollRate), _checkHistoryData);
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     _maxLongPressDistance = options.longPressCancelDistance;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -134,6 +138,49 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       appState.setZoomLevel(bestZoomLevel);
       _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasSize.x * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize.height - (appState.canvasSize.y * appState.zoomFactor.value)) / 2));
     });
+  }
+
+  void _checkHistoryData(final Timer _)
+  {
+    if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasHistoryData)
+    {
+      String description = "drawing";
+      if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.pencil])
+      {
+        description = "pencil drawing";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.shape])
+      {
+        description = "shape drawing";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.stamp])
+      {
+        description = "stamp drawing";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.line])
+      {
+        description = "line drawing";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.spraycan])
+      {
+        description = "spray can drawing";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.font])
+      {
+        description = "font drawing";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.erase])
+      {
+        description = "erase";
+      }
+      else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.fill])
+      {
+        description = "fill";
+      }
+      GetIt.I.get<HistoryManager>().addState(appState: appState, description: description);
+      kPixPainter.toolPainter!.hasHistoryData = false;
+    }
+
   }
 
 
@@ -250,7 +297,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     if (appState.selectedTool.value == ToolType.select)
     {
-      if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
+      if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
       {
         final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
         if (selectionPainter.hasNewSelection)

@@ -89,6 +89,7 @@ class FillPainter extends IToolPainter
         _wholeFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
       }
       _shouldDraw = false;
+      hasHistoryData = true;
     }
   }
 

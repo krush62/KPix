@@ -227,6 +227,7 @@ class LinePainter extends IToolPainter
         {
           drawParams.currentLayer.setDataAll(drawingPixels);
         }
+        hasHistoryData = true;
         _lineStarted = false;
         _dragStarted = false;
         _linePoints.clear();

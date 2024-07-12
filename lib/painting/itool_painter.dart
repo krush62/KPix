@@ -108,6 +108,7 @@ abstract class IToolPainter
   final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final KPixPainterOptions painterOptions;
   final StatusBarData statusBarData = StatusBarData();
+  bool hasHistoryData = false;
 
   IToolPainter({required this.painterOptions});
 

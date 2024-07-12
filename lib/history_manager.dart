@@ -152,6 +152,11 @@ class HistoryManager
   int _curPos = -1;
   final Queue<HistoryState> _states = Queue();
 
+  String getCurrentDescription()
+  {
+    return _states.elementAt(_curPos).description;
+  }
+
   void addState({required final AppState appState, required final String description})
   {
     print("ADDING STATE: " + description);

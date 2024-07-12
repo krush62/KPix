@@ -166,6 +166,7 @@ enum PreferenceInt
 
   Layout_Canvas_LongPressDuration(defaultValue: 250),
   Layout_Canvas_Stylus_PollRate(defaultValue: 100),
+  Layout_Canvas_HistoryCheck_PollRate(defaultValue: 250),
   Layout_Canvas_SingleTouchDelay(defaultValue: 50),
   Layout_Canvas_IdleTimerRate(defaultValue: 15),
 
@@ -482,6 +483,7 @@ class PreferenceManager
         splitViewFlexRightDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault));
     canvasWidgetOptions = CanvasOptions(
         stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
+        historyCHeckPollRate: getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
         singleTouchDelay: getValueI(PreferenceInt.Layout_Canvas_SingleTouchDelay),
         longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
         longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),

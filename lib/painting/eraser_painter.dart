@@ -16,6 +16,8 @@ class EraserPainter extends IToolPainter
   final EraserOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  bool _isDown = false;
+  bool _hasErasedPixels = false;
 
   EraserPainter({required super.painterOptions});
 
@@ -32,6 +34,7 @@ class EraserPainter extends IToolPainter
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
+
 
       if (_cursorPosNorm != _previousCursorPosNorm)
       {
@@ -66,12 +69,26 @@ class EraserPainter extends IToolPainter
                   selection.selection.deleteDirectly(coord);
                 }
               }
+              _hasErasedPixels = true;
             }
           }
           drawParams.currentLayer.setDataAll(refs);
         }
         _previousCursorPosNorm.x = _cursorPosNorm.x;
         _previousCursorPosNorm.y = _cursorPosNorm.y;
+      }
+    }
+    if (drawParams.primaryDown && _isDown == false)
+    {
+      _isDown = true;
+    }
+    else if (!drawParams.primaryDown && _isDown == true)
+    {
+      _isDown = false;
+      if (_hasErasedPixels)
+      {
+        hasHistoryData = true;
+        _hasErasedPixels = false;
       }
     }
   }

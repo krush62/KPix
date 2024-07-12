@@ -122,6 +122,7 @@ class ShapePainter extends IToolPainter
       {
         layer.setDataAll(_drawingPixels);
       }
+      hasHistoryData = true;
     }
   }
 

@@ -105,6 +105,7 @@ class PencilPainter extends IToolPainter
         currentLayer.setDataAll(_drawingPixels);
       }
     }
+    hasHistoryData = true;
   }
 
   @override

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class MainButtonWidgetOptions
@@ -88,7 +91,22 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   //TODO
   void _loadFile()
   {
-    print("Load File");
+    //TODO TEMP TEST
+    FileHandler.loadFile(path:  "C:\\tmp\\test.txt", constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then(tempyLoad);
+    //_closeAllMenus();
+  }
+
+  //TODO TEMP TEST
+  void tempyLoad(final HistoryState? s)
+  {
+    if (s == null)
+    {
+      print("NULLY McNULL");
+    }
+    else
+    {
+      print("LOADED");
+    }
     _closeAllMenus();
   }
 
@@ -112,7 +130,22 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   //TODO
   void _saveFile()
   {
-    print("Save File");
+    //TODO TEMP TEST
+    FileHandler.saveFile(path: "C:\\tmp\\test.txt", appState: GetIt.I.get<AppState>()).then(tempySave);
+    //_closeAllMenus();
+  }
+
+  //TODO TEMP TEST
+  void tempySave(final File? s)
+  {
+    if (s == null)
+    {
+      print("NULLY McNULL");
+    }
+    else
+    {
+      print("SAVED");
+    }
     _closeAllMenus();
   }
 

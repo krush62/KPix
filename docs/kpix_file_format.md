@@ -32,7 +32,7 @@ An optional comment starting with ``//`` may be appended.
 The kpix file format consists of the following three consecutive sections:
 
 ### Header
-* magic_number ``byte (4)`` //``4B 50 49 58``
+* magic_number ``ubyte (4)`` //``4B 50 49 58``
 * file_format_version ``ubyte (1)`` // currently: ``01``
 
 ### Palette
@@ -43,7 +43,7 @@ The kpix file format consists of the following three consecutive sections:
   * base_sat ``ubyte (1)`` // 0...100
   * hue_shift ``byte (1)`` // -90...90
   * hue_shift_exp ``ubyte (1)`` // 50...200
-  * sat_shift ``ubyte (1)`` // -25...25
+  * sat_shift ``byte (1)`` // -25...25
   * sat_shift_exp ``ubyte (1)`` // 50...200
   * sat_curve ``ubyte (1)`` // ``00`` = noFlat, ``01`` = darkFlat, ``02`` = brightFlat, ``03`` = linear 
   * val_min ``ubyte (1)``
@@ -61,6 +61,9 @@ The kpix file format consists of the following three consecutive sections:
   * type ``ubyte (1)`` // currently only ``01`` is supported
   * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``01`` = transparency locked, ``02`` = locked
-  * Image_Data ``(columns*rows)`` // for type ``01``
-    * color_ramp_index ``ubyte (1)`` // color ramp index (``FF`` means transparent)
-    * color_index ``ubyte (1)`` // index in color ramp (ignored when color_ramp_index is ``FF``)
+  * data_count ``ubyte (1)`` //how many non-transparent pixels on layer
+  * Image_Data ``(data_count)`` // for type ``01``
+    * x ``ushort (1)`` // x position
+    * y ``ushort (1)`` // y position
+    * color_ramp_index ``ubyte (1)`` // color ramp index
+    * color_index ``ubyte (1)`` // index in color ramp

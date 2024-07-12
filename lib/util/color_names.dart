@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:kpix/helper.dart';
+import 'package:kpix/util/helper.dart';
 
 enum ColorNameScheme
 {

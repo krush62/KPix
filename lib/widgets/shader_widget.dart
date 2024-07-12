@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/preference_manager.dart';
-import 'package:kpix/shader_options.dart';
+import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/painting/shader_options.dart';
 
 class ShaderWidgetOptions {
   final double outSidePadding;

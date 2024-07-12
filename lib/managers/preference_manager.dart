@@ -1,10 +1,10 @@
 
 // ignore_for_file: constant_identifier_names
-import 'package:kpix/color_names.dart';
-import 'package:kpix/font_manager.dart';
+import 'package:kpix/util/color_names.dart';
+import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/stamp_manager.dart';
+import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -16,7 +16,7 @@ import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/shader_options.dart';
+import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -30,7 +30,7 @@ import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/widgets/shader_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'kpal/kpal_widget.dart';
+import '../kpal/kpal_widget.dart';
 
 enum PreferenceDouble
 {

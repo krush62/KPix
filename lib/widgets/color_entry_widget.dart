@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/preference_manager.dart';
-import 'package:kpix/typedefs.dart';
+import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class ColorEntryWidgetOptions {

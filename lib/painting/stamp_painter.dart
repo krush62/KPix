@@ -1,11 +1,11 @@
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/helper.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/preference_manager.dart';
-import 'package:kpix/stamp_manager.dart';
+import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 

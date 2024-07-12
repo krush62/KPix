@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/helper.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
@@ -17,7 +17,7 @@ import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
-import 'package:kpix/preference_manager.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class KPixPainterOptions

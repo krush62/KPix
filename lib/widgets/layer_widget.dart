@@ -130,16 +130,15 @@ class LayerState
   }
 
 
-  factory LayerState({required int width, required int height, final HashMap<CoordinateSetI, ColorReference?>? content})
+  factory LayerState({required CoordinateSetI size, final HashMap<CoordinateSetI, ColorReference?>? content})
   {
     HashMap<CoordinateSetI, ColorReference> data2 = HashMap();
-    final CoordinateSetI size = CoordinateSetI(x: width, y: height);
 
     if (content != null)
     {
       for (final MapEntry<CoordinateSetI, ColorReference?> entry in content.entries)
       {
-        if (entry.key.x > 0 && entry.key.y > 0 && entry.key.x < width && entry.key.y < height && entry.value != null)
+        if (entry.key.x > 0 && entry.key.y > 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
         {
           data2[entry.key] = entry.value!;
         }
@@ -360,19 +359,19 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _deletePressed()
   {
-    appState.layerDeleted(widget.layerState);
+    appState.layerDeleted(deleteLayer: widget.layerState);
     _closeSettingsMenu();
   }
 
   void _mergeDownPressed()
   {
-    appState.layerMerged(widget.layerState);
+    appState.layerMerged(mergeLayer: widget.layerState);
     _closeSettingsMenu();
   }
 
   void _duplicatePressed()
   {
-    appState.layerDuplicated(widget.layerState);
+    appState.layerDuplicated(duplicateLayer: widget.layerState);
     _closeSettingsMenu();
   }
 
@@ -544,7 +543,7 @@ class _LayerWidgetState extends State<LayerWidget>
                     Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            appState.layerSelected(widget.layerState);
+                            appState.layerSelected(newLayer: widget.layerState);
                           },
                           child: ValueListenableBuilder<ui.Image?>(
                             valueListenable: widget.layerState.thumbnail,

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/font_manager.dart';
+import 'package:kpix/history_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/stamp_manager.dart';
@@ -60,15 +61,20 @@ class _KPixAppState extends State<KPixApp> {
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
     GetIt.I.registerSingleton<AppState>(AppState());
     AppState appState = GetIt.I.get<AppState>();
+
+    //TODO TEMP
+    appState.setCanvasDimensions(width: 256, height: 160, addToHistoryStack: false);
+    appState.addNewRamp(addToHistoryStack: false);
+    appState.addNewLayer(select: true, addToHistoryStack: false);
+
+    GetIt.I.registerSingleton<HistoryManager>(HistoryManager());
+    GetIt.I.get<HistoryManager>().addState(appState: appState, description: "initial");
     if (context.mounted)
     {
       final BuildContext c = context;
       appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
     }
-    //TODO TEMP
-    appState.setCanvasDimensions(width: 256, height: 160);
-    appState.addNewRamp();
-    appState.addNewLayer(select: true);
+
     initialized.value = true;
   }
 

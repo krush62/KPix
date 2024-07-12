@@ -122,7 +122,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       int bestZoomLevel = AppState.zoomLevelMin;
       for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
       {
-        if (appState.canvasWidth * i < kPixPainter.latestSize.width && appState.canvasHeight * i < kPixPainter.latestSize.height)
+        if (appState.canvasSize.x * i < kPixPainter.latestSize.width && appState.canvasSize.y * i < kPixPainter.latestSize.height)
         {
           bestZoomLevel = i;
         }
@@ -132,7 +132,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
       appState.setZoomLevel(bestZoomLevel);
-      _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasWidth * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize.height - (appState.canvasHeight * appState.zoomFactor.value)) / 2));
+      _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasSize.x * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize.height - (appState.canvasSize.y * appState.zoomFactor.value)) / 2));
     });
   }
 
@@ -202,10 +202,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
     //deselect if outside is clicked
-    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasWidth * appState.zoomFactor.value) ||
-        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasHeight * appState.zoomFactor.value))
+    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasSize.x * appState.zoomFactor.value) ||
+        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasSize.y * appState.zoomFactor.value))
     {
-      appState.selectionState.deselect();
+      appState.selectionState.deselect(addToHistoryStack: true);
     }
 
     print("PRIMARY DOWN");
@@ -523,7 +523,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   void _setOffset(final Offset newOffset)
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasWidth.toDouble() * appState.zoomFactor.value, y: appState.canvasHeight.toDouble() * appState.zoomFactor.value);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasSize.x.toDouble() * appState.zoomFactor.value, y: appState.canvasSize.y.toDouble() * appState.zoomFactor.value);
     final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * options.minVisibilityFactor, y: kPixPainter.latestSize.height * options.minVisibilityFactor);
 
     coords.x = max(coords.x, -scaledCanvas.x + minVisibility.x);

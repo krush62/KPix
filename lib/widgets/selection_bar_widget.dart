@@ -65,7 +65,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   padding: EdgeInsets.all(options.padding),
                   child: IconButton.outlined(
                       tooltip: "Deselect",
-                      onPressed: selectionState.selection.isEmpty() ? null : selectionState.deselect,
+                      onPressed: selectionState.selection.isEmpty() ? null : (){return selectionState.deselect(addToHistoryStack: true);},
                       icon: FaIcon(
                           FontAwesomeIcons.objectUngroup,
                           size: options.iconHeight

@@ -91,7 +91,7 @@ class ColorRampRowWidget extends StatefulWidget {
           size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
         ),
         onPressed: () {
-          createKPal(rampData!);
+          createKPal(ramp: rampData!);
         },
       ));
     } else {
@@ -119,7 +119,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
   bool kPalVisible = false;
   late OverlayEntry kPal;
 
-  void _createKPal(final KPalRampData ramp)
+  void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     if (kPalVisible)
     {
@@ -138,16 +138,16 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
     }
   }
 
-  void _colorRampUpdate(final KPalRampData ramp, final KPalRampData originalData)
+  void _colorRampUpdate({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
   {
     _closeKPal();
-    widget.colorsUpdatedFn!(ramp, originalData);
+    widget.colorsUpdatedFn!(ramp: ramp, originalData: originalData, addToHistoryStack: addToHistoryStack);
   }
 
-  void _colorRampDelete(final KPalRampData ramp)
+  void _colorRampDelete({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     _closeKPal();
-    widget.deleteRowFn!(ramp);
+    widget.deleteRowFn!(ramp: ramp, addToHistoryStack: addToHistoryStack);
   }
 
   void _closeKPal()

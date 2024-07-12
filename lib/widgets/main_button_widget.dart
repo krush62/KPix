@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/history_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -30,27 +32,29 @@ class MainButtonWidget extends StatefulWidget
 
 class _MainButtonWidgetState extends State<MainButtonWidget>
 {
-  late OverlayEntry loadMenu;
-  late OverlayEntry saveMenu;
-  final LayerLink loadMenulayerLink = LayerLink();
-  final LayerLink saveMenulayerLink = LayerLink();
-  bool loadMenuVisible = false;
-  bool saveMenuVisible = false;
-  MainButtonWidgetOptions options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
+  final AppState _appState = GetIt.I.get<AppState>();
+  final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
+  late OverlayEntry _loadMenu;
+  late OverlayEntry _saveMenu;
+  final LayerLink _loadMenulayerLink = LayerLink();
+  final LayerLink _saveMenulayerLink = LayerLink();
+  bool _loadMenuVisible = false;
+  bool _saveMenuVisible = false;
+  final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
   void initState()
   {
     super.initState();
-    loadMenu = OverlayEntries.getLoadMenu(
+    _loadMenu = OverlayEntries.getLoadMenu(
       onDismiss: _closeAllMenus,
-      layerLink: loadMenulayerLink,
+      layerLink: _loadMenulayerLink,
       onLoadFile: _loadFile,
       onLoadPalette: _loadPalette,
     );
-    saveMenu = OverlayEntries.getSaveMenu(
+    _saveMenu = OverlayEntries.getSaveMenu(
       onDismiss: _closeAllMenus,
-      layerLink: saveMenulayerLink,
+      layerLink: _saveMenulayerLink,
       onSaveFile: _saveFile,
       onSavePalette: _savePalette,
     );
@@ -59,25 +63,25 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _closeAllMenus()
   {
-    if (loadMenuVisible)
+    if (_loadMenuVisible)
     {
-      loadMenu.remove();
-      loadMenuVisible = false;
+      _loadMenu.remove();
+      _loadMenuVisible = false;
     }
 
-    if (saveMenuVisible)
+    if (_saveMenuVisible)
     {
-      saveMenu.remove();
-      saveMenuVisible = false;
+      _saveMenu.remove();
+      _saveMenuVisible = false;
     }
   }
 
   void _loadPressed()
   {
-    if (!loadMenuVisible)
+    if (!_loadMenuVisible)
     {
-      Overlay.of(context).insert(loadMenu);
-      loadMenuVisible = true;
+      Overlay.of(context).insert(_loadMenu);
+      _loadMenuVisible = true;
     }
   }
 
@@ -98,10 +102,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   //TODO
   void _savePressed()
   {
-    if (!saveMenuVisible)
+    if (!_saveMenuVisible)
     {
-      Overlay.of(context).insert(saveMenu);
-      saveMenuVisible = true;
+      Overlay.of(context).insert(_saveMenu);
+      _saveMenuVisible = true;
     }
   }
 
@@ -128,20 +132,20 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   //TODO
   void _undoPressed()
   {
-
+    _appState.undoPressed();
   }
 
   //TODO
   void _redoPressed()
   {
-
+    _appState.redoPressed();
   }
 
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.all(options.padding),
+        padding: EdgeInsets.all(_options.padding),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
         ),
@@ -157,14 +161,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(right: options.padding / 2.0),
+                      padding: EdgeInsets.only(right: _options.padding / 2.0),
                       child: CompositedTransformTarget(
-                        link: loadMenulayerLink,
+                        link: _loadMenulayerLink,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
                             FontAwesomeIcons.folderOpen,
-                            size: options.menuIconSize,
+                            size: _options.menuIconSize,
                           ),
                           onPressed: _loadPressed,
                         ),
@@ -174,14 +178,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(left: options.padding / 2.0, right: options.padding / 2.0),
+                      padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
                       child: CompositedTransformTarget(
-                        link: saveMenulayerLink,
+                        link: _saveMenulayerLink,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
                             FontAwesomeIcons.floppyDisk,
-                            size: options.menuIconSize,
+                            size: _options.menuIconSize,
                           ),
                           onPressed: _savePressed,
                         ),
@@ -191,12 +195,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(left: options.padding / 2.0),
+                      padding: EdgeInsets.only(left: _options.padding / 2.0),
                       child: IconButton.outlined(
                         color: Theme.of(context).primaryColorLight,
                         icon:  FaIcon(
                           FontAwesomeIcons.gear,
-                          size: options.menuIconSize,
+                          size: _options.menuIconSize,
                         ),
                         onPressed: _settingsPressed,
                       ),
@@ -205,11 +209,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               ],
             ),
             Padding(
-              padding: EdgeInsets.only(top: options.padding, bottom: options.padding),
+              padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
               child: Divider(
                 color: Theme.of(context).primaryColorDark,
-                height: options.dividerSize,
-                thickness: options.dividerSize,
+                height: _options.dividerSize,
+                thickness: _options.dividerSize,
               ),
             ),
             Row(
@@ -219,28 +223,39 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(right: options.padding / 2.0),
-                      child: IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.rotateLeft,
-                          size: options.menuIconSize,
-                        ),
-                        onPressed: _undoPressed,
+                      padding: EdgeInsets.only(right: _options.padding / 2.0),
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _historyManager.hasUndo,
+                        builder: (final BuildContext context, final bool hasUndo, child) {
+                          return IconButton.outlined(
+                            color: Theme.of(context).primaryColorLight,
+                            icon:  FaIcon(
+                              FontAwesomeIcons.rotateLeft,
+                              size: _options.menuIconSize,
+                            ),
+                            onPressed: hasUndo ? _undoPressed : null,
+                          );
+                        },
                       ),
                     )
                 ),
                 Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.only(left: options.padding / 2.0),
-                      child: IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.rotateRight,
-                          size: options.menuIconSize,
-                        ),
-                        onPressed: _redoPressed,
+                      padding: EdgeInsets.only(left: _options.padding / 2.0),
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _historyManager.hasRedo,
+                        builder: (final BuildContext context, final bool hasRedo, child) {
+                          return IconButton.outlined(
+                            color: Theme.of(context).primaryColorLight,
+                            icon:  FaIcon(
+                              FontAwesomeIcons.rotateRight,
+                              size: _options.menuIconSize,
+                            ),
+                            onPressed: hasRedo ? _redoPressed : null,
+                          );
+                        },
+
                       ),
                     )
                 ),

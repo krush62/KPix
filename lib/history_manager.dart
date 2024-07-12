@@ -1,6 +1,7 @@
 
 import 'dart:collection';
 
+import 'package:flutter/cupertino.dart';
 import 'package:kpix/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
@@ -38,12 +39,29 @@ class HistoryLayer
     final HashMap<CoordinateSetI, ColorReference> lData = layerState.getData();
     for (final MapEntry<CoordinateSetI, ColorReference> entry in lData.entries)
     {
-      final int? rampIndex = getRampIndex(uuid: entry.value.ramp.uuid, ramps: ramps);
+      final int? rampIndex = _getRampIndex(uuid: entry.value.ramp.uuid, ramps: ramps);
       if (rampIndex != null)
       {
         dt[CoordinateSetI.from(entry.key)] = HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
       }
     }
+    final Set<(CoordinateSetI, ColorReference?)> rasterSet = layerState.rasterQueue.toSet();
+    for (final (CoordinateSetI, ColorReference?) entry in rasterSet)
+    {
+      if (entry.$2 != null)
+      {
+        final int? rampIndex = _getRampIndex(uuid: entry.$2!.ramp.uuid, ramps: ramps);
+        if (rampIndex != null)
+        {
+          dt[CoordinateSetI.from(entry.$1)] = HistoryColorReference(colorIndex: entry.$2!.colorIndex, rampIndex: rampIndex);
+        }
+      }
+      else
+      {
+        dt.remove(entry.$1);
+      }
+    }
+
     return HistoryLayer._(visibilityState: visState, lockState: lState, size: sz, data: dt);
   }
 }
@@ -51,10 +69,11 @@ class HistoryLayer
 class HistorySelectionState
 {
   final HashMap<CoordinateSetI, HistoryColorReference?> content;
+  final HistoryLayer? currentLayer;
 
-  HistorySelectionState._({required this.content});
+  HistorySelectionState._({required this.content, required this.currentLayer});
 
-  factory HistorySelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps})
+  factory HistorySelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, required HistoryLayer? historyLayer})
   {
     final HashMap<CoordinateSetI, ColorReference?> otherCnt = sState.selection.getSelectedPixels();
     HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap();
@@ -62,7 +81,7 @@ class HistorySelectionState
     {
       if (entry.value != null)
       {
-        final int? rampIndex = getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
+        final int? rampIndex = _getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
         if (rampIndex != null)
         {
           cnt[CoordinateSetI.from(entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
@@ -73,13 +92,14 @@ class HistorySelectionState
         cnt[CoordinateSetI.from(entry.key)] = null;
       }
     }
-    return HistorySelectionState._(content: cnt);
+    return HistorySelectionState._(content: cnt, currentLayer: historyLayer);
   }
 
 }
 
 class HistoryState
 {
+  final String description;
   final List<HistoryRampData> rampList;
   final HistoryColorReference selectedColor;
   final List<HistoryLayer> layerList;
@@ -87,42 +107,112 @@ class HistoryState
   final CoordinateSetI canvasSize;
   final HistorySelectionState selectionState;
 
-  HistoryState._({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex});
+  HistoryState._({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex, required this.description});
 
-  factory HistoryState({required final AppState appState})
+  factory HistoryState({required final AppState appState, required String description})
   {
     List<HistoryRampData> rampList = [];
     for (final KPalRampData rampData in appState.colorRamps.value)
     {
       rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid));
     }
-    final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor.value!.ramp.uuid, ramps: rampList);
+    final int? selectedColorRampIndex = _getRampIndex(uuid: appState.selectedColor.value!.ramp.uuid, ramps: rampList);
     final HistoryColorReference selectedColor = HistoryColorReference(colorIndex: appState.selectedColor.value!.colorIndex, rampIndex: selectedColorRampIndex!);
     final List<HistoryLayer> layerList = [];
     int selectedLayerIndex = 0;
+    HistoryLayer? selectLayer;
     for (int i = 0; i < appState.layers.value.length; i++)
     {
       final LayerState layerState = appState.layers.value[i];
-      layerList.add(HistoryLayer(layerState: layerState, ramps: rampList));
+      final HistoryLayer hLayer = HistoryLayer(layerState: layerState, ramps: rampList);
+      layerList.add(hLayer);
       if (layerState.isSelected.value)
       {
         selectedLayerIndex = i;
       }
+      if (layerState == appState.selectionState.selection.currentLayer)
+      {
+        selectLayer = hLayer;
+      }
     }
 
-    final CoordinateSetI canvasSize = CoordinateSetI(x: appState.canvasWidth, y: appState.canvasHeight);
-    final HistorySelectionState selectionState = HistorySelectionState(sState: appState.selectionState, ramps: rampList);
+    final CoordinateSetI canvasSize = CoordinateSetI.from(appState.canvasSize);
+    final HistorySelectionState selectionState = HistorySelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectLayer);
 
-    return HistoryState._(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex);
+    return HistoryState._(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex, description: description);
   }
 }
 
 class HistoryManager
 {
+  final ValueNotifier<bool> hasUndo = ValueNotifier(false);
+  final ValueNotifier<bool> hasRedo = ValueNotifier(false);
+  //TODO magic number (-> config)
+  final int _maxEntries = 10;
+  int _curPos = -1;
   final Queue<HistoryState> _states = Queue();
+
+  void addState({required final AppState appState, required final String description})
+  {
+    print("ADDING STATE: " + description);
+    if (_curPos >= 0 && _curPos < _states.length - 1)
+    {
+      for (int i = 0; i < (_states.length - _curPos); i++)
+      {
+        _states.removeLast();
+      }
+      _curPos = _states.length - 1;
+    }
+
+    _states.add(HistoryState(appState: appState, description: description));
+    _curPos++;
+    final int entriesLeft = (_maxEntries - _states.length);
+
+    if (entriesLeft < 0)
+    {
+      for (int i = 0; i < -entriesLeft; i++)
+      {
+        _states.removeFirst();
+        _curPos--;
+      }
+    }
+    _updateNotifiers();
+  }
+
+
+  HistoryState? undo()
+  {
+    HistoryState? hState;
+    if (_curPos > 0)
+    {
+      _curPos--;
+       hState = _states.elementAt(_curPos);
+       _updateNotifiers();
+    }
+    return hState;
+  }
+
+
+  HistoryState? redo()
+  {
+    HistoryState? hState;
+    if (_curPos < _states.length - 1)
+    {
+      _curPos++;
+      hState = _states.elementAt(_curPos);
+      _updateNotifiers();
+    }
+    return hState;
+  }
+
+  void _updateNotifiers()
+  {
+    hasUndo.value = (_curPos > 0);
+    hasRedo.value = (_curPos < _states.length - 1);
+  }
 }
 
-int? getRampIndex({required String uuid, required final List<HistoryRampData> ramps})
+int? _getRampIndex({required String uuid, required final List<HistoryRampData> ramps})
 {
   int? rampIndex;
   for (int i = 0; i < ramps.length; i++)

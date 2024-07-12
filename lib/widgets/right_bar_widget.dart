@@ -43,7 +43,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
           );
         },
         onAcceptWithDetails: (details) {
-          appState.changeLayerOrder(details.data, i);
+          appState.changeLayerOrder(state: details.data, newPosition: i);
         },
       ));
 
@@ -60,7 +60,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
         );
       },
       onAcceptWithDetails: (details) {
-        appState.changeLayerOrder(details.data, layers.length);
+        appState.changeLayerOrder(state: details.data, newPosition: layers.length);
       },
     ));
   }

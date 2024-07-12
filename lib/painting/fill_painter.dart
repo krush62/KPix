@@ -101,8 +101,8 @@ class FillPainter extends IToolPainter
     required final bool shadeCurrentRampOnly,
     required final bool fillWholeRamp})
   {
-    final int numRows = appState.canvasHeight;
-    final int numCols = appState.canvasWidth;
+    final int numRows = appState.canvasSize.y;
+    final int numCols = appState.canvasSize.x;
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
     final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(start)) ? appState.selectionState.selection.getColorReference(start) : layer.getDataEntry(start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
@@ -208,9 +208,9 @@ class FillPainter extends IToolPainter
     {
       final ColorReference? startValue = layer.getDataEntry(start);
       final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
-      for (int x = 0; x < appState.canvasWidth; x++)
+      for (int x = 0; x < appState.canvasSize.x; x++)
       {
-        for (int y = 0; y < appState.canvasHeight; y++)
+        for (int y = 0; y < appState.canvasSize.y; y++)
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
           final ColorReference? refAtPos = layer.getDataEntry(curCoord);

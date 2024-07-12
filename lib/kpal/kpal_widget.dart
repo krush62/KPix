@@ -214,7 +214,7 @@ class _KPalState extends State<KPal>
   void _acceptDeletion()
   {
     _dismissAlertDialog();
-    widget.delete(widget.colorRamp);
+    widget.delete(ramp: widget.colorRamp);
   }
 
   void _dismissAlertDialog()
@@ -302,7 +302,7 @@ class _KPalState extends State<KPal>
                               size: _options.iconSize,
                             ),
                             onPressed: () {
-                              widget.accept(widget.colorRamp, _originalData);
+                              widget.accept(ramp: widget.colorRamp, originalData: _originalData);
                             },
                           ),
                         )

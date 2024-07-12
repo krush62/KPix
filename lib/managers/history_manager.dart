@@ -29,8 +29,8 @@ class HistoryLayer
   final LayerLockState lockState;
   final CoordinateSetI size;
   final HashMap<CoordinateSetI, HistoryColorReference> data;
-  HistoryLayer._({required this.visibilityState, required this.lockState, required this.size, required this.data});
-  factory HistoryLayer({required final LayerState layerState, required final List<HistoryRampData> ramps })
+  HistoryLayer({required this.visibilityState, required this.lockState, required this.size, required this.data});
+  factory HistoryLayer.fromLayerState({required final LayerState layerState, required final List<HistoryRampData> ramps })
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
@@ -62,7 +62,7 @@ class HistoryLayer
       }
     }
 
-    return HistoryLayer._(visibilityState: visState, lockState: lState, size: sz, data: dt);
+    return HistoryLayer(visibilityState: visState, lockState: lState, size: sz, data: dt);
   }
 }
 
@@ -71,9 +71,9 @@ class HistorySelectionState
   final HashMap<CoordinateSetI, HistoryColorReference?> content;
   final HistoryLayer? currentLayer;
 
-  HistorySelectionState._({required this.content, required this.currentLayer});
+  HistorySelectionState({required this.content, required this.currentLayer});
 
-  factory HistorySelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, required HistoryLayer? historyLayer})
+  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, required HistoryLayer? historyLayer})
   {
     final HashMap<CoordinateSetI, ColorReference?> otherCnt = sState.selection.getSelectedPixels();
     HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap();
@@ -92,7 +92,7 @@ class HistorySelectionState
         cnt[CoordinateSetI.from(entry.key)] = null;
       }
     }
-    return HistorySelectionState._(content: cnt, currentLayer: historyLayer);
+    return HistorySelectionState(content: cnt, currentLayer: historyLayer);
   }
 
 }
@@ -107,9 +107,9 @@ class HistoryState
   final CoordinateSetI canvasSize;
   final HistorySelectionState selectionState;
 
-  HistoryState._({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex, required this.description});
+  HistoryState({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex, required this.description});
 
-  factory HistoryState({required final AppState appState, required String description})
+  factory HistoryState.fromAppState({required final AppState appState, required String description})
   {
     List<HistoryRampData> rampList = [];
     for (final KPalRampData rampData in appState.colorRamps.value)
@@ -124,7 +124,7 @@ class HistoryState
     for (int i = 0; i < appState.layers.value.length; i++)
     {
       final LayerState layerState = appState.layers.value[i];
-      final HistoryLayer hLayer = HistoryLayer(layerState: layerState, ramps: rampList);
+      final HistoryLayer hLayer = HistoryLayer.fromLayerState(layerState: layerState, ramps: rampList);
       layerList.add(hLayer);
       if (layerState.isSelected.value)
       {
@@ -137,9 +137,9 @@ class HistoryState
     }
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(appState.canvasSize);
-    final HistorySelectionState selectionState = HistorySelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectLayer);
+    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectLayer);
 
-    return HistoryState._(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex, description: description);
+    return HistoryState(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex, description: description);
   }
 }
 
@@ -169,7 +169,7 @@ class HistoryManager
       _curPos = _states.length - 1;
     }
 
-    _states.add(HistoryState(appState: appState, description: description));
+    _states.add(HistoryState.fromAppState(appState: appState, description: description));
     _curPos++;
     final int entriesLeft = (_maxEntries - _states.length);
 

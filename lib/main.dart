@@ -16,6 +16,7 @@ import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/canvas_widget.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 
@@ -59,7 +60,8 @@ class _KPixAppState extends State<KPixApp> {
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
-    GetIt.I.registerSingleton<AppState>(AppState());
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    GetIt.I.registerSingleton<AppState>(AppState(appDir: appDir.path));
     AppState appState = GetIt.I.get<AppState>();
 
     //TODO TEMP
@@ -145,10 +147,15 @@ class MainWidget extends StatelessWidget {
                     WindowTitleBarBox(child: MoveWindow()),
                     Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: Text(
-                        "KPix",
-                        style: Theme.of(context).textTheme.bodyLarge,
-                        textAlign: TextAlign.center,
+                      child: ValueListenableBuilder<String?>(
+                        valueListenable: GetIt.I.get<AppState>().filePath,
+                        builder: (final BuildContext context, final String? _, final Widget? __) {
+                          return Text(
+                            GetIt.I.get<AppState>().getTitle(),
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            textAlign: TextAlign.center,
+                          );
+                        },
                       ),
                     )
                   ])),

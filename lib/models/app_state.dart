@@ -1,8 +1,11 @@
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
@@ -41,8 +44,11 @@ class AppState
   final CoordinateSetI canvasSize = CoordinateSetI(x: 1, y: 1);
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
   final StatusBarState statusBarState = StatusBarState();
+  final String appDir;
+  final ValueNotifier<String?> filePath = ValueNotifier(null);
+  bool hasChanges = true;
 
-  AppState()
+  AppState({required this.appDir})
   {
 
     for (ToolType toolType in toolList.keys)
@@ -54,7 +60,11 @@ class AppState
     currentLayer.addListener(() {
       selectionState.selection.setCurrentLayer(currentLayer.value);
     });
+  }
 
+  String getTitle()
+  {
+    return "KPix ${filePath.value != null ? getFileName() : ""}${hasChanges ? "*" : ""}";
   }
 
   void setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
@@ -231,6 +241,34 @@ class AppState
       _restoreState(historyState: GetIt.I.get<HistoryManager>().redo());
       showMessage("Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
     }
+  }
+
+  void restoreFromFile({required final LoadFileSet loadFileSet})
+  {
+    if (loadFileSet.historyState != null && loadFileSet.path != null)
+    {
+      _restoreState(historyState: loadFileSet.historyState);
+      filePath.value = loadFileSet.path;
+    }
+    else
+    {
+      showMessage("Loading failed (${loadFileSet.status})");
+    }
+  }
+
+  String getFileName()
+  {
+    String fileName = "";
+    if (filePath.value != null)
+    {
+      fileName = File(filePath.value!).uri.pathSegments.last;
+    }
+    return fileName;
+  }
+
+  void fileSaved({required String path})
+  {
+    filePath.value = path;
   }
 
   void _restoreState({required final HistoryState? historyState})

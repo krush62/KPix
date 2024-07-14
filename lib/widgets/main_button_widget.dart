@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -88,25 +89,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  //TODO
   void _loadFile()
   {
-    //TODO TEMP TEST
-    FileHandler.loadFile(path:  "C:\\tmp\\test.txt", constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then(tempyLoad);
-    //_closeAllMenus();
-  }
-
-  //TODO TEMP TEST
-  void tempyLoad(final HistoryState? s)
-  {
-    if (s == null)
-    {
-      print("NULLY McNULL");
-    }
-    else
-    {
-      print("LOADED");
-    }
+    FileHandler.loadFilePressed();
     _closeAllMenus();
   }
 
@@ -127,27 +112,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  //TODO
   void _saveFile()
   {
-    //TODO TEMP TEST
-    FileHandler.saveFile(path: "C:\\tmp\\test.txt", appState: GetIt.I.get<AppState>()).then(tempySave);
-    //_closeAllMenus();
-  }
-
-  //TODO TEMP TEST
-  void tempySave(final File? s)
-  {
-    if (s == null)
-    {
-      print("NULLY McNULL");
-    }
-    else
-    {
-      print("SAVED");
-    }
+    FileHandler.saveFilePressed();
     _closeAllMenus();
   }
+
 
   //TODO
   void _savePalette()

@@ -61,7 +61,7 @@ The kpix file format consists of the following three consecutive sections:
   * type ``ubyte (1)`` // currently only ``01`` is supported
   * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``01`` = transparency locked, ``02`` = locked
-  * data_count ``ubyte (1)`` //how many non-transparent pixels on layer
+  * data_count ``uint (1)`` //how many non-transparent pixels on layer
   * Image_Data ``(data_count)`` // for type ``01``
     * x ``ushort (1)`` // x position
     * y ``ushort (1)`` // y position

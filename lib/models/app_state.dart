@@ -46,7 +46,8 @@ class AppState
   final StatusBarState statusBarState = StatusBarState();
   final String appDir;
   final ValueNotifier<String?> filePath = ValueNotifier(null);
-  bool hasChanges = true;
+  final ValueNotifier<bool> hasChanges = ValueNotifier(false);
+
 
   AppState({required this.appDir})
   {
@@ -64,7 +65,7 @@ class AppState
 
   String getTitle()
   {
-    return "KPix ${filePath.value != null ? getFileName() : ""}${hasChanges ? "*" : ""}";
+    return "KPix ${filePath.value != null ? getFileName() : ""}${hasChanges.value ? "*" : ""}";
   }
 
   void setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
@@ -249,6 +250,7 @@ class AppState
     {
       _restoreState(historyState: loadFileSet.historyState);
       filePath.value = loadFileSet.path;
+      hasChanges.value = false;
     }
     else
     {
@@ -269,6 +271,8 @@ class AppState
   void fileSaved({required String path})
   {
     filePath.value = path;
+    hasChanges.value = false;
+
   }
 
   void _restoreState({required final HistoryState? historyState})

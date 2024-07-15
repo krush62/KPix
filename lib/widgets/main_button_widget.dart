@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -40,10 +37,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
   late OverlayEntry _loadMenu;
   late OverlayEntry _saveMenu;
+  late OverlayEntry _saveWarningDialog;
   final LayerLink _loadMenulayerLink = LayerLink();
   final LayerLink _saveMenulayerLink = LayerLink();
   bool _loadMenuVisible = false;
   bool _saveMenuVisible = false;
+  bool _saveWarningVisible = false;
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
@@ -62,6 +61,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSaveFile: _saveFile,
       onSavePalette: _savePalette,
     );
+    _saveWarningDialog = OverlayEntries.getThreeButtonDialog(
+        onYes: _saveWarningYes,
+        onNo: _saveWarningNo,
+        onCancel: _closeAllMenus,
+        message: "There are unsaved changes, do you want to save first?");
   }
 
 
@@ -78,6 +82,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       _saveMenu.remove();
       _saveMenuVisible = false;
     }
+
+    if (_saveWarningVisible)
+    {
+      _saveWarningDialog.remove();
+      _saveWarningVisible = false;
+    }
+
   }
 
   void _loadPressed()
@@ -91,9 +102,39 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _loadFile()
   {
+    if (_appState.hasChanges.value)
+    {
+      if (!_saveWarningVisible)
+      {
+        Overlay.of(context).insert(_saveWarningDialog);
+        _saveWarningVisible = true;
+      }
+    }
+    else
+    {
+      FileHandler.loadFilePressed();
+      _closeAllMenus();
+    }
+  }
+
+  void _saveWarningYes()
+  {
+    FileHandler.saveFilePressed(finishCallback: _saveBeforeLoadFinished);
+
+  }
+
+  void _saveWarningNo()
+  {
     FileHandler.loadFilePressed();
     _closeAllMenus();
   }
+
+  void _saveBeforeLoadFinished()
+  {
+    FileHandler.loadFilePressed();
+    _closeAllMenus();
+  }
+
 
   //TODO
   void _loadPalette()
@@ -102,7 +143,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _closeAllMenus();
   }
 
-  //TODO
+
   void _savePressed()
   {
     if (!_saveMenuVisible)

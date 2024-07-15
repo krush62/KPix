@@ -157,7 +157,7 @@ class HistoryManager
     return _states.elementAt(_curPos).description;
   }
 
-  void addState({required final AppState appState, required final String description})
+  void addState({required final AppState appState, required final String description, final setHasChanges = true})
   {
     print("ADDING STATE: " + description);
     if (_curPos >= 0 && _curPos < _states.length - 1)
@@ -182,6 +182,7 @@ class HistoryManager
       }
     }
     _updateNotifiers();
+    appState.hasChanges.value = setHasChanges;
   }
 
 

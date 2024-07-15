@@ -11,6 +11,7 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -22,7 +23,9 @@ import 'package:get_it/get_it.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const KPixApp());
+  runApp(
+      const KPixApp()
+  );
 
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     doWhenWindowReady(() {
@@ -39,21 +42,24 @@ void main() {
   }
 }
 
-class KPixApp extends StatefulWidget {
+class KPixApp extends StatefulWidget
+{
   const KPixApp({super.key});
 
   @override
   State<KPixApp> createState() => _KPixAppState();
 }
 
-class _KPixAppState extends State<KPixApp> {
-  ValueNotifier<bool> initialized = ValueNotifier(false);
+class _KPixAppState extends State<KPixApp>
+{
+  final ValueNotifier<bool> initialized = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
     _initPrefs();
   }
+
 
   Future<void> _initPrefs() async {
     final sPrefs = await SharedPreferences.getInstance();
@@ -70,15 +76,51 @@ class _KPixAppState extends State<KPixApp> {
     appState.addNewLayer(select: true, addToHistoryStack: false);
 
     GetIt.I.registerSingleton<HistoryManager>(HistoryManager());
-    GetIt.I.get<HistoryManager>().addState(appState: appState, description: "initial");
+    GetIt.I.get<HistoryManager>().addState(appState: appState, description: "initial", setHasChanges: false);
     if (context.mounted)
     {
       final BuildContext c = context;
       appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
     }
 
+
+
+
     initialized.value = true;
   }
+
+  void _closePressed()
+  {
+    if (GetIt.I.get<AppState>().hasChanges.value)
+    {
+      OverlayEntry oEntry = OverlayEntries.getThreeButtonDialog(
+          onYes: _closeWarningYes,
+          onNo: _closeWarningNo,
+          onCancel: _closeAllMenus,
+          message: "There are unsaved changes, do you want to save first?");
+      Overlay.of(context).insert(oEntry);
+    }
+    else
+    {
+      exit(0);
+    }
+  }
+
+  void _closeWarningYes()
+  {
+
+  }
+
+  void _closeWarningNo()
+  {
+
+  }
+
+  void _closeAllMenus()
+  {
+
+  }
+
 
   @override
   Widget build(BuildContext context)
@@ -90,7 +132,7 @@ class _KPixAppState extends State<KPixApp> {
         if (init)
         {
           return MaterialApp(
-            home: const ToastProvider(child: MainWidget()),
+            home:  ToastProvider(child: MainWidget(closePressed: _closePressed,)),
             theme: KPixTheme.monochromeTheme,
             darkTheme: KPixTheme.monochromeThemeDark,
           );
@@ -123,8 +165,11 @@ class _KPixAppState extends State<KPixApp> {
   }
 }
 
-class MainWidget extends StatelessWidget {
-  const MainWidget({super.key});
+class MainWidget extends StatelessWidget
+{
+  const MainWidget({super.key, required this.closePressed});
+  final Function()? closePressed;
+
 
   @override
   Widget build(BuildContext context) {
@@ -145,15 +190,21 @@ class MainWidget extends StatelessWidget {
                   Expanded(
                       child: Stack(alignment: Alignment.centerLeft, children: [
                     WindowTitleBarBox(child: MoveWindow()),
+
                     Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: ValueListenableBuilder<String?>(
-                        valueListenable: GetIt.I.get<AppState>().filePath,
-                        builder: (final BuildContext context, final String? _, final Widget? __) {
-                          return Text(
-                            GetIt.I.get<AppState>().getTitle(),
-                            style: Theme.of(context).textTheme.bodyLarge,
-                            textAlign: TextAlign.center,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: GetIt.I.get<AppState>().hasChanges,
+                        builder: (final BuildContext context, final bool __, Widget? ___) {
+                          return ValueListenableBuilder<String?>(
+                            valueListenable: GetIt.I.get<AppState>().filePath,
+                            builder: (final BuildContext _, final String? ____, final Widget? _____) {
+                              return Text(
+                                GetIt.I.get<AppState>().getTitle(),
+                                style: Theme.of(context).textTheme.bodyLarge,
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           );
                         },
                       ),
@@ -163,7 +214,7 @@ class MainWidget extends StatelessWidget {
                     children: [
                       MinimizeWindowButton(colors: windowButtonColors),
                       MaximizeWindowButton(colors: windowButtonColors),
-                      CloseWindowButton(colors: windowButtonColors),
+                      CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
                     ],
                   )
                 ])

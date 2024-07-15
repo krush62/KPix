@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
@@ -127,7 +128,6 @@ class FileHandler
       final int dataLength = saveData.layerList[i].data.length;
       byteData.setUint32(offset, dataLength);
       offset+=4;
-      //print("WRITING DATA FOR LAYER $i: $dataLength pixels");
       //image data
       for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in saveData.layerList[i].data.entries)
       {
@@ -321,14 +321,23 @@ class FileHandler
 
   static void loadFilePressed()
   {
-
-    //TODO this only works on windows (and macos/linux?) for android/ios us FileType.all and filter by yourself
-    FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        type: FileType.custom,
-        allowedExtensions: [FileHandler.fileExtension],
-        initialDirectory: GetIt.I.get<AppState>().appDir
-    ).then(_loadFileChosen);
+    if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+    {
+      FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
+          allowedExtensions: [FileHandler.fileExtension],
+          initialDirectory: GetIt.I.get<AppState>().appDir
+      ).then(_loadFileChosen);
+    }
+    else //mobile
+    {
+      FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().appDir
+      ).then(_loadFileChosen);
+    }
   }
 
   static void _loadFileChosen(final FilePickerResult? result)
@@ -344,9 +353,9 @@ class FileHandler
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
   }
 
-  static void saveFilePressed()
+  static void saveFilePressed({final Function()? finishCallback})
   {
-    //hack
+    //hack (FilePicker needs bytes on mobile)
     final Uint8List byteList = Uint8List(1);
     if (GetIt.I.get<AppState>().filePath.value == null)
     {
@@ -359,27 +368,29 @@ class FileHandler
               .get<AppState>()
               .appDir,
         bytes: byteList
-      ).then(_saveFileChosen);
+      ).then((final String? path){_saveFileChosen(path, finishCallback);});
     }
     else
     {
-      _saveFileChosen(GetIt.I.get<AppState>().filePath.value);
+      _saveFileChosen(GetIt.I.get<AppState>().filePath.value, finishCallback);
     }
   }
 
-  static void _saveFileChosen(final String? path)
+  static void _saveFileChosen(final String? path, final Function()? finishCallback)
   {
-    print("save file chosen pre");
     if (path != null)
     {
-      print("save file chosen: $path");
       final String finalPath = !path.endsWith(".${FileHandler.fileExtension}") ? ("$path.${FileHandler.fileExtension}") : path;
-      FileHandler.saveFile(path: finalPath, appState: GetIt.I.get<AppState>()).then(_fileSaved);
+      FileHandler.saveFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final File file){_fileSaved(file, finishCallback);});
     }
   }
 
-  static void _fileSaved(final File file)
+  static void _fileSaved(final File file, final Function()? finishCallback)
   {
     GetIt.I.get<AppState>().fileSaved(path: file.path);
+    if (finishCallback != null)
+    {
+      finishCallback();
+    }
   }
 }

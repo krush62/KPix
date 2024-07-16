@@ -38,8 +38,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late OverlayEntry _loadMenu;
   late OverlayEntry _saveMenu;
   late OverlayEntry _saveWarningDialog;
-  final LayerLink _loadMenulayerLink = LayerLink();
-  final LayerLink _saveMenulayerLink = LayerLink();
+  final LayerLink _loadMenuLayerLink = LayerLink();
+  final LayerLink _saveMenuLayerLink = LayerLink();
   bool _loadMenuVisible = false;
   bool _saveMenuVisible = false;
   bool _saveWarningVisible = false;
@@ -51,20 +51,23 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     super.initState();
     _loadMenu = OverlayEntries.getLoadMenu(
       onDismiss: _closeAllMenus,
-      layerLink: _loadMenulayerLink,
+      layerLink: _loadMenuLayerLink,
       onLoadFile: _loadFile,
       onLoadPalette: _loadPalette,
     );
     _saveMenu = OverlayEntries.getSaveMenu(
       onDismiss: _closeAllMenus,
-      layerLink: _saveMenulayerLink,
+      layerLink: _saveMenuLayerLink,
       onSaveFile: _saveFile,
+      onSaveAsFile: _saveAsFile,
+      onExportFile: _exportFile,
       onSavePalette: _savePalette,
     );
     _saveWarningDialog = OverlayEntries.getThreeButtonDialog(
         onYes: _saveWarningYes,
         onNo: _saveWarningNo,
         onCancel: _closeAllMenus,
+        outsideCancelable: false,
         message: "There are unsaved changes, do you want to save first?");
   }
 
@@ -159,6 +162,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _closeAllMenus();
   }
 
+  void _saveAsFile()
+  {
+    FileHandler.saveFilePressed(forceSaveAs: true);
+    _closeAllMenus();
+  }
+
+  void _exportFile()
+  {
+    print("EXPORT");
+  }
+
 
   //TODO
   void _savePalette()
@@ -171,6 +185,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _settingsPressed()
   {
     print("SHOW SETTINGS");
+  }
+
+  //TODO
+  void _questionPressed()
+  {
+    print("SHOW QUESTION");
   }
 
   void _undoPressed()
@@ -205,7 +225,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     child: Padding(
                       padding: EdgeInsets.only(right: _options.padding / 2.0),
                       child: CompositedTransformTarget(
-                        link: _loadMenulayerLink,
+                        link: _loadMenuLayerLink,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
@@ -222,7 +242,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     child: Padding(
                       padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
                       child: CompositedTransformTarget(
-                        link: _saveMenulayerLink,
+                        link: _saveMenuLayerLink,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
@@ -248,6 +268,20 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       ),
                     )
                 ),
+                Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: _options.padding / 2.0),
+                      child: IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.question,
+                          size: _options.menuIconSize,
+                        ),
+                        onPressed: _questionPressed,
+                      ),
+                    )
+                ),
               ],
             ),
             Padding(
@@ -263,43 +297,42 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: _options.padding / 2.0),
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: _historyManager.hasUndo,
-                        builder: (final BuildContext context, final bool hasUndo, child) {
-                          return IconButton.outlined(
-                            color: Theme.of(context).primaryColorLight,
-                            icon:  FaIcon(
-                              FontAwesomeIcons.rotateLeft,
-                              size: _options.menuIconSize,
-                            ),
-                            onPressed: hasUndo ? _undoPressed : null,
-                          );
-                        },
-                      ),
-                    )
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: _options.padding / 2.0),
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _historyManager.hasUndo,
+                      builder: (final BuildContext context, final bool hasUndo, child) {
+                        return IconButton.outlined(
+                          color: Theme.of(context).primaryColorLight,
+                          icon:  FaIcon(
+                            FontAwesomeIcons.rotateLeft,
+                            size: _options.menuIconSize,
+                          ),
+                          onPressed: hasUndo ? _undoPressed : null,
+                        );
+                      },
+                    ),
+                  )
                 ),
                 Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: _options.padding / 2.0),
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: _historyManager.hasRedo,
-                        builder: (final BuildContext context, final bool hasRedo, child) {
-                          return IconButton.outlined(
-                            color: Theme.of(context).primaryColorLight,
-                            icon:  FaIcon(
-                              FontAwesomeIcons.rotateRight,
-                              size: _options.menuIconSize,
-                            ),
-                            onPressed: hasRedo ? _redoPressed : null,
-                          );
-                        },
-
-                      ),
-                    )
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: _options.padding / 2.0),
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _historyManager.hasRedo,
+                      builder: (final BuildContext context, final bool hasRedo, child) {
+                        return IconButton.outlined(
+                          color: Theme.of(context).primaryColorLight,
+                          icon:  FaIcon(
+                            FontAwesomeIcons.rotateRight,
+                            size: _options.menuIconSize,
+                          ),
+                          onPressed: hasRedo ? _redoPressed : null,
+                        );
+                      },
+                    ),
+                  )
                 ),
               ],
             )

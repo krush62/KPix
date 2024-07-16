@@ -57,6 +57,7 @@ class OverlayEntryAlertDialogOptions
 
 class OverlayEntries
 {
+
   static OverlayEntry getLoadMenu({
     required final Function onDismiss,
     required Function onLoadFile,
@@ -74,13 +75,13 @@ class OverlayEntries
             onDismiss: () {onDismiss();},
           ),
           Positioned(
-            width: options.width,
+            width: options.width / 2,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
               offset: Offset(
                 options.offsetX,
-                options.offsetY,
+                options.offsetY + options.buttonSpacing,
               ),
               child: Material(
                 color: Colors.transparent,
@@ -91,26 +92,34 @@ class OverlayEntries
                   children: [
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: SizedBox(
-                        height: options.buttonHeight,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            onLoadFile();
-                            },
-                          child: const Text("Load Project")
-                        )
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onLoadFile();},
+                        icon: FaIcon(
+                            Icons.file_open,
+                            size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: SizedBox(
-                        height: options.buttonHeight,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            onLoadPalette();
-                          },
-                            child: const Text("Load Palette")
-                        )
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onLoadPalette();},
+                        icon: FaIcon(
+                            FontAwesomeIcons.palette,
+                            size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
                       ),
                     ),
                   ],
@@ -123,9 +132,12 @@ class OverlayEntries
     );
   }
 
+
   static OverlayEntry getSaveMenu({
     required final Function onDismiss,
     required Function onSaveFile,
+    required Function onSaveAsFile,
+    required Function onExportFile,
     required Function onSavePalette,
     required final LayerLink layerLink,
   })
@@ -139,13 +151,13 @@ class OverlayEntries
             onDismiss: () {onDismiss();},
           ),
           Positioned(
-            width: options.width,
+            width: options.width / 2,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
               offset: Offset(
                 options.offsetX,
-                options.offsetY,
+                options.offsetY + options.buttonSpacing,
               ),
               child: Material(
                 color: Colors.transparent,
@@ -156,26 +168,66 @@ class OverlayEntries
                   children: [
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: SizedBox(
-                        height: options.buttonHeight,
-                        child: ElevatedButton(
-                            onPressed: () {
-                              onSaveFile();
-                            },
-                            child: const Text("Save Project")
-                        )
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onSaveFile();},
+                        icon: FaIcon(
+                            Icons.save,
+                            size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: SizedBox(
-                        height: options.buttonHeight,
-                        child: ElevatedButton(
-                            onPressed: () {
-                              onSavePalette();
-                            },
-                            child: const Text("Save Palette")
-                        )
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onSaveAsFile();},
+                        icon: FaIcon(
+                            Icons.save_as,
+                            size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(options.buttonSpacing / 2),
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onExportFile();},
+                        icon: FaIcon(
+                            Icons.share,
+                            size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(options.buttonSpacing / 2),
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                            options.buttonSpacing),
+                        onPressed: () {onSavePalette();},
+                        icon: FaIcon(
+                            Icons.palette,
+                            size: options.buttonHeight),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
                       ),
                     ),
                   ],
@@ -399,6 +451,7 @@ class OverlayEntries
     required final Function() onYes,
     required final Function() onNo,
     required final Function() onCancel,
+    required bool outsideCancelable,
     required final String message,
   })
   {
@@ -408,7 +461,7 @@ class OverlayEntries
             children: [
               ModalBarrier(
                 color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                onDismiss: () {onCancel();},
+                onDismiss: outsideCancelable ? onCancel : null,//onCancel,
               ),
               Center(
                 child: Material(

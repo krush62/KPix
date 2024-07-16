@@ -10,6 +10,7 @@ import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
@@ -24,7 +25,12 @@ import 'package:get_it/get_it.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-      const KPixApp()
+      MaterialApp(
+          home: const KPixApp(),
+          theme: KPixTheme.monochromeTheme,
+          darkTheme: KPixTheme.monochromeThemeDark,
+
+      )
   );
 
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
@@ -53,6 +59,8 @@ class KPixApp extends StatefulWidget
 class _KPixAppState extends State<KPixApp>
 {
   final ValueNotifier<bool> initialized = ValueNotifier(false);
+  late OverlayEntry _closeWarningDialog;
+  bool _closeWarningVisible = false;
 
   @override
   void initState() {
@@ -83,8 +91,12 @@ class _KPixAppState extends State<KPixApp>
       appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
     }
 
-
-
+    _closeWarningDialog = OverlayEntries.getThreeButtonDialog(
+        onYes: _closeWarningYes,
+        onNo: _closeWarningNo,
+        onCancel: _closeAllMenus,
+        outsideCancelable: false,
+        message: "There are unsaved changes, do you want to save first?");
 
     initialized.value = true;
   }
@@ -93,12 +105,8 @@ class _KPixAppState extends State<KPixApp>
   {
     if (GetIt.I.get<AppState>().hasChanges.value)
     {
-      OverlayEntry oEntry = OverlayEntries.getThreeButtonDialog(
-          onYes: _closeWarningYes,
-          onNo: _closeWarningNo,
-          onCancel: _closeAllMenus,
-          message: "There are unsaved changes, do you want to save first?");
-      Overlay.of(context).insert(oEntry);
+      Overlay.of(context).insert(_closeWarningDialog);
+      _closeWarningVisible = true;
     }
     else
     {
@@ -108,17 +116,25 @@ class _KPixAppState extends State<KPixApp>
 
   void _closeWarningYes()
   {
-
+    FileHandler.saveFilePressed(finishCallback: _saveBeforeClosedFinished);
   }
 
   void _closeWarningNo()
   {
+    exit(0);
+  }
 
+  void _saveBeforeClosedFinished()
+  {
+    exit(0);
   }
 
   void _closeAllMenus()
   {
-
+    if (_closeWarningVisible)
+    {
+      _closeWarningDialog.remove();
+    }
   }
 
 
@@ -131,33 +147,25 @@ class _KPixAppState extends State<KPixApp>
       {
         if (init)
         {
-          return MaterialApp(
-            home:  ToastProvider(child: MainWidget(closePressed: _closePressed,)),
-            theme: KPixTheme.monochromeTheme,
-            darkTheme: KPixTheme.monochromeThemeDark,
-          );
+          return ToastProvider(child: MainWidget(closePressed: _closePressed,));
         }
         else
         {
-          return MaterialApp(
-            home: Padding(
-              //TODO magic
-              padding: const EdgeInsets.all(32.0),
-              child: Stack(
-                children: [
-                  Center(child: Image.asset("imgs/kpix_icon.png"),),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Text(
-                      "Loading...",
-                      style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight)
-                    )
+          return  Padding(
+            //TODO magic
+            padding: const EdgeInsets.all(32.0),
+            child: Stack(
+              children: [
+                Center(child: Image.asset("imgs/kpix_icon.png"),),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Text(
+                    "Loading...",
+                    style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight)
                   )
-                ]
-              ),
+                )
+              ]
             ),
-            theme: KPixTheme.monochromeTheme,
-            darkTheme: KPixTheme.monochromeThemeDark,
           );
         }
       },

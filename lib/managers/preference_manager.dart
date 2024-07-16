@@ -67,7 +67,7 @@ enum PreferenceDouble
   Layout_ColorEntry_MinSize(defaultValue: 8.0),
   Layout_ColorEntry_MaxSize(defaultValue: 32.0),
 
-    Layout_ToolsSettings_Padding(defaultValue: 8.0),
+  Layout_ToolsSettings_Padding(defaultValue: 8.0),
   Layout_ToolSettings_SmallButtonSize(defaultValue: 36.0),
   Layout_ToolSettings_SmallIconSize(defaultValue: 20),
 
@@ -80,7 +80,7 @@ enum PreferenceDouble
   Layout_StatusBar_Padding(defaultValue: 2.0),
   Layout_StatusBar_DividerWidth(defaultValue: 2.0),
 
-  Layout_OverlayEntrySubMenu_OffsetX(defaultValue: -32.0),
+  Layout_OverlayEntrySubMenu_OffsetX(defaultValue: 0),
   Layout_OverlayEntrySubMenu_OffsetXLeft(defaultValue: -128.0),
   Layout_OverlayEntrySubMenu_OffsetY(defaultValue: 32.0),
   Layout_OverlayEntrySubMenu_ButtonSpacing(defaultValue: 8.0),

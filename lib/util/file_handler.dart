@@ -353,11 +353,11 @@ class FileHandler
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
   }
 
-  static void saveFilePressed({final Function()? finishCallback})
+  static void saveFilePressed({final Function()? finishCallback, final bool forceSaveAs = false})
   {
     //hack (FilePicker needs bytes on mobile)
     final Uint8List byteList = Uint8List(1);
-    if (GetIt.I.get<AppState>().filePath.value == null)
+    if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
     {
       FilePicker.platform.saveFile(
           dialogTitle: "Save kpix file",

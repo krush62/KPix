@@ -1,7 +1,6 @@
 import 'dart:collection';
 import 'dart:io';
 import 'dart:math';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -258,6 +257,19 @@ class AppState
     }
   }
 
+  void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
+  {
+    if (loadPaletteSet.rampData != null)
+    {
+      //TODO remap or delete, don't forget the selected color
+      showMessage("Loading Palette succeeded: " + paletteReplaceBehavior.toString());
+    }
+    else
+    {
+      showMessage("Loading palette failed (${loadPaletteSet.status})");
+    }
+  }
+
   String getFileName()
   {
     String fileName = "";
@@ -272,7 +284,7 @@ class AppState
   {
     filePath.value = path;
     hasChanges.value = false;
-
+    showMessage("File saved at: $path");
   }
 
   void _restoreState({required final HistoryState? historyState})

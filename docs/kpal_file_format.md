@@ -39,8 +39,8 @@ The kpal file format consists of the following three consecutive sections:
   * option_value ``ubyte (1)``
 
 ### Ramps
-* ramp_count ``byte (1)``
-* Ramps
+* ramp_count ``ubyte (1)``
+* Ramps  ``(ramp_count)``
   * name_length ``uint (1)`` // ignored in KPix
   * name_data ``ubyte (name_length)`` //ignored in KPix
   * color_count ``ubyte (1)``
@@ -56,6 +56,10 @@ The kpal file format consists of the following three consecutive sections:
     * hue_shift ``byte (1)`` // -25...25
     * sat_shift ``byte (1)`` // -15...15
     * val_shift ``byte (1)`` // -15...15
+  * ramp_option_count ``ubyte (1)``
+  * Ramp_options ``(ramp_option_count)``
+    * option_type ``ubyte (1)``
+    * option_value ``ubyte (1)``
 
 ### Links (ignored in KPix)
 * link_count ``ubyte (1)``

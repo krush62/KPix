@@ -1,8 +1,6 @@
 
 import 'dart:collection';
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -22,17 +20,48 @@ class LoadFileSet
   LoadFileSet({required this.status, this.historyState, this.path});
 }
 
+enum PaletteReplaceBehavior
+{
+  remap,
+  replace
+}
+
+class LoadPaletteSet
+{
+  final String status;
+  final List<KPalRampData>? rampData;
+  LoadPaletteSet({required this.status, this.rampData});
+}
+
+
+const Map<SatCurve, int> _kpixlKpalSatCurveMap =
+{
+  SatCurve.noFlat:1,
+  SatCurve.darkFlat:0,
+  SatCurve.brightFlat:3,
+  SatCurve.linear:2
+};
+
+const Map<int, SatCurve> _kpalKpixSatCurveMap =
+{
+  1:SatCurve.noFlat,
+  0:SatCurve.darkFlat,
+  3:SatCurve.brightFlat,
+  2: SatCurve.linear
+};
+
 class FileHandler
 {
   static const int fileVersion = 1;
   static const String magicNumber = "4B504958";
-  static const String fileExtension = "kpix";
+  static const String fileExtensionKpix = "kpix";
+  static const String fileExtensionKpal = "kpal";
 
-  static Future<File> saveFile({required final String path, required final AppState appState}) async
+  static Future<File> _saveKPixFile({required final String path, required final AppState appState}) async
   {
     //TODO perform sanity checks (max ramps, max layers, etc...)
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");
-    final ByteData byteData = ByteData(_calculateFileSize(saveData: saveData));
+    final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
 
     int offset = 0;
     //header
@@ -151,7 +180,7 @@ class FileHandler
 
 
 
-  static Future<LoadFileSet> loadFile({required final String path, required final KPalConstraints constraints}) async
+  static Future<LoadFileSet> _loadKPixFile({required final String path, required final KPalConstraints constraints}) async
   {
     final Uint8List uint8list = await File(path).readAsBytes();
     final ByteData byteData = uint8list.buffer.asByteData();
@@ -220,7 +249,7 @@ class FileHandler
       if (visibilityState == null) return LoadFileSet(status: "Invalid visibility type for layer $i: $visibilityStateVal");
       final int lockStateVal = byteData.getUint8(offset++);
       final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
-      if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");;
+      if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
       final int dataCount = byteData.getUint32(offset);
       offset+=4;
       final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
@@ -242,7 +271,7 @@ class FileHandler
     return LoadFileSet(status: "loading okay", historyState: historyState, path: path);
   }
 
-  static int _calculateFileSize({required final HistoryState saveData})
+  static int _calculateKPixFileSize({required final HistoryState saveData})
   {
     int size = 0;
 
@@ -319,6 +348,60 @@ class FileHandler
     return size;
   }
 
+  static int _calculateKPalFileSize({required final List<KPalRampData> rampList})
+  {
+    int size = 0;
+
+    //option count
+    size += 1;
+
+    //ramp count
+    size += 1;
+    for (int i = 0; i < rampList.length; i++)
+    {
+      //name
+      size += 1;
+      //color count
+      size += 1;
+      //base hue
+      size += 2;
+      //base sat
+      size += 2;
+      //hue shift
+      size += 1;
+      //hue shift exp
+      size += 4;
+      //sat shift
+      size += 1;
+      //sat shift exp
+      size += 4;
+      //val min
+      size += 1;
+      //val max
+      size += 1;
+      for (int j = 0; j < rampList[i].settings.colorCount; j++)
+      {
+        //hue shift
+        size += 1;
+        //sat shift
+        size += 1;
+        //val shift
+        size += 1;
+      }
+      //ramp option count
+      size += 1;
+      //sat curve option type
+      size += 1;
+      //sat curve option value
+      size += 1;
+    }
+
+    //link count
+    size += 1;
+
+    return size;
+  }
+
   static void loadFilePressed()
   {
     if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS)
@@ -326,7 +409,7 @@ class FileHandler
       FilePicker.platform.pickFiles(
           allowMultiple: false,
           type: FileType.custom,
-          allowedExtensions: [FileHandler.fileExtension],
+          allowedExtensions: [fileExtensionKpix],
           initialDirectory: GetIt.I.get<AppState>().appDir
       ).then(_loadFileChosen);
     }
@@ -344,7 +427,7 @@ class FileHandler
   {
     if (result != null && result.files.single.path != null)
     {
-      FileHandler.loadFile(path:  result.files.single.path!, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then(_fileLoaded);
+      _loadKPixFile(path:  result.files.single.path!, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then(_fileLoaded);
     }
   }
 
@@ -363,7 +446,7 @@ class FileHandler
           dialogTitle: "Save kpix file",
           type: FileType.custom,
           fileName: GetIt.I.get<AppState>().getFileName(),
-          allowedExtensions: [FileHandler.fileExtension],
+          allowedExtensions: [fileExtensionKpix],
           initialDirectory: GetIt.I
               .get<AppState>()
               .appDir,
@@ -380,8 +463,8 @@ class FileHandler
   {
     if (path != null)
     {
-      final String finalPath = !path.endsWith(".${FileHandler.fileExtension}") ? ("$path.${FileHandler.fileExtension}") : path;
-      FileHandler.saveFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final File file){_fileSaved(file, finishCallback);});
+      final String finalPath = !path.endsWith(".$fileExtensionKpix") ? ("$path.$fileExtensionKpix") : path;
+      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final File file){_fileSaved(file, finishCallback);});
     }
   }
 
@@ -393,4 +476,206 @@ class FileHandler
       finishCallback();
     }
   }
+
+
+  static void savePalettePressed({final Function()? finishCallback})
+  {
+    final Uint8List byteList = Uint8List(1);
+    FilePicker.platform.saveFile(
+        dialogTitle: "Save pal file",
+        type: FileType.custom,
+        fileName: GetIt.I.get<AppState>().getFileName(),
+        allowedExtensions: [fileExtensionKpal],
+        initialDirectory: GetIt.I
+            .get<AppState>()
+            .appDir,
+        bytes: byteList
+    ).then((final String? path){_paletteSavePathChosen(path, finishCallback);});
+  }
+
+  static void _paletteSavePathChosen(final String? path, final Function()? finishCallback)
+  {
+    if (path != null)
+    {
+      final String finalPath = !path.endsWith(".$fileExtensionKpal") ? ("$path.$fileExtensionKpal") : path;
+      _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps.value, path: finalPath).then((final File file) {_paletteSaved(file, finishCallback);});
+    }
+  }
+
+
+  static Future<File> _saveKPalFile({required final List<KPalRampData> rampList, required String path}) async
+  {
+    //TODO perform sanity checks (ramp count, color count, ...)
+    final ByteData byteData = ByteData(_calculateKPalFileSize(rampList: rampList));
+    int offset = 0;
+
+    //options
+    byteData.setUint8(offset++, 0);
+
+    //ramp count
+    byteData.setUint8(offset++, rampList.length);
+    for (final KPalRampData rampData in rampList)
+    {
+      //name length
+      byteData.setUint8(offset++, 0);
+      //color count
+      byteData.setUint8(offset++, rampData.settings.colorCount);
+      //base hue
+      byteData.setUint16(offset, rampData.settings.baseHue, Endian.little);
+      offset += 2;
+      //base sat
+      byteData.setUint16(offset, rampData.settings.baseSat, Endian.little);
+      offset += 2;
+      //hue shift
+      byteData.setUint8(offset++, rampData.settings.hueShift);
+      //hueShiftExp
+      byteData.setFloat32(offset, rampData.settings.hueShiftExp, Endian.little);
+      offset += 4;
+      //sat shift
+      byteData.setUint8(offset++, rampData.settings.satShift);
+      //satShiftExp
+      byteData.setFloat32(offset, rampData.settings.satShiftExp, Endian.little);
+      offset += 4;
+      //val min
+      byteData.setUint8(offset++, rampData.settings.valueRangeMin);
+      //val max
+      byteData.setUint8(offset++, rampData.settings.valueRangeMax);
+      for (int j = 0; j < rampData.settings.colorCount; j++)
+      {
+        //hue shift
+        byteData.setUint8(offset++, 0);
+        //sat shift
+        byteData.setUint8(offset++, 0);
+        //val shift
+        byteData.setUint8(offset++, 0);
+      }
+      //ramp option count
+      byteData.setUint8(offset++, 1);
+      //sat curve option
+      byteData.setUint8(offset++, 1); //option type sat curve
+      //sat curve value
+      byteData.setUint8(offset++, _kpixlKpalSatCurveMap[rampData.settings.satCurve]?? 0);
+    }
+
+    //link count
+    byteData.setUint8(offset++, 0);
+    return File(path).writeAsBytes(byteData.buffer.asUint8List());
+
+  }
+
+  static void loadPalettePressed({required PaletteReplaceBehavior paletteReplaceBehavior})
+  {
+    if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+    {
+      FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
+          allowedExtensions: [fileExtensionKpal],
+          initialDirectory: GetIt.I.get<AppState>().appDir
+      ).then((final FilePickerResult? result) {
+        _loadPaletteChosen(result: result, paletteReplaceBehavior: paletteReplaceBehavior);
+      });
+    }
+    else //mobile
+        {
+      FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().appDir
+      ).then((final FilePickerResult? result) {
+        _loadPaletteChosen(result: result, paletteReplaceBehavior: paletteReplaceBehavior);
+      });
+    }
+  }
+
+  static void _loadPaletteChosen({required final FilePickerResult? result, required final PaletteReplaceBehavior paletteReplaceBehavior})
+  {
+    if (result != null && result.files.single.path != null)
+    {
+      _loadKPalFile(path: result.files.single.path!, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then((final LoadPaletteSet loadPaletteSet) {
+        _paletteLoaded(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior);
+      });
+    }
+  }
+
+  //this method is not necessary, replacePalette can be called directly from _loadPaletteChosen
+  static void _paletteLoaded({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
+  {
+    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior);
+
+  }
+
+  static Future<LoadPaletteSet> _loadKPalFile({required final String path, required final KPalConstraints constraints}) async
+  {
+    final Uint8List uint8list = await File(path).readAsBytes();
+    final ByteData byteData = uint8list.buffer.asByteData();
+    int offset = 0;
+
+    //skip options
+    final int optionCount = byteData.getUint8(offset++);
+    offset += (optionCount * 2);
+
+    final int rampCount = byteData.getUint8(offset++);
+    if (rampCount <= 0) return LoadPaletteSet(status: "no ramp found");
+    final List<KPalRampData> rampList = [];
+    for (int i = 0; i < rampCount; i++)
+    {
+      final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
+      final int nameLength = byteData.getUint8(offset++);
+      offset += nameLength;
+      kPalRampSettings.colorCount = byteData.getUint8(offset++);
+      if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadPaletteSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
+      kPalRampSettings.baseHue = byteData.getInt16(offset, Endian.little);
+      offset+=2;
+      if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax) return LoadPaletteSet(status: "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}");
+      kPalRampSettings.baseSat = byteData.getInt16(offset, Endian.little);
+      offset+=2;
+      if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax) return LoadPaletteSet(status: "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}");
+      kPalRampSettings.hueShift = byteData.getInt8(offset++);
+      if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax) return LoadPaletteSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
+      kPalRampSettings.hueShiftExp = byteData.getFloat32(offset, Endian.little);
+      offset += 4;
+      if (kPalRampSettings.hueShiftExp < constraints.hueShiftExpMin || kPalRampSettings.hueShiftExp > constraints.hueShiftExpMax) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
+      kPalRampSettings.satShift = byteData.getInt8(offset++);
+      if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax) return LoadPaletteSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
+      kPalRampSettings.satShiftExp = byteData.getFloat32(offset, Endian.little);
+      offset += 4;
+      if (kPalRampSettings.satShiftExp < constraints.satShiftExpMin || kPalRampSettings.satShiftExp > constraints.satShiftExpMax) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
+      kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
+      kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
+      if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
+      //not used at the moment (don't forget to check for constraints)
+      for (int j = 0; j < kPalRampSettings.colorCount; j++)
+      {
+        byteData.getInt8(offset++);
+        byteData.getInt8(offset++);
+        byteData.getInt8(offset++);
+      }
+      final int rampOptionCount = byteData.getInt8(offset++);
+      for (int j = 0; j < rampOptionCount; j++)
+      {
+        final int optionType = byteData.getInt8(offset++);
+        if (optionType == 1) //sat curve
+        {
+          final int satCurveVal = byteData.getInt8(offset);
+          kPalRampSettings.satCurve = _kpalKpixSatCurveMap[satCurveVal]?? SatCurve.noFlat;
+        }
+        offset++;
+      }
+      rampList.add(KPalRampData(uuid: const Uuid().v1(), settings: kPalRampSettings));
+    }
+    return LoadPaletteSet(status: "loading okay", rampData: rampList);
+
+  }
+
+  static void _paletteSaved(final File file, final Function()? finishCallback)
+  {
+    //TODO inform AppState
+    print("PALETTE SAVED");
+    if (finishCallback != null)
+    {
+      finishCallback();
+    }
+  }
+
 }

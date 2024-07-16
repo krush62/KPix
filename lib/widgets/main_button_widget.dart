@@ -38,11 +38,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late OverlayEntry _loadMenu;
   late OverlayEntry _saveMenu;
   late OverlayEntry _saveWarningDialog;
+  late OverlayEntry _paletteWarningDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   bool _loadMenuVisible = false;
   bool _saveMenuVisible = false;
   bool _saveWarningVisible = false;
+  bool _paletteWarningVisible = false;
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
@@ -68,7 +70,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         onNo: _saveWarningNo,
         onCancel: _closeAllMenus,
         outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?");
+        message: "There are unsaved changes, do you want to save first?"
+    );
+    _paletteWarningDialog = OverlayEntries.getThreeButtonDialog(
+        onYes: _paletteWarningYes,
+        onNo: _paletteWarningNo,
+        onCancel: _closeAllMenus,
+        outsideCancelable: false,
+        message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
   }
 
 
@@ -90,6 +99,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       _saveWarningDialog.remove();
       _saveWarningVisible = false;
+    }
+    if (_paletteWarningVisible)
+    {
+      _paletteWarningDialog.remove();
+      _paletteWarningVisible = false;
     }
 
   }
@@ -139,10 +153,24 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  //TODO
   void _loadPalette()
   {
-    print("Load Palette");
+    if (!_paletteWarningVisible)
+    {
+      Overlay.of(context).insert(_paletteWarningDialog);
+      _paletteWarningVisible = true;
+    }
+  }
+
+  void _paletteWarningYes()
+  {
+    FileHandler.loadPalettePressed(paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    _closeAllMenus();
+  }
+
+  void _paletteWarningNo()
+  {
+    FileHandler.loadPalettePressed(paletteReplaceBehavior: PaletteReplaceBehavior.replace);
     _closeAllMenus();
   }
 
@@ -174,10 +202,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  //TODO
   void _savePalette()
   {
-    print("Save Palette");
+    FileHandler.savePalettePressed();
     _closeAllMenus();
   }
 

@@ -1,5 +1,6 @@
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 typedef ChangeToolFn = void Function(ToolType toolType);
@@ -15,4 +16,5 @@ typedef LayerSelectedFn = void Function(LayerState state);
 typedef LayerDeleteFn = void Function(LayerState state);
 typedef LayerMergeDownFn = void Function(LayerState state);
 typedef LayerDuplicateFn = void Function(LayerState state);
+typedef ExportDataFn = void Function(ExportData exportData, ExportTypeEnum exportType);
 

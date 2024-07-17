@@ -159,7 +159,7 @@ class HistoryManager
 
   void addState({required final AppState appState, required final String description, final setHasChanges = true})
   {
-    print("ADDING STATE: " + description);
+    //print("ADDING STATE: $description");
     if (_curPos >= 0 && _curPos < _states.length - 1)
     {
       for (int i = 0; i < (_states.length - _curPos); i++)

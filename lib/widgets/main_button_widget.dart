@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -5,6 +7,7 @@ import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class MainButtonWidgetOptions
@@ -39,12 +42,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late OverlayEntry _saveMenu;
   late OverlayEntry _saveWarningDialog;
   late OverlayEntry _paletteWarningDialog;
+  late OverlayEntry _exportDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   bool _loadMenuVisible = false;
   bool _saveMenuVisible = false;
   bool _saveWarningVisible = false;
   bool _paletteWarningVisible = false;
+  bool _exportDialogVisible = false;
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
@@ -78,8 +83,29 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         onCancel: _closeAllMenus,
         outsideCancelable: false,
         message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
+    _exportDialog = OverlayEntries.getExportDialog(
+        onDismiss: _closeAllMenus,
+        onAccept: _exportFilePressed,
+        canvasSize: _appState.canvasSize);
   }
 
+  void _exportFilePressed(final ExportData exportData, final ExportTypeEnum exportType)
+  {
+    FileHandler.exportFile(exportData: exportData, exportType: exportType).then(_exportToTempFinished);
+  }
+
+  void _exportToTempFinished(final File? file)
+  {
+    if (file != null)
+    {
+        _appState.showMessage("Exported to: ${file.path}");
+    }
+    else
+    {
+      _appState.showMessage("Error exporting file");
+    }
+    _closeAllMenus();
+  }
 
   void _closeAllMenus()
   {
@@ -100,10 +126,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       _saveWarningDialog.remove();
       _saveWarningVisible = false;
     }
+
     if (_paletteWarningVisible)
     {
       _paletteWarningDialog.remove();
       _paletteWarningVisible = false;
+    }
+
+    if (_exportDialogVisible)
+    {
+      _exportDialog.remove();
+      _exportDialogVisible = false;
     }
 
   }
@@ -198,7 +231,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportFile()
   {
-    print("EXPORT");
+    if (!_exportDialogVisible)
+    {
+      Overlay.of(context).insert(_exportDialog);
+      _exportDialogVisible = true;
+    }
   }
 
 
@@ -211,13 +248,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   //TODO
   void _settingsPressed()
   {
-    print("SHOW SETTINGS");
+    //print("SHOW SETTINGS");
   }
 
   //TODO
   void _questionPressed()
   {
-    print("SHOW QUESTION");
+    //print("SHOW QUESTION");
   }
 
   void _undoPressed()

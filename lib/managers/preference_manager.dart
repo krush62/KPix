@@ -89,7 +89,7 @@ enum PreferenceDouble
 
   Layout_OverlayAlertDialog_MinWidth(defaultValue: 200.0),
   Layout_OverlayAlertDialog_MinHeight(defaultValue: 150.0),
-  Layout_OverlayAlertDialog_MaxWidth(defaultValue: 500.0),
+  Layout_OverlayAlertDialog_MaxWidth(defaultValue: 600.0),
   Layout_OverlayAlertDialog_MaxHeight(defaultValue: 500.0),
   Layout_OverlayAlertDialog_Padding(defaultValue: 8.0),
   Layout_OverlayAlertDialog_BorderWidth(defaultValue: 2.0),

@@ -44,11 +44,13 @@ class AppState
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
   final StatusBarState statusBarState = StatusBarState();
   final String appDir;
+  final String tempDir;
+  final String cacheDir;
   final ValueNotifier<String?> filePath = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
 
-  AppState({required this.appDir})
+  AppState({required this.appDir, required this.tempDir, required this.cacheDir})
   {
 
     for (ToolType toolType in toolList.keys)

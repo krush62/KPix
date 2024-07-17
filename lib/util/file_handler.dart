@@ -1,6 +1,8 @@
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -8,7 +10,9 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
 
@@ -19,6 +23,7 @@ class LoadFileSet
   final String? path;
   LoadFileSet({required this.status, this.historyState, this.path});
 }
+
 
 enum PaletteReplaceBehavior
 {
@@ -56,6 +61,7 @@ class FileHandler
   static const String magicNumber = "4B504958";
   static const String fileExtensionKpix = "kpix";
   static const String fileExtensionKpal = "kpal";
+
 
   static Future<File> _saveKPixFile({required final String path, required final AppState appState}) async
   {
@@ -439,13 +445,14 @@ class FileHandler
   static void saveFilePressed({final Function()? finishCallback, final bool forceSaveAs = false})
   {
     //hack (FilePicker needs bytes on mobile)
-    final Uint8List byteList = Uint8List(1);
+    final Uint8List byteList = Uint8List(0);
+    final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("$GetIt.I.get<AppState>().getFileName().$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
     if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
     {
       FilePicker.platform.saveFile(
           dialogTitle: "Save kpix file",
           type: FileType.custom,
-          fileName: GetIt.I.get<AppState>().getFileName(),
+          fileName: finalPath,
           allowedExtensions: [fileExtensionKpix],
           initialDirectory: GetIt.I
               .get<AppState>()
@@ -480,11 +487,13 @@ class FileHandler
 
   static void savePalettePressed({final Function()? finishCallback})
   {
-    final Uint8List byteList = Uint8List(1);
+    //hack (FilePicker needs bytes on mobile)
+    final Uint8List byteList = Uint8List(0);
+    final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("$GetIt.I.get<AppState>().getFileName().$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
     FilePicker.platform.saveFile(
         dialogTitle: "Save pal file",
         type: FileType.custom,
-        fileName: GetIt.I.get<AppState>().getFileName(),
+        fileName: finalPath,
         allowedExtensions: [fileExtensionKpal],
         initialDirectory: GetIt.I
             .get<AppState>()
@@ -670,12 +679,119 @@ class FileHandler
 
   static void _paletteSaved(final File file, final Function()? finishCallback)
   {
-    //TODO inform AppState
-    print("PALETTE SAVED");
+    GetIt.I.get<AppState>().showMessage("Palette saved at: ${file.path}");
     if (finishCallback != null)
     {
       finishCallback();
     }
+  }
+
+  static Future<File?> exportFile({required final ExportData exportData, required final ExportTypeEnum exportType}) async
+  {
+    String? path;
+    final Uint8List byteList = Uint8List(0);
+    path = await FilePicker.platform.saveFile(
+      dialogTitle: "Export as ${exportData.name}",
+      type: FileType.custom,
+      allowedExtensions: [exportData.extension],
+      initialDirectory: GetIt.I
+          .get<AppState>()
+          .appDir,
+      bytes: byteList
+    );
+    if (path != null)
+    {
+      path = !path.endsWith(".${exportData.extension}") ? ("$path.${exportData.extension}") : path;
+    }
+
+    File? file;
+
+    if (path != null)
+    {
+      switch (exportType)
+      {
+        case ExportTypeEnum.png:
+          file = await _exportPNG(exportData: exportData, exportPath: path);
+          break;
+        case ExportTypeEnum.aseprite:
+        // TODO: Handle this case.
+          break;
+        case ExportTypeEnum.photoshop:
+        // TODO: Handle this case.
+          break;
+        case ExportTypeEnum.gimp:
+        // TODO: Handle this case.
+          break;
+      }
+    }
+
+
+    return file;
+  }
+
+
+  static Future<File?> _exportPNG({required ExportData exportData, required String exportPath}) async
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final ByteData byteData = await _getImageData(
+        ramps: appState.colorRamps.value,
+        layers: appState.layers.value,
+        selectionState: appState.selectionState,
+        imageSize: appState.canvasSize,
+        scaling: exportData.scaling);
+
+    final Completer<Image> c = Completer<Image>();
+      decodeImageFromPixels(
+        byteData.buffer.asUint8List(),
+        appState.canvasSize.x * exportData.scaling,
+        appState.canvasSize.y * exportData.scaling,
+        PixelFormat.rgba8888, (Image convertedImage)
+      {
+        c.complete(convertedImage);
+      }
+    );
+    final Image img = await c.future;
+
+    ByteData? pngBytes = await img.toByteData(format: ImageByteFormat.png);
+
+    return File(exportPath)
+        .writeAsBytes(pngBytes!.buffer.asInt8List());
+  }
+
+
+  static Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling}) async
+  {
+    final ByteData byteData = ByteData((imageSize.x * scaling) * (imageSize.y * scaling) * 4);
+    for (int x = 0; x < imageSize.x; x++)
+    {
+      for (int y = 0; y < imageSize.y; y++)
+      {
+        final CoordinateSetI currentCoord = CoordinateSetI(x: x, y: y);
+        for (int l = 0; l < layers.length; l++)
+        {
+          ColorReference? col;
+          if (selectionState.selection.currentLayer == layers[l])
+          {
+            col = selectionState.selection.getColorReference(currentCoord);
+          }
+          col ??= layers[l].getDataEntry(currentCoord);
+
+          if (col != null)
+          {
+            for (int i = 0; i < scaling; i++)
+            {
+              for (int j = 0; j < scaling; j++)
+              {
+                byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
+                    Helper.argbToRgba(col.getIdColor().color.value));
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+    return byteData;
   }
 
 }

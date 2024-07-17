@@ -75,7 +75,9 @@ class _KPixAppState extends State<KPixApp>
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
     final Directory appDir = await getApplicationDocumentsDirectory();
-    GetIt.I.registerSingleton<AppState>(AppState(appDir: appDir.path));
+    final Directory tempDir = await getTemporaryDirectory();
+    final Directory cache = await getApplicationCacheDirectory();
+    GetIt.I.registerSingleton<AppState>(AppState(appDir: appDir.path, cacheDir: cache.path, tempDir: tempDir.path));
     AppState appState = GetIt.I.get<AppState>();
 
     //TODO TEMP

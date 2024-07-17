@@ -3,7 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class OverlayEntrySubMenuOptions
@@ -553,4 +555,28 @@ class OverlayEntries
         )
     );
   }
+
+
+  static OverlayEntry getExportDialog({
+    required final Function() onDismiss,
+    required final ExportDataFn onAccept,
+    required final CoordinateSetI canvasSize
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            onDismiss: () {onDismiss();},
+          ),
+          Center(
+            child: ExportWidget(accept: onAccept, dismiss: onDismiss, canvasSize: canvasSize),
+          ),
+        ]
+      )
+    );
+  }
+
 }

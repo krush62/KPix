@@ -187,7 +187,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   void handleTimeoutLongPress()
   {
     _timerRunning = false;
-    print("LONG PRESS PRIMARY");
+    //print("LONG PRESS PRIMARY");
   }
 
   void _buttonDown(PointerDownEvent details)
@@ -255,7 +255,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       appState.selectionState.deselect(addToHistoryStack: true);
     }
 
-    print("PRIMARY DOWN");
+    //print("PRIMARY DOWN");
   }
 
   void checkTouchDraw()
@@ -276,7 +276,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     if (_primaryIsDown.value)
     {
-      print("PRIMARY UP");
+      //print("PRIMARY UP");
       _timerLongPress.cancel();
       _primaryIsDown.value = false;
       if (_idleTimerInitialized)
@@ -545,17 +545,17 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   void stylusBtnDown()
   {
-    print("SECONDARY DOWN");
+    //print("SECONDARY DOWN");
   }
 
   void stylusBtnUp()
   {
-    print("SECONDARY UP");
+    //print("SECONDARY UP");
   }
 
   void handleTimeoutStylusBtnLongPress()
   {
-    print("STYLUS BTN LONG PRESS");
+    //print("STYLUS BTN LONG PRESS");
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = appState.zoomFactor.value;

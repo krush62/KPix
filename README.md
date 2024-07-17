@@ -1,6 +1,8 @@
 # KPix
 
-A pixel art creation tool.
+### *A pixel art creation tool.*
+
+<span style="color:yellow">*SCREENSHOT PLACEHOLDER*</span>
 
 ## Contents
 
@@ -18,6 +20,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - shading capabilities for all tools
 - cross-platform support 
 - stylus and touch support
+- automatic light/dark theme
 
 ## Features
 ### Drawing Tools
@@ -26,8 +29,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - Text
 - Fill
 - Stamp
-- Line
-- Curve
+- Line / Bézier Curve
 - Spray Can
 
 ### Shading
@@ -42,33 +44,25 @@ A palette consists of multiple independent color ramps. Each ramp can have an ar
 - saturation curve (keep darker/brighter shades constant)
 - minimum and maximum brightness
 
-Palettes can be saved using the project's own kpal format (documentation can be found here: TBD)
-#### Palette Export Formats
-- png (1x, 8x, 32x)
-- aseprite
-- gpl (Gimp)
-- txt (Paint.NET)
-- ase (Adobe)
-- pal (JASC)
-- xml (Corel)
-- soc (OpenOffice)
+Palettes can be saved using the kpal format which is also used by [KPal](https://github.com/krush62/KPal). The file format documentation can be found [here](docs/kpal_file_format.md).
+
 
 ### File Format Support
-Kpix uses its own kpix format for storing project files (documentation can be found here: TBD).
+Kpix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 #### Export Formats
-- png
-- gif
-- aseprite
-- psd
-- xcf
+- png (with optional integer scaling)
+- aseprite (including the palette)
+- psd (including the palette)
+- xcf (including the palette)
 
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 
 
 ## Controls
-
 This application supports input by mouse/keyboard, touch screen and stylus.
+The complete control table can be found [here](docs/controls.md).
 
+### Quick Start
 | ACTION      | MOUSE               | TOUCH                | STYLUS                      |
 |-------------|---------------------|----------------------|-----------------------------|
 | use tool    | left click          | one finger           | down                        |
@@ -76,8 +70,6 @@ This application supports input by mouse/keyboard, touch screen and stylus.
 | zoom canvas | mouse wheel         | two finger pinch     | button long press + up/down |
 | color pick  | right click         | one finger down long | down long                   |
 
-### Keyboard Shortcuts
-TBD
 
 ## Installation
 ### Windows
@@ -92,5 +84,5 @@ possible, but not planned
 
 ## License
 TBD
-possible, but not planned
+
 

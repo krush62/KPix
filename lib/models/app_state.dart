@@ -204,8 +204,8 @@ class AppState
 
   LayerState addNewLayer({final bool addToHistoryStack = true, final bool select = false, final HashMap<CoordinateSetI, ColorReference?>? content})
   {
-    List<LayerState> layerList = [];
-    LayerState newLayer = LayerState(size: canvasSize, content: content);
+    final List<LayerState> layerList = [];
+    final LayerState newLayer = LayerState(size: canvasSize, content: content);
     if (layers.value.isEmpty)
     {
       newLayer.isSelected.value = true;
@@ -259,16 +259,32 @@ class AppState
 
   void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
   {
-    if (loadPaletteSet.rampData != null)
+    if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
     {
-      //TODO remap or delete, don't forget the selected color
-      showMessage("Loading Palette succeeded: " + paletteReplaceBehavior.toString());
+      if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
+      {
+        _deleteAllRampsFromLayers();
+      }
+      else
+      {
+        final HashMap<ColorReference, ColorReference> rampMap = Helper.getRampMap(rampList1: colorRamps.value, rampList2: loadPaletteSet.rampData!);
+        for (final LayerState layerState in layers.value)
+        {
+          layerState.remapAllColors(rampMap: rampMap);
+          layerState.doManualRaster = true;
+        }
+      }
+      selectedColor.value = loadPaletteSet.rampData![0].references[0];
+      colorRamps.value = loadPaletteSet.rampData!;
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "replace color ramp");
     }
     else
     {
       showMessage("Loading palette failed (${loadPaletteSet.status})");
     }
   }
+
+
 
   String getFileName()
   {
@@ -408,7 +424,6 @@ class AppState
   void addNewLayerPressed()
   {
     addNewLayer();
-
   }
 
   LayerState? getSelectedLayer()
@@ -599,11 +614,23 @@ class AppState
     }
   }
 
+  void _deleteAllRampsFromLayers()
+  {
+    for (final LayerState layerState in layers.value)
+    {
+      for (final KPalRampData kPalRampData in colorRamps.value)
+      {
+        layerState.deleteRamp(ramp: kPalRampData);
+      }
+      layerState.doManualRaster = true;
+    }
+  }
+
   void _remapLayers({required final KPalRampData newData, required final HashMap<int, int> map})
   {
     for (final LayerState layer in layers.value)
     {
-     layer.remapColors(newData: newData, map: map);
+     layer.remapSingleRamp(newData: newData, map: map);
     }
   }
 

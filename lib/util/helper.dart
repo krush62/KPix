@@ -1,7 +1,10 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 
 enum ToolType
 {
@@ -235,6 +238,46 @@ class Helper
     final double deltaHkhsh = deltaH / sh;
     final double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
     return i < 0.0 ? 0.0 : sqrt(i);
+  }
+
+  static HashMap<ColorReference, ColorReference> getRampMap({required final List<KPalRampData> rampList1, required final List<KPalRampData> rampList2})
+  {
+    final HashMap<ColorReference, ColorReference> rampMap = HashMap();
+    for (final KPalRampData kPalRampData in rampList1)
+    {
+      for (final ColorReference colRef in kPalRampData.references)
+      {
+        rampMap[colRef] = getClosestColor(inputColor: colRef, rampList: rampList2);
+      }
+    }
+    return rampMap;
+  }
+
+  static ColorReference getClosestColor({required final ColorReference inputColor, required final List<KPalRampData> rampList})
+  {
+    assert(rampList.isNotEmpty);
+
+    final int r = inputColor.getIdColor().color.red;
+    final int g = inputColor.getIdColor().color.green;
+    final int b = inputColor.getIdColor().color.blue;
+    late ColorReference closestColor;
+    double closestVal = double.maxFinite;
+    for (final KPalRampData kPalRampData in rampList)
+    {
+      for (int i = 0; i < kPalRampData.settings.colorCount; i++)
+      {
+         final int r2 = kPalRampData.colors[i].value.color.red;
+         final int g2 = kPalRampData.colors[i].value.color.green;
+         final int b2 = kPalRampData.colors[i].value.color.blue;
+         final double dist = getDeltaE(r, g, b, r2, g2, b2);
+         if (dist < closestVal)
+         {
+            closestColor = kPalRampData.references[i];
+            closestVal = dist;
+         }
+      }
+    }
+    return closestColor;
   }
 
   static bool isPointInPolygon(final CoordinateSetI point, final List<CoordinateSetI> polygon)

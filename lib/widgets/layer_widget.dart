@@ -177,7 +177,17 @@ class LayerState
     isRasterizing = false;
   }
 
-  void remapColors({required final KPalRampData newData, required final HashMap<int, int> map})
+  void remapAllColors({required final HashMap<ColorReference, ColorReference> rampMap})
+  {
+    isRasterizing = true;
+    for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)
+    {
+      _data[entry.key] = rampMap[entry.value]!;
+    }
+    isRasterizing = false;
+  }
+
+  void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})
   {
     isRasterizing = true;
     for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)

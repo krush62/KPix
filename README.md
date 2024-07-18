@@ -50,12 +50,16 @@ Palettes can be saved using the kpal format which is also used by [KPal](https:/
 ### File Format Support
 Kpix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 #### Export Formats
-- png (with optional integer scaling)
-- aseprite (Aseprite) [^1]
-- psd (Photoshop) [^1]
-- xcf (Gimp) [^1]
+##### Image Formats
+Projects can be exported to uncompressed images including transparency. Integer scaling is supported.
+- png
+##### Application Formats
+Projects can be exported for usage in other applications. Palettes and layers will be included.
+- aseprite (Aseprite)
+- psd (Photoshop)
+- xcf (Gimp)
 
-- [^1]: Including Palette and layers
+
 
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 

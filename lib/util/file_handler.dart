@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:convert' show utf8;
 import 'package:file_picker/file_picker.dart';
@@ -1080,6 +1081,152 @@ class FileHandler
       }
     }
     return File(exportPath).writeAsBytes(outBytes.buffer.asInt8List());
+
+  }
+
+  static Future<File?> _exportGimp({required ExportData exportData, required String exportPath}) async
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Color> colorList = [];
+    final Map<ColorReference, int> colorMap = {};
+    int index = 0;
+    for (final KPalRampData kPalRampData in appState.colorRamps.value)
+    {
+      for (int i = 0; i < kPalRampData.colors.length; i++)
+      {
+        colorList.add(kPalRampData.colors[i].value.color);
+        colorMap[kPalRampData.references[i]] = index;
+        index++;
+      }
+    }
+    assert(colorList.length < 256);
+
+    final int fullHeaderSize = 30 + //header
+        12 + (3 * colorList.length) + //color map
+        9 + //compression
+        16 + //resolution
+        12 + //tattoo
+        12 + //unit
+        8 + //prop end
+        8 + (appState.layers.value.length * 8) + //layer addresses
+        8; //channel addresses
+
+    //LAYER (without name and active layer prop)
+    const int singleLayerSize = 12 + //opacity
+        12 + //float opacity
+        12 + //visible
+        12 + //linked
+        12 + //color tag
+        12 + //lock content
+        12 + //lock alpha
+        12 + //lock position
+        12 + //apply mask
+        12 + //edit mask
+        12 + //show mask
+        16 + //offsets
+        12 + //mode
+        12 + //blend space
+        12 + //composite space
+        12 + //composite mode
+        12 + //tattoo
+        8 + //prop end
+        8 + //hierarchy ptr
+        8; //layer mask ptr
+
+    //HIERARCHY
+    const int hierarchySize = 4 + //width
+        4 + //height
+        4 + //bpp
+        (4 * 8); //level pointers and end
+
+    //LEVEL
+    const int basicLevelSize = 4 + //width
+        4 + //height
+        8; //pointer end
+
+    final List<List<List<int>>> layerEncBytes = [];
+    final List<Uint8List> layerNames = [];
+    final ZLibCodec zLibCodec = ZLibCodec();
+    const int tileSize = 64;
+    for (int l = 0; l < appState.layers.value.length; l++)
+    {
+      final LayerState layerState = appState.layers.value[l];
+      int x = 0;
+      int y = 0;
+      final List<List<int>> tileList = [];
+      do //TILING
+      {
+        final List<int> imgBytes = [];
+        int endX = min(x + tileSize, layerState.size.x);
+        int endY = min(y + tileSize, layerState.size.y);
+        for (int b = y; b < endY; b++)
+        {
+          for (int a = x; a < endX; a++)
+          {
+            final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
+            final ColorReference? colAtPos = layerState.getDataEntry(curCoord);
+            if (colAtPos == null)
+            {
+              imgBytes.add(0);
+              imgBytes.add(0);
+            }
+            else
+            {
+              imgBytes.add(colorMap[colAtPos]!);
+              imgBytes.add(1);
+            }
+
+          }
+
+        }
+        final List<int> encData = zLibCodec.encode(imgBytes);
+        tileList.add(encData);
+
+        x = (endX >= layerState.size.x) ? 0 : endX;
+        y = (endX >= layerState.size.x) ? endY : y;
+      }
+      while (y < layerState.size.y);
+
+      layerNames.add(utf8.encode("Layer$l"));
+      layerEncBytes.add(tileList);
+    }
+
+    //CALCULATING SIZE
+    bool activeLayerSet = false;
+    int fileSize = fullHeaderSize;
+    for (int i = 0; i < appState.layers.value.length; i++)
+    {
+      final List<List<int>> tiles = layerEncBytes[i];
+      fileSize += singleLayerSize;
+      if (!activeLayerSet)
+      {
+        fileSize += 8; //ACTIVE LAYER
+        activeLayerSet = true;
+      }
+      //name
+      fileSize += 4 + layerNames[i].length + 1;
+      //hierarchy
+      fileSize += hierarchySize;
+      //level 1
+      fileSize += basicLevelSize;
+      fileSize += tiles.length * 8;
+      //level1
+      fileSize += basicLevelSize;
+      for (final List<int> tileData in tiles)
+      {
+        fileSize += tileData.length;
+      }
+      //level3
+      fileSize += basicLevelSize;
+      //tile data
+    }
+
+    final ByteData outBytes = ByteData(fileSize);
+    int offset = 0;
+    //TODO finish
+
+
+
 
   }
 

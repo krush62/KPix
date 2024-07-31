@@ -415,6 +415,7 @@ class _LayerWidgetState extends State<LayerWidget>
       {
         widget.layerState.visibilityState.value = LayerVisibilityState.visible;
       }
+      GetIt.I.get<AppState>().layerVisibilityChanged();
     });
   }
 
@@ -433,7 +434,7 @@ class _LayerWidgetState extends State<LayerWidget>
       {
         widget.layerState.lockState.value = LayerLockState.unlocked;
       }
-
+      GetIt.I.get<AppState>().layerLockStateChanged();
     });
   }
 

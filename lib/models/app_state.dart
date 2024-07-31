@@ -423,6 +423,16 @@ class AppState
     }
   }
 
+  void layerVisibilityChanged()
+  {
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer visibility changed");
+  }
+
+  void layerLockStateChanged()
+  {
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer lock state changed");
+  }
+
   void addNewLayerPressed()
   {
     addNewLayer();

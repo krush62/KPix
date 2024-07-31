@@ -43,21 +43,26 @@ class PencilPainter extends IToolPainter
     {
       if (drawParams.primaryDown)
       {
-        if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(_paintPositions[_paintPositions.length - 1], true))
+        if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
-          _paintPositions.add(CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y));
-          //PIXEL PERFECT
-          if (_paintPositions.length >= 3)
+          if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(
+              _paintPositions[_paintPositions.length - 1], true))
           {
-            if (_options.pixelPerfect.value && _paintPositions[_paintPositions.length-1].isDiagonal(_paintPositions[_paintPositions.length - 3]))
+            _paintPositions.add(CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y));
+            //PIXEL PERFECT
+            if (_paintPositions.length >= 3)
             {
-              _paintPositions.removeAt(_paintPositions.length - 2);
+              if (_options.pixelPerfect.value &&
+                  _paintPositions[_paintPositions.length - 1].isDiagonal(_paintPositions[_paintPositions.length - 3]))
+              {
+                _paintPositions.removeAt(_paintPositions.length - 2);
+              }
             }
           }
-        }
-        else
-        {
-          _paintPositions.addAll(Helper.bresenham(_paintPositions[_paintPositions.length - 1], _cursorPosNorm).sublist(1));
+          else
+          {
+            _paintPositions.addAll(Helper.bresenham(_paintPositions[_paintPositions.length - 1], _cursorPosNorm).sublist(1));
+          }
         }
         if (_paintPositions.length > 3)
         {
@@ -67,6 +72,7 @@ class PencilPainter extends IToolPainter
           {
             paintPoints.addAll(getRoundSquareContentPoints(_options.shape.value, _options.size.value, pos));
           }
+
           _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
           _paintPositions.removeRange(0, _paintPositions.length - 3);
         }

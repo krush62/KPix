@@ -80,16 +80,19 @@ class FillPainter extends IToolPainter
   void drawExtras({required DrawingParameters drawParams}) {
     if (_shouldDraw)
     {
-      if (_options.fillAdjacent.value)
+      if (drawParams.currentLayer.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentLayer.lockState.value == LayerLockState.unlocked || (drawParams.currentLayer.lockState.value == LayerLockState.transparency && drawParams.currentLayer.getDataEntry(_cursorPosNorm) != null)))
       {
-        _floodFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
-      }
-      else
-      {
-        _wholeFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+        if (_options.fillAdjacent.value)
+        {
+          _floodFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+        }
+        else
+        {
+          _wholeFill(fillColor: appState.selectedColor.value!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+        }
+        hasHistoryData = true;
       }
       _shouldDraw = false;
-      hasHistoryData = true;
     }
   }
 

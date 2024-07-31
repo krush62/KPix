@@ -57,7 +57,7 @@ class AppState
     {
       _toolMap[toolType] = false;
     }
-    setToolSelection(ToolType.pencil);
+    setToolSelection(tool: ToolType.pencil);
     statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
     currentLayer.addListener(() {
       selectionState.selection.setCurrentLayer(currentLayer.value);
@@ -423,6 +423,16 @@ class AppState
     }
   }
 
+  void layerVisibilityChanged()
+  {
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer visibility changed");
+  }
+
+  void layerLockStateChanged()
+  {
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer lock state changed");
+  }
+
   void addNewLayerPressed()
   {
     addNewLayer();
@@ -647,10 +657,11 @@ class AppState
   void colorSelected(final ColorReference color)
   {
     selectedColor.value = color;
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
   }
 
 
-  void setToolSelection(final ToolType tool)
+  void setToolSelection({required final ToolType tool})
   {
     for (final ToolType k in _toolMap.keys)
     {

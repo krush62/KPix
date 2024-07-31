@@ -138,7 +138,7 @@ class LayerState
     {
       for (final MapEntry<CoordinateSetI, ColorReference?> entry in content.entries)
       {
-        if (entry.key.x > 0 && entry.key.y > 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
+        if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
         {
           data2[entry.key] = entry.value!;
         }
@@ -415,6 +415,7 @@ class _LayerWidgetState extends State<LayerWidget>
       {
         widget.layerState.visibilityState.value = LayerVisibilityState.visible;
       }
+      GetIt.I.get<AppState>().layerVisibilityChanged();
     });
   }
 
@@ -433,7 +434,7 @@ class _LayerWidgetState extends State<LayerWidget>
       {
         widget.layerState.lockState.value = LayerLockState.unlocked;
       }
-
+      GetIt.I.get<AppState>().layerLockStateChanged();
     });
   }
 

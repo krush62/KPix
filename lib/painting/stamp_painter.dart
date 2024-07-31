@@ -37,41 +37,44 @@ class StampPainter extends IToolPainter
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
 
-    if (_oldCursorPos != _cursorPosNorm)
+    if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
     {
-      _stampData.clear();
-      final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
-      for (final MapEntry<CoordinateSetI, int> entry in currentStamp.data.entries)
+      if (_oldCursorPos != _cursorPosNorm)
       {
-        int stampX = entry.key.x;
-        int stampY = entry.key.y;
-        if (_options.flipH.value)
+        _stampData.clear();
+        final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
+        for (final MapEntry<CoordinateSetI, int> entry in currentStamp.data.entries)
         {
-          stampX = currentStamp.width - stampX;
-        }
-        if (_options.flipV.value)
-        {
-          stampY = currentStamp.height - stampY;
-        }
-
-        for (int x = 0; x < _options.scale.value; x++)
-        {
-          for (int y = 0; y < _options.scale.value; y++)
+          int stampX = entry.key.x;
+          int stampY = entry.key.y;
+          if (_options.flipH.value)
           {
-            _stampData[CoordinateSetI(x: _cursorPosNorm.x + (stampX * _options.scale.value) + x, y: _cursorPosNorm.y + (stampY * _options.scale.value) + y)] = entry.value;
+            stampX = currentStamp.width - stampX;
+          }
+          if (_options.flipV.value)
+          {
+            stampY = currentStamp.height - stampY;
+          }
+
+          for (int x = 0; x < _options.scale.value; x++)
+          {
+            for (int y = 0; y < _options.scale.value; y++)
+            {
+              _stampData[CoordinateSetI(x: _cursorPosNorm.x + (stampX * _options.scale.value) + x, y: _cursorPosNorm.y + (stampY * _options.scale.value) + y)] = entry.value;
+            }
           }
         }
       }
-    }
 
-    if (drawParams.primaryDown && !_down)
-    {
-      _down = true;
-    }
-    else if (!drawParams.primaryDown && _down)
-    {
-      _dump(drawParams: drawParams);
-      _down = false;
+      if (drawParams.primaryDown && !_down)
+      {
+        _down = true;
+      }
+      else if (!drawParams.primaryDown && _down)
+      {
+        _dump(drawParams: drawParams);
+        _down = false;
+      }
     }
 
     _oldCursorPos.x = _cursorPosNorm.x;

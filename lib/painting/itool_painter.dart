@@ -272,7 +272,10 @@ abstract class IToolPainter
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != selectedColor))
           {
-            pixelMap[coord] = selectedColor;
+            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
+            {
+              pixelMap[coord] = selectedColor;
+            }
           }
         }
         //with shading
@@ -326,7 +329,10 @@ abstract class IToolPainter
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != drawColor))
           {
-            pixelMap[coord] = drawColor;
+            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
+            {
+              pixelMap[coord] = drawColor;
+            }
           }
         }
         //with shading

@@ -12,6 +12,7 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/selection_bar_widget.dart';
 
 
@@ -221,8 +222,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
-      //NOT USED ATM
       _secondaryIsDown = true;
+      //TODO should change to color picker while pressed
     }
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -287,6 +288,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_secondaryIsDown && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown = false;
+      //TODO trigger color pick and change to previous tool
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
     {
@@ -426,6 +428,12 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
     }
 
+    _checkSelectedToolData();
+    appState.repaintNotifier.repaint();
+  }
+
+  void _checkSelectedToolData()
+  {
     if (appState.selectedTool.value == ToolType.select)
     {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
@@ -444,7 +452,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
               final CoordinateSetI checkPoint = CoordinateSetI(x: x, y: y);
               if (Helper.isPointInPolygon(checkPoint, selectionPainter.polygonPoints))
               {
-                  selection.add(checkPoint);
+                selection.add(checkPoint);
               }
             }
           }
@@ -461,11 +469,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          appState.selectedColor.value = colorPickPainter.selectedColor!;
+          //appState.selectedColor.value = colorPickPainter.selectedColor!;
+          appState.colorSelected(colorPickPainter.selectedColor!);
         }
       }
     }
-    appState.repaintNotifier.repaint();
   }
 
   void _hover(PointerHoverEvent details)

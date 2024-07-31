@@ -56,7 +56,7 @@ class ShapePainter extends IToolPainter
       selectionChanged = true;
     }
 
-    if (!_waitingForRasterization)
+    if (!_waitingForRasterization && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
     {
       _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
       if (_isStartOnCanvas)

@@ -188,53 +188,55 @@ class LinePainter extends IToolPainter
       }
     }
 
-    if (drawParams.primaryDown)
+    if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
     {
-      if (!_isDown)
+      if (drawParams.primaryDown)
       {
-        if (_lineStarted && !_dragStarted)
+        if (!_isDown)
         {
-          _lineEndPos1.x = _cursorPosNorm.x;
-          _lineEndPos1.y = _cursorPosNorm.y;
-          _dragStarted = true;
+          if (_lineStarted && !_dragStarted)
+          {
+            _lineEndPos1.x = _cursorPosNorm.x;
+            _lineEndPos1.y = _cursorPosNorm.y;
+            _dragStarted = true;
+          }
+          _isDown = true;
         }
-        _isDown = true;
-      }
 
-      if (_dragStarted)
-      {
-        _lineEndPos2.x = _cursorPosNorm.x;
-        _lineEndPos2.y = _cursorPosNorm.y;
-      }
-    }
-    else if (!drawParams.primaryDown && _isDown)
-    {
-      //FIRST (set starting point)
-      if (!_lineStarted)
-      {
-        _lineStartPos.x = _cursorPosNorm.x;
-        _lineStartPos.y = _cursorPosNorm.y;
-        _lineStarted = true;
-      }
-      else
-      {
-        final HashMap<CoordinateSetI, ColorReference> drawingPixels =  getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
-        if (!appState.selectionState.selection.isEmpty())
+        if (_dragStarted)
         {
-          appState.selectionState.selection.addDirectlyAll(drawingPixels);
+          _lineEndPos2.x = _cursorPosNorm.x;
+          _lineEndPos2.y = _cursorPosNorm.y;
+        }
+      }
+      else if (!drawParams.primaryDown && _isDown)
+      {
+        //FIRST (set starting point)
+        if (!_lineStarted)
+        {
+          _lineStartPos.x = _cursorPosNorm.x;
+          _lineStartPos.y = _cursorPosNorm.y;
+          _lineStarted = true;
         }
         else
         {
-          drawParams.currentLayer.setDataAll(drawingPixels);
+          final HashMap<CoordinateSetI, ColorReference> drawingPixels =  getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          if (!appState.selectionState.selection.isEmpty())
+          {
+            appState.selectionState.selection.addDirectlyAll(drawingPixels);
+          }
+          else
+          {
+            drawParams.currentLayer.setDataAll(drawingPixels);
+          }
+          hasHistoryData = true;
+          _lineStarted = false;
+          _dragStarted = false;
+          _linePoints.clear();
         }
-        hasHistoryData = true;
-        _lineStarted = false;
-        _dragStarted = false;
-        _linePoints.clear();
+        _isDown = false;
       }
-      _isDown = false;
     }
-
   }
 
   @override

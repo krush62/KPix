@@ -2,12 +2,20 @@
 import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
+
+class HistoryManagerOptions
+{
+  final int stepCount;
+  HistoryManagerOptions({required this.stepCount});
+}
 
 class HistoryRampData
 {
@@ -147,8 +155,7 @@ class HistoryManager
 {
   final ValueNotifier<bool> hasUndo = ValueNotifier(false);
   final ValueNotifier<bool> hasRedo = ValueNotifier(false);
-  //TODO magic number (-> config)
-  final int _maxEntries = 10;
+  final int _maxEntries = GetIt.I.get<PreferenceManager>().historyManagerOptions.stepCount;
   int _curPos = -1;
   final Queue<HistoryState> _states = Queue();
 

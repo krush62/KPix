@@ -1,5 +1,6 @@
 
 // ignore_for_file: constant_identifier_names
+import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/main.dart';
@@ -278,6 +279,8 @@ enum PreferenceInt
 
   ColorNames_Scheme(defaultValue: 0),
 
+  HistoryOptions_Steps(defaultValue: 50),
+
   ;
 
 
@@ -385,6 +388,8 @@ class PreferenceManager
   late KPalConstraints kPalConstraints;
   late KPalWidgetOptions kPalWidgetOptions;
 
+  late HistoryManagerOptions historyManagerOptions;
+
   late ColorNames colorNames;
 
   final FontManager _fontManager;
@@ -393,11 +398,12 @@ class PreferenceManager
   PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
   {
     _init();
-    loadWidgetOptions();
-    loadToolOptions();
-    loadKPalOptions();
-    loadColorNames();
-    loadPainterOptions();
+    _loadHistoryOptions();
+    _loadWidgetOptions();
+    _loadToolOptions();
+    _loadKPalOptions();
+    _loadColorNames();
+    _loadPainterOptions();
 
   }
 
@@ -424,22 +430,22 @@ class PreferenceManager
     }
   }
 
-  double getValueD(PreferenceDouble prefName)
+  double _getValueD(PreferenceDouble prefName)
   {
     return _doubleMap[prefName]?.value ?? 0.0;
   }
 
-  int getValueI(PreferenceInt prefName)
+  int _getValueI(PreferenceInt prefName)
   {
     return _intMap[prefName]?.value ?? 0;
   }
 
-  bool getValueB(PreferenceBool prefName)
+  bool _getValueB(PreferenceBool prefName)
   {
     return _boolMap[prefName]?.value ?? false;
   }
 
-  String getValueS(PreferenceString prefName)
+  String _getValueS(PreferenceString prefName)
   {
     return _stringMap[prefName]?.value ?? "";
   }
@@ -463,189 +469,194 @@ class PreferenceManager
     });
   }
 
+  void _loadHistoryOptions()
+  {
+    historyManagerOptions = HistoryManagerOptions(stepCount: _getValueI(PreferenceInt.HistoryOptions_Steps));
+  }
 
-  void loadWidgetOptions()
+
+  void _loadWidgetOptions()
   {
     mainLayoutOptions = MainLayoutOptions(
-        splitViewDividerWidth: getValueD(PreferenceDouble.Layout_SplitView_DividerWidth),
-        splitViewGrooveGap: getValueD(PreferenceDouble.Layout_SplitView_GrooveGap),
-        splitViewGrooveThickness: getValueD(PreferenceDouble.Layout_SplitView_GrooveThickness),
-        splitViewGrooveSize: getValueD(PreferenceDouble.Layout_SplitView_GrooveSize),
-        splitViewFlexLeftMin: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMin),
-        splitViewFlexLeftMax: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMax),
-        splitViewFlexRightMin: getValueD(PreferenceDouble.Layout_SplitView_FlexRightMin),
-        splitViewFlexRightMax: getValueD(PreferenceDouble.Layout_SplitView_FlexRightMax),
-        splitViewGrooveCountMin: getValueI(PreferenceInt.Layout_SplitView_GrooveCountMin),
-        splitViewGrooveCountMax: getValueI(PreferenceInt.Layout_SplitView_GrooveCountMax),
-        splitViewAnimationLength: getValueI(PreferenceInt.Layout_SplitView_AnimationLength),
-        splitViewFlexLeftDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
-        splitViewFlexCenterDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexCenterDefault),
-        splitViewFlexRightDefault: getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault));
+        splitViewDividerWidth: _getValueD(PreferenceDouble.Layout_SplitView_DividerWidth),
+        splitViewGrooveGap: _getValueD(PreferenceDouble.Layout_SplitView_GrooveGap),
+        splitViewGrooveThickness: _getValueD(PreferenceDouble.Layout_SplitView_GrooveThickness),
+        splitViewGrooveSize: _getValueD(PreferenceDouble.Layout_SplitView_GrooveSize),
+        splitViewFlexLeftMin: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMin),
+        splitViewFlexLeftMax: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMax),
+        splitViewFlexRightMin: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightMin),
+        splitViewFlexRightMax: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightMax),
+        splitViewGrooveCountMin: _getValueI(PreferenceInt.Layout_SplitView_GrooveCountMin),
+        splitViewGrooveCountMax: _getValueI(PreferenceInt.Layout_SplitView_GrooveCountMax),
+        splitViewAnimationLength: _getValueI(PreferenceInt.Layout_SplitView_AnimationLength),
+        splitViewFlexLeftDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
+        splitViewFlexCenterDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexCenterDefault),
+        splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault));
     canvasWidgetOptions = CanvasOptions(
-        stylusPollRate: getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
-        historyCHeckPollRate: getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
-        singleTouchDelay: getValueI(PreferenceInt.Layout_Canvas_SingleTouchDelay),
-        longPressDuration: getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
-        longPressCancelDistance: getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),
-        stylusZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance),
-        touchZoomStepDistance: getValueD(PreferenceDouble.Layout_Canvas_TouchZoomStepDistance),
-        stylusToolSizeDistance: getValueD(PreferenceDouble.Layout_Canvas_StylusToolSizeDistance),
-        minVisibilityFactor: getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor),
-        idleTimerRate: getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate));
+        stylusPollRate: _getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
+        historyCHeckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
+        singleTouchDelay: _getValueI(PreferenceInt.Layout_Canvas_SingleTouchDelay),
+        longPressDuration: _getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
+        longPressCancelDistance: _getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),
+        stylusZoomStepDistance: _getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance),
+        touchZoomStepDistance: _getValueD(PreferenceDouble.Layout_Canvas_TouchZoomStepDistance),
+        stylusToolSizeDistance: _getValueD(PreferenceDouble.Layout_Canvas_StylusToolSizeDistance),
+        minVisibilityFactor: _getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor),
+        idleTimerRate: _getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate));
     toolsWidgetOptions = ToolsWidgetOptions(
-        padding: getValueD(PreferenceDouble.Layout_Tools_Padding),
-        colCount: getValueI(PreferenceInt.Layout_Tools_ColCount),
-        buttonSize: getValueD(PreferenceDouble.Layout_Tools_ButtonSize),
-        iconSize: getValueD(PreferenceDouble.Layout_Tools_IconSize));
+        padding: _getValueD(PreferenceDouble.Layout_Tools_Padding),
+        colCount: _getValueI(PreferenceInt.Layout_Tools_ColCount),
+        buttonSize: _getValueD(PreferenceDouble.Layout_Tools_ButtonSize),
+        iconSize: _getValueD(PreferenceDouble.Layout_Tools_IconSize));
     paletteWidgetOptions = PaletteWidgetOptions(
-        padding: getValueD(PreferenceDouble.Layout_Palette_Padding));
+        padding: _getValueD(PreferenceDouble.Layout_Palette_Padding));
     colorEntryOptions = ColorEntryWidgetOptions(
-        unselectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
-        selectedMargin: getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
-        roundRadius: getValueD(PreferenceDouble.Layout_ColorEntry_RoundRadius),
-        addIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
-        settingsIconSize: getValueD(PreferenceDouble.Layout_ColorEntry_SettingsIconSize),
-        buttonPadding: getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
-        minSize: getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
-        maxSize: getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),);
+        unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
+        selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
+        roundRadius: _getValueD(PreferenceDouble.Layout_ColorEntry_RoundRadius),
+        addIconSize: _getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
+        settingsIconSize: _getValueD(PreferenceDouble.Layout_ColorEntry_SettingsIconSize),
+        buttonPadding: _getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
+        minSize: _getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
+        maxSize: _getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),);
     toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
-        columnWidthRatio: getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
-        padding: getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
-        smallButtonSize: getValueD(PreferenceDouble.Layout_ToolSettings_SmallButtonSize),
-        smallIconSize: getValueD(PreferenceDouble.Layout_ToolSettings_SmallIconSize));
+        columnWidthRatio: _getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
+        padding: _getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
+        smallButtonSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallButtonSize),
+        smallIconSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallIconSize));
     mainToolbarWidgetOptions = MainToolbarWidgetOptions(
-        paletteFlex: getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
-        toolSettingsFlex: getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
-        dividerHeight: getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
-        dividerPadding: getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),);
+        paletteFlex: _getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
+        toolSettingsFlex: _getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
+        dividerHeight: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
+        dividerPadding: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),);
     shaderWidgetOptions = ShaderWidgetOptions(
-        outSidePadding: getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
+        outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
     statusBarWidgetOptions = StatusBarWidgetOptions(
-      height: getValueD(PreferenceDouble.Layout_StatusBar_Height),
-      padding: getValueD(PreferenceDouble.Layout_StatusBar_Padding),
-      dividerWidth: getValueD(PreferenceDouble.Layout_StatusBar_DividerWidth),);
+      height: _getValueD(PreferenceDouble.Layout_StatusBar_Height),
+      padding: _getValueD(PreferenceDouble.Layout_StatusBar_Padding),
+      dividerWidth: _getValueD(PreferenceDouble.Layout_StatusBar_DividerWidth),);
     shaderOptions = ShaderOptions(
-        shaderDirectionDefault: getValueB(PreferenceBool.Shader_DirectionRight),
-        onlyCurrentRampEnabledDefault: getValueB(PreferenceBool.Shader_CurrentRampOnly),
-        isEnabledDefault: getValueB(PreferenceBool.Shader_IsEnabled));
+        shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
+        onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),
+        isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled));
     overlayEntryOptions = OverlayEntrySubMenuOptions(
-        offsetX: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetX),
-        offsetXLeft: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetXLeft),
-        offsetY: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetY),
-        buttonSpacing: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
-        width: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
-        buttonHeight: getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonHeight),
-        smokeOpacity: getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity));
+        offsetX: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetX),
+        offsetXLeft: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetXLeft),
+        offsetY: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetY),
+        buttonSpacing: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
+        width: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
+        buttonHeight: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonHeight),
+        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity));
     alertDialogOptions = OverlayEntryAlertDialogOptions(
-        smokeOpacity: getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
-        minWidth: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinWidth),
-        minHeight: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinHeight),
-        maxWidth: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxWidth),
-        maxHeight: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxHeight),
-        padding: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Padding),
-        borderWidth: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderWidth),
-        borderRadius: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderRadius),
-        iconSize: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_IconSize),
-        elevation: getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation));
+        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
+        minWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinWidth),
+        minHeight: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinHeight),
+        maxWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxWidth),
+        maxHeight: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxHeight),
+        padding: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Padding),
+        borderWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderWidth),
+        borderRadius: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderRadius),
+        iconSize: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_IconSize),
+        elevation: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation));
     mainButtonWidgetOptions = MainButtonWidgetOptions(
-        padding: getValueD(PreferenceDouble.Layout_MainButton_Padding),
-        menuIconSize: getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),
-        dividerSize: getValueD(PreferenceDouble.Layout_MainButton_DividerSize));
+        padding: _getValueD(PreferenceDouble.Layout_MainButton_Padding),
+        menuIconSize: _getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),
+        dividerSize: _getValueD(PreferenceDouble.Layout_MainButton_DividerSize));
     layerWidgetOptions = LayerWidgetOptions(
-        outerPadding: getValueD(PreferenceDouble.Layout_LayerWidget_OuterPadding),
-        innerPadding: getValueD(PreferenceDouble.Layout_LayerWidget_InnerPadding),
-        borderRadius: getValueD(PreferenceDouble.Layout_LayerWidget_BorderRadius),
-        buttonSizeMin: getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMin),
-        buttonSizeMax: getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMax),
-        iconSize: getValueD(PreferenceDouble.Layout_LayerWidget_IconSize),
-        height: getValueD(PreferenceDouble.Layout_LayerWidget_Height),
-        borderWidth: getValueD(PreferenceDouble.Layout_LayerWidget_BorderWidth),
-        dragFeedbackSize: getValueD(PreferenceDouble.Layout_LayerWidget_DragFeedbackSize),
-        dragOpacity: getValueD(PreferenceDouble.Layout_LayerWidget_DragOpacity),
-        dragTargetHeight: getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
-        dragTargetShowDuration: getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
-        dragDelay: getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
-        thumbUpdateTimerSec: getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerSec),
-        thumbUpdateTimerMsec: getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec));
+        outerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_OuterPadding),
+        innerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_InnerPadding),
+        borderRadius: _getValueD(PreferenceDouble.Layout_LayerWidget_BorderRadius),
+        buttonSizeMin: _getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMin),
+        buttonSizeMax: _getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMax),
+        iconSize: _getValueD(PreferenceDouble.Layout_LayerWidget_IconSize),
+        height: _getValueD(PreferenceDouble.Layout_LayerWidget_Height),
+        borderWidth: _getValueD(PreferenceDouble.Layout_LayerWidget_BorderWidth),
+        dragFeedbackSize: _getValueD(PreferenceDouble.Layout_LayerWidget_DragFeedbackSize),
+        dragOpacity: _getValueD(PreferenceDouble.Layout_LayerWidget_DragOpacity),
+        dragTargetHeight: _getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
+        dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
+        dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
+        thumbUpdateTimerSec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerSec),
+        thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec));
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
-        iconHeight: getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
-        padding: getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
-        opacityDuration: getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration));
+        iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
+        padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
+        opacityDuration: _getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration));
 
   }
 
-  void loadToolOptions()
+  void _loadToolOptions()
   {
     PencilOptions pencilOptions = PencilOptions(
-        sizeMin: getValueI(PreferenceInt.Tool_Pencil_SizeMin),
-        sizeMax: getValueI(PreferenceInt.Tool_Pencil_SizeMax),
-        sizeDefault: getValueI(PreferenceInt.Tool_Pencil_Size),
-        shapeDefault: getValueI(PreferenceInt.Tool_Pencil_Shape),
-        pixelPerfectDefault: getValueB(PreferenceBool.Tool_Pencil_PixelPerfect));
+        sizeMin: _getValueI(PreferenceInt.Tool_Pencil_SizeMin),
+        sizeMax: _getValueI(PreferenceInt.Tool_Pencil_SizeMax),
+        sizeDefault: _getValueI(PreferenceInt.Tool_Pencil_Size),
+        shapeDefault: _getValueI(PreferenceInt.Tool_Pencil_Shape),
+        pixelPerfectDefault: _getValueB(PreferenceBool.Tool_Pencil_PixelPerfect));
     ShapeOptions shapeOptions = ShapeOptions(
-        shapeDefault: getValueI(PreferenceInt.Tool_Shape_Shape),
-        keepRatioDefault: getValueB(PreferenceBool.Tool_Shape_KeepAspectRatio),
-        strokeOnlyDefault: getValueB(PreferenceBool.Tool_Shape_StrokeOnly),
-        strokeWidthMin: getValueI(PreferenceInt.Tool_Shape_StrokeWidthMin),
-        strokeWidthMax: getValueI(PreferenceInt.Tool_Shape_StrokeWidthMax),
-        strokeWidthDefault: getValueI(PreferenceInt.Tool_Shape_StrokeWidth),
-        cornerRadiusMin: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMin),
-        cornerRadiusMax: getValueI(PreferenceInt.Tool_Shape_CornerRadiusMax),
-        cornerRadiusDefault: getValueI(PreferenceInt.Tool_Shape_CornerRadius),
-        cornerCountMin: getValueI(PreferenceInt.Tool_Shape_CornerCountMin),
-        cornerCountMax: getValueI(PreferenceInt.Tool_Shape_CornerCountMax),
-        cornerCountDefault: getValueI(PreferenceInt.Tool_Shape_CornerCount),
-        ellipseAngleMin: getValueI(PreferenceInt.Tool_Shape_EllipseAngleMin),
-        ellipseAngleMax: getValueI(PreferenceInt.Tool_Shape_EllipseAngleMax),
-        ellipseAngleDefault: getValueI(PreferenceInt.Tool_Shape_EllipseAngle),
-        ellipseAngleSteps: getValueI(PreferenceInt.Tool_Shape_EllipseAngleSteps),);
+        shapeDefault: _getValueI(PreferenceInt.Tool_Shape_Shape),
+        keepRatioDefault: _getValueB(PreferenceBool.Tool_Shape_KeepAspectRatio),
+        strokeOnlyDefault: _getValueB(PreferenceBool.Tool_Shape_StrokeOnly),
+        strokeWidthMin: _getValueI(PreferenceInt.Tool_Shape_StrokeWidthMin),
+        strokeWidthMax: _getValueI(PreferenceInt.Tool_Shape_StrokeWidthMax),
+        strokeWidthDefault: _getValueI(PreferenceInt.Tool_Shape_StrokeWidth),
+        cornerRadiusMin: _getValueI(PreferenceInt.Tool_Shape_CornerRadiusMin),
+        cornerRadiusMax: _getValueI(PreferenceInt.Tool_Shape_CornerRadiusMax),
+        cornerRadiusDefault: _getValueI(PreferenceInt.Tool_Shape_CornerRadius),
+        cornerCountMin: _getValueI(PreferenceInt.Tool_Shape_CornerCountMin),
+        cornerCountMax: _getValueI(PreferenceInt.Tool_Shape_CornerCountMax),
+        cornerCountDefault: _getValueI(PreferenceInt.Tool_Shape_CornerCount),
+        ellipseAngleMin: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleMin),
+        ellipseAngleMax: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleMax),
+        ellipseAngleDefault: _getValueI(PreferenceInt.Tool_Shape_EllipseAngle),
+        ellipseAngleSteps: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleSteps),);
     FillOptions fillOptions = FillOptions(
-        fillAdjacentDefault: getValueB(PreferenceBool.Tool_Fill_FillAdjacent),
-        fillWholeRampDefault: getValueB(PreferenceBool.Tool_Fill_FillWholeRamp));
+        fillAdjacentDefault: _getValueB(PreferenceBool.Tool_Fill_FillAdjacent),
+        fillWholeRampDefault: _getValueB(PreferenceBool.Tool_Fill_FillWholeRamp));
     SelectOptions selectOptions = SelectOptions(
-        shapeDefault: getValueI(PreferenceInt.Tool_Select_Shape),
-        keepAspectRatioDefault: getValueB(PreferenceBool.Tool_Select_KeepAspectRatio),
-        modeDefault: getValueI(PreferenceInt.Tool_Select_Mode),
-        wandContinuousDefault: getValueB(PreferenceBool.Tool_Wand_Continuous),
-        wandWholeRampDefault: getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp));
+        shapeDefault: _getValueI(PreferenceInt.Tool_Select_Shape),
+        keepAspectRatioDefault: _getValueB(PreferenceBool.Tool_Select_KeepAspectRatio),
+        modeDefault: _getValueI(PreferenceInt.Tool_Select_Mode),
+        wandContinuousDefault: _getValueB(PreferenceBool.Tool_Wand_Continuous),
+        wandWholeRampDefault: _getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp));
     ColorPickOptions colorPickOptions = ColorPickOptions();
     EraserOptions eraserOptions = EraserOptions(
-        sizeMin: getValueI(PreferenceInt.Tool_Eraser_SizeMin),
-        sizeMax: getValueI(PreferenceInt.Tool_Eraser_SizeMax),
-        sizeDefault: getValueI(PreferenceInt.Tool_Eraser_Size),
-        shapeDefault: getValueI(PreferenceInt.Tool_Eraser_Shape));
+        sizeMin: _getValueI(PreferenceInt.Tool_Eraser_SizeMin),
+        sizeMax: _getValueI(PreferenceInt.Tool_Eraser_SizeMax),
+        sizeDefault: _getValueI(PreferenceInt.Tool_Eraser_Size),
+        shapeDefault: _getValueI(PreferenceInt.Tool_Eraser_Shape));
     TextOptions textOptions = TextOptions(
         fontManager: _fontManager,
-        fontDefault: getValueI(PreferenceInt.Tool_Text_Font),
-        sizeMin: getValueI(PreferenceInt.Tool_Text_SizeMin),
-        sizeMax: getValueI(PreferenceInt.Tool_Text_SizeMax),
-        sizeDefault: getValueI(PreferenceInt.Tool_Text_Size),
-        textDefault: getValueS(PreferenceString.Tool_Text_TextDefault),
-        maxLength: getValueI(PreferenceInt.Tool_Text_MaxLength));
+        fontDefault: _getValueI(PreferenceInt.Tool_Text_Font),
+        sizeMin: _getValueI(PreferenceInt.Tool_Text_SizeMin),
+        sizeMax: _getValueI(PreferenceInt.Tool_Text_SizeMax),
+        sizeDefault: _getValueI(PreferenceInt.Tool_Text_Size),
+        textDefault: _getValueS(PreferenceString.Tool_Text_TextDefault),
+        maxLength: _getValueI(PreferenceInt.Tool_Text_MaxLength));
     SprayCanOptions sprayCanOptions = SprayCanOptions(
-        radiusMin: getValueI(PreferenceInt.Tool_SprayCan_RadiusMin),
-        radiusMax: getValueI(PreferenceInt.Tool_SprayCan_RadiusMax),
-        radiusDefault: getValueI(PreferenceInt.Tool_SprayCan_Radius),
-        blobSizeMin: getValueI(PreferenceInt.Tool_SprayCan_BlobSizeMin),
-        blobSizeMax: getValueI(PreferenceInt.Tool_SprayCan_BlobSizeMax),
-        blobSizeDefault: getValueI(PreferenceInt.Tool_SprayCan_BlobSize),
-        intensityMin: getValueI(PreferenceInt.Tool_SprayCan_IntensityMin),
-        intensityMax: getValueI(PreferenceInt.Tool_SprayCan_IntensityMax),
-        intensityDefault: getValueI(PreferenceInt.Tool_SprayCan_Intensity));
+        radiusMin: _getValueI(PreferenceInt.Tool_SprayCan_RadiusMin),
+        radiusMax: _getValueI(PreferenceInt.Tool_SprayCan_RadiusMax),
+        radiusDefault: _getValueI(PreferenceInt.Tool_SprayCan_Radius),
+        blobSizeMin: _getValueI(PreferenceInt.Tool_SprayCan_BlobSizeMin),
+        blobSizeMax: _getValueI(PreferenceInt.Tool_SprayCan_BlobSizeMax),
+        blobSizeDefault: _getValueI(PreferenceInt.Tool_SprayCan_BlobSize),
+        intensityMin: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMin),
+        intensityMax: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMax),
+        intensityDefault: _getValueI(PreferenceInt.Tool_SprayCan_Intensity));
     LineOptions lineOptions = LineOptions(
-        widthMin: getValueI(PreferenceInt.Tool_Line_WidthMin),
-        widthMax: getValueI(PreferenceInt.Tool_Line_WidthMax),
-        widthDefault: getValueI(PreferenceInt.Tool_Line_Width),
-        bezierCalculationPoints: getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
-        integerAspectRatioDefault: getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
+        widthMin: _getValueI(PreferenceInt.Tool_Line_WidthMin),
+        widthMax: _getValueI(PreferenceInt.Tool_Line_WidthMax),
+        widthDefault: _getValueI(PreferenceInt.Tool_Line_Width),
+        bezierCalculationPoints: _getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
+        integerAspectRatioDefault: _getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
     StampOptions stampOptions = StampOptions(
         stampManager: _stampManager,
-        scaleMin: getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
-        scaleMax: getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
-        scaleDefault: getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
-        stampDefault: getValueI(PreferenceInt.Tool_Stamp_StampDefault),
-        flipHDefault: getValueB(PreferenceBool.Tool_Stamp_FlipH),
-        flipVDefault: getValueB(PreferenceBool.Tool_Stamp_FlipH));
+        scaleMin: _getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
+        scaleMax: _getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
+        scaleDefault: _getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
+        stampDefault: _getValueI(PreferenceInt.Tool_Stamp_StampDefault),
+        flipHDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
+        flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH));
     toolOptions = ToolOptions(
         pencilOptions: pencilOptions,
         shapeOptions: shapeOptions,
@@ -659,89 +670,89 @@ class PreferenceManager
         lineOptions: lineOptions,);
   }
 
-  void loadKPalOptions()
+  void _loadKPalOptions()
   {
     kPalConstraints = KPalConstraints(
-        colorCountMin: getValueI(PreferenceInt.KPal_Constraints_ColorCountMin),
-        colorCountMax: getValueI(PreferenceInt.KPal_Constraints_ColorCountMax),
-        colorCountDefault: getValueI(PreferenceInt.KPal_Constraints_ColorCountDefault),
-        baseHueMin: getValueI(PreferenceInt.KPal_Constraints_BaseHueMin),
-        baseHueMax: getValueI(PreferenceInt.KPal_Constraints_BaseHueMax),
-        baseHueDefault: getValueI(PreferenceInt.KPal_Constraints_BaseHueDefault),
-        baseSatMin: getValueI(PreferenceInt.KPal_Constraints_BaseSatMin),
-        baseSatMax: getValueI(PreferenceInt.KPal_Constraints_BaseSatMax),
-        baseSatDefault: getValueI(PreferenceInt.KPal_Constraints_BaseSatDefault),
-        hueShiftMin: getValueI(PreferenceInt.KPal_Constraints_HueShiftMin),
-        hueShiftMax: getValueI(PreferenceInt.KPal_Constraints_HueShiftMax),
-        hueShiftDefault: getValueI(PreferenceInt.KPal_Constraints_HueShiftDefault),
-        hueShiftExpMin: getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMin),
-        hueShiftExpMax: getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMax),
-        hueShiftExpDefault: getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpDefault),
-        satShiftMin: getValueI(PreferenceInt.KPal_Constraints_SatShiftMin),
-        satShiftMax: getValueI(PreferenceInt.KPal_Constraints_SatShiftMax),
-        satShiftDefault: getValueI(PreferenceInt.KPal_Constraints_SatShiftDefault),
-        satShiftExpMin: getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMin),
-        satShiftExpMax: getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMax),
-        satShiftExpDefault: getValueD(PreferenceDouble.KPal_Constraints_staShiftExpDefault),
-        valueRangeMin: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMin),
-        valueRangeMinDefault: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMinDefault),
-        valueRangeMax: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMax),
-        valueRangeMaxDefault: getValueI(PreferenceInt.KPal_Constraints_ValueRangeMaxDefault),
-        satCurveDefault: getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault));
+        colorCountMin: _getValueI(PreferenceInt.KPal_Constraints_ColorCountMin),
+        colorCountMax: _getValueI(PreferenceInt.KPal_Constraints_ColorCountMax),
+        colorCountDefault: _getValueI(PreferenceInt.KPal_Constraints_ColorCountDefault),
+        baseHueMin: _getValueI(PreferenceInt.KPal_Constraints_BaseHueMin),
+        baseHueMax: _getValueI(PreferenceInt.KPal_Constraints_BaseHueMax),
+        baseHueDefault: _getValueI(PreferenceInt.KPal_Constraints_BaseHueDefault),
+        baseSatMin: _getValueI(PreferenceInt.KPal_Constraints_BaseSatMin),
+        baseSatMax: _getValueI(PreferenceInt.KPal_Constraints_BaseSatMax),
+        baseSatDefault: _getValueI(PreferenceInt.KPal_Constraints_BaseSatDefault),
+        hueShiftMin: _getValueI(PreferenceInt.KPal_Constraints_HueShiftMin),
+        hueShiftMax: _getValueI(PreferenceInt.KPal_Constraints_HueShiftMax),
+        hueShiftDefault: _getValueI(PreferenceInt.KPal_Constraints_HueShiftDefault),
+        hueShiftExpMin: _getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMin),
+        hueShiftExpMax: _getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMax),
+        hueShiftExpDefault: _getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpDefault),
+        satShiftMin: _getValueI(PreferenceInt.KPal_Constraints_SatShiftMin),
+        satShiftMax: _getValueI(PreferenceInt.KPal_Constraints_SatShiftMax),
+        satShiftDefault: _getValueI(PreferenceInt.KPal_Constraints_SatShiftDefault),
+        satShiftExpMin: _getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMin),
+        satShiftExpMax: _getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMax),
+        satShiftExpDefault: _getValueD(PreferenceDouble.KPal_Constraints_staShiftExpDefault),
+        valueRangeMin: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMin),
+        valueRangeMinDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMinDefault),
+        valueRangeMax: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMax),
+        valueRangeMaxDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMaxDefault),
+        satCurveDefault: _getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault));
 
     KPalColorCardWidgetOptions colorCardWidgetOptions = KPalColorCardWidgetOptions(
-        borderRadius: getValueD(PreferenceDouble.KPalColorCard_Layout_BorderRadius),
-        borderWidth: getValueD(PreferenceDouble.KPalColorCard_Layout_BorderWidth),
-        outsidePadding: getValueD(PreferenceDouble.KPalColorCard_Layout_OutsidePadding),
-        colorFlex: getValueI(PreferenceInt.KPalColorCard_Layout_ColorFlex),
-        colorNameFlex: getValueI(PreferenceInt.KPalColorCard_Layout_ColorNameFlex),
-        colorNumbersFlex: getValueI(PreferenceInt.KPalColorCard_Layout_ColorNumbersFlex));
+        borderRadius: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderRadius),
+        borderWidth: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderWidth),
+        outsidePadding: _getValueD(PreferenceDouble.KPalColorCard_Layout_OutsidePadding),
+        colorFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorFlex),
+        colorNameFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNameFlex),
+        colorNumbersFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNumbersFlex));
 
     KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
-        padding: getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
-        centerFlex: getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
-        rightFlex: getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
-        minHeight: getValueD(PreferenceDouble.KPalRamp_Layout_MinHeight),
-        maxHeight: getValueD(PreferenceDouble.KPalRamp_Layout_MaxHeight),
-        borderWidth: getValueD(PreferenceDouble.KPalRamp_Layout_BorderWidth),
-        borderRadius: getValueD(PreferenceDouble.KPalRamp_Layout_BorderRadius),
-        dividerThickness: getValueD(PreferenceDouble.KPalRamp_Layout_DividerThickness),
-        rowControlFlex: getValueI(PreferenceInt.KPalRamp_Layout_RowControlFlex),
-        rowLabelFlex: getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
-        rowValueFlex: getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
+        padding: _getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
+        centerFlex: _getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
+        rightFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
+        minHeight: _getValueD(PreferenceDouble.KPalRamp_Layout_MinHeight),
+        maxHeight: _getValueD(PreferenceDouble.KPalRamp_Layout_MaxHeight),
+        borderWidth: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderWidth),
+        borderRadius: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderRadius),
+        dividerThickness: _getValueD(PreferenceDouble.KPalRamp_Layout_DividerThickness),
+        rowControlFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowControlFlex),
+        rowLabelFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
+        rowValueFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
         colorCardWidgetOptions: colorCardWidgetOptions);
 
     kPalWidgetOptions = KPalWidgetOptions(
-        borderWidth: getValueD(PreferenceDouble.KPal_Layout_BorderWidth),
-        outsidePadding: getValueD(PreferenceDouble.KPal_Layout_OutsidePadding),
-        smokeOpacity: getValueI(PreferenceInt.KPal_Layout_SmokeOpacity),
-        borderRadius: getValueD(PreferenceDouble.KPal_Layout_BorderRadius),
-        iconSize: getValueD(PreferenceDouble.KPal_Layout_IconSize),
-        insidePadding: getValueD(PreferenceDouble.KPal_Layout_InsidePadding),
+        borderWidth: _getValueD(PreferenceDouble.KPal_Layout_BorderWidth),
+        outsidePadding: _getValueD(PreferenceDouble.KPal_Layout_OutsidePadding),
+        smokeOpacity: _getValueI(PreferenceInt.KPal_Layout_SmokeOpacity),
+        borderRadius: _getValueD(PreferenceDouble.KPal_Layout_BorderRadius),
+        iconSize: _getValueD(PreferenceDouble.KPal_Layout_IconSize),
+        insidePadding: _getValueD(PreferenceDouble.KPal_Layout_InsidePadding),
         rampOptions: rampWidgetOptions);
   }
 
-  void loadColorNames()
+  void _loadColorNames()
   {
     ColorNamesOptions options = ColorNamesOptions(
-        defaultNameScheme: getValueI(PreferenceInt.ColorNames_Scheme),
-        defaultColorNamePath: getValueS(PreferenceString.ColorNames_ColorNamePath));
+        defaultNameScheme: _getValueI(PreferenceInt.ColorNames_Scheme),
+        defaultColorNamePath: _getValueS(PreferenceString.ColorNames_ColorNamePath));
 
     colorNames = ColorNames(options: options);
 
   }
 
-  void loadPainterOptions()
+  void _loadPainterOptions()
   {
     kPixPainterOptions = KPixPainterOptions(
-        cursorSize: getValueD(PreferenceDouble.Painter_CursorSize),
-        cursorBorderWidth: getValueD(PreferenceDouble.Painter_CursorBorderWidth),
-        checkerBoardSize: getValueI(PreferenceInt.Painter_CheckerBoardSize),
-        pixelExtension: getValueD(PreferenceDouble.Painter_PixelExtension),
-        selectionSolidStrokeWidth: getValueD(PreferenceDouble.Painter_SelectionSolidStrokeWidth),
-        selectionPolygonCircleRadius: getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
-        selectionStrokeWidthLarge: getValueD(PreferenceDouble.Painter_SelectionStrokeWidthLarge),
-        selectionStrokeWidthSmall: getValueD(PreferenceDouble.Painter_SelectionStrokeWidthSmall),
+        cursorSize: _getValueD(PreferenceDouble.Painter_CursorSize),
+        cursorBorderWidth: _getValueD(PreferenceDouble.Painter_CursorBorderWidth),
+        checkerBoardSize: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
+        pixelExtension: _getValueD(PreferenceDouble.Painter_PixelExtension),
+        selectionSolidStrokeWidth: _getValueD(PreferenceDouble.Painter_SelectionSolidStrokeWidth),
+        selectionPolygonCircleRadius: _getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
+        selectionStrokeWidthLarge: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthLarge),
+        selectionStrokeWidthSmall: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthSmall),
     );
   }
 

@@ -1146,7 +1146,7 @@ class FileHandler
 
     final List<List<List<int>>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    final ZLibCodec zLibCodec = ZLibCodec();
+    final ZLibCodec zLibCodec = ZLibCodec(strategy: ZLibOption.strategyRle);
     const int tileSize = 64;
     for (int l = 0; l < appState.layers.value.length; l++)
     {
@@ -1221,13 +1221,321 @@ class FileHandler
       //tile data
     }
 
+
+    //WRITING
+
+    final List<int> layerOffsets = [];
+    final List<int> layerOffsetsInsertPositions = [];
+
+    int tattooIndex = 2;
     final ByteData outBytes = ByteData(fileSize);
     int offset = 0;
+
+    //header
+    final Uint8List fileType = utf8.encode("gimp xcf ");
+    final Uint8List version = utf8.encode("v011");
+    for (int i = 0; i < fileType.length; i++)
+    {
+      outBytes.setUint8(offset, fileType[i]);
+      offset++;
+    }
+
+    for (int i = 0; i < version.length; i++)
+    {
+      outBytes.setUint8(offset, version[i]);
+      offset++;
+    }
+
+    outBytes.setUint8(offset, 0);
+    offset++;
+    outBytes.setUint32(offset, appState.canvasSize.x); //width;
+    offset+=4;
+    outBytes.setUint32(offset, appState.canvasSize.y); //height
+    offset+=4;
+    outBytes.setUint32(offset, 2); //base type (2=indexed)
+    offset+=4;
+    outBytes.setUint32(offset, 150); //precision (8-bit gamma)
+    offset+=4;
+
+    //prop list
+
+    //PROP_COLORMAP
+    outBytes.setUint32(offset, 1);
+    offset+=4;
+    outBytes.setUint32(offset, (3 * colorList.length) + 4);
+    offset+=4;
+    for (final Color c in colorList)
+    {
+      outBytes.setUint8(offset, c.red);
+      offset++;
+      outBytes.setUint8(offset, c.green);
+      offset++;
+      outBytes.setUint8(offset, c.blue);
+      offset++;
+    }
+
+    //PROP_COMPRESSION
+    outBytes.setUint32(offset, 17);
+    offset+=4;
+    outBytes.setUint32(offset, 1);
+    offset+=4;
+    outBytes.setUint8(offset, 1);
+    offset++;
+
+    //PROP_RESOLUTION
+    outBytes.setUint32(offset, 19);
+    offset+=4;
+    outBytes.setUint32(offset, 8);
+    offset+=4;
+    outBytes.setFloat32(offset, 300);
+    offset+=4;
+    outBytes.setFloat32(offset, 300);
+    offset+=4;
+
+    //PROP_TATTOO
+    outBytes.setUint32(offset, 20);
+    offset+=4;
+    outBytes.setUint32(offset, 4);
+    offset+=4;
+    outBytes.setUint32(offset, tattooIndex++);
+    offset+=4;
+
+    //PROP_UNIT
+    outBytes.setUint32(offset, 20);
+    offset+=4;
+    outBytes.setUint32(offset, 4);
+    offset+=4;
+    outBytes.setUint32(offset, 1);
+    offset+=4;
+
+    //PROP_END
+    outBytes.setUint32(offset, 0);
+    offset+=4;
+    outBytes.setUint32(offset, 0);
+    offset+=4;
+
+    for (int i = 0; i < appState.layers.value.length; i++)
+    {
+      layerOffsetsInsertPositions.add(offset);
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+    }
+
+    outBytes.setUint64(offset, 0); //end layer pointers
+    outBytes.setUint64(offset, 0); //start/end channel pointers
+
+
     //TODO finish
-
-
-
-
   }
 
 }
+
+
+//TODO delete
+//GIMP FILE FORMAT
+
+/*
+//HEADER (30 bytes)
+byte[9]     "gimp xcf " File type identification (with space at the end)
+byte[4]     version     XCF version (use v011)
+byte        0            Zero marks the end of the version tag.
+uint32      width        Width of canvas
+uint32      height       Height of canvas
+uint32      base_type    Color mode of the image; one of
+						 0: RGB color
+						 1: Grayscale
+						 2: Indexed color (THIS IS THE ONE)
+uint32      precision    Image precision; this field is only present for
+						 100: 8-bit linear integer
+						 150: 8-bit gamma integer (preferred)
+
+//PROP LIST
+
+uint32  1        Type identification (PROP_COLORMAP)
+uint32  3*n+4    Payload length in bytes
+uint32  n        Number of colors in the color map (should be <256)
+,------------    Repeat n times:
+| byte  r        Red component of a color map color
+| byte  g        Green component of a color map color
+| byte  b        Blue component of a color map color
+`--
+
+
+uint32  17       Type identification (PROP_COMPRESSION)
+uint32  1        One byte of payload
+byte    comp     Compression indicator; one of
+				 0: No compression
+				 1: RLE encoding (default)
+				 2: zlib compression (worth a try)
+				 3: (Never used, but reserved for some fractal compression)
+
+uint32  19       Type identification (PROP_RESOLUTION)
+uint32  8        Eight bytes of payload
+float   hres     Horizontal resolution in pixels per inch (ppi) =300
+float   vres     Vertical resolution in pixels per inch (ppi) =300
+
+uint32  20         Type identification (PROP_TATTOO)
+uint32  4          Four bytes of payload
+uint32  tattoo     Nonzero unsigned integer identifier
+
+uint32  22       Type identification (PROP_UNIT)
+uint32  4        Four bytes of payload
+uint32  uid      Unit identifier; one of
+				 1: Inches (25.4 mm) (should be default)
+				 2: Millimeters (1 mm)
+				 3: Points (127/360 mm)
+				 4: Picas (127/30 mm)
+
+//SKIP PARASITE (21)
+
+uint32  0          Type identification (PROP_END)
+uint32  0          `PROP_END` has no payload.
+
+//layer pointers for each layer:
+uint64	address of layer
+
+uint64  0           Zero marks the end of the array of layer pointers.
+
+uint64  0           Zero marks the end of the array of channel pointers. (no channels)
+
+
+
+//Layers
+uint32     width  Width of the layer
+uint32     height Height of the layer
+uint32     type   Color mode of the layer: one of
+				  0: RGB color without alpha
+				  1: RGB color with alpha
+				  2: Grayscale without alpha
+				  3: Grayscale with alpha
+				  4: Indexed without alpha
+				  5: Indexed with alpha (THIS SHOULD BE THE MODE)
+string     name   Name of the layer
+
+//only for the first layer
+uint32  2        Type identification (PROP_ACTIVE_LAYER)
+uint32  0        `PROP_ACTIVE_LAYER` has no payload
+
+uint32  6          Type identification (PROP_OPACITY)
+uint32  4          Four bytes of payload
+uint32  opacity    Opacity on a scale from 0 (fully transparent) to
+				 255 (fully opaque) (ALWAYS 255)
+
+uint32  33         Type identification (PROP_FLOAT_OPACITY)
+uint32  4          Four bytes of payload
+float   opacity    Opacity on a scale from 0.0 (fully transparent) to
+				 1.0 (fully opaque) (ALWAYS 1.0)
+
+uint32  8          Type identification (PROP_VISIBLE)
+uint32  4          Four bytes of payload
+uint32  visible    1 if the layer/channel is visible; 0 if not
+
+uint32  9          Type identification (PROP_LINKED)
+uint32  4          Four bytes of payload
+uint32  linked     1 if the layer is linked; 0 if not (ALWAYS 0)
+
+uint32  34         Type identification (PROP_COLOR_TAG)
+uint32  4          Four bytes of payload
+uint32  tag        Color tag of the layer; (ALWAYS 0)
+
+uint32  28         Type identification (PROP_LOCK_CONTENT)
+uint32  4          Four bytes of payload
+uint32  locked     1 if the content is locked; 0 if not
+
+uint32  10           Type identification (PROP_LOCK_ALPHA)
+uint32  4            Four bytes of payload
+uint32  lock_alpha   1 if alpha is locked; 0 if not
+
+uint32  32         Type identification (PROP_LOCK_POSITION)
+uint32  4          Four bytes of payload
+uint32  locked     1 if the position is locked; 0 if not (ALWAYS 0)
+
+uint32  11       Type identification (PROP_APPLY_MASK)
+uint32  4        Four bytes of payload
+uint32  apply    1 if the layer mask should be applied, 0 if not (ALWAYS 0)
+
+uint32  12       Type identification (PROP_EDIT_MASK)
+uint32  4        Four bytes of payload
+uint32  editing  1 if the layer mask is currently being edited, 0 if not (ALWAYS 0)
+
+uint32  13       Type identification (PROP_SHOW_MASK)
+uint32  4        Four bytes of payload
+uint32  visible  1 if the layer mask is visible, 0 if not (ALWAYS 0)
+
+uint32  15       Type identification (PROP_OFFSETS)
+uint32  8        Eight bytes of payload
+int32   xoffset  Horizontal offset (ALWAYS 0)
+int32   yoffset  Vertical offset (ALWAYS 0)
+
+uint32  7        Type identification (PROP_MODE)
+uint32  4        Four bytes of payload
+unit32  mode     Layer mode; (ALWAYS 28)
+
+uint32  37         Type identification (PROP_BLEND_SPACE)
+uint32  4          Four bytes of payload
+int32   space      Composite space of the layer; ALWAYS 0
+
+uint32  36         Type identification (PROP_COMPOSITE_SPACE)
+uint32  4          Four bytes of payload
+int32   space      (ALWAYS -1 -> INT32!!!!)
+
+uint32  35         Type identification (PROP_COMPOSITE_MODE)
+uint32  4          Four bytes of payload
+int32   mode       (ALWAYS -1 -> INT32!!!!)
+
+uint32  20         Type identification (PROP TATTOO)
+uint32  4          Four bytes of payload
+uint32  tattoo     Nonzero unsigned integer identifier
+
+uint32  0          Type identification (PROP_END)
+uint32  0          `PROP_END` has no payload.
+
+uint64    hptr   Pointer to the hierarchy structure with the pixels
+uint64    mptr   Pointer to the layer mask (a channel structure), or 0 (ALWAYS 0)
+//hierarchy (comes directly after the layer)
+uint32      width   Width of the pixel array
+uint32      height  Height of the pixel array
+uint32      bpp     Number of bytes per pixel; (ALWAYS 2 [indexed with alpha])
+uint64		lptr    Pointer to the "level" structure
+uint64     0       Zero marks the end of the list of level pointers.
+
+//Levels (comes directly after the hierarchy)
+uint32      width  Width of the pixel array
+uint32      height Height of the pixel array
+,----------------- Repeat for each of the ceil(width/64)*ceil(height/64) tiles
+| pointer   tptr   Pointer to tile data
+`--
+pointer     0      Zero marks the end of the array of tile pointers.
+
+	TILE DATA (directly after each level)
+
+
+
+
+//STRUCTURE
+
+HEADER
+GENERAL PROPS
+LAYER1
+HIERARCHY1
+LEVEL1_1
+TILE DATA
+LEVEL1_2 (DUMMY)
+EMPTY TILE DATA
+LEVEL1_3 (DUMMY)
+EMPTY TILE DATA
+LAYER2
+HIERARCHY2
+LEVEL2_1
+TILE DATA
+LEVEL2_2 (DUMMY)
+EMPTY TILE DATA
+LEVEL2_3 (DUMMY)
+EMPTY TILE DATA
+
+
+
+ */
+
+
+

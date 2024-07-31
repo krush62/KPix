@@ -44,7 +44,7 @@ class SprayCanPainter extends IToolPainter
 
     }
 
-    if (!_waitingForRasterization)
+    if (!_waitingForRasterization && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
     {
       if (drawParams.primaryDown)
       {

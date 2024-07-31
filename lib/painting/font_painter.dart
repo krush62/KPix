@@ -74,14 +74,17 @@ class FontPainter extends IToolPainter
       _currentText = _options.text.value;
     }
 
-    if (drawParams.primaryDown && !_down)
+    if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
     {
-      _down = true;
-    }
-    else if (!drawParams.primaryDown && _down)
-    {
-      _dump(drawParams: drawParams);
-      _down = false;
+      if (drawParams.primaryDown && !_down)
+      {
+        _down = true;
+      }
+      else if (!drawParams.primaryDown && _down)
+      {
+        _dump(drawParams: drawParams);
+        _down = false;
+      }
     }
 
     _oldCursorPos.x = _cursorPosNorm.x;

@@ -340,10 +340,10 @@ packages:
     dependency: "direct main"
     description:
       name: multi_split_view
-      sha256: "78f3505bd4d9b6657af9ee07b8985adcb70ce46830d05d8929065b65eb1f0d0b"
+      sha256: "309a6c6119020a2adffac3f6d8f05d3b638cbef5b79a0384068d1bdf899b561d"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.0"
+    version: "3.4.0"
   path:
     dependency: transitive
     description:
@@ -585,10 +585,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: a79dbe579cb51ecd6d30b17e0cae4e0ea15e2c0e66f69ad4198f22a6789e94f4
+      sha256: "015002c060f1ae9f41a818f2d5640389cc05283e368be19dc8d77cecb43c40c9"
       url: "https://pub.dev"
     source: hosted
-    version: "5.5.1"
+    version: "5.5.3"
   xdg_directories:
     dependency: transitive
     description:

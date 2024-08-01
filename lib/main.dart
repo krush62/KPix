@@ -74,10 +74,18 @@ class _KPixAppState extends State<KPixApp>
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
-    final Directory appDir = await getApplicationDocumentsDirectory();
-    final Directory tempDir = await getTemporaryDirectory();
-    final Directory cache = await getApplicationCacheDirectory();
-    GetIt.I.registerSingleton<AppState>(AppState(appDir: appDir.path, cacheDir: cache.path, tempDir: tempDir.path));
+    String appDirString = "", tempDirString = "", cacheString = "";
+    if (!kIsWeb)
+    {
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final Directory tempDir = await getTemporaryDirectory();
+      final Directory cache = await getApplicationCacheDirectory();
+      appDirString = appDir.path;
+      tempDirString = tempDir.path;
+      cacheString = cache.path;
+    }
+
+    GetIt.I.registerSingleton<AppState>(AppState(appDir: appDirString, cacheDir: cacheString, tempDir: tempDirString));
     AppState appState = GetIt.I.get<AppState>();
 
     //TODO TEMP

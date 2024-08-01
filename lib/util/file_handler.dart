@@ -449,7 +449,7 @@ class FileHandler
   {
     //hack (FilePicker needs bytes on mobile)
     final Uint8List byteList = Uint8List(0);
-    final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("$GetIt.I.get<AppState>().getFileName().$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
+    final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("${GetIt.I.get<AppState>().getFileName()}.$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
     if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
     {
       FilePicker.platform.saveFile(
@@ -723,7 +723,7 @@ class FileHandler
         // TODO: Handle this case.
           break;
         case ExportTypeEnum.gimp:
-        // TODO: Handle this case.
+          file = await _exportGimp(exportData: exportData, exportPath: path);
           break;
       }
     }
@@ -1112,7 +1112,11 @@ class FileHandler
         8; //channel addresses
 
     //LAYER (without name and active layer prop)
-    const int singleLayerSize = 12 + //opacity
+    const int singleLayerSize =
+        8 + //width
+        8 + //height
+        8 + //type
+        12 + //opacity
         12 + //float opacity
         12 + //visible
         12 + //linked
@@ -1146,7 +1150,7 @@ class FileHandler
 
     final List<List<List<int>>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    final ZLibCodec zLibCodec = ZLibCodec(strategy: ZLibOption.strategyRle);
+    final ZLibCodec zLibCodec = ZLibCodec();
     const int tileSize = 64;
     for (int l = 0; l < appState.layers.value.length; l++)
     {
@@ -1173,7 +1177,7 @@ class FileHandler
             else
             {
               imgBytes.add(colorMap[colAtPos]!);
-              imgBytes.add(1);
+              imgBytes.add(255);
             }
 
           }
@@ -1209,22 +1213,21 @@ class FileHandler
       fileSize += hierarchySize;
       //level 1
       fileSize += basicLevelSize;
-      fileSize += tiles.length * 8;
-      //level1
-      fileSize += basicLevelSize;
+      //tile data
       for (final List<int> tileData in tiles)
       {
         fileSize += tileData.length;
       }
+      fileSize += tiles.length * 8;
+      //level 2
+      fileSize += (basicLevelSize - 4);
       //level3
-      fileSize += basicLevelSize;
-      //tile data
+      fileSize += (basicLevelSize - 4);
     }
 
 
     //WRITING
 
-    final List<int> layerOffsets = [];
     final List<int> layerOffsetsInsertPositions = [];
 
     int tattooIndex = 2;
@@ -1264,6 +1267,8 @@ class FileHandler
     offset+=4;
     outBytes.setUint32(offset, (3 * colorList.length) + 4);
     offset+=4;
+    outBytes.setUint32(offset, colorList.length);
+    offset+=4;
     for (final Color c in colorList)
     {
       outBytes.setUint8(offset, c.red);
@@ -1278,8 +1283,9 @@ class FileHandler
     outBytes.setUint32(offset, 17);
     offset+=4;
     outBytes.setUint32(offset, 1);
+
     offset+=4;
-    outBytes.setUint8(offset, 1);
+    outBytes.setUint8(offset, 2);
     offset++;
 
     //PROP_RESOLUTION
@@ -1301,7 +1307,7 @@ class FileHandler
     offset+=4;
 
     //PROP_UNIT
-    outBytes.setUint32(offset, 20);
+    outBytes.setUint32(offset, 22);
     offset+=4;
     outBytes.setUint32(offset, 4);
     offset+=4;
@@ -1314,6 +1320,7 @@ class FileHandler
     outBytes.setUint32(offset, 0);
     offset+=4;
 
+    //LAYER POINTERS
     for (int i = 0; i < appState.layers.value.length; i++)
     {
       layerOffsetsInsertPositions.add(offset);
@@ -1322,220 +1329,262 @@ class FileHandler
     }
 
     outBytes.setUint64(offset, 0); //end layer pointers
+    offset+=8;
     outBytes.setUint64(offset, 0); //start/end channel pointers
+    offset+=8;
 
 
-    //TODO finish
+    //LAYERS
+    for (int i = 0; i < appState.layers.value.length; i++)
+    {
+      outBytes.setUint64(layerOffsetsInsertPositions[i], offset);
+
+      final LayerState currentLayer = appState.layers.value[i];
+      outBytes.setUint32(offset, currentLayer.size.x);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.size.y);
+      offset+=4;
+      outBytes.setUint32(offset, 5);
+      offset+=4;
+      outBytes.setUint32(offset, layerNames[i].length + 1);
+      offset+=4;
+      for (int j = 0; j < layerNames[i].length; j++)
+      {
+        outBytes.setUint8(offset, layerNames[i][j]);
+        offset++;
+      }
+      outBytes.setUint8(offset, 0);
+      offset++;
+
+      //PROP_ACTIVE_LAYER
+      if (i == 0)
+      {
+        outBytes.setUint32(offset, 2);
+        offset+=4;
+        outBytes.setUint32(offset, 0);
+        offset+=4;
+      }
+
+      //PROP_OPACITY
+      outBytes.setUint32(offset, 6);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 255);
+      offset+=4;
+
+      //PROP_FLOAT_OPACITY
+      outBytes.setUint32(offset, 33);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setFloat32(offset, 1.0);
+      offset+=4;
+
+      //PROP_VISIBLE
+      outBytes.setUint32(offset, 8);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.visibilityState.value == LayerVisibilityState.visible ? 1 : 0);
+      offset+=4;
+
+      //PROP_LINKED
+      outBytes.setUint32(offset, 9);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_COLOR_TAG
+      outBytes.setUint32(offset, 34);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_LOCK_CONTENT
+      outBytes.setUint32(offset, 28);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.lockState.value == LayerLockState.locked ? 1 : 0);
+      offset+=4;
+
+      //PROP_LOCK_ALPHA
+      outBytes.setUint32(offset, 10);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.lockState.value == LayerLockState.transparency ? 1 : 0);
+      offset+=4;
+
+      //PROP_LOCK_POSITION
+      outBytes.setUint32(offset, 32);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_APPLY_MASK
+      outBytes.setUint32(offset, 11);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_EDIT_MASK
+      outBytes.setUint32(offset, 12);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_SHOW_MASK
+      outBytes.setUint32(offset, 13);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_OFFSETS
+      outBytes.setUint32(offset, 15);
+      offset+=4;
+      outBytes.setUint32(offset, 8);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_MODE
+      outBytes.setUint32(offset, 7);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 28);
+      offset+=4;
+
+      //PROP_BLEND_SPACE
+      outBytes.setUint32(offset, 37);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //PROP_COMPOSITE_SPACE
+      outBytes.setUint32(offset, 36);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setInt32(offset, -1);
+      offset+=4;
+
+      //PROP_COMPOSITE_MODE
+      outBytes.setUint32(offset, 35);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setInt32(offset, -1);
+      offset+=4;
+
+      //PROP_TATTOO
+      outBytes.setUint32(offset, 20);
+      offset+=4;
+      outBytes.setUint32(offset, 4);
+      offset+=4;
+      outBytes.setUint32(offset, tattooIndex++);
+      offset+=4;
+
+      //PROP_END
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+
+      //HIERARCHY OFFSET
+      final int hierarchyOffsetInsertPosition = offset;
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+
+      //LAYER MASK
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+
+      //HIERARCHY
+      outBytes.setUint64(hierarchyOffsetInsertPosition, offset);
+      outBytes.setUint32(offset, currentLayer.size.x);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.size.y);
+      offset+=4;
+      outBytes.setUint32(offset, 2);
+      offset+=4;
+      final int pointerInsertToLevel1 = offset;
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+      final int pointerInsertToLevel2 = offset;
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+      final int pointerInsertToLevel3 = offset;
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+
+      //LEVEL1
+      outBytes.setUint64(pointerInsertToLevel1, offset);
+      outBytes.setUint32(offset, currentLayer.size.x);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.size.y);
+      offset+=4;
+      final List<int> tileOffsetsLv1 = [];
+      final List<List<int>> currentTiles = layerEncBytes[i];
+      for (int j = 0; j < currentTiles.length; j++)
+      {
+        tileOffsetsLv1.add(offset);
+        outBytes.setUint64(offset, 0);
+        offset+=8;
+      }
+      outBytes.setUint64(offset, 0);
+      offset+=8;
+
+      //TILE DATA FOR LEVEL1
+      for (int j = 0; j < currentTiles.length; j++)
+      {
+        outBytes.setUint64(tileOffsetsLv1[j], offset);
+        final List<int> currentTile = currentTiles[j];
+        for (int k = 0; k < currentTile.length; k++)
+        {
+           outBytes.setUint8(offset, currentTile[k]);
+           offset++;
+        }
+      }
+
+      //LEVEL2
+      outBytes.setUint64(pointerInsertToLevel2, offset);
+      outBytes.setUint32(offset, currentLayer.size.x ~/ 2);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.size.y ~/ 2);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+      //LEVEL3
+      outBytes.setUint64(pointerInsertToLevel3, offset);
+      outBytes.setUint32(offset, currentLayer.size.x ~/ 4);
+      offset+=4;
+      outBytes.setUint32(offset, currentLayer.size.y ~/ 4);
+      offset+=4;
+      outBytes.setUint32(offset, 0);
+      offset+=4;
+    }
+
+    return File(exportPath).writeAsBytes(outBytes.buffer.asInt8List());
   }
-
 }
-
-
-//TODO delete
-//GIMP FILE FORMAT
-
-/*
-//HEADER (30 bytes)
-byte[9]     "gimp xcf " File type identification (with space at the end)
-byte[4]     version     XCF version (use v011)
-byte        0            Zero marks the end of the version tag.
-uint32      width        Width of canvas
-uint32      height       Height of canvas
-uint32      base_type    Color mode of the image; one of
-						 0: RGB color
-						 1: Grayscale
-						 2: Indexed color (THIS IS THE ONE)
-uint32      precision    Image precision; this field is only present for
-						 100: 8-bit linear integer
-						 150: 8-bit gamma integer (preferred)
-
-//PROP LIST
-
-uint32  1        Type identification (PROP_COLORMAP)
-uint32  3*n+4    Payload length in bytes
-uint32  n        Number of colors in the color map (should be <256)
-,------------    Repeat n times:
-| byte  r        Red component of a color map color
-| byte  g        Green component of a color map color
-| byte  b        Blue component of a color map color
-`--
-
-
-uint32  17       Type identification (PROP_COMPRESSION)
-uint32  1        One byte of payload
-byte    comp     Compression indicator; one of
-				 0: No compression
-				 1: RLE encoding (default)
-				 2: zlib compression (worth a try)
-				 3: (Never used, but reserved for some fractal compression)
-
-uint32  19       Type identification (PROP_RESOLUTION)
-uint32  8        Eight bytes of payload
-float   hres     Horizontal resolution in pixels per inch (ppi) =300
-float   vres     Vertical resolution in pixels per inch (ppi) =300
-
-uint32  20         Type identification (PROP_TATTOO)
-uint32  4          Four bytes of payload
-uint32  tattoo     Nonzero unsigned integer identifier
-
-uint32  22       Type identification (PROP_UNIT)
-uint32  4        Four bytes of payload
-uint32  uid      Unit identifier; one of
-				 1: Inches (25.4 mm) (should be default)
-				 2: Millimeters (1 mm)
-				 3: Points (127/360 mm)
-				 4: Picas (127/30 mm)
-
-//SKIP PARASITE (21)
-
-uint32  0          Type identification (PROP_END)
-uint32  0          `PROP_END` has no payload.
-
-//layer pointers for each layer:
-uint64	address of layer
-
-uint64  0           Zero marks the end of the array of layer pointers.
-
-uint64  0           Zero marks the end of the array of channel pointers. (no channels)
-
-
-
-//Layers
-uint32     width  Width of the layer
-uint32     height Height of the layer
-uint32     type   Color mode of the layer: one of
-				  0: RGB color without alpha
-				  1: RGB color with alpha
-				  2: Grayscale without alpha
-				  3: Grayscale with alpha
-				  4: Indexed without alpha
-				  5: Indexed with alpha (THIS SHOULD BE THE MODE)
-string     name   Name of the layer
-
-//only for the first layer
-uint32  2        Type identification (PROP_ACTIVE_LAYER)
-uint32  0        `PROP_ACTIVE_LAYER` has no payload
-
-uint32  6          Type identification (PROP_OPACITY)
-uint32  4          Four bytes of payload
-uint32  opacity    Opacity on a scale from 0 (fully transparent) to
-				 255 (fully opaque) (ALWAYS 255)
-
-uint32  33         Type identification (PROP_FLOAT_OPACITY)
-uint32  4          Four bytes of payload
-float   opacity    Opacity on a scale from 0.0 (fully transparent) to
-				 1.0 (fully opaque) (ALWAYS 1.0)
-
-uint32  8          Type identification (PROP_VISIBLE)
-uint32  4          Four bytes of payload
-uint32  visible    1 if the layer/channel is visible; 0 if not
-
-uint32  9          Type identification (PROP_LINKED)
-uint32  4          Four bytes of payload
-uint32  linked     1 if the layer is linked; 0 if not (ALWAYS 0)
-
-uint32  34         Type identification (PROP_COLOR_TAG)
-uint32  4          Four bytes of payload
-uint32  tag        Color tag of the layer; (ALWAYS 0)
-
-uint32  28         Type identification (PROP_LOCK_CONTENT)
-uint32  4          Four bytes of payload
-uint32  locked     1 if the content is locked; 0 if not
-
-uint32  10           Type identification (PROP_LOCK_ALPHA)
-uint32  4            Four bytes of payload
-uint32  lock_alpha   1 if alpha is locked; 0 if not
-
-uint32  32         Type identification (PROP_LOCK_POSITION)
-uint32  4          Four bytes of payload
-uint32  locked     1 if the position is locked; 0 if not (ALWAYS 0)
-
-uint32  11       Type identification (PROP_APPLY_MASK)
-uint32  4        Four bytes of payload
-uint32  apply    1 if the layer mask should be applied, 0 if not (ALWAYS 0)
-
-uint32  12       Type identification (PROP_EDIT_MASK)
-uint32  4        Four bytes of payload
-uint32  editing  1 if the layer mask is currently being edited, 0 if not (ALWAYS 0)
-
-uint32  13       Type identification (PROP_SHOW_MASK)
-uint32  4        Four bytes of payload
-uint32  visible  1 if the layer mask is visible, 0 if not (ALWAYS 0)
-
-uint32  15       Type identification (PROP_OFFSETS)
-uint32  8        Eight bytes of payload
-int32   xoffset  Horizontal offset (ALWAYS 0)
-int32   yoffset  Vertical offset (ALWAYS 0)
-
-uint32  7        Type identification (PROP_MODE)
-uint32  4        Four bytes of payload
-unit32  mode     Layer mode; (ALWAYS 28)
-
-uint32  37         Type identification (PROP_BLEND_SPACE)
-uint32  4          Four bytes of payload
-int32   space      Composite space of the layer; ALWAYS 0
-
-uint32  36         Type identification (PROP_COMPOSITE_SPACE)
-uint32  4          Four bytes of payload
-int32   space      (ALWAYS -1 -> INT32!!!!)
-
-uint32  35         Type identification (PROP_COMPOSITE_MODE)
-uint32  4          Four bytes of payload
-int32   mode       (ALWAYS -1 -> INT32!!!!)
-
-uint32  20         Type identification (PROP TATTOO)
-uint32  4          Four bytes of payload
-uint32  tattoo     Nonzero unsigned integer identifier
-
-uint32  0          Type identification (PROP_END)
-uint32  0          `PROP_END` has no payload.
-
-uint64    hptr   Pointer to the hierarchy structure with the pixels
-uint64    mptr   Pointer to the layer mask (a channel structure), or 0 (ALWAYS 0)
-//hierarchy (comes directly after the layer)
-uint32      width   Width of the pixel array
-uint32      height  Height of the pixel array
-uint32      bpp     Number of bytes per pixel; (ALWAYS 2 [indexed with alpha])
-uint64		lptr    Pointer to the "level" structure
-uint64     0       Zero marks the end of the list of level pointers.
-
-//Levels (comes directly after the hierarchy)
-uint32      width  Width of the pixel array
-uint32      height Height of the pixel array
-,----------------- Repeat for each of the ceil(width/64)*ceil(height/64) tiles
-| pointer   tptr   Pointer to tile data
-`--
-pointer     0      Zero marks the end of the array of tile pointers.
-
-	TILE DATA (directly after each level)
-
-
-
-
-//STRUCTURE
-
-HEADER
-GENERAL PROPS
-LAYER1
-HIERARCHY1
-LEVEL1_1
-TILE DATA
-LEVEL1_2 (DUMMY)
-EMPTY TILE DATA
-LEVEL1_3 (DUMMY)
-EMPTY TILE DATA
-LAYER2
-HIERARCHY2
-LEVEL2_1
-TILE DATA
-LEVEL2_2 (DUMMY)
-EMPTY TILE DATA
-LEVEL2_3 (DUMMY)
-EMPTY TILE DATA
-
-
-
- */
-
-
-

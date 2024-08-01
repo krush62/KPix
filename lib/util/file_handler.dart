@@ -772,24 +772,27 @@ class FileHandler
         final CoordinateSetI currentCoord = CoordinateSetI(x: x, y: y);
         for (int l = 0; l < layers.length; l++)
         {
-          ColorReference? col;
-          if (selectionState.selection.currentLayer == layers[l])
+          if (layers[l].visibilityState.value == LayerVisibilityState.visible)
           {
-            col = selectionState.selection.getColorReference(currentCoord);
-          }
-          col ??= layers[l].getDataEntry(currentCoord);
-
-          if (col != null)
-          {
-            for (int i = 0; i < scaling; i++)
+            ColorReference? col;
+            if (selectionState.selection.currentLayer == layers[l])
             {
-              for (int j = 0; j < scaling; j++)
-              {
-                byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
-                    Helper.argbToRgba(col.getIdColor().color.value));
-              }
+              col = selectionState.selection.getColorReference(currentCoord);
             }
-            break;
+            col ??= layers[l].getDataEntry(currentCoord);
+
+            if (col != null)
+            {
+              for (int i = 0; i < scaling; i++)
+              {
+                for (int j = 0; j < scaling; j++)
+                {
+                  byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
+                      Helper.argbToRgba(col.getIdColor().color.value));
+                }
+              }
+              break;
+            }
           }
         }
       }

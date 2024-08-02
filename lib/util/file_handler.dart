@@ -18,6 +18,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_saver/file_saver.dart';
 
 class LoadFileSet
 {
@@ -64,9 +65,11 @@ class FileHandler
   static const String magicNumber = "4B504958";
   static const String fileExtensionKpix = "kpix";
   static const String fileExtensionKpal = "kpal";
+  static const String webFileName = "KPixExport";
+  static const String webPaletteFileName = "KPixPalette";
 
 
-  static Future<File> _saveKPixFile({required final String path, required final AppState appState}) async
+  static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
   {
     //TODO perform sanity checks (max ramps, max layers, etc...)
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");
@@ -182,17 +185,30 @@ class FileHandler
       }
     }
 
-    return File(path).writeAsBytes(byteData.buffer.asUint8List());
-
+    if (!kIsWeb)
+    {
+      await File(path).writeAsBytes(byteData.buffer.asUint8List());
+      return path;
+    }
+    else
+    {
+      String newPath = await FileSaver.instance.saveFile(
+        name: path,
+        bytes: byteData.buffer.asUint8List(),
+        ext: fileExtensionKpix,
+        mimeType: MimeType.other,
+      );
+      return "$newPath/$path";
+    }
   }
 
 
 
 
-  static Future<LoadFileSet> _loadKPixFile({required final String path, required final KPalConstraints constraints}) async
+  static Future<LoadFileSet> _loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path}) async
   {
-    final Uint8List uint8list = await File(path).readAsBytes();
-    final ByteData byteData = uint8list.buffer.asByteData();
+    fileData ??= await File(path).readAsBytes();
+    final ByteData byteData = fileData.buffer.asByteData();
     int offset = 0;
     final int mNumber = byteData.getUint32(offset);
     offset+=4;
@@ -434,9 +450,14 @@ class FileHandler
 
   static void _loadFileChosen(final FilePickerResult? result)
   {
-    if (result != null && result.files.single.path != null)
+    if (result != null && result.files.isNotEmpty)
     {
-      _loadKPixFile(path:  result.files.single.path!, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then(_fileLoaded);
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      _loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then(_fileLoaded);
     }
   }
 
@@ -447,25 +468,32 @@ class FileHandler
 
   static void saveFilePressed({final Function()? finishCallback, final bool forceSaveAs = false})
   {
-    //hack (FilePicker needs bytes on mobile)
-    final Uint8List byteList = Uint8List(0);
-    final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("${GetIt.I.get<AppState>().getFileName()}.$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
-    if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
+    if (!kIsWeb)
     {
-      FilePicker.platform.saveFile(
-          dialogTitle: "Save kpix file",
-          type: FileType.custom,
-          fileName: finalPath,
-          allowedExtensions: [fileExtensionKpix],
-          initialDirectory: GetIt.I
-              .get<AppState>()
-              .appDir,
-        bytes: byteList
-      ).then((final String? path){_saveFileChosen(path, finishCallback);});
+      //hack (FilePicker needs bytes on mobile)
+      final Uint8List byteList = Uint8List(0);
+      final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("${GetIt.I.get<AppState>().getFileName()}.$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
+      if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
+      {
+        FilePicker.platform.saveFile(
+            dialogTitle: "Save kpix file",
+            type: FileType.custom,
+            fileName: finalPath,
+            allowedExtensions: [fileExtensionKpix],
+            initialDirectory: GetIt.I
+                .get<AppState>()
+                .appDir,
+            bytes: byteList
+        ).then((final String? path){_saveFileChosen(path, finishCallback);});
+      }
+      else
+      {
+        _saveFileChosen(GetIt.I.get<AppState>().filePath.value, finishCallback);
+      }
     }
     else
     {
-      _saveFileChosen(GetIt.I.get<AppState>().filePath.value, finishCallback);
+      _saveFileChosen(webFileName, finishCallback);
     }
   }
 
@@ -474,13 +502,13 @@ class FileHandler
     if (path != null)
     {
       final String finalPath = !path.endsWith(".$fileExtensionKpix") ? ("$path.$fileExtensionKpix") : path;
-      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final File file){_fileSaved(file, finishCallback);});
+      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String fileName){_fileSaved(fileName, finishCallback);});
     }
   }
 
-  static void _fileSaved(final File file, final Function()? finishCallback)
+  static void _fileSaved(final String fileName, final Function()? finishCallback)
   {
-    GetIt.I.get<AppState>().fileSaved(path: file.path);
+    GetIt.I.get<AppState>().fileSaved(path: fileName);
     if (finishCallback != null)
     {
       finishCallback();
@@ -490,32 +518,39 @@ class FileHandler
 
   static void savePalettePressed({final Function()? finishCallback})
   {
-    //hack (FilePicker needs bytes on mobile)
-    final Uint8List byteList = Uint8List(0);
-    final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("$GetIt.I.get<AppState>().getFileName().$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
-    FilePicker.platform.saveFile(
-        dialogTitle: "Save pal file",
-        type: FileType.custom,
-        fileName: finalPath,
-        allowedExtensions: [fileExtensionKpal],
-        initialDirectory: GetIt.I
-            .get<AppState>()
-            .appDir,
-        bytes: byteList
-    ).then((final String? path){_paletteSavePathChosen(path, finishCallback);});
+    if (!kIsWeb)
+    {
+      //hack (FilePicker needs bytes on mobile)
+      final Uint8List byteList = Uint8List(0);
+      final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("$GetIt.I.get<AppState>().getFileName().$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
+      FilePicker.platform.saveFile(
+          dialogTitle: "Save pal file",
+          type: FileType.custom,
+          fileName: finalPath,
+          allowedExtensions: [fileExtensionKpal],
+          initialDirectory: GetIt.I
+              .get<AppState>()
+              .appDir,
+          bytes: byteList
+      ).then((final String? path){_paletteSavePathChosen(path, finishCallback);});
+    }
+    else
+    {
+      _paletteSavePathChosen(webPaletteFileName, finishCallback);
+    }
   }
 
   static void _paletteSavePathChosen(final String? path, final Function()? finishCallback)
   {
     if (path != null)
     {
-      final String finalPath = !path.endsWith(".$fileExtensionKpal") ? ("$path.$fileExtensionKpal") : path;
-      _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps.value, path: finalPath).then((final File file) {_paletteSaved(file, finishCallback);});
+      final String finalPath = !path.endsWith(".$fileExtensionKpal") && !kIsWeb ? ("$path.$fileExtensionKpal") : path;
+      _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps.value, path: finalPath).then((final String? fileName) {_paletteSaved(fileName, finishCallback);});
     }
   }
 
 
-  static Future<File> _saveKPalFile({required final List<KPalRampData> rampList, required String path}) async
+  static Future<String?> _saveKPalFile({required final List<KPalRampData> rampList, required String path}) async
   {
     //TODO perform sanity checks (ramp count, color count, ...)
     final ByteData byteData = ByteData(_calculateKPalFileSize(rampList: rampList));
@@ -571,7 +606,22 @@ class FileHandler
 
     //link count
     byteData.setUint8(offset++, 0);
-    return File(path).writeAsBytes(byteData.buffer.asUint8List());
+
+    if (!kIsWeb)
+    {
+      await File(path).writeAsBytes(byteData.buffer.asUint8List());
+      return path;
+    }
+    else
+    {
+      String newPath = await FileSaver.instance.saveFile(
+        name: path,
+        bytes: byteData.buffer.asUint8List(),
+        ext: fileExtensionKpal,
+        mimeType: MimeType.other,
+      );
+      return "$newPath/$path";
+    }
 
   }
 
@@ -602,9 +652,15 @@ class FileHandler
 
   static void _loadPaletteChosen({required final FilePickerResult? result, required final PaletteReplaceBehavior paletteReplaceBehavior})
   {
-    if (result != null && result.files.single.path != null)
+
+    if (result != null && result.files.isNotEmpty)
     {
-      _loadKPalFile(path: result.files.single.path!, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints).then((final LoadPaletteSet loadPaletteSet) {
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      _loadKPalFile(path: path, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: result.files.first.bytes).then((final LoadPaletteSet loadPaletteSet) {
         _paletteLoaded(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior);
       });
     }
@@ -614,13 +670,12 @@ class FileHandler
   static void _paletteLoaded({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
   {
     GetIt.I.get<AppState>().replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior);
-
   }
 
-  static Future<LoadPaletteSet> _loadKPalFile({required final String path, required final KPalConstraints constraints}) async
+  static Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints}) async
   {
-    final Uint8List uint8list = await File(path).readAsBytes();
-    final ByteData byteData = uint8list.buffer.asByteData();
+    fileData ??= await File(path).readAsBytes();
+    final ByteData byteData = fileData.buffer.asByteData();
     int offset = 0;
 
     //skip options
@@ -680,60 +735,95 @@ class FileHandler
 
   }
 
-  static void _paletteSaved(final File file, final Function()? finishCallback)
+  static void _paletteSaved(final String? fileName, final Function()? finishCallback)
   {
-    GetIt.I.get<AppState>().showMessage("Palette saved at: ${file.path}");
-    if (finishCallback != null)
+    if (fileName != null)
     {
-      finishCallback();
+      GetIt.I.get<AppState>().showMessage("Palette saved at: $fileName");
+      if (finishCallback != null)
+      {
+        finishCallback();
+      }
+    }
+    else
+    {
+      GetIt.I.get<AppState>().showMessage("Palette saving failed");
     }
   }
 
-  static Future<File?> exportFile({required final ExportData exportData, required final ExportTypeEnum exportType}) async
+  static Future<String?> exportFile({required final ExportData exportData, required final ExportTypeEnum exportType}) async
   {
     String? path;
-    final Uint8List byteList = Uint8List(0);
-    path = await FilePicker.platform.saveFile(
-      dialogTitle: "Export as ${exportData.name}",
-      type: FileType.custom,
-      allowedExtensions: [exportData.extension],
-      initialDirectory: GetIt.I
-          .get<AppState>()
-          .appDir,
-      bytes: byteList
-    );
-    if (path != null)
+    if (!kIsWeb)
     {
-      path = !path.endsWith(".${exportData.extension}") ? ("$path.${exportData.extension}") : path;
+      final Uint8List byteList = Uint8List(0);
+      path = await FilePicker.platform.saveFile(
+          dialogTitle: "Export as ${exportData.name}",
+          type: FileType.custom,
+          allowedExtensions: [exportData.extension],
+          initialDirectory: GetIt.I
+              .get<AppState>()
+              .appDir,
+          bytes: byteList
+      );
+      if (path != null)
+      {
+        path = !path.endsWith(".${exportData.extension}") ? ("$path.${exportData.extension}") : path;
+      }
+    }
+    else
+    {
+      path = webFileName;
     }
 
-    File? file;
+    Uint8List? data;
 
     if (path != null)
     {
       switch (exportType)
       {
         case ExportTypeEnum.png:
-          file = await _exportPNG(exportData: exportData, exportPath: path);
+          data = await _exportPNG(exportData: exportData);
           break;
         case ExportTypeEnum.aseprite:
-          file = await _exportAseprite(exportData: exportData, exportPath: path);
+          data = await _exportAseprite(exportData: exportData);
           break;
         case ExportTypeEnum.photoshop:
         // TODO: Handle this case.
           break;
         case ExportTypeEnum.gimp:
-          file = await _exportGimp(exportData: exportData, exportPath: path);
+          data = await _exportGimp(exportData: exportData);
           break;
+      }
+
+      if (data != null)
+      {
+        if (!kIsWeb)
+        {
+          await File(path).writeAsBytes(data);
+        }
+        else
+        {
+          String newPath = await FileSaver.instance.saveFile(
+            name: webFileName,
+            bytes: data,
+            ext: exportData.extension,
+            mimeType: MimeType.other,
+          );
+          path = "$newPath/$path";
+        }
+      }
+      else
+      {
+        path = null;
       }
     }
 
-
-    return file;
+    return path;
   }
 
 
-  static Future<File?> _exportPNG({required ExportData exportData, required String exportPath}) async
+  static Future<Uint8List?> _exportPNG({required ExportData exportData}) async
   {
     final AppState appState = GetIt.I.get<AppState>();
     final ByteData byteData = await _getImageData(
@@ -757,8 +847,7 @@ class FileHandler
 
     ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
 
-    return File(exportPath)
-        .writeAsBytes(pngBytes!.buffer.asInt8List());
+    return pngBytes!.buffer.asUint8List();
   }
 
 
@@ -800,7 +889,7 @@ class FileHandler
     return byteData;
   }
 
-  static Future<File?> _exportAseprite({required ExportData exportData, required String exportPath}) async
+  static Future<Uint8List?> _exportAseprite({required ExportData exportData}) async
   {
     final AppState appState = GetIt.I.get<AppState>();
     final List<Color> colorList = [];
@@ -1083,11 +1172,11 @@ class FileHandler
         offset++;
       }
     }
-    return File(exportPath).writeAsBytes(outBytes.buffer.asInt8List());
+    return outBytes.buffer.asUint8List();
 
   }
 
-  static Future<File?> _exportGimp({required ExportData exportData, required String exportPath}) async
+  static Future<Uint8List?> _exportGimp({required ExportData exportData}) async
   {
     final AppState appState = GetIt.I.get<AppState>();
     final List<Color> colorList = [];
@@ -1588,6 +1677,6 @@ class FileHandler
       offset+=4;
     }
 
-    return File(exportPath).writeAsBytes(outBytes.buffer.asInt8List());
+    return outBytes.buffer.asUint8List();
   }
 }

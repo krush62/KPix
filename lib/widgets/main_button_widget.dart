@@ -94,11 +94,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     FileHandler.exportFile(exportData: exportData, exportType: exportType).then(_exportToTempFinished);
   }
 
-  void _exportToTempFinished(final File? file)
+  void _exportToTempFinished(final String? fileName)
   {
-    if (file != null)
+    if (fileName != null && fileName.isNotEmpty)
     {
-        _appState.showMessage("Exported to: ${file.path}");
+        _appState.showMessage("Exported to: $fileName");
     }
     else
     {

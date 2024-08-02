@@ -77,7 +77,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   late Offset _secondaryStartLoc;
   bool _needSecondaryStartLoc = false;
   final ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
-  bool _secondaryIsDown = false;
+  final ValueNotifier<bool> _secondaryIsDown = ValueNotifier(false);
   int _stylusZoomStartLevel = 100;
   int _stylusToolStartSize = 1;
 
@@ -112,8 +112,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     stylusLongMoveVertical: _stylusLongMoveVertical,
     stylusLongMoveHorizontal: _stylusLongMoveHorizontal,
     primaryDown: _primaryIsDown,
+    secondaryDown: _secondaryIsDown,
     primaryPressStart: _pressStartLoc,
   );
+
+  late ToolType _previousTool;
 
   @override
   void initState()
@@ -214,7 +217,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
       _startDown(details.localPosition);
-      if (appState.selectedTool.value == ToolType.spraycan)
+      if (appState.getSelectedTool() == ToolType.spraycan)
       {
         _idleTimer = Timer.periodic(Duration(milliseconds: options.idleTimerRate), _idleTimeout);
         _idleTimerInitialized = true;
@@ -222,8 +225,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
-      _secondaryIsDown = true;
-      //TODO should change to color picker while pressed
+      _secondaryIsDown.value = true;
+      _previousTool = appState.getSelectedTool();
+      appState.setToolSelection(tool: ToolType.pick);
     }
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -285,10 +289,12 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         _idleTimer.cancel();
       }
     }
-    else if (_secondaryIsDown && details.kind == PointerDeviceKind.mouse)
+    else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
-      _secondaryIsDown = false;
-      //TODO trigger color pick and change to previous tool
+      _secondaryIsDown.value = false;
+      final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
+      appState.colorSelected(colorPickPainter.selectedColor!);
+      appState.setToolSelection(tool: _previousTool);
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
     {
@@ -297,7 +303,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     _timerRunning = false;
 
-    if (appState.selectedTool.value == ToolType.select)
+    if (appState.getSelectedTool() == ToolType.select)
     {
       if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
       {
@@ -434,7 +440,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   void _checkSelectedToolData()
   {
-    if (appState.selectedTool.value == ToolType.select)
+    if (appState.getSelectedTool() == ToolType.select)
     {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
       {
@@ -462,14 +468,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
-    else if (appState.selectedTool.value == ToolType.pick)
+    else if (appState.getSelectedTool() == ToolType.pick)
     {
       if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
       {
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          //appState.selectedColor.value = colorPickPainter.selectedColor!;
           appState.colorSelected(colorPickPainter.selectedColor!);
         }
       }
@@ -621,7 +626,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: GetIt.I.get<AppState>().selectedTool,
+                valueListenable: GetIt.I.get<AppState>().getSelectedToolNotifier(),
                 builder: (BuildContext context, ToolType toolType, child)
                 {
                   return IgnorePointer(

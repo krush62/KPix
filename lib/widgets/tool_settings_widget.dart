@@ -53,7 +53,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   Widget build(BuildContext context)
   {
     return ValueListenableBuilder<ToolType>(
-      valueListenable: appState.selectedTool,
+      valueListenable: appState.getSelectedToolNotifier(),
       builder: (BuildContext context, ToolType type, child){
         Widget toolWidget;
 

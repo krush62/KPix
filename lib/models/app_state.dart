@@ -26,7 +26,7 @@ class RepaintNotifier extends ChangeNotifier
 
 class AppState
 {
-  final ValueNotifier<ToolType> selectedTool = ValueNotifier(ToolType.pencil);
+  final ValueNotifier<ToolType> _selectedTool = ValueNotifier(ToolType.pencil);
   late IToolOptions currentToolOptions;
   final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
   final ValueNotifier<ColorReference?> selectedColor = ValueNotifier(null);
@@ -672,13 +672,23 @@ class AppState
       }
 
     }
-    selectedTool.value = tool;
-    currentToolOptions = prefs.toolOptions.toolOptionMap[selectedTool.value]!;
+    _selectedTool.value = tool;
+    currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
   }
 
   bool toolIsSelected(final ToolType tool)
   {
     return _toolMap[tool] ?? false;
+  }
+
+  ToolType getSelectedTool()
+  {
+    return _selectedTool.value;
+  }
+
+  ValueNotifier<ToolType> getSelectedToolNotifier()
+  {
+    return _selectedTool;
   }
 
   void showMessage(final String text) {

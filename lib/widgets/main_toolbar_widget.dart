@@ -58,7 +58,7 @@ class MainToolbarWidget extends StatelessWidget
               //TODO MAGIC NUMBER
               height: 200,
               child: ValueListenableBuilder<ToolType>(
-                valueListenable: GetIt.I.get<AppState>().selectedTool,
+                valueListenable: GetIt.I.get<AppState>().getSelectedToolNotifier(),
                 builder: (BuildContext context, ToolType value,child) {
 
                   return const ToolSettingsWidget();

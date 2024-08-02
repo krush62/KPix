@@ -57,6 +57,7 @@ class DrawingParameters
   final Size drawingSize;
   final CoordinateSetD? cursorPos;
   final bool primaryDown;
+  final bool secondaryDown;
   final Offset primaryPressStart;
   final LayerState currentLayer;
   DrawingParameters({
@@ -68,6 +69,7 @@ class DrawingParameters
     required this.drawingSize,
     required this.cursorPos,
     required this.primaryDown,
+    required this.secondaryDown,
     required this.primaryPressStart,
     required this.currentLayer
 }) :
@@ -87,6 +89,7 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<bool> _stylusLongMoveVertical;
   final ValueNotifier<bool> _stylusLongMoveHorizontal;
   final ValueNotifier<bool> _primaryDown;
+  final ValueNotifier<bool> _secondaryDown;
   final ValueNotifier<Offset> _primaryPressStart;
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
   final Color checkerboardColor1;
@@ -104,6 +107,7 @@ class KPixPainter extends CustomPainter
     required this.checkerboardColor2,
     required ValueNotifier<CoordinateSetD?> coords,
     required ValueNotifier<bool> primaryDown,
+    required ValueNotifier<bool> secondaryDown,
     required ValueNotifier<Offset> primaryPressStart,
     required ValueNotifier<bool> isDragging,
     required ValueNotifier<bool> stylusLongMoveStarted,
@@ -117,6 +121,7 @@ class KPixPainter extends CustomPainter
         _stylusLongMoveVertical = stylusLongMoveVertical,
         _stylusLongMoveHorizontal = stylusLongMoveHorizontal,
         _primaryDown = primaryDown,
+        _secondaryDown = secondaryDown,
         _primaryPressStart = primaryPressStart,
         super(repaint: appState.repaintNotifier)
   {
@@ -137,7 +142,7 @@ class KPixPainter extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    toolPainter = toolPainterMap[_appState.selectedTool.value];
+    toolPainter = toolPainterMap[_appState.getSelectedTool()];
     if (size != latestSize)
     {
       latestSize = size;
@@ -153,6 +158,7 @@ class KPixPainter extends CustomPainter
         drawingSize: size,
         cursorPos: _coords.value,
         primaryDown: _primaryDown.value,
+        secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
         currentLayer: _appState.currentLayer.value!
         );

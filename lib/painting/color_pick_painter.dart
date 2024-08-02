@@ -29,7 +29,7 @@ class ColorPickPainter extends IToolPainter
       _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x + 0.5) * drawParams.pixelSize);
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
 
-      if (drawParams.primaryDown && _oldCursorPos != _cursorPosNorm)
+      if (drawParams.secondaryDown || (drawParams.primaryDown && _oldCursorPos != _cursorPosNorm))
       {
         _oldCursorPos.x = _cursorPosNorm.x;
         _oldCursorPos.y = _cursorPosNorm.y;

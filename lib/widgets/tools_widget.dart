@@ -46,7 +46,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
     return Padding(
       padding: EdgeInsets.all(toolsWidgetOptions.padding),
       child: ValueListenableBuilder<ToolType>(
-        valueListenable: appState.selectedTool,
+        valueListenable: appState.getSelectedToolNotifier(),
         builder: (BuildContext context, ToolType tool, child) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,

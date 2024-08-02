@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -33,26 +34,35 @@ class ColorPickPainter extends IToolPainter
       {
         _oldCursorPos.x = _cursorPosNorm.x;
         _oldCursorPos.y = _cursorPosNorm.y;
-        ColorReference? colRef;
-        for (final LayerState layer in appState.layers.value)
-        {
-          if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.getColorReference(_cursorPosNorm) != null)
-          {
-            colRef = appState.selectionState.selection.getColorReference(_cursorPosNorm);
-            break;
-          }
-          if (layer.getDataEntry(_cursorPosNorm) != null)
-          {
-            colRef = layer.getDataEntry(_cursorPosNorm);
-            break;
-          }
-        }
+        final ColorReference? colRef = getColorFromImageAtPosition(appState: appState, normPos: _cursorPosNorm);
         if (colRef != null && colRef != appState.selectedColor.value)
         {
           selectedColor = colRef;
         }
       }
     }
+  }
+
+  static ColorReference? getColorFromImageAtPosition({required AppState appState, required CoordinateSetI normPos})
+  {
+    ColorReference? colRef;
+    for (final LayerState layer in appState.layers.value)
+    {
+      if (layer.visibilityState.value == LayerVisibilityState.visible)
+      {
+        if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.getColorReference(normPos) != null)
+        {
+          colRef = appState.selectionState.selection.getColorReference(normPos);
+          break;
+        }
+        if (layer.getDataEntry(normPos) != null)
+        {
+          colRef = layer.getDataEntry(normPos);
+          break;
+        }
+      }
+    }
+    return colRef;
   }
 
 

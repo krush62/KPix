@@ -12,6 +12,7 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
+import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/selection_bar_widget.dart';
 
 
@@ -292,7 +293,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       _secondaryIsDown.value = false;
       final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
-      appState.colorSelected(colorPickPainter.selectedColor!);
+      if (colorPickPainter.selectedColor != null)
+      {
+        appState.colorSelected(colorPickPainter.selectedColor!);
+      }
       appState.setToolSelection(tool: _previousTool);
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
@@ -374,9 +378,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (_stylusLongMoveStarted.value)
     {
       final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
-      double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
-      double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
-      int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
+      final double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
+      final double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
+      final int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
       final int toolSizeSteps = (xOffset / options.stylusToolSizeDistance).round();
       if (!_stylusLongMoveVertical.value && !_stylusLongMoveHorizontal.value)
       {
@@ -531,6 +535,24 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     else if (!_stylusButtonDetected && _stylusButtonDown)
     {
+      if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
+      {
+        final CoordinateSetI normPos = CoordinateSetI(
+            x: KPixPainter.getClosestPixel(
+                value: _cursorPos.value!.x - _canvasOffset.value.dx,
+                pixelSize: appState.zoomFactor.value.toDouble())
+                .round(),
+            y: KPixPainter.getClosestPixel(
+                value: _cursorPos.value!.y - _canvasOffset.value.dy,
+                pixelSize: appState.zoomFactor.value.toDouble())
+                .round());
+        ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: appState, normPos: normPos);
+        if (colRef != null && colRef != appState.selectedColor.value)
+        {
+           appState.colorSelected(colRef);
+        }
+      }
+
       _needSecondaryStartLoc = false;
       stylusBtnUp();
       _stylusButtonDown = false;
@@ -555,11 +577,14 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
   }
 
+
+  //TODO delete me
   void stylusBtnDown()
   {
     //print("SECONDARY DOWN");
   }
 
+  //TODO delete me
   void stylusBtnUp()
   {
     //print("SECONDARY UP");

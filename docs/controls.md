@@ -40,7 +40,7 @@
 |                          |                     |                  |                          |                              |                           |
 | <h3>Tool Settings</h3>   |                     |                  |                          |                              |                           |
 | use tool                 |                     |                  | primary down             | primary down                 | single down               |
-| color pick               |                     |                  | secondary down           |                              |                           |
+| color pick               |                     |                  | secondary down           | quick secondary down/up      |                           |
 | Selection Add            | shift (hold)        |                  |                          |                              |                           |
 | Selection Subtract       | alt + shift (hold)  |                  |                          |                              |                           |
 | Selection Intersect      | ctrl + shift (hold) |                  |                          |                              |                           |

@@ -69,12 +69,12 @@ This application supports input by mouse/keyboard, touch screen and stylus.
 The complete control table can be found [here](docs/controls.md).
 
 ### Quick Start
-| ACTION      | MOUSE               | TOUCH                | STYLUS                      |
-|-------------|---------------------|----------------------|-----------------------------|
-| use tool    | left click          | one finger           | down                        |
-| move canvas | middle click + move | two finger move      | button press + move         |
-| zoom canvas | mouse wheel         | two finger pinch     | button long press + up/down |
-| color pick  | right click         | one finger down long | down long                   |
+| ACTION      | MOUSE               | TOUCH                | STYLUS                           |
+|-------------|---------------------|----------------------|----------------------------------|
+| use tool    | left click          | one finger           | down                             |
+| move canvas | middle click + move | two finger move      | button press + move              |
+| zoom canvas | mouse wheel         | two finger pinch     | button long press + move up/down |
+| color pick  | right click         | one finger down long | quick button down and up         |
 
 
 ## Installation

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -123,20 +122,14 @@ class _ExportWidgetState extends State<ExportWidget>
                                   ButtonSegment(
                                       value: ExportTypeEnum.aseprite,
                                       label: Text(exportTypeMap[ExportTypeEnum.aseprite]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.aseprite ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
-                                      enabled: !kIsWeb,
-                                      tooltip: kIsWeb ? "Not supported in web version of KPix" : null,
                                   ),
                                   ButtonSegment(
                                     value: ExportTypeEnum.photoshop,
                                     label: Text(exportTypeMap[ExportTypeEnum.photoshop]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.photoshop ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
-                                    enabled: !kIsWeb,
-                                    tooltip: kIsWeb ? "Not supported in web version of KPix" : null
                                   ),
                                   ButtonSegment(
                                     value: ExportTypeEnum.gimp,
                                     label: Text(exportTypeMap[ExportTypeEnum.gimp]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.gimp ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
-                                    enabled: !kIsWeb,
-                                    tooltip: kIsWeb ? "Not supported in web version of KPix" : null
                                   ),
                                 ],
                               );

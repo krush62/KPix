@@ -19,6 +19,7 @@ import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:archive/archive_io.dart';
 
 class LoadFileSet
 {
@@ -915,7 +916,6 @@ class FileHandler
 
     final List<List<int>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    final ZLibCodec zLibCodec = ZLibCodec();
     for (int l = 0; l < appState.layers.value.length; l++)
     {
       final LayerState layerState = appState.layers.value[l];
@@ -936,7 +936,8 @@ class FileHandler
           }
         }
       }
-      final List<int> encData = zLibCodec.encode(imgBytes);
+
+      final List<int> encData = const ZLibEncoder().encode(imgBytes);
       layerEncBytes.add(encData);
       layerNames.add(utf8.encode("Layer$l"));
     }
@@ -1242,7 +1243,6 @@ class FileHandler
 
     final List<List<List<int>>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    final ZLibCodec zLibCodec = ZLibCodec();
     const int tileSize = 64;
     for (int l = 0; l < appState.layers.value.length; l++)
     {
@@ -1275,7 +1275,7 @@ class FileHandler
           }
 
         }
-        final List<int> encData = zLibCodec.encode(imgBytes);
+        final List<int> encData = const ZLibEncoder().encode(imgBytes);
         tileList.add(encData);
 
         x = (endX >= layerState.size.x) ? 0 : endX;

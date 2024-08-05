@@ -41,6 +41,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late OverlayEntry _saveWarningDialog;
   late OverlayEntry _paletteWarningDialog;
   late OverlayEntry _exportDialog;
+  late OverlayEntry _aboutDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   bool _loadMenuVisible = false;
@@ -48,6 +49,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   bool _saveWarningVisible = false;
   bool _paletteWarningVisible = false;
   bool _exportDialogVisible = false;
+  bool _aboutDialogVisible = false;
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
@@ -84,6 +86,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _exportDialog = OverlayEntries.getExportDialog(
         onDismiss: _closeAllMenus,
         onAccept: _exportFilePressed,
+        canvasSize: _appState.canvasSize);
+    _aboutDialog = OverlayEntries.getAboutDialog(
+        onDismiss: _closeAllMenus,
         canvasSize: _appState.canvasSize);
   }
 
@@ -135,6 +140,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       _exportDialog.remove();
       _exportDialogVisible = false;
+    }
+
+    if (_aboutDialogVisible)
+    {
+      _aboutDialog.remove();
+      _aboutDialogVisible = false;
     }
 
   }
@@ -249,10 +260,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     //print("SHOW SETTINGS");
   }
 
-  //TODO
   void _questionPressed()
   {
-    //print("SHOW QUESTION");
+    if (!_aboutDialogVisible)
+    {
+      Overlay.of(context).insert(_aboutDialog);
+      _aboutDialogVisible = true;
+    }
   }
 
   void _undoPressed()

@@ -20,7 +20,7 @@ class ColorSet
 
 class KPixTheme {
 
-  static ColorSet lightColors = ColorSet(normal: Colors.grey[350]!, light: Colors.grey[700]!, dark: Colors.grey[200]!);
+  static ColorSet lightColors = ColorSet(normal: Colors.grey[400]!, light: Colors.grey[700]!, dark: Colors.grey[350]!);
   static ThemeData monochromeTheme = ThemeData(
 
     primaryColor: lightColors.normal,
@@ -87,6 +87,21 @@ class KPixTheme {
             )
         )
     ),
+
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.hovered) ? darkColors.light : darkColors.normal),
+          backgroundColor: WidgetStateProperty.all(lightColors.normal),
+          overlayColor: WidgetStateProperty.all(lightColors.light),
+          surfaceTintColor: WidgetStateProperty.all(lightColors.normal),
+          side: WidgetStateProperty.all(
+              BorderSide(
+                  color: lightColors.light
+              )
+          )
+      )
+    ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         elevation: WidgetStateProperty.all(lightColors.elevation),
@@ -183,6 +198,18 @@ class KPixTheme {
           color: darkColors.light
         )
       )
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.hovered) ? darkColors.normal : darkColors.light),
+          backgroundColor: WidgetStateProperty.all(darkColors.normal),
+          overlayColor: WidgetStateProperty.all(darkColors.light),
+          surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+          side: WidgetStateProperty.all(BorderSide(
+              color: darkColors.light
+          ))
+      )
+
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(

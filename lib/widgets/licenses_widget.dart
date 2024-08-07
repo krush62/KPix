@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/oss_licenses.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class LicensesWidget extends StatelessWidget
 {
   final List<Package> _licenses = allDependencies;
-  final OverlayEntryAlertDialogOptions options;
-  const LicensesWidget({super.key, required this.options});
+  const LicensesWidget({super.key});
 
 
   @override
   Widget build(BuildContext context)
   {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return Material(
       elevation: options.elevation,
       shadowColor: Theme.of(context).primaryColorDark,

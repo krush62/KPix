@@ -36,20 +36,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
   final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
-  late OverlayEntry _loadMenu;
-  late OverlayEntry _saveMenu;
-  late OverlayEntry _saveWarningDialog;
-  late OverlayEntry _paletteWarningDialog;
-  late OverlayEntry _exportDialog;
-  late OverlayEntry _aboutDialog;
+  late KPixOverlay _loadMenu;
+  late KPixOverlay _saveMenu;
+  late KPixOverlay _saveWarningDialog;
+  late KPixOverlay _paletteWarningDialog;
+  late KPixOverlay _exportDialog;
+  late KPixOverlay _aboutDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
-  bool _loadMenuVisible = false;
-  bool _saveMenuVisible = false;
-  bool _saveWarningVisible = false;
-  bool _paletteWarningVisible = false;
-  bool _exportDialogVisible = false;
-  bool _aboutDialogVisible = false;
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
@@ -112,62 +106,24 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _closeAllMenus()
   {
-    if (_loadMenuVisible)
-    {
-      _loadMenu.remove();
-      _loadMenuVisible = false;
-    }
-
-    if (_saveMenuVisible)
-    {
-      _saveMenu.remove();
-      _saveMenuVisible = false;
-    }
-
-    if (_saveWarningVisible)
-    {
-      _saveWarningDialog.remove();
-      _saveWarningVisible = false;
-    }
-
-    if (_paletteWarningVisible)
-    {
-      _paletteWarningDialog.remove();
-      _paletteWarningVisible = false;
-    }
-
-    if (_exportDialogVisible)
-    {
-      _exportDialog.remove();
-      _exportDialogVisible = false;
-    }
-
-    if (_aboutDialogVisible)
-    {
-      _aboutDialog.remove();
-      _aboutDialogVisible = false;
-    }
-
+    _loadMenu.hide();
+    _saveMenu.hide();
+    _saveWarningDialog.hide();
+    _paletteWarningDialog.hide();
+    _exportDialog.hide();
+    _aboutDialog.hide();
   }
 
   void _loadPressed()
   {
-    if (!_loadMenuVisible)
-    {
-      Overlay.of(context).insert(_loadMenu);
-      _loadMenuVisible = true;
-    }
+    _loadMenu.show(context);
   }
 
   void _loadFile()
   {
     if (_appState.hasChanges.value)
     {
-      if (!_saveWarningVisible)
-      {
-        Overlay.of(context).insert(_saveWarningDialog);
-        _saveWarningVisible = true;
-      }
+      _saveWarningDialog.show(context);
     }
     else
     {
@@ -179,7 +135,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _saveWarningYes()
   {
     FileHandler.saveFilePressed(finishCallback: _saveBeforeLoadFinished);
-
   }
 
   void _saveWarningNo()
@@ -197,11 +152,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _loadPalette()
   {
-    if (!_paletteWarningVisible)
-    {
-      Overlay.of(context).insert(_paletteWarningDialog);
-      _paletteWarningVisible = true;
-    }
+    _paletteWarningDialog.show(context);
   }
 
   void _paletteWarningYes()
@@ -219,11 +170,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _savePressed()
   {
-    if (!_saveMenuVisible)
-    {
-      Overlay.of(context).insert(_saveMenu);
-      _saveMenuVisible = true;
-    }
+    _saveMenu.show(context);
   }
 
   void _saveFile()
@@ -240,11 +187,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportFile()
   {
-    if (!_exportDialogVisible)
-    {
-      Overlay.of(context).insert(_exportDialog);
-      _exportDialogVisible = true;
-    }
+    _exportDialog.show(context);
   }
 
 
@@ -262,11 +205,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _questionPressed()
   {
-    if (!_aboutDialogVisible)
-    {
-      Overlay.of(context).insert(_aboutDialog);
-      _aboutDialogVisible = true;
-    }
+    _aboutDialog.show(context);
   }
 
   void _undoPressed()

@@ -60,8 +60,7 @@ class KPixApp extends StatefulWidget
 class _KPixAppState extends State<KPixApp>
 {
   final ValueNotifier<bool> initialized = ValueNotifier(false);
-  late OverlayEntry _closeWarningDialog;
-  bool _closeWarningVisible = false;
+  late KPixOverlay _closeWarningDialog;
 
   @override
   void initState() {
@@ -117,8 +116,7 @@ class _KPixAppState extends State<KPixApp>
   {
     if (GetIt.I.get<AppState>().hasChanges.value)
     {
-      Overlay.of(context).insert(_closeWarningDialog);
-      _closeWarningVisible = true;
+      _closeWarningDialog.show(context);
     }
     else
     {
@@ -143,10 +141,7 @@ class _KPixAppState extends State<KPixApp>
 
   void _closeAllMenus()
   {
-    if (_closeWarningVisible)
-    {
-      _closeWarningDialog.remove();
-    }
+    _closeWarningDialog.hide();
   }
 
 

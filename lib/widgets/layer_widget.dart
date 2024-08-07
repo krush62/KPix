@@ -352,8 +352,7 @@ class _LayerWidgetState extends State<LayerWidget>
   };
 
   final LayerLink settingsLink = LayerLink();
-  late OverlayEntry settingsMenu;
-  bool settingsMenuVisible = false;
+  late KPixOverlay settingsMenu;
 
   @override
   void initState() {
@@ -387,20 +386,12 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _closeSettingsMenu()
   {
-    if (settingsMenuVisible)
-    {
-      settingsMenu.remove();
-      settingsMenuVisible = false;
-    }
+    settingsMenu.hide();
   }
 
   void _settingsButtonPressed()
   {
-    if (!settingsMenuVisible)
-    {
-      Overlay.of(context).insert(settingsMenu);
-      settingsMenuVisible = true;
-    }
+    settingsMenu.show(context);
   }
 
 

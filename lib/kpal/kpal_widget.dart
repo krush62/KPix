@@ -192,8 +192,7 @@ class KPal extends StatefulWidget {
 
 class _KPalState extends State<KPal>
 {
-  bool _alertDialogVisible = false;
-  late OverlayEntry _alertDialog;
+  late KPixOverlay _alertDialog;
   final KPalWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions;
   late KPalRampData _originalData;
 
@@ -219,19 +218,12 @@ class _KPalState extends State<KPal>
 
   void _dismissAlertDialog()
   {
-    if (_alertDialogVisible)
-    {
-       _alertDialog.remove();
-       _alertDialogVisible = false;
-    }
+    _alertDialog.hide();
   }
 
   void _showDeleteDialog()
   {
-    if (!_alertDialogVisible) {
-      Overlay.of(context).insert(_alertDialog);
-      _alertDialogVisible = true;
-    }
+    _alertDialog.show(context);
   }
 
   @override

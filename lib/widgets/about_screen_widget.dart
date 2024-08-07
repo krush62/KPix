@@ -17,10 +17,8 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final PackageInfo pInfo = GetIt.I.get<PackageInfo>();
 
-  late OverlayEntry _licenseScreen;
-  late OverlayEntry _creditsScreen;
-  bool _licenseScreenVisible = false;
-  bool _creditsScreenVisible = false;
+  late KPixOverlay _licenseScreen;
+  late KPixOverlay _creditsScreen;
 
   @override
   void initState()
@@ -32,34 +30,19 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
 
   void _licensesPressed()
   {
-    if (!_licenseScreenVisible)
-    {
-      Overlay.of(context).insert(_licenseScreen);
-      _licenseScreenVisible = true;
-    }
+    _licenseScreen.show(context);
   }
 
   void _creditsPressed()
   {
-    if (!_creditsScreenVisible)
-    {
-      Overlay.of(context).insert(_creditsScreen);
-      _creditsScreenVisible = true;
-    }
+    _creditsScreen.show(context);
   }
 
   void _dismissDialogs()
   {
-    if (_licenseScreenVisible)
-    {
-      _licenseScreen.remove();
-      _licenseScreenVisible = false;
-    }
-    if (_creditsScreenVisible)
-    {
-      _creditsScreen.remove();
-      _creditsScreenVisible = false;
-    }
+    _licenseScreen.hide();
+    _creditsScreen.hide();
+
   }
 
   @override

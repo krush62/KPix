@@ -31,7 +31,12 @@ class CreditsWidgetState extends State<CreditsWidget>
   void initState()
   {
     super.initState();
-    createCreditEntries(context).then(setCreditEntries);
+    createCreditEntries(
+      headerLarge: Theme.of(context).textTheme.headlineLarge!,
+      headerMedium: Theme.of(context).textTheme.headlineMedium!,
+      headerSmall: Theme.of(context).textTheme.headlineSmall!,
+      textNormal: Theme.of(context).textTheme.bodyMedium!
+    ).then(setCreditEntries);
   }
 
   void setCreditEntries(final List<CreditEntry> entries)
@@ -40,7 +45,7 @@ class CreditsWidgetState extends State<CreditsWidget>
   }
 
 
-  Future<List<CreditEntry>> createCreditEntries(final BuildContext context) async
+  Future<List<CreditEntry>> createCreditEntries({required final TextStyle headerLarge, required final TextStyle headerMedium, required final TextStyle headerSmall, required final TextStyle textNormal}) async
   {
     final List<CreditEntry> entries = [];
     final String credContent = await rootBundle.loadString("docs/credits.md");
@@ -49,19 +54,19 @@ class CreditsWidgetState extends State<CreditsWidget>
     {
       if (line.startsWith("# "))
       {
-        entries.add(CreditEntry(content: line.substring(2), style: Theme.of(context).textTheme.headlineLarge!));
+        entries.add(CreditEntry(content: line.substring(2), style: headerLarge));
       }
       else if (line.startsWith("## "))
       {
-        entries.add(CreditEntry(content: line.substring(3), style: Theme.of(context).textTheme.headlineMedium!));
+        entries.add(CreditEntry(content: line.substring(3), style: headerMedium));
       }
       else if (line.startsWith("### "))
       {
-        entries.add(CreditEntry(content: line.substring(4), style: Theme.of(context).textTheme.headlineSmall!));
+        entries.add(CreditEntry(content: line.substring(4), style: headerSmall));
       }
       else
       {
-        entries.add(CreditEntry(content: line, style: Theme.of(context).textTheme.bodyLarge!));
+        entries.add(CreditEntry(content: line, style: textNormal));
       }
     }
 

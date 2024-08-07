@@ -116,26 +116,24 @@ class ColorRampRowWidget extends StatefulWidget {
 
 class _ColorRampRowWidgetState extends State<ColorRampRowWidget> 
 {
-  bool kPalVisible = false;
-  late OverlayEntry kPal;
+  late KPixOverlay kPal;
+
+  @override
+  void initState()
+  {
+    super.initState();
+
+  }
 
   void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    if (kPalVisible)
-    {
-      kPal.remove();
-    }
     kPal = OverlayEntries.getKPal(
       onDismiss: _closeKPal,
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
       colorRamp: ramp,
     );
-    if (!kPalVisible)
-    {
-      Overlay.of(context).insert(kPal);
-      kPalVisible = true;
-    }
+    kPal.show(context);
   }
 
   void _colorRampUpdate({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
@@ -152,11 +150,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
 
   void _closeKPal()
   {
-    if (kPalVisible)
-    {
-      kPal.remove();
-      kPalVisible = false;
-    }
+    kPal.hide();
   }
    @override
   Widget build(BuildContext context) {

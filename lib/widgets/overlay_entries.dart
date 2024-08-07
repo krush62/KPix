@@ -11,6 +11,33 @@ import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/licenses_widget.dart';
 
+
+
+class KPixOverlay
+{
+  bool isVisible;
+  OverlayEntry entry;
+  KPixOverlay({required this.entry, this.isVisible = false});
+
+  void show(BuildContext context)
+  {
+    if (!isVisible)
+    {
+      Overlay.of(context).insert(entry);
+      isVisible = true;
+    }
+  }
+
+  void hide()
+  {
+    if (isVisible)
+    {
+      entry.remove();
+      isVisible = false;
+    }
+  }
+}
+
 class OverlayEntrySubMenuOptions
 {
   final double offsetX;
@@ -63,7 +90,7 @@ class OverlayEntryAlertDialogOptions
 class OverlayEntries
 {
 
-  static OverlayEntry getLoadMenu({
+  static KPixOverlay getLoadMenu({
     required final Function onDismiss,
     required Function onLoadFile,
     required Function onLoadPalette,
@@ -72,7 +99,7 @@ class OverlayEntries
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
           ModalBarrier(
@@ -134,11 +161,11 @@ class OverlayEntries
           ),
         ],
       ),
-    );
+    ));
   }
 
 
-  static OverlayEntry getSaveMenu({
+  static KPixOverlay getSaveMenu({
     required final Function onDismiss,
     required Function onSaveFile,
     required Function onSaveAsFile,
@@ -148,7 +175,7 @@ class OverlayEntries
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
           ModalBarrier(
@@ -242,11 +269,11 @@ class OverlayEntries
           ),
         ],
       ),
-    );
+    ));
   }
 
 
-  static OverlayEntry getLayerMenu({
+  static KPixOverlay getLayerMenu({
     required final Function onDismiss,
     required Function onDelete,
     required Function onMergeDown,
@@ -259,7 +286,7 @@ class OverlayEntries
     const int buttonCount = 3;
     final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
     final double height = options.buttonHeight + 2 * options.buttonSpacing;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
           ModalBarrier(
@@ -325,12 +352,12 @@ class OverlayEntries
           ),
         ],
       ),
-    );
+    ));
   }
 
 
 
-  static OverlayEntry getKPal({
+  static KPixOverlay getKPal({
     required final Function() onDismiss,
     required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
@@ -338,7 +365,7 @@ class OverlayEntries
 
   })
   {
-    return OverlayEntry(
+    return KPixOverlay(entry:  OverlayEntry(
       builder: (context) => Stack(
         children: [
           ModalBarrier(
@@ -359,17 +386,17 @@ class OverlayEntries
           ),
         ],
       ),
-    );
+    ));
   }
 
-  static OverlayEntry getAlertDialog({
+  static KPixOverlay getAlertDialog({
     required final Function() onDismiss,
     required final Function() onAccept,
     required final String message,
 })
   {
     OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
           ModalBarrier(
@@ -449,10 +476,10 @@ class OverlayEntries
           ),
         ]
       )
-    );
+    ));
   }
 
-  static OverlayEntry getThreeButtonDialog({
+  static KPixOverlay getThreeButtonDialog({
     required final Function() onYes,
     required final Function() onNo,
     required final Function() onCancel,
@@ -461,7 +488,7 @@ class OverlayEntries
   })
   {
     OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
         builder: (context) => Stack(
             children: [
               ModalBarrier(
@@ -556,18 +583,18 @@ class OverlayEntries
               ),
             ]
         )
-    );
+    ));
   }
 
 
-  static OverlayEntry getExportDialog({
+  static KPixOverlay getExportDialog({
     required final Function() onDismiss,
     required final ExportDataFn onAccept,
     required final CoordinateSetI canvasSize
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
           ModalBarrier(
@@ -579,16 +606,16 @@ class OverlayEntries
           ),
         ]
       )
-    );
+    ));
   }
 
-  static OverlayEntry getAboutDialog({
+  static KPixOverlay getAboutDialog({
     required final Function() onDismiss,
     required final CoordinateSetI canvasSize
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
         builder: (context) => Stack(
             children: [
               ModalBarrier(
@@ -600,15 +627,15 @@ class OverlayEntries
               ),
             ]
         )
-    );
+    ));
   }
 
-  static OverlayEntry getLicensesDialog({
+  static KPixOverlay getLicensesDialog({
     required final Function() onDismiss,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
         builder: (context) => Stack(
             children: [
               ModalBarrier(
@@ -620,15 +647,15 @@ class OverlayEntries
               ),
             ]
         )
-    );
+    ));
   }
 
-  static OverlayEntry getCreditsDialog({
+  static KPixOverlay getCreditsDialog({
     required final Function() onDismiss,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return OverlayEntry(
+    return KPixOverlay(entry: OverlayEntry(
         builder: (context) => Stack(
             children: [
               ModalBarrier(
@@ -640,7 +667,7 @@ class OverlayEntries
               ),
             ]
         )
-    );
+    ));
   }
 
 }

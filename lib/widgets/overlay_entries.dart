@@ -8,6 +8,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/about_screen_widget.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/licenses_widget.dart';
 
 class OverlayEntrySubMenuOptions
 {
@@ -595,6 +596,26 @@ class OverlayEntries
               ),
               Center(
                 child: AboutScreenWidget()
+              ),
+            ]
+        )
+    );
+  }
+
+  static OverlayEntry getLicensesDialog({
+    required final Function() onDismiss,
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return OverlayEntry(
+        builder: (context) => Stack(
+            children: [
+              ModalBarrier(
+                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                onDismiss: () {onDismiss();},
+              ),
+              Center(
+                child: LicensesWidget(options: options),
               ),
             ]
         )

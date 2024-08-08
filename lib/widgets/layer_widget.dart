@@ -9,6 +9,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 
@@ -306,16 +307,32 @@ class LayerState
 
   }
 
-  LayerState getRotatedLayer()
+  LayerState getTransformedLayer(final CanvasTransformation transformation)
   {
-    HashMap<CoordinateSetI, ColorReference> rotatedContent = HashMap();
-    //TODO
+    final HashMap<CoordinateSetI, ColorReference> rotatedContent = HashMap();
+    final CoordinateSetI newSize = CoordinateSetI.from(size);
     for (final MapEntry entry in _data.entries)
     {
-      final CoordinateSetI rotCoord = CoordinateSetI(x: ((size.y - 1) - entry.key.y).toInt(), y: entry.key.x);
+      final CoordinateSetI rotCoord = CoordinateSetI.from(entry.key);
+      if (transformation == CanvasTransformation.rotate)
+      {
+        rotCoord.x = ((size.y - 1) - entry.key.y).toInt();
+        rotCoord.y = entry.key.x;
+        newSize.x = size.y;
+        newSize.y = size.x;
+      }
+      else if (transformation == CanvasTransformation.flipH)
+      {
+        rotCoord.x = ((size.x - 1) - entry.key.x).toInt();
+      }
+      else if (transformation == CanvasTransformation.flipV)
+      {
+        rotCoord.y = ((size.y - 1) - entry.key.y).toInt();
+      }
+
       rotatedContent[rotCoord] = entry.value;
     }
-    return LayerState(size: CoordinateSetI(x: size.y, y: size.x), content: rotatedContent);
+    return LayerState(size: newSize, content: rotatedContent);
   }
 }
 

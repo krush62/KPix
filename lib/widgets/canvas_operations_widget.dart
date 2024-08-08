@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -11,6 +13,20 @@ class CanvasOperationsWidgetOptions
 
   CanvasOperationsWidgetOptions({required this.iconHeight, required this.padding});
 }
+
+enum CanvasTransformation
+{
+  rotate,
+  flipH,
+  flipV
+}
+
+const Map<CanvasTransformation, String> transformationDescriptions =
+{
+  CanvasTransformation.rotate: "rotate canvas",
+  CanvasTransformation.flipH: "flip canvas horizontally",
+  CanvasTransformation.flipV: "flip canvas vertically"
+};
 
 
 class CanvasOperationsWidget extends StatefulWidget
@@ -27,21 +43,6 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
   final CanvasOperationsWidgetOptions _options = GetIt.I.get<PreferenceManager>().canvasOperationsWidgetOptions;
   final AppState _appState = GetIt.I.get<AppState>();
 
-  void _rotate()
-  {
-    //TODO call directly
-    _appState.canvasRotate();
-  }
-
-  void _hFlip()
-  {
-    //TODO
-  }
-
-  void _vFlip()
-  {
-    //TODO
-  }
 
   void _crop()
   {
@@ -72,8 +73,8 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: IconButton.outlined(
-                    tooltip: "Rotate",
-                    onPressed: _rotate,
+                    tooltip: transformationDescriptions[CanvasTransformation.rotate],
+                    onPressed: (){_appState.canvasTransform(CanvasTransformation.rotate);},
                     icon: FaIcon(
                       FontAwesomeIcons.rotate,
                       size: _options.iconHeight
@@ -88,8 +89,8 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: IconButton.outlined(
-                    tooltip: "Horizontal Flip",
-                    onPressed: _hFlip,
+                    tooltip: transformationDescriptions[CanvasTransformation.flipH],
+                    onPressed: (){_appState.canvasTransform(CanvasTransformation.flipH);},
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsLeftRight,
                       size: _options.iconHeight
@@ -104,8 +105,8 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: IconButton.outlined(
-                    tooltip: "Vertical Flip",
-                    onPressed: _vFlip,
+                    tooltip: transformationDescriptions[CanvasTransformation.flipV],
+                    onPressed: (){_appState.canvasTransform(CanvasTransformation.flipV);},
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsUpDown,
                       size: _options.iconHeight

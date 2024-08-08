@@ -12,6 +12,7 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
 
@@ -692,32 +693,41 @@ class AppState
     return _selectedTool;
   }
 
-  void canvasRotate()
+  void canvasTransform(final CanvasTransformation transformation)
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
     final List<LayerState> layerList = [];
-    LayerState? currentRotatedLayer;
+    LayerState? currentTransformLayer;
     for (final LayerState layer in layers.value)
     {
-       final LayerState rotatedLayer = layer.getRotatedLayer();
-       layerList.add(rotatedLayer);
+       LayerState transformLayer = layer.getTransformedLayer(transformation);
+       layerList.add(transformLayer);
        if (layer == currentLayer.value)
        {
-           currentRotatedLayer = rotatedLayer;
+           currentTransformLayer = transformLayer;
        }
     }
     layers.value = layerList;
-    currentLayer.value = currentRotatedLayer;
-    if (currentRotatedLayer != null)
+    currentLayer.value = currentTransformLayer;
+    if (currentTransformLayer != null)
     {
-      currentRotatedLayer.isSelected.value = true;
-      selectionState.selection.changeLayer(null, currentRotatedLayer);
+      currentTransformLayer.isSelected.value = true;
+      selectionState.selection.changeLayer(null, currentTransformLayer);
+    }
+    if (transformation == CanvasTransformation.rotate)
+    {
+      setCanvasDimensions(width: canvasSize.y, height: canvasSize.x);
+
+    }
+    else if (transformation == CanvasTransformation.flipH || transformation == CanvasTransformation.flipV)
+    {
+      //canvas dimensions stay the same
     }
 
-    setCanvasDimensions(width: canvasSize.y, height: canvasSize.x);
-    GetIt.I.get<HistoryManager>().addState(appState: this, description: "rotate canvas");
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: transformationDescriptions[transformation]!);
 
   }
+
 
   void showMessage(final String text) {
     showStyledToast(

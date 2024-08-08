@@ -36,7 +36,7 @@ class EraserPainter extends IToolPainter
           .round();
 
 
-      if (_cursorPosNorm != _previousCursorPosNorm)
+      //if (_cursorPosNorm != _previousCursorPosNorm)
       {
         if (drawParams.primaryDown && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
@@ -60,7 +60,6 @@ class EraserPainter extends IToolPainter
                 {
                   if (drawParams.currentLayer.getDataEntry(coord) != null)
                   {
-                    //drawParams.currentLayer.setData(coord, null);
                     refs[coord] = null;
                   }
                 }

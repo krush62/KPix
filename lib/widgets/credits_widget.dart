@@ -31,12 +31,6 @@ class CreditsWidgetState extends State<CreditsWidget>
   void initState()
   {
     super.initState();
-    createCreditEntries(
-      headerLarge: Theme.of(context).textTheme.headlineLarge!,
-      headerMedium: Theme.of(context).textTheme.headlineMedium!,
-      headerSmall: Theme.of(context).textTheme.headlineSmall!,
-      textNormal: Theme.of(context).textTheme.bodyMedium!
-    ).then(setCreditEntries);
   }
 
   void setCreditEntries(final List<CreditEntry> entries)
@@ -77,6 +71,15 @@ class CreditsWidgetState extends State<CreditsWidget>
   @override
   Widget build(BuildContext context)
   {
+    if (_creditEntries.value.isEmpty)
+    {
+      createCreditEntries(
+          headerLarge: Theme.of(context).textTheme.headlineLarge!,
+          headerMedium: Theme.of(context).textTheme.headlineMedium!,
+          headerSmall: Theme.of(context).textTheme.headlineSmall!,
+          textNormal: Theme.of(context).textTheme.bodyMedium!
+      ).then(setCreditEntries);
+    }
     return Material(      
       elevation: options.elevation,
       shadowColor: Theme.of(context).primaryColorDark,

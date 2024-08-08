@@ -305,6 +305,18 @@ class LayerState
 
 
   }
+
+  LayerState getRotatedLayer()
+  {
+    HashMap<CoordinateSetI, ColorReference> rotatedContent = HashMap();
+    //TODO
+    for (final MapEntry entry in _data.entries)
+    {
+      final CoordinateSetI rotCoord = CoordinateSetI(x: ((size.y - 1) - entry.key.y).toInt(), y: entry.key.x);
+      rotatedContent[rotCoord] = entry.value;
+    }
+    return LayerState(size: CoordinateSetI(x: size.y, y: size.x), content: rotatedContent);
+  }
 }
 
 

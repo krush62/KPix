@@ -18,6 +18,7 @@ import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -116,6 +117,9 @@ enum PreferenceDouble
 
   Layout_SelectionBar_IconHeight(defaultValue: 16.0),
   Layout_SelectionBar_Padding(defaultValue: 4.0),
+
+  Layout_CanvasOperations_IconHeight(defaultValue: 12.0),
+  Layout_CanvasOperations_Padding(defaultValue: 4.0),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -379,6 +383,7 @@ class PreferenceManager
   late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
   late SelectionBarWidgetOptions selectionBarWidgetOptions;
+  late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
 
   late KPixPainterOptions kPixPainterOptions;
 
@@ -582,6 +587,9 @@ class PreferenceManager
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
         opacityDuration: _getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration));
+    canvasOperationsWidgetOptions = CanvasOperationsWidgetOptions(
+        iconHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_IconHeight),
+        padding: _getValueD(PreferenceDouble.Layout_CanvasOperations_Padding));
 
   }
 

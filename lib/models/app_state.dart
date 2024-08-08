@@ -59,6 +59,7 @@ class AppState
     }
     setToolSelection(tool: ToolType.pencil);
     statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
+    //TODO what is this and should this be applied every time the current layer changes?
     currentLayer.addListener(() {
       selectionState.selection.setCurrentLayer(currentLayer.value);
     });
@@ -689,6 +690,33 @@ class AppState
   ValueNotifier<ToolType> getSelectedToolNotifier()
   {
     return _selectedTool;
+  }
+
+  void canvasRotate()
+  {
+    selectionState.deselect(addToHistoryStack: false, notify: false);
+    final List<LayerState> layerList = [];
+    LayerState? currentRotatedLayer;
+    for (final LayerState layer in layers.value)
+    {
+       final LayerState rotatedLayer = layer.getRotatedLayer();
+       layerList.add(rotatedLayer);
+       if (layer == currentLayer.value)
+       {
+           currentRotatedLayer = rotatedLayer;
+       }
+    }
+    layers.value = layerList;
+    currentLayer.value = currentRotatedLayer;
+    if (currentRotatedLayer != null)
+    {
+      currentRotatedLayer.isSelected.value = true;
+      selectionState.selection.changeLayer(null, currentRotatedLayer);
+    }
+
+    setCanvasDimensions(width: canvasSize.y, height: canvasSize.x);
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "rotate canvas");
+
   }
 
   void showMessage(final String text) {

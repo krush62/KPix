@@ -698,7 +698,7 @@ class SelectionList
     currentLayer = layerState;
   }
 
-  void changeLayer(final LayerState oldLayer, final LayerState newLayer)
+  void changeLayer(final LayerState? oldLayer, final LayerState newLayer)
   {
     final HashMap<CoordinateSetI, ColorReference?> refsOld = HashMap();
     final HashMap<CoordinateSetI, ColorReference?> refsNew = HashMap();
@@ -717,7 +717,11 @@ class SelectionList
         refsNew[key] = null;
       }
     }
-    oldLayer.setDataAll(refsOld);
+    if (oldLayer != null)
+    {
+      oldLayer.setDataAll(refsOld);
+    }
+
     newLayer.setDataAll(refsNew);
   }
 

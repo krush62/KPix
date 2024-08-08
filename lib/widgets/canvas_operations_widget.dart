@@ -46,7 +46,7 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _crop()
   {
-    //TODO
+    _appState.cropToSelection();
   }
 
   void _setSize()

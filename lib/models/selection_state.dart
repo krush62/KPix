@@ -906,5 +906,30 @@ class SelectionList
     return has;
   }
 
+  (CoordinateSetI?, CoordinateSetI?) getBoundingBox(final CoordinateSetI canvasSize)
+  {
+    CoordinateSetI? topLeft, bottomRight;
+    int minX = canvasSize.x;
+    int maxX = -1;
+    int minY = canvasSize.y;
+    int maxY = -1;
+
+    final Iterable<CoordinateSetI> allCoords = _content.keys;
+    for (final CoordinateSetI coord in allCoords)
+    {
+      minX = min(minX, coord.x);
+      maxX = max(maxX, coord.x);
+      minY = min(minY, coord.y);
+      maxY = max(maxY, coord.y);
+    }
+
+    if (minX <= maxX && minY <= maxY)
+    {
+       topLeft = CoordinateSetI(x: minX, y: minY);
+       bottomRight = CoordinateSetI(x: maxX, y: maxY);
+    }
+    return (topLeft, bottomRight);
+  }
+
 }
 

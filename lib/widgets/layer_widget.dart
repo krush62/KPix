@@ -311,6 +311,11 @@ class LayerState
   {
     final HashMap<CoordinateSetI, ColorReference> rotatedContent = HashMap();
     final CoordinateSetI newSize = CoordinateSetI.from(size);
+    if (transformation == CanvasTransformation.rotate)
+    {
+      newSize.x = size.y;
+      newSize.y = size.x;
+    }
     for (final MapEntry entry in _data.entries)
     {
       final CoordinateSetI rotCoord = CoordinateSetI.from(entry.key);
@@ -318,8 +323,6 @@ class LayerState
       {
         rotCoord.x = ((size.y - 1) - entry.key.y).toInt();
         rotCoord.y = entry.key.x;
-        newSize.x = size.y;
-        newSize.y = size.x;
       }
       else if (transformation == CanvasTransformation.flipH)
       {
@@ -332,9 +335,72 @@ class LayerState
 
       rotatedContent[rotCoord] = entry.value;
     }
+    if (rasterQueue.isNotEmpty)
+    {
+      for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
+      {
+        final CoordinateSetI rotCoord = CoordinateSetI.from(entry.$1);
+        if (transformation == CanvasTransformation.rotate)
+        {
+          rotCoord.x = ((size.y - 1) - entry.$1.y).toInt();
+          rotCoord.y = entry.$1.x;
+        }
+        else if (transformation == CanvasTransformation.flipH)
+        {
+          rotCoord.x = ((size.x - 1) - entry.$1.x).toInt();
+        }
+        else if (transformation == CanvasTransformation.flipV)
+        {
+          rotCoord.y = ((size.y - 1) - entry.$1.y).toInt();
+        }
+        if (entry.$2 != null)
+        {
+          rotatedContent[rotCoord] = entry.$2!;
+        }
+        else if (rotatedContent.containsKey(rotCoord))
+        {
+          rotatedContent.remove(rotCoord);
+        }
+      }
+    }
     return LayerState(size: newSize, content: rotatedContent);
   }
+
+  LayerState getCroppedLayer(final CoordinateSetI topLeft, final CoordinateSetI bottomRight, final CoordinateSetI newSize)
+  {
+    final HashMap<CoordinateSetI, ColorReference> croppedContent = HashMap();
+
+    for (final MapEntry entry in _data.entries)
+    {
+      if (entry.key.x >= topLeft.x && entry.key.x <= bottomRight.x && entry.key.y >= topLeft.y && entry.key.y <= bottomRight.y)
+      {
+        final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x - topLeft.x, y: entry.key.y - topLeft.y);
+        croppedContent[newCoord] = entry.value;
+      }
+    }
+    if (rasterQueue.isNotEmpty)
+    {
+      for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
+      {
+        if (entry.$1.x >= topLeft.x && entry.$1.x <= bottomRight.x && entry.$1.y >= topLeft.y && entry.$1.y <= bottomRight.y)
+        {
+          final CoordinateSetI newCoord = CoordinateSetI(x: entry.$1.x - topLeft.x, y: entry.$1.y - topLeft.y);
+          if (entry.$2 != null)
+          {
+            croppedContent[newCoord] = entry.$2!;
+          }
+          else if (croppedContent.containsKey(newCoord))
+          {
+            croppedContent.remove(newCoord);
+          }
+        }
+      }
+    }
+    return LayerState(size: newSize, content: croppedContent);
+  }
 }
+
+
 
 
 

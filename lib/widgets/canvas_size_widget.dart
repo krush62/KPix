@@ -426,7 +426,12 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                           top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
                                           width: scaledCanvasSize.x,
                                           height: scaledCanvasSize.y,
-                                          child: ColoredBox(color: Colors.green,),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Theme.of(context).primaryColorDark),
+                                              color: Theme.of(context).primaryColorLight,
+                                            ),
+                                          )
                                         ),
                                         Positioned(
                                             left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
@@ -435,7 +440,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                             height: scaledNewSize.y,
                                             child: DecoratedBox(
                                               decoration: BoxDecoration(
-                                                  border: Border.all(color: Colors.yellow)
+                                                  border: Border.all(color:  Theme.of(context).primaryColorDark)
                                               ),
                                             )
                                         )
@@ -480,7 +485,6 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           )
                         ],
                       ),
-                        //child: ColoredBox(color: Colors.green, child: Text("PREVIEW")), flex: 1
                     )
                   ],
                 ),

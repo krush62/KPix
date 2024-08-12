@@ -1,9 +1,11 @@
 import 'dart:collection';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 enum ToolType
@@ -407,5 +409,40 @@ class Helper
   {
     return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
   }
+
+  static Future<ui.Image> getImageFromCustomPainter(final CustomPainter cPainter, final CoordinateSetI size) async
+  {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    cPainter.paint(Canvas(recorder), Size(size.x.toDouble(), size.y.toDouble()));
+    final ui.Picture picture = recorder.endRecording();
+    return picture.toImage(size.x, size.y);
+  }
+
+  static Future<ui.Image> getImageFromLayers(final CoordinateSetI canvasSize, final List<LayerState> layers, final CoordinateSetI size) async
+  {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+    for (int i = layers.length - 1; i >= 0; i--)
+    {
+      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      {
+
+        if (layers[i].raster != null)
+        {
+          paintImage(
+              canvas: canvas,
+              rect: ui.Rect.fromLTWH(0, 0,
+                  canvasSize.x.toDouble(),
+                  canvasSize.y.toDouble()),
+              image: layers[i].raster!,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none);
+        }
+      }
+    }
+    return recorder.endRecording().toImage(size.x, size.y);
+  }
+
 }
 

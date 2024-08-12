@@ -233,8 +233,12 @@ class LayerState
       if (entry.value != null) {
         final Color dColor = entry.value!.ramp.colors[entry.value!.colorIndex]
             .value.color;
-        byteData.setUint32((entry.key.y * size.x + entry.key.x) * 4,
-            Helper.argbToRgba(dColor.value));
+        final int index = (entry.key.y * size.x + entry.key.x) * 4;
+        if (index < byteData.lengthInBytes)
+        {
+          byteData.setUint32(index, Helper.argbToRgba(dColor.value));
+        }
+
       }
 
     }

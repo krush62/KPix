@@ -19,6 +19,7 @@ import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
+import 'package:kpix/widgets/canvas_size_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -192,6 +193,10 @@ enum PreferenceInt
   Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 50),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
+
+  Layout_CanvasSize_SizeMin(defaultValue: 4),
+  Layout_CanvasSize_SizeMax(defaultValue: 1024),
+  Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -384,6 +389,7 @@ class PreferenceManager
   late LayerWidgetOptions layerWidgetOptions;
   late SelectionBarWidgetOptions selectionBarWidgetOptions;
   late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
+  late CanvasSizeOptions canvasSizeOptions;
 
   late KPixPainterOptions kPixPainterOptions;
 
@@ -590,6 +596,10 @@ class PreferenceManager
     canvasOperationsWidgetOptions = CanvasOperationsWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_IconHeight),
         padding: _getValueD(PreferenceDouble.Layout_CanvasOperations_Padding));
+    canvasSizeOptions = CanvasSizeOptions(
+        sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
+        sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
+        previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize));
 
   }
 

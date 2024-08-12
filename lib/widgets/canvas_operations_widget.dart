@@ -5,6 +5,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 
 class CanvasOperationsWidgetOptions
 {
@@ -42,7 +44,19 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
   final CanvasOperationsWidgetOptions _options = GetIt.I.get<PreferenceManager>().canvasOperationsWidgetOptions;
   final AppState _appState = GetIt.I.get<AppState>();
+  late KPixOverlay _canvasSizeOverlay;
 
+  @override
+  void initState()
+  {
+    super.initState();
+    _canvasSizeOverlay = OverlayEntries.getCanvasSizeDialog(onDismiss: _hideOverlays, onAccept: _sizeChangeAccepted);
+  }
+
+  void _hideOverlays()
+  {
+    _canvasSizeOverlay.hide();
+  }
 
   void _crop()
   {
@@ -51,7 +65,12 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _setSize()
   {
-    //TODO
+    _canvasSizeOverlay.show(context);
+  }
+
+  void _sizeChangeAccepted(final CoordinateSetI size, final CoordinateSetI offset)
+  {
+
   }
 
 

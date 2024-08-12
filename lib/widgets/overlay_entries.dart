@@ -6,6 +6,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/about_screen_widget.dart';
+import 'package:kpix/widgets/canvas_size_widget.dart';
 import 'package:kpix/widgets/credits_widget.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -664,6 +665,27 @@ class OverlayEntries
               ),
               const Center(
                 child: CreditsWidget(),
+              ),
+            ]
+        )
+    ));
+  }
+
+  static KPixOverlay getCanvasSizeDialog({
+    required final Function() onDismiss,
+    required final CanvasSizeFn onAccept
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(entry: OverlayEntry(
+        builder: (context) => Stack(
+            children: [
+              ModalBarrier(
+                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                onDismiss: () {onDismiss();},
+              ),
+              Center(
+                child: CanvasSizeWidget(accept: onAccept, dismiss: onDismiss),
               ),
             ]
         )

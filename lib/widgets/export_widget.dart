@@ -190,41 +190,41 @@ class _ExportWidgetState extends State<ExportWidget>
                   ),
 
                   Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: EdgeInsets.all(options.padding),
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.xmark,
-                                  size: options.iconSize,
-                                ),
-                                onPressed: () {
-                                  widget.dismiss();
-                                },
-                              ),
-                            )
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding: EdgeInsets.all(options.padding),
-                            child: IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.check,
-                                size: options.iconSize,
-                              ),
-                              onPressed: () {
-                                widget.accept(ExportData.fromWithScaling(other: exportTypeMap[exportType.value]!, scaling: exportScalingValues[scalingIndex.value]), exportType.value);
-                              },
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.all(options.padding),
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.xmark,
+                              size: options.iconSize,
                             ),
-                          )
-                        ),
-                      ]
+                            onPressed: () {
+                              widget.dismiss();
+                            },
+                          ),
+                        )
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.all(options.padding),
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.check,
+                              size: options.iconSize,
+                            ),
+                            onPressed: () {
+                              widget.accept(ExportData.fromWithScaling(other: exportTypeMap[exportType.value]!, scaling: exportScalingValues[scalingIndex.value]), exportType.value);
+                            },
+                          ),
+                        )
+                      ),
+                    ]
                   ),
                 ],
               ),

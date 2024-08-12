@@ -1,5 +1,6 @@
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/canvas_size_widget.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
@@ -17,4 +18,5 @@ typedef LayerDeleteFn = void Function(LayerState state);
 typedef LayerMergeDownFn = void Function(LayerState state);
 typedef LayerDuplicateFn = void Function(LayerState state);
 typedef ExportDataFn = void Function(ExportData exportData, ExportTypeEnum exportType);
+typedef CanvasSizeFn = void Function(CoordinateSetI size, CoordinateSetI offset);
 

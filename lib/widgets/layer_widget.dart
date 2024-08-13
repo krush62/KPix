@@ -370,25 +370,25 @@ class LayerState
     return LayerState(size: newSize, content: rotatedContent);
   }
 
-  LayerState getCroppedLayer(final CoordinateSetI topLeft, final CoordinateSetI bottomRight, final CoordinateSetI newSize)
+  LayerState getResizedLayer(final CoordinateSetI newSize, final CoordinateSetI offset)
   {
     final HashMap<CoordinateSetI, ColorReference> croppedContent = HashMap();
-
     for (final MapEntry entry in _data.entries)
     {
-      if (entry.key.x >= topLeft.x && entry.key.x <= bottomRight.x && entry.key.y >= topLeft.y && entry.key.y <= bottomRight.y)
+      final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
+      if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
       {
-        final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x - topLeft.x, y: entry.key.y - topLeft.y);
         croppedContent[newCoord] = entry.value;
       }
     }
+
     if (rasterQueue.isNotEmpty)
     {
       for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
       {
-        if (entry.$1.x >= topLeft.x && entry.$1.x <= bottomRight.x && entry.$1.y >= topLeft.y && entry.$1.y <= bottomRight.y)
+        final CoordinateSetI newCoord = CoordinateSetI(x: entry.$1.x + offset.x, y: entry.$1.y + offset.y);
+        if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
         {
-          final CoordinateSetI newCoord = CoordinateSetI(x: entry.$1.x - topLeft.x, y: entry.$1.y - topLeft.y);
           if (entry.$2 != null)
           {
             croppedContent[newCoord] = entry.$2!;
@@ -403,7 +403,6 @@ class LayerState
     return LayerState(size: newSize, content: croppedContent);
   }
 }
-
 
 
 

@@ -728,36 +728,37 @@ class AppState
     if (topLeft != null && bottomRight != null)
     {
       final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);
-      selectionState.deselect(addToHistoryStack: false, notify: false);
-      final List<LayerState> layerList = [];
-      LayerState? currentCropLayer;
-      for (final LayerState layer in layers.value)
-      {
-        LayerState cropLayer = layer.getCroppedLayer(topLeft, bottomRight, newSize);
-        layerList.add(cropLayer);
-        if (layer == currentLayer.value)
-        {
-          currentCropLayer = cropLayer;
-        }
-      }
-      layers.value = layerList;
-      currentLayer.value = currentCropLayer;
-      if (currentCropLayer != null)
-      {
-        currentCropLayer.isSelected.value = true;
-        selectionState.selection.changeLayer(null, currentCropLayer);
-      }
-
-      setCanvasDimensions(width: newSize.x, height: newSize.y);
-
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "crop to selection");
-
+      changeCanvasSize(newSize: newSize, offset: CoordinateSetI(x: -topLeft.x, y: -topLeft.y));
     }
     else
     {
+      //This should never happen
       showMessage("Could not crop!");
     }
+  }
 
+  void changeCanvasSize({required CoordinateSetI newSize, required CoordinateSetI offset})
+  {
+    selectionState.deselect(addToHistoryStack: false, notify: false);
+    final List<LayerState> layerList = [];
+    LayerState? currentCropLayer;
+    for (final LayerState layer in layers.value)
+    {
+      final LayerState cropLayer = layer.getResizedLayer(newSize, offset);
+      layerList.add(cropLayer);
+      if (layer == currentLayer.value)
+      {
+         currentCropLayer = cropLayer;
+      }
+    }
+    layers.value = layerList;
+    currentLayer.value = currentCropLayer;
+    if (currentCropLayer != null)
+    {
+      currentCropLayer.isSelected.value = true;
+      selectionState.selection.changeLayer(null, currentCropLayer);
+    }
+    setCanvasDimensions(width: newSize.x, height: newSize.y);
   }
 
 

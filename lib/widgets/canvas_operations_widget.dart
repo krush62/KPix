@@ -70,7 +70,8 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _sizeChangeAccepted(final CoordinateSetI size, final CoordinateSetI offset)
   {
-
+    _appState.changeCanvasSize(newSize: size, offset: offset);
+    _hideOverlays();
   }
 
 

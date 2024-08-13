@@ -6,7 +6,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -468,7 +467,18 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                           height: scaledNewSize.y,
                                           child: DecoratedBox(
                                             decoration: BoxDecoration(
-                                                border: Border.all(color:  Theme.of(context).primaryColorDark, width: 2)
+                                                border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3)
+                                            ),
+                                          )
+                                        ),
+                                        Positioned(
+                                          left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                          top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                          width: scaledNewSize.x,
+                                          height: scaledNewSize.y,
+                                          child: DecoratedBox(
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color:  Theme.of(context).primaryColorLight, width: 1)
                                             ),
                                           )
                                         )

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
@@ -146,11 +162,11 @@ class _KPixAppState extends State<KPixApp>
 
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return ValueListenableBuilder<bool>(
       valueListenable: initialized,
-      builder: (BuildContext context, bool init, child)
+      builder: (final BuildContext context, final bool init, final Widget? child)
       {
         if (init)
         {
@@ -185,46 +201,48 @@ class MainWidget extends StatelessWidget
   const MainWidget({super.key, required this.closePressed});
   final Function()? closePressed;
 
-
   @override
   Widget build(BuildContext context) {
     final WindowButtonColors windowButtonColors = WindowButtonColors(
-        iconNormal: Theme.of(context).primaryColorLight,
-        mouseOver: Theme.of(context).highlightColor,
-        mouseDown: Theme.of(context).splashColor,
-        iconMouseOver: Theme.of(context).primaryColor,
-        iconMouseDown: Theme.of(context).primaryColorDark);
+      iconNormal: Theme.of(context).primaryColorLight,
+      mouseOver: Theme.of(context).highlightColor,
+      mouseDown: Theme.of(context).splashColor,
+      iconMouseOver: Theme.of(context).primaryColor,
+      iconMouseDown: Theme.of(context).primaryColorDark);
     return Column(
       children: [
         //TOP BAR
         ColoredBox(
           color: Theme.of(context).primaryColor,
-          child: (!kIsWeb &&
-                  (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
-              ? Row(children: [
-                  Expanded(
-                      child: Stack(alignment: Alignment.centerLeft, children: [
-                    WindowTitleBarBox(child: MoveWindow()),
-
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: GetIt.I.get<AppState>().hasChanges,
-                        builder: (final BuildContext context, final bool __, Widget? ___) {
-                          return ValueListenableBuilder<String?>(
-                            valueListenable: GetIt.I.get<AppState>().filePath,
-                            builder: (final BuildContext _, final String? ____, final Widget? _____) {
-                              return Text(
-                                GetIt.I.get<AppState>().getTitle(),
-                                style: Theme.of(context).textTheme.bodyLarge,
-                                textAlign: TextAlign.center,
+          child: (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
+            Row(
+              children: [
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      WindowTitleBarBox(child: MoveWindow()),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: GetIt.I.get<AppState>().hasChanges,
+                            builder: (final BuildContext context, final bool __, Widget? ___) {
+                              return ValueListenableBuilder<String?>(
+                                valueListenable: GetIt.I.get<AppState>().filePath,
+                                builder: (final BuildContext _, final String? ____, final Widget? _____) {
+                                  return Text(
+                                    GetIt.I.get<AppState>().getTitle(),
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                    textAlign: TextAlign.center,
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        )
+                      ]
                     )
-                  ])),
+                  ),
                   Row(
                     children: [
                       MinimizeWindowButton(colors: windowButtonColors),
@@ -232,10 +250,11 @@ class MainWidget extends StatelessWidget
                       CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
                     ],
                   )
-                ])
+                ]
+              )
               : const SizedBox.shrink(),
-        ),
-        Expanded(
+          ),
+          Expanded(
             child: MultiSplitViewTheme(
               data: MultiSplitViewThemeData(
                 dividerThickness: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth,
@@ -253,38 +272,34 @@ class MainWidget extends StatelessWidget
               ),
               child: MultiSplitView(
                 initialAreas: [
-                Area(builder: (context, area) {
-                  return const MainToolbarWidget();
-                },
-                flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault,
-                min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
-                max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax),
-                Area(builder: (context, area) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      const CanvasWidget(
-                      ),
-                      StatusBarWidget(
-                      )
-                    ],
-                  );
-                },
-                flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault
+                  Area(builder: (context, area) {
+                    return const MainToolbarWidget();
+                  },
+                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault,
+                  min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
+                  max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax),
+                  Area(builder: (context, area) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        const CanvasWidget(),
+                        StatusBarWidget()
+                      ],
+                    );
+                  },
+                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault
                 ),
                 Area(builder: (context, area)
                 {
                  return const RightBarWidget();
                 },
-                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault,
-                  min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
-                  max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
-
+                flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault,
+                min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
+                max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
                 )
-                        ],
-                      ),
-            )
-
+              ],
+            ),
+          )
         ),
       ],
     );

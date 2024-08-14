@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:math';
 import 'package:get_it/get_it.dart';
@@ -8,6 +24,7 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class BorderCoordinateSetI
@@ -27,7 +44,8 @@ class BorderCoordinateSetI
     {
       borders = [[coord, CoordinateSetI(x: coord.x + 1, y: coord.y)],[CoordinateSetI(x: coord.x, y: coord.y + 1), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
     }
-    else {
+    else
+    {
       List<CoordinateSetI> path = [];
       final CoordinateSetI tl = coord;
       final CoordinateSetI tr = CoordinateSetI(x: coord.x + 1, y: coord.y);
@@ -35,51 +53,51 @@ class BorderCoordinateSetI
       final CoordinateSetI bl = CoordinateSetI(x: coord.x, y: coord.y + 1);
 
       if (top && !right && !bottom && !left) //top
-          {
+      {
         path.addAll([tl, tr]);
       }
       else if (!top && right && !bottom && !left) //right
-          {
+      {
         path.addAll([tr, br]);
       }
       else if (!top && !right && bottom && !left) //bottom
-          {
+      {
         path.addAll([br, bl]);
       }
       else if (!top && !right && !bottom && left) //left
-          {
+      {
         path.addAll([bl, tl]);
       }
       else if (top && right && !bottom && !left) //tr
-          {
+      {
         path.addAll([tl, tr, br]);
       }
       else if (!top && right && bottom && !left) //br
-          {
+      {
         path.addAll([tr, br, bl]);
       }
       else if (!top && !right && bottom && left) //bl
-          {
+      {
         path.addAll([br, bl, tl]);
       }
       else if (top && !right && !bottom && left) //tl
-          {
+      {
         path.addAll([bl, tl, tr]);
       }
       else if (!top && right && bottom && left) // - top
-          {
+      {
         path.addAll([tr, br, bl, tl]);
       }
       else if (top && !right && bottom && left) // - right
-          {
+      {
         path.addAll([br, bl, tl, tr]);
       }
       else if (top && right && !bottom && left) // - bottom
-          {
+      {
         path.addAll([bl, tl, tr, br]);
       }
       else if (top && right && bottom && !left) // - left
-          {
+      {
         path.addAll([tl, tr, br, bl]);
       }
       if (path.isNotEmpty)
@@ -114,8 +132,8 @@ abstract class IToolPainter
 
   void calculate({required DrawingParameters drawParams}){}
   void drawExtras({required DrawingParameters drawParams}){}
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams}){return HashMap();}
-  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawParams}){return HashMap();}
+  CoordinateColorMap getCursorContent({required DrawingParameters drawParams}){return HashMap();}
+  CoordinateColorMap getToolContent({required DrawingParameters drawParams}){return HashMap();}
   void drawCursorOutline({required DrawingParameters drawParams});
   void setStatusBarData({required DrawingParameters drawParams})
   {
@@ -128,7 +146,7 @@ abstract class IToolPainter
 
 
 
-  Set<CoordinateSetI> getRoundSquareContentPoints(final PencilShape shape, final int size, final CoordinateSetI position)
+  Set<CoordinateSetI> getRoundSquareContentPoints({required final PencilShape shape, required final int size, required final CoordinateSetI position})
   {
     final CoordinateSetI startPos = CoordinateSetI(x: position.x - ((size - 1) ~/ 2), y: position.y - ((size - 1) ~/ 2));
     final CoordinateSetI endPos = CoordinateSetI(x: position.x + (size ~/ 2), y: position.y + (size ~/ 2));
@@ -165,7 +183,7 @@ abstract class IToolPainter
 
 
 
-  static List<CoordinateSetI> getBoundaryPath(final Set<CoordinateSetI> coords)
+  static List<CoordinateSetI> getBoundaryPath({required final Set<CoordinateSetI> coords})
   {
     final List<CoordinateSetI> path = [];
     if (coords.length == 1)
@@ -193,10 +211,6 @@ abstract class IToolPainter
           boundaryPoints.add(bcoord);
         }
       }
-
-
-
-
 
       bool itemAdded = true;
       while (boundaryPoints.isNotEmpty && itemAdded)
@@ -250,15 +264,12 @@ abstract class IToolPainter
         }
       }
     }
-
-
-
     return path;
   }
 
-  HashMap<CoordinateSetI, ColorReference> getPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
+  CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
-    final HashMap<CoordinateSetI, ColorReference> pixelMap = HashMap();
+    final CoordinateColorMap pixelMap = HashMap();
     for (final CoordinateSetI coord in coords)
     {
       if (coord.x >= 0 && coord.y >= 0 &&
@@ -268,11 +279,11 @@ abstract class IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
             {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != selectedColor) ||
+          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != selectedColor) ||
               //if selection and selection contains pixel and selection pixel is different
-              (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != selectedColor))
+              (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != selectedColor))
           {
-            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
+            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord: coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
             {
               pixelMap[coord] = selectedColor;
             }
@@ -281,11 +292,11 @@ abstract class IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != null) ||
+        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != null) ||
             //if selection and selection contains pixel and pixel is not null
-            (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
+            (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord)! : selection.selection.getColorReference(coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
           if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
@@ -309,9 +320,9 @@ abstract class IToolPainter
     return pixelMap;
   }
 
-  HashMap<CoordinateSetI, ColorReference> getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
+  CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
-    final HashMap<CoordinateSetI, ColorReference> pixelMap = HashMap();
+    final CoordinateColorMap pixelMap = HashMap();
     for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
     {
       final CoordinateSetI coord = stampEntry.key;
@@ -325,11 +336,11 @@ abstract class IToolPainter
           final int index = min(max(selectedColor.colorIndex + stampEntry.value, 0), selectedColor.ramp.colors.length - 1);
           final ColorReference drawColor = selectedColor.ramp.references[index];
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != drawColor) ||
+          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != drawColor) ||
               //if selection and selection contains pixel and selection pixel is different
-              (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != drawColor))
+              (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != drawColor))
           {
-            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
+            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord: coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
             {
               pixelMap[coord] = drawColor;
             }
@@ -338,11 +349,11 @@ abstract class IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord) != null) ||
+        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != null) ||
             //if selection and selection contains pixel and pixel is not null
-            (!selection.selection.isEmpty() && selection.selection.contains(coord) && selection.selection.getColorReference(coord) != null))
+            (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord)! : selection.selection.getColorReference(coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
           if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value) //all ramps
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)

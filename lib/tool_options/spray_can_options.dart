@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -38,9 +54,9 @@ class SprayCanOptions extends IToolOptions
   }
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required SprayCanOptions sprayCanOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final SprayCanOptions sprayCanOptions,
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,14 +81,14 @@ class SprayCanOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: sprayCanOptions.radius,
-                builder: (BuildContext context, int radius, child)
+                builder: (final BuildContext context, final int radius, final Widget? child)
                 {
                   return Slider(
                     value: radius.toDouble(),
                     min: sprayCanOptions.radiusMin.toDouble(),
                     max: sprayCanOptions.radiusMax.toDouble(),
                     divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
-                    onChanged: (double newVal) {sprayCanOptions.radius.value = newVal.round();},
+                    onChanged: (final double newVal) {sprayCanOptions.radius.value = newVal.round();},
                     label: radius.round().toString(),
                   );
                 },
@@ -87,18 +103,18 @@ class SprayCanOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Blob Size",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Blob Size",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: sprayCanOptions.blobSize,
-                builder: (BuildContext context, int blobSize, child)
+                builder: (final BuildContext context, final int blobSize, final Widget? child)
                 {
                   return Slider(
                     value: blobSize.toDouble(),
@@ -120,18 +136,18 @@ class SprayCanOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Intensity",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Intensity",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: sprayCanOptions.intensity,
-                builder: (BuildContext context, int intensity, child)
+                builder: (final BuildContext context, final int intensity, final Widget? child)
                 {
                   return Slider(
                     value: intensity.toDouble(),
@@ -151,7 +167,7 @@ class SprayCanOptions extends IToolOptions
   }
 
   @override
-  void changeSize(int steps, int originalValue)
+  void changeSize({required int steps, required int originalValue})
   {
     radius.value = min(max(originalValue + steps, radiusMin), radiusMax);
   }

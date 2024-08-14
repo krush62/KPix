@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -47,11 +63,11 @@ class SelectionPainter extends IToolPainter
     if (_isStartOnCanvas)
     {
       _shouldMove = (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden) &&
-          (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(_normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+          (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
       if (_shouldMove)
       {
         movementStarted = true;
-        appState.selectionState.setOffset(CoordinateSetI(
+        appState.selectionState.setOffset(offset: CoordinateSetI(
             x: _cursorPosNorm.x - _normStartPos.x,
             y: _cursorPosNorm.y - _normStartPos.y));
       }
@@ -119,7 +135,7 @@ class SelectionPainter extends IToolPainter
         bool isInsideCircle = false;
         if (polygonPoints.isNotEmpty)
         {
-          if (Helper.getDistance(point, polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+          if (Helper.getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
           {
             isInsideCircle = true;
           }
@@ -188,8 +204,6 @@ class SelectionPainter extends IToolPainter
         drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
       }
     }
-
-
 
     if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
     {

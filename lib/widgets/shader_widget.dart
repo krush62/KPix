@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -24,15 +40,15 @@ class ShaderWidget extends StatefulWidget {
 }
 
 class _ShaderWidgetState extends State<ShaderWidget> {
-  final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
-  final ShaderWidgetOptions shaderWidgetOptions = GetIt.I.get<PreferenceManager>().shaderWidgetOptions;
+  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final ShaderWidgetOptions _shaderWidgetOptions = GetIt.I.get<PreferenceManager>().shaderWidgetOptions;
 
   @override
   Widget build(BuildContext context) {
     return Padding (
-      padding: EdgeInsets.all(shaderWidgetOptions.outSidePadding),
+      padding: EdgeInsets.all(_shaderWidgetOptions.outSidePadding),
       child: ValueListenableBuilder<bool>(
-        valueListenable: shaderOptions.isEnabled,
+        valueListenable: _shaderOptions.isEnabled,
         builder: (BuildContext context, bool isEnabled, child)
         {
           return Column(
@@ -42,29 +58,26 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
-                    //TODO magic
                     flex: 3,
                     child: GestureDetector(
-                      onTap: () {shaderOptions.isEnabled.value = !isEnabled;},
+                      onTap: () {_shaderOptions.isEnabled.value = !isEnabled;},
                       child: Text("Shading",
                           textAlign: TextAlign.start, style: isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark)),
                     ),
                   ),
                   Expanded(
-                    //TODO magic
                     flex: 2,
                     child: Padding(
-                      padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
+                      padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
                       child: Text("Enabled",
                           textAlign: TextAlign.end, style: widget.labelStyle),
                     ),
                   ),
                   Expanded(
-                    //TODO magic
                     flex: 1,
                     child: Switch(
                       onChanged: (bool newState) {
-                        shaderOptions.isEnabled.value = newState;
+                        _shaderOptions.isEnabled.value = newState;
                       },
                       value: isEnabled,
                     )
@@ -77,31 +90,31 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                   Expanded(
                     flex: 2,
                     child: Padding(
-                      padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
+                      padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
                       child: Text("Current Ramp Only",
                           textAlign: TextAlign.start, style: widget.labelStyle),
                     ),
                   ),
                   Expanded(
-                      flex: 1,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: shaderOptions.onlyCurrentRampEnabled,
-                        builder: (BuildContext context, bool onlyCurrentRampEnabled, child)
-                        {
-                          return Switch(
-                            onChanged: isEnabled
-                                ? (bool newState) { shaderOptions.onlyCurrentRampEnabled.value = newState;}
-                                : null,
-                            value: onlyCurrentRampEnabled,
-                          );
-                        },
+                    flex: 1,
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _shaderOptions.onlyCurrentRampEnabled,
+                      builder: (BuildContext context, bool onlyCurrentRampEnabled, child)
+                      {
+                        return Switch(
+                          onChanged: isEnabled
+                              ? (bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
+                              : null,
+                          value: onlyCurrentRampEnabled,
+                        );
+                      },
 
-                      )
+                    )
                   ),
                   Expanded(
                     flex: 2,
                     child: Padding(
-                      padding: EdgeInsets.only(right: shaderWidgetOptions.outSidePadding),
+                      padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
                       child: Text("Direction",
                           textAlign: TextAlign.end, style: widget.labelStyle),
                     ),
@@ -109,12 +122,12 @@ class _ShaderWidgetState extends State<ShaderWidget> {
                   Expanded(
                     flex: 1,
                     child: ValueListenableBuilder<ShaderDirection>(
-                      valueListenable: shaderOptions.shaderDirection,
+                      valueListenable: _shaderOptions.shaderDirection,
                       builder: (BuildContext context, ShaderDirection direction, child)
                       {
                         return Switch(
                           onChanged: isEnabled
-                              ? (bool newState) {shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
+                              ? (bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
                               : null,
                           value: direction == ShaderDirection.right,
                         );

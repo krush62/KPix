@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -12,7 +28,8 @@ enum SelectShape
 
 }
 
-const List<SelectShape> selectShapeList = [
+const List<SelectShape> selectShapeList =
+[
   SelectShape.rectangle,
   SelectShape.ellipse,
   SelectShape.polygon,
@@ -58,9 +75,9 @@ class SelectOptions extends IToolOptions
 
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required SelectOptions selectOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final SelectOptions selectOptions,
   })
   {
     return Column(
@@ -77,11 +94,11 @@ class SelectOptions extends IToolOptions
               Expanded(
                 flex: 1,
                 child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Mode",
-                      style: Theme.of(context).textTheme.labelLarge,
-                    )
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Mode",
+                    style: Theme.of(context).textTheme.labelLarge,
+                  )
                 ),
               ),
               Expanded(
@@ -89,8 +106,7 @@ class SelectOptions extends IToolOptions
                 child: ValueListenableBuilder<SelectionMode>(
                   valueListenable: selectOptions.mode,
                   builder: (BuildContext context, SelectionMode mode, child){
-                    return SegmentedButton<SelectionMode>
-                      (
+                    return SegmentedButton<SelectionMode>(
                       segments: [
                         ButtonSegment(value: SelectionMode.replace, label: FaIcon(
                           FontAwesomeIcons.rotate,
@@ -113,7 +129,7 @@ class SelectOptions extends IToolOptions
                       emptySelectionAllowed: false,
                       multiSelectionEnabled: false,
                       showSelectedIcon: false,
-                      onSelectionChanged: (Set<SelectionMode> modes) {selectOptions.mode.value = modes.first;},
+                      onSelectionChanged: (final Set<SelectionMode> modes) {selectOptions.mode.value = modes.first;},
                     );
                   },
                 ),
@@ -130,11 +146,11 @@ class SelectOptions extends IToolOptions
               Expanded(
                 flex: 1,
                 child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Shape",
-                      style: Theme.of(context).textTheme.labelLarge,
-                    )
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Shape",
+                    style: Theme.of(context).textTheme.labelLarge,
+                  )
                 ),
               ),
               Expanded(
@@ -186,9 +202,9 @@ class SelectOptions extends IToolOptions
             ],
           ),
         ),
-        ValueListenableBuilder(
+        ValueListenableBuilder<SelectShape>(
           valueListenable: selectOptions.shape,
-          builder: (BuildContext context, SelectShape shape, child){
+          builder: (final BuildContext context, final SelectShape shape, final Widget? child){
             return Visibility(
               visible: (shape != SelectShape.polygon),
               child: Row(
@@ -198,11 +214,11 @@ class SelectOptions extends IToolOptions
                   Expanded(
                     flex: 1,
                     child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                            (shape == SelectShape.wand) ? "Continuous" : "Keep 1:1",
-                          style: Theme.of(context).textTheme.labelLarge,
-                        )
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                          (shape == SelectShape.wand) ? "Continuous" : "Keep 1:1",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      )
                     ),
                   ),
                   Expanded(
@@ -212,29 +228,28 @@ class SelectOptions extends IToolOptions
                       child: Stack(
                         children: [
                           Visibility(
-                              visible: (shape == SelectShape.rectangle || shape == SelectShape.ellipse),
-                              child: ValueListenableBuilder<bool>(
-                                valueListenable: selectOptions.keepAspectRatio,
-                                builder: (BuildContext context, bool keep, child)
-                                {
-                                  return Switch(
-                                      onChanged:  (bool newVal) {selectOptions.keepAspectRatio.value = newVal;},
-                                      value: keep
-                                  );
-                                },
-                              )
+                            visible: (shape == SelectShape.rectangle || shape == SelectShape.ellipse),
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: selectOptions.keepAspectRatio,
+                              builder: (final BuildContext context, final bool keep, final Widget? child){
+                                return Switch(
+                                  onChanged:  (bool newVal) {selectOptions.keepAspectRatio.value = newVal;},
+                                  value: keep
+                                );
+                              },
+                            )
                           ),
                           Visibility(
-                              visible: (shape == SelectShape.wand),
-                              child: ValueListenableBuilder<bool>(
-                                valueListenable: selectOptions.wandContinuous,
-                                builder: (BuildContext context, bool continuous, child){
-                                  return Switch(
-                                    value: continuous,
-                                    onChanged: (bool newVal) {selectOptions.wandContinuous.value = newVal;},
-                                  );
-                                },
-                              )
+                            visible: (shape == SelectShape.wand),
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: selectOptions.wandContinuous,
+                              builder: (final BuildContext context, final bool continuous, final Widget? child){
+                                return Switch(
+                                  value: continuous,
+                                  onChanged: (final bool newVal) {selectOptions.wandContinuous.value = newVal;},
+                                );
+                              },
+                            )
                           )
                         ],
                       ),
@@ -245,9 +260,9 @@ class SelectOptions extends IToolOptions
             );
           },
         ),
-        ValueListenableBuilder(
+        ValueListenableBuilder<SelectShape>(
           valueListenable: selectOptions.shape,
-          builder: (BuildContext context, SelectShape shape, child){
+          builder: (final BuildContext context, final SelectShape shape, final Widget? child){
             return Visibility(
               visible: (shape == SelectShape.wand),
               child: Row(
@@ -257,28 +272,28 @@ class SelectOptions extends IToolOptions
                   Expanded(
                     flex: 1,
                     child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Whole Ramp",
-                          style: Theme.of(context).textTheme.labelLarge,
-                        )
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Whole Ramp",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      )
                     ),
                   ),
                   Expanded(
-                      flex: toolSettingsWidgetOptions.columnWidthRatio,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: selectOptions.wandWholeRamp,
-                          builder: (BuildContext context, bool wholeRamp, child)
-                          {
-                            return Switch(
-                              value: wholeRamp,
-                              onChanged: (bool newVal) {selectOptions.wandWholeRamp.value = newVal;},
-                            );
-                          },
-                        ),
-                      )
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: selectOptions.wandWholeRamp,
+                        builder: (final BuildContext context, final bool wholeRamp, final Widget? child)
+                        {
+                          return Switch(
+                            value: wholeRamp,
+                            onChanged: (bool newVal) {selectOptions.wandWholeRamp.value = newVal;},
+                          );
+                        },
+                      ),
+                    )
                   ),
                 ],
               ),
@@ -287,15 +302,6 @@ class SelectOptions extends IToolOptions
         ),
       ],
     );
-  }
-
-  @override
-  void changeSize(int steps, int originalValue){}
-
-  @override
-  int getSize()
-  {
-    return 0;
   }
 
 }

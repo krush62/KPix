@@ -1,5 +1,20 @@
-library kpal;
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+library kpal;
 
 import 'dart:math';
 
@@ -35,7 +50,8 @@ enum SatCurve
   linear,
 }
 
-const Map<int, SatCurve> satCurveMap = {
+const Map<int, SatCurve> satCurveMap =
+{
   0:SatCurve.noFlat,
   1:SatCurve.darkFlat,
   2:SatCurve.brightFlat,
@@ -165,26 +181,22 @@ class KPalWidgetOptions
     required this.insidePadding,
     required this.iconSize,
   });
-
-
 }
 
-class KPal extends StatefulWidget {
-  final KPalRampData colorRamp;
-  final Function() dismiss;
-  final ColorRampUpdateFn accept;
-  final ColorRampFn delete;
-
+class KPal extends StatefulWidget
+{
+  final KPalRampData _colorRamp;
+  final Function() _dismiss;
+  final ColorRampUpdateFn _accept;
+  final ColorRampFn _delete;
 
   const KPal({
     super.key,
-    required this.colorRamp,
-    required this.dismiss,
-    required this.accept,
-    required this.delete,
-  });
-
-
+    required KPalRampData colorRamp,
+    required dynamic Function() dismiss,
+    required void Function({bool addToHistoryStack, required KPalRampData originalData, required KPalRampData ramp}) accept,
+    required void Function({bool addToHistoryStack, required KPalRampData ramp}) delete,
+  }) : _delete = delete, _accept = accept, _dismiss = dismiss, _colorRamp = colorRamp;
 
   @override
   State<KPal> createState() => _KPalState();
@@ -199,8 +211,8 @@ class _KPalState extends State<KPal>
   @override
   void initState() {
     super.initState();
-    widget.colorRamp;
-    _originalData = KPalRampData.from(other: widget.colorRamp);
+    widget._colorRamp;
+    _originalData = KPalRampData.from(other: widget._colorRamp);
 
     _alertDialog = OverlayEntries.getAlertDialog(
         onDismiss: _dismissAlertDialog,
@@ -213,7 +225,7 @@ class _KPalState extends State<KPal>
   void _acceptDeletion()
   {
     _dismissAlertDialog();
-    widget.delete(ramp: widget.colorRamp);
+    widget._delete(ramp: widget._colorRamp);
   }
 
   void _dismissAlertDialog()
@@ -227,7 +239,8 @@ class _KPalState extends State<KPal>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context)
+  {
     return Padding(
       padding: EdgeInsets.all(_options.outsidePadding),
       child: Align(
@@ -247,59 +260,57 @@ class _KPalState extends State<KPal>
               mainAxisSize: MainAxisSize.min,
               children: [
                 KPalRamp(
-                  rampData: widget.colorRamp,
+                  rampData: widget._colorRamp,
                 ),
                 Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: EdgeInsets.all(_options.insidePadding),
-                          child: IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.xmark,
-                              size: _options.iconSize,
-                            ),
-                            onPressed: () {
-                              widget.dismiss();
-                            },
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: EdgeInsets.all(_options.insidePadding),
+                        child: IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.xmark,
+                            size: _options.iconSize,
                           ),
-                        )
-                      ),
-                      Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding: EdgeInsets.all(_options.insidePadding),
-                            child: IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.trash,
-                                size: _options.iconSize,
-                              ),
-                              onPressed: () {
-                                _showDeleteDialog();
-                              },
-                            ),
-                          )
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: EdgeInsets.all(_options.insidePadding),
-                          child: IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.check,
-                              size: _options.iconSize,
-                            ),
-                            onPressed: () {
-                              widget.accept(ramp: widget.colorRamp, originalData: _originalData);
-                            },
+                          onPressed: () {
+                            widget._dismiss();
+                          },
+                        ),
+                      )
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: EdgeInsets.all(_options.insidePadding),
+                        child: IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.trash,
+                            size: _options.iconSize,
                           ),
-                        )
-                      ),
-                    ]
+                          onPressed: () {
+                            _showDeleteDialog();
+                          },
+                        ),
+                      )
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: EdgeInsets.all(_options.insidePadding),
+                        child: IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.check,
+                            size: _options.iconSize,
+                          ),
+                          onPressed: () {widget._accept(ramp: widget._colorRamp, originalData: _originalData);},
+                        ),
+                      )
+                    ),
+                  ]
                 ),
               ],
             )
@@ -308,5 +319,4 @@ class _KPalState extends State<KPal>
       ),
     );
   }
-  
 }

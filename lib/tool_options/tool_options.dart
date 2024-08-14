@@ -42,8 +42,8 @@ const Map<SelectionMode, String> selectionModeStringMap =
 };
 
 abstract class IToolOptions{
-  int getSize();
-  void changeSize(int steps, int originalValue);
+  int getSize(){return 0;}
+  void changeSize({required final int steps, required final int originalValue}){}
 }
 
 class ToolOptions

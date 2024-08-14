@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
@@ -75,7 +91,8 @@ const Map<int, PixelFontType> pixelFontIndexMap =
 };
 
 
-class Glyph {
+class Glyph
+{
   final int width;
   final List<List<bool>> dataMatrix;
 
@@ -188,12 +205,12 @@ class FontManager
     PixelFontType.fontSquarewaveBold: "Squarewave-Bold"
   };
 
-  static String getFontName(final PixelFontType type)
+  static String getFontName({required final PixelFontType type})
   {
     return _pixelFontNameMap[type]!;
   }
 
-  KFont getFont(final PixelFontType type)
+  KFont getFont({required final PixelFontType type})
   {
     return kFontMap[type]!;
   }
@@ -204,19 +221,19 @@ class FontManager
 
   static Future<Map<PixelFontType, KFont>> readFonts() async
   {
-    Map<PixelFontType, KFont> fontMap = {};
+    final Map<PixelFontType, KFont> fontMap = {};
     for (final MapEntry<PixelFontType, String> mapEntry in _pixelFontFileMap.entries)
     {
-     fontMap[mapEntry.key] = await _readFontFromFile("$fontPath/${mapEntry.value}$sflExtension", "$fontPath/${mapEntry.value}$pngExtension", _pixelFontNameMap[mapEntry.key]!);
+     fontMap[mapEntry.key] = await _readFontFromFile(sflName: "$fontPath/${mapEntry.value}$sflExtension", pngName: "$fontPath/${mapEntry.value}$pngExtension", fontName: _pixelFontNameMap[mapEntry.key]!);
     }
     return fontMap;
   }
 
 
-  static Future<KFont> _readFontFromFile(final String sflName, final String pngName, final String fontName) async
+  static Future<KFont> _readFontFromFile({required final String sflName, required final String pngName, required final String fontName}) async
   {
-    String sflContent = await rootBundle.loadString(sflName);
-    List<String> lines = sflContent.split('\n');
+    final String sflContent = await rootBundle.loadString(sflName);
+    final List<String> lines = sflContent.split('\n');
     assert(lines.isNotEmpty);
 
     final ByteData byteData = await rootBundle.load(pngName);

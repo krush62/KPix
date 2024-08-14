@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -5,7 +21,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 enum ToolType
@@ -89,7 +104,7 @@ class CoordinateSetI
 
   CoordinateSetI({required this.x, required this.y});
 
-  factory CoordinateSetI.from(final CoordinateSetI other)
+  factory CoordinateSetI.from({required final CoordinateSetI other})
   {
     return CoordinateSetI(x: other.x, y: other.y);
   }
@@ -110,7 +125,7 @@ class CoordinateSetI
     return "$x|$y";
   }
 
-  bool isAdjacent(final CoordinateSetI other, final bool withDiagonal)
+  bool isAdjacent({required final CoordinateSetI other, required final bool withDiagonal})
   {
     bool adj = true;
     if (withDiagonal)
@@ -130,7 +145,7 @@ class CoordinateSetI
     return adj;
   }
 
-  bool isDiagonal(final CoordinateSetI other)
+  bool isDiagonal({required final CoordinateSetI other})
   {
     return (x - other.x).abs() == 1 && (y - other.y).abs() == 1;
   }
@@ -157,45 +172,45 @@ class StackCol<T> {
 class Helper
 {
 
-  static String colorToHexString(final Color c)
+  static String colorToHexString({required final Color c})
   {
     return '#${c.red.toRadixString(16).padLeft(2, '0')}'
         '${c.green.toRadixString(16).padLeft(2, '0')}'
         '${c.blue.toRadixString(16).padLeft(2, '0')}';
   }
 
-  static String colorToRGBString(final Color c)
+  static String colorToRGBString({required final Color c})
   {
     return '${c.red.toString()} | '
         '${c.green.toString()} | '
         '${c.blue.toString()}';
   }
 
-  static String colorToHSVString(final Color c)
+  static String colorToHSVString({required final Color c})
   {
-    return hsvColorToHSVString(HSVColor.fromColor(c));
+    return hsvColorToHSVString(c: HSVColor.fromColor(c));
   }
 
-  static String hsvColorToHSVString(final HSVColor c)
+  static String hsvColorToHSVString({required final HSVColor c})
   {
     return "${c.hue.round().toString()}° | "
         "${(c.saturation * 100.0).round().toString()}% | "
         "${(c.value * 100.0).round().toString()}%";
   }
 
-  static bool isPerfectSquare(final int number)
+  static bool isPerfectSquare({required final int number})
   {
     double squareRoot = sqrt(number);
     return squareRoot % 1 == 0;
   }
 
-  static int gcd(final int a, final int b)
+  static int gcd({required final int a, required final int b})
   {
     if (b == 0) return a;
-    return gcd(b, a % b);
+    return gcd(a: b, b: a % b);
   }
 
-  static double calculateAngle(final CoordinateSetI startPos, final CoordinateSetI endPos)
+  static double calculateAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
   {
     final int dx = endPos.x - startPos.x;
     final int dy = endPos.y - startPos.y;
@@ -206,7 +221,7 @@ class Helper
 
 
 
-  static LabColor rgb2lab(final int red, final int green, final int blue)
+  static LabColor rgb2lab({required final int red, required final int green, required final int blue})
   {
     double r = red.toDouble() / 255.0, g = green.toDouble() / 255.0, b = blue.toDouble() / 255.0, x, y, z;
     r = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4).toDouble() : r / 12.92;
@@ -221,10 +236,16 @@ class Helper
     return LabColor(L: (116.0 * y) - 16.0, A: 500.0 * (x - y), B: 200.0 * (y - z));
   }
 
-  static double getDeltaE(final int redA, final int greenA, final int blueA, final int redB, final int greenB, final int blueB)
+  static double getDeltaE(
+      {required final int redA,
+        required final int greenA,
+        required final int blueA,
+        required final int redB,
+        required final int greenB,
+        required final int blueB})
   {
-    final LabColor labA = rgb2lab(redA, greenA, blueA);
-    final LabColor labB = rgb2lab(redB, greenB, blueB);
+    final LabColor labA = rgb2lab(red: redA, green: greenA, blue: blueA);
+    final LabColor labB = rgb2lab(red: redB, green: greenB, blue: blueB);
     final double deltaL = labA.L - labB.L;
     final double deltaA = labA.A - labB.A;
     final double deltaB = labA.B - labB.B;
@@ -271,7 +292,7 @@ class Helper
          final int r2 = kPalRampData.colors[i].value.color.red;
          final int g2 = kPalRampData.colors[i].value.color.green;
          final int b2 = kPalRampData.colors[i].value.color.blue;
-         final double dist = getDeltaE(r, g, b, r2, g2, b2);
+         final double dist = getDeltaE(redA: r, greenA: g, blueA: b, redB: r2, greenB: g2, blueB: b2);
          if (dist < closestVal)
          {
             closestColor = kPalRampData.references[i];
@@ -282,7 +303,7 @@ class Helper
     return closestColor;
   }
 
-  static bool isPointInPolygon(final CoordinateSetI point, final List<CoordinateSetI> polygon)
+  static bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
   {
     final int n = polygon.length;
     bool inside = false;
@@ -299,7 +320,7 @@ class Helper
   }
 
 
-  static double getPointToEdgeDistance(final CoordinateSetI point, final List<CoordinateSetI> polygon)
+  static double getPointToEdgeDistance({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
   {
     double minDistance = double.infinity;
 
@@ -333,14 +354,14 @@ class Helper
 
 
 
-  static CoordinateSetI getMin(final List<CoordinateSetI> coordList)
+  static CoordinateSetI getMin({required final List<CoordinateSetI> coordList})
   {
     final int minX = coordList.reduce((a, b) => a.x < b.x ? a : b).x;
     final int minY = coordList.reduce((a, b) => a.y < b.y ? a : b).y;
     return CoordinateSetI(x: minX, y: minY);
   }
 
-  static CoordinateSetI getMax(final List<CoordinateSetI> coordList)
+  static CoordinateSetI getMax({required final List<CoordinateSetI> coordList})
   {
     final int maxX = coordList.reduce((a, b) => a.x > b.x ? a : b).x;
     final int maxY = coordList.reduce((a, b) => a.y > b.y ? a : b).y;
@@ -348,18 +369,18 @@ class Helper
   }
 
 
-  static List<CoordinateSetI> bresenham(final CoordinateSetI start, final CoordinateSetI end)
+  static List<CoordinateSetI> bresenham({required final CoordinateSetI start, required final CoordinateSetI end})
   {
     final List<CoordinateSetI> points = [];
     final CoordinateSetI d = CoordinateSetI(x: (end.x - start.x).abs(), y: (end.y - start.y).abs());
     final CoordinateSetI s = CoordinateSetI(x: start.x < end.x ? 1 : -1, y: start.y < end.y ? 1 : -1);
 
     int err = d.x - d.y;
-    final CoordinateSetI currentPoint = CoordinateSetI.from(start);
+    final CoordinateSetI currentPoint = CoordinateSetI.from(other: start);
 
     while (true)
     {
-      points.add(CoordinateSetI.from(currentPoint));
+      points.add(CoordinateSetI.from(other: currentPoint));
       if (currentPoint.x == end.x && currentPoint.y == end.y) break;
       final int e2 = err * 2;
       if (e2 > -d.y)
@@ -378,7 +399,7 @@ class Helper
 
 
 
-  static int argbToRgba(int argb) {
+  static int argbToRgba({required final int argb}) {
     int a = (argb & 0xFF000000) >> 24; // Extract alpha component
     int r = (argb & 0x00FF0000) >> 16; // Extract red component
     int g = (argb & 0x0000FF00) >> 8;  // Extract green component
@@ -390,27 +411,28 @@ class Helper
   }
 
   static const double twoPi = 2 * pi;
-  static double normAngle(final double angle)
+
+  static double normAngle({required final double angle})
   {
     return angle - (twoPi * (angle / twoPi).floor());
   }
 
-  static double deg2rad(final double angle)
+  static double deg2rad({required final double angle})
   {
     return angle * (pi / 180.0);
   }
 
-  static double rad2deg(final double angle)
+  static double rad2deg({required final double angle})
   {
     return angle * (180.0 / pi);
   }
   
-  static double getDistance(final CoordinateSetI a, final CoordinateSetI b)
+  static double getDistance({required final CoordinateSetI a, required final CoordinateSetI b})
   {
     return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
   }
 
-  static Future<ui.Image> getImageFromCustomPainter(final CustomPainter cPainter, final CoordinateSetI size) async
+  static Future<ui.Image> getImageFromCustomPainter({required final CustomPainter cPainter, required final CoordinateSetI size}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     cPainter.paint(Canvas(recorder), Size(size.x.toDouble(), size.y.toDouble()));
@@ -418,7 +440,10 @@ class Helper
     return picture.toImage(size.x, size.y);
   }
 
-  static Future<ui.Image> getImageFromLayers(final CoordinateSetI canvasSize, final List<LayerState> layers, final CoordinateSetI size) async
+  static Future<ui.Image> getImageFromLayers({
+    required final CoordinateSetI canvasSize,
+    required final List<LayerState> layers,
+    required final CoordinateSetI size}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);

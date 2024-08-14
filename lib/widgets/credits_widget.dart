@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
@@ -11,18 +27,14 @@ class CreditEntry
   CreditEntry({required this.content, required this.style});
 }
 
-
-
 class CreditsWidget extends StatefulWidget
 {
-  const CreditsWidget({super.key}); 
-
+  const CreditsWidget({super.key});
   @override
-  State<CreditsWidget> createState() => CreditsWidgetState();
-
+  State<CreditsWidget> createState() => _CreditsWidgetState();
 }
 
-class CreditsWidgetState extends State<CreditsWidget>
+class _CreditsWidgetState extends State<CreditsWidget>
 {
   final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<List<CreditEntry>> _creditEntries = ValueNotifier([]);
@@ -33,13 +45,12 @@ class CreditsWidgetState extends State<CreditsWidget>
     super.initState();
   }
 
-  void setCreditEntries(final List<CreditEntry> entries)
+  void _setCreditEntries({required final List<CreditEntry> entries})
   {
     _creditEntries.value = entries;
   }
 
-
-  Future<List<CreditEntry>> createCreditEntries({required final TextStyle headerLarge, required final TextStyle headerMedium, required final TextStyle headerSmall, required final TextStyle textNormal}) async
+  Future<List<CreditEntry>> _createCreditEntries({required final TextStyle headerLarge, required final TextStyle headerMedium, required final TextStyle headerSmall, required final TextStyle textNormal}) async
   {
     final List<CreditEntry> entries = [];
     final String credContent = await rootBundle.loadString("docs/credits.md");
@@ -69,16 +80,16 @@ class CreditsWidgetState extends State<CreditsWidget>
 
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     if (_creditEntries.value.isEmpty)
     {
-      createCreditEntries(
-          headerLarge: Theme.of(context).textTheme.headlineLarge!,
-          headerMedium: Theme.of(context).textTheme.headlineMedium!,
-          headerSmall: Theme.of(context).textTheme.headlineSmall!,
-          textNormal: Theme.of(context).textTheme.bodyMedium!
-      ).then(setCreditEntries);
+      _createCreditEntries(
+        headerLarge: Theme.of(context).textTheme.headlineLarge!,
+        headerMedium: Theme.of(context).textTheme.headlineMedium!,
+        headerSmall: Theme.of(context).textTheme.headlineSmall!,
+        textNormal: Theme.of(context).textTheme.bodyMedium!
+      ).then((final List<CreditEntry> entries){_setCreditEntries(entries: entries);});
     }
     return Material(      
       elevation: options.elevation,
@@ -115,5 +126,4 @@ class CreditsWidgetState extends State<CreditsWidget>
       )
     );
   }
-  
 }

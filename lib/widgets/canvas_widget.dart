@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -122,8 +138,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   void initState()
   {
     super.initState();
-    Timer.periodic(Duration(milliseconds: options.stylusPollRate), _stylusBtnTimeout);
-    Timer.periodic(Duration(milliseconds: options.historyCHeckPollRate), _checkHistoryData);
+    Timer.periodic(Duration(milliseconds: options.stylusPollRate), (final Timer t) {_stylusBtnTimeout(t: t);});
+    Timer.periodic(Duration(milliseconds: options.historyCHeckPollRate), (final Timer t) {_checkHistoryData(t: t);});
     _timeoutLongPress = Duration(milliseconds: options.longPressDuration);
     _maxLongPressDistance = options.longPressCancelDistance;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -139,12 +155,12 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           break;
         }
       }
-      appState.setZoomLevel(bestZoomLevel);
-      _setOffset(Offset((kPixPainter.latestSize.width - (appState.canvasSize.x * appState.zoomFactor.value)) / 2, (kPixPainter.latestSize.height - (appState.canvasSize.y * appState.zoomFactor.value)) / 2));
+      appState.setZoomLevel(val: bestZoomLevel);
+      _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (appState.canvasSize.x * appState.zoomFactor)) / 2, (kPixPainter.latestSize.height - (appState.canvasSize.y * appState.zoomFactor)) / 2));
     });
   }
 
-  void _checkHistoryData(final Timer _)
+  void _checkHistoryData({required final Timer t})
   {
     if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasHistoryData)
     {
@@ -194,7 +210,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     //print("LONG PRESS PRIMARY");
   }
 
-  void _buttonDown(PointerDownEvent details)
+  void _buttonDown({required final PointerDownEvent details})
   {
     if (details.kind == PointerDeviceKind.touch)
     {
@@ -208,8 +224,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         _dragStartLoc = Offset((_touchPointers.values.elementAt(0).currentPos.dx + _touchPointers.values.elementAt(1).currentPos.dx) / 2, (_touchPointers.values.elementAt(0).currentPos.dy + _touchPointers.values.elementAt(1).currentPos.dy) / 2);
         _isDragging.value = true;
         _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
-        _touchZoomStartLevel = appState.zoomFactor.value;
-        setMouseCursor(SystemMouseCursors.move);
+        _touchZoomStartLevel = appState.zoomFactor;
+        setMouseCursor(cursor: SystemMouseCursors.move);
       }
     }
 
@@ -217,29 +233,29 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
       _startDown(details.localPosition);
-      if (appState.getSelectedTool() == ToolType.spraycan)
+      if (appState.selectedTool == ToolType.spraycan)
       {
-        _idleTimer = Timer.periodic(Duration(milliseconds: options.idleTimerRate), _idleTimeout);
+        _idleTimer = Timer.periodic(Duration(milliseconds: options.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
         _idleTimerInitialized = true;
       }
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      _previousTool = appState.getSelectedTool();
+      _previousTool = appState.selectedTool;
       appState.setToolSelection(tool: ToolType.pick);
     }
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _dragStartLoc = details.localPosition;
       _isDragging.value = true;
-      setMouseCursor(SystemMouseCursors.move);
+      setMouseCursor(cursor: SystemMouseCursors.move);
     }
 
-    _updateLocation(details);
+    _updateLocation(details: details);
   }
 
-  void _idleTimeout(final Timer _)
+  void _idleTimeout({required final Timer t})
   {
     appState.repaintNotifier.repaint();
   }
@@ -254,8 +270,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
 
     //deselect if outside is clicked
-    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasSize.x * appState.zoomFactor.value) ||
-        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasSize.y * appState.zoomFactor.value))
+    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (appState.canvasSize.x * appState.zoomFactor) ||
+        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (appState.canvasSize.y * appState.zoomFactor))
     {
       appState.selectionState.deselect(addToHistoryStack: true);
     }
@@ -271,7 +287,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
   }
 
-  void _buttonUp(PointerEvent details)
+  void _buttonUp({required final PointerEvent details})
   {
     if (details.kind == PointerDeviceKind.touch)
     {
@@ -295,18 +311,18 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
       if (colorPickPainter.selectedColor != null)
       {
-        appState.colorSelected(colorPickPainter.selectedColor!);
+        appState.colorSelected(color: colorPickPainter.selectedColor!);
       }
       appState.setToolSelection(tool: _previousTool);
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
     {
       _isDragging.value = false;
-      setMouseCursor(SystemMouseCursors.none);
+      setMouseCursor(cursor: SystemMouseCursors.none);
     }
     _timerRunning = false;
 
-    if (appState.getSelectedTool() == ToolType.select)
+    if (appState.selectedTool == ToolType.select)
     {
       if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
       {
@@ -335,12 +351,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
-    _updateLocation(details);
+    _updateLocation(details: details);
   }
 
 
-
-  void _updateLocation(PointerEvent details)
+  void _updateLocation({required final PointerEvent details})
   {
     if (details.kind == PointerDeviceKind.touch)
     {
@@ -358,7 +373,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     if (kPixPainter.toolPainter != null)
     {
-      appState.statusBarState.updateFromPaint(kPixPainter.toolPainter!.statusBarData);
+      appState.statusBarState.updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);
 
     }
 
@@ -377,7 +392,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
     if (_stylusLongMoveStarted.value)
     {
-      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
+      final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.toDouble();
       final double yOffset = _secondaryStartLoc.dy - _cursorPos.value!.y;
       final double xOffset = _secondaryStartLoc.dx - _cursorPos.value!.x;
       final int zoomSteps = (yOffset / options.stylusZoomStepDistance).round();
@@ -394,15 +409,14 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
 
-
       if (_stylusLongMoveHorizontal.value)
       {
         appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
       }
 
-      if (_stylusLongMoveVertical.value && appState.setZoomLevelByDistance(_stylusZoomStartLevel, zoomSteps))
+      if (_stylusLongMoveVertical.value && appState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
       {
-        _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
+        _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * appState.zoomFactor.toDouble()));
       }
     }
 
@@ -416,23 +430,23 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
       _isDragging.value = true;
-      setMouseCursor(SystemMouseCursors.move);
+      setMouseCursor(cursor: SystemMouseCursors.move);
       _dragStartLoc = cursorOffset;
     }
 
     if (_isDragging.value)
     {
-      _setOffset(_canvasOffset.value - (_dragStartLoc - cursorOffset));
+      _setOffset(newOffset: _canvasOffset.value - (_dragStartLoc - cursorOffset));
       _dragStartLoc = cursorOffset;
 
       if (details.kind == PointerDeviceKind.touch && _touchPointers.length == 2)
       {
         final double currentDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         final int zoomSteps = ((currentDistance - _initialTouchZoomDistance) / options.touchZoomStepDistance).round();
-        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
-        if (appState.setZoomLevelByDistance(_touchZoomStartLevel, zoomSteps))
+        final Offset cursorPositionBeforeZoom = (cursorOffset - _canvasOffset.value) / appState.zoomFactor.toDouble();
+        if (appState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps))
         {
-          _setOffset(cursorOffset - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
+          _setOffset(newOffset: cursorOffset - (cursorPositionBeforeZoom * appState.zoomFactor.toDouble()));
         }
       }
     }
@@ -443,7 +457,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   void _checkSelectedToolData()
   {
-    if (appState.getSelectedTool() == ToolType.select)
+    if (appState.selectedTool == ToolType.select)
     {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
       {
@@ -451,15 +465,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         if (selectionPainter.hasNewSelection && selectionPainter.options.shape.value == SelectShape.polygon)
         {
           selectionPainter.hasNewSelection = false;
-          final CoordinateSetI min = Helper.getMin(selectionPainter.polygonPoints);
-          final CoordinateSetI max = Helper.getMax(selectionPainter.polygonPoints);
+          final CoordinateSetI min = Helper.getMin(coordList: selectionPainter.polygonPoints);
+          final CoordinateSetI max = Helper.getMax(coordList: selectionPainter.polygonPoints);
           Set<CoordinateSetI> selection = {};
           for (int x = min.x; x < max.x; x++)
           {
             for (int y = min.y; y < max.y; y++)
             {
               final CoordinateSetI checkPoint = CoordinateSetI(x: x, y: y);
-              if (Helper.isPointInPolygon(checkPoint, selectionPainter.polygonPoints))
+              if (Helper.isPointInPolygon(point: checkPoint, polygon: selectionPainter.polygonPoints))
               {
                 selection.add(checkPoint);
               }
@@ -471,20 +485,20 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
     }
-    else if (appState.getSelectedTool() == ToolType.pick)
+    else if (appState.selectedTool == ToolType.pick)
     {
       if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
       {
         final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          appState.colorSelected(colorPickPainter.selectedColor!);
+          appState.colorSelected(color: colorPickPainter.selectedColor!);
         }
       }
     }
   }
 
-  void _hover(PointerHoverEvent details)
+  void _hover({required final PointerHoverEvent details})
   {
     if (details.kind == PointerDeviceKind.stylus)
     {
@@ -494,28 +508,28 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
       _stylusHoverDetected = true;
     }
-    _updateLocation(details);
+    _updateLocation(details: details);
 
   }
 
-  void _scroll(PointerSignalEvent ev)
+  void _scroll({required final PointerSignalEvent ev})
   {
     if (ev is PointerScrollEvent)
     {
-      final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / appState.zoomFactor.value.toDouble();
+      final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / appState.zoomFactor.toDouble();
 
       if (ev.scrollDelta.dy < 0.0 && appState.increaseZoomLevel())
       {
-        _setOffset(ev.localPosition - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
+        _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * appState.zoomFactor.toDouble()));
       }
       else if (ev.scrollDelta.dy > 0.0 && appState.decreaseZoomLevel())
       {
-        _setOffset(ev.localPosition - (cursorPositionBeforeZoom * appState.zoomFactor.value.toDouble()));
+        _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * appState.zoomFactor.toDouble()));
       }
     }
   }
 
-  void _onMouseExit(PointerExitEvent _)
+  void _onMouseExit({required final PointerExitEvent pee})
   {
     _cursorPos.value = null;
     appState.repaintNotifier.repaint();
@@ -523,7 +537,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   }
 
 
-  void _stylusBtnTimeout(Timer t)
+  void _stylusBtnTimeout({required final Timer t})
   {
     if (_stylusButtonDetected && !_stylusButtonDown)
     {
@@ -540,16 +554,16 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         final CoordinateSetI normPos = CoordinateSetI(
             x: KPixPainter.getClosestPixel(
                 value: _cursorPos.value!.x - _canvasOffset.value.dx,
-                pixelSize: appState.zoomFactor.value.toDouble())
+                pixelSize: appState.zoomFactor.toDouble())
                 .round(),
             y: KPixPainter.getClosestPixel(
                 value: _cursorPos.value!.y - _canvasOffset.value.dy,
-                pixelSize: appState.zoomFactor.value.toDouble())
+                pixelSize: appState.zoomFactor.toDouble())
                 .round());
         ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: appState, normPos: normPos);
-        if (colRef != null && colRef != appState.selectedColor.value)
+        if (colRef != null && colRef != appState.selectedColor)
         {
-           appState.colorSelected(colRef);
+           appState.colorSelected(color: colRef);
         }
       }
 
@@ -562,7 +576,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _stylusLongMoveVertical.value = false;
       _stylusLongMoveHorizontal.value = false;
       _isDragging.value = false;
-      setMouseCursor(SystemMouseCursors.none);
+      setMouseCursor(cursor: SystemMouseCursors.none);
     }
     _stylusButtonDetected = false;
 
@@ -576,7 +590,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _stylusHoverDetected = false;
     }
   }
-
 
   //TODO delete me
   void stylusBtnDown()
@@ -595,34 +608,30 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     //print("STYLUS BTN LONG PRESS");
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
-    _stylusZoomStartLevel = appState.zoomFactor.value;
+    _stylusZoomStartLevel = appState.zoomFactor;
     _stylusToolStartSize = appState.getCurrentToolSize();
   }
 
-  void setMouseCursor(final MouseCursor cursor)
+  void setMouseCursor({required final MouseCursor cursor})
   {
     _mouseCursor.value = cursor;
   }
 
-  void _setOffset(final Offset newOffset)
+  void _setOffset({required final Offset newOffset})
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasSize.x.toDouble() * appState.zoomFactor.value, y: appState.canvasSize.y.toDouble() * appState.zoomFactor.value);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: appState.canvasSize.x.toDouble() * appState.zoomFactor, y: appState.canvasSize.y.toDouble() * appState.zoomFactor);
     final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * options.minVisibilityFactor, y: kPixPainter.latestSize.height * options.minVisibilityFactor);
 
     coords.x = max(coords.x, -scaledCanvas.x + minVisibility.x);
     coords.y = max(coords.y, -scaledCanvas.y + minVisibility.y);
     coords.x = min(coords.x, kPixPainter.latestSize.width - minVisibility.x);
     coords.y = min(coords.y, kPixPainter.latestSize.height - minVisibility.y);
-
-
     _canvasOffset.value = Offset(coords.x, coords.y);
   }
 
-
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Expanded(
       child: ValueListenableBuilder(
         valueListenable: _mouseCursor,
@@ -631,14 +640,14 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           return Stack(
             children: [
               MouseRegion(
-                onExit: _onMouseExit,
+                onExit: (final PointerExitEvent pee) {_onMouseExit(pee: pee);},
                 cursor: cursor,
                 child: Listener(
-                  onPointerDown: _buttonDown,
-                  onPointerMove: _updateLocation,
-                  onPointerUp: _buttonUp,
-                  onPointerHover: _hover,
-                  onPointerSignal: _scroll,
+                  onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
+                  onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
+                  onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
+                  onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
+                  onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,
@@ -650,7 +659,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: GetIt.I.get<AppState>().getSelectedToolNotifier(),
+                valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
                 builder: (BuildContext context, ToolType toolType, child)
                 {
                   return IgnorePointer(
@@ -661,8 +670,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                       alignment: Alignment.bottomCenter,
                       //opacity: toolType == ToolType.select ? 1.0 : 0.0,
                       child: const Align(
-                          alignment: Alignment.bottomCenter,
-                          child: SelectionBarWidget()
+                        alignment: Alignment.bottomCenter,
+                        child: SelectionBarWidget()
                       ),
                     ),
                   );

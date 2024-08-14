@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -71,7 +87,7 @@ class StatusBarWidget extends StatefulWidget
 class _StatusBarWidgetState extends State<StatusBarWidget>
 {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Column(
       children: [
         Container(
@@ -116,52 +132,52 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                      flex: 1,
-                      child: _StatusBarWidgetEntry(
-                        listenable: widget.toolDimensionString,
-                        icon: FontAwesomeIcons.rulerCombined,
-                        iconSize: widget.iconSize,
-                        padding: widget.options.padding,
-                      )
+                    flex: 1,
+                    child: _StatusBarWidgetEntry(
+                      listenable: widget.toolDimensionString,
+                      icon: FontAwesomeIcons.rulerCombined,
+                      iconSize: widget.iconSize,
+                      padding: widget.options.padding,
+                    )
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                      flex: 1,
-                      child: _StatusBarWidgetEntry(
-                        listenable: widget.toolDiagonalString,
-                        icon: FontAwesomeIcons.slash,
-                        iconSize: widget.iconSize,
-                        padding: widget.options.padding,
-                      )
+                    flex: 1,
+                    child: _StatusBarWidgetEntry(
+                      listenable: widget.toolDiagonalString,
+                      icon: FontAwesomeIcons.slash,
+                      iconSize: widget.iconSize,
+                      padding: widget.options.padding,
+                    )
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                      flex: 1,
-                      child: _StatusBarWidgetEntry(
-                        listenable: widget.toolAspectRatioString,
-                        icon: FontAwesomeIcons.percent,
-                        iconSize: widget.iconSize,
-                        padding: widget.options.padding,
-                      )
+                    flex: 1,
+                    child: _StatusBarWidgetEntry(
+                      listenable: widget.toolAspectRatioString,
+                      icon: FontAwesomeIcons.percent,
+                      iconSize: widget.iconSize,
+                      padding: widget.options.padding,
+                    )
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                      flex: 1,
-                      child: _StatusBarWidgetEntry(
-                        listenable: widget.toolAngleString,
-                        icon: FontAwesomeIcons.lessThan,
-                        iconSize: widget.iconSize,
-                        padding: widget.options.padding,
-                      )
+                    flex: 1,
+                    child: _StatusBarWidgetEntry(
+                      listenable: widget.toolAngleString,
+                      icon: FontAwesomeIcons.lessThan,
+                      iconSize: widget.iconSize,
+                      padding: widget.options.padding,
+                    )
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
@@ -206,15 +222,12 @@ class _StatusBarWidgetEntry extends StatefulWidget
 class _StatusBarWidgetEntryState extends State<_StatusBarWidgetEntry>
 {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: widget.padding, right: widget.padding, bottom: widget.padding),
-      child: ValueListenableBuilder(
+      child: ValueListenableBuilder<String?>(
         valueListenable: widget.listenable,
-        builder: (
-          BuildContext context,
-          String? value,
-          child){
+        builder: (final BuildContext context, final String? value, final Widget? child){
             return Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -248,5 +261,4 @@ class _StatusBarWidgetEntryState extends State<_StatusBarWidgetEntry>
         )
     );
   }
-
 }

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -70,9 +86,9 @@ class LineOptions extends IToolOptions
   }
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required LineOptions lineOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final LineOptions lineOptions,
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,13 +113,13 @@ class LineOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: lineOptions.width,
-                builder: (BuildContext context, int width, child){
+                builder: (final BuildContext context, final int width, final Widget? child){
                     return Slider(
                     value: width.toDouble(),
                     min: lineOptions.widthMin.toDouble(),
                     max: lineOptions.widthMax.toDouble(),
                     divisions: lineOptions.widthMax - lineOptions.widthMin,
-                    onChanged: (double newVal) {lineOptions.width.value = newVal.round();},
+                    onChanged: (final double newVal) {lineOptions.width.value = newVal.round();},
                     label: width.round().toString(),
                   );
                 },
@@ -147,7 +163,7 @@ class LineOptions extends IToolOptions
   }
 
   @override
-  void changeSize(int steps, int originalValue)
+  void changeSize({required final int steps, required final int originalValue})
   {
     width.value = min(max(originalValue + steps, widthMin), widthMax);
   }

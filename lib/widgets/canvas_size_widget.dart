@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -51,61 +67,61 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
   void initState()
   {
     super.initState();
-    _setSize(_appState.canvasSize);
-    Helper.getImageFromLayers(_appState.canvasSize, _appState.layers.value, _appState.canvasSize).then(_setImage);
+    _setSize(newSize: _appState.canvasSize);
+    Helper.getImageFromLayers(canvasSize: _appState.canvasSize, layers: _appState.layers, size: _appState.canvasSize).then((final ui.Image img){_setImage(img: img);});
 
   }
 
-  void _setImage(final ui.Image img)
+  void _setImage({required final ui.Image img})
   {
     _image.value = img;
   }
 
-  void _sizeXSliderChanged(final double newVal)
+  void _sizeXSliderChanged({required final double newVal})
   {
     final CoordinateSetI newCoords = CoordinateSetI(x: newVal.round(), y: _size.value.y);
-    _setSize(newCoords);
+    _setSize(newSize: newCoords);
   }
 
-  void _sizeXInputChanged(final String newVal)
+  void _sizeXInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
       final int val = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
       final CoordinateSetI newCoords = CoordinateSetI(x: val, y: _size.value.y);
-      _setSize(newCoords);
+      _setSize(newSize: newCoords);
     }
     else
     {
-      final CoordinateSetI newCoords = CoordinateSetI.from(_size.value);
-      _setSize(newCoords);
+      final CoordinateSetI newCoords = CoordinateSetI.from(other: _size.value);
+      _setSize(newSize: newCoords);
     }
   }
 
-  void _sizeYSliderChanged(final double newVal)
+  void _sizeYSliderChanged({required final double newVal})
   {
     final CoordinateSetI newCoords = CoordinateSetI(x: _size.value.x, y: newVal.round());
-    _setSize(newCoords);
+    _setSize(newSize: newCoords);
   }
 
-  void _sizeYInputChanged(final String newVal)
+  void _sizeYInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
       final int val = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
       final CoordinateSetI newCoords = CoordinateSetI(x: _size.value.x, y: val);
-      _setSize(newCoords);
+      _setSize(newSize: newCoords);
     }
     else
     {
-      final CoordinateSetI newCoords = CoordinateSetI.from(_size.value);
-      _setSize(newCoords);
+      final CoordinateSetI newCoords = CoordinateSetI.from(other: _size.value);
+      _setSize(newSize: newCoords);
     }
   }
 
-  void _setSize(final CoordinateSetI newSize)
+  void _setSize({required final CoordinateSetI newSize})
   {
     _size.value = newSize;
     _calculateOffset();
@@ -143,20 +159,20 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _minOffset.value = oMin;
     _maxOffset.value = oMax;
 
-    final CoordinateSetI newOffset = CoordinateSetI.from(_offset.value);
+    final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
     newOffset.x = min(max(newOffset.x, _minOffset.value.x), _maxOffset.value.x);
     newOffset.y = min(max(newOffset.y, _minOffset.value.y), _maxOffset.value.y);
     _offset.value = newOffset;
 
   }
 
-  void _offsetXSliderChanged(final double newVal)
+  void _offsetXSliderChanged({required final double newVal})
   {
     final CoordinateSetI newCoords = CoordinateSetI(x: newVal.round(), y: _offset.value.y);
     _offset.value = newCoords;
   }
 
-  void _offsetXInputChanged(final String newVal)
+  void _offsetXInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
@@ -167,18 +183,18 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     }
     else
     {
-      final CoordinateSetI newCoords = CoordinateSetI.from(_offset.value);
+      final CoordinateSetI newCoords = CoordinateSetI.from(other: _offset.value);
       _offset.value = newCoords;
     }
   }
 
-  void _offsetYSliderChanged(final double newVal)
+  void _offsetYSliderChanged({required final double newVal})
   {
     final CoordinateSetI newCoords = CoordinateSetI(x: _offset.value.x, y: newVal.round());
     _offset.value = newCoords;
   }
 
-  void _offsetYInputChanged(final String newVal)
+  void _offsetYInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
@@ -189,27 +205,27 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     }
     else
     {
-      final CoordinateSetI newCoords = CoordinateSetI.from(_offset.value);
+      final CoordinateSetI newCoords = CoordinateSetI.from(other: _offset.value);
       _offset.value = newCoords;
     }
   }
 
   void _centerH()
   {
-    final CoordinateSetI newOffset = CoordinateSetI.from(_offset.value);
+    final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
     newOffset.x = (_minOffset.value.x + _maxOffset.value.x) ~/ 2;
     _offset.value = newOffset;
   }
 
   void _centerV()
   {
-    final CoordinateSetI newOffset = CoordinateSetI.from(_offset.value);
+    final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
     newOffset.y = (_minOffset.value.y + _maxOffset.value.y) ~/ 2;
     _offset.value = newOffset;
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       elevation: _options.elevation,
@@ -264,7 +280,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                   valueListenable: _size,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
                                     return Slider(
-                                      onChanged: _sizeXSliderChanged,
+                                      onChanged: (final double newVal) {_sizeXSliderChanged(newVal: newVal);},
                                       value: value.x.toDouble(),
                                       min: _sizeOptions.sizeMin.toDouble(),
                                       max: _sizeOptions.sizeMax.toDouble()
@@ -282,7 +298,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     return TextField(
                                       textAlign: TextAlign.end,
                                       controller: controller,
-                                      onChanged: _sizeXInputChanged
+                                      onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);}
                                     );
                                   },
                                 )
@@ -301,7 +317,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                   valueListenable: _size,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
                                     return Slider(
-                                      onChanged: _sizeYSliderChanged,
+                                      onChanged: (final double newVal) {_sizeYSliderChanged(newVal: newVal);},
                                       value: value.y.toDouble(),
                                       min: _sizeOptions.sizeMin.toDouble(),
                                       max: _sizeOptions.sizeMax.toDouble()
@@ -319,7 +335,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     return TextField(
                                       textAlign: TextAlign.end,
                                       controller: controller,
-                                      onChanged: _sizeYInputChanged
+                                      onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);}
                                     );
                                   },
                                 )
@@ -343,26 +359,26 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     return Slider(
                                       min: _minOffset.value.x.toDouble(),
                                       max: _maxOffset.value.x.toDouble(),
-                                      onChanged: _offsetXSliderChanged,
+                                      onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
                                       value: value.x.toDouble(),
                                     );
                                   },
                                 )
                               ),
                               Expanded(
-                                  flex: 1,
-                                  child: ValueListenableBuilder<CoordinateSetI>(
-                                    valueListenable: _offset,
-                                    builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                      final TextEditingController controller = TextEditingController(text: value.x.toString());
-                                      controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                      return TextField(
-                                          textAlign: TextAlign.end,
-                                          controller: controller,
-                                          onChanged: _offsetXInputChanged
-                                      );
-                                    },
-                                  )
+                                flex: 1,
+                                child: ValueListenableBuilder<CoordinateSetI>(
+                                  valueListenable: _offset,
+                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                    final TextEditingController controller = TextEditingController(text: value.x.toString());
+                                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                                    return TextField(
+                                      textAlign: TextAlign.end,
+                                      controller: controller,
+                                      onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);}
+                                    );
+                                  },
+                                )
                               ),
                             ],
                           ),
@@ -380,7 +396,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     return Slider(
                                       min: _minOffset.value.y.toDouble(),
                                       max: _maxOffset.value.y.toDouble(),
-                                      onChanged: _offsetYSliderChanged,
+                                      onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
                                       value: value.y.toDouble(),
                                     );
                                   },
@@ -394,9 +410,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     final TextEditingController controller = TextEditingController(text: value.y.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
-                                        textAlign: TextAlign.end,
-                                        controller: controller,
-                                        onChanged: _offsetYInputChanged
+                                      textAlign: TextAlign.end,
+                                      controller: controller,
+                                      onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);}
                                     );
                                   },
                                 )
@@ -417,76 +433,76 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _size,
-                              builder: (final BuildContext context1, final CoordinateSetI size, final Widget? child1) {
-                                return ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _offset,
-                                  builder: (final BuildContext context2, final CoordinateSetI offset, final Widget? child) {
-                                    final CoordinateSetD scaledCanvasSize = CoordinateSetD(x: _appState.canvasSize.x * _scalingFactor, y: _appState.canvasSize.y * _scalingFactor);
-                                    final CoordinateSetD scaledNewSize = CoordinateSetD(x: _size.value.x * _scalingFactor, y: _size.value.y * _scalingFactor);
+                            valueListenable: _size,
+                            builder: (final BuildContext context1, final CoordinateSetI size, final Widget? child1) {
+                              return ValueListenableBuilder<CoordinateSetI>(
+                                valueListenable: _offset,
+                                builder: (final BuildContext context2, final CoordinateSetI offset, final Widget? child) {
+                                  final CoordinateSetD scaledCanvasSize = CoordinateSetD(x: _appState.canvasSize.x * _scalingFactor, y: _appState.canvasSize.y * _scalingFactor);
+                                  final CoordinateSetD scaledNewSize = CoordinateSetD(x: _size.value.x * _scalingFactor, y: _size.value.y * _scalingFactor);
 
-                                    return Stack(
-                                      children: [
-                                        SizedBox(
-                                          width: _sizeOptions.previewSize.toDouble(),
-                                          height: _sizeOptions.previewSize.toDouble(),
-                                        ),
-                                        Positioned(
-                                          left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
-                                          top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
-                                          width: scaledCanvasSize.x,
-                                          height: scaledCanvasSize.y,
-                                          child: ValueListenableBuilder<ui.Image?>(
-                                            valueListenable: _image,
-                                            builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
-                                              return RawImage(
-                                                fit: BoxFit.fill,
-                                                filterQuality: ui.FilterQuality.none,
-                                                isAntiAlias: false,
-                                                image: img,
-                                              );
-                                            },
-                                          )
-                                        ),
-                                        Positioned(
-                                          left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
-                                          top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
-                                          width: scaledCanvasSize.x,
-                                          height: scaledCanvasSize.y,
-                                          child: DecoratedBox(
-
-                                            decoration: BoxDecoration(
-                                              border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
-                                            ),
-                                          )
-                                        ),
-                                        Positioned(
-                                          left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                          top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                          width: scaledNewSize.x,
-                                          height: scaledNewSize.y,
-                                          child: DecoratedBox(
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3)
-                                            ),
-                                          )
-                                        ),
-                                        Positioned(
-                                          left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                          top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                          width: scaledNewSize.x,
-                                          height: scaledNewSize.y,
-                                          child: DecoratedBox(
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color:  Theme.of(context).primaryColorLight, width: 1)
-                                            ),
-                                          )
+                                  return Stack(
+                                    children: [
+                                      SizedBox(
+                                        width: _sizeOptions.previewSize.toDouble(),
+                                        height: _sizeOptions.previewSize.toDouble(),
+                                      ),
+                                      Positioned(
+                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
+                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
+                                        width: scaledCanvasSize.x,
+                                        height: scaledCanvasSize.y,
+                                        child: ValueListenableBuilder<ui.Image?>(
+                                          valueListenable: _image,
+                                          builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
+                                            return RawImage(
+                                              fit: BoxFit.fill,
+                                              filterQuality: ui.FilterQuality.none,
+                                              isAntiAlias: false,
+                                              image: img,
+                                            );
+                                          },
                                         )
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
+                                      ),
+                                      Positioned(
+                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
+                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
+                                        width: scaledCanvasSize.x,
+                                        height: scaledCanvasSize.y,
+                                        child: DecoratedBox(
+
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
+                                          ),
+                                        )
+                                      ),
+                                      Positioned(
+                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                        width: scaledNewSize.x,
+                                        height: scaledNewSize.y,
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3)
+                                          ),
+                                        )
+                                      ),
+                                      Positioned(
+                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                        width: scaledNewSize.x,
+                                        height: scaledNewSize.y,
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color:  Theme.of(context).primaryColorLight, width: 1)
+                                          ),
+                                        )
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                           ),
                           Row(
                             mainAxisSize: MainAxisSize.min,
@@ -530,40 +546,40 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
 
               SizedBox(height: _options.padding,),
               Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.padding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.xmark,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: () {
-                            widget.dismiss();
-                          },
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: EdgeInsets.all(_options.padding),
+                      child: IconButton.outlined(
+                        icon: FaIcon(
+                          FontAwesomeIcons.xmark,
+                          size: _options.iconSize,
                         ),
-                      )
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.padding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.check,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: () {
-                            widget.accept(_size.value, _offset.value);
-                          },
-                        ),
-                      )
+                        onPressed: () {
+                          widget.dismiss();
+                        },
+                      ),
+                    )
                   ),
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: EdgeInsets.all(_options.padding),
+                      child: IconButton.outlined(
+                        icon: FaIcon(
+                          FontAwesomeIcons.check,
+                          size: _options.iconSize,
+                        ),
+                        onPressed: () {
+                          widget.accept(size: _size.value, offset: _offset.value);
+                        },
+                      ),
+                    )
+                ),
                 ]
               )
             ],

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -108,18 +124,18 @@ class ShapeOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Size",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Size",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<ShapeShape>(
                 valueListenable: shapeOptions.shape,
-                builder: (BuildContext context, ShapeShape shape, child)
+                builder: (final BuildContext context, final ShapeShape shape, final Widget? child)
                 {
                   return SegmentedButton<ShapeShape>(
                     segments: [
@@ -193,7 +209,7 @@ class ShapeOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: shapeOptions.keepRatio,
-                  builder: (BuildContext context, bool keep, child)
+                  builder: (final BuildContext context, final bool keep, final Widget? child)
                   {
                     return Switch(
                       onChanged: (bool newVal) {shapeOptions.keepRatio.value = newVal;},
@@ -223,7 +239,7 @@ class ShapeOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<bool>(
                 valueListenable: shapeOptions.strokeOnly,
-                builder: (BuildContext context, bool strokeOnly, child){
+                builder: (final BuildContext context, final bool strokeOnly, final Widget? child){
                   return Row(
                     children: [
                       Expanded(
@@ -240,7 +256,7 @@ class ShapeOptions extends IToolOptions
                         flex: 2,
                         child: ValueListenableBuilder<int>(
                           valueListenable: shapeOptions.strokeWidth,
-                          builder: (BuildContext context, int width, child)
+                          builder: (final BuildContext context, final int width, final Widget? child)
                           {
                             return Slider(
                               value: width.toDouble(),
@@ -260,10 +276,9 @@ class ShapeOptions extends IToolOptions
             ),
           ],
         ),
-        ValueListenableBuilder(
+        ValueListenableBuilder<ShapeShape>(
           valueListenable: shapeOptions.shape,
-          builder: (BuildContext context, ShapeShape shape, child)
-          {
+          builder: (final BuildContext context, final ShapeShape shape, final Widget? child){
             return Stack(
               children: [
                 Visibility(
@@ -287,7 +302,7 @@ class ShapeOptions extends IToolOptions
                         flex: toolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable: shapeOptions.cornerRadius,
-                          builder: (BuildContext context, int cornerRadius, child)
+                          builder: (final BuildContext context, final int cornerRadius, final Widget? child)
                           {
                             return Slider(
                               value: cornerRadius.toDouble(),
@@ -314,28 +329,28 @@ class ShapeOptions extends IToolOptions
                       Expanded(
                         flex: 1,
                         child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Angle",
-                              style: Theme.of(context).textTheme.labelLarge,
-                            )
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Angle",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          )
                         ),
                       ),
                       Expanded(
                         flex: toolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
-                            valueListenable: shapeOptions.ellipseAngle,
-                            builder: (BuildContext context, int angle, child)
-                            {
-                              return Slider(
-                                value: angle.toDouble(),
-                                min: shapeOptions.ellipseAngleMin.toDouble(),
-                                max: shapeOptions.ellipseAngleMax.toDouble(),
-                                divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
-                                onChanged: (double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
-                                label: angle.round().toString(),
-                              );
-                            }
+                          valueListenable: shapeOptions.ellipseAngle,
+                          builder: (final BuildContext context, final int angle, final Widget? child)
+                          {
+                            return Slider(
+                              value: angle.toDouble(),
+                              min: shapeOptions.ellipseAngleMin.toDouble(),
+                              max: shapeOptions.ellipseAngleMax.toDouble(),
+                              divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
+                              onChanged: (final double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
+                              label: angle.round().toString(),
+                            );
+                          }
                         ),
                       ),
                     ],
@@ -350,28 +365,28 @@ class ShapeOptions extends IToolOptions
                       Expanded(
                         flex: 1,
                         child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Corner Count",
-                              style: Theme.of(context).textTheme.labelLarge,
-                            )
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Corner Count",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          )
                         ),
                       ),
                       Expanded(
                         flex: toolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
-                            valueListenable: shapeOptions.cornerCount,
-                            builder: (BuildContext context, int corners, child)
-                            {
-                              return Slider(
-                                value: corners.toDouble(),
-                                min: shapeOptions.cornerCountMin.toDouble(),
-                                max: shapeOptions.cornerCountMax.toDouble(),
-                                divisions: (shapeOptions.cornerCountMax - shapeOptions.cornerCountMin),
-                                onChanged: (double newVal) {shapeOptions.cornerCount.value = newVal.round();},
-                                label: corners.round().toString(),
-                              );
-                            }
+                          valueListenable: shapeOptions.cornerCount,
+                          builder: (final BuildContext context, final int corners, final Widget? child)
+                          {
+                            return Slider(
+                              value: corners.toDouble(),
+                              min: shapeOptions.cornerCountMin.toDouble(),
+                              max: shapeOptions.cornerCountMax.toDouble(),
+                              divisions: (shapeOptions.cornerCountMax - shapeOptions.cornerCountMin),
+                              onChanged: (double newVal) {shapeOptions.cornerCount.value = newVal.round();},
+                              label: corners.round().toString(),
+                            );
+                          }
                         ),
                       ),
                     ],
@@ -386,7 +401,7 @@ class ShapeOptions extends IToolOptions
   }
 
   @override
-  void changeSize(int steps, int originalValue)
+  void changeSize({required final int steps, required final int originalValue})
   {
     strokeWidth.value = min(max(originalValue + steps, strokeWidthMin), strokeWidthMax);
   }

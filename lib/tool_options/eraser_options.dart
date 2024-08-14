@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -26,9 +42,9 @@ class EraserOptions extends IToolOptions
   }
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required EraserOptions eraserOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final EraserOptions eraserOptions,
   })
   {
     return Column(
@@ -54,20 +70,19 @@ class EraserOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: eraserOptions.size,
-                builder: (BuildContext context, int size, child)
+                builder: (final BuildContext context, final int size, final Widget? child)
                 {
                   return Slider(
                     value: size.toDouble(),
                     min: eraserOptions.sizeMin.toDouble(),
                     max: eraserOptions.sizeMax.toDouble(),
                     divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
-                    onChanged: (double newVal) {eraserOptions.size.value = newVal.round();},
+                    onChanged: (final double newVal) {eraserOptions.size.value = newVal.round();},
                     label: size.round().toString(),
                   );
                 },
               ),
             ),
-
           ],
         ),
         Row(
@@ -88,15 +103,15 @@ class EraserOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<PencilShape>(
                 valueListenable: eraserOptions.shape,
-                builder: (BuildContext context, PencilShape shape, child)
+                builder: (final BuildContext context, final PencilShape shape, final Widget? child)
                 {
                   return DropdownButton(
                     value: shape,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
-                    onChanged: (PencilShape? eShape) {eraserOptions.shape.value = eShape!;},
-                    items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((PencilShape value) {
+                    onChanged: (final PencilShape? eShape) {eraserOptions.shape.value = eShape!;},
+                    items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((final PencilShape value) {
                       return DropdownMenuItem<PencilShape>(
                         value: value,
                         child: Text(pencilShapeStringMap[value]!),
@@ -113,7 +128,7 @@ class EraserOptions extends IToolOptions
   }
 
   @override
-  void changeSize(int steps, int originalValue)
+  void changeSize({required final int steps, required final int originalValue})
   {
     size.value = min(max(originalValue + steps, sizeMin), sizeMax);
   }

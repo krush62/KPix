@@ -1,4 +1,18 @@
-import 'dart:collection';
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -36,11 +50,11 @@ class CanvasOperationsWidget extends StatefulWidget
   const CanvasOperationsWidget({super.key});
 
   @override
-  State<CanvasOperationsWidget> createState() => CanvasOperationsWidgetState();
+  State<CanvasOperationsWidget> createState() => _CanvasOperationsWidgetState();
 
 }
 
-class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
+class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
   final CanvasOperationsWidgetOptions _options = GetIt.I.get<PreferenceManager>().canvasOperationsWidgetOptions;
   final AppState _appState = GetIt.I.get<AppState>();
@@ -68,7 +82,7 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
     _canvasSizeOverlay.show(context);
   }
 
-  void _sizeChangeAccepted(final CoordinateSetI size, final CoordinateSetI offset)
+  void _sizeChangeAccepted({required final CoordinateSetI size, required final CoordinateSetI offset})
   {
     _appState.changeCanvasSize(newSize: size, offset: offset);
     _hideOverlays();
@@ -94,7 +108,7 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   aspectRatio: 1,
                   child: IconButton.outlined(
                     tooltip: transformationDescriptions[CanvasTransformation.rotate],
-                    onPressed: (){_appState.canvasTransform(CanvasTransformation.rotate);},
+                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
                     icon: FaIcon(
                       FontAwesomeIcons.rotate,
                       size: _options.iconHeight
@@ -110,7 +124,7 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   aspectRatio: 1,
                   child: IconButton.outlined(
                     tooltip: transformationDescriptions[CanvasTransformation.flipH],
-                    onPressed: (){_appState.canvasTransform(CanvasTransformation.flipH);},
+                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsLeftRight,
                       size: _options.iconHeight
@@ -126,7 +140,7 @@ class CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   aspectRatio: 1,
                   child: IconButton.outlined(
                     tooltip: transformationDescriptions[CanvasTransformation.flipV],
-                    onPressed: (){_appState.canvasTransform(CanvasTransformation.flipV);},
+                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsUpDown,
                       size: _options.iconHeight

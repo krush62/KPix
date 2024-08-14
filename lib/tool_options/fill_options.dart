@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -17,9 +33,9 @@ class FillOptions extends IToolOptions
   }
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required FillOptions fillOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final FillOptions fillOptions,
   })
   {
     return Column(
@@ -34,11 +50,11 @@ class FillOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Fill Adjacent",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Fill Adjacent",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded(
@@ -47,10 +63,10 @@ class FillOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: fillOptions.fillAdjacent,
-                  builder: (BuildContext context, bool fill, child)
+                  builder: (final BuildContext context, final bool fill, final Widget? child)
                   {
                     return Switch(
-                      onChanged: (bool newVal) {fillOptions.fillAdjacent.value = newVal;},
+                      onChanged: (final bool newVal) {fillOptions.fillAdjacent.value = newVal;},
                       value: fill
                     );
                   },
@@ -79,10 +95,10 @@ class FillOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: fillOptions.fillWholeRamp,
-                  builder: (BuildContext context, bool fill, child)
+                  builder: (final BuildContext context, final bool fill, final Widget? child)
                   {
                     return Switch(
-                      onChanged: (bool newVal) {fillOptions.fillWholeRamp.value = newVal;},
+                      onChanged: (final bool newVal) {fillOptions.fillWholeRamp.value = newVal;},
                       value: fill
                     );
                   },
@@ -93,15 +109,6 @@ class FillOptions extends IToolOptions
         ),
       ],
     );
-  }
-
-  @override
-  void changeSize(int steps, int originalValue) {}
-
-  @override
-  int getSize()
-  {
-    return 0;
   }
 
 }

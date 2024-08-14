@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -35,7 +51,7 @@ class ColorPickPainter extends IToolPainter
         _oldCursorPos.x = _cursorPosNorm.x;
         _oldCursorPos.y = _cursorPosNorm.y;
         final ColorReference? colRef = getColorFromImageAtPosition(appState: appState, normPos: _cursorPosNorm);
-        if (colRef != null && colRef != appState.selectedColor.value)
+        if (colRef != null && colRef != appState.selectedColor)
         {
           selectedColor = colRef;
         }
@@ -46,18 +62,18 @@ class ColorPickPainter extends IToolPainter
   static ColorReference? getColorFromImageAtPosition({required AppState appState, required CoordinateSetI normPos})
   {
     ColorReference? colRef;
-    for (final LayerState layer in appState.layers.value)
+    for (final LayerState layer in appState.layers)
     {
       if (layer.visibilityState.value == LayerVisibilityState.visible)
       {
-        if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.getColorReference(normPos) != null)
+        if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.getColorReference(coord: normPos) != null)
         {
-          colRef = appState.selectionState.selection.getColorReference(normPos);
+          colRef = appState.selectionState.selection.getColorReference(coord: normPos);
           break;
         }
-        if (layer.getDataEntry(normPos) != null)
+        if (layer.getDataEntry(coord: normPos) != null)
         {
-          colRef = layer.getDataEntry(normPos);
+          colRef = layer.getDataEntry(coord: normPos);
           break;
         }
       }

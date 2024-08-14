@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -6,6 +22,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class PencilPainter extends IToolPainter
@@ -16,7 +33,7 @@ class PencilPainter extends IToolPainter
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   Set<CoordinateSetI> _contentPoints = {};
   bool _waitingForRasterization = false;
-  final HashMap<CoordinateSetI, ColorReference> _drawingPixels = HashMap();
+  final CoordinateColorMap _drawingPixels = HashMap();
 
   PencilPainter({required super.painterOptions});
 
@@ -34,7 +51,7 @@ class PencilPainter extends IToolPainter
           .round();
        if (_cursorPosNorm != _previousCursorPosNorm)
        {
-         _contentPoints = getRoundSquareContentPoints(_options.shape.value, _options.size.value, _cursorPosNorm);
+         _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
          _previousCursorPosNorm.x = _cursorPosNorm.x;
          _previousCursorPosNorm.y = _cursorPosNorm.y;
        }
@@ -45,15 +62,14 @@ class PencilPainter extends IToolPainter
       {
         if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
-          if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(
-              _paintPositions[_paintPositions.length - 1], true))
+          if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true))
           {
             _paintPositions.add(CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y));
             //PIXEL PERFECT
             if (_paintPositions.length >= 3)
             {
               if (_options.pixelPerfect.value &&
-                  _paintPositions[_paintPositions.length - 1].isDiagonal(_paintPositions[_paintPositions.length - 3]))
+                  _paintPositions[_paintPositions.length - 1].isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
               {
                 _paintPositions.removeAt(_paintPositions.length - 2);
               }
@@ -61,7 +77,7 @@ class PencilPainter extends IToolPainter
           }
           else
           {
-            _paintPositions.addAll(Helper.bresenham(_paintPositions[_paintPositions.length - 1], _cursorPosNorm).sublist(1));
+            _paintPositions.addAll(Helper.bresenham(start: _paintPositions[_paintPositions.length - 1], end: _cursorPosNorm).sublist(1));
           }
         }
         if (_paintPositions.length > 3)
@@ -70,10 +86,10 @@ class PencilPainter extends IToolPainter
           final Set<CoordinateSetI> paintPoints = {};
           for (final CoordinateSetI pos in posSet)
           {
-            paintPoints.addAll(getRoundSquareContentPoints(_options.shape.value, _options.size.value, pos));
+            paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
           }
 
-          _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
+          _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
           _paintPositions.removeRange(0, _paintPositions.length - 3);
         }
       }
@@ -83,9 +99,9 @@ class PencilPainter extends IToolPainter
         final Set<CoordinateSetI> paintPoints = {};
         for (final CoordinateSetI pos in posSet)
         {
-          paintPoints.addAll(getRoundSquareContentPoints(_options.shape.value, _options.size.value, pos));
+          paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
         }
-        _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
+        _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
         _dump(currentLayer: drawParams.currentLayer);
         _waitingForRasterization = true;
         _paintPositions.clear();
@@ -104,11 +120,11 @@ class PencilPainter extends IToolPainter
     {
       if (!appState.selectionState.selection.isEmpty())
       {
-        appState.selectionState.selection.addDirectlyAll(_drawingPixels);
+        appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
       else
       {
-        currentLayer.setDataAll(_drawingPixels);
+        currentLayer.setDataAll(list: _drawingPixels);
       }
     }
     hasHistoryData = true;
@@ -118,7 +134,7 @@ class PencilPainter extends IToolPainter
   void drawCursorOutline({required DrawingParameters drawParams})
   {
     //Surrounding
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(_contentPoints);
+    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
     Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)
     {
@@ -147,12 +163,12 @@ class PencilPainter extends IToolPainter
   }
 
 
- @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
+  @override
+  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor.value != null && drawParams.cursorPos != null)
+    if(appState.selectedColor != null && drawParams.cursorPos != null)
     {
-      return getPixelsToDraw(coords: _contentPoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      return getPixelsToDraw(coords: _contentPoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {
@@ -161,7 +177,7 @@ class PencilPainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawParams})
+  CoordinateColorMap getToolContent({required DrawingParameters drawParams})
   {
     if (drawParams.primaryDown || _waitingForRasterization)
     {

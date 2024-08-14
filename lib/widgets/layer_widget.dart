@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:typed_data';
@@ -9,6 +25,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -104,26 +121,26 @@ class LayerState
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
   final CoordinateSetI size;
-  final HashMap<CoordinateSetI, ColorReference> _data;
+  final CoordinateColorMap _data;
   ui.Image? raster;
   bool isRasterizing = false;
   bool doManualRaster = false;
   Queue<(CoordinateSetI, ColorReference?)> rasterQueue = Queue();
 
-  LayerState._({required HashMap<CoordinateSetI, ColorReference> data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
+  LayerState._({required CoordinateColorMap data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
   {
-    _createRaster().then((final ui.Image image) => _rasterizingDone(image));
+    _createRaster().then((final ui.Image image) => _rasterizingDone(image: image));
     lockState.value = lState;
     visibilityState.value = vState;
     LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), updateTimerCallback);
+    Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
 
   }
 
   factory LayerState.from({required LayerState other})
   {
-    HashMap<CoordinateSetI, ColorReference> data2 = HashMap();
-  for (final MapEntry<CoordinateSetI, ColorReference> ref in other._data.entries)
+    CoordinateColorMap data2 = HashMap();
+  for (final CoordinateColor ref in other._data.entries)
     {
       data2[ref.key] = ref.value;
     }
@@ -131,13 +148,13 @@ class LayerState
   }
 
 
-  factory LayerState({required CoordinateSetI size, final HashMap<CoordinateSetI, ColorReference?>? content})
+  factory LayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
   {
-    HashMap<CoordinateSetI, ColorReference> data2 = HashMap();
+    CoordinateColorMap data2 = HashMap();
 
     if (content != null)
     {
-      for (final MapEntry<CoordinateSetI, ColorReference?> entry in content.entries)
+      for (final CoordinateColorNullable entry in content.entries)
       {
         if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
         {
@@ -148,12 +165,12 @@ class LayerState
     return LayerState._(data2: data2, size: size);
   }
 
-  void updateTimerCallback(final Timer timer) async
+  void updateTimerCallback({required final Timer timer}) async
   {
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
-      _createRaster().then((final ui.Image image) => _rasterizingDone(image));
+      _createRaster().then((final ui.Image image) => _rasterizingDone(image: image));
 
     }
   }
@@ -162,7 +179,7 @@ class LayerState
   {
     isRasterizing = true;
     final Set<CoordinateSetI> deleteData = {};
-    for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)
+    for (final CoordinateColor entry in _data.entries)
     {
       if (entry.value.ramp == ramp)
       {
@@ -181,7 +198,7 @@ class LayerState
   void remapAllColors({required final HashMap<ColorReference, ColorReference> rampMap})
   {
     isRasterizing = true;
-    for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)
+    for (final CoordinateColor entry in _data.entries)
     {
       _data[entry.key] = rampMap[entry.value]!;
     }
@@ -191,7 +208,7 @@ class LayerState
   void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})
   {
     isRasterizing = true;
-    for (final MapEntry<CoordinateSetI, ColorReference> entry in _data.entries)
+    for (final CoordinateColor entry in _data.entries)
     {
       if (entry.value.ramp == newData)
       {
@@ -202,7 +219,7 @@ class LayerState
   }
 
 
-  void _rasterizingDone(final ui.Image image)
+  void _rasterizingDone({required final ui.Image image})
   {
     isRasterizing = false;
     raster = image;
@@ -228,7 +245,7 @@ class LayerState
     }
 
     final ByteData byteData = ByteData(size.x * size.y * 4);
-    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _data.entries)
+    for (final CoordinateColorNullable entry in _data.entries)
     {
       if (entry.value != null) {
         final Color dColor = entry.value!.ramp.colors[entry.value!.colorIndex]
@@ -236,7 +253,7 @@ class LayerState
         final int index = (entry.key.y * size.x + entry.key.x) * 4;
         if (index < byteData.lengthInBytes)
         {
-          byteData.setUint32(index, Helper.argbToRgba(dColor.value));
+          byteData.setUint32(index, Helper.argbToRgba(argb: dColor.value));
         }
 
       }
@@ -256,7 +273,7 @@ class LayerState
   }
 
 
-  ColorReference? getDataEntry(final CoordinateSetI coord)
+  ColorReference? getDataEntry({required final CoordinateSetI coord})
   {
     if (_data.containsKey(coord))
     {
@@ -275,15 +292,15 @@ class LayerState
     return null;
   }
 
-  HashMap<CoordinateSetI, ColorReference> getData()
+  CoordinateColorMap getData()
   {
     return _data;
   }
 
-  void setDataAll(final HashMap<CoordinateSetI, ColorReference?> list)
+  void setDataAll({required final CoordinateColorMapNullable list})
   {
     final Set<(CoordinateSetI, ColorReference?)> it = {};
-    for (final MapEntry<CoordinateSetI, ColorReference?> entry in list.entries)
+    for (final CoordinateColorNullable entry in list.entries)
     {
       bool foundInRaster = false;
       for (int i = 0; i < rasterQueue.length; i++)
@@ -311,18 +328,18 @@ class LayerState
 
   }
 
-  LayerState getTransformedLayer(final CanvasTransformation transformation)
+  LayerState getTransformedLayer({required final CanvasTransformation transformation})
   {
-    final HashMap<CoordinateSetI, ColorReference> rotatedContent = HashMap();
-    final CoordinateSetI newSize = CoordinateSetI.from(size);
+    final CoordinateColorMap rotatedContent = HashMap();
+    final CoordinateSetI newSize = CoordinateSetI.from(other: size);
     if (transformation == CanvasTransformation.rotate)
     {
       newSize.x = size.y;
       newSize.y = size.x;
     }
-    for (final MapEntry entry in _data.entries)
+    for (final CoordinateColor entry in _data.entries)
     {
-      final CoordinateSetI rotCoord = CoordinateSetI.from(entry.key);
+      final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.key);
       if (transformation == CanvasTransformation.rotate)
       {
         rotCoord.x = ((size.y - 1) - entry.key.y).toInt();
@@ -343,7 +360,7 @@ class LayerState
     {
       for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
       {
-        final CoordinateSetI rotCoord = CoordinateSetI.from(entry.$1);
+        final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.$1);
         if (transformation == CanvasTransformation.rotate)
         {
           rotCoord.x = ((size.y - 1) - entry.$1.y).toInt();
@@ -370,10 +387,10 @@ class LayerState
     return LayerState(size: newSize, content: rotatedContent);
   }
 
-  LayerState getResizedLayer(final CoordinateSetI newSize, final CoordinateSetI offset)
+  LayerState getResizedLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
-    final HashMap<CoordinateSetI, ColorReference> croppedContent = HashMap();
-    for (final MapEntry entry in _data.entries)
+    final CoordinateColorMap croppedContent = HashMap();
+    for (final CoordinateColor entry in _data.entries)
     {
       final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
       if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
@@ -405,13 +422,9 @@ class LayerState
 }
 
 
-
-
 class LayerWidget extends StatefulWidget
 {
   final LayerState layerState;
-  
-
   const LayerWidget({
     super.key,
     required this.layerState,
@@ -424,8 +437,8 @@ class LayerWidget extends StatefulWidget
 
 class _LayerWidgetState extends State<LayerWidget>
 {
-  AppState appState = GetIt.I.get<AppState>();
-  LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+  final AppState _appState = GetIt.I.get<AppState>();
+  final LayerWidgetOptions _options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
 
   static const Map<LayerVisibilityState, IconData> _visibilityIconMap = {
     LayerVisibilityState.visible: FontAwesomeIcons.eye,
@@ -466,19 +479,19 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _deletePressed()
   {
-    appState.layerDeleted(deleteLayer: widget.layerState);
+    _appState.layerDeleted(deleteLayer: widget.layerState);
     _closeSettingsMenu();
   }
 
   void _mergeDownPressed()
   {
-    appState.layerMerged(mergeLayer: widget.layerState);
+    _appState.layerMerged(mergeLayer: widget.layerState);
     _closeSettingsMenu();
   }
 
   void _duplicatePressed()
   {
-    appState.layerDuplicated(duplicateLayer: widget.layerState);
+    _appState.layerDuplicated(duplicateLayer: widget.layerState);
     _closeSettingsMenu();
   }
 
@@ -528,157 +541,153 @@ class _LayerWidgetState extends State<LayerWidget>
   }
 
 
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return LongPressDraggable<LayerState>(
-      delay: Duration(milliseconds: options.dragDelay),
+      delay: Duration(milliseconds: _options.dragDelay),
       data: widget.layerState,
       feedback: Container(
-        width: options.dragFeedbackSize,
-        height: options.dragFeedbackSize,
-        color: Theme.of(context).primaryColor.withOpacity(options.dragOpacity),
+        width: _options.dragFeedbackSize,
+        height: _options.dragFeedbackSize,
+        color: Theme.of(context).primaryColor.withOpacity(_options.dragOpacity),
       ),
       //childWhenDragging: const SizedBox.shrink(),
       childWhenDragging: Container(
-        height: options.dragTargetHeight,
+        height: _options.dragTargetHeight,
         color: Theme.of(context).primaryColor,
       ),
       child: Padding(
-        padding: EdgeInsets.only(left: options.outerPadding, right: options.outerPadding),
+        padding: EdgeInsets.only(left: _options.outerPadding, right: _options.outerPadding),
         child: SizedBox(
-          height: options.height,
+          height: _options.height,
           child: ValueListenableBuilder<bool>(
             valueListenable: widget.layerState.isSelected,
-            builder: (BuildContext context, bool isSelected, child) {
+            builder: (final BuildContext context, final bool isSelected, final Widget? child) {
             return Container(
-                padding: EdgeInsets.all(options.innerPadding),
-
-                decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.all(
-                        Radius.circular(options.borderRadius),
-                    ),
-                    border: Border.all(
-                      color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
-                      width: options.borderWidth,
-                    )
+              padding: EdgeInsets.all(_options.innerPadding),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.all(
+                    Radius.circular(_options.borderRadius),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(
-                          right: options.innerPadding),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: ValueListenableBuilder<LayerVisibilityState>(
-                                valueListenable: widget.layerState
-                                    .visibilityState,
-                                builder: (BuildContext context,
-                                    LayerVisibilityState visibility, child) {
-                                  return IconButton.outlined(
-                                      tooltip: _visibilityTooltipMap[visibility],
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(
-                                        maxHeight: options.buttonSizeMax,
-                                        maxWidth: options.buttonSizeMax,
-                                        minWidth: options.buttonSizeMin,
-                                        minHeight: options.buttonSizeMin,
-                                      ),
-                                      style: ButtonStyle(
-                                        tapTargetSize: MaterialTapTargetSize
-                                            .shrinkWrap,
-                                        backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : null,
-                                        iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColor) : null,
-                                      ),
-                                      onPressed: _visibilityButtonPressed,
-                                      icon: FaIcon(
-                                        _visibilityIconMap[visibility],
-                                        size: options.iconSize,
-                                      )
-                                  );
-                                }
-                            ),
+                border: Border.all(
+                  color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
+                  width: _options.borderWidth,
+                )
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                        right: _options.innerPadding),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ValueListenableBuilder<LayerVisibilityState>(
+                            valueListenable: widget.layerState.visibilityState,
+                            builder: (final BuildContext context, final LayerVisibilityState visibility, final Widget? child) {
+                              return IconButton.outlined(
+                                tooltip: _visibilityTooltipMap[visibility],
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(
+                                  maxHeight: _options.buttonSizeMax,
+                                  maxWidth: _options.buttonSizeMax,
+                                  minWidth: _options.buttonSizeMin,
+                                  minHeight: _options.buttonSizeMin,
+                                ),
+                                style: ButtonStyle(
+                                  tapTargetSize: MaterialTapTargetSize
+                                      .shrinkWrap,
+                                  backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : null,
+                                  iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColor) : null,
+                                ),
+                                onPressed: _visibilityButtonPressed,
+                                icon: FaIcon(
+                                  _visibilityIconMap[visibility],
+                                  size: _options.iconSize,
+                                )
+                              );
+                            }
                           ),
-                          SizedBox(height: options.innerPadding),
-                          Expanded(
-                            child: ValueListenableBuilder<LayerLockState>(
-                              valueListenable: widget.layerState.lockState,
-                              builder: (BuildContext context,
-                                LayerLockState lock, child) {
-                                return IconButton.outlined(
-                                  tooltip: _lockStringMap[lock],
-                                  padding: EdgeInsets.zero,
-                                  constraints: BoxConstraints(
-                                    maxHeight: options.buttonSizeMax,
-                                    maxWidth: options.buttonSizeMax,
-                                    minWidth: options.buttonSizeMin,
-                                    minHeight: options.buttonSizeMin,
-                                  ),
-                                  style: ButtonStyle(
-                                    tapTargetSize: MaterialTapTargetSize
-                                        .shrinkWrap,
-                                    backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
-                                    iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
-                                  ),
-                                  onPressed: _lockButtonPressed,
-                                  icon: FaIcon(
-                                    _lockIconMap[lock],
-                                    size: options.iconSize,
-                                  )
-                                );
-                              }
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            appState.layerSelected(newLayer: widget.layerState);
-                          },
-                          child: ValueListenableBuilder<ui.Image?>(
-                            valueListenable: widget.layerState.thumbnail,
-                            builder: (BuildContext context, ui.Image? img, child)
-                            {
-                              return RawImage(image: img,);
-                            },
-                          ),
-                        )),
-                    Padding(
-                      padding: EdgeInsets.only(
-                          left: options.innerPadding),
-                      child: CompositedTransformTarget(
-                        link: settingsLink,
-                        child: IconButton.outlined(
-                            tooltip: "Settings",
-                            constraints: BoxConstraints(
-                              maxHeight: options.buttonSizeMax,
-                              maxWidth: options.buttonSizeMax,
-                              minWidth: options.buttonSizeMin,
-                              minHeight: options.buttonSizeMin,
-                            ),
-                            style: const ButtonStyle(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: _settingsButtonPressed,
-                            icon: FaIcon(
-                              FontAwesomeIcons.bars,
-                              size: options.iconSize,
-                            )
                         ),
+                        SizedBox(height: _options.innerPadding),
+                        Expanded(
+                          child: ValueListenableBuilder<LayerLockState>(
+                            valueListenable: widget.layerState.lockState,
+                            builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
+                              return IconButton.outlined(
+                                tooltip: _lockStringMap[lock],
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(
+                                  maxHeight: _options.buttonSizeMax,
+                                  maxWidth: _options.buttonSizeMax,
+                                  minWidth: _options.buttonSizeMin,
+                                  minHeight: _options.buttonSizeMin,
+                                ),
+                                style: ButtonStyle(
+                                  tapTargetSize: MaterialTapTargetSize
+                                      .shrinkWrap,
+                                  backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
+                                  iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
+                                ),
+                                onPressed: _lockButtonPressed,
+                                icon: FaIcon(
+                                  _lockIconMap[lock],
+                                  size: _options.iconSize,
+                                )
+                              );
+                            }
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        _appState.layerSelected(newLayer: widget.layerState);
+                      },
+                      child: ValueListenableBuilder<ui.Image?>(
+                        valueListenable: widget.layerState.thumbnail,
+                        builder: (final BuildContext context, final ui.Image? img, final Widget? child)
+                        {
+                          return RawImage(image: img,);
+                        },
                       ),
                     )
-                  ],
-                )
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                        left: _options.innerPadding),
+                    child: CompositedTransformTarget(
+                      link: settingsLink,
+                      child: IconButton.outlined(
+                          tooltip: "Settings",
+                          constraints: BoxConstraints(
+                            maxHeight: _options.buttonSizeMax,
+                            maxWidth: _options.buttonSizeMax,
+                            minWidth: _options.buttonSizeMin,
+                            minHeight: _options.buttonSizeMin,
+                          ),
+                          style: const ButtonStyle(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: _settingsButtonPressed,
+                          icon: FaIcon(
+                            FontAwesomeIcons.bars,
+                            size: _options.iconSize,
+                          )
+                      ),
+                    ),
+                  )
+                ],
+              )
             );
           }
           )

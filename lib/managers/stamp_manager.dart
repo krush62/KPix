@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -75,9 +91,9 @@ const Map<StampType, String> _stampFileMap =
 
 class KStamp
 {
-  HashMap<CoordinateSetI, int> data;
-  int width;
-  int height;
+  final HashMap<CoordinateSetI, int> data;
+  final int width;
+  final int height;
   KStamp({required this.data, required this.width, required this.height});
 }
 
@@ -90,7 +106,7 @@ class StampManager
 
   static Future<HashMap<StampType, KStamp>> readStamps() async
   {
-    HashMap<StampType, KStamp> stampMap = HashMap();
+    final HashMap<StampType, KStamp> stampMap = HashMap();
     for (final MapEntry<StampType, String> mapEntry in _stampFileMap.entries)
     {
       stampMap[mapEntry.key] = await _readStampFromFile("$stampPath/${mapEntry.value}");

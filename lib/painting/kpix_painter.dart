@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:ui' as ui;
 
@@ -18,6 +34,7 @@ import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class KPixPainterOptions
@@ -142,7 +159,7 @@ class KPixPainter extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    toolPainter = toolPainterMap[_appState.getSelectedTool()];
+    toolPainter = toolPainterMap[_appState.selectedTool];
     if (size != latestSize)
     {
       latestSize = size;
@@ -153,14 +170,14 @@ class KPixPainter extends CustomPainter
         offset: _offset.value,
         canvas: canvas,
         paint: Paint(),
-        pixelSize: _appState.zoomFactor.value,
+        pixelSize: _appState.zoomFactor,
         canvasSize: _appState.canvasSize,
         drawingSize: size,
         cursorPos: _coords.value,
         primaryDown: _primaryDown.value,
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
-        currentLayer: _appState.currentLayer.value!
+        currentLayer: _appState.getSelectedLayer()!,
         );
 
 
@@ -389,7 +406,7 @@ class KPixPainter extends CustomPainter
   {
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
 
-    final List<LayerState> layers = _appState.layers.value;
+    final List<LayerState> layers = _appState.layers;
     for (int i = layers.length - 1; i >= 0; i--)
     {
       if (layers[i].visibilityState.value == LayerVisibilityState.visible)
@@ -411,8 +428,8 @@ class KPixPainter extends CustomPainter
 
         if (layers[i].isSelected.value)
         {
-          final HashMap<CoordinateSetI, ColorReference> selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
-          final HashMap<CoordinateSetI, ColorReference> toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
+          final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
+          final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
           for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
           {
             for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
@@ -434,7 +451,7 @@ class KPixPainter extends CustomPainter
               //DRAW SELECTION PIXEL
               if (drawColor == null)
               {
-                ColorReference? selColor = _appState.selectionState.selection.getColorReference(CoordinateSetI(x: x, y: y));
+                ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
                 if (selColor != null)
                 {
                   drawColor = selColor.getIdColor().color;

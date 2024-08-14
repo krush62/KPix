@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
@@ -17,7 +33,6 @@ class PaletteWidgetOptions
 
 class PaletteWidget extends StatefulWidget
 {
-
   const PaletteWidget(
     {
       super.key,
@@ -30,20 +45,18 @@ class PaletteWidget extends StatefulWidget
 
 class _PaletteWidgetState extends State<PaletteWidget>
 {
-
-  final ValueNotifier<List<ColorRampRowWidget>> colorRampWidgetList = ValueNotifier([]);
+  final ValueNotifier<List<ColorRampRowWidget>> _colorRampWidgetList = ValueNotifier([]);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: ValueListenableBuilder<List<KPalRampData>>(
-        valueListenable: GetIt.I.get<AppState>().colorRamps,
-        builder: (BuildContext context, List<KPalRampData> rampDataSet, child)
-        {
-          colorRampWidgetList.value = [];
+        valueListenable: GetIt.I.get<AppState>().colorRampNotifier,
+        builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child){
+          _colorRampWidgetList.value = [];
           for (KPalRampData rampData in rampDataSet)
           {
-            colorRampWidgetList.value.add(
+            _colorRampWidgetList.value.add(
                 ColorRampRowWidget(
                   rampData: rampData,
                   colorSelectedFn: GetIt.I.get<AppState>().colorSelected,
@@ -52,42 +65,38 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 )
             );
           }
-          colorRampWidgetList.value.add(ColorRampRowWidget(
+          _colorRampWidgetList.value.add(ColorRampRowWidget(
             addNewRampFn: GetIt.I.get<AppState>().addNewRamp,
           ));
 
-
-
           return ValueListenableBuilder<List<ColorRampRowWidget>>(
-              valueListenable: colorRampWidgetList,
-              builder: (BuildContext context, List<ColorRampRowWidget> widgetRows, child)
-              {
-                return Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColorDark,
-                    ),
+            valueListenable: _colorRampWidgetList,
+            builder: (final BuildContext context, final List<ColorRampRowWidget> widgetRows, final Widget? child) {
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorDark,
+                ),
 
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Padding(
-                          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              ...widgetRows
-                            ],
-                          )
-                      ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Padding(
+                    padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        ...widgetRows
+                      ],
                     )
-                );
-              }
+                  ),
+                )
+              );
+            }
           );
         }
       )
     );
   }
-  
 }

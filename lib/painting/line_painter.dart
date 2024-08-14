@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -8,6 +24,7 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class LinePainter extends IToolPainter
@@ -41,7 +58,7 @@ class LinePainter extends IToolPainter
           .round();
       if (_cursorPosNorm != _previousCursorPosNorm)
       {
-        _contentPoints = getRoundSquareContentPoints(PencilShape.round, _options.width.value, _cursorPosNorm);
+        _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: _cursorPosNorm);
         _previousCursorPosNorm.x = _cursorPosNorm.x;
         _previousCursorPosNorm.y = _cursorPosNorm.y;
 
@@ -57,11 +74,11 @@ class LinePainter extends IToolPainter
               double closestDist = 0.0;
               for (final AngleData aData in _options.angles)
               {
-                final double currentDist = (Helper.normAngle(aData.angle) - Helper.normAngle(currentAngle)).abs();
+                final double currentDist = (Helper.normAngle(angle: aData.angle) - Helper.normAngle(angle: currentAngle)).abs();
                 if (closestAngle == null || currentDist < closestDist)
                 {
                   closestAngle = aData;
-                  closestDist = (Helper.normAngle(currentAngle) - Helper.normAngle(closestAngle.angle)).abs();
+                  closestDist = (Helper.normAngle(angle: currentAngle) - Helper.normAngle(angle: closestAngle.angle)).abs();
                 }
               }
 
@@ -69,7 +86,7 @@ class LinePainter extends IToolPainter
               if (closestAngle != null) //should never happen
               {
                double shortestDist = double.maxFinite;
-               CoordinateSetI currentPos = CoordinateSetI.from(_lineStartPos);
+               CoordinateSetI currentPos = CoordinateSetI.from(other: _lineStartPos);
                final Set<CoordinateSetI> lPoints = {};
                do
                {
@@ -86,7 +103,7 @@ class LinePainter extends IToolPainter
                       {
                         currentPos.x--;
                       }
-                      currPoints.add(CoordinateSetI.from(currentPos));
+                      currPoints.add(CoordinateSetI.from(other: currentPos));
                     }
                     if (closestAngle.y > 0)
                     {
@@ -109,7 +126,7 @@ class LinePainter extends IToolPainter
                      {
                        currentPos.y--;
                      }
-                     currPoints.add(CoordinateSetI.from(currentPos));
+                     currPoints.add(CoordinateSetI.from(other: currentPos));
                    }
                    if (closestAngle.x > 0)
                    {
@@ -121,7 +138,7 @@ class LinePainter extends IToolPainter
                    }
                  }
 
-                 final dist = Helper.getDistance(_cursorPosNorm, currentPos);
+                 final dist = Helper.getDistance(a: _cursorPosNorm, b: currentPos);
                  if (dist < shortestDist)
                  {
                     shortestDist = dist;
@@ -143,7 +160,7 @@ class LinePainter extends IToolPainter
                  final Set<CoordinateSetI> widePoints = {};
                  for (final CoordinateSetI coord in lPoints)
                  {
-                   widePoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                   widePoints.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: coord));
                  }
                  _linePoints = widePoints;
                }
@@ -151,7 +168,7 @@ class LinePainter extends IToolPainter
             }
             else
             {
-              final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(_lineStartPos, _cursorPosNorm).toSet();
+              final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(start: _lineStartPos, end: _cursorPosNorm).toSet();
               if (_options.width.value == 1)
               {
                 _linePoints = bresenhamPoints;
@@ -161,7 +178,7 @@ class LinePainter extends IToolPainter
                 Set<CoordinateSetI> lPoints = {};
                 for (final CoordinateSetI coord in bresenhamPoints)
                 {
-                  lPoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                  lPoints.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: coord));
                 }
                 _linePoints = lPoints;
               }
@@ -169,7 +186,7 @@ class LinePainter extends IToolPainter
           }
           else // CURVE
           {
-            final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(_lineStartPos, _lineEndPos2, _lineEndPos1, _options.bezierCalculationPoints);
+            final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(p0: _lineStartPos, p1: _lineEndPos2, p2: _lineEndPos1, numPoints: _options.bezierCalculationPoints);
             if (_options.width.value == 1)
             {
               _linePoints = curvePoints;
@@ -179,7 +196,7 @@ class LinePainter extends IToolPainter
               Set<CoordinateSetI> widePoints = {};
               for (final CoordinateSetI coord in curvePoints)
               {
-                widePoints.addAll(getRoundSquareContentPoints(PencilShape.round, _options.width.value, coord));
+                widePoints.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: coord));
               }
               _linePoints = widePoints;
             }
@@ -220,14 +237,14 @@ class LinePainter extends IToolPainter
         }
         else
         {
-          final HashMap<CoordinateSetI, ColorReference> drawingPixels =  getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
           if (!appState.selectionState.selection.isEmpty())
           {
-            appState.selectionState.selection.addDirectlyAll(drawingPixels);
+            appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
           }
           else
           {
-            drawParams.currentLayer.setDataAll(drawingPixels);
+            drawParams.currentLayer.setDataAll(list: drawingPixels);
           }
           hasHistoryData = true;
           _lineStarted = false;
@@ -243,7 +260,7 @@ class LinePainter extends IToolPainter
   void drawCursorOutline({required DrawingParameters drawParams})
   {
     //Surrounding
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(_contentPoints);
+    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
     Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)
     {
@@ -272,11 +289,11 @@ class LinePainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
+  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor.value != null && drawParams.cursorPos != null && _lineStarted)
+    if(appState.selectedColor != null && drawParams.cursorPos != null && _lineStarted)
     {
-      return getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      return getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {
@@ -317,7 +334,12 @@ class LinePainter extends IToolPainter
     }*/
   }
 
-  Set<CoordinateSetI> _calculateQuadraticBezierCurve(final CoordinateSetI p0, final CoordinateSetI p1, final CoordinateSetI p2, final int numPoints) {
+  Set<CoordinateSetI> _calculateQuadraticBezierCurve(
+      {required final CoordinateSetI p0,
+      required final CoordinateSetI p1,
+      required final CoordinateSetI p2,
+      required final int numPoints})
+  {
     final Set<CoordinateSetI> points = {};
 
     for (int i = 0; i <= numPoints; i++)

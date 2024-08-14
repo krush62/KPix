@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:io';
 import 'dart:math';
@@ -12,6 +28,7 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
@@ -28,30 +45,74 @@ class RepaintNotifier extends ChangeNotifier
 class AppState
 {
   final ValueNotifier<ToolType> _selectedTool = ValueNotifier(ToolType.pencil);
-  late IToolOptions currentToolOptions;
-  final ValueNotifier<List<KPalRampData>> colorRamps = ValueNotifier([]);
-  final ValueNotifier<ColorReference?> selectedColor = ValueNotifier(null);
+  ToolType get selectedTool
+  {
+    return _selectedTool.value;
+  }
+  ValueNotifier<ToolType> get selectedToolNotifier
+  {
+    return _selectedTool;
+  }
+  late IToolOptions _currentToolOptions;
+  final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier([]);
+  List<KPalRampData> get colorRamps
+  {
+    return _colorRamps.value;
+  }
+  ValueNotifier<List<KPalRampData>> get colorRampNotifier
+  {
+    return _colorRamps;
+  }
+  final ValueNotifier<ColorReference?> _selectedColor = ValueNotifier(null);
+  ColorReference? get selectedColor
+  {
+    return _selectedColor.value;
+  }
+  ValueNotifier<ColorReference?> get selectedColorNotifier
+  {
+    return _selectedColor;
+  }
   final Map<ToolType, bool> _toolMap = {};
-  final ValueNotifier<List<LayerState>> layers = ValueNotifier([]);
-  final ValueNotifier<LayerState?> currentLayer = ValueNotifier(null);
+  final ValueNotifier<List<LayerState>> _layers = ValueNotifier([]);
+  List<LayerState> get layers
+  {
+    return _layers.value;
+  }
+  ValueNotifier<List<LayerState>> get layerListNotifier
+  {
+    return _layers;
+  }
+  LayerState? _currentLayer;
   final RepaintNotifier repaintNotifier = RepaintNotifier();
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
-  final ValueNotifier<int> zoomFactor = ValueNotifier(1);
+  final ValueNotifier<int> _zoomFactor = ValueNotifier(1);
+  int get zoomFactor
+  {
+    return _zoomFactor.value;
+  }
   static const int zoomLevelMin = 1;
   static const int zoomLevelMax = 80;
 
-  final CoordinateSetI canvasSize = CoordinateSetI(x: 1, y: 1);
+  final CoordinateSetI _canvasSize = CoordinateSetI(x: 1, y: 1);
+  CoordinateSetI get canvasSize
+  {
+    return CoordinateSetI.from(other: _canvasSize);
+  }
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
   final StatusBarState statusBarState = StatusBarState();
-  final String appDir;
-  final String tempDir;
-  final String cacheDir;
+  final String _appDir;
+  String get appDir
+  {
+    return _appDir;
+  }
+  final String _tempDir;
+  final String _cacheDir;
   final ValueNotifier<String?> filePath = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
 
-  AppState({required this.appDir, required this.tempDir, required this.cacheDir})
+  AppState({required String appDir, required String tempDir, required String cacheDir}) : _appDir = appDir, _cacheDir = cacheDir, _tempDir = tempDir
   {
 
     for (ToolType toolType in toolList.keys)
@@ -59,11 +120,7 @@ class AppState
       _toolMap[toolType] = false;
     }
     setToolSelection(tool: ToolType.pencil);
-    statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
-    //TODO what is this and should this be applied every time the current layer changes?
-    currentLayer.addListener(() {
-      selectionState.selection.setCurrentLayer(currentLayer.value);
-    });
+    statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
   }
 
   String getTitle()
@@ -73,9 +130,9 @@ class AppState
 
   void setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
   {
-    canvasSize.x = width;
-    canvasSize.y = height;
-    statusBarState.setStatusBarDimensions(width, height);
+    _canvasSize.x = width;
+    _canvasSize.y = height;
+    statusBarState.setStatusBarDimensions(width: width, height: height);
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, description: "change canvas size");
@@ -85,10 +142,10 @@ class AppState
   bool increaseZoomLevel()
   {
     bool changed = false;
-    if (zoomFactor.value < zoomLevelMax)
+    if (_zoomFactor.value < zoomLevelMax)
     {
-      zoomFactor.value = zoomFactor.value + 1;
-      statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
+      _zoomFactor.value = _zoomFactor.value + 1;
+      statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
       changed = true;
     }
     return changed;
@@ -97,38 +154,38 @@ class AppState
   bool decreaseZoomLevel()
   {
     bool changed = false;
-    if (zoomFactor.value > zoomLevelMin)
+    if (_zoomFactor.value > zoomLevelMin)
     {
-      zoomFactor.value = zoomFactor.value - 1;
-      statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
+      _zoomFactor.value = _zoomFactor.value - 1;
+      statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
       changed = true;
     }
     return changed;
   }
 
-  bool setZoomLevelByDistance(final int startZoomLevel, final int steps)
+  bool setZoomLevelByDistance({required final int startZoomLevel, required final int steps})
   {
     bool change = false;
     if (steps != 0)
     {
       final int endIndex = startZoomLevel + steps;
-      if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != zoomFactor.value)
+      if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != _zoomFactor.value)
       {
-         zoomFactor.value = endIndex;
-         statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
+         _zoomFactor.value = endIndex;
+         statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
          change = true;
       }
     }
     return change;
   }
 
-  bool setZoomLevel(final int val)
+  bool setZoomLevel({required final int val})
   {
     bool change = false;
-    if (val <= zoomLevelMax && val >= zoomLevelMin && val != zoomFactor.value)
+    if (val <= zoomLevelMax && val >= zoomLevelMin && val != _zoomFactor.value)
     {
-      zoomFactor.value = val;
-      statusBarState.setStatusBarZoomFactor(zoomFactor.value * 100);
+      _zoomFactor.value = val;
+      statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
       change = true;
     }
     return change;
@@ -137,22 +194,22 @@ class AppState
 
   int getCurrentToolSize()
   {
-    return currentToolOptions.getSize();
+    return _currentToolOptions.getSize();
   }
 
   void setToolSize(final int steps, final int originalValue)
   {
-    currentToolOptions.changeSize(steps, originalValue);
+    _currentToolOptions.changeSize(steps: steps, originalValue: originalValue);
   }
 
   void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    if (colorRamps.value.length > 1)
+    if (_colorRamps.value.length > 1)
     {
-      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+      List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
       rampDataList.remove(ramp);
-      selectedColor.value = rampDataList[0].references[0];
-      colorRamps.value = rampDataList;
+      _selectedColor.value = rampDataList[0].references[0];
+      _colorRamps.value = rampDataList;
       _deleteRampFromLayers(ramp: ramp);
       _reRaster();
       repaintNotifier.repaint();
@@ -163,19 +220,19 @@ class AppState
     }
     else
     {
-      showMessage("Cannot delete the only color ramp!");
+      showMessage(text: "Cannot delete the only color ramp!");
     }
   }
 
   void updateRamp({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
   {
-    final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
-    colorRamps.value = rampDataList;
+    final List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
+    _colorRamps.value = rampDataList;
 
     if (ramp.colors.length != originalData.colors.length)
     {
-      HashMap<int, int> indexMap = _remapIndices(originalData.colors.length, ramp.colors.length);
-      selectedColor.value = ramp.references[indexMap[selectedColor.value!.colorIndex]!];
+      HashMap<int, int> indexMap = _remapIndices(oldLength: originalData.colors.length, newLength: ramp.colors.length);
+      _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _remapLayers(newData: ramp, map: indexMap);
     }
     _reRaster();
@@ -189,7 +246,7 @@ class AppState
   void addNewRamp({bool addToHistoryStack = true})
   {
     const Uuid uuid = Uuid();
-    List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps.value);
+    List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
     final KPalRampData newRamp = KPalRampData(
         uuid: uuid.v1(),
         settings: KPalRampSettings(
@@ -197,8 +254,8 @@ class AppState
         )
     );
     rampDataList.add(newRamp);
-    colorRamps.value = rampDataList;
-    selectedColor.value = newRamp.references[0];
+    _colorRamps.value = rampDataList;
+    _selectedColor.value = newRamp.references[0];
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new ramp");
@@ -206,18 +263,18 @@ class AppState
 
   }
 
-  LayerState addNewLayer({final bool addToHistoryStack = true, final bool select = false, final HashMap<CoordinateSetI, ColorReference?>? content})
+  LayerState addNewLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
     final List<LayerState> layerList = [];
-    final LayerState newLayer = LayerState(size: canvasSize, content: content);
-    if (layers.value.isEmpty)
+    final LayerState newLayer = LayerState(size: _canvasSize, content: content);
+    if (_layers.value.isEmpty)
     {
       newLayer.isSelected.value = true;
-      currentLayer.value = newLayer;
+      _currentLayer = newLayer;
     }
     layerList.add(newLayer);
-    layerList.addAll(layers.value);
-    layers.value = layerList;
+    layerList.addAll(_layers.value);
+    _layers.value = layerList;
     if (select)
     {
       layerSelected(newLayer: newLayer);
@@ -233,7 +290,7 @@ class AppState
   {
     if (GetIt.I.get<HistoryManager>().hasUndo.value)
     {
-      showMessage("Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+      showMessage(text: "Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
       _restoreState(historyState: GetIt.I.get<HistoryManager>().undo());
     }
   }
@@ -243,7 +300,7 @@ class AppState
     if (GetIt.I.get<HistoryManager>().hasRedo.value)
     {
       _restoreState(historyState: GetIt.I.get<HistoryManager>().redo());
-      showMessage("Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+      showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
     }
   }
 
@@ -257,7 +314,7 @@ class AppState
     }
     else
     {
-      showMessage("Loading failed (${loadFileSet.status})");
+      showMessage(text: "Loading failed (${loadFileSet.status})");
     }
   }
 
@@ -271,20 +328,20 @@ class AppState
       }
       else
       {
-        final HashMap<ColorReference, ColorReference> rampMap = Helper.getRampMap(rampList1: colorRamps.value, rampList2: loadPaletteSet.rampData!);
-        for (final LayerState layerState in layers.value)
+        final HashMap<ColorReference, ColorReference> rampMap = Helper.getRampMap(rampList1: _colorRamps.value, rampList2: loadPaletteSet.rampData!);
+        for (final LayerState layerState in _layers.value)
         {
           layerState.remapAllColors(rampMap: rampMap);
           layerState.doManualRaster = true;
         }
       }
-      selectedColor.value = loadPaletteSet.rampData![0].references[0];
-      colorRamps.value = loadPaletteSet.rampData!;
+      _selectedColor.value = loadPaletteSet.rampData![0].references[0];
+      _colorRamps.value = loadPaletteSet.rampData!;
       GetIt.I.get<HistoryManager>().addState(appState: this, description: "replace color ramp");
     }
     else
     {
-      showMessage("Loading palette failed (${loadPaletteSet.status})");
+      showMessage(text: "Loading palette failed (${loadPaletteSet.status})");
     }
   }
 
@@ -304,7 +361,7 @@ class AppState
   {
     filePath.value = path;
     hasChanges.value = false;
-    showMessage("File saved at: $path");
+    showMessage(text: "File saved at: $path");
   }
 
   void _restoreState({required final HistoryState? historyState})
@@ -312,7 +369,7 @@ class AppState
     if (historyState != null)
     {
       //CANVAS
-      final CoordinateSetI canvSize = CoordinateSetI.from(historyState.canvasSize);
+      final CoordinateSetI canvSize = CoordinateSetI.from(other: historyState.canvasSize);
 
       //COLORS
       final List<KPalRampData> ramps = [];
@@ -330,7 +387,7 @@ class AppState
       int layerIndex = 0;
       for (final HistoryLayer historyLayer in historyState.layerList)
       {
-        final HashMap<CoordinateSetI, ColorReference> content = HashMap();
+        final CoordinateColorMap content = HashMap();
         for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyLayer.data.entries)
         {
           KPalRampData? ramp;
@@ -344,7 +401,7 @@ class AppState
           }
           if (ramp != null)
           {
-            content[CoordinateSetI.from(entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
+            content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
           }
         }
         final LayerState layerState = LayerState(size: canvSize, content: content);
@@ -361,33 +418,33 @@ class AppState
       }
 
       //SELECTION
-      final HashMap<CoordinateSetI, ColorReference?> selectionContent = HashMap();
+      final CoordinateColorMapNullable selectionContent = HashMap();
       for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in historyState.selectionState.content.entries)
       {
         if (entry.value != null)
         {
-          selectionContent[CoordinateSetI.from(entry.key)] = ramps[entry.value!.rampIndex].references[entry.value!.colorIndex];
+          selectionContent[CoordinateSetI.from(other: entry.key)] = ramps[entry.value!.rampIndex].references[entry.value!.colorIndex];
         }
         else
         {
-          selectionContent[CoordinateSetI.from(entry.key)] = null;
+          selectionContent[CoordinateSetI.from(other: entry.key)] = null;
         }
       }
 
       // SET VALUES
       // ramps
-      colorRamps.value = ramps;
+      _colorRamps.value = ramps;
       // selected color
-      selectedColor.value = selCol;
+      _selectedColor.value = selCol;
       //canvas
-      canvasSize.x = canvSize.x;
-      canvasSize.y = canvSize.y;
+      _canvasSize.x = canvSize.x;
+      _canvasSize.y = canvSize.y;
       // layers
-      layers.value = stateList;
-      currentLayer.value = curSelLayer?? getSelectedLayer();
+      _layers.value = stateList;
+      _currentLayer = curSelLayer?? getSelectedLayer();
       // selection state (incl layer)
-      selectionState.selection.delete(false);
-      selectionState.selection.addDirectlyAll(selectionContent);
+      selectionState.selection.delete(keepSelection: false);
+      selectionState.selection.addDirectlyAll(list: selectionContent);
       selectionState.selection.currentLayer = curSelLayer?? getSelectedLayer();
       selectionState.createSelectionLines();
       selectionState.notifyRepaint();
@@ -397,9 +454,9 @@ class AppState
   void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
   {
     int sourcePosition = -1;
-    for (int i = 0; i < layers.value.length; i++)
+    for (int i = 0; i < _layers.value.length; i++)
     {
-       if (layers.value[i] == state)
+       if (_layers.value[i] == state)
        {
           sourcePosition = i;
           break;
@@ -408,7 +465,7 @@ class AppState
 
     if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
-      List<LayerState> stateList = List<LayerState>.from(layers.value);
+      List<LayerState> stateList = List<LayerState>.from(_layers.value);
       stateList.removeAt(sourcePosition);
       if (newPosition > sourcePosition) {
         stateList.insert(newPosition - 1, state);
@@ -417,7 +474,7 @@ class AppState
         {
           stateList.insert(newPosition, state);
         }
-      layers.value = stateList;
+      _layers.value = stateList;
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, description: "change layer order");
@@ -443,7 +500,7 @@ class AppState
   LayerState? getSelectedLayer()
   {
     LayerState? selectedLayer;
-    for (final LayerState state in layers.value)
+    for (final LayerState state in _layers.value)
     {
       if (state.isSelected.value)
       {
@@ -456,7 +513,7 @@ class AppState
   void layerSelected({required final LayerState newLayer, final bool addToHistoryStack = false})
   {
     LayerState oldLayer = newLayer;
-    for (final LayerState layer in layers.value)
+    for (final LayerState layer in _layers.value)
     {
       if (layer.isSelected.value)
       {
@@ -468,8 +525,8 @@ class AppState
     {
       newLayer.isSelected.value = true;
       oldLayer.isSelected.value = false;
-      currentLayer.value = newLayer;
-      selectionState.selection.changeLayer(oldLayer, newLayer);
+      _currentLayer = newLayer;
+      selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, description: "select layer");
@@ -480,15 +537,15 @@ class AppState
 
   void layerDeleted({required final LayerState deleteLayer, final bool addToHistoryStack = true})
   {
-    if (layers.value.length > 1)
+    if (_layers.value.length > 1)
     {
       final List<LayerState> layerList = [];
       int foundIndex = 0;
-      for (int i = 0; i < layers.value.length; i++)
+      for (int i = 0; i < _layers.value.length; i++)
       {
-        if (layers.value[i] != deleteLayer)
+        if (_layers.value[i] != deleteLayer)
         {
-          layerList.add(layers.value[i]);
+          layerList.add(_layers.value[i]);
         }
         else
         {
@@ -505,7 +562,7 @@ class AppState
         layerSelected(newLayer: layerList[0], addToHistoryStack: false);
       }
 
-      layers.value = layerList;
+      _layers.value = layerList;
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, description: "delete layer");
@@ -513,64 +570,64 @@ class AppState
     }
     else
     {
-      showMessage("Cannot delete the only layer!");
+      showMessage(text: "Cannot delete the only layer!");
     }
   }
 
   void layerMerged({required final LayerState mergeLayer, final bool addToHistoryStack = true})
   {
-    final int mergeLayerIndex = layers.value.indexOf(mergeLayer);
-    if (mergeLayerIndex == layers.value.length - 1)
+    final int mergeLayerIndex = _layers.value.indexOf(mergeLayer);
+    if (mergeLayerIndex == _layers.value.length - 1)
     {
-      showMessage("No layer below!");
+      showMessage(text: "No layer below!");
     }
     else if (mergeLayer.visibilityState.value == LayerVisibilityState.hidden)
     {
-      showMessage("Cannot merge from an invisible layer!");
+      showMessage(text: "Cannot merge from an invisible layer!");
     }
-    else if (layers.value[mergeLayerIndex + 1].visibilityState.value == LayerVisibilityState.hidden)
+    else if (_layers.value[mergeLayerIndex + 1].visibilityState.value == LayerVisibilityState.hidden)
     {
-      showMessage("Cannot merge with an invisible layer!");
+      showMessage(text: "Cannot merge with an invisible layer!");
     }
     else if (mergeLayer.lockState.value == LayerLockState.locked)
     {
-      showMessage("Cannot merge from a locked layer!");
+      showMessage(text: "Cannot merge from a locked layer!");
     }
-    else if (layers.value[mergeLayerIndex + 1].lockState.value == LayerLockState.locked)
+    else if (_layers.value[mergeLayerIndex + 1].lockState.value == LayerLockState.locked)
     {
-      showMessage("Cannot merge with a locked layer!");
+      showMessage(text: "Cannot merge with a locked layer!");
     }
     else
     {
       bool lowLayerWasSelected = false;
       final List<LayerState> layerList = [];
       selectionState.deselect(addToHistoryStack: false);
-      final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
-      for (int i = 0; i < layers.value.length; i++)
+      final CoordinateColorMapNullable refs = HashMap();
+      for (int i = 0; i < _layers.value.length; i++)
       {
         if (i == mergeLayerIndex)
         {
-          for (int x = 0; x < canvasSize.x; x++)
+          for (int x = 0; x < _canvasSize.x; x++)
           {
-            for (int y = 0; y < canvasSize.y; y++)
+            for (int y = 0; y < _canvasSize.y; y++)
             {
               final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
 
               //if transparent pixel -> use value from layer below
-              if (mergeLayer.getDataEntry(curCoord) == null && layers.value[i+1].getDataEntry(curCoord) != null)
+              if (mergeLayer.getDataEntry(coord: curCoord) == null && _layers.value[i+1].getDataEntry(coord: curCoord) != null)
               {
-                refs[curCoord] = layers.value[i+1].getDataEntry(curCoord);
+                refs[curCoord] = _layers.value[i+1].getDataEntry(coord: curCoord);
               }
             }
           }
           layerList.add(mergeLayer);
-          lowLayerWasSelected = layers.value[i+1].isSelected.value;
+          lowLayerWasSelected = _layers.value[i+1].isSelected.value;
           i++;
-          mergeLayer.setDataAll(refs);
+          mergeLayer.setDataAll(list: refs);
         }
         else
         {
-          layerList.add(layers.value[i]);
+          layerList.add(_layers.value[i]);
         }
 
       }
@@ -578,7 +635,7 @@ class AppState
       {
         layerSelected(newLayer: mergeLayer, addToHistoryStack: false);
       }
-      layers.value = layerList;
+      _layers.value = layerList;
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, description: "merge layer");
@@ -590,22 +647,22 @@ class AppState
   {
     List<LayerState> layerList = [];
     selectionState.deselect(addToHistoryStack: false);
-    for (int i = 0; i < layers.value.length; i++)
+    for (int i = 0; i < _layers.value.length; i++)
     {
-      if (layers.value[i] == duplicateLayer)
+      if (_layers.value[i] == duplicateLayer)
       {
         layerList.add(LayerState.from(other: duplicateLayer));
       }
-      layerList.add(layers.value[i]);
+      layerList.add(_layers.value[i]);
     }
-    layers.value = layerList;
+    _layers.value = layerList;
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, description: "duplicate layer");
     }
   }
 
-  HashMap<int, int> _remapIndices(final int oldLength, final int newLength)
+  HashMap<int, int> _remapIndices({required final int oldLength, required final int newLength})
   {
     final HashMap<int, int> indexMap = HashMap();
     final int centerOld = oldLength ~/ 2;
@@ -622,7 +679,7 @@ class AppState
 
   void _deleteRampFromLayers({required final KPalRampData ramp})
   {
-    for (final LayerState layer in layers.value)
+    for (final LayerState layer in _layers.value)
     {
       layer.deleteRamp(ramp: ramp);
     }
@@ -630,9 +687,9 @@ class AppState
 
   void _deleteAllRampsFromLayers()
   {
-    for (final LayerState layerState in layers.value)
+    for (final LayerState layerState in _layers.value)
     {
-      for (final KPalRampData kPalRampData in colorRamps.value)
+      for (final KPalRampData kPalRampData in _colorRamps.value)
       {
         layerState.deleteRamp(ramp: kPalRampData);
       }
@@ -642,7 +699,7 @@ class AppState
 
   void _remapLayers({required final KPalRampData newData, required final HashMap<int, int> map})
   {
-    for (final LayerState layer in layers.value)
+    for (final LayerState layer in _layers.value)
     {
      layer.remapSingleRamp(newData: newData, map: map);
     }
@@ -650,15 +707,15 @@ class AppState
 
   void _reRaster()
   {
-    for (final LayerState layer in layers.value)
+    for (final LayerState layer in _layers.value)
     {
       layer.doManualRaster = true;
     }
   }
 
-  void colorSelected(final ColorReference color)
+  void colorSelected({required final ColorReference? color})
   {
-    selectedColor.value = color;
+    _selectedColor.value = color;
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
   }
 
@@ -675,48 +732,33 @@ class AppState
 
     }
     _selectedTool.value = tool;
-    currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
+    _currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
   }
 
-  bool toolIsSelected(final ToolType tool)
-  {
-    return _toolMap[tool] ?? false;
-  }
-
-  ToolType getSelectedTool()
-  {
-    return _selectedTool.value;
-  }
-
-  ValueNotifier<ToolType> getSelectedToolNotifier()
-  {
-    return _selectedTool;
-  }
-
-  void canvasTransform(final CanvasTransformation transformation)
+  void canvasTransform({required final CanvasTransformation transformation})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
     final List<LayerState> layerList = [];
     LayerState? currentTransformLayer;
-    for (final LayerState layer in layers.value)
+    for (final LayerState layer in _layers.value)
     {
-       LayerState transformLayer = layer.getTransformedLayer(transformation);
+       LayerState transformLayer = layer.getTransformedLayer(transformation: transformation);
        layerList.add(transformLayer);
-       if (layer == currentLayer.value)
+       if (layer == _currentLayer)
        {
            currentTransformLayer = transformLayer;
        }
     }
-    layers.value = layerList;
-    currentLayer.value = currentTransformLayer;
+    _layers.value = layerList;
+    _currentLayer = currentTransformLayer;
     if (currentTransformLayer != null)
     {
       currentTransformLayer.isSelected.value = true;
-      selectionState.selection.changeLayer(null, currentTransformLayer);
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: currentTransformLayer);
     }
     if (transformation == CanvasTransformation.rotate)
     {
-      setCanvasDimensions(width: canvasSize.y, height: canvasSize.x);
+      setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
     }
     GetIt.I.get<HistoryManager>().addState(appState: this, description: transformationDescriptions[transformation]!);
   }
@@ -724,7 +766,7 @@ class AppState
   void cropToSelection()
   {
     CoordinateSetI? topLeft, bottomRight;
-    (topLeft, bottomRight) = selectionState.selection.getBoundingBox(canvasSize);
+    (topLeft, bottomRight) = selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final CoordinateSetI newSize = CoordinateSetI(x: bottomRight.x - topLeft.x + 1, y: bottomRight.y - topLeft.y + 1);
@@ -733,7 +775,7 @@ class AppState
     else
     {
       //This should never happen
-      showMessage("Could not crop!");
+      showMessage(text: "Could not crop!");
     }
   }
 
@@ -742,27 +784,27 @@ class AppState
     selectionState.deselect(addToHistoryStack: false, notify: false);
     final List<LayerState> layerList = [];
     LayerState? currentCropLayer;
-    for (final LayerState layer in layers.value)
+    for (final LayerState layer in _layers.value)
     {
-      final LayerState cropLayer = layer.getResizedLayer(newSize, offset);
+      final LayerState cropLayer = layer.getResizedLayer(newSize: newSize, offset: offset);
       layerList.add(cropLayer);
-      if (layer == currentLayer.value)
+      if (layer == _currentLayer)
       {
          currentCropLayer = cropLayer;
       }
     }
-    layers.value = layerList;
-    currentLayer.value = currentCropLayer;
+    _layers.value = layerList;
+    _currentLayer = currentCropLayer;
     if (currentCropLayer != null)
     {
       currentCropLayer.isSelected.value = true;
-      selectionState.selection.changeLayer(null, currentCropLayer);
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: currentCropLayer);
     }
     setCanvasDimensions(width: newSize.x, height: newSize.y);
   }
 
 
-  void showMessage(final String text) {
+  void showMessage({required final String text}) {
     showStyledToast(
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.zero,

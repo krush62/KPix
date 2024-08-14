@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:kpix/managers/stamp_manager.dart';
@@ -66,14 +82,14 @@ class StampOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<StampType>(
                 valueListenable: stampOptions.stamp,
-                builder: (BuildContext context, StampType stamp, child)
+                builder: (final BuildContext context, final StampType stamp, final Widget? child)
                 {
                   return DropdownButton(
                     value: stamp,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
-                    onChanged: (StampType? type) {stampOptions.stamp.value = type!;},
+                    onChanged: (final StampType? type) {stampOptions.stamp.value = type!;},
                     items: stampIndexMap.values.map<DropdownMenuItem<StampType>>((StampType value) {
                       return DropdownMenuItem<StampType>(
                         value: value,
@@ -93,11 +109,11 @@ class StampOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Scale",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Scale",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded
@@ -107,7 +123,7 @@ class StampOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<int>(
                   valueListenable: stampOptions.scale,
-                  builder: (BuildContext context, int scale, child)
+                  builder: (final BuildContext context, final int scale, final Widget? child)
                   {
                     return Slider(
                       value: scale.toDouble(),
@@ -144,11 +160,9 @@ class StampOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: stampOptions.flipH,
-                  builder: (BuildContext context, bool flipH, child)
-                  {
-                    return Switch
-                    (
-                      onChanged: (bool newVal) {stampOptions.flipH.value = newVal;},
+                  builder: (final BuildContext context, final bool flipH, final Widget? child){
+                    return Switch(
+                      onChanged: (final bool newVal) {stampOptions.flipH.value = newVal;},
                       value: flipH
                     );
                   },
@@ -181,11 +195,9 @@ class StampOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: stampOptions.flipV,
-                  builder: (BuildContext context, bool flipV, child)
-                  {
-                    return Switch
-                    (
-                      onChanged: (bool newVal) {stampOptions.flipV.value = newVal;},
+                  builder: (final BuildContext context, final bool flipV, final Widget? child){
+                    return Switch(
+                      onChanged: (final bool newVal) {stampOptions.flipV.value = newVal;},
                       value: flipV
                     );
                   },
@@ -199,7 +211,7 @@ class StampOptions extends IToolOptions
   }
 
   @override
-  void changeSize(int steps, int originalValue)
+  void changeSize({required final int steps, required final int originalValue})
   {
     scale.value = min(max(originalValue + steps, scaleMin), scaleMax);
   }

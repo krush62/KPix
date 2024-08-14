@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -7,6 +23,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/shape_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class ShapePainter extends IToolPainter
@@ -21,8 +38,7 @@ class ShapePainter extends IToolPainter
   final CoordinateSetI _lastNormEndPos = CoordinateSetI(x: 0, y: 0);
   bool _isStartOnCanvas = false;
   bool _waitingForRasterization = false;
-  HashMap<CoordinateSetI, ColorReference> _drawingPixels = HashMap();
-
+  CoordinateColorMap _drawingPixels = HashMap();
 
   ShapePainter({required super.painterOptions});
 
@@ -89,7 +105,7 @@ class ShapePainter extends IToolPainter
         if (selectionChanged)
         {
           final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
-          _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
 
         }
       }
@@ -112,7 +128,7 @@ class ShapePainter extends IToolPainter
     {
       if (!appState.selectionState.selection.isEmpty())
       {
-        appState.selectionState.selection.addDirectlyAll(_drawingPixels);
+        appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
       /*else if (!_shaderOptions.isEnabled.value)
       {
@@ -120,14 +136,14 @@ class ShapePainter extends IToolPainter
       }*/
       else
       {
-        layer.setDataAll(_drawingPixels);
+        layer.setDataAll(list: _drawingPixels);
       }
       hasHistoryData = true;
     }
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
+  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
     if (drawParams.primaryDown || _waitingForRasterization)
     {
@@ -191,7 +207,7 @@ class ShapePainter extends IToolPainter
       {
         for (int y = selectionStart.y; y <= selectionEnd.y; y++)
         {
-          if (options.cornerRadius.value == 0 || _isPointInRoundedRectangle(CoordinateSetI(x: x, y: y), selectionStart, selectionEnd, options.cornerRadius.value))
+          if (options.cornerRadius.value == 0 || _isPointInRoundedRectangle(testPoint: CoordinateSetI(x: x, y: y), topLeft: selectionStart, bottomRight: selectionEnd, radius: options.cornerRadius.value))
           {
             content.add(CoordinateSetI(x: x, y: y));
           }
@@ -259,17 +275,16 @@ class ShapePainter extends IToolPainter
     else
     {
       final List<CoordinateSetI> points = _getPolygonPoints(options: options, selectionStart: selectionStart, selectionEnd: selectionEnd);
-
-      final CoordinateSetI min = Helper.getMin(points);
-      final CoordinateSetI max = Helper.getMax(points);
+      final CoordinateSetI min = Helper.getMin(coordList: points);
+      final CoordinateSetI max = Helper.getMax(coordList: points);
       for (int x = min.x; x <= max.x; x++)
       {
         for (int y = min.y; y <= max.y; y++)
         {
-          if (Helper.isPointInPolygon(CoordinateSetI(x: x, y: y), points))
+          if (Helper.isPointInPolygon(point: CoordinateSetI(x: x, y: y), polygon: points))
           {
             final CoordinateSetI point = CoordinateSetI(x: x, y: y);
-            if (!options.strokeOnly.value || (Helper.getPointToEdgeDistance(point, points) < options.strokeWidth.value))
+            if (!options.strokeOnly.value || (Helper.getPointToEdgeDistance(point: point, polygon: points) < options.strokeWidth.value))
             {
               content.add(point);
             }
@@ -336,7 +351,11 @@ class ShapePainter extends IToolPainter
     return points;
   }
 
-  static bool _isPointInRoundedRectangle(CoordinateSetI testPoint, CoordinateSetI topLeft, CoordinateSetI bottomRight, int radius)
+  static bool _isPointInRoundedRectangle(
+      {required final CoordinateSetI testPoint,
+        required final CoordinateSetI topLeft,
+        required final CoordinateSetI bottomRight,
+        required final int radius})
   {
     if ((testPoint.x >= topLeft.x + radius && testPoint.x <= bottomRight.x - radius && testPoint.y >= topLeft.y && testPoint.y <= bottomRight.y) ||
         (testPoint.y >= topLeft.y + radius && testPoint.y <= bottomRight.y - radius && testPoint.x >= topLeft.x && testPoint.x <= bottomRight.x))
@@ -349,10 +368,10 @@ class ShapePainter extends IToolPainter
     final CoordinateSetI bottomLeftCorner = CoordinateSetI(x: topLeft.x + radius, y: bottomRight.y - radius);
     final CoordinateSetI bottomRightCorner = CoordinateSetI(x: bottomRight.x - radius, y: bottomRight.y - radius);
 
-    if (_isPointInCircle(testPoint, topLeftCorner, radius) ||
-        _isPointInCircle(testPoint, topRightCorner, radius) ||
-        _isPointInCircle(testPoint, bottomLeftCorner, radius) ||
-        _isPointInCircle(testPoint, bottomRightCorner, radius)) {
+    if (_isPointInCircle(pt: testPoint, center: topLeftCorner, radius: radius) ||
+        _isPointInCircle(pt: testPoint, center: topRightCorner, radius: radius) ||
+        _isPointInCircle(pt: testPoint, center: bottomLeftCorner, radius: radius) ||
+        _isPointInCircle(pt: testPoint, center: bottomRightCorner, radius: radius)) {
       return true;
     }
 
@@ -360,7 +379,10 @@ class ShapePainter extends IToolPainter
   }
 
 
-  static bool _isPointInCircle(final CoordinateSetI pt, final CoordinateSetI center, final int radius)
+  static bool _isPointInCircle(
+      {required final CoordinateSetI pt,
+      required final CoordinateSetI center,
+      required final int radius})
   {
     final int dx = pt.x - center.x;
     final int dy = pt.y - center.y;

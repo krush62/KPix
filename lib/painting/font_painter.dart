@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -8,6 +24,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/text_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class FontPainter extends IToolPainter
@@ -43,7 +60,7 @@ class FontPainter extends IToolPainter
     if (_currentText != _options.text.value || _oldCursorPos != _cursorPosNorm)
     {
       _textContent.clear();
-      final KFont currentFont = _options.fontManager.getFont(_options.font.value!);
+      final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
       int offset = 0;
       for (int i = 0; i < _options.text.value.length; i++)
       {
@@ -96,10 +113,10 @@ class FontPainter extends IToolPainter
   {
     if (_textContent.isNotEmpty)
     {
-      final HashMap<CoordinateSetI, ColorReference> drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
       if (!appState.selectionState.selection.isEmpty())
       {
-        appState.selectionState.selection.addDirectlyAll(drawingPixels);
+        appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
       }
       /*else if (!_shaderOptions.isEnabled.value)
       {
@@ -107,7 +124,7 @@ class FontPainter extends IToolPainter
       }*/
       else
       {
-        drawParams.currentLayer.setDataAll(drawingPixels);
+        drawParams.currentLayer.setDataAll(list: drawingPixels);
       }
       hasHistoryData = true;
     }
@@ -130,11 +147,11 @@ class FontPainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getCursorContent({required DrawingParameters drawParams})
+  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor.value != null && drawParams.cursorPos != null)
+    if(appState.selectedColor != null && drawParams.cursorPos != null)
     {
-      return getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      return getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {

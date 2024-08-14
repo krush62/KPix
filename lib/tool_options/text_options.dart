@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -53,29 +69,29 @@ class TextOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Font",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Font",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<PixelFontType?>(
                 valueListenable: textOptions.font,
-                builder: (BuildContext context, PixelFontType? font, child)
+                builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
                 {
                   return DropdownButton(
                     value: font,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
-                    onChanged: (PixelFontType? type) {textOptions.font.value = type;},
-                    items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType value) {
+                    onChanged: (final PixelFontType? type) {textOptions.font.value = type;},
+                    items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType typeValue) {
                       return DropdownMenuItem<PixelFontType>(
-                        value: value,
-                        child: Text(FontManager.getFontName(value), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(value)),),
+                        value: typeValue,
+                        child: Text(FontManager.getFontName(type: typeValue), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),),
                       );
                     }).toList(),
                   );
@@ -102,7 +118,7 @@ class TextOptions extends IToolOptions
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<int>(
                 valueListenable: textOptions.size,
-                builder: (BuildContext context, int size, child)
+                builder: (final BuildContext context, final int size, final Widget? child)
                 {
                   return Slider(
                     value: size.toDouble(),
@@ -125,24 +141,24 @@ class TextOptions extends IToolOptions
             Expanded(
               flex: 1,
               child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Text",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  )
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Text",
+                  style: Theme.of(context).textTheme.labelLarge,
+                )
               ),
             ),
             Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<String>(
                 valueListenable: textOptions.text,
-                builder: (BuildContext context, String text, child)
+                builder: (final BuildContext context, final String text, final Widget? child)
                 {
                   final TextEditingController controller = TextEditingController(text: textOptions.text.value);
                   controller.selection = TextSelection.collapsed(offset: controller.text.length);
                   return TextField(
                     controller: controller,
-                    onChanged: (String newText) {textOptions.text.value = newText;},
+                    onChanged: (final String newText) {textOptions.text.value = newText;},
                     maxLength: textOptions.maxLength,
                   );
                 },
@@ -155,7 +171,7 @@ class TextOptions extends IToolOptions
   }
 
   @override
-  void changeSize(int steps, int originalValue)
+  void changeSize({required final int steps, required final int originalValue})
   {
     size.value = min(max(originalValue + steps, sizeMin), sizeMax);
   }

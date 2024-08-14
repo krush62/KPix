@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
@@ -10,6 +26,7 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class SprayCanPainter extends IToolPainter
@@ -18,7 +35,7 @@ class SprayCanPainter extends IToolPainter
 
   final SprayCanOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.sprayCanOptions;
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-  final HashMap<CoordinateSetI, ColorReference> _drawingPixels = HashMap();
+  final CoordinateColorMap _drawingPixels = HashMap();
   Set<CoordinateSetI> _contentPoints = {};
   final Set<CoordinateSetI> _paintPositions = {};
   bool _waitingForRasterization = false;
@@ -40,7 +57,7 @@ class SprayCanPainter extends IToolPainter
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
 
-      _contentPoints = getRoundSquareContentPoints(PencilShape.round, _options.radius.value * 2, _cursorPosNorm);
+      _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: _cursorPosNorm);
 
     }
 
@@ -50,7 +67,7 @@ class SprayCanPainter extends IToolPainter
       {
         if (!timerInitialized || !timer.isActive)
         {
-          timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), _timeout);
+          timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {_timeout(timer: timer);});
           timerInitialized = true;
         }
 
@@ -60,7 +77,7 @@ class SprayCanPainter extends IToolPainter
         }
         if (_paintPositions.isNotEmpty)
         {
-          _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor.value!, selection: appState.selectionState, shaderOptions: shaderOptions));
+          _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
           _paintPositions.clear();
         }
       }
@@ -86,23 +103,23 @@ class SprayCanPainter extends IToolPainter
     {
       if (!appState.selectionState.selection.isEmpty())
       {
-        appState.selectionState.selection.addDirectlyAll(_drawingPixels);
+        appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
       else
       {
-        currentLayer.setDataAll(_drawingPixels);
+        currentLayer.setDataAll(list: _drawingPixels);
       }
       hasHistoryData = true;
     }
   }
 
-  void _timeout(final Timer t)
+  void _timeout({required final Timer timer})
   {
     final double r = _options.radius.value * sqrt(Random().nextDouble());
     final double theta = Random().nextDouble() * 2 * pi;
     final int x = (_cursorPosNorm.x + (r * cos(theta))).round();
     final int y = (_cursorPosNorm.y + (r * sin(theta))).round();
-    _paintPositions.addAll(getRoundSquareContentPoints(PencilShape.round, _options.blobSize.value, CoordinateSetI(x: x, y: y)));
+    _paintPositions.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)));
   }
 
 
@@ -110,7 +127,7 @@ class SprayCanPainter extends IToolPainter
   void drawCursorOutline({required DrawingParameters drawParams})
   {
     //Surrounding
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(_contentPoints);
+    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
     Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)
     {
@@ -139,7 +156,7 @@ class SprayCanPainter extends IToolPainter
   }
 
   @override
-  HashMap<CoordinateSetI, ColorReference> getToolContent({required DrawingParameters drawParams})
+  CoordinateColorMap getToolContent({required DrawingParameters drawParams})
   {
     if (drawParams.primaryDown || _waitingForRasterization)
     {

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -36,36 +52,35 @@ class MainToolbarWidget extends StatelessWidget
     return Material(
       color: Theme.of(context).primaryColor,
       child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            (!kIsWeb &&
-                (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
-            Divider(
-              color: Theme.of(context).primaryColorDark,
-              thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-              height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            ) : const SizedBox.shrink(),
-            ShaderWidget(
-              titleStyle: Theme.of(context).textTheme.titleLarge,
-              labelStyle: Theme.of(context).textTheme.bodySmall,
-            ),
-            const PaletteWidget(),
-            const ToolsWidget(),
-
-            SizedBox(
-              width: double.infinity,
-              //TODO MAGIC NUMBER
-              height: 200,
-              child: ValueListenableBuilder<ToolType>(
-                valueListenable: GetIt.I.get<AppState>().getSelectedToolNotifier(),
-                builder: (BuildContext context, ToolType value,child) {
-
-                  return const ToolSettingsWidget();
-                }
-             ),
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          (!kIsWeb &&
+              (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
+          Divider(
+            color: Theme.of(context).primaryColorDark,
+            thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
+            height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
+          ) : const SizedBox.shrink(),
+          ShaderWidget(
+            titleStyle: Theme.of(context).textTheme.titleLarge,
+            labelStyle: Theme.of(context).textTheme.bodySmall,
           ),
-        ]
+          const PaletteWidget(),
+          const ToolsWidget(),
+          SizedBox(
+            width: double.infinity,
+            //TODO MAGIC NUMBER
+            height: 200,
+            child: ValueListenableBuilder<ToolType>(
+              valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+              builder: (BuildContext context, ToolType value,child) {
+
+                return const ToolSettingsWidget();
+              }
+           ),
+        ),
+      ]
       ),
     );
   }

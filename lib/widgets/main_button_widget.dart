@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -15,7 +31,7 @@ class MainButtonWidgetOptions
   final double dividerSize;
 
   MainButtonWidgetOptions({
-   required this.padding ,
+    required this.padding ,
     required this.menuIconSize,
     required this.dividerSize
   });
@@ -65,41 +81,41 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSavePalette: _savePalette,
     );
     _saveWarningDialog = OverlayEntries.getThreeButtonDialog(
-        onYes: _saveWarningYes,
-        onNo: _saveWarningNo,
-        onCancel: _closeAllMenus,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?"
+      onYes: _saveWarningYes,
+      onNo: _saveWarningNo,
+      onCancel: _closeAllMenus,
+      outsideCancelable: false,
+      message: "There are unsaved changes, do you want to save first?"
     );
     _paletteWarningDialog = OverlayEntries.getThreeButtonDialog(
-        onYes: _paletteWarningYes,
-        onNo: _paletteWarningNo,
-        onCancel: _closeAllMenus,
-        outsideCancelable: false,
-        message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
+      onYes: _paletteWarningYes,
+      onNo: _paletteWarningNo,
+      onCancel: _closeAllMenus,
+      outsideCancelable: false,
+      message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
     _exportDialog = OverlayEntries.getExportDialog(
-        onDismiss: _closeAllMenus,
-        onAccept: _exportFilePressed,
-        canvasSize: _appState.canvasSize);
+      onDismiss: _closeAllMenus,
+      onAccept: _exportFilePressed,
+      canvasSize: _appState.canvasSize);
     _aboutDialog = OverlayEntries.getAboutDialog(
-        onDismiss: _closeAllMenus,
-        canvasSize: _appState.canvasSize);
+      onDismiss: _closeAllMenus,
+      canvasSize: _appState.canvasSize);
   }
 
-  void _exportFilePressed(final ExportData exportData, final ExportTypeEnum exportType)
+  void _exportFilePressed({required final ExportData exportData, required final ExportTypeEnum exportType})
   {
-    FileHandler.exportFile(exportData: exportData, exportType: exportType).then(_exportToTempFinished);
+    FileHandler.exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportToTempFinished(fileName: fName);});
   }
 
-  void _exportToTempFinished(final String? fileName)
+  void _exportToTempFinished({required final String? fileName})
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-        _appState.showMessage("Exported to: $fileName");
+        _appState.showMessage(text: "Exported to: $fileName");
     }
     else
     {
-      _appState.showMessage("Error exporting file");
+      _appState.showMessage(text: "Error exporting file");
     }
     _closeAllMenus();
   }
@@ -220,139 +236,139 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
-        padding: EdgeInsets.all(_options.padding),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-        ),
-        child:  Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: _options.padding / 2.0),
-                      child: CompositedTransformTarget(
-                        link: _loadMenuLayerLink,
-                        child: IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
-                          icon:  FaIcon(
-                            FontAwesomeIcons.folderOpen,
-                            size: _options.menuIconSize,
-                          ),
-                          onPressed: _loadPressed,
-                        ),
+      padding: EdgeInsets.all(_options.padding),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+      ),
+      child:  Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(right: _options.padding / 2.0),
+                  child: CompositedTransformTarget(
+                    link: _loadMenuLayerLink,
+                    child: IconButton.outlined(
+                      color: Theme.of(context).primaryColorLight,
+                      icon:  FaIcon(
+                        FontAwesomeIcons.folderOpen,
+                        size: _options.menuIconSize,
                       ),
-                    )
-                ),
-                Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
-                      child: CompositedTransformTarget(
-                        link: _saveMenuLayerLink,
-                        child: IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
-                          icon:  FaIcon(
-                            FontAwesomeIcons.floppyDisk,
-                            size: _options.menuIconSize,
-                          ),
-                          onPressed: _savePressed,
-                        ),
-                      ),
-                    )
-                ),
-                Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: _options.padding / 2.0),
-                      child: IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.gear,
-                          size: _options.menuIconSize,
-                        ),
-                        onPressed: _settingsPressed,
-                      ),
-                    )
-                ),
-                Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: _options.padding / 2.0),
-                      child: IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.question,
-                          size: _options.menuIconSize,
-                        ),
-                        onPressed: _questionPressed,
-                      ),
-                    )
-                ),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
-              child: Divider(
-                color: Theme.of(context).primaryColorDark,
-                height: _options.dividerSize,
-                thickness: _options.dividerSize,
+                      onPressed: _loadPressed,
+                    ),
+                  ),
+                )
               ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
+                  child: CompositedTransformTarget(
+                    link: _saveMenuLayerLink,
+                    child: IconButton.outlined(
+                      color: Theme.of(context).primaryColorLight,
+                      icon:  FaIcon(
+                        FontAwesomeIcons.floppyDisk,
+                        size: _options.menuIconSize,
+                      ),
+                      onPressed: _savePressed,
+                    ),
+                  ),
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                  child: IconButton.outlined(
+                    color: Theme.of(context).primaryColorLight,
+                    icon:  FaIcon(
+                      FontAwesomeIcons.gear,
+                      size: _options.menuIconSize,
+                    ),
+                    onPressed: _settingsPressed,
+                  ),
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                  child: IconButton.outlined(
+                    color: Theme.of(context).primaryColorLight,
+                    icon:  FaIcon(
+                      FontAwesomeIcons.question,
+                      size: _options.menuIconSize,
+                    ),
+                    onPressed: _questionPressed,
+                  ),
+                )
+              ),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+            child: Divider(
+              color: Theme.of(context).primaryColorDark,
+              height: _options.dividerSize,
+              thickness: _options.dividerSize,
             ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: _options.padding / 2.0),
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _historyManager.hasUndo,
-                      builder: (final BuildContext context, final bool hasUndo, child) {
-                        return IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
-                          icon:  FaIcon(
-                            FontAwesomeIcons.rotateLeft,
-                            size: _options.menuIconSize,
-                          ),
-                          onPressed: hasUndo ? _undoPressed : null,
-                        );
-                      },
-                    ),
-                  )
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: _options.padding / 2.0),
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _historyManager.hasRedo,
-                      builder: (final BuildContext context, final bool hasRedo, child) {
-                        return IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
-                          icon:  FaIcon(
-                            FontAwesomeIcons.rotateRight,
-                            size: _options.menuIconSize,
-                          ),
-                          onPressed: hasRedo ? _redoPressed : null,
-                        );
-                      },
-                    ),
-                  )
-                ),
-              ],
-            )
-          ],
-        )
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(right: _options.padding / 2.0),
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _historyManager.hasUndo,
+                    builder: (final BuildContext context, final bool hasUndo, child) {
+                      return IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.rotateLeft,
+                          size: _options.menuIconSize,
+                        ),
+                        onPressed: hasUndo ? _undoPressed : null,
+                      );
+                    },
+                  ),
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _historyManager.hasRedo,
+                    builder: (final BuildContext context, final bool hasRedo, child) {
+                      return IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.rotateRight,
+                          size: _options.menuIconSize,
+                        ),
+                        onPressed: hasRedo ? _redoPressed : null,
+                      );
+                    },
+                  ),
+                )
+              ),
+            ],
+          )
+        ],
+      )
     );
   }
 

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -12,11 +28,8 @@ class ToolsWidgetOptions
   final double buttonSize;
   final int colCount;
   final double iconSize;
-
   ToolsWidgetOptions({required this.padding, required this.buttonSize, required this.colCount, required this.iconSize});
-
 }
-
 
 class ToolsWidget extends StatefulWidget
 {
@@ -26,7 +39,6 @@ class ToolsWidget extends StatefulWidget
 
   @override
   State<ToolsWidget> createState() => _ToolsWidgetState();
-
 }
 
 class _ToolsWidgetState extends State<ToolsWidget>
@@ -46,7 +58,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
     return Padding(
       padding: EdgeInsets.all(toolsWidgetOptions.padding),
       child: ValueListenableBuilder<ToolType>(
-        valueListenable: appState.getSelectedToolNotifier(),
+        valueListenable: appState.selectedToolNotifier,
         builder: (BuildContext context, ToolType tool, child) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -9,6 +25,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 class EraserPainter extends IToolPainter
@@ -41,14 +58,14 @@ class EraserPainter extends IToolPainter
         if (drawParams.primaryDown && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
           List<CoordinateSetI> pixelsToDelete = [_cursorPosNorm];
-          if (!_cursorPosNorm.isAdjacent(_previousCursorPosNorm, true))
+          if (!_cursorPosNorm.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
           {
-            pixelsToDelete.addAll(Helper.bresenham(_previousCursorPosNorm, _cursorPosNorm).sublist(1));
+            pixelsToDelete.addAll(Helper.bresenham(start: _previousCursorPosNorm, end: _cursorPosNorm).sublist(1));
           }
-          final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
+          final CoordinateColorMapNullable refs = HashMap();
           for (final CoordinateSetI delCoord in pixelsToDelete)
           {
-            Set<CoordinateSetI> content = getRoundSquareContentPoints(_options.shape.value, _options.size.value, delCoord);
+            Set<CoordinateSetI> content = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: delCoord);
             final SelectionState selection = GetIt.I.get<AppState>().selectionState;
             for (final CoordinateSetI coord in content)
             {
@@ -58,20 +75,20 @@ class EraserPainter extends IToolPainter
               {
                 if (selection.selection.isEmpty())
                 {
-                  if (drawParams.currentLayer.getDataEntry(coord) != null)
+                  if (drawParams.currentLayer.getDataEntry(coord: coord) != null)
                   {
                     refs[coord] = null;
                   }
                 }
                 else
                 {
-                  selection.selection.deleteDirectly(coord);
+                  selection.selection.deleteDirectly(coord: coord);
                 }
               }
               _hasErasedPixels = true;
             }
           }
-          drawParams.currentLayer.setDataAll(refs);
+          drawParams.currentLayer.setDataAll(list: refs);
         }
         _previousCursorPosNorm.x = _cursorPosNorm.x;
         _previousCursorPosNorm.y = _cursorPosNorm.y;
@@ -97,8 +114,8 @@ class EraserPainter extends IToolPainter
   {
     assert(drawParams.cursorPos != null);
 
-    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(_options.shape.value, _options.size.value, _cursorPosNorm);
-    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(contentPoints);
+    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
+    final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: contentPoints);
 
     Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)

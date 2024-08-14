@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -16,7 +32,7 @@ class StatusBarState
 
   double devicePixelRatio = 1.0;
 
-  void setStatusBarDimensions(final int width, final int height)
+  void setStatusBarDimensions({required final int width, required final int height})
   {
     statusBarDimensionString.value = "$width,$height";
   }
@@ -26,7 +42,7 @@ class StatusBarState
     statusBarDimensionString.value = null;
   }
 
-  void setStatusBarCursorPosition(final CoordinateSetI coords)
+  void setStatusBarCursorPosition({required final CoordinateSetI coords})
   {
     statusBarCursorPositionString.value = "${coords.x.toString()},${coords.y.toString()}";
   }
@@ -36,7 +52,7 @@ class StatusBarState
     statusBarCursorPositionString.value = null;
   }
 
-  void setStatusBarZoomFactor(final int val)
+  void setStatusBarZoomFactor({required final int val})
   {
     int realVal = (val / devicePixelRatio).round();
     String suffix = "";
@@ -53,7 +69,7 @@ class StatusBarState
     statusBarZoomFactorString.value = null;
   }
 
-  void setStatusBarToolDimension(final int width, final int height)
+  void setStatusBarToolDimension({required final int width, required final int height})
   {
     statusBarToolDimensionString.value = "$width,$height";
   }
@@ -73,9 +89,9 @@ class StatusBarState
     statusBarToolDiagonalString.value = null;
   }
 
-  void setStatusBarToolAspectRatio(final int width, final int height)
+  void setStatusBarToolAspectRatio({required final int width, required final int height})
   {
-    final int divisor = Helper.gcd(width, height);
+    final int divisor = Helper.gcd(a: width, b: height);
     final int reducedWidth = divisor != 0 ? width ~/ divisor : 0;
     final int reducedHeight = divisor != 0 ? height ~/ divisor : 0;
     statusBarToolAspectRatioString.value = '$reducedWidth:$reducedHeight';
@@ -86,9 +102,9 @@ class StatusBarState
     statusBarToolAspectRatioString.value = null;
   }
 
-  void setStatusBarToolAngle(final CoordinateSetI startPos, final CoordinateSetI endPos)
+  void setStatusBarToolAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
   {
-    double angle = Helper.calculateAngle(startPos, endPos);
+    double angle = Helper.calculateAngle(startPos: startPos, endPos: endPos);
     statusBarToolAngleString.value = "${angle.toStringAsFixed(1)}°";
   }
 
@@ -97,11 +113,11 @@ class StatusBarState
     statusBarToolAngleString.value = null;
   }
 
-  void updateFromPaint(final StatusBarData statusBarData)
+  void updateFromPaint({required final StatusBarData statusBarData})
   {
     if (statusBarData.cursorPos != null)
     {
-      setStatusBarCursorPosition(statusBarData.cursorPos!);
+      setStatusBarCursorPosition(coords: statusBarData.cursorPos!);
     }
     else
     {
@@ -110,7 +126,7 @@ class StatusBarState
 
     if (statusBarData.dimension != null)
     {
-      setStatusBarToolDimension(statusBarData.dimension!.x, statusBarData.dimension!.y);
+      setStatusBarToolDimension(width: statusBarData.dimension!.x, height: statusBarData.dimension!.y);
     }
     else
     {
@@ -128,7 +144,7 @@ class StatusBarState
 
     if (statusBarData.aspectRatio != null)
     {
-      setStatusBarToolAspectRatio(statusBarData.aspectRatio!.x, statusBarData.aspectRatio!.y);
+      setStatusBarToolAspectRatio(width: statusBarData.aspectRatio!.x, height: statusBarData.aspectRatio!.y);
     }
     else
     {
@@ -137,7 +153,7 @@ class StatusBarState
 
     if (statusBarData.angle != null && statusBarData.cursorPos != null)
     {
-      setStatusBarToolAngle(statusBarData.angle!, statusBarData.cursorPos!);
+      setStatusBarToolAngle(startPos: statusBarData.angle!, endPos: statusBarData.cursorPos!);
     }
     else
     {

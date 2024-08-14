@@ -1,22 +1,34 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import 'dart:collection';
+
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/canvas_size_widget.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
-typedef ChangeToolFn = void Function(ToolType toolType);
-typedef IdColorSelectedFn = void Function(IdColor uuid);
-typedef ColorReferenceSelectedFn = void Function(ColorReference uuid);
-typedef RampOptionsFn = void Function(KPalRampData? data);
-typedef AddNewRampFn = void Function();
+typedef IdColorSelectedFn = void Function({required IdColor newColor});
+typedef ColorReferenceSelectedFn = void Function({required ColorReference? color});
 typedef ColorRampFn = void Function({required KPalRampData ramp, bool addToHistoryStack});
 typedef ColorRampUpdateFn = void Function({required KPalRampData ramp, required KPalRampData originalData, bool addToHistoryStack});
-typedef ChangeLayerPositionFn = void Function(LayerState state, int newPosition);
-typedef AddNewLayerFn = void Function();
-typedef LayerSelectedFn = void Function(LayerState state);
-typedef LayerDeleteFn = void Function(LayerState state);
-typedef LayerMergeDownFn = void Function(LayerState state);
-typedef LayerDuplicateFn = void Function(LayerState state);
-typedef ExportDataFn = void Function(ExportData exportData, ExportTypeEnum exportType);
-typedef CanvasSizeFn = void Function(CoordinateSetI size, CoordinateSetI offset);
+typedef ExportDataFn = void Function({required ExportData exportData, required ExportTypeEnum exportType});
+typedef CanvasSizeFn = void Function({required CoordinateSetI size, required CoordinateSetI offset});
 
+typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
+typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
+typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;
+typedef CoordinateColorNullable = MapEntry<CoordinateSetI, ColorReference?>;

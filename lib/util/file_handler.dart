@@ -1,3 +1,18 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import 'dart:async';
 import 'dart:collection';
@@ -437,7 +452,7 @@ class FileHandler
           type: FileType.custom,
           allowedExtensions: [fileExtensionKpix],
           initialDirectory: GetIt.I.get<AppState>().appDir
-      ).then(_loadFileChosen);
+      ).then((final FilePickerResult? result) {_loadFileChosen(result: result);});
     }
     else //mobile
     {
@@ -445,11 +460,11 @@ class FileHandler
           allowMultiple: false,
           type: FileType.any,
           initialDirectory: GetIt.I.get<AppState>().appDir
-      ).then(_loadFileChosen);
+      ).then((final FilePickerResult? result) {_loadFileChosen(result: result);});
     }
   }
 
-  static void _loadFileChosen(final FilePickerResult? result)
+  static void _loadFileChosen({final FilePickerResult? result})
   {
     if (result != null && result.files.isNotEmpty)
     {
@@ -458,11 +473,11 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      _loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then(_fileLoaded);
+      _loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){_fileLoaded(loadFileSet: loadFileSet);});
     }
   }
 
-  static void _fileLoaded(final LoadFileSet loadFileSet)
+  static void _fileLoaded({required final LoadFileSet loadFileSet})
   {
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
   }
@@ -485,20 +500,20 @@ class FileHandler
                 .get<AppState>()
                 .appDir,
             bytes: byteList
-        ).then((final String? path){_saveFileChosen(path, finishCallback);});
+        ).then((final String? path){_saveFileChosen(path: path, finishCallback: finishCallback);});
       }
       else
       {
-        _saveFileChosen(GetIt.I.get<AppState>().filePath.value, finishCallback);
+        _saveFileChosen(path: GetIt.I.get<AppState>().filePath.value, finishCallback: finishCallback);
       }
     }
     else
     {
-      _saveFileChosen(webFileName, finishCallback);
+      _saveFileChosen(path: webFileName, finishCallback: finishCallback);
     }
   }
 
-  static void _saveFileChosen(final String? path, final Function()? finishCallback)
+  static void _saveFileChosen({final String? path, final Function()? finishCallback})
   {
     if (path != null)
     {
@@ -533,20 +548,20 @@ class FileHandler
               .get<AppState>()
               .appDir,
           bytes: byteList
-      ).then((final String? path){_paletteSavePathChosen(path, finishCallback);});
+      ).then((final String? path){_paletteSavePathChosen(path: path, finishCallback: finishCallback);});
     }
     else
     {
-      _paletteSavePathChosen(webPaletteFileName, finishCallback);
+      _paletteSavePathChosen(path: webPaletteFileName, finishCallback: finishCallback);
     }
   }
 
-  static void _paletteSavePathChosen(final String? path, final Function()? finishCallback)
+  static void _paletteSavePathChosen({final String? path, final Function()? finishCallback})
   {
     if (path != null)
     {
       final String finalPath = !path.endsWith(".$fileExtensionKpal") && !kIsWeb ? ("$path.$fileExtensionKpal") : path;
-      _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps.value, path: finalPath).then((final String? fileName) {_paletteSaved(fileName, finishCallback);});
+      _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps, path: finalPath).then((final String? fileName) {_paletteSaved(fileName: fileName, finishCallback: finishCallback);});
     }
   }
 
@@ -736,11 +751,11 @@ class FileHandler
 
   }
 
-  static void _paletteSaved(final String? fileName, final Function()? finishCallback)
+  static void _paletteSaved({final String? fileName, final Function()? finishCallback})
   {
     if (fileName != null)
     {
-      GetIt.I.get<AppState>().showMessage("Palette saved at: $fileName");
+      GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $fileName");
       if (finishCallback != null)
       {
         finishCallback();
@@ -748,7 +763,7 @@ class FileHandler
     }
     else
     {
-      GetIt.I.get<AppState>().showMessage("Palette saving failed");
+      GetIt.I.get<AppState>().showMessage(text: "Palette saving failed");
     }
   }
 
@@ -828,8 +843,8 @@ class FileHandler
   {
     final AppState appState = GetIt.I.get<AppState>();
     final ByteData byteData = await _getImageData(
-        ramps: appState.colorRamps.value,
-        layers: appState.layers.value,
+        ramps: appState.colorRamps,
+        layers: appState.layers,
         selectionState: appState.selectionState,
         imageSize: appState.canvasSize,
         scaling: exportData.scaling);
@@ -867,9 +882,9 @@ class FileHandler
             ColorReference? col;
             if (selectionState.selection.currentLayer == layers[l])
             {
-              col = selectionState.selection.getColorReference(currentCoord);
+              col = selectionState.selection.getColorReference(coord: currentCoord);
             }
-            col ??= layers[l].getDataEntry(currentCoord);
+            col ??= layers[l].getDataEntry(coord: currentCoord);
 
             if (col != null)
             {
@@ -878,7 +893,7 @@ class FileHandler
                 for (int j = 0; j < scaling; j++)
                 {
                   byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
-                      Helper.argbToRgba(col.getIdColor().color.value));
+                      Helper.argbToRgba(argb: col.getIdColor().color.value));
                 }
               }
               break;
@@ -897,7 +912,7 @@ class FileHandler
     final Map<ColorReference, int> colorMap = {};
     colorList.add(Colors.black);
     int index = 1;
-    for (final KPalRampData kPalRampData in appState.colorRamps.value)
+    for (final KPalRampData kPalRampData in appState.colorRamps)
     {
       for (int i = 0; i < kPalRampData.colors.length; i++)
       {
@@ -916,16 +931,16 @@ class FileHandler
 
     final List<List<int>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    for (int l = 0; l < appState.layers.value.length; l++)
+    for (int l = 0; l < appState.layers.length; l++)
     {
-      final LayerState layerState = appState.layers.value[l];
+      final LayerState layerState = appState.layers[l];
       final List<int> imgBytes = [];
       for (int y = 0; y < layerState.size.y; y++)
       {
         for (int x = 0; x < layerState.size.x; x++)
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          final ColorReference? colAtPos = layerState.getDataEntry(curCoord);
+          final ColorReference? colAtPos = layerState.getDataEntry(coord: curCoord);
           if (colAtPos == null)
           {
             imgBytes.add(0);
@@ -1105,11 +1120,11 @@ class FileHandler
       outBytes.setUint16(offset, 0x2004, Endian.little); //chunk type
       offset+=2;
       int flagVal = 0;
-      if (appState.layers.value[i].visibilityState.value == LayerVisibilityState.visible)
+      if (appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
       {
         flagVal += 1;
       }
-      if (appState.layers.value[i].lockState.value != LayerLockState.locked)
+      if (appState.layers[i].lockState.value != LayerLockState.locked)
       {
         flagVal += 2;
       }
@@ -1163,9 +1178,9 @@ class FileHandler
         outBytes.setUint8(offset, 0);
         offset++;
       }
-      outBytes.setUint16(offset, appState.layers.value[i].size.x, Endian.little); //width
+      outBytes.setUint16(offset, appState.layers[i].size.x, Endian.little); //width
       offset+=2;
-      outBytes.setUint16(offset, appState.layers.value[i].size.y, Endian.little); //height
+      outBytes.setUint16(offset, appState.layers[i].size.y, Endian.little); //height
       offset+=2;
       for (int j = 0; j < layerEncBytes[i].length; j++)
       {
@@ -1183,7 +1198,7 @@ class FileHandler
     final List<Color> colorList = [];
     final Map<ColorReference, int> colorMap = {};
     int index = 0;
-    for (final KPalRampData kPalRampData in appState.colorRamps.value)
+    for (final KPalRampData kPalRampData in appState.colorRamps)
     {
       for (int i = 0; i < kPalRampData.colors.length; i++)
       {
@@ -1201,7 +1216,7 @@ class FileHandler
         12 + //tattoo
         12 + //unit
         8 + //prop end
-        8 + (appState.layers.value.length * 8) + //layer addresses
+        8 + (appState.layers.length * 8) + //layer addresses
         8; //channel addresses
 
     //LAYER (without name and active layer prop)
@@ -1244,9 +1259,9 @@ class FileHandler
     final List<List<List<int>>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
     const int tileSize = 64;
-    for (int l = 0; l < appState.layers.value.length; l++)
+    for (int l = 0; l < appState.layers.length; l++)
     {
-      final LayerState layerState = appState.layers.value[l];
+      final LayerState layerState = appState.layers[l];
       int x = 0;
       int y = 0;
       final List<List<int>> tileList = [];
@@ -1260,7 +1275,7 @@ class FileHandler
           for (int a = x; a < endX; a++)
           {
             final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
-            final ColorReference? colAtPos = layerState.getDataEntry(curCoord);
+            final ColorReference? colAtPos = layerState.getDataEntry(coord: curCoord);
             if (colAtPos == null)
             {
               imgBytes.add(0);
@@ -1290,7 +1305,7 @@ class FileHandler
     //CALCULATING SIZE
     bool activeLayerSet = false;
     int fileSize = fullHeaderSize;
-    for (int i = 0; i < appState.layers.value.length; i++)
+    for (int i = 0; i < appState.layers.length; i++)
     {
       final List<List<int>> tiles = layerEncBytes[i];
       fileSize += singleLayerSize;
@@ -1413,7 +1428,7 @@ class FileHandler
     offset+=4;
 
     //LAYER POINTERS
-    for (int i = 0; i < appState.layers.value.length; i++)
+    for (int i = 0; i < appState.layers.length; i++)
     {
       layerOffsetsInsertPositions.add(offset);
       outBytes.setUint64(offset, 0);
@@ -1427,11 +1442,11 @@ class FileHandler
 
 
     //LAYERS
-    for (int i = 0; i < appState.layers.value.length; i++)
+    for (int i = 0; i < appState.layers.length; i++)
     {
       outBytes.setUint64(layerOffsetsInsertPositions[i], offset);
 
-      final LayerState currentLayer = appState.layers.value[i];
+      final LayerState currentLayer = appState.layers[i];
       outBytes.setUint32(offset, currentLayer.size.x);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y);

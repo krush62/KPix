@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 part of 'kpal_widget.dart';
 
 class KPalRampWidgetOptions
@@ -29,10 +45,8 @@ class KPalRampWidgetOptions
     required this.rowControlFlex,
     required this.rowLabelFlex,
     required this.rowValueFlex
-
   });
 }
-
 
 class KPalRamp extends StatefulWidget
 {
@@ -48,8 +62,8 @@ class KPalRamp extends StatefulWidget
 
 class _KPalRampState extends State<KPalRamp>
 {
-  late List<KPalColorCardWidget> colorCards = [];
-  final KPalRampWidgetOptions options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions;
+  final List<KPalColorCardWidget> _colorCards = [];
+  final KPalRampWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions;
 
   @override
   void initState()
@@ -60,20 +74,20 @@ class _KPalRampState extends State<KPalRamp>
 
   void _createColorCards()
   {
-    colorCards.clear();
+    _colorCards.clear();
     for (ValueNotifier<IdColor> notifier in widget.rampData.colors)
     {
-      colorCards.add(KPalColorCardWidget(
+      _colorCards.add(KPalColorCardWidget(
           colorNotifier: notifier,
           isLast: notifier == widget.rampData.colors.last)
       );
     }
   }
 
-  void settingsChanged({final bool colorCountChanged = false})
+  void _settingsChanged({final bool colorCountChanged = false})
   {
     setState(() {
-      widget.rampData.updateColors(colorCountChanged: colorCountChanged);
+      widget.rampData._updateColors(colorCountChanged: colorCountChanged);
       if (colorCountChanged)
       {
         _createColorCards();
@@ -81,57 +95,55 @@ class _KPalRampState extends State<KPalRamp>
     });
   }
 
-
-
-  void _colorCountSliderChanged(final double newVal)
+  void _colorCountSliderChanged({required final double newVal})
   {
     widget.rampData.settings.colorCount = newVal.round();
-    settingsChanged(colorCountChanged: true);
+    _settingsChanged(colorCountChanged: true);
   }
 
-  void _baseHueSliderChanged(final double newVal)
+  void _baseHueSliderChanged({required final double newVal})
   {
     widget.rampData.settings.baseHue = newVal.round();
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _baseSatSliderChanged(final double newVal)
+  void _baseSatSliderChanged({required final double newVal})
   {
     widget.rampData.settings.baseSat = newVal.round();
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _hueShiftSliderChanged(final double newVal)
+  void _hueShiftSliderChanged({required final double newVal})
   {
     widget.rampData.settings.hueShift = newVal.round();
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _hueShiftExpSliderChanged(final double newVal)
+  void _hueShiftExpSliderChanged({required final double newVal})
   {
     widget.rampData.settings.hueShiftExp = newVal;
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _satShiftSliderChanged(final double newVal)
+  void _satShiftSliderChanged({required final double newVal})
   {
     widget.rampData.settings.satShift = newVal.round();
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _satShiftExpSliderChanged(final double newVal)
+  void _satShiftExpSliderChanged({required final double newVal})
   {
     widget.rampData.settings.satShiftExp = newVal;
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _satCurveModeChanged(final SatCurve newCurve)
+  void _satCurveModeChanged({required final SatCurve newCurve})
   {
     widget.rampData.settings.satCurve = newCurve;
-    settingsChanged();
+    _settingsChanged();
   }
 
-  void _valueRangeSliderChanged(final RangeValues newVals)
+  void _valueRangeSliderChanged({required final RangeValues newVals})
   {
     if (newVals.start < newVals.end)
     {
@@ -143,22 +155,20 @@ class _KPalRampState extends State<KPalRamp>
       widget.rampData.settings.valueRangeMin = newVals.end.round();
       widget.rampData.settings.valueRangeMax = newVals.start.round();
     }
-    settingsChanged();
+    _settingsChanged();
   }
 
-
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(options.padding),
+      padding: EdgeInsets.all(_options.padding),
       constraints: BoxConstraints(
-        minHeight: options.minHeight,
-        maxHeight: options.maxHeight,
+        minHeight: _options.minHeight,
+        maxHeight: _options.maxHeight,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
-        borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+        borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -166,7 +176,7 @@ class _KPalRampState extends State<KPalRamp>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            flex: options.centerFlex,
+            flex: _options.centerFlex,
             child: ColoredBox(
               color: Theme.of(context).primaryColorDark,
               child: Row(
@@ -174,16 +184,16 @@ class _KPalRampState extends State<KPalRamp>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ...colorCards,
+                  ..._colorCards,
                 ],
               )
             )
           ),
           Expanded(
-            flex: options.rightFlex,
+            flex: _options.rightFlex,
             child: Container(
               color: Theme.of(context).primaryColor,
-              padding: EdgeInsets.all(options.padding),
+              padding: EdgeInsets.all(_options.padding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.max,
@@ -197,22 +207,22 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("Color Count")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: Slider(
                             value: widget.rampData.settings.colorCount.toDouble(),
                             min: widget.rampData.settings.constraints.colorCountMin.toDouble(),
                             max: widget.rampData.settings.constraints.colorCountMax.toDouble(),
-                            divisions: widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin,
-                            onChanged: _colorCountSliderChanged,
+                            divisions: (widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin),
+                            onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
                             label: widget.rampData.settings.colorCount.toString(),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text(widget.rampData.settings.colorCount.toString(), textAlign: TextAlign.end)
                         ),
                       ],
@@ -220,8 +230,8 @@ class _KPalRampState extends State<KPalRamp>
                   ),
                   Divider(
                     color: Theme.of(context).primaryColorDark,
-                    thickness: options.dividerThickness,
-                    height: options.dividerThickness,
+                    thickness: _options.dividerThickness,
+                    height: _options.dividerThickness,
                   ),
                   Expanded(
                     flex: 1,
@@ -231,22 +241,22 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("Base Hue")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: Slider(
                             value: widget.rampData.settings.baseHue.toDouble(),
                             min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
                             max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
                             divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
-                            onChanged: _baseHueSliderChanged,
+                            onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
                             label: widget.rampData.settings.baseHue.toString(),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text(widget.rampData.settings.baseHue.toString(), textAlign: TextAlign.end)
                         ),
                       ],
@@ -254,8 +264,8 @@ class _KPalRampState extends State<KPalRamp>
                   ),
                   Divider(
                     color: Theme.of(context).primaryColorDark,
-                    thickness: options.dividerThickness,
-                    height: options.dividerThickness,
+                    thickness: _options.dividerThickness,
+                    height: _options.dividerThickness,
                   ),
                   Expanded(
                     flex: 1,
@@ -265,22 +275,22 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("Base Sat")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: Slider(
                             value: widget.rampData.settings.baseSat.toDouble(),
                             min: widget.rampData.settings.constraints.baseSatMin.toDouble(),
                             max: widget.rampData.settings.constraints.baseSatMax.toDouble(),
                             divisions: widget.rampData.settings.constraints.baseSatMax - widget.rampData.settings.constraints.baseSatMin,
-                            onChanged: _baseSatSliderChanged,
+                            onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
                             label: widget.rampData.settings.baseSat.toString(),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text(widget.rampData.settings.baseSat.toString(), textAlign: TextAlign.end)
                         ),
                       ],
@@ -288,8 +298,8 @@ class _KPalRampState extends State<KPalRamp>
                   ),
               Divider(
                 color: Theme.of(context).primaryColorDark,
-                thickness: options.dividerThickness,
-                height: options.dividerThickness,
+                thickness: _options.dividerThickness,
+                height: _options.dividerThickness,
               ),
               Expanded(
                 flex: 1,
@@ -299,22 +309,22 @@ class _KPalRampState extends State<KPalRamp>
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                      Expanded(
-                        flex: options.rowLabelFlex,
+                        flex: _options.rowLabelFlex,
                         child: const Text("Hue Shift")
                     ),
                     Expanded(
-                      flex: options.rowControlFlex,
+                      flex: _options.rowControlFlex,
                       child: Slider(
                         value: widget.rampData.settings.hueShift.toDouble(),
                         min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
                         max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
                         divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
-                        onChanged: _hueShiftSliderChanged,
+                        onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
                         label: widget.rampData.settings.hueShift.toString(),
                       ),
                     ),
                     Expanded(
-                        flex: options.rowValueFlex,
+                        flex: _options.rowValueFlex,
                         child: Text(widget.rampData.settings.hueShift.toString(), textAlign: TextAlign.end)
                     ),
                   ],
@@ -328,22 +338,22 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                          Expanded(
-                             flex: options.rowLabelFlex,
+                             flex: _options.rowLabelFlex,
                             child: const Text("↳ Exponent")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: Slider(
                             value: widget.rampData.settings.hueShiftExp.toDouble(),
                             min: widget.rampData.settings.constraints.hueShiftExpMin.toDouble(),
                             max: widget.rampData.settings.constraints.hueShiftExpMax.toDouble(),
                             divisions: (widget.rampData.settings.constraints.hueShiftExpMax * 100.0 - widget.rampData.settings.constraints.hueShiftExpMin * 100.0).round(),
-                            onChanged: _hueShiftExpSliderChanged,
+                            onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
                             label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text(widget.rampData.settings.hueShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
                         ),
                       ],
@@ -351,8 +361,8 @@ class _KPalRampState extends State<KPalRamp>
                   ),
                   Divider(
                     color: Theme.of(context).primaryColorDark,
-                    thickness: options.dividerThickness,
-                    height: options.dividerThickness,
+                    thickness: _options.dividerThickness,
+                    height: _options.dividerThickness,
                   ),
                   Expanded(
                     flex: 1,
@@ -362,22 +372,22 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("Sat Shift")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: Slider(
                             value: widget.rampData.settings.satShift.toDouble(),
                             min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
                             max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
                             divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
-                            onChanged: _satShiftSliderChanged,
+                            onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
                             label: widget.rampData.settings.satShift.toString(),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text(widget.rampData.settings.satShift.toString(), textAlign: TextAlign.end)
                         ),
                       ],
@@ -391,22 +401,22 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("↳ Exponent")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: Slider(
                             value: widget.rampData.settings.satShiftExp.toDouble(),
                             min: widget.rampData.settings.constraints.satShiftExpMin.toDouble(),
                             max: widget.rampData.settings.constraints.satShiftExpMax.toDouble(),
                             divisions: (widget.rampData.settings.constraints.satShiftExpMax * 100.0 - widget.rampData.settings.constraints.satShiftExpMin * 100.0).round(),
-                            onChanged: _satShiftExpSliderChanged,
+                            onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
                             label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text(widget.rampData.settings.satShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
                         ),
                       ],
@@ -420,11 +430,11 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("Sat Curve")
                         ),
                         Expanded(
-                            flex: options.rowControlFlex + options.rowValueFlex,
+                            flex: _options.rowControlFlex + _options.rowValueFlex,
                           child: Row
                             (
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -434,25 +444,25 @@ class _KPalRampState extends State<KPalRamp>
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.noFlat,
-                                onPressed: () {_satCurveModeChanged(SatCurve.noFlat);},
+                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.noFlat);},
                                 icon: FaIcon(KPixIcons.noFlat, color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.darkFlat,
-                                onPressed: () {_satCurveModeChanged(SatCurve.darkFlat);},
+                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.darkFlat);},
                                 icon: FaIcon(KPixIcons.darkFlat, color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.brightFlat,
-                                onPressed: () {_satCurveModeChanged(SatCurve.brightFlat);},
+                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.brightFlat);},
                                 icon: FaIcon(KPixIcons.brightFlat, color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.linear,
-                                onPressed: () {_satCurveModeChanged(SatCurve.linear);},
+                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.linear);},
                                 icon: FaIcon(KPixIcons.linear, color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               )
                             ],
@@ -463,8 +473,8 @@ class _KPalRampState extends State<KPalRamp>
                   ),
                   Divider(
                     color: Theme.of(context).primaryColorDark,
-                    thickness: options.dividerThickness,
-                    height: options.dividerThickness,
+                    thickness: _options.dividerThickness,
+                    height: _options.dividerThickness,
                   ),
                   Expanded(
                     flex: 1,
@@ -474,28 +484,27 @@ class _KPalRampState extends State<KPalRamp>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                            flex: options.rowLabelFlex,
+                            flex: _options.rowLabelFlex,
                             child: const Text("Value Range")
                         ),
                         Expanded(
-                          flex: options.rowControlFlex,
+                          flex: _options.rowControlFlex,
                           child: RangeSlider(
                             values: RangeValues(widget.rampData.settings.valueRangeMin.toDouble(), widget.rampData.settings.valueRangeMax.toDouble()),
                             min: widget.rampData.settings.constraints.valueRangeMin.toDouble(),
                             max: widget.rampData.settings.constraints.valueRangeMax.toDouble(),
                             divisions: widget.rampData.settings.constraints.valueRangeMax - widget.rampData.settings.constraints.valueRangeMin,
-                            onChanged: _valueRangeSliderChanged,
+                            onChanged: (final RangeValues newVals) {_valueRangeSliderChanged(newVals: newVals);},
                             labels: RangeLabels(widget.rampData.settings.valueRangeMin.toString(), widget.rampData.settings.valueRangeMax.toString()),
                           ),
                         ),
                         Expanded(
-                            flex: options.rowValueFlex,
+                            flex: _options.rowValueFlex,
                             child: Text("${widget.rampData.settings.valueRangeMin.toString()}-${widget.rampData.settings.valueRangeMax.toString()}", textAlign: TextAlign.end)
                         ),
                       ],
                     ),
                   ),
-
                 ],
               ),
             ),

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -48,8 +64,6 @@ class ColorNamesOptions{
     colorFilename = _colorNameFileNames[nameScheme] ?? "general.csv";
 
   }
-
-
 }
 
 class NamedColor
@@ -73,31 +87,26 @@ class ColorNames
   List<NamedColor> colorList = [];
   bool colorsLoaded = false;
 
-  void _processColorData(final String data)
+  void _processColorData({required final String data})
   {
     LineSplitter ls = const LineSplitter();
     List<String> lines = ls.convert(data);
     for(final String line in lines)
     {
-      _processLine(line);
+      _processLine(line: line);
     }
-
-
     colorsLoaded = true;
   }
 
 
-  ColorNames({
-   required this.options
-  })
+  ColorNames({required this.options})
   {
     rootBundle.loadString("${options.colorNamePath}/${options.colorFilename}").then((value) {
-      _processColorData(value);
+      _processColorData(data: value);
     });
-
   }
 
-  void _processLine(final String line)
+  void _processLine({required final String line})
   {
     final List<String> split = line.split(';');
     if (split.length == 2 && split[1].length == 6)
@@ -111,7 +120,7 @@ class ColorNames
     }
   }
 
-  String getColorName(final int r, final int g, final int b)
+  String getColorName({required final int r, required final int g, required final int b})
   {
     //TODO magic string
     String bestName = "<UNKNOWN>";
@@ -124,7 +133,7 @@ class ColorNames
           break;
         }
         else {
-          double delta = Helper.getDeltaE(r, g, b, c.r, c.g, c.b);
+          double delta = Helper.getDeltaE(redA: r, greenA: g, blueA: b, redB: c.r, greenB: c.g, blueB: c.b);
           if (delta < bestDelta) {
             bestDelta = delta;
             bestName = c.name;
@@ -134,5 +143,4 @@ class ColorNames
     }
     return bestName;
   }
-
 }

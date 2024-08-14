@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -8,6 +24,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
 enum SelectionDirection
@@ -32,7 +49,7 @@ class SelectionLine
 class SelectionState with ChangeNotifier
 {
   final SelectionList selection = SelectionList();
-  HashMap<CoordinateSetI, ColorReference?>? clipboard;
+  CoordinateColorMapNullable? clipboard;
   final RepaintNotifier repaintNotifier;
   final SelectOptions selectionOptions = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
   final List<SelectionLine> selectionLines = [];
@@ -59,11 +76,7 @@ class SelectionState with ChangeNotifier
     {
       notifyRepaint();
     }
-
   }
-
-
-
 
   void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true, final bool addToHistoryStack = true})
   {
@@ -131,7 +144,7 @@ class SelectionState with ChangeNotifier
       deselect(notify: false, addToHistoryStack: false);
     }
 
-    if (!selection.contains(coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
+    if (!selection.contains(coord: coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
     {
       final Set<CoordinateSetI> selectData = continuous ?
         _getFloodReferences(layer: selection.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
@@ -158,7 +171,7 @@ class SelectionState with ChangeNotifier
   {
     final int numRows = GetIt.I.get<AppState>().canvasSize.y;
     final int numCols = GetIt.I.get<AppState>().canvasSize.x;
-    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getDataEntry(start);
+    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final Set<CoordinateSetI> result = {};
     final Set<CoordinateSetI> visited = {};
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
@@ -170,7 +183,7 @@ class SelectionState with ChangeNotifier
       final CoordinateSetI curCoord = pointStack.pop();
       if (curCoord.x >= 0 && curCoord.y < numRows && curCoord.y >= 0 && curCoord.x < numCols)
       {
-        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getDataEntry(curCoord);
+        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
         if (!visited.contains(curCoord) && (refAtPos == targetValue || (refAtPos != null && targetValue != null && selectFromWholeRamp && refAtPos.ramp == targetValue.ramp)))
         {
           result.add(curCoord);
@@ -204,13 +217,13 @@ class SelectionState with ChangeNotifier
     required final bool selectFromWholeRamp})
   {
     final Set<CoordinateSetI> result = {};
-    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(start)) ? selection.getColorReference(start) : layer.getDataEntry(start);
+    final ColorReference? targetValue = (selection.currentLayer == layer && selection.contains(coord: start)) ? selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     for (int x = 0; x < GetIt.I.get<AppState>().canvasSize.x; x++)
     {
       for (int y = 0; y < GetIt.I.get<AppState>().canvasSize.y; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(curCoord)) ? selection.getColorReference(curCoord) : layer.getDataEntry(curCoord);
+        final ColorReference? refAtPos = (selection.currentLayer == layer && selection.contains(coord: curCoord)) ? selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
         if (refAtPos == targetValue || (selectFromWholeRamp && refAtPos != null && targetValue != null && refAtPos.ramp == targetValue.ramp))
         {
           result.add(curCoord);
@@ -230,12 +243,12 @@ class SelectionState with ChangeNotifier
       switch (selectionOptions.mode.value) {
         case SelectionMode.replace:
         case SelectionMode.add:
-          if (!selection.contains(coord)) {
+          if (!selection.contains(coord: coord)) {
             addCoords.add(coord);
           }
           break;
         case SelectionMode.intersect:
-          if (!selection.contains(coord)) {
+          if (!selection.contains(coord: coord)) {
             addCoords.add(coord);
           }
           else
@@ -244,14 +257,14 @@ class SelectionState with ChangeNotifier
           }
           break;
         case SelectionMode.subtract:
-          if (selection.contains(coord)) {
+          if (selection.contains(coord: coord)) {
             removeCoords.add(coord);
           }
           break;
       }
     }
-    selection.addAll(addCoords);
-    selection.removeAll(removeCoords);
+    selection.addAll(coords: addCoords);
+    selection.removeAll(coords: removeCoords);
   }
 
   void createSelectionLines()
@@ -260,7 +273,7 @@ class SelectionState with ChangeNotifier
     final Iterable<CoordinateSetI> selectedCoordinates = selection.getCoordinates();
     for (final CoordinateSetI coord in selectedCoordinates)
     {
-      if (coord.x == 0 || !selection.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
+      if (coord.x == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x - 1, y: coord.y)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.left);
         bool inserted = false;
@@ -282,7 +295,7 @@ class SelectionState with ChangeNotifier
           selectionLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
         }
       }
-      if (coord.x == GetIt.I.get<AppState>().canvasSize.x - 1 || !selection.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)))
+      if (coord.x == GetIt.I.get<AppState>().canvasSize.x - 1 || !selection.contains(coord: CoordinateSetI(x: coord.x + 1, y: coord.y)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.right);
         bool inserted = false;
@@ -304,7 +317,7 @@ class SelectionState with ChangeNotifier
           selectionLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
         }
       }
-      if (coord.y == 0 || !selection.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)))
+      if (coord.y == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y - 1)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.top);
         bool inserted = false;
@@ -326,7 +339,7 @@ class SelectionState with ChangeNotifier
           selectionLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
         }
       }
-      if (coord.y == GetIt.I.get<AppState>().canvasSize.y - 1 || !selection.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)))
+      if (coord.y == GetIt.I.get<AppState>().canvasSize.y - 1 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y + 1)))
       {
         Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.bottom);
         bool inserted = false;
@@ -360,7 +373,7 @@ class SelectionState with ChangeNotifier
       for (int y = 0; y < GetIt.I.get<AppState>().canvasSize.y; y++)
       {
         CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        if (selection.contains(coord))
+        if (selection.contains(coord: coord))
         {
           removeSet.add(coord);
         }
@@ -371,8 +384,8 @@ class SelectionState with ChangeNotifier
       }
     }
 
-    selection.removeAll(removeSet);
-    selection.addAll(addSet);
+    selection.removeAll(coords: removeSet);
+    selection.addAll(coords: addSet);
     createSelectionLines();
     if (addToHistoryStack)
     {
@@ -407,13 +420,13 @@ class SelectionState with ChangeNotifier
       for (int y = 0; y < GetIt.I.get<AppState>().canvasSize.y; y++)
       {
         CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-        if (!selection.contains(coord))
+        if (!selection.contains(coord: coord))
         {
           addSet.add(coord);
         }
       }
     }
-    selection.addAll(addSet);
+    selection.addAll(coords: addSet);
     createSelectionLines();
     if (addToHistoryStack)
     {
@@ -429,15 +442,15 @@ class SelectionState with ChangeNotifier
   {
     if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot delete from hidden layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot delete from hidden layer!");
     }
     else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot delete from locked layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot delete from locked layer!");
     }
     else
     {
-      selection.delete(keepSelection);
+      selection.delete(keepSelection: keepSelection);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), description: "delete selection");
@@ -458,11 +471,11 @@ class SelectionState with ChangeNotifier
   {
     if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot cut from hidden layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot cut from hidden layer!");
     }
     else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot cut from locked layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot cut from locked layer!");
     }
     else if (copy(notify: false, keepSelection: true))
     {
@@ -487,7 +500,7 @@ class SelectionState with ChangeNotifier
       final Iterable<CoordinateSetI> coords = selection.getCoordinates();
       for (final CoordinateSetI coord in coords)
       {
-        clipboard![coord] = selection.getColorReference(coord);
+        clipboard![coord] = selection.getColorReference(coord: coord);
       }
       if (!keepSelection)
       {
@@ -501,15 +514,15 @@ class SelectionState with ChangeNotifier
     }
     else
     {
-      GetIt.I.get<AppState>().showMessage("Nothing to copy!");
+      GetIt.I.get<AppState>().showMessage(text: "Nothing to copy!");
     }
     return hasCopied;
   }
 
   void copyMerged({final bool notify = true, final keepSelection = false})
   {
-    HashMap<CoordinateSetI, ColorReference?> tempCB = HashMap();
-    final Iterable<LayerState> visibleLayers = GetIt.I.get<AppState>().layers.value.where((x) => x.visibilityState.value == LayerVisibilityState.visible);
+    final CoordinateColorMapNullable tempCB = HashMap();
+    final Iterable<LayerState> visibleLayers = GetIt.I.get<AppState>().layers.where((x) => x.visibilityState.value == LayerVisibilityState.visible);
     final Iterable<CoordinateSetI> coords = selection.getCoordinates();
     bool hasValues = false;
 
@@ -519,7 +532,7 @@ class SelectionState with ChangeNotifier
       //TODO is the order correct?
       for (final LayerState layer in visibleLayers)
       {
-        final ColorReference? colRef = layer.getDataEntry(coord);
+        final ColorReference? colRef = layer.getDataEntry(coord: coord);
         if (colRef != null)
         {
           hasValues = true;
@@ -549,7 +562,7 @@ class SelectionState with ChangeNotifier
     }
     else
     {
-      GetIt.I.get<AppState>().showMessage("Nothing to copy!");
+      GetIt.I.get<AppState>().showMessage(text: "Nothing to copy!");
     }
   }
 
@@ -559,16 +572,16 @@ class SelectionState with ChangeNotifier
     {
       if (selection.currentLayer!.lockState.value == LayerLockState.locked)
       {
-        GetIt.I.get<AppState>().showMessage("Cannot paste to a locked layer!");
+        GetIt.I.get<AppState>().showMessage(text: "Cannot paste to a locked layer!");
       }
       else if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
       {
-        GetIt.I.get<AppState>().showMessage("Cannot paste to a hidden layer!");
+        GetIt.I.get<AppState>().showMessage(text: "Cannot paste to a hidden layer!");
       }
       else
       {
         deselect(notify: false, addToHistoryStack: false);
-        final HashMap<CoordinateSetI, ColorReference> addCoords = HashMap();
+        final CoordinateColorMap addCoords = HashMap();
         for (final CoordinateSetI key in clipboard!.keys)
         {
           if (clipboard![key] != null)
@@ -576,7 +589,7 @@ class SelectionState with ChangeNotifier
             addCoords[key] = clipboard![key]!;
           }
         }
-        selection.addDirectlyAll(addCoords);
+        selection.addDirectlyAll(list: addCoords);
         createSelectionLines();
         if (addToHistoryStack)
         {
@@ -595,11 +608,11 @@ class SelectionState with ChangeNotifier
   {
     if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot transform on a hidden layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot transform on a hidden layer!");
     }
     else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot transform on a locked layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot transform on a locked layer!");
     }
     else
     {
@@ -621,11 +634,11 @@ class SelectionState with ChangeNotifier
   {
     if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot transform on a hidden layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot transform on a hidden layer!");
     }
     else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot transform on a locked layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot transform on a locked layer!");
     }
     else
     {
@@ -647,11 +660,11 @@ class SelectionState with ChangeNotifier
   {
     if (selection.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot transform on a hidden layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot transform on a hidden layer!");
     }
     else if (selection.currentLayer!.lockState.value == LayerLockState.locked)
     {
-      GetIt.I.get<AppState>().showMessage("Cannot transform on a locked layer!");
+      GetIt.I.get<AppState>().showMessage(text: "Cannot transform on a locked layer!");
     }
     else
     {
@@ -669,9 +682,9 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void setOffset(final CoordinateSetI offset)
+  void setOffset({required final CoordinateSetI offset})
   {
-    selection.shiftSelection(offset);
+    selection.shiftSelection(offset: offset);
     createSelectionLines();
   }
 
@@ -684,24 +697,28 @@ class SelectionState with ChangeNotifier
 
 class SelectionList
 {
-  HashMap<CoordinateSetI, ColorReference?> _content = HashMap();
-  final CoordinateSetI _lastOffset = CoordinateSetI(x: 0, y: 0);
-  LayerState? currentLayer;
-
-  HashMap<CoordinateSetI, ColorReference?> getSelectedPixels()
+  CoordinateColorMapNullable _content = HashMap();
+  CoordinateColorMapNullable get selectedPixels
   {
     return _content;
   }
 
-  void setCurrentLayer(final LayerState? layerState)
+  final CoordinateSetI _lastOffset = CoordinateSetI(x: 0, y: 0);
+  LayerState? _currentLayer;
+  LayerState? get currentLayer
   {
-    currentLayer = layerState;
+    return _currentLayer;
   }
 
-  void changeLayer(final LayerState? oldLayer, final LayerState newLayer)
+  set currentLayer(final LayerState? layerState)
   {
-    final HashMap<CoordinateSetI, ColorReference?> refsOld = HashMap();
-    final HashMap<CoordinateSetI, ColorReference?> refsNew = HashMap();
+    _currentLayer = layerState;
+  }
+
+  void changeLayer({required final LayerState? oldLayer, required final LayerState newLayer})
+  {
+    final CoordinateColorMapNullable refsOld = HashMap();
+    final CoordinateColorMapNullable refsNew = HashMap();
     for (final CoordinateSetI key in _content.keys)
     {
       final ColorReference? curVal = _content[key];
@@ -712,49 +729,49 @@ class SelectionList
       }
       if (newLayer.lockState.value != LayerLockState.locked)
       {
-        _content[key] = newLayer.getDataEntry(key);
+        _content[key] = newLayer.getDataEntry(coord: key);
         //newLayer.setData(key, null);
         refsNew[key] = null;
       }
     }
     if (oldLayer != null)
     {
-      oldLayer.setDataAll(refsOld);
+      oldLayer.setDataAll(list: refsOld);
     }
 
-    newLayer.setDataAll(refsNew);
+    newLayer.setDataAll(list: refsNew);
   }
 
-  void addAll(final Set<CoordinateSetI> coords)
+  void addAll({required final Set<CoordinateSetI> coords})
   {
-    final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
+    final CoordinateColorMapNullable refs = HashMap();
     for (final CoordinateSetI coord in coords)
     {
-      _content[coord] = currentLayer!.getDataEntry(coord);
+      _content[coord] = currentLayer!.getDataEntry(coord: coord);
       refs[coord] = null;
     }
-    currentLayer!.setDataAll(refs);
+    currentLayer!.setDataAll(list: refs);
   }
 
-  void addEmpty(final CoordinateSetI coord)
+  void addEmpty({required final CoordinateSetI coord})
   {
     _content[coord] = null;
   }
 
-  void addDirectly(final CoordinateSetI coord, final ColorReference? colRef)
+  void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})
   {
     _content[coord] = colRef;
   }
 
-  void addDirectlyAll(final HashMap<CoordinateSetI, ColorReference?> list)
+  void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
     _content.addAll(list);
 
   }
 
-  void removeAll(final Set<CoordinateSetI> coords)
+  void removeAll({required final Set<CoordinateSetI> coords})
   {
-    final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
+    final CoordinateColorMapNullable refs = HashMap();
     for (final CoordinateSetI coord in coords)
     {
       if (_content[coord] != null && coord.x >= 0 && coord.y >= 0 && coord.x < GetIt.I.get<AppState>().canvasSize.x && coord.y < GetIt.I.get<AppState>().canvasSize.y)
@@ -763,24 +780,24 @@ class SelectionList
         _content.remove(coord);
       }
     }
-    currentLayer!.setDataAll(refs);
+    currentLayer!.setDataAll(list: refs);
   }
 
   void clear()
   {
-    final HashMap<CoordinateSetI, ColorReference?> refs = HashMap();
-    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    final CoordinateColorMapNullable refs = HashMap();
+    for (final CoordinateColorNullable entry in _content.entries)
     {
       if (entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < GetIt.I.get<AppState>().canvasSize.x && entry.key.y < GetIt.I.get<AppState>().canvasSize.y)
       {
         refs[entry.key] = entry.value;
       }
     }
-    currentLayer!.setDataAll(refs);
+    currentLayer!.setDataAll(list: refs);
     _content.clear();
   }
 
-  void deleteDirectly(final CoordinateSetI coord)
+  void deleteDirectly({required final CoordinateSetI coord})
   {
     if (_content.keys.contains(coord) && _content[coord] != null)
     {
@@ -788,7 +805,7 @@ class SelectionList
     }
   }
 
-  void delete(bool keepSelection)
+  void delete({required bool keepSelection})
   {
     if (keepSelection)
     {
@@ -808,8 +825,8 @@ class SelectionList
     CoordinateSetI minXcoord = _content.keys.reduce((a, b) => a.x < b.x ? a : b);
     CoordinateSetI maxXcoord = _content.keys.reduce((a, b) => a.x > b.x ? a : b);
 
-    final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
-    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    final CoordinateColorMapNullable newContent = HashMap();
+    for (final CoordinateColorNullable entry in _content.entries)
     {
       newContent[CoordinateSetI(x: maxXcoord.x - entry.key.x + minXcoord.x , y: entry.key.y)] = entry.value;
     }
@@ -821,8 +838,8 @@ class SelectionList
     CoordinateSetI minYcoord = _content.keys.reduce((a, b) => a.y < b.y ? a : b);
     CoordinateSetI maxYcoord = _content.keys.reduce((a, b) => a.y > b.y ? a : b);
 
-    final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
-    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    final CoordinateColorMapNullable newContent = HashMap();
+    for (final CoordinateColorNullable entry in _content.entries)
     {
       newContent[CoordinateSetI(x: entry.key.x, y: maxYcoord.y - entry.key.y + minYcoord.y)] = entry.value;
     }
@@ -831,7 +848,7 @@ class SelectionList
 
   void rotate90cw()
   {
-    CoordinateSetI minCoords = CoordinateSetI.from(GetIt.I.get<AppState>().canvasSize);
+    CoordinateSetI minCoords = CoordinateSetI.from(other: GetIt.I.get<AppState>().canvasSize);
     CoordinateSetI maxCoords = CoordinateSetI(x: 0, y: 0);
     for (final CoordinateSetI coord in _content.keys)
     {
@@ -842,15 +859,15 @@ class SelectionList
     }
 
     final CoordinateSetI centerCoord = CoordinateSetI(x: (minCoords.x + maxCoords.x) ~/ 2, y: (minCoords.y + maxCoords.y) ~/ 2);
-    final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
-    for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+    final CoordinateColorMapNullable newContent = HashMap();
+    for (final CoordinateColorNullable entry in _content.entries)
     {
       newContent[CoordinateSetI(x: centerCoord.y - entry.key.y + centerCoord.x, y: entry.key.x - centerCoord.x + centerCoord.y)] = entry.value;
     }
     _content = newContent;
   }
 
-  bool contains(final CoordinateSetI coord)
+  bool contains({required final CoordinateSetI coord})
   {
     return _content.containsKey(coord);
   }
@@ -866,17 +883,17 @@ class SelectionList
   }
 
 
-  ColorReference? getColorReference(final CoordinateSetI coord)
+  ColorReference? getColorReference({required final CoordinateSetI coord})
   {
-    return contains(coord) ? _content[coord] : null;
+    return contains(coord: coord) ? _content[coord] : null;
   }
 
-  void shiftSelection(final CoordinateSetI offset)
+  void shiftSelection({required final CoordinateSetI offset})
   {
 
     if (offset != _lastOffset) {
-      final HashMap<CoordinateSetI, ColorReference?> newContent = HashMap();
-      for (final MapEntry<CoordinateSetI, ColorReference?> entry in _content.entries)
+      final CoordinateColorMapNullable newContent = HashMap();
+      for (final CoordinateColorNullable entry in _content.entries)
       {
         newContent[CoordinateSetI(x: entry.key.x + (offset.x - _lastOffset.x), y: entry.key.y + (offset.y - _lastOffset.y))] = entry.value;
       }
@@ -906,7 +923,8 @@ class SelectionList
     return has;
   }
 
-  (CoordinateSetI?, CoordinateSetI?) getBoundingBox(final CoordinateSetI canvasSize)
+  (CoordinateSetI?, CoordinateSetI?) getBoundingBox(
+      {required final CoordinateSetI canvasSize})
   {
     CoordinateSetI? topLeft, bottomRight;
     int minX = canvasSize.x;

@@ -1,3 +1,19 @@
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -12,7 +28,7 @@ class ColorRampRowWidget extends StatefulWidget {
   final ColorReferenceSelectedFn? colorSelectedFn;
   final ColorRampUpdateFn? colorsUpdatedFn;
   final ColorRampFn? deleteRowFn;
-  final AddNewRampFn? addNewRampFn;
+  final Function()? addNewRampFn;
   final List<Widget> widgetList;
 
   @override
@@ -31,7 +47,7 @@ class ColorRampRowWidget extends StatefulWidget {
   factory ColorRampRowWidget({
     KPalRampData? rampData,
     ColorReferenceSelectedFn? colorSelectedFn,
-    AddNewRampFn? addNewRampFn,
+    Function()? addNewRampFn,
     ColorRampFn? deleteRowFn,
     ColorRampUpdateFn? colorsUpdatedFn,
     Key? key,
@@ -48,7 +64,7 @@ class ColorRampRowWidget extends StatefulWidget {
     );
   }
 
-  void colorSelected(final IdColor newColor)
+  void colorSelected({required final IdColor newColor})
   {
     if (colorSelectedFn != null && rampData != null)
     {
@@ -63,37 +79,37 @@ class ColorRampRowWidget extends StatefulWidget {
       }
       if (index != -1)
       {
-        colorSelectedFn!(rampData!.references[index]);
+        colorSelectedFn!(color: rampData!.references[index]);
       }
     }
   }
 
-  void _createWidgetList({
-    required ColorRampFn createKPal
-})
+  void _createWidgetList({required ColorRampFn createKPal})
   {
     widgetList.clear();
     if (rampData != null)
     {
       for (ValueNotifier<IdColor> color in rampData!.colors)
       {
-        widgetList.add(ColorEntryWidget(
+        widgetList.add(
+          ColorEntryWidget(
             color: color.value,
             colorSelectedFn: colorSelected,
-            ));
-
+          )
+        );
       }
-      widgetList.add(IconButton(
-        padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
-        constraints: const BoxConstraints(),
-        icon: FaIcon(
-          FontAwesomeIcons.sliders,
-          size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
-        ),
-        onPressed: () {
-          createKPal(ramp: rampData!);
-        },
-      ));
+      widgetList.add(
+        IconButton(
+          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
+          constraints: const BoxConstraints(),
+          icon: FaIcon(
+            FontAwesomeIcons.sliders,
+            size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
+          ),
+          onPressed: () {createKPal(ramp: rampData!);
+          },
+        )
+      );
     } else {
       widgetList.add(
         Expanded(
@@ -103,10 +119,7 @@ class ColorRampRowWidget extends StatefulWidget {
               FontAwesomeIcons.plus,
               size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
             ),
-            onPressed: () {
-
-              addNewRampFn!.call();
-            }
+            onPressed: () {addNewRampFn!.call();}
           )
         )
       );
@@ -153,7 +166,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
     kPal.hide();
   }
    @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     widget._createWidgetList(createKPal: _createKPal);
     return Row(
         mainAxisSize: MainAxisSize.max,

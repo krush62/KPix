@@ -243,6 +243,12 @@ class AppState
     }
   }
 
+  void setDefaultPalette()
+  {
+    _colorRamps.value = KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints);
+    _selectedColor.value = _colorRamps.value[0].references[0];
+  }
+
   void addNewRamp({bool addToHistoryStack = true})
   {
     const Uuid uuid = Uuid();

@@ -107,7 +107,9 @@ class _KPixAppState extends State<KPixApp>
 
     //TODO TEMP
     appState.setCanvasDimensions(width: 256, height: 160, addToHistoryStack: false);
-    appState.addNewRamp(addToHistoryStack: false);
+
+
+    appState.setDefaultPalette();
     appState.addNewLayer(select: true, addToHistoryStack: false);
 
     GetIt.I.registerSingleton<HistoryManager>(HistoryManager());

@@ -15,6 +15,7 @@
  */
 
 import 'dart:collection';
+import 'dart:isolate';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -236,8 +237,8 @@ class SelectionState with ChangeNotifier
 
   void _addPixelsWithMode({required Set<CoordinateSetI> coords, required SelectionMode mode})
   {
-    Set<CoordinateSetI> addCoords = {};
-    Set<CoordinateSetI> removeCoords = {};
+    final Set<CoordinateSetI> addCoords = {};
+    final Set<CoordinateSetI> removeCoords = {};
 
     for (final CoordinateSetI coord in coords)
     {
@@ -264,8 +265,14 @@ class SelectionState with ChangeNotifier
           break;
       }
     }
-    selection.addAll(coords: addCoords);
-    selection.removeAll(coords: removeCoords);
+    if (addCoords.isNotEmpty)
+    {
+      selection.addAll(coords: addCoords);
+    }
+    if (removeCoords.isNotEmpty)
+    {
+      selection.removeAll(coords: addCoords);
+    }
   }
 
   void createSelectionLines()
@@ -700,6 +707,7 @@ class SelectionState with ChangeNotifier
   {
     selection.resetLastOffset();
     GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "selection moved");
+    _appState.currentLayer!.doManualRaster = true;
   }
 }
 
@@ -743,13 +751,11 @@ class SelectionList
 
   void addAll({required final Set<CoordinateSetI> coords})
   {
-    final CoordinateColorMapNullable refs = HashMap();
     for (final CoordinateSetI coord in coords)
     {
       _content[coord] = _appState.currentLayer!.getDataEntry(coord: coord);
-      refs[coord] = null;
     }
-    _appState.currentLayer!.setDataAll(list: refs);
+    _appState.currentLayer!.removeDataAll(removeCoordList: coords);
   }
 
   void addEmpty({required final CoordinateSetI coord})

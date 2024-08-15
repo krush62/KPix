@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -129,7 +130,7 @@ class LayerState
 
   LayerState._({required CoordinateColorMap data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
   {
-    _createRaster().then((final ui.Image image) => _rasterizingDone(image: image));
+    _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2));
     lockState.value = lState;
     visibilityState.value = vState;
     LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
@@ -170,8 +171,7 @@ class LayerState
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
-      _createRaster().then((final ui.Image image) => _rasterizingDone(image: image));
-
+      _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2));
     }
   }
 
@@ -219,18 +219,24 @@ class LayerState
   }
 
 
-  void _rasterizingDone({required final ui.Image image})
+  void _rasterizingDone({required final ui.Image image, required final ui.Image thb})
   {
     isRasterizing = false;
     raster = image;
-    thumbnail.value = raster;
+    thumbnail.value = thb;
     doManualRaster = false;
     GetIt.I.get<AppState>().repaintNotifier.repaint();
   }
 
-  //TODO thumbnail is rasterized without selection data
-  Future<ui.Image> _createRaster() async
+  Future<(ui.Image, ui.Image)> _createRaster() async
   {
+    final AppState appState = GetIt.I.get<AppState>();
+    bool differentThumb = false;
+    if (appState.currentLayer == this && appState.selectionState.selection.hasValues())
+    {
+      differentThumb = true;
+    }
+
     while(rasterQueue.isNotEmpty)
     {
       final (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();
@@ -244,32 +250,79 @@ class LayerState
       }
     }
 
-    final ByteData byteData = ByteData(size.x * size.y * 4);
+    final ByteData byteDataImg = ByteData(size.x * size.y * 4);
+    ByteData? byteDataThumb;
+    if (differentThumb)
+    {
+      byteDataThumb = ByteData(size.x * size.y * 4);
+    }
     for (final CoordinateColorNullable entry in _data.entries)
     {
-      if (entry.value != null) {
-        final Color dColor = entry.value!.ramp.colors[entry.value!.colorIndex]
-            .value.color;
+      if (entry.value != null)
+      {
+        final Color dColor = entry.value!.getIdColor().color;
         final int index = (entry.key.y * size.x + entry.key.x) * 4;
-        if (index < byteData.lengthInBytes)
+        if (index < byteDataImg.lengthInBytes)
         {
-          byteData.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+          byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+          if (byteDataThumb != null)
+          {
+            byteDataThumb.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+          }
         }
-
       }
-
     }
-    final Completer<ui.Image> c = Completer<ui.Image>();
+    if (differentThumb)
+    {
+      final Iterable<CoordinateSetI> selectionCoords = appState.selectionState.selection.getCoordinates();
+      for (final CoordinateSetI coord in selectionCoords)
+      {
+        final ColorReference? colRef = appState.selectionState.selection.getColorReference(coord: coord);
+        if (colRef != null)
+        {
+          final Color dColor = colRef.getIdColor().color;
+          final int index = (coord.y * size.x + coord.x) * 4;
+          if (index > 0 && index < byteDataThumb!.lengthInBytes)
+          {
+            byteDataThumb.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+          }
+        }
+      }
+    }
+
+
+    final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
-      byteData.buffer.asUint8List(),
+      byteDataImg.buffer.asUint8List(),
       size.x,
       size.y,
       ui.PixelFormat.rgba8888, (ui.Image convertedImage)
       {
-        c.complete(convertedImage);
+        completerImg.complete(convertedImage);
       }
     );
-    return c.future;
+
+    final ui.Image img = await completerImg.future;
+
+    if (differentThumb)
+    {
+      final Completer<ui.Image> completerThumb = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+          byteDataThumb!.buffer.asUint8List(),
+          size.x,
+          size.y,
+          ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+      {
+        completerThumb.complete(convertedImage);
+      }
+      );
+      final ui.Image thumb = await completerThumb.future;
+      return (img, thumb);
+    }
+    else
+    {
+      return (img, img);
+    }
   }
 
 
@@ -324,9 +377,24 @@ class LayerState
     {
       rasterQueue.addAll(it);
     }
-
-
   }
+
+  Future <void> removeDataAll({required final Set<CoordinateSetI> removeCoordList}) async
+  {
+    final Queue<(CoordinateSetI, ColorReference?)> newQueue =  Queue<(CoordinateSetI, ColorReference?)>.from(rasterQueue);
+    rasterQueue = await Isolate.run(() => addNullQueue(removeCoordList: removeCoordList, queue: newQueue));
+  }
+
+  static Future<Queue<(CoordinateSetI, ColorReference?)>> addNullQueue({required final Set<CoordinateSetI> removeCoordList, required Queue<(CoordinateSetI, ColorReference?)> queue}) async
+  {
+    for (final CoordinateSetI coord in removeCoordList)
+    {
+      queue.add((coord, null));
+    }
+    return queue;
+  }
+
+
 
   LayerState getTransformedLayer({required final CanvasTransformation transformation})
   {

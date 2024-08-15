@@ -53,10 +53,11 @@ class _PaletteWidgetState extends State<PaletteWidget>
       child: ValueListenableBuilder<List<KPalRampData>>(
         valueListenable: GetIt.I.get<AppState>().colorRampNotifier,
         builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child){
-          _colorRampWidgetList.value = [];
+
+          final List<ColorRampRowWidget> widgetList = [];
           for (KPalRampData rampData in rampDataSet)
           {
-            _colorRampWidgetList.value.add(
+            widgetList.add(
                 ColorRampRowWidget(
                   rampData: rampData,
                   colorSelectedFn: GetIt.I.get<AppState>().colorSelected,
@@ -65,10 +66,10 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 )
             );
           }
-          _colorRampWidgetList.value.add(ColorRampRowWidget(
+          widgetList.add(ColorRampRowWidget(
             addNewRampFn: GetIt.I.get<AppState>().addNewRamp,
           ));
-
+          _colorRampWidgetList.value = widgetList;
           return ValueListenableBuilder<List<ColorRampRowWidget>>(
             valueListenable: _colorRampWidgetList,
             builder: (final BuildContext context, final List<ColorRampRowWidget> widgetRows, final Widget? child) {

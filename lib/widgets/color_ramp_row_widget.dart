@@ -100,14 +100,16 @@ class ColorRampRowWidget extends StatefulWidget {
       }
       widgetList.add(
         IconButton(
-          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
-          constraints: const BoxConstraints(),
+          padding: EdgeInsets.zero,
           icon: FaIcon(
             FontAwesomeIcons.sliders,
             size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
           ),
           onPressed: () {createKPal(ramp: rampData!);
           },
+          style: IconButton.styleFrom(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
         )
       );
     } else {

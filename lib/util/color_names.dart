@@ -28,6 +28,8 @@ enum ColorNameScheme
   ralDsp
 }
 
+const String noColorName = "<UNKNOWN>";
+
 const Map<int, ColorNameScheme> _colorNameSchemeMap =
 {
   0: ColorNameScheme.general,
@@ -122,8 +124,7 @@ class ColorNames
 
   String getColorName({required final int r, required final int g, required final int b})
   {
-    //TODO magic string
-    String bestName = "<UNKNOWN>";
+    String bestName = noColorName;
     if (colorsLoaded) {
       double bestDelta = 100;
       for (final NamedColor c in colorList) {

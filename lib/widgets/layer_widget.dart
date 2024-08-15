@@ -126,7 +126,8 @@ class LayerState
   ui.Image? raster;
   bool isRasterizing = false;
   bool doManualRaster = false;
-  Queue<(CoordinateSetI, ColorReference?)> rasterQueue = Queue();
+  final Map<CoordinateSetI, ColorReference?> rasterQueue = {};
+
 
   LayerState._({required CoordinateColorMap data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
   {
@@ -237,18 +238,18 @@ class LayerState
       differentThumb = true;
     }
 
-    while(rasterQueue.isNotEmpty)
+    for (final CoordinateColorNullable entry in rasterQueue.entries)
     {
-      final (CoordinateSetI, ColorReference?) entry = rasterQueue.removeFirst();
-      if (entry.$2 == null)
+      if (entry.value == null)
       {
-        _data.remove(entry.$1);
+        _data.remove(entry.key);
       }
       else
       {
-        _data[entry.$1] = entry.$2!;
+        _data[entry.key] = entry.value!;
       }
     }
+    rasterQueue.clear();
 
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     ByteData? byteDataThumb;
@@ -334,13 +335,7 @@ class LayerState
     }
     else if (rasterQueue.isNotEmpty)
     {
-      for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
-      {
-        if (entry.$1 == coord)
-        {
-          return entry.$2;
-        }
-      }
+      return rasterQueue[coord];
     }
     return null;
   }
@@ -352,48 +347,16 @@ class LayerState
 
   void setDataAll({required final CoordinateColorMapNullable list})
   {
-    final Set<(CoordinateSetI, ColorReference?)> it = {};
-    for (final CoordinateColorNullable entry in list.entries)
-    {
-      bool foundInRaster = false;
-      for (int i = 0; i < rasterQueue.length; i++)
-      {
-        final (CoordinateSetI, ColorReference?) rasterEntry = rasterQueue.elementAt(i);
-        if (rasterEntry.$1 == entry.key && rasterEntry.$2 != entry.value)
-        {
-          rasterQueue.remove(rasterEntry);
-          it.add((entry.key, entry.value));
-          foundInRaster = true;
-          break;
-        }
-      }
-
-      if (entry.value != _data[entry.key] && !foundInRaster)
-      {
-        it.add((entry.key, entry.value));
-      }
-    }
-    if (it.isNotEmpty)
-    {
-      rasterQueue.addAll(it);
-    }
+    rasterQueue.addAll(list);
   }
 
   Future <void> removeDataAll({required final Set<CoordinateSetI> removeCoordList}) async
   {
-    final Queue<(CoordinateSetI, ColorReference?)> newQueue =  Queue<(CoordinateSetI, ColorReference?)>.from(rasterQueue);
-    rasterQueue = await Isolate.run(() => addNullQueue(removeCoordList: removeCoordList, queue: newQueue));
-  }
-
-  static Future<Queue<(CoordinateSetI, ColorReference?)>> addNullQueue({required final Set<CoordinateSetI> removeCoordList, required Queue<(CoordinateSetI, ColorReference?)> queue}) async
-  {
     for (final CoordinateSetI coord in removeCoordList)
     {
-      queue.add((coord, null));
+     rasterQueue[coord] = null;
     }
-    return queue;
   }
-
 
 
   LayerState getTransformedLayer({required final CanvasTransformation transformation})
@@ -426,25 +389,25 @@ class LayerState
     }
     if (rasterQueue.isNotEmpty)
     {
-      for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
+      for (final CoordinateColorNullable entry in rasterQueue.entries)
       {
-        final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.$1);
+        final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.key);
         if (transformation == CanvasTransformation.rotate)
         {
-          rotCoord.x = ((size.y - 1) - entry.$1.y).toInt();
-          rotCoord.y = entry.$1.x;
+          rotCoord.x = ((size.y - 1) - entry.key.y).toInt();
+          rotCoord.y = entry.key.x;
         }
         else if (transformation == CanvasTransformation.flipH)
         {
-          rotCoord.x = ((size.x - 1) - entry.$1.x).toInt();
+          rotCoord.x = ((size.x - 1) - entry.key.x).toInt();
         }
         else if (transformation == CanvasTransformation.flipV)
         {
-          rotCoord.y = ((size.y - 1) - entry.$1.y).toInt();
+          rotCoord.y = ((size.y - 1) - entry.key.y).toInt();
         }
-        if (entry.$2 != null)
+        if (entry.value != null)
         {
-          rotatedContent[rotCoord] = entry.$2!;
+          rotatedContent[rotCoord] = entry.value!;
         }
         else if (rotatedContent.containsKey(rotCoord))
         {
@@ -469,14 +432,14 @@ class LayerState
 
     if (rasterQueue.isNotEmpty)
     {
-      for (final (CoordinateSetI, ColorReference?) entry in rasterQueue)
+      for (final CoordinateColorNullable entry in rasterQueue.entries)
       {
-        final CoordinateSetI newCoord = CoordinateSetI(x: entry.$1.x + offset.x, y: entry.$1.y + offset.y);
+        final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
         if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
         {
-          if (entry.$2 != null)
+          if (entry.value != null)
           {
-            croppedContent[newCoord] = entry.$2!;
+            croppedContent[newCoord] = entry.value!;
           }
           else if (croppedContent.containsKey(newCoord))
           {

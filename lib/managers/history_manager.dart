@@ -69,20 +69,19 @@ class HistoryLayer
         dt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
       }
     }
-    final Set<(CoordinateSetI, ColorReference?)> rasterSet = layerState.rasterQueue.toSet();
-    for (final (CoordinateSetI, ColorReference?) entry in rasterSet)
+    for (final CoordinateColorNullable entry in layerState.rasterQueue.entries)
     {
-      if (entry.$2 != null)
+      if (entry.value != null)
       {
-        final int? rampIndex = _getRampIndex(uuid: entry.$2!.ramp.uuid, ramps: ramps);
+        final int? rampIndex = _getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
         if (rampIndex != null)
         {
-          dt[CoordinateSetI.from(other: entry.$1)] = HistoryColorReference(colorIndex: entry.$2!.colorIndex, rampIndex: rampIndex);
+          dt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
         }
       }
       else
       {
-        dt.remove(entry.$1);
+        dt.remove(entry.key);
       }
     }
 

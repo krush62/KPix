@@ -530,10 +530,17 @@ class SelectionState with ChangeNotifier
     for (final CoordinateSetI coord in coords)
     {
       bool pixelFound = false;
-      //TODO is the order correct?
       for (final LayerState layer in visibleLayers)
       {
-        final ColorReference? colRef = layer.getDataEntry(coord: coord);
+        ColorReference? colRef = layer.getDataEntry(coord: coord);
+        if (layer == _appState.currentLayer)
+        {
+          final ColorReference? selColRef = selection.getColorReference(coord: coord);
+          if (selColRef != null)
+          {
+            colRef = selColRef;
+          }
+        }
         if (colRef != null)
         {
           hasValues = true;

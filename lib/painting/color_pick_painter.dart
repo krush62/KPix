@@ -66,7 +66,7 @@ class ColorPickPainter extends IToolPainter
     {
       if (layer.visibilityState.value == LayerVisibilityState.visible)
       {
-        if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.getColorReference(coord: normPos) != null)
+        if (appState.currentLayer == layer && appState.selectionState.selection.getColorReference(coord: normPos) != null)
         {
           colRef = appState.selectionState.selection.getColorReference(coord: normPos);
           break;

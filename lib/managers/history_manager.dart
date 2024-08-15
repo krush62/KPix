@@ -154,7 +154,7 @@ class HistoryState
       {
         selectedLayerIndex = i;
       }
-      if (layerState == appState.selectionState.selection.currentLayer)
+      if (layerState == appState.currentLayer)
       {
         selectLayer = hLayer;
       }

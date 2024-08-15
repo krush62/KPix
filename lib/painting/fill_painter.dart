@@ -124,7 +124,7 @@ class FillPainter extends IToolPainter
     final int numRows = appState.canvasSize.y;
     final int numCols = appState.canvasSize.x;
     final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
-    final ColorReference? startValue = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(coord: start)) ? appState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
+    final ColorReference? startValue = (appState.currentLayer == layer && appState.selectionState.selection.contains(coord: start)) ? appState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
     final CoordinateColorMap layerPixels = HashMap();
     final CoordinateColorMap selectionPixels = HashMap();
@@ -134,7 +134,7 @@ class FillPainter extends IToolPainter
     while(pointStack.isNotEmpty)
     {
       final CoordinateSetI curCoord = pointStack.pop();
-      final ColorReference? refAtPos = (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(coord: curCoord)) ? appState.selectionState.selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
+      final ColorReference? refAtPos = (appState.currentLayer == layer && appState.selectionState.selection.contains(coord: curCoord)) ? appState.selectionState.selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
       if (!visited[curCoord.x][curCoord.y] &&
           (appState.selectionState.selection.isEmpty() || (!appState.selectionState.selection.isEmpty() && appState.selectionState.selection.contains(coord: curCoord))) &&
           (
@@ -147,7 +147,7 @@ class FillPainter extends IToolPainter
         visited[curCoord.x][curCoord.y] = true;
 
         //draw on selection
-        if (appState.selectionState.selection.currentLayer == layer && appState.selectionState.selection.contains(coord: curCoord))
+        if (appState.currentLayer == layer && appState.selectionState.selection.contains(coord: curCoord))
         {
           if (!doShade || refAtPos == null)
           {

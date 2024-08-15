@@ -847,7 +847,8 @@ class FileHandler
         layers: appState.layers,
         selectionState: appState.selectionState,
         imageSize: appState.canvasSize,
-        scaling: exportData.scaling);
+        scaling: exportData.scaling,
+        selectedLayer: appState.currentLayer);
 
     final Completer<ui.Image> c = Completer<ui.Image>();
       ui.decodeImageFromPixels(
@@ -867,7 +868,7 @@ class FileHandler
   }
 
 
-  static Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling}) async
+  static Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final LayerState? selectedLayer}) async
   {
     final ByteData byteData = ByteData((imageSize.x * scaling) * (imageSize.y * scaling) * 4);
     for (int x = 0; x < imageSize.x; x++)
@@ -880,7 +881,7 @@ class FileHandler
           if (layers[l].visibilityState.value == LayerVisibilityState.visible)
           {
             ColorReference? col;
-            if (selectionState.selection.currentLayer == layers[l])
+            if (selectedLayer == layers[l])
             {
               col = selectionState.selection.getColorReference(coord: currentCoord);
             }

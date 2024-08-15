@@ -83,6 +83,10 @@ class AppState
     return _layers;
   }
   LayerState? _currentLayer;
+  LayerState? get currentLayer
+  {
+    return _currentLayer;
+  }
   final RepaintNotifier repaintNotifier = RepaintNotifier();
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
@@ -277,6 +281,7 @@ class AppState
     {
       newLayer.isSelected.value = true;
       _currentLayer = newLayer;
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
     }
     layerList.add(newLayer);
     layerList.addAll(_layers.value);
@@ -451,7 +456,6 @@ class AppState
       // selection state (incl layer)
       selectionState.selection.delete(keepSelection: false);
       selectionState.selection.addDirectlyAll(list: selectionContent);
-      selectionState.selection.currentLayer = curSelLayer?? getSelectedLayer();
       selectionState.createSelectionLines();
       selectionState.notifyRepaint();
     }

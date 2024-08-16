@@ -116,6 +116,8 @@ class AppState
   final ValueNotifier<String?> filePath = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
+  static const Duration toolTipDuration = Duration(seconds: 1);
+
 
   AppState({required String appDir, required String tempDir, required String cacheDir}) : _appDir = appDir, _cacheDir = cacheDir, _tempDir = tempDir
   {

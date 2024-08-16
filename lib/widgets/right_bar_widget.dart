@@ -105,9 +105,13 @@ class _RightBarWidgetState extends State<RightBarWidget>
                   children: [
                     Padding(
                       padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                      child: IconButton(
-                        onPressed: () {_appState.addNewLayer(select: true);},
-                        icon: const FaIcon(FontAwesomeIcons.plus)
+                      child: Tooltip(
+                        message: "Add New Layer",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton(
+                          onPressed: () {_appState.addNewLayer(select: true);},
+                          icon: const FaIcon(FontAwesomeIcons.plus)
+                        ),
                       ),
                     ),
                     ValueListenableBuilder<List<LayerState>>(

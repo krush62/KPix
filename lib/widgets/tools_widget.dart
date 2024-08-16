@@ -43,8 +43,8 @@ class ToolsWidget extends StatefulWidget
 
 class _ToolsWidgetState extends State<ToolsWidget>
 {
-  AppState appState = GetIt.I.get<AppState>();
-  ToolsWidgetOptions toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
+  final AppState _appState = GetIt.I.get<AppState>();
+  final ToolsWidgetOptions _toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
 
   @override
   void initState()
@@ -56,9 +56,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
   Widget build(BuildContext context)
   {
     return Padding(
-      padding: EdgeInsets.all(toolsWidgetOptions.padding),
+      padding: EdgeInsets.all(_toolsWidgetOptions.padding),
       child: ValueListenableBuilder<ToolType>(
-        valueListenable: appState.selectedToolNotifier,
+        valueListenable: _appState.selectedToolNotifier,
         builder: (BuildContext context, ToolType tool, child) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -73,46 +73,61 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 emptySelectionAllowed: true,
                 multiSelectionEnabled: false,
                 showSelectedIcon: false,
-                onSelectionChanged: (final Set<ToolType> tools) {appState.setToolSelection(tool: tools.first);},
+                onSelectionChanged: (final Set<ToolType> tools) {_appState.setToolSelection(tool: tools.first);},
                 segments: [
                   ButtonSegment(
                     value: ToolType.pencil,
-                    tooltip: toolList[ToolType.pencil]?.title,
-                    label: FaIcon(
-                      toolList[ToolType.pencil]!.icon,
-                      size: toolsWidgetOptions.iconSize,
+                    label: Tooltip(
+                      message: toolList[ToolType.pencil]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
+                        toolList[ToolType.pencil]!.icon,
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
                     )
                   ),
                   ButtonSegment(
                     value: ToolType.erase,
-                    tooltip: toolList[ToolType.erase]?.title,
-                    label: FaIcon(
-                      toolList[ToolType.erase]!.icon,
-                      size: toolsWidgetOptions.iconSize,
+                    label: Tooltip(
+                      message: toolList[ToolType.erase]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
+                        toolList[ToolType.erase]!.icon,
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
                     )
                   ),
                   ButtonSegment(
                     value: ToolType.select,
-                    tooltip: toolList[ToolType.select]?.title,
-                    label: FaIcon(
-                      toolList[ToolType.select]!.icon,
-                      size: toolsWidgetOptions.iconSize,
+                    label: Tooltip(
+                      message: toolList[ToolType.select]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
+                        toolList[ToolType.select]!.icon,
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
                     )
                   ),
                   ButtonSegment(
                     value: ToolType.fill,
-                    tooltip: toolList[ToolType.fill]?.title,
-                    label: FaIcon(
-                      toolList[ToolType.fill]!.icon,
-                      size: toolsWidgetOptions.iconSize,
+                    label: Tooltip(
+                      message: toolList[ToolType.fill]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
+                        toolList[ToolType.fill]!.icon,
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
                     )
                   ),
                   ButtonSegment(
                     value: ToolType.pick,
-                    tooltip: toolList[ToolType.pick]?.title,
-                    label: FaIcon(
-                      toolList[ToolType.pick]!.icon,
-                      size: toolsWidgetOptions.iconSize,
+                    label: Tooltip(
+                      message: toolList[ToolType.pick]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
+                        toolList[ToolType.pick]!.icon,
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
                     )
                   ),
                 ],
@@ -125,47 +140,62 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 emptySelectionAllowed: true,
                 multiSelectionEnabled: false,
                 showSelectedIcon: false,
-                onSelectionChanged: (final Set<ToolType> tools) {appState.setToolSelection(tool: tools.first);},
+                onSelectionChanged: (final Set<ToolType> tools) {_appState.setToolSelection(tool: tools.first);},
                 segments: [
                   ButtonSegment(
-                      value: ToolType.line,
-                      tooltip: toolList[ToolType.line]?.title,
-                      label: FaIcon(
+                    value: ToolType.line,
+                    label: Tooltip(
+                      message: toolList[ToolType.line]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
                         toolList[ToolType.line]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
+                    )
                   ),
                   ButtonSegment(
-                      value: ToolType.shape,
-                      tooltip: toolList[ToolType.shape]?.title,
-                      label: FaIcon(
+                    value: ToolType.shape,
+                    label: Tooltip(
+                      message: toolList[ToolType.shape]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
                         toolList[ToolType.shape]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
+                    )
                   ),
                   ButtonSegment(
-                      value: ToolType.font,
-                      tooltip: toolList[ToolType.font]?.title,
-                      label: FaIcon(
+                    value: ToolType.font,
+                    label: Tooltip(
+                      message: toolList[ToolType.font]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
                         toolList[ToolType.font]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
+                    )
                   ),
                   ButtonSegment(
-                      value: ToolType.spraycan,
-                      tooltip: toolList[ToolType.spraycan]?.title,
-                      label: FaIcon(
+                    value: ToolType.spraycan,
+                    label: Tooltip(
+                      message: toolList[ToolType.spraycan]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
                         toolList[ToolType.spraycan]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
+                    )
                   ),
                   ButtonSegment(
-                      value: ToolType.stamp,
-                      tooltip: toolList[ToolType.stamp]?.title,
-                      label: FaIcon(
+                    value: ToolType.stamp,
+                    label: Tooltip(
+                      message: toolList[ToolType.stamp]?.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: FaIcon(
                         toolList[ToolType.stamp]!.icon,
-                        size: toolsWidgetOptions.iconSize,
-                      )
+                        size: _toolsWidgetOptions.iconSize,
+                      ),
+                    )
                   ),
                 ],
               ),

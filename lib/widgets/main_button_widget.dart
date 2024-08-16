@@ -257,13 +257,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   padding: EdgeInsets.only(right: _options.padding / 2.0),
                   child: CompositedTransformTarget(
                     link: _loadMenuLayerLink,
-                    child: IconButton.outlined(
-                      color: Theme.of(context).primaryColorLight,
-                      icon:  FaIcon(
-                        FontAwesomeIcons.folderOpen,
-                        size: _options.menuIconSize,
+                    child: Tooltip(
+                      message: "Open...",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.folderOpen,
+                          size: _options.menuIconSize,
+                        ),
+                        onPressed: _loadPressed,
                       ),
-                      onPressed: _loadPressed,
                     ),
                   ),
                 )
@@ -274,13 +278,35 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
                   child: CompositedTransformTarget(
                     link: _saveMenuLayerLink,
+                    child: Tooltip(
+                      message: "Save...",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.floppyDisk,
+                          size: _options.menuIconSize,
+                        ),
+                        onPressed: _savePressed,
+                      ),
+                    ),
+                  ),
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                  child: Tooltip(
+                    message: "Options",
+                    waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
                       color: Theme.of(context).primaryColorLight,
                       icon:  FaIcon(
-                        FontAwesomeIcons.floppyDisk,
+                        FontAwesomeIcons.gear,
                         size: _options.menuIconSize,
                       ),
-                      onPressed: _savePressed,
+                      onPressed: _settingsPressed,
                     ),
                   ),
                 )
@@ -289,27 +315,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding / 2.0),
-                  child: IconButton.outlined(
-                    color: Theme.of(context).primaryColorLight,
-                    icon:  FaIcon(
-                      FontAwesomeIcons.gear,
-                      size: _options.menuIconSize,
+                  child: Tooltip(
+                    message: "About",
+                    waitDuration: AppState.toolTipDuration,
+                    child: IconButton.outlined(
+                      color: Theme.of(context).primaryColorLight,
+                      icon:  FaIcon(
+                        FontAwesomeIcons.question,
+                        size: _options.menuIconSize,
+                      ),
+                      onPressed: _questionPressed,
                     ),
-                    onPressed: _settingsPressed,
-                  ),
-                )
-              ),
-              Expanded(
-                flex: 1,
-                child: Padding(
-                  padding: EdgeInsets.only(left: _options.padding / 2.0),
-                  child: IconButton.outlined(
-                    color: Theme.of(context).primaryColorLight,
-                    icon:  FaIcon(
-                      FontAwesomeIcons.question,
-                      size: _options.menuIconSize,
-                    ),
-                    onPressed: _questionPressed,
                   ),
                 )
               ),
@@ -334,13 +350,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, child) {
-                      return IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.rotateLeft,
-                          size: _options.menuIconSize,
+                      return Tooltip(
+                        message: "Undo",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          color: Theme.of(context).primaryColorLight,
+                          icon:  FaIcon(
+                            FontAwesomeIcons.rotateLeft,
+                            size: _options.menuIconSize,
+                          ),
+                          onPressed: hasUndo ? _undoPressed : null,
                         ),
-                        onPressed: hasUndo ? _undoPressed : null,
                       );
                     },
                   ),
@@ -353,13 +373,17 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, child) {
-                      return IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.rotateRight,
-                          size: _options.menuIconSize,
+                      return Tooltip(
+                        message: "Redo",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          color: Theme.of(context).primaryColorLight,
+                          icon:  FaIcon(
+                            FontAwesomeIcons.rotateRight,
+                            size: _options.menuIconSize,
+                          ),
+                          onPressed: hasRedo ? _redoPressed : null,
                         ),
-                        onPressed: hasRedo ? _redoPressed : null,
                       );
                     },
                   ),

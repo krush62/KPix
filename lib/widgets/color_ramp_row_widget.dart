@@ -19,6 +19,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/color_entry_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -99,29 +100,37 @@ class ColorRampRowWidget extends StatefulWidget {
         );
       }
       widgetList.add(
-        IconButton(
-          padding: EdgeInsets.zero,
-          icon: FaIcon(
-            FontAwesomeIcons.sliders,
-            size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
+        Tooltip(
+          message: "Edit Color Ramp",
+          waitDuration: AppState.toolTipDuration,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            icon: FaIcon(
+              FontAwesomeIcons.sliders,
+              size: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize,
+            ),
+            onPressed: () {createKPal(ramp: rampData!);
+            },
+            style: IconButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          onPressed: () {createKPal(ramp: rampData!);
-          },
-          style: IconButton.styleFrom(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+          ),
         )
       );
     } else {
       widgetList.add(
         Expanded(
-          child: IconButton(
-            padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
-            icon: FaIcon(
-              FontAwesomeIcons.plus,
-              size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
+          child: Tooltip(
+            message: "Add New Color Ramp",
+            waitDuration: AppState.toolTipDuration,
+            child: IconButton(
+              padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().colorEntryOptions.buttonPadding),
+              icon: FaIcon(
+                FontAwesomeIcons.plus,
+                size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
+              ),
+              onPressed: () {addNewRampFn!.call();}
             ),
-            onPressed: () {addNewRampFn!.call();}
           )
         )
       );

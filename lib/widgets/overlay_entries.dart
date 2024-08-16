@@ -19,6 +19,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/about_screen_widget.dart';
@@ -139,34 +140,42 @@ class OverlayEntries
                   children: [
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onLoadFile();},
-                        icon: FaIcon(
-                            Icons.file_open,
-                            size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
+                      child: Tooltip(
+                        message: "Open Project",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(
+                              options.buttonSpacing),
+                          onPressed: () {onLoadFile();},
+                          icon: FaIcon(
+                              Icons.file_open,
+                              size: options.buttonHeight),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onLoadPalette();},
-                        icon: FaIcon(
-                            FontAwesomeIcons.palette,
-                            size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
+                      child: Tooltip(
+                        message: "Open Palette",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(
+                              options.buttonSpacing),
+                          onPressed: () {onLoadPalette();},
+                          icon: FaIcon(
+                              FontAwesomeIcons.palette,
+                              size: options.buttonHeight),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor),
+                        ),
                       ),
                     ),
                   ],
@@ -215,66 +224,78 @@ class OverlayEntries
                   children: [
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onSaveFile();},
-                        icon: FaIcon(
+                      child: Tooltip(
+                        message: "Save Project",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(options.buttonSpacing),
+                          onPressed: () {onSaveFile();},
+                          icon: FaIcon(
                             Icons.save,
                             size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             backgroundColor: Theme.of(context).primaryColor),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onSaveAsFile();},
-                        icon: FaIcon(
+                      child: Tooltip(
+                        message: "Save Project As",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(options.buttonSpacing),
+                          onPressed: () {onSaveAsFile();},
+                          icon: FaIcon(
                             Icons.save_as,
                             size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             backgroundColor: Theme.of(context).primaryColor),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onExportFile();},
-                        icon: FaIcon(
+                      child: Tooltip(
+                        message: "Export Project",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(options.buttonSpacing),
+                          onPressed: () {onExportFile();},
+                          icon: FaIcon(
                             Icons.share,
                             size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             backgroundColor: Theme.of(context).primaryColor),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onSavePalette();},
-                        icon: FaIcon(
+                      child: Tooltip(
+                        message: "Save Palette",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(options.buttonSpacing),
+                          onPressed: () {onSavePalette();},
+                          icon: FaIcon(
                             Icons.palette,
                             size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             backgroundColor: Theme.of(context).primaryColor),
+                        ),
                       ),
                     ),
                   ],
@@ -326,42 +347,54 @@ class OverlayEntries
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                            options.buttonSpacing),
-                        onPressed: () {onDelete();},
-                        icon: FaIcon(
-                          FontAwesomeIcons.trashCan,
-                          size: options.buttonHeight),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: Theme.of(context).primaryColor),
-                        ),
-                      IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(options.buttonSpacing),
-                        onPressed: () {onDuplicate();},
-                        icon: FaIcon(
-                          FontAwesomeIcons.clone,
-                          size: options.buttonHeight,),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor)
+                      Tooltip(
+                        message: "Delete Layer",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(
+                              options.buttonSpacing),
+                          onPressed: () {onDelete();},
+                          icon: FaIcon(
+                            FontAwesomeIcons.trashCan,
+                            size: options.buttonHeight),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor),
+                          ),
                       ),
-                      IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(options.buttonSpacing),
-                        onPressed: () {onMergeDown();},
-                        icon: FaIcon(
-                          FontAwesomeIcons.turnDown,
-                          size: options.buttonHeight,),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor)
+                      Tooltip(
+                        message: "Duplicate Layer",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(options.buttonSpacing),
+                          onPressed: () {onDuplicate();},
+                          icon: FaIcon(
+                            FontAwesomeIcons.clone,
+                            size: options.buttonHeight,),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor)
+                        ),
+                      ),
+                      Tooltip(
+                        message: "Merge Down Layer",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(options.buttonSpacing),
+                          onPressed: () {onMergeDown();},
+                          icon: FaIcon(
+                            FontAwesomeIcons.turnDown,
+                            size: options.buttonHeight,),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor)
+                        ),
                       ),
                     ],
                   )

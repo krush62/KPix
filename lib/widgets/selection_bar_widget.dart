@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/helper.dart';
 
 class SelectionBarWidgetOptions
 {
@@ -68,134 +69,170 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
             children: [
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Select All",
-                  onPressed: _selectionState.selectAll,
-                  icon: FaIcon(
-                      FontAwesomeIcons.objectGroup,
-                      size: _options.iconHeight
-                  )
-              ),
+                child: Tooltip(
+                  message: "Select All",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selectAll,
+                    icon: FaIcon(
+                        FontAwesomeIcons.objectGroup,
+                        size: _options.iconHeight
+                    )
+                                ),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                    tooltip: "Deselect",
-                    onPressed: _selectionState.selection.isEmpty() ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
+                child: Tooltip(
+                  message: "Deselect",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                      onPressed: _selectionState.selection.isEmpty() ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
+                      icon: FaIcon(
+                        FontAwesomeIcons.objectUngroup,
+                        size: _options.iconHeight
+                      )
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(_options.padding),
+                child: Tooltip(
+                  message: "Inverse Selection",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                      onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.inverse,
+                      icon: FaIcon(
+                        FontAwesomeIcons.circleHalfStroke,
+                        size: _options.iconHeight
+                      )
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(_options.padding),
+                child: Tooltip(
+                  message: "Copy",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copy,
                     icon: FaIcon(
-                      FontAwesomeIcons.objectUngroup,
+                      FontAwesomeIcons.copy,
                       size: _options.iconHeight
                     )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                    tooltip: "Inverse Selection",
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.inverse,
+                child: Tooltip(
+                  message: "Copy Merged",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copyMerged,
                     icon: FaIcon(
-                      FontAwesomeIcons.circleHalfStroke,
+                      FontAwesomeIcons.clone,
                       size: _options.iconHeight
                     )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Copy",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copy,
-                  icon: FaIcon(
-                    FontAwesomeIcons.copy,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Cut",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.cut,
+                    icon: FaIcon(
+                      FontAwesomeIcons.scissors,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Copy Merged",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copyMerged,
-                  icon: FaIcon(
-                    FontAwesomeIcons.clone,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Paste",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.clipboard == null ? null : _selectionState.paste,
+                    icon: FaIcon(
+                      FontAwesomeIcons.paste,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Cut",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.cut,
-                  icon: FaIcon(
-                    FontAwesomeIcons.scissors,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Paste As New Layer",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.clipboard == null ? null : _pasteNewPressed,
+                    icon: FaIcon(
+                      FontAwesomeIcons.layerGroup,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Paste",
-                  onPressed: _selectionState.clipboard == null ? null : _selectionState.paste,
-                  icon: FaIcon(
-                    FontAwesomeIcons.paste,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Horizontal Flip",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipH,
+                    icon: FaIcon(
+                      FontAwesomeIcons.arrowsLeftRight,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Paste As New Layer",
-                  onPressed: _selectionState.clipboard == null ? null : _pasteNewPressed,
-                  icon: FaIcon(
-                    FontAwesomeIcons.layerGroup,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Vertical Flip",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipV,
+                    icon: FaIcon(
+                      FontAwesomeIcons.arrowsUpDown,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Flip Horizontal",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipH,
-                  icon: FaIcon(
-                    FontAwesomeIcons.arrowsLeftRight,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Rotate 90° Clockwise",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.rotate,
+                    icon: FaIcon(
+                      FontAwesomeIcons.rotateRight,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Flip Vertical",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipV,
-                  icon: FaIcon(
-                    FontAwesomeIcons.arrowsUpDown,
-                    size: _options.iconHeight
-                  )
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Rotate 90°",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.rotate,
-                  icon: FaIcon(
-                    FontAwesomeIcons.rotateRight,
-                    size: _options.iconHeight
-                  )
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: IconButton.outlined(
-                  tooltip: "Delete",
-                  onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.delete,
-                  icon: FaIcon(
-                    FontAwesomeIcons.ban,
-                    size: _options.iconHeight
-                  )
+                child: Tooltip(
+                  message: "Delete",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.delete,
+                    icon: FaIcon(
+                      FontAwesomeIcons.ban,
+                      size: _options.iconHeight
+                    )
+                  ),
                 ),
               ),
             ],

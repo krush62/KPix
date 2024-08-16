@@ -622,26 +622,29 @@ class _LayerWidgetState extends State<LayerWidget>
                           child: ValueListenableBuilder<LayerVisibilityState>(
                             valueListenable: widget.layerState.visibilityState,
                             builder: (final BuildContext context, final LayerVisibilityState visibility, final Widget? child) {
-                              return IconButton.outlined(
-                                tooltip: _visibilityTooltipMap[visibility],
-                                padding: EdgeInsets.zero,
-                                constraints: BoxConstraints(
-                                  maxHeight: _options.buttonSizeMax,
-                                  maxWidth: _options.buttonSizeMax,
-                                  minWidth: _options.buttonSizeMin,
-                                  minHeight: _options.buttonSizeMin,
+                              return Tooltip(
+                                message: _visibilityTooltipMap[visibility],
+                                waitDuration: AppState.toolTipDuration,
+                                child: IconButton.outlined(
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(
+                                    maxHeight: _options.buttonSizeMax,
+                                    maxWidth: _options.buttonSizeMax,
+                                    minWidth: _options.buttonSizeMin,
+                                    minHeight: _options.buttonSizeMin,
+                                  ),
+                                  style: ButtonStyle(
+                                    tapTargetSize: MaterialTapTargetSize
+                                        .shrinkWrap,
+                                    backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : null,
+                                    iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColor) : null,
+                                  ),
+                                  onPressed: _visibilityButtonPressed,
+                                  icon: FaIcon(
+                                    _visibilityIconMap[visibility],
+                                    size: _options.iconSize,
+                                  )
                                 ),
-                                style: ButtonStyle(
-                                  tapTargetSize: MaterialTapTargetSize
-                                      .shrinkWrap,
-                                  backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : null,
-                                  iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColor) : null,
-                                ),
-                                onPressed: _visibilityButtonPressed,
-                                icon: FaIcon(
-                                  _visibilityIconMap[visibility],
-                                  size: _options.iconSize,
-                                )
                               );
                             }
                           ),
@@ -651,26 +654,29 @@ class _LayerWidgetState extends State<LayerWidget>
                           child: ValueListenableBuilder<LayerLockState>(
                             valueListenable: widget.layerState.lockState,
                             builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
-                              return IconButton.outlined(
-                                tooltip: _lockStringMap[lock],
-                                padding: EdgeInsets.zero,
-                                constraints: BoxConstraints(
-                                  maxHeight: _options.buttonSizeMax,
-                                  maxWidth: _options.buttonSizeMax,
-                                  minWidth: _options.buttonSizeMin,
-                                  minHeight: _options.buttonSizeMin,
+                              return Tooltip(
+                                message: _lockStringMap[lock],
+                                waitDuration: AppState.toolTipDuration,
+                                child: IconButton.outlined(
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(
+                                    maxHeight: _options.buttonSizeMax,
+                                    maxWidth: _options.buttonSizeMax,
+                                    minWidth: _options.buttonSizeMin,
+                                    minHeight: _options.buttonSizeMin,
+                                  ),
+                                  style: ButtonStyle(
+                                    tapTargetSize: MaterialTapTargetSize
+                                        .shrinkWrap,
+                                    backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
+                                    iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
+                                  ),
+                                  onPressed: _lockButtonPressed,
+                                  icon: FaIcon(
+                                    _lockIconMap[lock],
+                                    size: _options.iconSize,
+                                  )
                                 ),
-                                style: ButtonStyle(
-                                  tapTargetSize: MaterialTapTargetSize
-                                      .shrinkWrap,
-                                  backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
-                                  iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
-                                ),
-                                onPressed: _lockButtonPressed,
-                                icon: FaIcon(
-                                  _lockIconMap[lock],
-                                  size: _options.iconSize,
-                                )
                               );
                             }
                           ),
@@ -697,8 +703,10 @@ class _LayerWidgetState extends State<LayerWidget>
                         left: _options.innerPadding),
                     child: CompositedTransformTarget(
                       link: settingsLink,
-                      child: IconButton.outlined(
-                          tooltip: "Settings",
+                      child: Tooltip(
+                        message: "Settings...",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
                           constraints: BoxConstraints(
                             maxHeight: _options.buttonSizeMax,
                             maxWidth: _options.buttonSizeMax,
@@ -713,6 +721,7 @@ class _LayerWidgetState extends State<LayerWidget>
                             FontAwesomeIcons.bars,
                             size: _options.iconSize,
                           )
+                        ),
                       ),
                     ),
                   )

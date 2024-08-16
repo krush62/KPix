@@ -15,7 +15,6 @@
  */
 
 import 'dart:collection';
-import 'dart:isolate';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';

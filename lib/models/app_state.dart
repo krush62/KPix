@@ -53,6 +53,7 @@ class AppState
   {
     return _selectedTool;
   }
+  ToolType _previousDrawTool = ToolType.pencil;
   late IToolOptions _currentToolOptions;
   final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier([]);
   List<KPalRampData> get colorRamps
@@ -725,24 +726,37 @@ class AppState
 
   void colorSelected({required final ColorReference? color})
   {
-    _selectedColor.value = color;
-    GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
+    if (_selectedColor.value != color)
+    {
+      _selectedColor.value = color;
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
+      if (!Tool.isDrawTool(type: _selectedTool.value))
+      {
+        setToolSelection(tool: _previousDrawTool);
+      }
+    }
   }
 
 
   void setToolSelection({required final ToolType tool})
   {
-    for (final ToolType k in _toolMap.keys)
+    if (tool != _selectedTool.value)
     {
-      final bool shouldSelect = (k == tool);
-      if (_toolMap[k] != shouldSelect)
+      for (final ToolType k in _toolMap.keys)
       {
-        _toolMap[k] = shouldSelect;
+        final bool shouldSelect = (k == tool);
+        if (_toolMap[k] != shouldSelect)
+        {
+          _toolMap[k] = shouldSelect;
+        }
       }
-
+      if (Tool.isDrawTool(type: tool))
+      {
+        _previousDrawTool = tool;
+      }
+      _selectedTool.value = tool;
+      _currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
     }
-    _selectedTool.value = tool;
-    _currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
   }
 
   void canvasTransform({required final CanvasTransformation transformation})

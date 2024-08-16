@@ -43,6 +43,19 @@ class Tool
   final IconData icon;
 
   const Tool({required this.title, required this.icon});
+
+  static bool isDrawTool({required final ToolType type})
+  {
+    return (
+      type == ToolType.pencil ||
+      type == ToolType.shape ||
+      type == ToolType.fill ||
+      type == ToolType.font ||
+      type == ToolType.spraycan ||
+      type == ToolType.line ||
+      type == ToolType.stamp
+    );
+  }
 }
 
 const Map<ToolType, Tool> toolList =
@@ -58,6 +71,8 @@ const Map<ToolType, Tool> toolList =
   ToolType.line : Tool(icon: Icons.multiline_chart, title: "Line"),
   ToolType.stamp : Tool(icon: FontAwesomeIcons.stamp, title: "Stamp"),
 };
+
+
 
 class LabColor
 {

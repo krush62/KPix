@@ -17,6 +17,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -117,77 +118,89 @@ class ShapeOptions extends IToolOptions
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              flex: 1,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Size",
-                  style: Theme.of(context).textTheme.labelLarge,
-                )
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<ShapeShape>(
-                valueListenable: shapeOptions.shape,
-                builder: (final BuildContext context, final ShapeShape shape, final Widget? child)
-                {
-                  return SegmentedButton<ShapeShape>(
-                    segments: [
-                      ButtonSegment(
-                        value: ShapeShape.triangle,
-                        label: Icon(
-                          Icons.change_history,
-                          size: toolSettingsWidgetOptions.smallIconSize)),
-                      ButtonSegment(
-                        value: ShapeShape.rectangle,
-                        tooltip: "Rectangle",
-                        label: Icon(
-                          Icons.check_box_outline_blank,
-                          size: toolSettingsWidgetOptions.smallIconSize,)),
-                      ButtonSegment(
-                        value: ShapeShape.diamond,
-                        tooltip: "Mid-Angle Rectangle",
-                        label: Transform.rotate(
-                          angle: -pi / 4,
-                          child: Icon(
-                            Icons.check_box_outline_blank,
-                            size: toolSettingsWidgetOptions.smallIconSize,),)),
-                      ButtonSegment(
-                        value: ShapeShape.ellipse,
-                        tooltip: "Ellipse",
-                        label: Icon(
-                          Icons.circle_outlined,
-                          size: toolSettingsWidgetOptions.smallIconSize,)),
-                      ButtonSegment(
-                        value: ShapeShape.ngon,
-                        tooltip: "Regular Polygon",
-                        label: Icon(
-                          Icons.hexagon_outlined,
-                          size: toolSettingsWidgetOptions.smallIconSize,)),
-                      ButtonSegment(
-                        value: ShapeShape.star,
-                        tooltip: "Star",
-                        label: Icon(
-                          Icons.star_outline,
-                          size: toolSettingsWidgetOptions.smallIconSize,)),
-                    ],
-                    selected: <ShapeShape>{shape},
-                    emptySelectionAllowed: false,
-                    multiSelectionEnabled: false,
-                    showSelectedIcon: false,
-                    onSelectionChanged: (Set<ShapeShape> shapes) {shapeOptions.shape.value = shapes.first;},
-                  );
-                },
-              ),
-            ),
-
-          ],
+        ValueListenableBuilder<ShapeShape>(
+          valueListenable: shapeOptions.shape,
+          builder: (final BuildContext context, final ShapeShape shape, final Widget? child)
+          {
+            return SegmentedButton<ShapeShape>(
+              segments: [
+                ButtonSegment(
+                  value: ShapeShape.triangle,
+                  label: Tooltip(
+                    message: "Triangle",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Icon(
+                      Icons.change_history,
+                      size: toolSettingsWidgetOptions.smallIconSize
+                    ),
+                  )
+                ),
+                ButtonSegment(
+                  value: ShapeShape.rectangle,
+                  label: Tooltip(
+                    message: "Rectangle",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Icon(
+                      Icons.check_box_outline_blank,
+                      size: toolSettingsWidgetOptions.smallIconSize,
+                    ),
+                  )
+                ),
+                ButtonSegment(
+                  value: ShapeShape.diamond,
+                  label: Tooltip(
+                    message: "Mid-Angle Rectangle",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Transform.rotate(
+                      angle: -pi / 4,
+                      child: Icon(
+                        Icons.check_box_outline_blank,
+                        size: toolSettingsWidgetOptions.smallIconSize,
+                      ),
+                    ),
+                  )
+                ),
+                ButtonSegment(
+                  value: ShapeShape.ellipse,
+                  label: Tooltip(
+                    message: "Ellipse",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Icon(
+                      Icons.circle_outlined,
+                      size: toolSettingsWidgetOptions.smallIconSize,
+                    ),
+                  )
+                ),
+                ButtonSegment(
+                  value: ShapeShape.ngon,
+                  label: Tooltip(
+                    message: "Regular Polygon",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Icon(
+                      Icons.hexagon_outlined,
+                      size: toolSettingsWidgetOptions.smallIconSize,
+                    ),
+                  )
+                ),
+                ButtonSegment(
+                  value: ShapeShape.star,
+                  label: Tooltip(
+                    message: "Star",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Icon(
+                      Icons.star_outline,
+                      size: toolSettingsWidgetOptions.smallIconSize,
+                    ),
+                  )
+                ),
+              ],
+              selected: <ShapeShape>{shape},
+              emptySelectionAllowed: false,
+              multiSelectionEnabled: false,
+              showSelectedIcon: false,
+              onSelectionChanged: (final Set<ShapeShape> shapes) {shapeOptions.shape.value = shapes.first;},
+            );
+          },
         ),
         Row(
           mainAxisSize: MainAxisSize.max,
@@ -309,7 +322,7 @@ class ShapeOptions extends IToolOptions
                               min: shapeOptions.cornerRadiusMin.toDouble(),
                               max: shapeOptions.cornerRadiusMax.toDouble(),
                               divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
-                              onChanged: (double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
+                              onChanged: (final double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
                               label: cornerRadius.round().toString(),
                             );
                           }
@@ -383,7 +396,7 @@ class ShapeOptions extends IToolOptions
                               min: shapeOptions.cornerCountMin.toDouble(),
                               max: shapeOptions.cornerCountMax.toDouble(),
                               divisions: (shapeOptions.cornerCountMax - shapeOptions.cornerCountMin),
-                              onChanged: (double newVal) {shapeOptions.cornerCount.value = newVal.round();},
+                              onChanged: (final double newVal) {shapeOptions.cornerCount.value = newVal.round();},
                               label: corners.round().toString(),
                             );
                           }

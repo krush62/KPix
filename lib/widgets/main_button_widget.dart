@@ -58,6 +58,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _paletteWarningDialog;
   late KPixOverlay _exportDialog;
   late KPixOverlay _aboutDialog;
+  late KPixOverlay _preferencesDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -100,6 +101,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _aboutDialog = OverlayEntries.getAboutDialog(
       onDismiss: _closeAllMenus,
       canvasSize: _appState.canvasSize);
+    _preferencesDialog = OverlayEntries.getPreferencesDialog(
+      onDismiss: _reloadPreferences,
+      onAccept: _savePreferencesPressed
+    );
   }
 
   void _exportFilePressed({required final ExportData exportData, required final ExportTypeEnum exportType})
@@ -128,6 +133,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _paletteWarningDialog.hide();
     _exportDialog.hide();
     _aboutDialog.hide();
+    _preferencesDialog.hide();
   }
 
   void _loadPressed()
@@ -213,10 +219,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _closeAllMenus();
   }
 
-  //TODO
   void _settingsPressed()
   {
-    //print("SHOW SETTINGS");
+    _preferencesDialog.show(context);
   }
 
   void _questionPressed()
@@ -232,6 +237,16 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _redoPressed()
   {
     _appState.redoPressed();
+  }
+
+  void _savePreferencesPressed()
+  {
+    GetIt.I.get<PreferenceManager>().saveUserPrefs().then((void _){_closeAllMenus();});
+  }
+
+  void _reloadPreferences()
+  {
+    GetIt.I.get<PreferenceManager>().loadPreferences().then((void _){_closeAllMenus();});
   }
 
 
@@ -298,7 +313,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding / 2.0),
                   child: Tooltip(
-                    message: "Options",
+                    message: "Preferences",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
                       color: Theme.of(context).primaryColorLight,

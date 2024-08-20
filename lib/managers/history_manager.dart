@@ -16,9 +16,7 @@
 
 import 'dart:collection';
 
-import 'package:flutter/cupertino.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
+import 'package:flutter/material.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
@@ -26,12 +24,6 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 
-
-class HistoryManagerOptions
-{
-  final int stepCount;
-  HistoryManagerOptions({required this.stepCount});
-}
 
 class HistoryRampData
 {
@@ -170,18 +162,40 @@ class HistoryManager
 {
   final ValueNotifier<bool> hasUndo = ValueNotifier(false);
   final ValueNotifier<bool> hasRedo = ValueNotifier(false);
-  final int _maxEntries = GetIt.I.get<PreferenceManager>().historyManagerOptions.stepCount;
+  int _maxEntries;
   int _curPos = -1;
   final Queue<HistoryState> _states = Queue();
+
+  HistoryManager({required int maxEntries}) : _maxEntries = maxEntries;
 
   String getCurrentDescription()
   {
     return _states.elementAt(_curPos).description;
   }
 
-  void addState({required final AppState appState, required final String description, final setHasChanges = true})
+  void changeMaxEntries({required int maxEntries})
   {
-    //print("ADDING STATE: $description");
+    if (maxEntries < _maxEntries && _states.length > maxEntries)
+    {
+      _removeFutureEntries();
+      final int deleteCount = _states.length - maxEntries;
+      for (int i = 0; i < deleteCount; i++)
+      {
+        _states.removeFirst();
+      }
+      _curPos -= deleteCount;
+      if (_curPos < 0)
+      {
+        _curPos = 0;
+      }
+
+    }
+    _maxEntries = maxEntries;
+    _updateNotifiers();
+  }
+
+  void _removeFutureEntries()
+  {
     if (_curPos >= 0 && _curPos < _states.length - 1)
     {
       for (int i = 0; i < (_states.length - _curPos); i++)
@@ -190,7 +204,11 @@ class HistoryManager
       }
       _curPos = _states.length - 1;
     }
+  }
 
+  void addState({required final AppState appState, required final String description, final setHasChanges = true})
+  {
+    _removeFutureEntries();
     _states.add(HistoryState.fromAppState(appState: appState, description: description));
     _curPos++;
     final int entriesLeft = (_maxEntries - _states.length);

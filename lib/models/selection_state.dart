@@ -165,6 +165,13 @@ class SelectionState with ChangeNotifier
     }
   }
 
+  void addNewSelectionWithContent({required final CoordinateColorMap colorMap})
+  {
+    deselect(notify: false, addToHistoryStack: false);
+    selection.addDirectlyAll(list: colorMap);
+    createSelectionLines();
+  }
+
   Set<CoordinateSetI> _getFloodReferences({
     required final LayerState layer,
     required final CoordinateSetI start,

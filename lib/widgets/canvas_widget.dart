@@ -120,8 +120,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   late KPixPainter kPixPainter = KPixPainter(
     appState: appState,
     offset: _canvasOffset,
-    checkerboardColor1: Theme.of(context).primaryColor,
-    checkerboardColor2: Theme.of(context).primaryColorLight,
     coords: _cursorPos,
     isDragging: _isDragging,
     stylusLongMoveStarted: _stylusLongMoveStarted,

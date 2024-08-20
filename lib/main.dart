@@ -39,13 +39,44 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 
+
+class ThemeNotifier extends ChangeNotifier
+{
+  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode get themeMode
+  {
+   return _themeMode;
+  }
+
+  set themeMode(final ThemeMode theme)
+  {
+    _themeMode = theme;
+    notifyListeners();
+  }
+
+  @override
+  void notifyListeners()
+  {
+      super.notifyListeners();
+  }
+}
+
+
+ThemeNotifier themeSettings = ThemeNotifier();
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-      MaterialApp(
-          home: const KPixApp(),
-          theme: KPixTheme.monochromeTheme,
-          darkTheme: KPixTheme.monochromeThemeDark,
+      AnimatedBuilder(
+        animation: themeSettings,
+        builder: (final BuildContext context, final Widget? child) {
+          return MaterialApp(
+            home: const KPixApp(),
+            theme: KPixTheme.monochromeTheme,
+            darkTheme: KPixTheme.monochromeThemeDark,
+            themeMode: themeSettings.themeMode,
+          );
+        },
 
       )
   );
@@ -112,7 +143,7 @@ class _KPixAppState extends State<KPixApp>
     appState.setDefaultPalette();
     appState.addNewLayer(select: true, addToHistoryStack: false);
 
-    GetIt.I.registerSingleton<HistoryManager>(HistoryManager());
+    GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
     GetIt.I.get<HistoryManager>().addState(appState: appState, description: "initial", setHasChanges: false);
     if (context.mounted)
     {
@@ -127,7 +158,14 @@ class _KPixAppState extends State<KPixApp>
         outsideCancelable: false,
         message: "There are unsaved changes, do you want to save first?");
 
+    final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
+    if (themeSettings.themeMode != currentTheme)
+    {
+      themeSettings.themeMode =  currentTheme;
+    }
+
     initialized.value = true;
+
   }
 
   void _closePressed()
@@ -172,7 +210,7 @@ class _KPixAppState extends State<KPixApp>
       {
         if (init)
         {
-          return ToastProvider(child: MainWidget(closePressed: _closePressed,));
+          return ToastProvider(child: MainWidget(closePressed: _closePressed));
         }
         else
         {

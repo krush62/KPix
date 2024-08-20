@@ -18,6 +18,7 @@ import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -29,6 +30,7 @@ import 'package:kpix/widgets/layer_widget.dart';
 class ShapePainter extends IToolPainter
 {
   final ShapeOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.shapeOptions;
+  final BehaviorPreferenceContent _behaviorPreferenceContent = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final CoordinateSetI _selectionStart = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _selectionEnd = CoordinateSetI(x: 0, y: 0);
   Offset _lastStartPos = const Offset(0,0);
@@ -130,10 +132,10 @@ class ShapePainter extends IToolPainter
       {
         appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
-      /*else if (!_shaderOptions.isEnabled.value)
+      else if (!shaderOptions.isEnabled.value && _behaviorPreferenceContent.selectAfterInsert.value)
       {
-        appState.selectionState.add(data: _drawingPixels, notify: false);
-      }*/
+        appState.selectionState.addNewSelectionWithContent(colorMap: _drawingPixels);
+      }
       else
       {
         layer.setDataAll(list: _drawingPixels);

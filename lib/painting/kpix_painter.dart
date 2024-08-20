@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -43,7 +44,6 @@ class KPixPainterOptions
   final double cursorBorderWidth;
   final double selectionSolidStrokeWidth;
   final double pixelExtension;
-  final int checkerBoardSize;
   final double selectionPolygonCircleRadius;
   final double selectionStrokeWidthLarge;
   final double selectionStrokeWidthSmall;
@@ -54,7 +54,6 @@ class KPixPainterOptions
     required this.cursorBorderWidth,
     required this.selectionSolidStrokeWidth,
     required this.pixelExtension,
-    required this.checkerBoardSize,
     required this.selectionPolygonCircleRadius,
     required this.selectionStrokeWidthLarge,
     required this.selectionStrokeWidthSmall,
@@ -109,10 +108,11 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<bool> _secondaryDown;
   final ValueNotifier<Offset> _primaryPressStart;
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
-  final Color checkerboardColor1;
-  final Color checkerboardColor2;
+  final GuiPreferenceContent _guiOptions = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   late Map<ToolType, IToolPainter> toolPainterMap;
   late Size latestSize = const Size(0,0);
+  late int _latestRasterSize = 8;
+  late int _latestContrast = 50;
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
 
@@ -120,8 +120,6 @@ class KPixPainter extends CustomPainter
   KPixPainter({
     required AppState appState,
     required ValueNotifier<Offset> offset,
-    required this.checkerboardColor1,
-    required this.checkerboardColor2,
     required ValueNotifier<CoordinateSetD?> coords,
     required ValueNotifier<bool> primaryDown,
     required ValueNotifier<bool> secondaryDown,
@@ -160,9 +158,11 @@ class KPixPainter extends CustomPainter
   void paint(Canvas canvas, Size size)
   {
     toolPainter = toolPainterMap[_appState.selectedTool];
-    if (size != latestSize)
+    if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
     {
       latestSize = size;
+      _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
+      _latestContrast = _guiOptions.rasterContrast.value;
       _createCheckerboard();
     }
 
@@ -350,9 +350,9 @@ class KPixPainter extends CustomPainter
       }
       else
       {
-        drawParams.paint.color = checkerboardColor1;
+        drawParams.paint.color = Colors.black;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize + _options.cursorBorderWidth, drawParams.paint);
-        drawParams.paint.color = checkerboardColor2;
+        drawParams.paint.color = Colors.white;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize, drawParams.paint);
       }
 
@@ -475,6 +475,14 @@ class KPixPainter extends CustomPainter
 
   }
 
+  (ui.Color, ui.Color) getCheckerBoardColors(final int contrast)
+  {
+    final int difference = (contrast.toDouble() * (127.0 / rasterContrastMax)).toInt();
+    final int val1 = 127 + difference;
+    final int val2 = 128 - difference;
+    return (ui.Color.fromARGB(255, val1, val1, val1), ui.Color.fromARGB(255, val2, val2, val2));
+  }
+
   void _createCheckerboard()
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
@@ -483,22 +491,22 @@ class KPixPainter extends CustomPainter
     bool rowFlip = false;
     bool colFlip = false;
 
+    final (ui.Color, ui.Color) checkerColors = getCheckerBoardColors(_latestContrast);
 
-
-    for (int x = 0; x < latestSize.width; x += _options.checkerBoardSize)
+    for (int x = 0; x < latestSize.width; x += _latestRasterSize)
     {
       colFlip = rowFlip;
-      for (int y = 0; y < latestSize.height; y += _options.checkerBoardSize)
+      for (int y = 0; y < latestSize.height; y += _latestRasterSize)
       {
-        paint.color = colFlip ? checkerboardColor1 : checkerboardColor2;
-        int width = _options.checkerBoardSize;
-        int height = _options.checkerBoardSize;
-        if (x + _options.checkerBoardSize > latestSize.width.floor())
+        paint.color = colFlip ? checkerColors.$1 : checkerColors.$2;
+        int width = _latestRasterSize;
+        int height = _latestRasterSize;
+        if (x + _latestRasterSize > latestSize.width.floor())
         {
           width = latestSize.width.floor() - x;
         }
 
-        if (y + _options.checkerBoardSize > latestSize.height.floor())
+        if (y + _latestRasterSize > latestSize.height.floor())
         {
           height = latestSize.height.floor() - y;
         }

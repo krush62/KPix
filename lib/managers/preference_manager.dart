@@ -15,7 +15,9 @@
  */
 
 // ignore_for_file: constant_identifier_names
+import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/main.dart';
@@ -47,6 +49,7 @@ import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/widgets/shader_widget.dart';
+import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../kpal/kpal_widget.dart';
 
@@ -300,10 +303,15 @@ enum PreferenceInt
   KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
 
   Painter_CheckerBoardSize(defaultValue: 8),
+  Painter_CheckerBoardContrast(defaultValue: 25),
 
   ColorNames_Scheme(defaultValue: 0),
 
   HistoryOptions_Steps(defaultValue: 50),
+
+  ThemeType(defaultValue: 0),
+
+
 
   ;
 
@@ -333,6 +341,8 @@ enum PreferenceBool
   Tool_Wand_Continuous(defaultValue: true),
   Tool_Stamp_FlipH(defaultValue: false),
   Tool_Stamp_FlipV(defaultValue: false),
+
+  SelectAfterInsert(defaultValue: false),
   ;
   const PreferenceBool({
     required this.defaultValue
@@ -356,30 +366,94 @@ enum PreferenceString
 
 class _DoublePair
 {
-  final double value;
-  bool changed = false;
-  _DoublePair(double val) : value = val;
+  double _value;
+  bool _changed = false;
+  _DoublePair({required final double val}) : _value=val;
+  double get value
+  {
+    return _value;
+  }
+  set value(final double newVal)
+  {
+    if (value != newVal)
+    {
+      _changed = true;
+      _value = newVal;
+    }
+  }
+  bool get changed
+  {
+    return _changed;
+  }
 }
 
 class _IntPair
 {
-  final int value;
-  bool changed = false;
-  _IntPair(int val) : value = val;
+  int _value;
+  bool _changed = false;
+  _IntPair({required final int val}) : _value=val;
+  int get value
+  {
+    return _value;
+  }
+  set value(final int newVal)
+  {
+    if (value != newVal)
+    {
+      _changed = true;
+      _value = newVal;
+    }
+  }
+  bool get changed
+  {
+    return _changed;
+  }
 }
 
 class _BoolPair
 {
-  final bool value;
-  bool changed = false;
-  _BoolPair(bool val) : value = val;
+  bool _value;
+  bool _changed = false;
+  _BoolPair({required final bool val}) : _value=val;
+  bool get value
+  {
+    return _value;
+  }
+  set value(final bool newVal)
+  {
+    if (value != newVal)
+    {
+      _changed = true;
+      _value = newVal;
+    }
+  }
+  bool get changed
+  {
+    return _changed;
+  }
 }
 
 class _StringPair
 {
-  final String value;
-  bool changed = false;
-  _StringPair(String val) : value = val;
+  String _value;
+  bool _changed = false;
+  _StringPair({required final String val}) : _value=val;
+  String get value
+  {
+    return _value;
+  }
+  set value(final String newVal)
+  {
+    if (value != newVal)
+    {
+      _changed = true;
+      _value = newVal;
+    }
+  }
+  bool get changed
+  {
+    return _changed;
+  }
 }
 
 class PreferenceManager
@@ -414,22 +488,23 @@ class PreferenceManager
   late KPalConstraints kPalConstraints;
   late KPalWidgetOptions kPalWidgetOptions;
 
-  late HistoryManagerOptions historyManagerOptions;
-
   late ColorNames colorNames;
 
   final FontManager _fontManager;
   final StampManager _stampManager;
 
+  late GuiPreferenceContent guiPreferenceContent;
+  late BehaviorPreferenceContent behaviorPreferenceContent;
+
   PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
   {
     _init();
-    _loadHistoryOptions();
     _loadWidgetOptions();
     _loadToolOptions();
     _loadKPalOptions();
     _loadColorNames();
     _loadPainterOptions();
+    loadPreferences();
 
   }
 
@@ -437,22 +512,22 @@ class PreferenceManager
   {
     for (PreferenceDouble dblEnum in PreferenceDouble.values)
     {
-      _doubleMap[dblEnum] = _DoublePair(_prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
+      _doubleMap[dblEnum] = _DoublePair(val: _prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
     }
 
     for (PreferenceInt intEnum in PreferenceInt.values)
     {
-      _intMap[intEnum] = _IntPair(_prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
+      _intMap[intEnum] = _IntPair(val: _prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
     }
 
     for (PreferenceBool boolEnum in PreferenceBool.values)
     {
-      _boolMap[boolEnum] = _BoolPair(_prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
+      _boolMap[boolEnum] = _BoolPair(val: _prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
     }
 
     for (PreferenceString stringEnum in PreferenceString.values)
     {
-      _stringMap[stringEnum] = _StringPair(_prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
+      _stringMap[stringEnum] = _StringPair(val: _prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
     }
   }
 
@@ -477,29 +552,37 @@ class PreferenceManager
   }
 
 
-   Future<void> savePreferences()
-  async {
-    _doubleMap.forEach((key, value)
+   Future<void> _savePreferences() async
+   {
+    _doubleMap.forEach((final PreferenceDouble key, final _DoublePair value)
     {
       if (value.changed)
       {
         _prefs.setDouble(key.name, value.value);
       }
     });
-    _intMap.forEach((key, value)
+    _intMap.forEach((final PreferenceInt key, final _IntPair value)
     {
       if (value.changed)
       {
         _prefs.setInt(key.name, value.value);
       }
     });
+    _boolMap.forEach((final PreferenceBool key, final _BoolPair value)
+    {
+      if (value.changed)
+      {
+        _prefs.setBool(key.name, value.value);
+      }
+    });
+    _stringMap.forEach((final PreferenceString key, final _StringPair value)
+    {
+      if (value.changed)
+      {
+        _prefs.setString(key.name, value.value);
+      }
+    });
   }
-
-  void _loadHistoryOptions()
-  {
-    historyManagerOptions = HistoryManagerOptions(stepCount: _getValueI(PreferenceInt.HistoryOptions_Steps));
-  }
-
 
   void _loadWidgetOptions()
   {
@@ -780,7 +863,6 @@ class PreferenceManager
     kPixPainterOptions = KPixPainterOptions(
         cursorSize: _getValueD(PreferenceDouble.Painter_CursorSize),
         cursorBorderWidth: _getValueD(PreferenceDouble.Painter_CursorBorderWidth),
-        checkerBoardSize: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
         pixelExtension: _getValueD(PreferenceDouble.Painter_PixelExtension),
         selectionSolidStrokeWidth: _getValueD(PreferenceDouble.Painter_SelectionSolidStrokeWidth),
         selectionPolygonCircleRadius: _getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
@@ -789,5 +871,48 @@ class PreferenceManager
     );
   }
 
+  Future<void> loadPreferences() async
+  {
+    guiPreferenceContent = GuiPreferenceContent(
+      colorNameSchemeValue: _getValueI(PreferenceInt.ColorNames_Scheme),
+      rasterContrast: _getValueI(PreferenceInt.Painter_CheckerBoardContrast),
+      rasterSizeValue: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
+      themeTypeValue: _getValueI(PreferenceInt.ThemeType)
+    );
+
+    behaviorPreferenceContent = BehaviorPreferenceContent(
+      undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
+      selectAfterInsert: _getValueB(PreferenceBool.SelectAfterInsert)
+    );
+  }
+
+  Future<void> saveUserPrefs() async
+  {
+    //GUI PREFERENCES
+    if (guiPreferenceContent.colorNameScheme.value != colorNameSchemeIndexMap[_intMap[PreferenceInt.ColorNames_Scheme]!.value])
+    {
+      _intMap[PreferenceInt.ColorNames_Scheme]!.value = colorNameSchemeIndexMap.keys.firstWhere((x) => colorNameSchemeIndexMap[x] == guiPreferenceContent.colorNameScheme.value, orElse:() => PreferenceInt.ColorNames_Scheme.defaultValue);
+      _loadColorNames();
+    }
+    _intMap[PreferenceInt.Painter_CheckerBoardContrast]!.value = guiPreferenceContent.rasterContrast.value;
+    _intMap[PreferenceInt.Painter_CheckerBoardSize]!.value = rasterSizes[guiPreferenceContent.rasterSizeIndex.value];
+    if (guiPreferenceContent.themeType.value != themeTypeIndexMap[_intMap[PreferenceInt.ThemeType]!.value])
+    {
+      _intMap[PreferenceInt.ThemeType]!.value = themeTypeIndexMap.keys.firstWhere((x) => themeTypeIndexMap[x] == guiPreferenceContent.themeType.value, orElse:() => PreferenceInt.ThemeType.defaultValue);
+      themeSettings.themeMode =  guiPreferenceContent.themeType.value;
+    }
+
+    //BEHAVIOR PREFERENCES
+    if (_intMap[PreferenceInt.HistoryOptions_Steps]!.value != behaviorPreferenceContent.undoSteps.value)
+    {
+      _intMap[PreferenceInt.HistoryOptions_Steps]!.value = behaviorPreferenceContent.undoSteps.value;
+      GetIt.I.get<HistoryManager>().changeMaxEntries(maxEntries: behaviorPreferenceContent.undoSteps.value);
+    }
+    _boolMap[PreferenceBool.SelectAfterInsert]!.value = behaviorPreferenceContent.selectAfterInsert.value;
+
+    await _savePreferences();
+
+
+  }
 }
 

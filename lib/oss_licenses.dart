@@ -24,7 +24,6 @@ const allDependencies = <Package>[
   _collection,
   _cross_file,
   _crypto,
-  _cupertino_icons,
   _dart_pubspec_licenses,
   _dio,
   _dio_web_adapter,
@@ -97,7 +96,6 @@ const allDependencies = <Package>[
 const dependencies = <Package>[
   _archive,
   _bitsdojo_window,
-  _cupertino_icons,
   _file_picker,
   _file_saver,
   _fl_toast,
@@ -926,38 +924,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     isMarkdown: false,
     isSdk: false,
     dependencies: [PackageRef('typed_data')]
-  );
-
-/// cupertino_icons 1.0.8
-const _cupertino_icons = Package(
-    name: 'cupertino_icons',
-    description: 'Default icons asset for Cupertino widgets based on Apple styled icons',
-    repository: 'https://github.com/flutter/packages/tree/main/third_party/packages/cupertino_icons',
-    authors: [],
-    version: '1.0.8',
-    license: '''The MIT License (MIT)
-
-Copyright (c) 2016 Vladimir Kharlampidi
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.''',
-    isMarkdown: false,
-    isSdk: false,
-    dependencies: []
   );
 
 /// dart_pubspec_licenses 3.0.1

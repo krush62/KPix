@@ -20,7 +20,6 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/util/helper.dart';
 
 class SelectionBarWidgetOptions
 {

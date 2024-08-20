@@ -342,7 +342,8 @@ enum PreferenceBool
   Tool_Stamp_FlipH(defaultValue: false),
   Tool_Stamp_FlipV(defaultValue: false),
 
-  SelectAfterInsert(defaultValue: false),
+  SelectShapeAfterInsert(defaultValue: false),
+  SelectLayerAfterInsert(defaultValue: true),
   ;
   const PreferenceBool({
     required this.defaultValue
@@ -882,7 +883,8 @@ class PreferenceManager
 
     behaviorPreferenceContent = BehaviorPreferenceContent(
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
-      selectAfterInsert: _getValueB(PreferenceBool.SelectAfterInsert)
+      selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
+      selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert)
     );
   }
 
@@ -908,7 +910,7 @@ class PreferenceManager
       _intMap[PreferenceInt.HistoryOptions_Steps]!.value = behaviorPreferenceContent.undoSteps.value;
       GetIt.I.get<HistoryManager>().changeMaxEntries(maxEntries: behaviorPreferenceContent.undoSteps.value);
     }
-    _boolMap[PreferenceBool.SelectAfterInsert]!.value = behaviorPreferenceContent.selectAfterInsert.value;
+    _boolMap[PreferenceBool.SelectShapeAfterInsert]!.value = behaviorPreferenceContent.selectShapeAfterInsert.value;
 
     await _savePreferences();
 

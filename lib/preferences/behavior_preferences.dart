@@ -25,14 +25,18 @@ const int undoStepsMax = 256;
 class BehaviorPreferenceContent
 {
   final ValueNotifier<int> undoSteps;
-  final ValueNotifier<bool> selectAfterInsert;
+  final ValueNotifier<bool> selectShapeAfterInsert;
+  final ValueNotifier<bool> selectLayerAfterInsert;
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectAfterInsert});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert});
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert})
+  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert})
   {
       final int undoStepsNormalized = max(min(undoSteps, undoStepsMax), undoStepsMin);
-      return BehaviorPreferenceContent._(undoSteps: ValueNotifier(undoStepsNormalized), selectAfterInsert: ValueNotifier(selectAfterInsert));
+      return BehaviorPreferenceContent._(
+        undoSteps: ValueNotifier(undoStepsNormalized),
+        selectShapeAfterInsert: ValueNotifier(selectAfterInsert),
+        selectLayerAfterInsert: ValueNotifier(selectLayerAfterInsert));
   }
 
 }
@@ -88,12 +92,33 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<bool>(
-                valueListenable: widget.prefs.selectAfterInsert,
+                valueListenable: widget.prefs.selectShapeAfterInsert,
                 builder: (final BuildContext context, final bool select, final Widget? child)
                 {
                   return Switch(
                     value: select,
-                    onChanged: (final bool newVal){widget.prefs.selectAfterInsert.value = newVal;},
+                    onChanged: (final bool newVal){widget.prefs.selectShapeAfterInsert.value = newVal;},
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(flex: 1, child: Text("Select Inserted Layers", style: Theme.of(context).textTheme.titleSmall)),
+            Expanded(
+              flex: 2,
+              child: ValueListenableBuilder<bool>(
+                valueListenable: widget.prefs.selectLayerAfterInsert,
+                builder: (final BuildContext context, final bool select, final Widget? child)
+                {
+                  return Switch(
+                    value: select,
+                    onChanged: (final bool newVal){widget.prefs.selectLayerAfterInsert.value = newVal;},
                   );
                 },
               ),

@@ -19,6 +19,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
@@ -39,6 +40,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   late List<Widget> _widgetList;
   final AppState _appState = GetIt.I.get<AppState>();
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+  final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   @override
   void initState()
@@ -109,7 +111,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                         message: "Add New Layer",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton(
-                          onPressed: () {_appState.addNewLayer(select: true);},
+                          onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
                           icon: const FaIcon(FontAwesomeIcons.plus)
                         ),
                       ),

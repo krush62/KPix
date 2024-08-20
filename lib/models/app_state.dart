@@ -285,9 +285,19 @@ class AppState
       newLayer.isSelected.value = true;
       _currentLayer = newLayer;
       selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+      layerList.add(newLayer);
     }
-    layerList.add(newLayer);
-    layerList.addAll(_layers.value);
+    else
+    {
+      for (int i = 0; i < _layers.value.length; i++)
+      {
+        if (_layers.value[i].isSelected.value)
+        {
+          layerList.add(newLayer);
+        }
+        layerList.add(_layers.value[i]);
+      }
+    }
     _layers.value = layerList;
     if (select)
     {
@@ -503,11 +513,6 @@ class AppState
   void layerLockStateChanged()
   {
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer lock state changed");
-  }
-
-  void addNewLayerPressed()
-  {
-    addNewLayer();
   }
 
   LayerState? getSelectedLayer()

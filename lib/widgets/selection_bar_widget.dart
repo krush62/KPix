@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 
 class SelectionBarWidgetOptions
 {
@@ -46,19 +47,19 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   final SelectionBarWidgetOptions _options = GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions;
   final SelectionState _selectionState = GetIt.I.get<AppState>().selectionState;
   final AppState _appState = GetIt.I.get<AppState>();
+  final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
 
   void _pasteNewPressed()
   {
-    _appState.addNewLayer(select: true, content: _appState.selectionState.clipboard);
+    _appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);
   }
 
   @override
   Widget build(final BuildContext context) {
     return ListenableBuilder(
       listenable: _selectionState,
-      builder: (final BuildContext context, final Widget? child)
-      {
+      builder: (final BuildContext context, final Widget? child){
         return Material(
           color: Theme.of(context).primaryColor,
           child: Row(
@@ -77,7 +78,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                         FontAwesomeIcons.objectGroup,
                         size: _options.iconHeight
                     )
-                                ),
+                  ),
                 ),
               ),
               Padding(

@@ -132,7 +132,7 @@ class ShapePainter extends IToolPainter
       {
         appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }
-      else if (!shaderOptions.isEnabled.value && _behaviorPreferenceContent.selectAfterInsert.value)
+      else if (!shaderOptions.isEnabled.value && _behaviorPreferenceContent.selectShapeAfterInsert.value)
       {
         appState.selectionState.addNewSelectionWithContent(colorMap: _drawingPixels);
       }

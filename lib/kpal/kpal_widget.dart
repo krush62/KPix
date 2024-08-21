@@ -235,7 +235,7 @@ class _KPalState extends State<KPal>
 
   void _showDeleteDialog()
   {
-    _alertDialog.show(context);
+    _alertDialog.show(context: context);
   }
 
   @override

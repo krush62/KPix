@@ -98,34 +98,39 @@ class _RightBarWidgetState extends State<RightBarWidget>
           Expanded(
             child: Container(
               color: Theme.of(context).primaryColorDark,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                      child: Tooltip(
-                        message: "Add New Layer",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton(
-                          onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
-                          icon: const FaIcon(FontAwesomeIcons.plus)
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _appState.hasProjectNotifier,
+                builder: (final BuildContext context, final bool hasProject, final Widget? child) {
+                  return hasProject ? SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
+                          child: Tooltip(
+                            message: "Add New Layer",
+                            waitDuration: AppState.toolTipDuration,
+                            child: IconButton(
+                              onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
+                              icon: const FaIcon(FontAwesomeIcons.plus)
+                            ),
+                          ),
                         ),
-                      ),
+                        ValueListenableBuilder<List<LayerState>>(
+                          valueListenable: _appState.layerListNotifier,
+                          builder: (final BuildContext context, final List<LayerState> states, final Widget? child)
+                          {
+                            _createWidgetList(states);
+                            return Column(children: _widgetList);
+                          }
+                        ),
+                      ],
                     ),
-                    ValueListenableBuilder<List<LayerState>>(
-                      valueListenable: _appState.layerListNotifier,
-                      builder: (final BuildContext context, final List<LayerState> states, final Widget? child)
-                      {
-                        _createWidgetList(states);
-                        return Column(children: _widgetList);
-                      }
-                    ),
-                  ],
-                ),
+                  ) : const SizedBox.shrink();
+                },
               ),
             )
           ),

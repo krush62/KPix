@@ -27,6 +27,7 @@ typedef ColorRampFn = void Function({required KPalRampData ramp, bool addToHisto
 typedef ColorRampUpdateFn = void Function({required KPalRampData ramp, required KPalRampData originalData, bool addToHistoryStack});
 typedef ExportDataFn = void Function({required ExportData exportData, required ExportTypeEnum exportType});
 typedef CanvasSizeFn = void Function({required CoordinateSetI size, required CoordinateSetI offset});
+typedef NewFileFn = void Function({required CoordinateSetI size});
 
 typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;

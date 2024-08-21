@@ -579,7 +579,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         },
                       ),
                     )
-                ),
+                  ),
                 ]
               )
             ],

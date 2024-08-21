@@ -27,6 +27,7 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/right_bar_widget.dart';
@@ -108,6 +109,8 @@ class _KPixAppState extends State<KPixApp>
 {
   final ValueNotifier<bool> initialized = ValueNotifier(false);
   late KPixOverlay _closeWarningDialog;
+  late KPixOverlay _newProjectDialog;
+  late KPixOverlay _saveNewWarningDialog;
 
   @override
   void initState() {
@@ -136,21 +139,14 @@ class _KPixAppState extends State<KPixApp>
     AppState appState = GetIt.I.get<AppState>();
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 
-    //TODO TEMP
-    appState.setCanvasDimensions(width: 256, height: 160, addToHistoryStack: false);
-
-
-    appState.setDefaultPalette();
-    appState.addNewLayer(select: true, addToHistoryStack: false);
-
     GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
-    GetIt.I.get<HistoryManager>().addState(appState: appState, description: "initial", setHasChanges: false);
     if (context.mounted)
     {
       final BuildContext c = context;
       appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
     }
 
+    //CREATE DIALOG OVERLAYS
     _closeWarningDialog = OverlayEntries.getThreeButtonDialog(
         onYes: _closeWarningYes,
         onNo: _closeWarningNo,
@@ -158,21 +154,43 @@ class _KPixAppState extends State<KPixApp>
         outsideCancelable: false,
         message: "There are unsaved changes, do you want to save first?");
 
+    _saveNewWarningDialog = OverlayEntries.getThreeButtonDialog(
+        onYes: _saveNewWarningYes,
+        onNo: _saveNewWarningNo,
+        onCancel: _saveNewWarningCancel,
+        outsideCancelable: false,
+        message: "There are unsaved changes, do you want to save first?"
+    );
+    _newProjectDialog = OverlayEntries.getNewProjectDialog(
+        onDismiss: () {exit(0);},
+        onAccept: _newFilePressed
+    );
+
     final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
     if (themeSettings.themeMode != currentTheme)
     {
       themeSettings.themeMode =  currentTheme;
     }
+    appState.hasProjectNotifier.addListener(_hasProjectChanged);
+    _hasProjectChanged();
 
     initialized.value = true;
 
+  }
+
+  void _hasProjectChanged()
+  {
+    if (!GetIt.I.get<AppState>().hasProject)
+    {
+      _newFile();
+    }
   }
 
   void _closePressed()
   {
     if (GetIt.I.get<AppState>().hasChanges.value)
     {
-      _closeWarningDialog.show(context);
+      _closeWarningDialog.show(context: context);
     }
     else
     {
@@ -198,6 +216,48 @@ class _KPixAppState extends State<KPixApp>
   void _closeAllMenus()
   {
     _closeWarningDialog.hide();
+  }
+
+  void _newFile()
+  {
+    if (GetIt.I.get<AppState>().hasChanges.value)
+    {
+      _saveNewWarningDialog.show(context: context);
+    }
+    else
+    {
+      _newProjectDialog.show(context: context);
+
+    }
+  }
+
+  void _saveNewWarningYes()
+  {
+    FileHandler.saveFilePressed(finishCallback: _saveBeforeNewFinished);
+  }
+
+  void _saveNewWarningNo()
+  {
+    _saveBeforeNewFinished();
+  }
+
+  void _saveNewWarningCancel()
+  {
+    _saveNewWarningDialog.hide();
+    GetIt.I.get<AppState>().hasProjectNotifier.value = true;
+  }
+
+  void _saveBeforeNewFinished()
+  {
+    _saveNewWarningDialog.hide();
+    _newProjectDialog.show(context: context);
+  }
+
+
+  void _newFilePressed({required CoordinateSetI size})
+  {
+    GetIt.I.get<AppState>().init(dimensions: size);
+    _newProjectDialog.hide();
   }
 
 
@@ -319,12 +379,17 @@ class MainWidget extends StatelessWidget
                   min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
                   max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax),
                   Area(builder: (context, area) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const CanvasWidget(),
-                        StatusBarWidget()
-                      ],
+                    return ValueListenableBuilder(
+                      valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+                      builder: (final BuildContext context, final bool hasProject, final Widget? child) {
+                        return hasProject ? Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            const CanvasWidget(),
+                            StatusBarWidget()
+                          ],
+                        ) : Container(color: Theme.of(context).primaryColorDark);
+                      },
                     );
                   },
                   flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault
@@ -339,8 +404,8 @@ class MainWidget extends StatelessWidget
                 )
               ],
             ),
-          )
-        ),
+          ),
+        )
       ],
     );
   }

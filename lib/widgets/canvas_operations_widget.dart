@@ -79,7 +79,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
   void _setSize()
   {
-    _canvasSizeOverlay.show(context);
+    _canvasSizeOverlay.show(context: context);
   }
 
   void _sizeChangeAccepted({required final CoordinateSetI size, required final CoordinateSetI offset})

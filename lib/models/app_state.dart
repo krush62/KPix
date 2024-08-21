@@ -44,6 +44,16 @@ class RepaintNotifier extends ChangeNotifier
 
 class AppState
 {
+  final ValueNotifier<bool> _hasProject = ValueNotifier(false);
+  bool get hasProject
+  {
+    return _hasProject.value;
+  }
+  ValueNotifier<bool> get hasProjectNotifier
+  {
+    return _hasProject;
+  }
+
   final ValueNotifier<ToolType> _selectedTool = ValueNotifier(ToolType.pencil);
   ToolType get selectedTool
   {
@@ -128,6 +138,17 @@ class AppState
     }
     setToolSelection(tool: ToolType.pencil);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
+  }
+
+  void init({required CoordinateSetI dimensions})
+  {
+    setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
+    final List<LayerState> layerList = [];
+    _layers.value = layerList;
+    addNewLayer(select: true, addToHistoryStack: false);
+    setDefaultPalette();
+    GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+    hasProjectNotifier.value = true;
   }
 
   String getTitle()

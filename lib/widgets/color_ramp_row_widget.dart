@@ -157,7 +157,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
       onDelete: _colorRampDelete,
       colorRamp: ramp,
     );
-    kPal.show(context);
+    kPal.show(context: context);
   }
 
   void _colorRampUpdate({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})

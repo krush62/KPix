@@ -66,7 +66,13 @@ class MainToolbarWidget extends StatelessWidget
             titleStyle: Theme.of(context).textTheme.titleLarge,
             labelStyle: Theme.of(context).textTheme.bodySmall,
           ),
-          const PaletteWidget(),
+          ValueListenableBuilder<bool>(
+            valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+            builder: (final BuildContext context, final bool hasProject, final Widget? child)
+            {
+              return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
+            },
+          ),
           const ToolsWidget(),
           SizedBox(
             width: double.infinity,

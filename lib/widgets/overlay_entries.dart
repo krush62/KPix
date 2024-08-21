@@ -28,6 +28,7 @@ import 'package:kpix/widgets/credits_widget.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/licenses_widget.dart';
+import 'package:kpix/widgets/new_project_widget.dart';
 import 'package:kpix/widgets/preferences_widget.dart';
 
 
@@ -37,7 +38,7 @@ class KPixOverlay
   OverlayEntry entry;
   KPixOverlay({required this.entry, this.isVisible = false});
 
-  void show(BuildContext context)
+  void show({required BuildContext context})
   {
     if (!isVisible)
     {
@@ -109,6 +110,7 @@ class OverlayEntries
 {
   static KPixOverlay getLoadMenu({
     required final Function onDismiss,
+    required Function onNewFile,
     required Function onLoadFile,
     required Function onLoadPalette,
     required final LayerLink layerLink,
@@ -139,6 +141,26 @@ class OverlayEntries
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Padding(
+                      padding: EdgeInsets.all(options.buttonSpacing / 2),
+                      child: Tooltip(
+                        message: "New Project",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(
+                              options.buttonSpacing),
+                          onPressed: () {onNewFile();},
+                          icon: FaIcon(
+                              FontAwesomeIcons.file,
+                              size: options.buttonHeight),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
@@ -780,4 +802,28 @@ class OverlayEntries
       )
     );
   }
+
+  static KPixOverlay getNewProjectDialog({
+    required final Function() onDismiss,
+    required final NewFileFn onAccept,
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: null,
+            ),
+            Center(
+              child: NewProjectWidget(accept: onAccept, dismiss: onDismiss),
+            ),
+          ]
+        )
+      )
+    );
+  }
+
 }

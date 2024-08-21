@@ -532,7 +532,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _settingsButtonPressed()
   {
-    settingsMenu.show(context);
+    settingsMenu.show(context: context);
   }
 
 

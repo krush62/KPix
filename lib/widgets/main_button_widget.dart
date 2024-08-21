@@ -54,7 +54,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
   late KPixOverlay _loadMenu;
   late KPixOverlay _saveMenu;
-  late KPixOverlay _saveWarningDialog;
+  late KPixOverlay _saveLoadWarningDialog;
   late KPixOverlay _paletteWarningDialog;
   late KPixOverlay _exportDialog;
   late KPixOverlay _aboutDialog;
@@ -70,6 +70,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _loadMenu = OverlayEntries.getLoadMenu(
       onDismiss: _closeAllMenus,
       layerLink: _loadMenuLayerLink,
+      onNewFile: _newFile,
       onLoadFile: _loadFile,
       onLoadPalette: _loadPalette,
     );
@@ -81,9 +82,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onExportFile: _exportFile,
       onSavePalette: _savePalette,
     );
-    _saveWarningDialog = OverlayEntries.getThreeButtonDialog(
-      onYes: _saveWarningYes,
-      onNo: _saveWarningNo,
+    _saveLoadWarningDialog = OverlayEntries.getThreeButtonDialog(
+      onYes: _saveLoadWarningYes,
+      onNo: _saveLoadWarningNo,
       onCancel: _closeAllMenus,
       outsideCancelable: false,
       message: "There are unsaved changes, do you want to save first?"
@@ -129,23 +130,29 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     _loadMenu.hide();
     _saveMenu.hide();
-    _saveWarningDialog.hide();
+    _saveLoadWarningDialog.hide();
     _paletteWarningDialog.hide();
     _exportDialog.hide();
     _aboutDialog.hide();
     _preferencesDialog.hide();
   }
 
+  void _newFile()
+  {
+    _appState.hasProjectNotifier.value = false;
+    _closeAllMenus();
+  }
+
   void _loadPressed()
   {
-    _loadMenu.show(context);
+    _loadMenu.show(context: context);
   }
 
   void _loadFile()
   {
     if (_appState.hasChanges.value)
     {
-      _saveWarningDialog.show(context);
+      _saveLoadWarningDialog.show(context: context);
     }
     else
     {
@@ -154,15 +161,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
   }
 
-  void _saveWarningYes()
+  void _saveLoadWarningYes()
   {
     FileHandler.saveFilePressed(finishCallback: _saveBeforeLoadFinished);
   }
 
-  void _saveWarningNo()
+  void _saveLoadWarningNo()
   {
-    FileHandler.loadFilePressed();
-    _closeAllMenus();
+    _saveBeforeLoadFinished();
   }
 
   void _saveBeforeLoadFinished()
@@ -174,7 +180,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _loadPalette()
   {
-    _paletteWarningDialog.show(context);
+    _paletteWarningDialog.show(context: context);
   }
 
   void _paletteWarningYes()
@@ -192,7 +198,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _savePressed()
   {
-    _saveMenu.show(context);
+    _saveMenu.show(context: context);
   }
 
   void _saveFile()
@@ -209,7 +215,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportFile()
   {
-    _exportDialog.show(context);
+    _exportDialog.show(context: context);
   }
 
 
@@ -221,12 +227,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _settingsPressed()
   {
-    _preferencesDialog.show(context);
+    _preferencesDialog.show(context: context);
   }
 
   void _questionPressed()
   {
-    _aboutDialog.show(context);
+    _aboutDialog.show(context: context);
   }
 
   void _undoPressed()

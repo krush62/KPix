@@ -27,16 +27,19 @@ class BehaviorPreferenceContent
   final ValueNotifier<int> undoSteps;
   final ValueNotifier<bool> selectShapeAfterInsert;
   final ValueNotifier<bool> selectLayerAfterInsert;
+  final int undoStepsMax;
+  final int undoStepsMin;
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin});
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert})
+  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin})
   {
-      final int undoStepsNormalized = max(min(undoSteps, undoStepsMax), undoStepsMin);
       return BehaviorPreferenceContent._(
-        undoSteps: ValueNotifier(undoStepsNormalized),
+        undoSteps: ValueNotifier(max(min(undoSteps, undoStepsMax), undoStepsMin)),
         selectShapeAfterInsert: ValueNotifier(selectAfterInsert),
-        selectLayerAfterInsert: ValueNotifier(selectLayerAfterInsert));
+        selectLayerAfterInsert: ValueNotifier(selectLayerAfterInsert),
+        undoStepsMax: undoStepsMax,
+        undoStepsMin: undoStepsMin);
   }
 
 }
@@ -73,8 +76,8 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                 {
                   return Slider(
                     value: undoSteps.toDouble(),
-                    min: undoStepsMin.toDouble(),
-                    max: undoStepsMax.toDouble() - 1,
+                    min: widget.prefs.undoStepsMin.toDouble(),
+                    max: widget.prefs.undoStepsMax.toDouble(),
                     label: undoSteps.toString(),
                     onChanged: (final double newVal) {widget.prefs.undoSteps.value = newVal.toInt();},
                   );

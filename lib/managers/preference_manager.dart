@@ -18,6 +18,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
+import 'package:kpix/preferences/stylus_preferences.dart';
+import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/main.dart';
@@ -67,10 +69,6 @@ enum PreferenceDouble
   Layout_SplitView_FlexCenterDefault(defaultValue: 12.0),
   Layout_SplitView_FlexRightDefault(defaultValue: 2.0),
 
-  Layout_Canvas_LongPressCancelDistance(defaultValue: 10.0),
-  Layout_Canvas_StylusZoomStepDistance(defaultValue: 10.0),
-  Layout_Canvas_StylusToolSizeDistance(defaultValue: 5.0),
-  Layout_Canvas_TouchZoomStepDistance(defaultValue: 25.0),
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
   Layout_Tools_Padding(defaultValue: 8.0),
@@ -173,6 +171,22 @@ enum PreferenceDouble
   Painter_SelectionStrokeWidthLarge(defaultValue: 4.0),
   Painter_SelectionStrokeWidthSmall(defaultValue: 2.0),
 
+  StylusOptions_LongPressCancelDistance(defaultValue: 10.0),
+  StylusOptions_LongPressCancelDistanceMin(defaultValue: 5.0),
+  StylusOptions_LongPressCancelDistanceMax(defaultValue: 50.0),
+  StylusOptions_ZoomStepDistance(defaultValue: 10.0),
+  StylusOptions_ZoomStepDistanceMin(defaultValue: 2.0),
+  StylusOptions_ZoomStepDistanceMax(defaultValue: 50.0),
+  StylusOptions_SizeStepDistance(defaultValue: 5.0),
+  StylusOptions_SizeStepDistanceMin(defaultValue: 2.0),
+  StylusOptions_SizeStepDistanceMax(defaultValue: 50.0),
+
+  TouchOptions_ZoomStepDistance(defaultValue: 25.0),
+  TouchOptions_ZoomStepDistanceMin(defaultValue: 10.0),
+  TouchOptions_ZoomStepDistanceMax(defaultValue: 100.0),
+
+
+
   ;
 
   const PreferenceDouble({
@@ -188,10 +202,7 @@ enum PreferenceInt
   Layout_SplitView_GrooveCountMax(defaultValue: 9),
   Layout_SplitView_AnimationLength(defaultValue: 250),
 
-  Layout_Canvas_LongPressDuration(defaultValue: 250),
-  Layout_Canvas_Stylus_PollRate(defaultValue: 100),
   Layout_Canvas_HistoryCheck_PollRate(defaultValue: 250),
-  Layout_Canvas_SingleTouchDelay(defaultValue: 50),
   Layout_Canvas_IdleTimerRate(defaultValue: 15),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
@@ -307,9 +318,23 @@ enum PreferenceInt
 
   ColorNames_Scheme(defaultValue: 0),
 
-  HistoryOptions_Steps(defaultValue: 50),
+  HistoryOptions_Steps(defaultValue: 100),
+  HistoryOptions_StepsMax(defaultValue: 1000),
+  HistoryOptions_StepsMin(defaultValue: 10),
 
   ThemeType(defaultValue: 0),
+
+  StylusOptions_LongPressDelay(defaultValue: 250),
+  StylusOptions_LongPressDelayMin(defaultValue: 50),
+  StylusOptions_LongPressDelayMax(defaultValue: 1000),
+  StylusOptions_PollInterval(defaultValue: 100),
+  StylusOptions_PollIntervalMin(defaultValue: 20),
+  StylusOptions_PollIntervalMax(defaultValue: 500),
+
+  TouchOptions_SingleTouchDelay(defaultValue: 50),
+  TouchOptions_SingleTouchDelayMin(defaultValue: 10),
+  TouchOptions_SingleTouchDelayMax(defaultValue: 250),
+
 
 
 
@@ -496,6 +521,8 @@ class PreferenceManager
 
   late GuiPreferenceContent guiPreferenceContent;
   late BehaviorPreferenceContent behaviorPreferenceContent;
+  late StylusPreferenceContent stylusPreferenceContent;
+  late TouchPreferenceContent touchPreferenceContent;
 
   PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
   {
@@ -603,14 +630,7 @@ class PreferenceManager
         splitViewFlexCenterDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexCenterDefault),
         splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault));
     canvasWidgetOptions = CanvasOptions(
-        stylusPollRate: _getValueI(PreferenceInt.Layout_Canvas_Stylus_PollRate),
-        historyCHeckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
-        singleTouchDelay: _getValueI(PreferenceInt.Layout_Canvas_SingleTouchDelay),
-        longPressDuration: _getValueI(PreferenceInt.Layout_Canvas_LongPressDuration),
-        longPressCancelDistance: _getValueD(PreferenceDouble.Layout_Canvas_LongPressCancelDistance),
-        stylusZoomStepDistance: _getValueD(PreferenceDouble.Layout_Canvas_StylusZoomStepDistance),
-        touchZoomStepDistance: _getValueD(PreferenceDouble.Layout_Canvas_TouchZoomStepDistance),
-        stylusToolSizeDistance: _getValueD(PreferenceDouble.Layout_Canvas_StylusToolSizeDistance),
+        historyCheckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
         minVisibilityFactor: _getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor),
         idleTimerRate: _getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate));
     toolsWidgetOptions = ToolsWidgetOptions(
@@ -884,7 +904,36 @@ class PreferenceManager
     behaviorPreferenceContent = BehaviorPreferenceContent(
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
       selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
-      selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert)
+      selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
+      undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
+      undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
+    );
+
+    stylusPreferenceContent = StylusPreferenceContent(
+      stylusLongPressCancelDistance: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistance),
+      stylusLongPressCancelDistanceMin: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMin),
+      stylusLongPressCancelDistanceMax: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMax),
+      stylusLongPressDelay: _getValueI(PreferenceInt.StylusOptions_LongPressDelay),
+      stylusLongPressDelayMin: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMin),
+      stylusLongPressDelayMax: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMax),
+      stylusPollInterval: _getValueI(PreferenceInt.StylusOptions_PollInterval),
+      stylusPollIntervalMin: _getValueI(PreferenceInt.StylusOptions_PollIntervalMin),
+      stylusPollIntervalMax: _getValueI(PreferenceInt.StylusOptions_PollIntervalMax),
+      stylusSizeStepDistance: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistance),
+      stylusSizeStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMin),
+      stylusSizeStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMax),
+      stylusZoomStepDistance: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistance),
+      stylusZoomStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMin),
+      stylusZoomStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMax)
+    );
+
+    touchPreferenceContent = TouchPreferenceContent(
+      singleTouchDelay: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelay),
+      singleTouchDelayMin: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMin),
+      singleTouchDelayMax: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMax),
+      zoomStepDistance: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistance),
+      zoomStepDistanceMin: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMin),
+      zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
     );
   }
 
@@ -911,6 +960,18 @@ class PreferenceManager
       GetIt.I.get<HistoryManager>().changeMaxEntries(maxEntries: behaviorPreferenceContent.undoSteps.value);
     }
     _boolMap[PreferenceBool.SelectShapeAfterInsert]!.value = behaviorPreferenceContent.selectShapeAfterInsert.value;
+
+    //STYLUS PREFERENCES
+    _doubleMap[PreferenceDouble.StylusOptions_LongPressCancelDistance]!.value = stylusPreferenceContent.stylusLongPressCancelDistance.value;
+    _intMap[PreferenceInt.StylusOptions_LongPressDelay]!.value = stylusPreferenceContent.stylusLongPressDelay.value;
+    _intMap[PreferenceInt.StylusOptions_PollInterval]!.value = stylusPreferenceContent.stylusPollInterval.value;
+    _doubleMap[PreferenceDouble.StylusOptions_SizeStepDistance]!.value = stylusPreferenceContent.stylusSizeStepDistance.value;
+    _doubleMap[PreferenceDouble.StylusOptions_ZoomStepDistance]!.value = stylusPreferenceContent.stylusZoomStepDistance.value;
+
+    //TOUCH PREFERENCES
+    _intMap[PreferenceInt.TouchOptions_SingleTouchDelay]!.value = touchPreferenceContent.singleTouchDelay.value;
+    _doubleMap[PreferenceDouble.TouchOptions_ZoomStepDistanceMax]!.value = touchPreferenceContent.zoomStepDistance.value;
+
 
     await _savePreferences();
 

@@ -21,6 +21,8 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
+import 'package:kpix/preferences/stylus_preferences.dart';
+import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 enum PreferenceSectionType
@@ -29,6 +31,7 @@ enum PreferenceSectionType
   behavior,
   controlsPC,
   controlsStylus,
+  controlsTouch
 }
 
 class PreferenceSection
@@ -44,6 +47,7 @@ const Map<PreferenceSectionType, PreferenceSection> preferenceMap =
   PreferenceSectionType.behavior: PreferenceSection(title: "Behavior", icon: FontAwesomeIcons.gears),
   PreferenceSectionType.controlsPC: PreferenceSection(title: "Controls PC", icon: FontAwesomeIcons.keyboard),
   PreferenceSectionType.controlsStylus: PreferenceSection(title: "Controls Stylus", icon: FontAwesomeIcons.pen),
+  PreferenceSectionType.controlsTouch: PreferenceSection(title: "Controls Touch", icon: FontAwesomeIcons.fingerprint),
 };
 
 class PreferencesWidget extends StatefulWidget
@@ -115,7 +119,8 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                           )
                         )
                       ),
-                      ButtonSegment(
+                      //for a future release
+                      /*ButtonSegment(
                         value: PreferenceSectionType.controlsPC,
                         label: Tooltip(
                           message: preferenceMap[PreferenceSectionType.controlsPC]!.title,
@@ -124,7 +129,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                             preferenceMap[PreferenceSectionType.controlsPC]!.icon
                           )
                         )
-                      ),
+                      ),*/
                       ButtonSegment(
                         value: PreferenceSectionType.controlsStylus,
                         label: Tooltip(
@@ -133,6 +138,15 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                           child: Icon(
                             preferenceMap[PreferenceSectionType.controlsStylus]!.icon,
                           )
+                        )
+                      ),
+                      ButtonSegment(
+                          value: PreferenceSectionType.controlsTouch,
+                          label: Tooltip(
+                            message: preferenceMap[PreferenceSectionType.controlsTouch]!.title,
+                            waitDuration: AppState.toolTipDuration,
+                            child: Icon(preferenceMap[PreferenceSectionType.controlsTouch]!.icon,
+                            )
                         )
                       ),
                     ],
@@ -162,8 +176,11 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                         return GuiPreferences(prefs: GetIt.I.get<PreferenceManager>().guiPreferenceContent);
                       case PreferenceSectionType.behavior:
                         return BehaviorPreferences(prefs: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent);
-                      case PreferenceSectionType.controlsPC:
                       case PreferenceSectionType.controlsStylus:
+                        return StylusPreferences(prefs: GetIt.I.get<PreferenceManager>().stylusPreferenceContent);
+                      case PreferenceSectionType.controlsTouch:
+                        return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
+                      case PreferenceSectionType.controlsPC:
                       default:
                         return const Placeholder();
                     }

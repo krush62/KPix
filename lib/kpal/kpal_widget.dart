@@ -221,7 +221,6 @@ class _KPalState extends State<KPal>
       );
   }
 
-
   void _acceptDeletion()
   {
     _dismissAlertDialog();

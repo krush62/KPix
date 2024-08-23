@@ -138,7 +138,7 @@ class AppState
     {
       _toolMap[toolType] = false;
     }
-    setToolSelection(tool: ToolType.pencil);
+    setToolSelection(tool: ToolType.pencil, forceSetting: true);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
     _setHotkeys();
   }
@@ -165,8 +165,8 @@ class AppState
     hotkeyManager.addListener(func: () {layerMerged(mergeLayer: _currentLayer!);}, action: HotkeyAction.layersMerge);
     hotkeyManager.addListener(func: () {moveUpLayer(state: _currentLayer!);}, action: HotkeyAction.layersMoveUp);
     hotkeyManager.addListener(func: () {moveDownLayer(state: _currentLayer!);}, action: HotkeyAction.layersMoveDown);
-    hotkeyManager.addListener(func: _selectLayerAbove, action: HotkeyAction.layersSelectAbove);
-    hotkeyManager.addListener(func: _selectLayerBelow, action: HotkeyAction.layersSelectBelow);
+    hotkeyManager.addListener(func: selectLayerAbove, action: HotkeyAction.layersSelectAbove);
+    hotkeyManager.addListener(func: selectLayerBelow, action: HotkeyAction.layersSelectBelow);
     hotkeyManager.addListener(func: increaseZoomLevel, action: HotkeyAction.panZoomZoomIn);
     hotkeyManager.addListener(func: decreaseZoomLevel, action: HotkeyAction.panZoomZoomOut);
     hotkeyManager.addListener(func: () {setZoomLevel(val: 1);}, action: HotkeyAction.panZoomSetZoom100);
@@ -564,12 +564,69 @@ class AppState
   void moveDownLayer({required final LayerState state})
   {
     final int sourcePosition = _getLayerPosition(state: state);
-    print("MOVE DOWN 1");
     if (sourcePosition < (layers.length - 1))
     {
-      print("MOVE DOWN 2");
       changeLayerOrder(state: state, newPosition: (sourcePosition + 2));
     }
+  }
+
+  void incrementColorSelection()
+  {
+    final (int, int) indices = _getRampAndColorIndex(color: selectedColor!);
+    if (indices.$1 >= 0 && indices.$1 < colorRamps.length && indices.$2 >= 0 && indices.$2 < colorRamps[indices.$1].references.length)
+    {
+      if ((indices.$2 + 1) < colorRamps[indices.$1].references.length)
+      {
+         colorSelected(color: colorRamps[indices.$1].references[indices.$2 + 1]);
+      }
+      else if ((indices.$1 + 1) < colorRamps.length)
+      {
+        colorSelected(color: colorRamps[indices.$1 + 1].references.first);
+      }
+      else
+      {
+        colorSelected(color: colorRamps.first.references.first);
+      }
+    }
+  }
+
+  void decrementColorSelection()
+  {
+    final (int, int) indices = _getRampAndColorIndex(color: selectedColor!);
+    if (indices.$1 >= 0 && indices.$1 < colorRamps.length && indices.$2 >= 0 && indices.$2 < colorRamps[indices.$1].references.length)
+    {
+      if ((indices.$2 - 1) >= 0)
+      {
+        colorSelected(color: colorRamps[indices.$1].references[indices.$2 - 1]);
+      }
+      else if ((indices.$1 - 1) >= 0)
+      {
+        colorSelected(color: colorRamps[indices.$1 - 1].references.last);
+      }
+      else
+      {
+        colorSelected(color: colorRamps.last.references.last);
+      }
+    }
+  }
+
+  (int, int) _getRampAndColorIndex({required final ColorReference color})
+  {
+    int rampIndex = -1;
+    int colorIndex = -1;
+    for (int i = 0; i < colorRamps.length; i++)
+    {
+      for (int j = 0; j < colorRamps[i].references.length; j++)
+      {
+        if (colorRamps[i].references[j] == color)
+        {
+          rampIndex = i;
+          colorIndex = j;
+        }
+      }
+    }
+
+    return (rampIndex, colorIndex);
   }
 
   void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
@@ -640,7 +697,7 @@ class AppState
     return selectedLayer;
   }
 
-  void _selectLayerAbove()
+  void selectLayerAbove()
   {
     int index = _getLayerPosition(state: _currentLayer!);
     if (index > 0)
@@ -649,7 +706,7 @@ class AppState
     }
   }
 
-  void _selectLayerBelow()
+  void selectLayerBelow()
   {
     int index = _getLayerPosition(state: _currentLayer!);
     if (index < layers.length - 1)
@@ -876,9 +933,9 @@ class AppState
   }
 
 
-  void setToolSelection({required final ToolType tool})
+  void setToolSelection({required final ToolType tool, final bool forceSetting = false})
   {
-    if (tool != _selectedTool.value)
+    if (tool != _selectedTool.value || forceSetting)
     {
       for (final ToolType k in _toolMap.keys)
       {

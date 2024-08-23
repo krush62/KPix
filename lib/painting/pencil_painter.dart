@@ -31,6 +31,7 @@ class PencilPainter extends IToolPainter
   final List<CoordinateSetI> _paintPositions = [];
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  int _previousToolSize = -1;
   Set<CoordinateSetI> _contentPoints = {};
   bool _waitingForRasterization = false;
   final CoordinateColorMap _drawingPixels = HashMap();
@@ -49,11 +50,12 @@ class PencilPainter extends IToolPainter
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
-       if (_cursorPosNorm != _previousCursorPosNorm)
+       if (_cursorPosNorm != _previousCursorPosNorm || _previousToolSize != _options.size.value)
        {
          _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
          _previousCursorPosNorm.x = _cursorPosNorm.x;
          _previousCursorPosNorm.y = _cursorPosNorm.y;
+         _previousToolSize = _options.size.value;
        }
     }
     if (!_waitingForRasterization)

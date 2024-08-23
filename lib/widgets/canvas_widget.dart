@@ -124,6 +124,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   late ToolType _previousTool;
 
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+
   @override
   void initState()
   {
@@ -143,8 +145,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _hasNewStylusPollValue = true;
     });
 
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
+
+    _hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
   }
 
   void _setOptimalZoom()
@@ -522,15 +524,68 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   {
     if (ev is PointerScrollEvent)
     {
-      final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _appState.zoomFactor.toDouble();
+      //ZOOM
+      if (!_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
+      {
+        final Offset cursorPositionBeforeZoom = (ev.localPosition - _canvasOffset.value) / _appState.zoomFactor.toDouble();
 
-      if (ev.scrollDelta.dy < 0.0 && _appState.increaseZoomLevel())
-      {
-        _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+        if (ev.scrollDelta.dy < 0.0 && _appState.increaseZoomLevel())
+        {
+          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+        }
+        else if (ev.scrollDelta.dy > 0.0 && _appState.decreaseZoomLevel())
+        {
+          _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+        }
       }
-      else if (ev.scrollDelta.dy > 0.0 && _appState.decreaseZoomLevel())
+      //CHANGE TOOL SIZE
+      else if (!_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && _hotkeyManager.controlIsPressed)
       {
-        _setOffset(newOffset: ev.localPosition - (cursorPositionBeforeZoom * _appState.zoomFactor.toDouble()));
+        if (ev.scrollDelta.dy < 0.0)
+        {
+          _appState.setToolSize(1, _appState.getCurrentToolSize());
+        }
+        else
+        {
+          _appState.setToolSize(-1, _appState.getCurrentToolSize());
+        }
+        _appState.repaintNotifier.repaint();
+      }
+      //CHANGE CURRENT LAYER
+      else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
+      {
+        if (ev.scrollDelta.dy < 0.0)
+        {
+          _appState.selectLayerAbove();
+        }
+        else
+        {
+          _appState.selectLayerBelow();
+        }
+      }
+      //MOVE LAYER
+      else if (_hotkeyManager.shiftIsPressed && !_hotkeyManager.altIsPressed && _hotkeyManager.controlIsPressed)
+      {
+        if (ev.scrollDelta.dy < 0.0)
+        {
+          _appState.moveUpLayer(state: _appState.currentLayer!);
+        }
+        else
+        {
+          _appState.moveDownLayer(state: _appState.currentLayer!);
+        }
+      }
+      //CHANGE COLOR SELECTION
+      else if (!_hotkeyManager.shiftIsPressed && _hotkeyManager.altIsPressed && !_hotkeyManager.controlIsPressed)
+      {
+        if (ev.scrollDelta.dy < 0.0)
+        {
+          _appState.incrementColorSelection();
+        }
+        else
+        {
+          _appState.decrementColorSelection();
+        }
       }
     }
   }

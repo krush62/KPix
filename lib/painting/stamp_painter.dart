@@ -36,6 +36,7 @@ class StampPainter extends IToolPainter
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
   bool _down = false;
   final HashMap<CoordinateSetI, int> _stampData = HashMap();
+  int _previousSize = -1;
 
   @override
   void calculate({required DrawingParameters drawParams})
@@ -56,7 +57,7 @@ class StampPainter extends IToolPainter
 
     if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
     {
-      if (_oldCursorPos != _cursorPosNorm)
+      if (_oldCursorPos != _cursorPosNorm || _previousSize != _options.scale.value)
       {
         _stampData.clear();
         final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
@@ -81,6 +82,7 @@ class StampPainter extends IToolPainter
             }
           }
         }
+        _previousSize = _options.scale.value;
       }
 
       if (drawParams.primaryDown && !_down)

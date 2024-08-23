@@ -67,24 +67,29 @@ class ThemeNotifier extends ChangeNotifier
 
 ThemeNotifier themeSettings = ThemeNotifier();
 
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final HotkeyManager hotkeyManager = HotkeyManager();
+  final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
   runApp(
       CallbackShortcuts(
         bindings: hotkeyManager.callbackMap,
-        child: AnimatedBuilder(
-          animation: themeSettings,
-          builder: (final BuildContext context, final Widget? child) {
-            return MaterialApp(
-              home: const KPixApp(),
-              theme: KPixTheme.monochromeTheme,
-              darkTheme: KPixTheme.monochromeThemeDark,
-              themeMode: themeSettings.themeMode,
-            );
-          },
+        child: KeyboardListener(
+          focusNode: focusNode,
+          autofocus: true,
+          onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
+          child: AnimatedBuilder(
+            animation: themeSettings,
+            builder: (final BuildContext context, final Widget? child) {
+              return MaterialApp(
+                home: const KPixApp(),
+                theme: KPixTheme.monochromeTheme,
+                darkTheme: KPixTheme.monochromeThemeDark,
+                themeMode: themeSettings.themeMode,
+              );
+            },
+          ),
         ),
       )
   );

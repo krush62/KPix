@@ -72,6 +72,9 @@
 | Toggle Current Ramp Only | x                   |                  |                                 |                              |                           |
 | Toggle Shading Direction | d                   |                  |                                 |                              |                           |
 |                          |                     |                  |                                 |                              |                           |
+| <h3>Palette</h3>         |                     |                  |                                 |                              |                           |
+| Change Color             |                     |                  | alt + mouse wheel               |                              |                           |
+|                          |                     |                  |                                 |                              |                           |
 | <h3>Pan & Zoom</h3>      |                     |                  |                                 |                              |                           |
 | Pan                      |                     |                  | middle down + hover             | secondary down + hover       | two finger down + move    |
 | Zoom In                  | Numpad +            |                  | mouse wheel up                  | hold secondary + hover up    | two finger pinch increase |

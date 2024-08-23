@@ -33,6 +33,7 @@ class FontPainter extends IToolPainter
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
+  int _previousSize = -1;
   String _currentText = "";
   final Set<CoordinateSetI> _textContent = {};
   bool _down = false;
@@ -55,7 +56,7 @@ class FontPainter extends IToolPainter
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
 
-    if (_currentText != _options.text.value || _oldCursorPos != _cursorPosNorm)
+    if (_currentText != _options.text.value || _oldCursorPos != _cursorPosNorm || _previousSize != _options.size.value)
     {
       _textContent.clear();
       final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
@@ -87,6 +88,7 @@ class FontPainter extends IToolPainter
         }
       }
       _currentText = _options.text.value;
+      _previousSize = _options.size.value;
     }
 
     if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)

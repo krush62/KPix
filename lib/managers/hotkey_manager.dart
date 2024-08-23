@@ -16,10 +16,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/models/app_state.dart';
-import 'package:kpix/tool_options/select_options.dart';
-import 'package:kpix/util/helper.dart';
 
 enum HotkeyAction
 {
@@ -105,6 +101,22 @@ class HotkeyManager
   final Map<HotkeyAction, VoidCallback> _actionMap = {};
   final Map<ShortcutActivator, VoidCallback> _callbackMap = {};
 
+  final ValueNotifier<bool> _shiftIsPressed = ValueNotifier(false);
+  bool get shiftIsPressed
+  {
+    return _shiftIsPressed.value;
+  }
+  final ValueNotifier<bool> _controlIsPressed = ValueNotifier(false);
+  bool get controlIsPressed
+  {
+    return _controlIsPressed.value;
+  }
+  final ValueNotifier<bool> _altIsPressed = ValueNotifier(false);
+  bool get altIsPressed
+  {
+    return _altIsPressed.value;
+  }
+
   Map<ShortcutActivator, VoidCallback> get callbackMap
   {
     return _callbackMap;
@@ -116,6 +128,26 @@ class HotkeyManager
     _createNotifiers();
     _createCallbackMap();
   }
+
+  void handleRawKeyboardEvent(final KeyEvent? evt)
+  {
+    if (evt != null && (evt is KeyUpEvent || evt is KeyDownEvent))
+    {
+      if (evt.logicalKey == LogicalKeyboardKey.shiftLeft || evt.logicalKey == LogicalKeyboardKey.shiftRight || evt.logicalKey == LogicalKeyboardKey.shift)
+      {
+        _shiftIsPressed.value = (evt is KeyDownEvent);
+      }
+      else if (evt.logicalKey == LogicalKeyboardKey.controlLeft || evt.logicalKey == LogicalKeyboardKey.controlRight || evt.logicalKey == LogicalKeyboardKey.control)
+      {
+        _controlIsPressed.value = (evt is KeyDownEvent);
+      }
+      else if (evt.logicalKey == LogicalKeyboardKey.altLeft || evt.logicalKey == LogicalKeyboardKey.altRight || evt.logicalKey == LogicalKeyboardKey.alt)
+      {
+        _altIsPressed.value = (evt is KeyDownEvent);
+      }
+    }
+  }
+
 
   void addListener({required VoidCallback func, required HotkeyAction action})
   {

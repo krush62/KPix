@@ -34,6 +34,7 @@ class LinePainter extends IToolPainter
   Set<CoordinateSetI> _linePoints = {};
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  int _previousSize = -1;
   bool _lineStarted = false;
   bool _dragStarted = false;
   final CoordinateSetI _lineStartPos = CoordinateSetI(x: 0, y: 0);
@@ -55,11 +56,12 @@ class LinePainter extends IToolPainter
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
-      if (_cursorPosNorm != _previousCursorPosNorm)
+      if (_cursorPosNorm != _previousCursorPosNorm || _options.width.value != _previousSize)
       {
         _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: _cursorPosNorm);
         _previousCursorPosNorm.x = _cursorPosNorm.x;
         _previousCursorPosNorm.y = _cursorPosNorm.y;
+        _previousSize = _options.width.value;
 
         if (_lineStarted)
         {

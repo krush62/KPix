@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -52,6 +53,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
   final HistoryManager _historyManager = GetIt.I.get<HistoryManager>();
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late KPixOverlay _loadMenu;
   late KPixOverlay _saveMenu;
   late KPixOverlay _saveLoadWarningDialog;
@@ -106,6 +108,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onDismiss: _reloadPreferences,
       onAccept: _savePreferencesPressed
     );
+
+    _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
+    _hotkeyManager.addListener(func: _saveFile, action: HotkeyAction.generalSave);
+    _hotkeyManager.addListener(func: _saveAsFile, action: HotkeyAction.generalSaveAs);
+    _hotkeyManager.addListener(func: _newFile, action: HotkeyAction.generalNew);
+    _hotkeyManager.addListener(func: _undoPressed, action: HotkeyAction.generalUndo);
+    _hotkeyManager.addListener(func: _redoPressed, action: HotkeyAction.generalRedo);
+
   }
 
   void _exportFilePressed({required final ExportData exportData, required final ExportTypeEnum exportType})

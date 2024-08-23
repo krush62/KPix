@@ -18,6 +18,8 @@ import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -49,13 +51,39 @@ class SelectionLine
 class SelectionState with ChangeNotifier
 {
   final AppState _appState = GetIt.I.get<AppState>();
+  final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final SelectionList selection = SelectionList();
   CoordinateColorMapNullable? clipboard;
   final RepaintNotifier repaintNotifier;
   final SelectOptions selectionOptions = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
   final List<SelectionLine> selectionLines = [];
 
-  SelectionState({required this.repaintNotifier});
+  SelectionState({required this.repaintNotifier})
+  {
+    _setHotkeys();
+  }
+
+  void _setHotkeys()
+  {
+    HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : copy();}, action: HotkeyAction.selectionCopy);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : copyMerged();}, action: HotkeyAction.selectionCopyMerged);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : cut();}, action: HotkeyAction.selectionCut);
+    hotkeyManager.addListener(func: () {clipboard == null ? null : paste();}, action: HotkeyAction.selectionPaste);
+    hotkeyManager.addListener(func: () {clipboard == null ? null : _appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : delete();}, action: HotkeyAction.selectionDelete);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : flipH();}, action: HotkeyAction.selectionFlipH);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : flipV();}, action: HotkeyAction.selectionFlipV);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : rotate();}, action: HotkeyAction.selectionRotate);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : inverse();}, action: HotkeyAction.selectionInvert);
+    hotkeyManager.addListener(func: selectAll, action: HotkeyAction.selectionSelectAll);
+    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : deselect(addToHistoryStack: true);}, action: HotkeyAction.selectionDeselect);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: -1));}, action: HotkeyAction.selectionMoveUp);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: 1));}, action: HotkeyAction.selectionMoveDown);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: -1, y: 0));}, action: HotkeyAction.selectionMoveLeft);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 1, y: 0));}, action: HotkeyAction.selectionMoveRight);
+
+  }
 
   void notifyRepaint()
   {
@@ -703,6 +731,12 @@ class SelectionState with ChangeNotifier
     }
   }
 
+  void _moveSelection({required final CoordinateSetI offset})
+  {
+    setOffset(offset: offset);
+    finishMovement();
+  }
+
   void setOffset({required final CoordinateSetI offset})
   {
     selection.shiftSelection(offset: offset);
@@ -904,8 +938,8 @@ class SelectionList
 
   void shiftSelection({required final CoordinateSetI offset})
   {
-
-    if (offset != _lastOffset) {
+    if (offset != _lastOffset)
+    {
       final CoordinateColorMapNullable newContent = HashMap();
       for (final CoordinateColorNullable entry in _content.entries)
       {

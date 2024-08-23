@@ -20,6 +20,8 @@ import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
@@ -138,6 +140,47 @@ class AppState
     }
     setToolSelection(tool: ToolType.pencil);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
+    _setHotkeys();
+  }
+
+  void _setHotkeys()
+  {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.pencil);}, action: HotkeyAction.selectToolPencil);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.fill);}, action: HotkeyAction.selectToolFill);
+    hotkeyManager.addListener(func: () {setSelectionToolSelection(shape: SelectShape.rectangle);}, action: HotkeyAction.selectToolSelectRectangle);
+    hotkeyManager.addListener(func: () {setSelectionToolSelection(shape: SelectShape.ellipse);}, action: HotkeyAction.selectToolSelectCircle);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.shape);}, action: HotkeyAction.selectToolShape);
+    hotkeyManager.addListener(func: () {setSelectionToolSelection(shape: SelectShape.wand);}, action: HotkeyAction.selectToolSelectWand);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.erase);}, action: HotkeyAction.selectToolEraser);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.font);}, action: HotkeyAction.selectToolText);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.spraycan);}, action: HotkeyAction.selectToolSprayCan);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.line);}, action: HotkeyAction.selectToolLine);
+    hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.stamp);}, action: HotkeyAction.selectToolStamp);
+    hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: _currentLayer!);}, action: HotkeyAction.layersSwitchVisibility);
+    hotkeyManager.addListener(func: () {changeLayerLockState(layerState: _currentLayer!);}, action: HotkeyAction.layersSwitchLock);
+    hotkeyManager.addListener(func: addNewLayer, action: HotkeyAction.layersNew);
+    hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: _currentLayer!);}, action: HotkeyAction.layersDuplicate);
+    hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: _currentLayer!);}, action: HotkeyAction.layersDelete);
+    hotkeyManager.addListener(func: () {layerMerged(mergeLayer: _currentLayer!);}, action: HotkeyAction.layersMerge);
+    hotkeyManager.addListener(func: () {moveUpLayer(state: _currentLayer!);}, action: HotkeyAction.layersMoveUp);
+    hotkeyManager.addListener(func: () {moveDownLayer(state: _currentLayer!);}, action: HotkeyAction.layersMoveDown);
+    hotkeyManager.addListener(func: _selectLayerAbove, action: HotkeyAction.layersSelectAbove);
+    hotkeyManager.addListener(func: _selectLayerBelow, action: HotkeyAction.layersSelectBelow);
+    hotkeyManager.addListener(func: increaseZoomLevel, action: HotkeyAction.panZoomZoomIn);
+    hotkeyManager.addListener(func: decreaseZoomLevel, action: HotkeyAction.panZoomZoomOut);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 1);}, action: HotkeyAction.panZoomSetZoom100);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 2);}, action: HotkeyAction.panZoomSetZoom200);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 4);}, action: HotkeyAction.panZoomSetZoom400);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 8);}, action: HotkeyAction.panZoomSetZoom800);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 16);}, action: HotkeyAction.panZoomSetZoom1600);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 32);}, action: HotkeyAction.panZoomSetZoom3200);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 48);}, action: HotkeyAction.panZoomSetZoom4800);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 64);}, action: HotkeyAction.panZoomSetZoom6400);
+    hotkeyManager.addListener(func: () {setZoomLevel(val: 80);}, action: HotkeyAction.panZoomSetZoom8000);
+
+
+
   }
 
   void init({required CoordinateSetI dimensions})
@@ -495,17 +538,43 @@ class AppState
     }
   }
 
-  void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
+  int _getLayerPosition({required final LayerState state})
   {
     int sourcePosition = -1;
     for (int i = 0; i < _layers.value.length; i++)
     {
-       if (_layers.value[i] == state)
-       {
-          sourcePosition = i;
-          break;
-       }
+      if (_layers.value[i] == state)
+      {
+        sourcePosition = i;
+        break;
+      }
     }
+    return sourcePosition;
+  }
+
+  void moveUpLayer({required final LayerState state})
+  {
+    final int sourcePosition = _getLayerPosition(state: state);
+    if (sourcePosition > 0)
+    {
+      changeLayerOrder(state: state, newPosition: (sourcePosition - 1));
+    }
+  }
+
+  void moveDownLayer({required final LayerState state})
+  {
+    final int sourcePosition = _getLayerPosition(state: state);
+    print("MOVE DOWN 1");
+    if (sourcePosition < (layers.length - 1))
+    {
+      print("MOVE DOWN 2");
+      changeLayerOrder(state: state, newPosition: (sourcePosition + 2));
+    }
+  }
+
+  void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
+  {
+    final int sourcePosition = _getLayerPosition(state: state);
 
     if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
@@ -523,18 +592,40 @@ class AppState
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, description: "change layer order");
       }
+      repaintNotifier.repaint();
     }
   }
 
-  void layerVisibilityChanged()
+  void changeLayerVisibility({required final LayerState layerState})
   {
+    if (layerState.visibilityState.value == LayerVisibilityState.visible)
+    {
+      layerState.visibilityState.value = LayerVisibilityState.hidden;
+    }
+    else if (layerState.visibilityState.value == LayerVisibilityState.hidden)
+    {
+      layerState.visibilityState.value = LayerVisibilityState.visible;
+    }
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer visibility changed");
   }
 
-  void layerLockStateChanged()
+  void changeLayerLockState({required final LayerState layerState})
   {
+    if (layerState.lockState.value == LayerLockState.unlocked)
+    {
+      layerState.lockState.value = LayerLockState.transparency;
+    }
+    else if (layerState.lockState.value == LayerLockState.transparency)
+    {
+      layerState.lockState.value = LayerLockState.locked;
+    }
+    else if (layerState.lockState.value == LayerLockState.locked)
+    {
+      layerState.lockState.value = LayerLockState.unlocked;
+    }
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer lock state changed");
   }
+
 
   LayerState? getSelectedLayer()
   {
@@ -548,6 +639,25 @@ class AppState
     }
     return selectedLayer;
   }
+
+  void _selectLayerAbove()
+  {
+    int index = _getLayerPosition(state: _currentLayer!);
+    if (index > 0)
+    {
+      layerSelected(newLayer: layers[index - 1]);
+    }
+  }
+
+  void _selectLayerBelow()
+  {
+    int index = _getLayerPosition(state: _currentLayer!);
+    if (index < layers.length - 1)
+    {
+      layerSelected(newLayer: layers[index + 1]);
+    }
+  }
+
 
   void layerSelected({required final LayerState newLayer, final bool addToHistoryStack = false})
   {
@@ -784,6 +894,17 @@ class AppState
       }
       _selectedTool.value = tool;
       _currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
+    }
+  }
+
+  void setSelectionToolSelection({required SelectShape shape})
+  {
+    setToolSelection(tool: ToolType.select);
+    //should always be the case
+    if (_currentToolOptions is SelectOptions)
+    {
+      SelectOptions selectOptions = _currentToolOptions as SelectOptions;
+      selectOptions.shape.value = shape;
     }
   }
 

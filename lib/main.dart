@@ -24,8 +24,10 @@ import 'package:flutter/services.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/kpix_theme.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
@@ -65,20 +67,25 @@ class ThemeNotifier extends ChangeNotifier
 
 ThemeNotifier themeSettings = ThemeNotifier();
 
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  final HotkeyManager hotkeyManager = HotkeyManager();
+  GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
   runApp(
-      AnimatedBuilder(
-        animation: themeSettings,
-        builder: (final BuildContext context, final Widget? child) {
-          return MaterialApp(
-            home: const KPixApp(),
-            theme: KPixTheme.monochromeTheme,
-            darkTheme: KPixTheme.monochromeThemeDark,
-            themeMode: themeSettings.themeMode,
-          );
-        },
-
+      CallbackShortcuts(
+        bindings: hotkeyManager.callbackMap,
+        child: AnimatedBuilder(
+          animation: themeSettings,
+          builder: (final BuildContext context, final Widget? child) {
+            return MaterialApp(
+              home: const KPixApp(),
+              theme: KPixTheme.monochromeTheme,
+              darkTheme: KPixTheme.monochromeThemeDark,
+              themeMode: themeSettings.themeMode,
+            );
+          },
+        ),
       )
   );
 
@@ -119,7 +126,8 @@ class _KPixAppState extends State<KPixApp>
   }
 
 
-  Future<void> _initPrefs() async {
+  Future<void> _initPrefs() async
+  {
     final sPrefs = await SharedPreferences.getInstance();
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
@@ -165,6 +173,9 @@ class _KPixAppState extends State<KPixApp>
         onDismiss: () {exit(0);},
         onAccept: _newFilePressed
     );
+
+
+    GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
 
     final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
     if (themeSettings.themeMode != currentTheme)
@@ -270,7 +281,11 @@ class _KPixAppState extends State<KPixApp>
       {
         if (init)
         {
-          return ToastProvider(child: MainWidget(closePressed: _closePressed));
+          return ToastProvider(
+            child: MainWidget(
+              closePressed: _closePressed
+            )
+          );
         }
         else
         {

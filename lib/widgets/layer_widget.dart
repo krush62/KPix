@@ -538,36 +538,12 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _visibilityButtonPressed()
   {
-    setState(() {
-      if (widget.layerState.visibilityState.value == LayerVisibilityState.visible)
-      {
-        widget.layerState.visibilityState.value = LayerVisibilityState.hidden;
-      }
-      else if (widget.layerState.visibilityState.value == LayerVisibilityState.hidden)
-      {
-        widget.layerState.visibilityState.value = LayerVisibilityState.visible;
-      }
-      GetIt.I.get<AppState>().layerVisibilityChanged();
-    });
+    _appState.changeLayerVisibility(layerState: widget.layerState);
   }
 
   void _lockButtonPressed()
   {
-    setState(() {
-      if (widget.layerState.lockState.value == LayerLockState.unlocked)
-      {
-        widget.layerState.lockState.value = LayerLockState.transparency;
-      }
-      else if (widget.layerState.lockState.value == LayerLockState.transparency)
-      {
-        widget.layerState.lockState.value = LayerLockState.locked;
-      }
-      else if (widget.layerState.lockState.value == LayerLockState.locked)
-      {
-        widget.layerState.lockState.value = LayerLockState.unlocked;
-      }
-      GetIt.I.get<AppState>().layerLockStateChanged();
-    });
+    _appState.changeLayerLockState(layerState: widget.layerState);
   }
 
 

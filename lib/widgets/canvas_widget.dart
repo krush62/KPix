@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/util/helper.dart';
@@ -132,20 +133,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     Timer.periodic(Duration(milliseconds: _options.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      int bestZoomLevel = AppState.zoomLevelMin;
-      for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
-      {
-        if (_appState.canvasSize.x * i < kPixPainter.latestSize.width && _appState.canvasSize.y * i < kPixPainter.latestSize.height)
-        {
-          bestZoomLevel = i;
-        }
-        else
-        {
-          break;
-        }
-      }
-      _appState.setZoomLevel(val: bestZoomLevel);
-      _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (_appState.canvasSize.x * _appState.zoomFactor)) / 2, (kPixPainter.latestSize.height - (_appState.canvasSize.y * _appState.zoomFactor)) / 2));
+      _setOptimalZoom();
     });
 
     _stylusPrefs.stylusLongPressDelay.addListener(() {
@@ -154,6 +142,27 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _stylusPrefs.stylusPollInterval.addListener(() {
       _hasNewStylusPollValue = true;
     });
+
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
+  }
+
+  void _setOptimalZoom()
+  {
+    int bestZoomLevel = AppState.zoomLevelMin;
+    for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
+    {
+      if (_appState.canvasSize.x * i < kPixPainter.latestSize.width && _appState.canvasSize.y * i < kPixPainter.latestSize.height)
+      {
+        bestZoomLevel = i;
+      }
+      else
+      {
+        break;
+      }
+    }
+    _appState.setZoomLevel(val: bestZoomLevel);
+    _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (_appState.canvasSize.x * _appState.zoomFactor)) / 2, (kPixPainter.latestSize.height - (_appState.canvasSize.y * _appState.zoomFactor)) / 2));
   }
 
 

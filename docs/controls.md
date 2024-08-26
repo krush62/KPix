@@ -51,7 +51,7 @@
 | Increase Tool Size       |                     |                  | ctrl + mouse wheel up           | hold secondary + hover right |                           |
 | Decrease Tool Size       |                     |                  | ctrl + mouse wheel down         | hold secondary + hover left  |                           |
 | Draw From Center[^1]     | ctrl (hold)         |                  |                                 |                              |                           |
-| Angle Snap[^1]           | ctrl (hold)         |                  |                                 |                              |                           |
+| Angle Snap               | ctrl (hold)         |                  |                                 |                              |                           |
 | Keep 1:1 Aspect Ratio    | shift (hold)        |                  |                                 |                              |                           |
 | Line To[^1]              | shift (hold)        |                  |                                 |                              |                           |
 |                          |                     |                  |                                 |                              |                           |

@@ -106,20 +106,37 @@ class HotkeyManager
   {
     return _shiftIsPressed.value;
   }
+  ValueNotifier<bool> get shiftNotifier
+  {
+    return _shiftIsPressed;
+  }
   final ValueNotifier<bool> _controlIsPressed = ValueNotifier(false);
   bool get controlIsPressed
   {
     return _controlIsPressed.value;
+  }
+  ValueNotifier<bool> get controlNotifier
+  {
+    return _controlIsPressed;
   }
   final ValueNotifier<bool> _altIsPressed = ValueNotifier(false);
   bool get altIsPressed
   {
     return _altIsPressed.value;
   }
+  ValueNotifier<bool> get altNotifier
+  {
+    return _altIsPressed;
+  }
 
   Map<ShortcutActivator, VoidCallback> get callbackMap
   {
     return _callbackMap;
+  }
+
+  bool noModifierIsPressed()
+  {
+    return !shiftIsPressed && !altIsPressed && !controlIsPressed;
   }
 
   HotkeyManager()
@@ -146,6 +163,7 @@ class HotkeyManager
         _altIsPressed.value = (evt is KeyDownEvent);
       }
     }
+
   }
 
 

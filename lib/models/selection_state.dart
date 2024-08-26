@@ -305,7 +305,7 @@ class SelectionState with ChangeNotifier
     }
     if (removeCoords.isNotEmpty)
     {
-      selection.removeAll(coords: addCoords);
+      selection.removeAll(coords: removeCoords);
     }
   }
 

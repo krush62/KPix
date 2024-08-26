@@ -17,6 +17,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -56,6 +58,7 @@ class LineOptions extends IToolOptions
 
   final ValueNotifier<int> width = ValueNotifier(1);
   final ValueNotifier<bool> integerAspectRatio = ValueNotifier(false);
+  final ValueNotifier<bool> unmodifiedIntegerAspectRatio = ValueNotifier(false);
 
   LineOptions({
     required this.widthMin,
@@ -67,6 +70,7 @@ class LineOptions extends IToolOptions
   {
     width.value = widthDefault;
     integerAspectRatio.value = integerAspectRatioDefault;
+    unmodifiedIntegerAspectRatio.value = integerAspectRatioDefault;
 
     for (int i = -1; i <= 1; i+=2)
     {
@@ -90,6 +94,7 @@ class LineOptions extends IToolOptions
     required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final LineOptions lineOptions,
   }) {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,
@@ -146,11 +151,28 @@ class LineOptions extends IToolOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
-                  valueListenable: lineOptions.integerAspectRatio,
-                  builder: (BuildContext context, bool keep, child){
-                    return Switch(
-                      onChanged: (bool newVal) {lineOptions.integerAspectRatio.value = newVal;},
-                      value: keep
+                  valueListenable: hotkeyManager.controlNotifier,
+                  builder: (final BuildContext _, final bool controlPressed, final Widget? __) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: lineOptions.unmodifiedIntegerAspectRatio,
+                      builder: (final BuildContext context, final bool unmodifiedAspectRatio, final Widget? child){
+                        bool newMode = unmodifiedAspectRatio;
+                        if (controlPressed)
+                        {
+                          newMode = true;
+                        }
+                        lineOptions.integerAspectRatio.value = newMode;
+                        return Switch(
+                          onChanged: (final bool newVal) {
+                            if (!controlPressed)
+                            {
+                              lineOptions.unmodifiedIntegerAspectRatio.value = newVal;
+                            }
+                            lineOptions.integerAspectRatio.value = newVal;
+                          },
+                          value: lineOptions.integerAspectRatio.value
+                        );
+                      },
                     );
                   },
                 ),

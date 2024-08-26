@@ -35,11 +35,11 @@ class ColorPickPainter extends IToolPainter
   {
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = KPixPainter.getClosestPixel(
+      _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
-      _cursorPosNorm.y = KPixPainter.getClosestPixel(
+      _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();

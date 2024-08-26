@@ -17,6 +17,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -75,6 +77,7 @@ class ShapeOptions extends IToolOptions
 
   final ValueNotifier<ShapeShape> shape = ValueNotifier(ShapeShape.rectangle);
   final ValueNotifier<bool> keepRatio = ValueNotifier(false);
+  final ValueNotifier<bool> unmodifiedKeepRatio = ValueNotifier(false);
   final ValueNotifier<bool> strokeOnly = ValueNotifier(false);
   final ValueNotifier<int> strokeWidth = ValueNotifier(1);
   final ValueNotifier<int> cornerRadius = ValueNotifier(0);
@@ -101,6 +104,7 @@ class ShapeOptions extends IToolOptions
   }) {
     shape.value = _shapeShapeIndexMap[shapeDefault] ?? ShapeShape.rectangle;
     keepRatio.value = keepRatioDefault;
+    unmodifiedKeepRatio.value = keepRatioDefault;
     strokeOnly.value = strokeOnlyDefault;
     strokeWidth.value = strokeWidthDefault;
     cornerRadius.value = cornerRadiusDefault;
@@ -113,6 +117,7 @@ class ShapeOptions extends IToolOptions
       required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
       required ShapeOptions shapeOptions})
   {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,
@@ -221,12 +226,28 @@ class ShapeOptions extends IToolOptions
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
-                  valueListenable: shapeOptions.keepRatio,
-                  builder: (final BuildContext context, final bool keep, final Widget? child)
-                  {
-                    return Switch(
-                      onChanged: (bool newVal) {shapeOptions.keepRatio.value = newVal;},
-                      value: keep,
+                  valueListenable: hotkeyManager.controlNotifier,
+                  builder: (final BuildContext _, final bool controlPressed, final Widget? __) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: shapeOptions.unmodifiedKeepRatio,
+                      builder: (final BuildContext context, final bool unmodifiedKeep, final Widget? child) {
+                        bool newMode = unmodifiedKeep;
+                        if (controlPressed)
+                        {
+                          newMode = true;
+                        }
+                        shapeOptions.keepRatio.value = newMode;
+                        return Switch(
+                          onChanged: (final bool newVal) {
+                            if (!controlPressed)
+                            {
+                              shapeOptions.unmodifiedKeepRatio.value = newVal;
+                            }
+                            shapeOptions.keepRatio.value = newVal;
+                            },
+                          value: shapeOptions.keepRatio.value,
+                        );
+                      },
                     );
                   },
                 ),

@@ -49,14 +49,14 @@ class SelectionPainter extends IToolPainter
   {
     if (_lastStartPos != drawParams.primaryPressStart)
     {
-      _normStartPos.x = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-      _normStartPos.y = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+      _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+      _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
       _lastStartPos = drawParams.primaryPressStart;
     }
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-      _cursorPosNorm.y = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
     }
 
     _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
@@ -279,10 +279,10 @@ class SelectionPainter extends IToolPainter
     {
       final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
       CoordinateSetD(
-          x: drawParams.offset.dx + KPixPainter.getClosestPixel(
+          x: drawParams.offset.dx + getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
               pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize + (drawParams.pixelSize / 2),
-          y: drawParams.offset.dy + KPixPainter.getClosestPixel(
+          y: drawParams.offset.dy + getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
               pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize + (drawParams.pixelSize / 2))
           : null;

@@ -17,7 +17,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:kpix/preferences/stylus_preferences.dart';
 
 class StylusPreferenceContent
 {

@@ -72,6 +72,7 @@ class SelectOptions extends IToolOptions
     keepAspectRatio.value = keepAspectRatioDefault;
     shape.value = _selectShapeIndexMap[shapeDefault] ?? SelectShape.rectangle;
     mode.value = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
+    unModifiedMode.value = mode.value;
     wandContinuous.value = wandContinuousDefault;
     wandWholeRamp.value = wandWholeRampDefault;
   }
@@ -164,10 +165,8 @@ class SelectOptions extends IToolOptions
                                       selectOptions.unModifiedMode.value = modes.first;
                                     }
                                     selectOptions.mode.value = modes.first;
-
                                   },
                                 );
-
                               },
                             );
                           },

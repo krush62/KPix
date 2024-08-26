@@ -18,6 +18,7 @@ import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -31,6 +32,7 @@ class ShapePainter extends IToolPainter
 {
   final ShapeOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.shapeOptions;
   final BehaviorPreferenceContent _behaviorPreferenceContent = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final CoordinateSetI _selectionStart = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _selectionEnd = CoordinateSetI(x: 0, y: 0);
   Offset _lastStartPos = const Offset(0,0);
@@ -51,14 +53,14 @@ class ShapePainter extends IToolPainter
     bool selectionChanged = false;
     if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
     {
-      _normStartPos.x = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-      _normStartPos.y = KPixPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+      _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+      _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
       _lastStartPos = drawParams.primaryPressStart;
     }
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-      _cursorPosNorm.y = KPixPainter.getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
     }
 
     if (_normStartPos != _lastNormStartPos)
@@ -79,27 +81,51 @@ class ShapePainter extends IToolPainter
       _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
       if (_isStartOnCanvas)
       {
-        _selectionStart.x = max(_normStartPos.x < _cursorPosNorm.x ? _normStartPos.x: _cursorPosNorm.x, 0);
-        _selectionStart.y = max(_normStartPos.y < _cursorPosNorm.y ? _normStartPos.y : _cursorPosNorm.y, 0);
-        _selectionEnd.x = min(_normStartPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (_normStartPos.x), appState.canvasSize.x - 1);
-        _selectionEnd.y = min(_normStartPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (_normStartPos.y), appState.canvasSize.y - 1);
+        final CoordinateSetI endPos = CoordinateSetI.from(other: _normStartPos);
 
+        if (_hotkeyManager.shiftIsPressed)
+        {
+          endPos.x = _normStartPos.x + (_normStartPos.x - _cursorPosNorm.x);
+          endPos.y = _normStartPos.y + (_normStartPos.y - _cursorPosNorm.y);
+        }
+
+        _selectionStart.x = max(endPos.x < _cursorPosNorm.x ? endPos.x: _cursorPosNorm.x, 0);
+        _selectionStart.y = max(endPos.y < _cursorPosNorm.y ? endPos.y : _cursorPosNorm.y, 0);
+        _selectionEnd.x = min(endPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (endPos.x), appState.canvasSize.x - 1);
+        _selectionEnd.y = min(endPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (endPos.y), appState.canvasSize.y - 1);
 
         if (_options.keepRatio.value)
         {
           final int width = _selectionEnd.x - _selectionStart.x;
           final int height = _selectionEnd.y - _selectionStart.y;
-          if (width > height) {
-            if (_normStartPos.x < _cursorPosNorm.x) {
-              _selectionEnd.x = _selectionStart.x + height;
-            } else {
-              _selectionStart.x = _selectionEnd.x - height;
+          if (_hotkeyManager.shiftIsPressed)
+          {
+            final int diff = (width - height).abs();
+            if (width > height)
+            {
+               _selectionStart.x += diff ~/ 2;
+               _selectionEnd.x -= ((diff ~/ 2) + (diff % 2));
             }
-          } else {
-            if (_normStartPos.y < _cursorPosNorm.y) {
-              _selectionEnd.y = _selectionStart.y + width;
+            else
+            {
+              _selectionStart.y += diff ~/ 2;
+              _selectionEnd.y -= ((diff ~/ 2) + (diff % 2));
+            }
+          }
+          else
+          {
+            if (width > height) {
+              if (_normStartPos.x < _cursorPosNorm.x) {
+                _selectionEnd.x = _selectionStart.x + height;
+              } else {
+                _selectionStart.x = _selectionEnd.x - height;
+              }
             } else {
-              _selectionStart.y = _selectionEnd.y - width;
+              if (_normStartPos.y < _cursorPosNorm.y) {
+                _selectionEnd.y = _selectionStart.y + width;
+              } else {
+                _selectionStart.y = _selectionEnd.y - width;
+              }
             }
           }
         }

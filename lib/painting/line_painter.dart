@@ -17,6 +17,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -30,6 +31,7 @@ class LinePainter extends IToolPainter
 {
   LinePainter({required super.painterOptions});
   final LineOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   Set<CoordinateSetI> _contentPoints = {};
   Set<CoordinateSetI> _linePoints = {};
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
@@ -48,11 +50,11 @@ class LinePainter extends IToolPainter
   void calculate({required DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null) {
-      _cursorPosNorm.x = KPixPainter.getClosestPixel(
+      _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
-      _cursorPosNorm.y = KPixPainter.getClosestPixel(
+      _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble())
           .round();
@@ -69,120 +71,22 @@ class LinePainter extends IToolPainter
           {
             if (_options.integerAspectRatio.value)
             {
-              assert(_options.angles.isNotEmpty);
-              final double currentAngle = atan2(_cursorPosNorm.x - _lineStartPos.x, _cursorPosNorm.y - _lineStartPos.y);
-              AngleData? closestAngle;
-              double closestDist = 0.0;
-              for (final AngleData aData in _options.angles)
+              _linePoints = getIntegerRatioLinePoints(startPos: _lineStartPos, endPos: _cursorPosNorm, size: _options.width.value, angles: _options.angles, shape: PencilShape.round);
+              if (_hotkeyManager.shiftIsPressed)
               {
-                final double currentDist = (Helper.normAngle(angle: aData.angle) - Helper.normAngle(angle: currentAngle)).abs();
-                if (closestAngle == null || currentDist < closestDist)
+                final Set<CoordinateSetI> otherDirPoints = {};
+                for (final CoordinateSetI coord in _linePoints)
                 {
-                  closestAngle = aData;
-                  closestDist = (Helper.normAngle(angle: currentAngle) - Helper.normAngle(angle: closestAngle.angle)).abs();
+                  otherDirPoints.add(CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - coord.x), y: _lineStartPos.y + (_lineStartPos.y - coord.y)));
                 }
-              }
-
-
-              if (closestAngle != null) //should never happen
-              {
-               double shortestDist = double.maxFinite;
-               CoordinateSetI currentPos = CoordinateSetI.from(other: _lineStartPos);
-               final Set<CoordinateSetI> lPoints = {};
-               do
-               {
-                 final Set<CoordinateSetI> currPoints = {};
-                 if (closestAngle.x.abs() > closestAngle.y.abs())
-                 {
-                    for (int i = 0; i < closestAngle.x.abs(); i++)
-                    {
-                      if (closestAngle.x > 0)
-                      {
-                        currentPos.x++;
-                      }
-                      else
-                      {
-                        currentPos.x--;
-                      }
-                      currPoints.add(CoordinateSetI.from(other: currentPos));
-                    }
-                    if (closestAngle.y > 0)
-                    {
-                       currentPos.y++;
-                    }
-                    else if (closestAngle.y < 0)
-                    {
-                       currentPos.y--;
-                    }
-                 }
-                 else
-                 {
-                   for (int i = 0; i < closestAngle.y.abs(); i++)
-                   {
-                     if (closestAngle.y > 0)
-                     {
-                       currentPos.y++;
-                     }
-                     else
-                     {
-                       currentPos.y--;
-                     }
-                     currPoints.add(CoordinateSetI.from(other: currentPos));
-                   }
-                   if (closestAngle.x > 0)
-                   {
-                     currentPos.x++;
-                   }
-                   else if (closestAngle.x < 0)
-                   {
-                     currentPos.x--;
-                   }
-                 }
-
-                 final dist = Helper.getDistance(a: _cursorPosNorm, b: currentPos);
-                 if (dist < shortestDist)
-                 {
-                    shortestDist = dist;
-                    lPoints.addAll(currPoints);
-                 }
-                 else
-                 {
-                    break;
-                 }
-               } while(true);
-
-
-               if (_options.width.value == 1)
-               {
-                 _linePoints = lPoints;
-               }
-               else
-               {
-                 final Set<CoordinateSetI> widePoints = {};
-                 for (final CoordinateSetI coord in lPoints)
-                 {
-                   widePoints.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: coord));
-                 }
-                 _linePoints = widePoints;
-               }
+                _linePoints.addAll(otherDirPoints);
               }
             }
             else
             {
-              final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(start: _lineStartPos, end: _cursorPosNorm).toSet();
-              if (_options.width.value == 1)
-              {
-                _linePoints = bresenhamPoints;
-              }
-              else
-              {
-                Set<CoordinateSetI> lPoints = {};
-                for (final CoordinateSetI coord in bresenhamPoints)
-                {
-                  lPoints.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: coord));
-                }
-                _linePoints = lPoints;
-              }
+              final CoordinateSetI startPos = _hotkeyManager.shiftIsPressed ? CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - _cursorPosNorm.x), y: _lineStartPos.y + (_lineStartPos.y - _cursorPosNorm.y)) : _lineStartPos;
+              _linePoints = getLinePoints(startPos: startPos, endPos: _cursorPosNorm, size: _options.width.value, shape: PencilShape.round);
+
             }
           }
           else // CURVE

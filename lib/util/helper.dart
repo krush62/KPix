@@ -412,8 +412,6 @@ class Helper
     return points;
   }
 
-
-
   static int argbToRgba({required final int argb}) {
     int a = (argb & 0xFF000000) >> 24; // Extract alpha component
     int r = (argb & 0x00FF0000) >> 16; // Extract red component

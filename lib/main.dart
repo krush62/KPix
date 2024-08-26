@@ -27,7 +27,6 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
-import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
@@ -60,10 +59,9 @@ class ThemeNotifier extends ChangeNotifier
   @override
   void notifyListeners()
   {
-      super.notifyListeners();
+    super.notifyListeners();
   }
 }
-
 
 ThemeNotifier themeSettings = ThemeNotifier();
 
@@ -73,25 +71,25 @@ void main() {
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
   runApp(
-      CallbackShortcuts(
-        bindings: hotkeyManager.callbackMap,
-        child: KeyboardListener(
-          focusNode: focusNode,
-          autofocus: true,
-          onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
-          child: AnimatedBuilder(
-            animation: themeSettings,
-            builder: (final BuildContext context, final Widget? child) {
-              return MaterialApp(
-                home: const KPixApp(),
-                theme: KPixTheme.monochromeTheme,
-                darkTheme: KPixTheme.monochromeThemeDark,
-                themeMode: themeSettings.themeMode,
-              );
-            },
-          ),
+    CallbackShortcuts(
+      bindings: hotkeyManager.callbackMap,
+      child: KeyboardListener(
+        focusNode: focusNode,
+        autofocus: true,
+        onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
+        child: AnimatedBuilder(
+          animation: themeSettings,
+          builder: (final BuildContext context, final Widget? child) {
+            return MaterialApp(
+              home: const KPixApp(),
+              theme: KPixTheme.monochromeTheme,
+              darkTheme: KPixTheme.monochromeThemeDark,
+              themeMode: themeSettings.themeMode,
+            );
+          },
         ),
-      )
+      ),
+    )
   );
 
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {

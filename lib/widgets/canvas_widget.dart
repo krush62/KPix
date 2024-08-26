@@ -597,6 +597,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _mouseIsInside = false;
   }
 
+  int _getClosestPixel({required double value, required double pixelSize})
+  {
+    final double remainder = value % pixelSize;
+    final double lowerMultiple = value - remainder;
+    return (lowerMultiple / pixelSize).round();
+  }
+
 
   void _stylusBtnTimeout({required final Timer t})
   {
@@ -613,11 +620,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
       {
         final CoordinateSetI normPos = CoordinateSetI(
-            x: KPixPainter.getClosestPixel(
+            x: _getClosestPixel(
                 value: _cursorPos.value!.x - _canvasOffset.value.dx,
                 pixelSize: _appState.zoomFactor.toDouble())
                 .round(),
-            y: KPixPainter.getClosestPixel(
+            y: _getClosestPixel(
                 value: _cursorPos.value!.y - _canvasOffset.value.dy,
                 pixelSize: _appState.zoomFactor.toDouble())
                 .round());

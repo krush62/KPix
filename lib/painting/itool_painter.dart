@@ -17,6 +17,7 @@
 import 'dart:collection';
 import 'dart:math';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -181,6 +182,133 @@ abstract class IToolPainter
     return coords;
   }
 
+  Set<CoordinateSetI> getLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape})
+  {
+    Set<CoordinateSetI> linePoints = {};
+    final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(start: startPos, end: endPos).toSet();
+    if (size == 1)
+    {
+      linePoints = bresenhamPoints;
+    }
+    else
+    {
+      final Set<CoordinateSetI> lPoints = {};
+      for (final CoordinateSetI coord in bresenhamPoints)
+      {
+        lPoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
+      }
+      linePoints = lPoints;
+    }
+    return linePoints;
+  }
+
+  Set<CoordinateSetI> getIntegerRatioLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape, required final Set<AngleData> angles})
+  {
+
+    Set<CoordinateSetI> linePoints = {};
+    assert(angles.isNotEmpty);
+    final double currentAngle = atan2(endPos.x - startPos.x, endPos.y - startPos.y);
+    AngleData? closestAngle;
+    double closestDist = 0.0;
+    for (final AngleData aData in angles)
+    {
+      final double currentDist = (Helper.normAngle(angle: aData.angle) - Helper.normAngle(angle: currentAngle)).abs();
+      if (closestAngle == null || currentDist < closestDist)
+      {
+        closestAngle = aData;
+        closestDist = (Helper.normAngle(angle: currentAngle) - Helper.normAngle(angle: closestAngle.angle)).abs();
+      }
+    }
+
+    if (closestAngle != null) //should never happen
+    {
+      double shortestDist = double.maxFinite;
+      CoordinateSetI currentPos = CoordinateSetI.from(other: startPos);
+      final Set<CoordinateSetI> lPoints = {};
+      lPoints.add(startPos);
+      bool firstRun = true;
+      do
+      {
+        int startReducer = firstRun ? -1 : 0;
+        firstRun = false;
+        final Set<CoordinateSetI> currPoints = {};
+        if (closestAngle.x.abs() > closestAngle.y.abs())
+        {
+          for (int i = 0; i < closestAngle.x.abs() + startReducer; i++)
+          {
+            if (closestAngle.x > 0)
+            {
+              currentPos.x++;
+            }
+            else
+            {
+              currentPos.x--;
+            }
+            currPoints.add(CoordinateSetI.from(other: currentPos));
+          }
+          if (closestAngle.y > 0)
+          {
+            currentPos.y++;
+          }
+          else if (closestAngle.y < 0)
+          {
+            currentPos.y--;
+          }
+        }
+        else
+        {
+          for (int i = 0; i < closestAngle.y.abs() + startReducer; i++)
+          {
+            if (closestAngle.y > 0)
+            {
+              currentPos.y++;
+            }
+            else
+            {
+              currentPos.y--;
+            }
+            currPoints.add(CoordinateSetI.from(other: currentPos));
+          }
+          if (closestAngle.x > 0)
+          {
+            currentPos.x++;
+          }
+          else if (closestAngle.x < 0)
+          {
+            currentPos.x--;
+          }
+        }
+
+        final dist = Helper.getDistance(a: endPos, b: currentPos);
+        if (dist < shortestDist)
+        {
+          shortestDist = dist;
+          lPoints.addAll(currPoints);
+        }
+        else
+        {
+          break;
+        }
+      } while(true);
+
+
+      if (size == 1)
+      {
+        linePoints = lPoints;
+      }
+      else
+      {
+        final Set<CoordinateSetI> widePoints = {};
+        for (final CoordinateSetI coord in lPoints)
+        {
+          widePoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
+        }
+        linePoints = widePoints;
+      }
+    }
+
+    return linePoints;
+  }
 
 
   static List<CoordinateSetI> getBoundaryPath({required final Set<CoordinateSetI> coords})
@@ -371,5 +499,12 @@ abstract class IToolPainter
       }
     }
     return pixelMap;
+  }
+
+  int getClosestPixel({required double value, required double pixelSize})
+  {
+    final double remainder = value % pixelSize;
+    final double lowerMultiple = value - remainder;
+    return (lowerMultiple / pixelSize).round();
   }
 }

@@ -536,15 +536,6 @@ class KPixPainter extends CustomPainter
   }
 
 
-  static int getClosestPixel({required double value, required double pixelSize})
-  {
-    final double remainder = value % pixelSize;
-    double lowerMultiple = value - remainder;
-    return (lowerMultiple / pixelSize).round();
-  }
-
-
-
 
   static bool isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
   {

@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 
 class ShaderWidgetOptions {
@@ -44,15 +45,16 @@ class _ShaderWidgetState extends State<ShaderWidget>
 {
   final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final ShaderWidgetOptions _shaderWidgetOptions = GetIt.I.get<PreferenceManager>().shaderWidgetOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override
   void initState()
   {
     super.initState();
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    hotkeyManager.addListener(func: () {_shaderOptions.isEnabled.value = !_shaderOptions.isEnabled.value;}, action: HotkeyAction.shadingToggle);
-    hotkeyManager.addListener(func: () {_shaderOptions.onlyCurrentRampEnabled.value = !_shaderOptions.onlyCurrentRampEnabled.value;}, action: HotkeyAction.shadingCurrentRampOnly);
-    hotkeyManager.addListener(func: () {_shaderOptions.shaderDirection.value = (_shaderOptions.shaderDirection.value == ShaderDirection.left) ? ShaderDirection.right : ShaderDirection.left;}, action: HotkeyAction.shadingDirection);
+
+    _hotkeyManager.addListener(func: () {_shaderOptions.isEnabled.value = !_shaderOptions.isEnabled.value;}, action: HotkeyAction.shadingToggle);
+    _hotkeyManager.addListener(func: () {_shaderOptions.onlyCurrentRampEnabled.value = !_shaderOptions.onlyCurrentRampEnabled.value;}, action: HotkeyAction.shadingCurrentRampOnly);
+    _hotkeyManager.addListener(func: () {_shaderOptions.shaderDirection.value = (_shaderOptions.shaderDirection.value == ShaderDirection.left) ? ShaderDirection.right : ShaderDirection.left;}, action: HotkeyAction.shadingDirection);
   }
 
   @override
@@ -87,11 +89,15 @@ class _ShaderWidgetState extends State<ShaderWidget>
                   ),
                   Expanded(
                     flex: 1,
-                    child: Switch(
-                      onChanged: (final bool newState) {
-                        _shaderOptions.isEnabled.value = newState;
-                      },
-                      value: isEnabled,
+                    child: Tooltip(
+                      waitDuration: AppState.toolTipDuration,
+                      message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, precededNewLine: false),
+                      child: Switch(
+                        onChanged: (final bool newState) {
+                          _shaderOptions.isEnabled.value = newState;
+                        },
+                        value: isEnabled,
+                      ),
                     )
                   ),
                 ],
@@ -113,11 +119,15 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       valueListenable: _shaderOptions.onlyCurrentRampEnabled,
                       builder: (final BuildContext context, final bool onlyCurrentRampEnabled, final Widget? child)
                       {
-                        return Switch(
-                          onChanged: isEnabled
-                            ? (bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
-                            : null,
-                          value: onlyCurrentRampEnabled,
+                        return Tooltip(
+                          waitDuration: AppState.toolTipDuration,
+                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, precededNewLine: false),
+                          child: Switch(
+                            onChanged: isEnabled
+                              ? (bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
+                              : null,
+                            value: onlyCurrentRampEnabled,
+                          ),
                         );
                       },
 
@@ -137,11 +147,15 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       valueListenable: _shaderOptions.shaderDirection,
                       builder: (final BuildContext context, final ShaderDirection direction, final Widget? child)
                       {
-                        return Switch(
-                          onChanged: isEnabled
-                            ? (bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
-                            : null,
-                          value: direction == ShaderDirection.right,
+                        return Tooltip(
+                          waitDuration: AppState.toolTipDuration,
+                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, precededNewLine: false),
+                          child: Switch(
+                            onChanged: isEnabled
+                              ? (bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
+                              : null,
+                            value: direction == ShaderDirection.right,
+                          ),
                         );
                       },
                     )

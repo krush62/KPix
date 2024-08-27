@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
@@ -41,6 +42,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final AppState _appState = GetIt.I.get<AppState>();
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override
   void initState()
@@ -111,7 +113,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                         Padding(
                           padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
                           child: Tooltip(
-                            message: "Add New Layer",
+                            message: "Add New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNew)}",
                             waitDuration: AppState.toolTipDuration,
                             child: IconButton(
                               onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},

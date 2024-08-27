@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -45,6 +46,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
   final ToolsWidgetOptions _toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override
   void initState()
@@ -78,7 +80,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.pencil,
                     label: Tooltip(
-                      message: toolList[ToolType.pencil]?.title,
+                      message: toolList[ToolType.pencil]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.pencil]!.icon,
@@ -89,7 +91,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.erase,
                     label: Tooltip(
-                      message: toolList[ToolType.erase]?.title,
+                      message: toolList[ToolType.erase]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.erase]!.icon,
@@ -100,7 +102,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.select,
                     label: Tooltip(
-                      message: toolList[ToolType.select]?.title,
+                      message: toolList[ToolType.select]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.select]!.icon,
@@ -111,7 +113,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.fill,
                     label: Tooltip(
-                      message: toolList[ToolType.fill]?.title,
+                      message: toolList[ToolType.fill]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.fill]!.icon,
@@ -145,7 +147,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.line,
                     label: Tooltip(
-                      message: toolList[ToolType.line]?.title,
+                      message: toolList[ToolType.line]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.line]!.icon,
@@ -156,7 +158,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.shape,
                     label: Tooltip(
-                      message: toolList[ToolType.shape]?.title,
+                      message: toolList[ToolType.shape]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.shape]!.icon,
@@ -167,7 +169,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.font,
                     label: Tooltip(
-                      message: toolList[ToolType.font]?.title,
+                      message: toolList[ToolType.font]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.font]!.icon,
@@ -178,7 +180,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.spraycan,
                     label: Tooltip(
-                      message: toolList[ToolType.spraycan]?.title,
+                      message: toolList[ToolType.spraycan]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.spraycan]!.icon,
@@ -189,7 +191,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                   ButtonSegment(
                     value: ToolType.stamp,
                     label: Tooltip(
-                      message: toolList[ToolType.stamp]?.title,
+                      message: toolList[ToolType.stamp]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp),
                       waitDuration: AppState.toolTipDuration,
                       child: FaIcon(
                         toolList[ToolType.stamp]!.icon,

@@ -115,6 +115,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _hotkeyManager.addListener(func: _newFile, action: HotkeyAction.generalNew);
     _hotkeyManager.addListener(func: _undoPressed, action: HotkeyAction.generalUndo);
     _hotkeyManager.addListener(func: _redoPressed, action: HotkeyAction.generalRedo);
+    _hotkeyManager.addListener(func: _exportFile, action: HotkeyAction.generalExport);
 
   }
 
@@ -382,7 +383,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, child) {
                       return Tooltip(
-                        message: "Undo",
+                        message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
@@ -405,7 +406,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, child) {
                       return Tooltip(
-                        message: "Redo",
+                        message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,

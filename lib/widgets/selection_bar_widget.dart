@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -45,6 +46,7 @@ class SelectionBarWidget extends StatefulWidget
 class _SelectionBarWidgetState extends State<SelectionBarWidget>
 {
   final SelectionBarWidgetOptions _options = GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final SelectionState _selectionState = GetIt.I.get<AppState>().selectionState;
   final AppState _appState = GetIt.I.get<AppState>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
@@ -70,7 +72,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Select All",
+                  message: "Select All${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selectAll,
@@ -84,7 +86,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Deselect",
+                  message: "Deselect${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                       onPressed: _selectionState.selection.isEmpty() ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
@@ -98,7 +100,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Inverse Selection",
+                  message: "Inverse Selection${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                       onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.inverse,
@@ -112,7 +114,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Copy",
+                  message: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copy,
@@ -126,7 +128,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Copy Merged",
+                  message: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copyMerged,
@@ -140,7 +142,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Cut",
+                  message: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.cut,
@@ -154,7 +156,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Paste",
+                  message: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.clipboard == null ? null : _selectionState.paste,
@@ -168,7 +170,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Paste As New Layer",
+                  message: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.clipboard == null ? null : _pasteNewPressed,
@@ -182,7 +184,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Horizontal Flip",
+                  message: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipH,
@@ -196,7 +198,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Vertical Flip",
+                  message: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipV,
@@ -210,7 +212,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Rotate 90° Clockwise",
+                  message: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.rotate,
@@ -224,7 +226,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
-                  message: "Delete",
+                  message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.delete,

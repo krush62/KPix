@@ -14,8 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 
 enum HotkeyAction
 {
@@ -24,6 +28,7 @@ enum HotkeyAction
   generalOpen,
   generalSave,
   generalSaveAs,
+  generalExport,
   generalExit,
   generalUndo,
   generalRedo,
@@ -96,10 +101,10 @@ class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners(
 
 class HotkeyManager
 {
-  final Map<ShortcutActivator, HotkeyAction> _shortCutMap = {};
+  final Map<SingleActivator, HotkeyAction> _shortCutMap = {};
   final Map<HotkeyAction, HotkeyNotifier> _notifierMap = {};
   final Map<HotkeyAction, VoidCallback> _actionMap = {};
-  final Map<ShortcutActivator, VoidCallback> _callbackMap = {};
+  final Map<SingleActivator, VoidCallback> _callbackMap = {};
 
   final ValueNotifier<bool> _shiftIsPressed = ValueNotifier(false);
   bool get shiftIsPressed
@@ -129,7 +134,7 @@ class HotkeyManager
     return _altIsPressed;
   }
 
-  Map<ShortcutActivator, VoidCallback> get callbackMap
+  Map<SingleActivator, VoidCallback> get callbackMap
   {
     return _callbackMap;
   }
@@ -172,6 +177,56 @@ class HotkeyManager
     _notifierMap[action]?.addListener(func);
   }
 
+
+  String getShortcutString({required final HotkeyAction action, final bool precededNewLine = true, final bool showSquareBrackets = true})
+  {
+    String result = "";
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
+    {
+      final Iterable<SingleActivator> activators = _shortCutMap.keys.where((x) => _shortCutMap[x] == action);
+      if (activators.isNotEmpty)
+      {
+        for (int i = 0; i < activators.length; i++)
+        {
+          if (i > 0 || precededNewLine)
+          {
+            result += "\n";
+          }
+          if (showSquareBrackets)
+          {
+            result += "[";
+          }
+          final SingleActivator activator = activators.elementAt(i);
+          if (activator.shift)
+          {
+            result += "${LogicalKeyboardKey.shift.keyLabel} + ";
+          }
+          if (activator.control)
+          {
+            result += "${LogicalKeyboardKey.control.keyLabel} + ";
+          }
+          if (activator.alt)
+          {
+            result += "${LogicalKeyboardKey.alt.keyLabel} + ";
+          }
+          if (activator.trigger == LogicalKeyboardKey.space)
+          {
+            result += "space";
+          }
+          else
+          {
+            result += activator.trigger.keyLabel;
+          }
+          if (showSquareBrackets)
+          {
+            result += "]";
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   void _createShortcuts()
   {
     _shortCutMap.clear();
@@ -181,6 +236,7 @@ class HotkeyManager
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyO, control: true)] = HotkeyAction.generalOpen;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyS, control: true)] = HotkeyAction.generalSave;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyS, control: true, shift: true)] = HotkeyAction.generalSaveAs;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyE, control: true)] = HotkeyAction.generalExport;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.f4, alt: true)] = HotkeyAction.generalExit;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyQ, control: true)] = HotkeyAction.generalExit;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyZ, control: true)] = HotkeyAction.generalUndo;
@@ -266,7 +322,7 @@ class HotkeyManager
   void _createCallbackMap()
   {
     _callbackMap.clear();
-    for (final MapEntry<ShortcutActivator, HotkeyAction> shortCutEntry in _shortCutMap.entries)
+    for (final MapEntry<SingleActivator, HotkeyAction> shortCutEntry in _shortCutMap.entries)
     {
       if (_actionMap[shortCutEntry.value] != null)
       {

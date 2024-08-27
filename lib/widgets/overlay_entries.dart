@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -118,6 +119,7 @@ class OverlayEntries
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -144,7 +146,7 @@ class OverlayEntries
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
-                        message: "New Project",
+                        message: "New Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -164,7 +166,7 @@ class OverlayEntries
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
-                        message: "Open Project",
+                        message: "Open Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -222,6 +224,7 @@ class OverlayEntries
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -248,7 +251,7 @@ class OverlayEntries
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
-                        message: "Save Project",
+                        message: "Save Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -267,7 +270,7 @@ class OverlayEntries
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
-                        message: "Save Project As",
+                        message: "Save Project As${hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -286,7 +289,7 @@ class OverlayEntries
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
-                        message: "Export Project",
+                        message: "Export Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -342,6 +345,7 @@ class OverlayEntries
   {
     OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     const int buttonCount = 3;
     final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
     final double height = options.buttonHeight + 2 * options.buttonSpacing;
@@ -371,7 +375,7 @@ class OverlayEntries
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Tooltip(
-                        message: "Delete Layer",
+                        message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -388,7 +392,7 @@ class OverlayEntries
                           ),
                       ),
                       Tooltip(
-                        message: "Duplicate Layer",
+                        message: "Duplicate Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -404,7 +408,7 @@ class OverlayEntries
                         ),
                       ),
                       Tooltip(
-                        message: "Merge Down Layer",
+                        message: "Merge Down Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),

@@ -7,6 +7,7 @@
 | Open                     | ctrl + o            |                  |                                 |                              |                           |
 | Save                     | ctrl + s            |                  |                                 |                              |                           |
 | Save As                  | ctrl + shift + s    |                  |                                 |                              |                           |
+| Export                   | ctrl + e            |                  |                                 |                              |                           |
 | Exit                     | ctrl + q            |                  |                                 |                              |                           |
 | Undo                     | ctrl + z            |                  | back button                     |                              |                           |
 | Redo                     | ctrl + y            | ctrl + shift + z | forward button                  |                              |                           |

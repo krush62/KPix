@@ -21,6 +21,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
@@ -469,6 +470,7 @@ class _LayerWidgetState extends State<LayerWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
   final LayerWidgetOptions _options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   static const Map<LayerVisibilityState, IconData> _visibilityIconMap = {
     LayerVisibilityState.visible: FontAwesomeIcons.eye,
@@ -599,7 +601,7 @@ class _LayerWidgetState extends State<LayerWidget>
                             valueListenable: widget.layerState.visibilityState,
                             builder: (final BuildContext context, final LayerVisibilityState visibility, final Widget? child) {
                               return Tooltip(
-                                message: _visibilityTooltipMap[visibility],
+                                message: _visibilityTooltipMap[visibility]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchVisibility),
                                 waitDuration: AppState.toolTipDuration,
                                 child: IconButton.outlined(
                                   padding: EdgeInsets.zero,
@@ -631,7 +633,7 @@ class _LayerWidgetState extends State<LayerWidget>
                             valueListenable: widget.layerState.lockState,
                             builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
                               return Tooltip(
-                                message: _lockStringMap[lock],
+                                message: _lockStringMap[lock]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchLock),
                                 waitDuration: AppState.toolTipDuration,
                                 child: IconButton.outlined(
                                   padding: EdgeInsets.zero,

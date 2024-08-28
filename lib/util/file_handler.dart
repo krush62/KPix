@@ -23,6 +23,7 @@ import 'dart:convert' show utf8;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
@@ -86,6 +87,26 @@ class FileHandler
 
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
+  {
+    final ByteData byteData = await _getKPixData(path: path, appState: appState);
+    if (!kIsWeb)
+    {
+      await File(path).writeAsBytes(byteData.buffer.asUint8List());
+      return path;
+    }
+    else
+    {
+      String newPath = await FileSaver.instance.saveFile(
+        name: path,
+        bytes: byteData.buffer.asUint8List(),
+        ext: fileExtensionKpix,
+        mimeType: MimeType.other,
+      );
+      return "$newPath/$path";
+    }
+  }
+
+  static ByteData _getKPixData({required final String path, required final AppState appState})
   {
     //TODO perform sanity checks (max ramps, max layers, etc...)
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");
@@ -201,21 +222,7 @@ class FileHandler
       }
     }
 
-    if (!kIsWeb)
-    {
-      await File(path).writeAsBytes(byteData.buffer.asUint8List());
-      return path;
-    }
-    else
-    {
-      String newPath = await FileSaver.instance.saveFile(
-        name: path,
-        bytes: byteData.buffer.asUint8List(),
-        ext: fileExtensionKpix,
-        mimeType: MimeType.other,
-      );
-      return "$newPath/$path";
-    }
+    return byteData;
   }
 
 
@@ -486,21 +493,31 @@ class FileHandler
   {
     if (!kIsWeb)
     {
-      //hack (FilePicker needs bytes on mobile)
-      final Uint8List byteList = Uint8List(0);
-      final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("${GetIt.I.get<AppState>().getFileName()}.$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
+
       if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
       {
-        FilePicker.platform.saveFile(
-            dialogTitle: "Save kpix file",
-            type: FileType.custom,
-            fileName: finalPath,
-            allowedExtensions: [fileExtensionKpix],
-            initialDirectory: GetIt.I
-                .get<AppState>()
-                .appDir,
-            bytes: byteList
-        ).then((final String? path){_saveFileChosen(path: path, finishCallback: finishCallback);});
+        final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("${GetIt.I.get<AppState>().getFileName()}.$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
+        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+        {
+          FilePicker.platform.saveFile(
+              dialogTitle: "Save kpix file",
+              type: FileType.custom,
+              fileName: finalPath,
+              allowedExtensions: [fileExtensionKpix],
+              initialDirectory: GetIt.I
+                  .get<AppState>()
+                  .appDir,
+          ).then((final String? path){_saveFileChosen(path: path, finishCallback: finishCallback);});
+        }
+        else if (Platform.isAndroid || Platform.isIOS)
+        {
+          //TODO use new save dialog
+
+        }
+
+
+
+
       }
       else
       {

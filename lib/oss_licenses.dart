@@ -53,6 +53,7 @@ const allDependencies = <Package>[
   _lints,
   _matcher,
   _material_color_utilities,
+  _media_scanner,
   _meta,
   _multi_split_view,
   _package_info_plus,
@@ -104,6 +105,7 @@ const dependencies = <Package>[
   _font_awesome_flutter,
   _get_it,
   _google_fonts,
+  _media_scanner,
   _multi_split_view,
   _package_info_plus,
   _path_provider,
@@ -887,13 +889,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('meta'), PackageRef('web')]
   );
 
-/// crypto 3.0.3
+/// crypto 3.0.5
 const _crypto = Package(
     name: 'crypto',
     description: 'Implementations of SHA, MD5, and HMAC cryptographic functions.',
     repository: 'https://github.com/dart-lang/crypto',
     authors: [],
-    version: '3.0.3',
+    version: '3.0.5',
     license: '''Copyright 2015, the Dart project authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -960,7 +962,7 @@ SOFTWARE.''',
     dependencies: [PackageRef('yaml'), PackageRef('path'), PackageRef('json_annotation')]
   );
 
-/// dio 5.5.0+1
+/// dio 5.6.0
 const _dio = Package(
     name: 'dio',
     description: '''A powerful HTTP networking package,
@@ -971,7 +973,7 @@ Custom adapters, Transformers, etc.
     homepage: 'https://github.com/cfug/dio',
     repository: 'https://github.com/cfug/dio/blob/main/dio',
     authors: [],
-    version: '5.5.0+1',
+    version: '5.6.0',
     license: '''MIT License
 
 Copyright (c) 2018 Wen Du (wendux)
@@ -999,14 +1001,14 @@ SOFTWARE.''',
     dependencies: [PackageRef('async'), PackageRef('http_parser'), PackageRef('meta'), PackageRef('path'), PackageRef('dio_web_adapter')]
   );
 
-/// dio_web_adapter 1.0.1
+/// dio_web_adapter 2.0.0
 const _dio_web_adapter = Package(
     name: 'dio_web_adapter',
     description: 'An adapter that supports Dio on Web.',
     homepage: 'https://github.com/cfug/dio',
     repository: 'https://github.com/cfug/dio/blob/main/plugins/web_adapter',
     authors: [],
-    version: '1.0.1',
+    version: '2.0.0',
     license: '''MIT License
 
 Copyright (c) 2018 Wen Du (wendux)
@@ -1031,7 +1033,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
     isMarkdown: false,
     isSdk: false,
-    dependencies: [PackageRef('dio'), PackageRef('http_parser'), PackageRef('meta')]
+    dependencies: [PackageRef('dio'), PackageRef('http_parser'), PackageRef('meta'), PackageRef('web')]
   );
 
 /// fake_async 1.3.1
@@ -1247,13 +1249,13 @@ const _fake_async = Package(
     dependencies: []
   );
 
-/// ffi 2.1.2
+/// ffi 2.1.3
 const _ffi = Package(
     name: 'ffi',
     description: 'Utilities for working with Foreign Function Interface (FFI) code.',
     repository: 'https://github.com/dart-lang/native/tree/main/pkgs/ffi',
     authors: [],
-    version: '2.1.2',
+    version: '2.1.3',
     license: '''Copyright 2019, the Dart project authors. 
 
 Redistribution and use in source and binary forms, with or without
@@ -1324,14 +1326,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('meta'), PackageRef('path')]
   );
 
-/// file_picker 8.0.6
+/// file_picker 8.1.2
 const _file_picker = Package(
     name: 'file_picker',
     description: 'A package that allows you to use a native file explorer to pick single or multiple absolute file paths, with extension filtering support.',
     homepage: 'https://github.com/miguelpruivo/plugins_flutter_file_picker',
     repository: 'https://github.com/miguelpruivo/flutter_file_picker',
     authors: [],
-    version: '8.0.6',
+    version: '8.1.2',
     license: '''MIT License
 
 Copyright (c) 2018 Miguel Ruivo
@@ -1358,14 +1360,14 @@ SOFTWARE.''',
     dependencies: [PackageRef('flutter'), PackageRef('flutter_plugin_android_lifecycle'), PackageRef('plugin_platform_interface'), PackageRef('ffi'), PackageRef('path'), PackageRef('win32'), PackageRef('cross_file'), PackageRef('web')]
   );
 
-/// file_saver 0.2.13
+/// file_saver 0.2.14
 const _file_saver = Package(
     name: 'file_saver',
     description: 'This package will help you save file with a single method on any platform including macOS, iOS, Android, Windows, Web, Linux.',
     homepage: 'https://hassanansari.dev',
     repository: 'https://github.com/incrediblezayed/file_saver',
     authors: [],
-    version: '0.2.13',
+    version: '0.2.14',
     license: '''BSD 3-Clause License
 
 Copyright (c) 2021, Hassan Ansari
@@ -1397,7 +1399,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     isMarkdown: false,
     isSdk: false,
-    dependencies: [PackageRef('flutter'), PackageRef('path_provider'), PackageRef('path_provider_windows'), PackageRef('path_provider_linux'), PackageRef('dio'), PackageRef('web')]
+    dependencies: [PackageRef('collection'), PackageRef('dio'), PackageRef('flutter'), PackageRef('path_provider'), PackageRef('path_provider_linux'), PackageRef('path_provider_windows'), PackageRef('web')]
   );
 
 /// fixnum 1.1.0
@@ -1622,13 +1624,13 @@ SOFTWARE.''',
     dependencies: [PackageRef('path'), PackageRef('meta'), PackageRef('yaml'), PackageRef('dart_pubspec_licenses'), PackageRef('args')]
   );
 
-/// flutter_plugin_android_lifecycle 2.0.21
+/// flutter_plugin_android_lifecycle 2.0.22
 const _flutter_plugin_android_lifecycle = Package(
     name: 'flutter_plugin_android_lifecycle',
     description: 'Flutter plugin for accessing an Android Lifecycle within other plugins.',
     repository: 'https://github.com/flutter/packages/tree/main/packages/flutter_plugin_android_lifecycle',
     authors: [],
-    version: '2.0.21',
+    version: '2.0.22',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -2896,6 +2898,39 @@ const _material_color_utilities = Package(
     dependencies: [PackageRef('collection')]
   );
 
+/// media_scanner 2.1.0
+const _media_scanner = Package(
+    name: 'media_scanner',
+    description: 'Media scanner is library for scan new Media in Gallery, Only work in Android',
+    homepage: 'https://github.com/ukieTux/media_scanner/',
+    authors: [],
+    version: '2.1.0',
+    license: '''MIT License
+
+Copyright (c) 2020 Mudassir
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.''',
+    isMarkdown: false,
+    isSdk: false,
+    dependencies: [PackageRef('flutter')]
+  );
+
 /// meta 1.12.0
 const _meta = Package(
     name: 'meta',
@@ -2935,13 +2970,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: []
   );
 
-/// multi_split_view 3.4.0
+/// multi_split_view 3.5.0
 const _multi_split_view = Package(
     name: 'multi_split_view',
     description: 'Provides horizontal or vertical multiple split view for Flutter.',
     repository: 'https://github.com/caduandrade/multi_split_view',
     authors: [],
-    version: '3.4.0',
+    version: '3.5.0',
     license: '''MIT License
 
 Copyright (c) 2021 Carlos Eduardo Leite de Andrade
@@ -2968,14 +3003,14 @@ SOFTWARE.''',
     dependencies: [PackageRef('flutter'), PackageRef('meta')]
   );
 
-/// package_info_plus 8.0.1
+/// package_info_plus 8.0.2
 const _package_info_plus = Package(
     name: 'package_info_plus',
     description: 'Flutter plugin for querying information about the application package, such as CFBundleVersion on iOS or versionCode on Android.',
     homepage: 'https://github.com/fluttercommunity/plus_plugins',
     repository: 'https://github.com/fluttercommunity/plus_plugins/tree/main/packages/package_info_plus/package_info_plus',
     authors: [],
-    version: '8.0.1',
+    version: '8.0.2',
     license: '''Copyright 2017 The Chromium Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -3124,13 +3159,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('flutter'), PackageRef('path_provider_android'), PackageRef('path_provider_foundation'), PackageRef('path_provider_linux'), PackageRef('path_provider_platform_interface'), PackageRef('path_provider_windows')]
   );
 
-/// path_provider_android 2.2.9
+/// path_provider_android 2.2.10
 const _path_provider_android = Package(
     name: 'path_provider_android',
     description: 'Android implementation of the path_provider plugin.',
     repository: 'https://github.com/flutter/packages/tree/main/packages/path_provider/path_provider_android',
     authors: [],
-    version: '2.2.9',
+    version: '2.2.10',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3419,13 +3454,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('meta')]
   );
 
-/// shared_preferences 2.3.1
+/// shared_preferences 2.3.2
 const _shared_preferences = Package(
     name: 'shared_preferences',
     description: 'Flutter plugin for reading and writing simple key-value pairs. Wraps NSUserDefaults on iOS and SharedPreferences on Android.',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences',
     authors: [],
-    version: '2.3.1',
+    version: '2.3.2',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3456,13 +3491,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('flutter'), PackageRef('shared_preferences_android'), PackageRef('shared_preferences_foundation'), PackageRef('shared_preferences_linux'), PackageRef('shared_preferences_platform_interface'), PackageRef('shared_preferences_web'), PackageRef('shared_preferences_windows')]
   );
 
-/// shared_preferences_android 2.3.0
+/// shared_preferences_android 2.3.2
 const _shared_preferences_android = Package(
     name: 'shared_preferences_android',
     description: 'Android implementation of the shared_preferences plugin',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_android',
     authors: [],
-    version: '2.3.0',
+    version: '2.3.2',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3493,13 +3528,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('flutter'), PackageRef('shared_preferences_platform_interface')]
   );
 
-/// shared_preferences_foundation 2.5.0
+/// shared_preferences_foundation 2.5.2
 const _shared_preferences_foundation = Package(
     name: 'shared_preferences_foundation',
     description: 'iOS and macOS implementation of the shared_preferences plugin.',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_foundation',
     authors: [],
-    version: '2.5.0',
+    version: '2.5.2',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3530,13 +3565,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('flutter'), PackageRef('shared_preferences_platform_interface')]
   );
 
-/// shared_preferences_linux 2.4.0
+/// shared_preferences_linux 2.4.1
 const _shared_preferences_linux = Package(
     name: 'shared_preferences_linux',
     description: 'Linux implementation of the shared_preferences plugin',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_linux',
     authors: [],
-    version: '2.4.0',
+    version: '2.4.1',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3604,13 +3639,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('flutter'), PackageRef('plugin_platform_interface')]
   );
 
-/// shared_preferences_web 2.4.1
+/// shared_preferences_web 2.4.2
 const _shared_preferences_web = Package(
     name: 'shared_preferences_web',
     description: 'Web platform implementation of shared_preferences',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_web',
     authors: [],
-    version: '2.4.1',
+    version: '2.4.2',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3641,13 +3676,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: [PackageRef('flutter'), PackageRef('shared_preferences_platform_interface'), PackageRef('web')]
   );
 
-/// shared_preferences_windows 2.4.0
+/// shared_preferences_windows 2.4.1
 const _shared_preferences_windows = Package(
     name: 'shared_preferences_windows',
     description: 'Windows implementation of shared_preferences',
     repository: 'https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_windows',
     authors: [],
-    version: '2.4.0',
+    version: '2.4.1',
     license: '''Copyright 2013 The Flutter Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -4102,13 +4137,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: []
   );
 
-/// web 0.5.1
+/// web 1.0.0
 const _web = Package(
     name: 'web',
-    description: 'Lightweight browser API bindings built around JS static interop.',
+    description: 'Lightweight browser API bindings built around JS interop.',
     repository: 'https://github.com/dart-lang/web',
     authors: [],
-    version: '0.5.1',
+    version: '1.0.0',
     license: '''Copyright 2023, the Dart project authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -4140,7 +4175,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     dependencies: []
   );
 
-/// win32 5.5.3
+/// win32 5.5.4
 const _win32 = Package(
     name: 'win32',
     description: '''Access common Win32 APIs directly from Dart using FFI — no C required!
@@ -4148,7 +4183,7 @@ const _win32 = Package(
     homepage: 'https://win32.pub',
     repository: 'https://github.com/halildurmus/win32',
     authors: [],
-    version: '5.5.3',
+    version: '5.5.4',
     license: '''BSD 3-Clause License
 
 Copyright (c) 2024, Halil Durmus

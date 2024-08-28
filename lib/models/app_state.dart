@@ -191,6 +191,8 @@ class AppState
     addNewLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+    filePath.value = null;
+    hasChanges.value = false;
     hasProjectNotifier.value = true;
   }
 

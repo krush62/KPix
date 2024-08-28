@@ -44,6 +44,7 @@ dependencies:
   file_saver: ^0.2.13
   archive: ^3.6.1
   package_info_plus: ^8.0.1
+  media_scanner: ^2.1.0
 
 
 dev_dependencies:

@@ -99,8 +99,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
     _exportDialog = OverlayEntries.getExportDialog(
       onDismiss: _closeAllMenus,
-      onAccept: _exportFilePressed,
-      canvasSize: _appState.canvasSize);
+      onAccept: _exportFilePressed);
     _aboutDialog = OverlayEntries.getAboutDialog(
       onDismiss: _closeAllMenus,
       canvasSize: _appState.canvasSize);

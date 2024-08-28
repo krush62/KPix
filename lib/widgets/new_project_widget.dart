@@ -19,6 +19,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -39,6 +40,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
 {
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<int> _width = ValueNotifier(64);
   final ValueNotifier<int> _height = ValueNotifier(64);
   static const double _maxPreviewHeight = 128;
@@ -140,6 +142,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                     final TextEditingController controller = TextEditingController(text: width.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
+                                      focusNode: _hotkeyManager.newProjectWidthTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
                                       onChanged: (final String newVal) {_widthInputChanged(newVal: newVal);},
@@ -180,6 +183,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                     final TextEditingController controller = TextEditingController(text: height.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
+                                      focusNode: _hotkeyManager.newProjectHeightTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
                                       onChanged: (final String newVal) {_heightInputChanged(newVal: newVal);},

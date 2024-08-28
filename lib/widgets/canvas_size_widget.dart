@@ -20,6 +20,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -55,6 +56,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
 {
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetI> _size = ValueNotifier(CoordinateSetI(x: 0, y: 0));
   final ValueNotifier<CoordinateSetI> _offset = ValueNotifier(CoordinateSetI(x: 0, y: 0));
@@ -296,6 +298,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     final TextEditingController controller = TextEditingController(text: value.x.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
+                                      focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
                                       onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);}
@@ -333,6 +336,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     final TextEditingController controller = TextEditingController(text: value.y.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
+                                      focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
                                       onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);}
@@ -373,6 +377,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     final TextEditingController controller = TextEditingController(text: value.x.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
+                                      focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
                                       onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);}
@@ -410,6 +415,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     final TextEditingController controller = TextEditingController(text: value.y.toString());
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
+                                      focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
                                       onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);}

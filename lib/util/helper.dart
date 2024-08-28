@@ -17,6 +17,7 @@
 import 'dart:collection';
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -480,6 +481,18 @@ class Helper
       }
     }
     return recorder.endRecording().toImage(size.x, size.y);
+  }
+
+  static String extractFilenameFromPath({required String? path, bool keepExtension = true})
+  {
+    if (path != null && path.isNotEmpty)
+    {
+      return keepExtension ? p.basename(path) : p.basenameWithoutExtension(path);
+    }
+    else
+    {
+      return "";
+    }
   }
 
 }

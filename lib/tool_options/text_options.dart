@@ -17,7 +17,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/font_manager.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
 
@@ -57,6 +59,7 @@ class TextOptions extends IToolOptions
     required TextOptions textOptions,
   })
   {
+    HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,
@@ -158,6 +161,7 @@ class TextOptions extends IToolOptions
                   controller.selection = TextSelection.collapsed(offset: controller.text.length);
                   return TextField(
                     controller: controller,
+                    focusNode: hotkeyManager.textOptionsTextFocus,
                     onChanged: (final String newText) {textOptions.text.value = newText;},
                     maxLength: textOptions.maxLength,
                   );

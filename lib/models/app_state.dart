@@ -118,20 +118,36 @@ class AppState
   }
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
   final StatusBarState statusBarState = StatusBarState();
-  final String _appDir;
-  String get appDir
+  final ValueNotifier<String> _saveDir;
+  String get saveDir
   {
-    return _appDir;
+    return _saveDir.value;
   }
-  final String _tempDir;
-  final String _cacheDir;
+  ValueNotifier<String> get saveDirNotifier
+  {
+    return _saveDir;
+  }
+
+  final ValueNotifier<String> _exportDir;
+  String get exportDir
+  {
+    return _exportDir.value;
+  }
+  ValueNotifier<String> get exportDirNotifier
+  {
+    return _exportDir;
+  }
+  set exportDir(final String dir)
+  {
+    _exportDir.value = dir;
+  }
   final ValueNotifier<String?> filePath = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
   static const Duration toolTipDuration = Duration(seconds: 1);
 
 
-  AppState({required String appDir, required String tempDir, required String cacheDir}) : _appDir = appDir, _cacheDir = cacheDir, _tempDir = tempDir
+  AppState({required String exportDir, required String saveDir}) : _saveDir = ValueNotifier(saveDir), _exportDir = ValueNotifier(exportDir)
   {
 
     for (ToolType toolType in toolList.keys)

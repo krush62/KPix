@@ -71,24 +71,29 @@ void main() {
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
   runApp(
-    CallbackShortcuts(
-      bindings: hotkeyManager.callbackMap,
-      child: KeyboardListener(
-        focusNode: focusNode,
-        autofocus: true,
-        onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
-        child: AnimatedBuilder(
-          animation: themeSettings,
-          builder: (final BuildContext context, final Widget? child) {
-            return MaterialApp(
-              home: const KPixApp(),
-              theme: KPixTheme.monochromeTheme,
-              darkTheme: KPixTheme.monochromeThemeDark,
-              themeMode: themeSettings.themeMode,
-            );
-          },
-        ),
-      ),
+    ValueListenableBuilder<Map<SingleActivator, VoidCallback>>(
+      valueListenable: hotkeyManager.callbackMapNotifier,
+      builder: (final BuildContext context, final Map<SingleActivator, VoidCallback> callbacks, final Widget? child) {
+        return CallbackShortcuts(
+          bindings: callbacks,
+          child: KeyboardListener(
+            focusNode: focusNode,
+            autofocus: true,
+            onKeyEvent: hotkeyManager.handleRawKeyboardEvent,
+            child: AnimatedBuilder(
+              animation: themeSettings,
+              builder: (final BuildContext context, final Widget? child) {
+                return MaterialApp(
+                  home: const KPixApp(),
+                  theme: KPixTheme.monochromeTheme,
+                  darkTheme: KPixTheme.monochromeThemeDark,
+                  themeMode: themeSettings.themeMode,
+                );
+              },
+            ),
+          ),
+        );
+      },
     )
   );
 
@@ -135,18 +140,16 @@ class _KPixAppState extends State<KPixApp>
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
-    String appDirString = "", tempDirString = "", cacheString = "";
+    String saveDirString = "", exportDirString = "";
     if (!kIsWeb)
     {
-      final Directory appDir = await getApplicationDocumentsDirectory();
-      final Directory tempDir = await getTemporaryDirectory();
-      final Directory cache = await getApplicationCacheDirectory();
-      appDirString = appDir.path;
-      tempDirString = tempDir.path;
-      cacheString = cache.path;
+      final Directory saveDir = await getApplicationDocumentsDirectory();
+      final Directory? exportDir = await getDownloadsDirectory();
+      saveDirString = saveDir.path;
+      exportDirString = exportDir == null ? "" : exportDir.path;
     }
 
-    GetIt.I.registerSingleton<AppState>(AppState(appDir: appDirString, cacheDir: cacheString, tempDir: tempDirString));
+    GetIt.I.registerSingleton<AppState>(AppState(saveDir: saveDirString, exportDir: exportDirString));
     AppState appState = GetIt.I.get<AppState>();
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 

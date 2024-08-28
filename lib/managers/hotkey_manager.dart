@@ -104,7 +104,19 @@ class HotkeyManager
   final Map<SingleActivator, HotkeyAction> _shortCutMap = {};
   final Map<HotkeyAction, HotkeyNotifier> _notifierMap = {};
   final Map<HotkeyAction, VoidCallback> _actionMap = {};
-  final Map<SingleActivator, VoidCallback> _callbackMap = {};
+  final ValueNotifier<Map<SingleActivator, VoidCallback>> _callbackMap = ValueNotifier({});
+  Map<SingleActivator, VoidCallback> _callbackMapBackup = {};
+
+  final FocusNode textOptionsTextFocus = FocusNode();
+  final FocusNode canvasSizeWidthTextFocus = FocusNode();
+  final FocusNode canvasSizeHeightTextFocus = FocusNode();
+  final FocusNode canvasSizeOffsetXTextFocus = FocusNode();
+  final FocusNode canvasSizeOffsetYTextFocus = FocusNode();
+  final FocusNode newProjectWidthTextFocus = FocusNode();
+  final FocusNode newProjectHeightTextFocus = FocusNode();
+  final FocusNode exportFileNameTextFocus = FocusNode();
+
+  List<FocusNode> _focusNodes = [];
 
   final ValueNotifier<bool> _shiftIsPressed = ValueNotifier(false);
   bool get shiftIsPressed
@@ -136,6 +148,11 @@ class HotkeyManager
 
   Map<SingleActivator, VoidCallback> get callbackMap
   {
+    return _callbackMap.value;
+  }
+
+  ValueNotifier<Map<SingleActivator, VoidCallback>> get callbackMapNotifier
+  {
     return _callbackMap;
   }
 
@@ -149,6 +166,7 @@ class HotkeyManager
     _createShortcuts();
     _createNotifiers();
     _createCallbackMap();
+    _createFocusNodeListeners();
   }
 
   void handleRawKeyboardEvent(final KeyEvent? evt)
@@ -321,13 +339,58 @@ class HotkeyManager
 
   void _createCallbackMap()
   {
-    _callbackMap.clear();
+    Map<SingleActivator, VoidCallback> cbMap = {};
     for (final MapEntry<SingleActivator, HotkeyAction> shortCutEntry in _shortCutMap.entries)
     {
       if (_actionMap[shortCutEntry.value] != null)
       {
-        _callbackMap[shortCutEntry.key] = _actionMap[shortCutEntry.value]!;
+        cbMap[shortCutEntry.key] = _actionMap[shortCutEntry.value]!;
       }
     }
+    _callbackMap.value = cbMap;
   }
+
+  void _createFocusNodeListeners()
+  {
+    _focusNodes = [
+      textOptionsTextFocus,
+      canvasSizeWidthTextFocus,
+      canvasSizeHeightTextFocus,
+      canvasSizeOffsetXTextFocus,
+      canvasSizeOffsetYTextFocus,
+      newProjectWidthTextFocus,
+      newProjectHeightTextFocus,
+      exportFileNameTextFocus
+    ];
+
+    for (final FocusNode fn in _focusNodes)
+    {
+      fn.addListener(_checkListeners);
+    }
+  }
+
+  void _checkListeners()
+  {
+    if (_focusNodes.where((final FocusNode node) => node.hasFocus).isNotEmpty)
+    {
+      _deactivateCallbacks();
+    }
+    else
+    {
+      _activateCallbacks();
+    }
+  }
+
+  void _deactivateCallbacks()
+  {
+    _callbackMapBackup = _callbackMap.value;
+    _callbackMap.value = {};
+  }
+
+  void _activateCallbacks()
+  {
+    _callbackMap.value = _callbackMapBackup;
+  }
+
+
 }

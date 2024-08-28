@@ -17,7 +17,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -58,13 +60,11 @@ class ExportWidget extends StatefulWidget
 {
   final Function() dismiss;
   final ExportDataFn accept;
-  final CoordinateSetI canvasSize;
 
   const ExportWidget({
     super.key,
     required this.dismiss,
     required this.accept,
-    required this.canvasSize
   });
 
   @override
@@ -73,40 +73,55 @@ class ExportWidget extends StatefulWidget
 
 class _ExportWidgetState extends State<ExportWidget>
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<ExportTypeEnum> exportType = ValueNotifier(ExportTypeEnum.png);
-  final ValueNotifier<int> scalingIndex = ValueNotifier(0);
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  final ValueNotifier<ExportTypeEnum> _exportType = ValueNotifier(ExportTypeEnum.png);
+  final ValueNotifier<int> _scalingIndex = ValueNotifier(0);
+  final ValueNotifier<String> _fileName = ValueNotifier("");
+  final AppState _appState = GetIt.I.get<AppState>();
+
+  void _changeDirectoryPressed()
+  {
+    //TODO show dialog and update exportdir valuenotifier in AppState
+  }
+
+  @override
+  void initState()
+  {
+    super.initState();
+    _fileName.value = Helper.extractFilenameFromPath(path: _appState.filePath.value);
+  }
 
   @override
   Widget build(final BuildContext context) {
     return Material(
-      elevation: options.elevation,
+      elevation: _options.elevation,
       shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
       child: Container(
         constraints: BoxConstraints(
-          minHeight: options.minHeight,
-          minWidth: options.minWidth,
-          maxHeight: options.maxHeight,
-          maxWidth: options.maxWidth,
+          minHeight: _options.minHeight,
+          minWidth: _options.minWidth,
+          maxHeight: _options.maxHeight,
+          maxWidth: _options.maxWidth,
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
           border: Border.all(
             color: Theme.of(context).primaryColorLight,
-            width: options.borderWidth,
+            width: _options.borderWidth,
           ),
-          borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
         ),
         child: Padding(
-          padding: EdgeInsets.all(options.padding),
+          padding: EdgeInsets.all(_options.padding),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text("EXPORT PROJECT", style: Theme.of(context).textTheme.titleLarge),
-              SizedBox(height: options.padding),
+              SizedBox(height: _options.padding),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -119,13 +134,13 @@ class _ExportWidgetState extends State<ExportWidget>
                   Expanded(
                     flex: 6,
                     child: ValueListenableBuilder<ExportTypeEnum>(
-                      valueListenable: exportType,
+                      valueListenable: _exportType,
                       builder: (final BuildContext context, final ExportTypeEnum exportTypeEnum, final Widget? child) {
                         return SegmentedButton<ExportTypeEnum>(
                           selected: <ExportTypeEnum>{exportTypeEnum},
                           multiSelectionEnabled: false,
                           showSelectedIcon: false,
-                          onSelectionChanged: (final Set<ExportTypeEnum> types) {exportType.value = types.first;},
+                          onSelectionChanged: (final Set<ExportTypeEnum> types) {_exportType.value = types.first;},
                           segments: [
                             ButtonSegment(
                                 value: ExportTypeEnum.png,
@@ -162,10 +177,10 @@ class _ExportWidgetState extends State<ExportWidget>
                   Expanded(
                     flex: 4,
                     child: ValueListenableBuilder<ExportTypeEnum>(
-                      valueListenable: exportType,
+                      valueListenable: _exportType,
                       builder: (final BuildContext context1, final ExportTypeEnum type, final Widget? child1) {
                         return ValueListenableBuilder<int>(
-                          valueListenable: scalingIndex,
+                          valueListenable: _scalingIndex,
                           builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                             return Slider(
                               value: exportTypeMap[type]!.scalable ? scalingIndexVal.toDouble() : 0,
@@ -173,7 +188,7 @@ class _ExportWidgetState extends State<ExportWidget>
                               max: exportScalingValues.length.toDouble() - 1,
                               divisions: exportScalingValues.length,
                               label: exportScalingValues[scalingIndexVal].toString(),
-                              onChanged: exportTypeMap[type]!.scalable ? (final double newVal){scalingIndex.value = newVal.round();} : null,
+                              onChanged: exportTypeMap[type]!.scalable ? (final double newVal){_scalingIndex.value = newVal.round();} : null,
                             );
                           },
                         );
@@ -183,13 +198,13 @@ class _ExportWidgetState extends State<ExportWidget>
                   Expanded(
                     flex: 2,
                     child: ValueListenableBuilder<ExportTypeEnum>(
-                      valueListenable: exportType,
+                      valueListenable: _exportType,
                       builder: (final BuildContext context1, final ExportTypeEnum type, final Widget? child) {
                         return ValueListenableBuilder<int>(
-                          valueListenable: scalingIndex,
+                          valueListenable: _scalingIndex,
                           builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                             return Text( exportTypeMap[type]!.scalable ?
-                              "${widget.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${widget.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${widget.canvasSize.x} x ${widget.canvasSize.y}",
+                              "${_appState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_appState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_appState.canvasSize.x} x ${_appState.canvasSize.y}",
                               textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium
                             );
                           },
@@ -207,12 +222,113 @@ class _ExportWidgetState extends State<ExportWidget>
                 children: [
                   Expanded(
                     flex: 1,
+                    child: Text("Directory", style: Theme.of(context).textTheme.titleMedium)
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: ValueListenableBuilder<String>(
+                      valueListenable: _appState.exportDirNotifier,
+                      builder: (final BuildContext context, final String expDir, Widget? child) {
+                        return Text(expDir, textAlign: TextAlign.center);
+                      },
+                    )
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Tooltip(
+                      message: "Change Directory",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(_options.padding),
+                        onPressed: _changeDirectoryPressed,
+                        icon: FaIcon(
+                          FontAwesomeIcons.file,
+                          size: _options.iconSize / 2
+                        ),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: Theme.of(context).primaryColor
+                        ),
+                      ),
+                    )
+                  )
+                ]
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                      flex: 1,
+                      child: Text("File Name", style: Theme.of(context).textTheme.titleMedium)
+                  ),
+                  Expanded(
+                      flex: 3,
+                      child: ValueListenableBuilder<String?>(
+                        valueListenable: _fileName,
+                        builder: (final BuildContext context, final String? filePath, Widget? child) {
+                          final TextEditingController controller = TextEditingController(text: filePath);
+                          controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                          return TextField(
+                            textAlign: TextAlign.end,
+                            focusNode: _hotkeyManager.exportFileNameTextFocus,
+                            controller: controller,
+                            onChanged: (final String value) {
+                              _fileName.value = value;
+                            },
+                          );
+                        },
+                      )
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: ValueListenableBuilder<ExportTypeEnum>(
+                      valueListenable: _exportType,
+                      builder: (final BuildContext context, final ExportTypeEnum exportType, final Widget? child) {
+                        return Text(".${exportTypeMap[exportType]!.extension}");
+                      },
+
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Tooltip(
+                      message: "Change Directory",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(_options.padding),
+                        onPressed: _changeDirectoryPressed,
+                        icon: FaIcon(
+                            FontAwesomeIcons.file,
+                            size: _options.iconSize / 2
+                        ),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: Theme.of(context).primaryColor
+                        ),
+                      ),
+                    )
+                  )
+                ]
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.all(options.padding),
+                      padding: EdgeInsets.all(_options.padding),
                       child: IconButton.outlined(
                         icon: FaIcon(
                           FontAwesomeIcons.xmark,
-                          size: options.iconSize,
+                          size: _options.iconSize,
                         ),
                         onPressed: () {
                           widget.dismiss();
@@ -223,14 +339,14 @@ class _ExportWidgetState extends State<ExportWidget>
                   Expanded(
                     flex: 1,
                     child: Padding(
-                      padding: EdgeInsets.all(options.padding),
+                      padding: EdgeInsets.all(_options.padding),
                       child: IconButton.outlined(
                         icon: FaIcon(
                           FontAwesomeIcons.check,
-                          size: options.iconSize,
+                          size: _options.iconSize,
                         ),
                         onPressed: () {
-                          widget.accept(exportData: ExportData.fromWithScaling(other: exportTypeMap[exportType.value]!, scaling: exportScalingValues[scalingIndex.value]), exportType: exportType.value);
+                          widget.accept(exportData: ExportData.fromWithScaling(other: exportTypeMap[_exportType.value]!, scaling: exportScalingValues[_scalingIndex.value]), exportType: _exportType.value);
                         },
                       ),
                     )

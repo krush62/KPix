@@ -673,7 +673,6 @@ class OverlayEntries
   static KPixOverlay getExportDialog({
     required final Function() onDismiss,
     required final ExportDataFn onAccept,
-    required final CoordinateSetI canvasSize
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -686,7 +685,7 @@ class OverlayEntries
               onDismiss: () {onDismiss();},
             ),
             Center(
-              child: ExportWidget(accept: onAccept, dismiss: onDismiss, canvasSize: canvasSize),
+              child: ExportWidget(accept: onAccept, dismiss: onDismiss),
             ),
           ]
         )

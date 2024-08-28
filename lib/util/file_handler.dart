@@ -458,7 +458,7 @@ class FileHandler
           allowMultiple: false,
           type: FileType.custom,
           allowedExtensions: [fileExtensionKpix],
-          initialDirectory: GetIt.I.get<AppState>().appDir
+          initialDirectory: GetIt.I.get<AppState>().saveDir
       ).then((final FilePickerResult? result) {_loadFileChosen(result: result);});
     }
     else //mobile
@@ -466,7 +466,7 @@ class FileHandler
       FilePicker.platform.pickFiles(
           allowMultiple: false,
           type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().appDir
+          initialDirectory: GetIt.I.get<AppState>().saveDir
       ).then((final FilePickerResult? result) {_loadFileChosen(result: result);});
     }
   }
@@ -506,7 +506,7 @@ class FileHandler
               allowedExtensions: [fileExtensionKpix],
               initialDirectory: GetIt.I
                   .get<AppState>()
-                  .appDir,
+                  .saveDir,
           ).then((final String? path){_saveFileChosen(path: path, finishCallback: finishCallback);});
         }
         else if (Platform.isAndroid || Platform.isIOS)
@@ -563,7 +563,7 @@ class FileHandler
           allowedExtensions: [fileExtensionKpal],
           initialDirectory: GetIt.I
               .get<AppState>()
-              .appDir,
+              .saveDir,
           bytes: byteList
       ).then((final String? path){_paletteSavePathChosen(path: path, finishCallback: finishCallback);});
     }
@@ -666,7 +666,7 @@ class FileHandler
           allowMultiple: false,
           type: FileType.custom,
           allowedExtensions: [fileExtensionKpal],
-          initialDirectory: GetIt.I.get<AppState>().appDir
+          initialDirectory: GetIt.I.get<AppState>().saveDir
       ).then((final FilePickerResult? result) {
         _loadPaletteChosen(result: result, paletteReplaceBehavior: paletteReplaceBehavior);
       });
@@ -676,7 +676,7 @@ class FileHandler
       FilePicker.platform.pickFiles(
           allowMultiple: false,
           type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().appDir
+          initialDirectory: GetIt.I.get<AppState>().saveDir
       ).then((final FilePickerResult? result) {
         _loadPaletteChosen(result: result, paletteReplaceBehavior: paletteReplaceBehavior);
       });
@@ -796,7 +796,7 @@ class FileHandler
           allowedExtensions: [exportData.extension],
           initialDirectory: GetIt.I
               .get<AppState>()
-              .appDir,
+              .exportDir,
           bytes: byteList
       );
       if (path != null)

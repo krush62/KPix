@@ -1085,7 +1085,7 @@ class AppState
               .textTheme
               .titleMedium,),
         ),
-        animationBuilder: (context, animation, child) {
+        animationBuilder: (final BuildContext context, final Animation<double> animation, final Widget? child) {
           return SlideTransition(
             position: Tween<Offset>(
               begin: const Offset(0, 1),

@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -24,6 +26,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions
 {
@@ -120,14 +123,18 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportFilePressed({required final ExportData exportData, required final ExportTypeEnum exportType})
   {
-    FileHandler.exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportToTempFinished(fileName: fName);});
+    FileHandler.exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
 
-  void _exportToTempFinished({required final String? fileName})
+  void _exportFinished({required final String? fileName})
   {
     if (fileName != null && fileName.isNotEmpty)
     {
         _appState.showMessage(text: "Exported to: $fileName");
+        if (Platform.isAndroid)
+        {
+          MediaScanner.loadMedia(path: fileName);
+        }
     }
     else
     {

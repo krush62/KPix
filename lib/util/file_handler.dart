@@ -30,12 +30,14 @@ import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:archive/archive_io.dart';
+import 'package:path/path.dart' as p;
 
 class LoadFileSet
 {
@@ -74,6 +76,22 @@ const Map<int, SatCurve> _kpalKpixSatCurveMap =
   0:SatCurve.darkFlat,
   3:SatCurve.brightFlat,
   2: SatCurve.linear
+};
+
+enum FileNameStatus
+{
+  available,
+  forbidden,
+  noRights,
+  overwrite
+}
+
+const Map<FileNameStatus, String> fileNameStatusTextMap =
+{
+  FileNameStatus.available:"Available",
+  FileNameStatus.forbidden:"Invalid File Name",
+  FileNameStatus.noRights:"Insufficient Permissions",
+  FileNameStatus.overwrite:"Overwriting Existing File"
 };
 
 class FileHandler
@@ -784,75 +802,54 @@ class FileHandler
     }
   }
 
+  static Future<String?> getDirectory({required String startDir}) async
+  {
+    return await FilePicker.platform.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir);
+  }
+
   static Future<String?> exportFile({required final ExportData exportData, required final ExportTypeEnum exportType}) async
   {
-    String? path;
-    if (!kIsWeb)
-    {
-      final Uint8List byteList = Uint8List(0);
-      path = await FilePicker.platform.saveFile(
-          dialogTitle: "Export as ${exportData.name}",
-          type: FileType.custom,
-          allowedExtensions: [exportData.extension],
-          initialDirectory: GetIt.I
-              .get<AppState>()
-              .exportDir,
-          bytes: byteList
-      );
-      if (path != null)
-      {
-        path = !path.endsWith(".${exportData.extension}") ? ("$path.${exportData.extension}") : path;
-      }
-    }
-    else
-    {
-      path = webFileName;
-    }
+    final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : webFileName;
 
     Uint8List? data;
 
-    if (path != null)
+    switch (exportType)
     {
-      switch (exportType)
-      {
-        case ExportTypeEnum.png:
-          data = await _exportPNG(exportData: exportData);
-          break;
-        case ExportTypeEnum.aseprite:
-          data = await _exportAseprite(exportData: exportData);
-          break;
-        case ExportTypeEnum.photoshop:
-        // TODO: Handle this case.
-          break;
-        case ExportTypeEnum.gimp:
-          data = await _exportGimp(exportData: exportData);
-          break;
-      }
+      case ExportTypeEnum.png:
+        data = await _exportPNG(exportData: exportData);
+        break;
+      case ExportTypeEnum.aseprite:
+        data = await _exportAseprite(exportData: exportData);
+        break;
+      case ExportTypeEnum.photoshop:
+      // TODO: Handle this case.
+        break;
+      case ExportTypeEnum.gimp:
+        data = await _exportGimp(exportData: exportData);
+        break;
+    }
 
-      if (data != null)
+    String? returnPath;
+    if (data != null)
+    {
+      if (!kIsWeb)
       {
-        if (!kIsWeb)
-        {
-          await File(path).writeAsBytes(data);
-        }
-        else
-        {
-          String newPath = await FileSaver.instance.saveFile(
-            name: webFileName,
-            bytes: data,
-            ext: exportData.extension,
-            mimeType: MimeType.other,
-          );
-          path = "$newPath/$path";
-        }
+        await File(path).writeAsBytes(data);
+        returnPath = path;
       }
       else
       {
-        path = null;
+        String newPath = await FileSaver.instance.saveFile(
+          name: webFileName,
+          bytes: data,
+          ext: exportData.extension,
+          mimeType: MimeType.other,
+        );
+        returnPath = "$newPath/$path";
       }
     }
 
-    return path;
+    return returnPath;
   }
 
 
@@ -1711,5 +1708,62 @@ class FileHandler
     }
 
     return outBytes.buffer.asUint8List();
+  }
+
+  static FileNameStatus checkFileName({required String fileName, required String directory})
+  {
+    if (fileName.isEmpty)
+    {
+      return FileNameStatus.forbidden;
+    }
+
+    if (Platform.isWindows)
+    {
+      final List<String> reservedFilenames = [
+        'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+      ];
+      if (fileName.endsWith(' ') || fileName.endsWith('.') || reservedFilenames.contains(fileName.toUpperCase()))
+      {
+        return FileNameStatus.forbidden;
+      }
+    }
+
+    final List<String> invalidCharacters = ['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'];
+    for (final String char in invalidCharacters)
+    {
+      if (fileName.contains(char))
+      {
+        return FileNameStatus.forbidden;
+      }
+    }
+    if (!hasWriteAccess(directory: directory))
+    {
+      return FileNameStatus.noRights;
+    }
+
+    final String fullPath = p.join(directory, fileName);
+    final File file = File(fullPath);
+    if (file.existsSync())
+    {
+      return FileNameStatus.overwrite;
+    }
+
+    return FileNameStatus.available;
+
+  }
+
+  static bool hasWriteAccess({required final String directory}) {
+    try {
+      final tempFile = File('$directory${Platform.pathSeparator}${DateTime.now().millisecondsSinceEpoch}.tmp');
+      tempFile.createSync();
+      tempFile.deleteSync();
+      return true;
+    }
+    catch (e)
+    {
+      print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa $e");
+      return false;
+    }
   }
 }

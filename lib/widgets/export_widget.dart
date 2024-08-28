@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -37,14 +38,16 @@ const List<int> exportScalingValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 
 class ExportData
 {
-  final String name;
   final String extension;
+  final String name;
   final int scaling;
+  final String fileName;
+  final String directory;
   final bool scalable;
-  const ExportData({required this.name, required this.extension, required this.scalable, this.scaling = 1});
-  factory ExportData.fromWithScaling({required ExportData other, required int scaling})
+  const ExportData({required this.name, required this.extension, required this.scalable, this.scaling = 1, this.fileName = "", this.directory = ""});
+  factory ExportData.fromWithConcreteData({required ExportData other, required int scaling, required String fileName, required String directory})
   {
-    return ExportData(name: other.name, extension: other.extension, scalable: other.scalable, scaling: scaling);
+    return ExportData(name: other.name, extension: other.extension, scalable: other.scalable, scaling: scaling, directory: directory, fileName: fileName);
   }
 }
 
@@ -54,6 +57,8 @@ const Map<ExportTypeEnum, ExportData> exportTypeMap = {
   ExportTypeEnum.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
   ExportTypeEnum.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false)
 };
+
+
 
 
 class ExportWidget extends StatefulWidget
@@ -79,10 +84,20 @@ class _ExportWidgetState extends State<ExportWidget>
   final ValueNotifier<int> _scalingIndex = ValueNotifier(0);
   final ValueNotifier<String> _fileName = ValueNotifier("");
   final AppState _appState = GetIt.I.get<AppState>();
+  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier(FileNameStatus.available);
 
   void _changeDirectoryPressed()
   {
-    //TODO show dialog and update exportdir valuenotifier in AppState
+    FileHandler.getDirectory(startDir: _appState.exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
+  }
+
+  void _handleChosenDirectory({required final String? chosenDir})
+  {
+    if (chosenDir != null)
+    {
+      _appState.exportDir = chosenDir;
+      _updateFileNameStatus();
+    }
   }
 
   @override
@@ -90,6 +105,12 @@ class _ExportWidgetState extends State<ExportWidget>
   {
     super.initState();
     _fileName.value = Helper.extractFilenameFromPath(path: _appState.filePath.value);
+    _updateFileNameStatus();
+  }
+
+  void _updateFileNameStatus()
+  {
+    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: _appState.exportDir);
   }
 
   @override
@@ -278,6 +299,7 @@ class _ExportWidgetState extends State<ExportWidget>
                             controller: controller,
                             onChanged: (final String value) {
                               _fileName.value = value;
+                              _updateFileNameStatus();
                             },
                           );
                         },
@@ -295,23 +317,34 @@ class _ExportWidgetState extends State<ExportWidget>
                   ),
                   Expanded(
                     flex: 1,
-                    child: Tooltip(
-                      message: "Change Directory",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(_options.padding),
-                        onPressed: _changeDirectoryPressed,
-                        icon: FaIcon(
-                            FontAwesomeIcons.file,
-                            size: _options.iconSize / 2
-                        ),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor
-                        ),
-                      ),
+                    child: ValueListenableBuilder<FileNameStatus>(
+                      valueListenable: _fileNameStatus,
+                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+                        IconData? icon;
+                        switch (status)
+                        {
+                          case FileNameStatus.available:
+                            icon = FontAwesomeIcons.thumbsUp;
+                            break;
+                          case FileNameStatus.forbidden:
+                            icon = FontAwesomeIcons.xmark;
+                            break;
+                          case FileNameStatus.noRights:
+                            icon = FontAwesomeIcons.ban;
+                            break;
+                          case FileNameStatus.overwrite:
+                            icon = FontAwesomeIcons.exclamation;
+                            break;
+                        }
+                        return Tooltip(
+                          message: fileNameStatusTextMap[status],
+                          waitDuration: AppState.toolTipDuration,
+                          child: FaIcon(
+                            icon,
+                            size: _options.iconSize / 2,
+                          ),
+                        );
+                      },
                     )
                   )
                 ]
@@ -340,13 +373,19 @@ class _ExportWidgetState extends State<ExportWidget>
                     flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.check,
-                          size: _options.iconSize,
-                        ),
-                        onPressed: () {
-                          widget.accept(exportData: ExportData.fromWithScaling(other: exportTypeMap[_exportType.value]!, scaling: exportScalingValues[_scalingIndex.value]), exportType: _exportType.value);
+                      child: ValueListenableBuilder<FileNameStatus>(
+                        valueListenable: _fileNameStatus,
+                        builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+                          return IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.check,
+                              size: _options.iconSize,
+                            ),
+                            onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
+                                () {
+                                  widget.accept(exportData: ExportData.fromWithConcreteData(other: exportTypeMap[_exportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir), exportType: _exportType.value);
+                                } : null,
+                          );
                         },
                       ),
                     )

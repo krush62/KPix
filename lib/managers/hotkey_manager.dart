@@ -115,6 +115,7 @@ class HotkeyManager
   final FocusNode newProjectHeightTextFocus = FocusNode();
   final FocusNode exportFileNameTextFocus = FocusNode();
   final FocusNode saveAsFileNameTextFocus = FocusNode();
+  final FocusNode savePaletteNameTextFocus = FocusNode();
 
   List<FocusNode> _focusNodes = [];
 
@@ -361,7 +362,8 @@ class HotkeyManager
       newProjectWidthTextFocus,
       newProjectHeightTextFocus,
       exportFileNameTextFocus,
-      saveAsFileNameTextFocus
+      saveAsFileNameTextFocus,
+      savePaletteNameTextFocus
     ];
 
     for (final FocusNode fn in _focusNodes)

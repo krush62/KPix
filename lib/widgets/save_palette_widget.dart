@@ -227,7 +227,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                 controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                 return TextField(
                                   textAlign: TextAlign.end,
-                                  focusNode: _hotkeyManager.exportFileNameTextFocus,
+                                  focusNode: _hotkeyManager.savePaletteNameTextFocus,
                                   controller: controller,
                                   onChanged: (final String value) {
                                     _fileName.value = value;

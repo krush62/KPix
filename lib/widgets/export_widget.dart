@@ -104,13 +104,13 @@ class _ExportWidgetState extends State<ExportWidget>
   void initState()
   {
     super.initState();
-    _fileName.value = Helper.extractFilenameFromPath(path: _appState.filePath.value);
+    _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
     _updateFileNameStatus();
   }
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: _appState.exportDir);
+    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: exportTypeMap[_exportType.value]!.extension);
   }
 
   @override
@@ -320,27 +320,11 @@ class _ExportWidgetState extends State<ExportWidget>
                     child: ValueListenableBuilder<FileNameStatus>(
                       valueListenable: _fileNameStatus,
                       builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                        IconData? icon;
-                        switch (status)
-                        {
-                          case FileNameStatus.available:
-                            icon = FontAwesomeIcons.thumbsUp;
-                            break;
-                          case FileNameStatus.forbidden:
-                            icon = FontAwesomeIcons.xmark;
-                            break;
-                          case FileNameStatus.noRights:
-                            icon = FontAwesomeIcons.ban;
-                            break;
-                          case FileNameStatus.overwrite:
-                            icon = FontAwesomeIcons.exclamation;
-                            break;
-                        }
                         return Tooltip(
                           message: fileNameStatusTextMap[status],
                           waitDuration: AppState.toolTipDuration,
                           child: FaIcon(
-                            icon,
+                            fileNameStatusIconMap[status],
                             size: _options.iconSize / 2,
                           ),
                         );

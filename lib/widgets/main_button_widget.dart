@@ -16,9 +16,11 @@
 
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/main.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -64,6 +66,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _exportDialog;
   late KPixOverlay _aboutDialog;
   late KPixOverlay _preferencesDialog;
+  late KPixOverlay _saveAsDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -110,6 +113,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onDismiss: _reloadPreferences,
       onAccept: _savePreferencesPressed
     );
+    _saveAsDialog = OverlayEntries.getSaveAsDialog(
+        onDismiss: _closeAllMenus,
+        onAccept: ({required final Function()? callback, required final String fileName}) {
+          _closeAllMenus();
+          FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
+        },
+    );
+
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
     _hotkeyManager.addListener(func: _saveFile, action: HotkeyAction.generalSave);
@@ -118,6 +129,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _hotkeyManager.addListener(func: _undoPressed, action: HotkeyAction.generalUndo);
     _hotkeyManager.addListener(func: _redoPressed, action: HotkeyAction.generalRedo);
     _hotkeyManager.addListener(func: _exportFile, action: HotkeyAction.generalExport);
+
+    KPixApp.saveCallbackFunc = _saveFile;
 
   }
 
@@ -152,6 +165,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _exportDialog.hide();
     _aboutDialog.hide();
     _preferencesDialog.hide();
+    _saveAsDialog.hide();
   }
 
   void _newFile()
@@ -180,7 +194,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveLoadWarningYes()
   {
-    FileHandler.saveFilePressed(finishCallback: _saveBeforeLoadFinished);
+    _saveFile(callback: _saveBeforeLoadFinished);
   }
 
   void _saveLoadWarningNo()
@@ -218,16 +232,30 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _saveMenu.show(context: context);
   }
 
-  void _saveFile()
+  void _saveFile({Function()? callback})
   {
-    FileHandler.saveFilePressed();
-    _closeAllMenus();
+    if (_appState.projectName.value == null && !kIsWeb)
+    {
+      _saveAsFile();
+    }
+    else
+    {
+      FileHandler.saveFilePressed(fileName: _appState.projectName.value!, finishCallback: callback);
+      _closeAllMenus();
+    }
   }
 
-  void _saveAsFile()
+  void _saveAsFile({Function()? callback})
   {
-    FileHandler.saveFilePressed(forceSaveAs: true);
-    _closeAllMenus();
+    _saveAsDialog = OverlayEntries.getSaveAsDialog(
+        onDismiss: _closeAllMenus,
+        onAccept: ({required final Function()? callback, required final String fileName}) {
+          _closeAllMenus();
+          FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
+        },
+        callback: callback
+    );
+    _saveAsDialog.show(context: context);
   }
 
   void _exportFile()

@@ -31,6 +31,7 @@ import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/licenses_widget.dart';
 import 'package:kpix/widgets/new_project_widget.dart';
 import 'package:kpix/widgets/preferences_widget.dart';
+import 'package:kpix/widgets/save_as_widget.dart';
 
 
 class KPixOverlay
@@ -686,6 +687,30 @@ class OverlayEntries
             ),
             Center(
               child: ExportWidget(accept: onAccept, dismiss: onDismiss),
+            ),
+          ]
+        )
+      )
+    );
+  }
+
+  static KPixOverlay getSaveAsDialog({
+    required final Function() onDismiss,
+    required final SaveFileFn onAccept,
+    final Function()? callback
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: () {onDismiss();},
+            ),
+            Center(
+              child: SaveAsWidget(accept: onAccept, dismiss: onDismiss, callback: callback),
             ),
           ]
         )

@@ -19,7 +19,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 
 enum HotkeyAction
 {
@@ -115,6 +114,7 @@ class HotkeyManager
   final FocusNode newProjectWidthTextFocus = FocusNode();
   final FocusNode newProjectHeightTextFocus = FocusNode();
   final FocusNode exportFileNameTextFocus = FocusNode();
+  final FocusNode saveAsFileNameTextFocus = FocusNode();
 
   List<FocusNode> _focusNodes = [];
 
@@ -360,7 +360,8 @@ class HotkeyManager
       canvasSizeOffsetYTextFocus,
       newProjectWidthTextFocus,
       newProjectHeightTextFocus,
-      exportFileNameTextFocus
+      exportFileNameTextFocus,
+      saveAsFileNameTextFocus
     ];
 
     for (final FocusNode fn in _focusNodes)

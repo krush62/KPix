@@ -15,9 +15,9 @@
  */
 
 import 'dart:collection';
-import 'dart:io';
 import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -34,6 +34,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
+import 'package:path/path.dart' as p;
 
 
 class RepaintNotifier extends ChangeNotifier
@@ -127,6 +128,10 @@ class AppState
   {
     return _saveDir;
   }
+  set saveDir(final String dir)
+  {
+    _saveDir.value = dir;
+  }
 
   final ValueNotifier<String> _exportDir;
   String get exportDir
@@ -141,7 +146,7 @@ class AppState
   {
     _exportDir.value = dir;
   }
-  final ValueNotifier<String?> filePath = ValueNotifier(null);
+  final ValueNotifier<String?> projectName = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
   static const Duration toolTipDuration = Duration(seconds: 1);
@@ -207,14 +212,14 @@ class AppState
     addNewLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
-    filePath.value = null;
+    projectName.value = null;
     hasChanges.value = false;
     hasProjectNotifier.value = true;
   }
 
   String getTitle()
   {
-    return "KPix ${filePath.value != null ? getFileName() : ""}${hasChanges.value ? "*" : ""}";
+    return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
   void setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
@@ -415,7 +420,7 @@ class AppState
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
       _restoreState(historyState: loadFileSet.historyState);
-      filePath.value = loadFileSet.path;
+      projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
       hasChanges.value = false;
     }
     else
@@ -451,23 +456,14 @@ class AppState
     }
   }
 
-
-
-  String getFileName()
+  void fileSaved({required final String saveName, required final String path})
   {
-    String fileName = "";
-    if (filePath.value != null)
+    if (!kIsWeb)
     {
-      fileName = File(filePath.value!).uri.pathSegments.last;
+      projectName.value = saveName;
+      hasChanges.value = false;
+      showMessage(text: "File saved at: $path");
     }
-    return fileName;
-  }
-
-  void fileSaved({required String path})
-  {
-    filePath.value = path;
-    hasChanges.value = false;
-    showMessage(text: "File saved at: $path");
   }
 
   void _restoreState({required final HistoryState? historyState})

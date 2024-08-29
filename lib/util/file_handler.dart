@@ -24,13 +24,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
@@ -94,6 +94,14 @@ const Map<FileNameStatus, String> fileNameStatusTextMap =
   FileNameStatus.overwrite:"Overwriting Existing File"
 };
 
+const Map<FileNameStatus, IconData> fileNameStatusIconMap =
+{
+  FileNameStatus.available:FontAwesomeIcons.thumbsUp,
+  FileNameStatus.forbidden:FontAwesomeIcons.xmark,
+  FileNameStatus.noRights:FontAwesomeIcons.ban,
+  FileNameStatus.overwrite:FontAwesomeIcons.exclamation
+};
+
 class FileHandler
 {
   static const int fileVersion = 1;
@@ -120,11 +128,11 @@ class FileHandler
         ext: fileExtensionKpix,
         mimeType: MimeType.other,
       );
-      return "$newPath/$path";
+      return newPath;
     }
   }
 
-  static ByteData _getKPixData({required final String path, required final AppState appState})
+  static Future<ByteData> _getKPixData({required final String path, required final AppState appState}) async
   {
     //TODO perform sanity checks (max ramps, max layers, etc...)
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");
@@ -507,59 +515,23 @@ class FileHandler
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
   }
 
-  static void saveFilePressed({final Function()? finishCallback, final bool forceSaveAs = false})
+  static void saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false})
   {
+    final AppState appState = GetIt.I.get<AppState>();
     if (!kIsWeb)
     {
-
-      if (GetIt.I.get<AppState>().filePath.value == null || forceSaveAs)
-      {
-        final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("${GetIt.I.get<AppState>().getFileName()}.$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
-        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
-        {
-          FilePicker.platform.saveFile(
-              dialogTitle: "Save kpix file",
-              type: FileType.custom,
-              fileName: finalPath,
-              allowedExtensions: [fileExtensionKpix],
-              initialDirectory: GetIt.I
-                  .get<AppState>()
-                  .saveDir,
-          ).then((final String? path){_saveFileChosen(path: path, finishCallback: finishCallback);});
-        }
-        else if (Platform.isAndroid || Platform.isIOS)
-        {
-          //TODO use new save dialog
-
-        }
-
-
-
-
-      }
-      else
-      {
-        _saveFileChosen(path: GetIt.I.get<AppState>().filePath.value, finishCallback: finishCallback);
-      }
+      final String finalPath = p.join(appState.saveDir, "$fileName.$fileExtensionKpix");
+      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
     }
     else
     {
-      _saveFileChosen(path: webFileName, finishCallback: finishCallback);
+      _saveKPixFile(path: webFileName, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: webFileName, path: path, finishCallback: finishCallback);});
     }
   }
 
-  static void _saveFileChosen({final String? path, final Function()? finishCallback})
+  static void _fileSaved({required final String fileName, required final String path, required final Function()? finishCallback})
   {
-    if (path != null)
-    {
-      final String finalPath = !path.endsWith(".$fileExtensionKpix") ? ("$path.$fileExtensionKpix") : path;
-      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String fileName){_fileSaved(fileName, finishCallback);});
-    }
-  }
-
-  static void _fileSaved(final String fileName, final Function()? finishCallback)
-  {
-    GetIt.I.get<AppState>().fileSaved(path: fileName);
+    GetIt.I.get<AppState>().fileSaved(saveName: fileName, path: path);
     if (finishCallback != null)
     {
       finishCallback();
@@ -569,26 +541,7 @@ class FileHandler
 
   static void savePalettePressed({final Function()? finishCallback})
   {
-    if (!kIsWeb)
-    {
-      //hack (FilePicker needs bytes on mobile)
-      final Uint8List byteList = Uint8List(0);
-      final String finalPath = !GetIt.I.get<AppState>().getFileName().endsWith(".$fileExtensionKpix") ? ("$GetIt.I.get<AppState>().getFileName().$fileExtensionKpix") : GetIt.I.get<AppState>().getFileName();
-      FilePicker.platform.saveFile(
-          dialogTitle: "Save pal file",
-          type: FileType.custom,
-          fileName: finalPath,
-          allowedExtensions: [fileExtensionKpal],
-          initialDirectory: GetIt.I
-              .get<AppState>()
-              .saveDir,
-          bytes: byteList
-      ).then((final String? path){_paletteSavePathChosen(path: path, finishCallback: finishCallback);});
-    }
-    else
-    {
-      _paletteSavePathChosen(path: webPaletteFileName, finishCallback: finishCallback);
-    }
+    //TODO
   }
 
   static void _paletteSavePathChosen({final String? path, final Function()? finishCallback})
@@ -1710,7 +1663,7 @@ class FileHandler
     return outBytes.buffer.asUint8List();
   }
 
-  static FileNameStatus checkFileName({required String fileName, required String directory})
+  static FileNameStatus checkFileName({required String fileName, required String directory, required String extension})
   {
     if (fileName.isEmpty)
     {
@@ -1742,7 +1695,7 @@ class FileHandler
       return FileNameStatus.noRights;
     }
 
-    final String fullPath = p.join(directory, fileName);
+    final String fullPath = p.join(directory, "$fileName.$extension");
     final File file = File(fullPath);
     if (file.existsSync())
     {
@@ -1762,7 +1715,6 @@ class FileHandler
     }
     catch (e)
     {
-      print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa $e");
       return false;
     }
   }

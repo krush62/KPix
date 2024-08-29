@@ -27,7 +27,6 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -114,11 +113,15 @@ void main() {
 
 class KPixApp extends StatefulWidget
 {
+  //This is ugly, I know
+  static Function({Function()? callback})? saveCallbackFunc;
   const KPixApp({super.key});
 
   @override
   State<KPixApp> createState() => _KPixAppState();
 }
+
+
 
 class _KPixAppState extends State<KPixApp>
 {
@@ -126,6 +129,9 @@ class _KPixAppState extends State<KPixApp>
   late KPixOverlay _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
   late KPixOverlay _saveNewWarningDialog;
+
+
+
 
   @override
   void initState() {
@@ -217,8 +223,12 @@ class _KPixAppState extends State<KPixApp>
 
   void _closeWarningYes()
   {
-    FileHandler.saveFilePressed(finishCallback: _saveBeforeClosedFinished);
+    if (KPixApp.saveCallbackFunc != null)
+    {
+      KPixApp.saveCallbackFunc!(callback: _saveBeforeClosedFinished);
+    }
   }
+
 
   void _closeWarningNo()
   {
@@ -250,7 +260,10 @@ class _KPixAppState extends State<KPixApp>
 
   void _saveNewWarningYes()
   {
-    FileHandler.saveFilePressed(finishCallback: _saveBeforeNewFinished);
+    if (KPixApp.saveCallbackFunc != null)
+    {
+      KPixApp.saveCallbackFunc!(callback: _saveBeforeNewFinished);
+    }
   }
 
   void _saveNewWarningNo()
@@ -349,7 +362,7 @@ class MainWidget extends StatelessWidget
                           valueListenable: GetIt.I.get<AppState>().hasChanges,
                             builder: (final BuildContext context, final bool __, Widget? ___) {
                               return ValueListenableBuilder<String?>(
-                                valueListenable: GetIt.I.get<AppState>().filePath,
+                                valueListenable: GetIt.I.get<AppState>().projectName,
                                 builder: (final BuildContext _, final String? ____, final Widget? _____) {
                                   return Text(
                                     GetIt.I.get<AppState>().getTitle(),

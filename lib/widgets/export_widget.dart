@@ -21,12 +21,11 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 
-enum ExportTypeEnum
+enum ExportType
 {
   png,
   aseprite,
@@ -51,11 +50,11 @@ class ExportData
   }
 }
 
-const Map<ExportTypeEnum, ExportData> exportTypeMap = {
-  ExportTypeEnum.png : ExportData(name: "PNG", extension: "png", scalable: true),
-  ExportTypeEnum.aseprite : ExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
-  ExportTypeEnum.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
-  ExportTypeEnum.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false)
+const Map<ExportType, ExportData> exportTypeMap = {
+  ExportType.png : ExportData(name: "PNG", extension: "png", scalable: true),
+  ExportType.aseprite : ExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
+  ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
+  ExportType.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false)
 };
 
 
@@ -80,25 +79,25 @@ class _ExportWidgetState extends State<ExportWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<ExportTypeEnum> _exportType = ValueNotifier(ExportTypeEnum.png);
+  final ValueNotifier<ExportType> _exportType = ValueNotifier(ExportType.png);
   final ValueNotifier<int> _scalingIndex = ValueNotifier(0);
   final ValueNotifier<String> _fileName = ValueNotifier("");
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier(FileNameStatus.available);
 
-  void _changeDirectoryPressed()
-  {
-    FileHandler.getDirectory(startDir: _appState.exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
-  }
-
-  void _handleChosenDirectory({required final String? chosenDir})
-  {
-    if (chosenDir != null)
+    void _changeDirectoryPressed()
     {
-      _appState.exportDir = chosenDir;
-      _updateFileNameStatus();
+      FileHandler.getDirectory(startDir: _appState.exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
     }
-  }
+
+    void _handleChosenDirectory({required final String? chosenDir})
+    {
+      if (chosenDir != null)
+      {
+        _appState.exportDir = chosenDir;
+        _updateFileNameStatus();
+      }
+    }
 
   @override
   void initState()
@@ -154,32 +153,15 @@ class _ExportWidgetState extends State<ExportWidget>
                   ),
                   Expanded(
                     flex: 6,
-                    child: ValueListenableBuilder<ExportTypeEnum>(
+                    child: ValueListenableBuilder<ExportType>(
                       valueListenable: _exportType,
-                      builder: (final BuildContext context, final ExportTypeEnum exportTypeEnum, final Widget? child) {
-                        return SegmentedButton<ExportTypeEnum>(
-                          selected: <ExportTypeEnum>{exportTypeEnum},
+                      builder: (final BuildContext context, final ExportType exportTypeEnum, final Widget? child) {
+                        return SegmentedButton<ExportType>(
+                          selected: <ExportType>{exportTypeEnum},
                           multiSelectionEnabled: false,
                           showSelectedIcon: false,
-                          onSelectionChanged: (final Set<ExportTypeEnum> types) {_exportType.value = types.first;},
-                          segments: [
-                            ButtonSegment(
-                                value: ExportTypeEnum.png,
-                                label: Text(exportTypeMap[ExportTypeEnum.png]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.png ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))
-                            ),
-                            ButtonSegment(
-                                value: ExportTypeEnum.aseprite,
-                                label: Text(exportTypeMap[ExportTypeEnum.aseprite]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.aseprite ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
-                            ),
-                            ButtonSegment(
-                              value: ExportTypeEnum.photoshop,
-                              label: Text(exportTypeMap[ExportTypeEnum.photoshop]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.photoshop ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
-                            ),
-                            ButtonSegment(
-                              value: ExportTypeEnum.gimp,
-                              label: Text(exportTypeMap[ExportTypeEnum.gimp]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == ExportTypeEnum.gimp ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)),
-                            ),
-                          ],
+                          onSelectionChanged: (final Set<ExportType> types) {_exportType.value = types.first;},
+                          segments: ExportType.values.map((x) => ButtonSegment<ExportType>(value: x, label: Text(exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                         );
                       },
                     )
@@ -197,9 +179,9 @@ class _ExportWidgetState extends State<ExportWidget>
                   ),
                   Expanded(
                     flex: 4,
-                    child: ValueListenableBuilder<ExportTypeEnum>(
+                    child: ValueListenableBuilder<ExportType>(
                       valueListenable: _exportType,
-                      builder: (final BuildContext context1, final ExportTypeEnum type, final Widget? child1) {
+                      builder: (final BuildContext context1, final ExportType type, final Widget? child1) {
                         return ValueListenableBuilder<int>(
                           valueListenable: _scalingIndex,
                           builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
@@ -218,9 +200,9 @@ class _ExportWidgetState extends State<ExportWidget>
                   ),
                   Expanded(
                     flex: 2,
-                    child: ValueListenableBuilder<ExportTypeEnum>(
+                    child: ValueListenableBuilder<ExportType>(
                       valueListenable: _exportType,
-                      builder: (final BuildContext context1, final ExportTypeEnum type, final Widget? child) {
+                      builder: (final BuildContext context1, final ExportType type, final Widget? child) {
                         return ValueListenableBuilder<int>(
                           valueListenable: _scalingIndex,
                           builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
@@ -307,9 +289,9 @@ class _ExportWidgetState extends State<ExportWidget>
                   ),
                   Expanded(
                     flex: 1,
-                    child: ValueListenableBuilder<ExportTypeEnum>(
+                    child: ValueListenableBuilder<ExportType>(
                       valueListenable: _exportType,
-                      builder: (final BuildContext context, final ExportTypeEnum exportType, final Widget? child) {
+                      builder: (final BuildContext context, final ExportType exportType, final Widget? child) {
                         return Text(".${exportTypeMap[exportType]!.extension}");
                       },
 

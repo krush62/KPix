@@ -34,7 +34,6 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:uuid/uuid.dart';
-import 'package:path/path.dart' as p;
 
 
 class RepaintNotifier extends ChangeNotifier

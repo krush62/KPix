@@ -28,6 +28,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/save_palette_widget.dart';
 import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions
@@ -67,6 +68,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _aboutDialog;
   late KPixOverlay _preferencesDialog;
   late KPixOverlay _saveAsDialog;
+  late KPixOverlay _savePaletteDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -120,7 +122,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
           FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
         },
     );
-
+    _savePaletteDialog = OverlayEntries.getPaletteSaveDialog(
+      onDismiss: _closeAllMenus,
+      onAccept: _paletteSavePressed,
+    );
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
     _hotkeyManager.addListener(func: _saveFile, action: HotkeyAction.generalSave);
@@ -134,7 +139,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
-  void _exportFilePressed({required final ExportData exportData, required final ExportTypeEnum exportType})
+  void _exportFilePressed({required final ExportData exportData, required final ExportType exportType})
   {
     FileHandler.exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
@@ -143,11 +148,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (fileName != null && fileName.isNotEmpty)
     {
-        _appState.showMessage(text: "Exported to: $fileName");
-        if (Platform.isAndroid)
-        {
-          MediaScanner.loadMedia(path: fileName);
-        }
+      _appState.showMessage(text: "Exported to: $fileName");
+      if (Platform.isAndroid)
+      {
+        MediaScanner.loadMedia(path: fileName);
+      }
     }
     else
     {
@@ -166,6 +171,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _aboutDialog.hide();
     _preferencesDialog.hide();
     _saveAsDialog.hide();
+    _savePaletteDialog.hide();
   }
 
   void _newFile()
@@ -264,10 +270,15 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
+  void _paletteSavePressed({required PaletteSaveData saveData, required PaletteType paletteType})
+  {
+    FileHandler.savePalettePressed(saveData: saveData, paletteType: paletteType);
+    _closeAllMenus();
+  }
+
   void _savePalette()
   {
-    FileHandler.savePalettePressed();
-    _closeAllMenus();
+    _savePaletteDialog.show(context: context);
   }
 
   void _settingsPressed()

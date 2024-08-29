@@ -34,6 +34,7 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/save_palette_widget.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:archive/archive_io.dart';
@@ -539,20 +540,34 @@ class FileHandler
   }
 
 
-  static void savePalettePressed({final Function()? finishCallback})
+  static void savePalettePressed({required PaletteSaveData saveData, required PaletteType paletteType})
   {
-    //TODO
-  }
+    //TODO handle web
 
-  static void _paletteSavePathChosen({final String? path, final Function()? finishCallback})
-  {
-    if (path != null)
+    final String finalPath = p.join(saveData.directory, "${saveData.fileName}.${saveData.extension}");
+    switch (paletteType)
     {
-      final String finalPath = !path.endsWith(".$fileExtensionKpal") && !kIsWeb ? ("$path.$fileExtensionKpal") : path;
-      _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps, path: finalPath).then((final String? fileName) {_paletteSaved(fileName: fileName, finishCallback: finishCallback);});
+
+      case PaletteType.kpal:
+        _saveKPalFile(rampList: GetIt.I.get<AppState>().colorRamps, path: finalPath).then((final String? fileName) {_paletteSaved(fileName: fileName);});
+      case PaletteType.png:
+        // TODO: Handle this case.
+      case PaletteType.aseprite:
+        // TODO: Handle this case.
+      case PaletteType.gimp:
+        // TODO: Handle this case.
+      case PaletteType.paintNet:
+        // TODO: Handle this case.
+      case PaletteType.adobe:
+        // TODO: Handle this case.
+      case PaletteType.jasc:
+        // TODO: Handle this case.
+      case PaletteType.corel:
+        // TODO: Handle this case.
+      case PaletteType.openOffice:
+        // TODO: Handle this case.
     }
   }
-
 
   static Future<String?> _saveKPalFile({required final List<KPalRampData> rampList, required String path}) async
   {
@@ -739,15 +754,11 @@ class FileHandler
 
   }
 
-  static void _paletteSaved({final String? fileName, final Function()? finishCallback})
+  static void _paletteSaved({required final String? fileName})
   {
     if (fileName != null)
     {
       GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $fileName");
-      if (finishCallback != null)
-      {
-        finishCallback();
-      }
     }
     else
     {
@@ -760,7 +771,7 @@ class FileHandler
     return await FilePicker.platform.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir);
   }
 
-  static Future<String?> exportFile({required final ExportData exportData, required final ExportTypeEnum exportType}) async
+  static Future<String?> exportFile({required final ExportData exportData, required final ExportType exportType}) async
   {
     final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : webFileName;
 
@@ -768,16 +779,16 @@ class FileHandler
 
     switch (exportType)
     {
-      case ExportTypeEnum.png:
+      case ExportType.png:
         data = await _exportPNG(exportData: exportData);
         break;
-      case ExportTypeEnum.aseprite:
+      case ExportType.aseprite:
         data = await _exportAseprite(exportData: exportData);
         break;
-      case ExportTypeEnum.photoshop:
+      case ExportType.photoshop:
       // TODO: Handle this case.
         break;
-      case ExportTypeEnum.gimp:
+      case ExportType.gimp:
         data = await _exportGimp(exportData: exportData);
         break;
     }

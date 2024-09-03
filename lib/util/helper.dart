@@ -15,7 +15,9 @@
  */
 
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:path/path.dart' as p;
 
@@ -188,11 +190,10 @@ class StackCol<T> {
 class Helper
 {
 
-  static String colorToHexString({required final Color c})
+  static String colorToHexString({required final Color c, final bool withHashTag = true})
   {
-    return '#${c.red.toRadixString(16).padLeft(2, '0')}'
-        '${c.green.toRadixString(16).padLeft(2, '0')}'
-        '${c.blue.toRadixString(16).padLeft(2, '0')}';
+    String str = withHashTag ? "#" : "";
+    return '$str${c.red.toRadixString(16).padLeft(2, '0')}${c.green.toRadixString(16).padLeft(2, '0')}${c.blue.toRadixString(16).padLeft(2, '0')}';
   }
 
   static String colorToRGBString({required final Color c})
@@ -493,6 +494,32 @@ class Helper
     {
       return "";
     }
+  }
+
+  static List<int> intToBytes({required final int value, required final int length, bool reverse = false})
+  {
+    final bytes = ByteData(length)..setInt32(0, value, Endian.little);
+    return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
+  }
+
+  static List<int> float32ToBytes({required final double value, bool reverse = false})
+  {
+    final bytes = ByteData(4)..setFloat32(0, value, Endian.little);
+    return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
+  }
+
+  static List<int> stringToBytes({required final String value})
+  {
+    return utf8.encode(value);
+  }
+
+  static String escapeXml({required final String input})
+  {
+    return input.replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
   }
 
 }

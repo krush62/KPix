@@ -158,7 +158,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                   selected: <PaletteType>{exportType},
                                   multiSelectionEnabled: false,
                                   showSelectedIcon: false,
-                                  onSelectionChanged: (final Set<PaletteType> types) {_exportType.value = types.first;},
+                                  onSelectionChanged: (final Set<PaletteType> types) {_exportType.value = types.first; _updateFileNameStatus();},
                                   segments: PaletteType.values.map((x) => ButtonSegment<PaletteType>(value: x, label: Text(paletteExportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
 
                                 );

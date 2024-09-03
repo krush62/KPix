@@ -26,6 +26,7 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
@@ -162,266 +163,406 @@ class ExportFunctions
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: CoordinateSetI(x: colorList.length, y: 1));
   }
 
+  static Future<Uint8List> getPaletteGimpData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  {
+    final List<ui.Color> colorList = _getColorList(ramps: rampList);
+    final StringBuffer stringBuffer = StringBuffer();
+    stringBuffer.writeln("GIMP Palette");
+    stringBuffer.writeln('Name: KPix_${DateTime.now().toString().replaceAll(RegExp(r'[:\- ]'), '_')}');
+    stringBuffer.writeln('Columns: 16');
+    stringBuffer.writeln('#');
+    for (final ui.Color color in colorList)
+    {
+      stringBuffer.writeln('${color.red} ${color.green} ${color.blue} ${colorNames.getColorName(r: color.red, g: color.green, b: color.blue)}');
+    }
+    final String str = stringBuffer.toString();
+    return Uint8List.fromList(utf8.encode(str));
+
+  }
+
+  static Future<Uint8List> getPalettePaintNetData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  {
+    final List<ui.Color> colorList = _getColorList(ramps: rampList);
+    final StringBuffer stringBuffer = StringBuffer();
+    stringBuffer.writeln('; KPix_${DateTime.now().toString().replaceAll(RegExp(r'[:\- ]'), '_')}');
+    for (int i = 0; i < colorList.length; i++)
+    {
+       stringBuffer.writeln("${Helper.colorToHexString(c: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].red, g: colorList[i].green, b: colorList[i].blue)}");
+    }
+    final String str = stringBuffer.toString();
+    return Uint8List.fromList(utf8.encode(str));
+  }
+
+  static Future<Uint8List> getPaletteAdobeData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  {
+    final List<ui.Color> colorList = _getColorList(ramps: rampList);
+    final BytesBuilder buffer = BytesBuilder();
+    buffer.add(Helper.intToBytes(value: 0x46455341, length: 4));
+    buffer.add(Helper.intToBytes(value: 0x00000100, length: 4));
+    buffer.add(Helper.intToBytes(value: colorList.length, length: 4, reverse: true));
+    for (final ui.Color color in colorList)
+    {
+      final String colorName = colorNames.getColorName(r: color.red, g: color.green, b: color.blue);
+      buffer.add(Helper.intToBytes(value: 0x0100, length: 2));
+      buffer.add(Helper.intToBytes(value: (22 + (colorName.length * 2)), length: 4, reverse: true));
+      buffer.add(Helper.intToBytes(value: (colorName.length + 1), length: 2, reverse: true));
+      for (final int codeUnit in colorName.codeUnits)
+      {
+        if (codeUnit != '-'.codeUnitAt(0))
+        {
+          buffer.add(Helper.intToBytes(value: codeUnit, length: 2, reverse: true));
+        }
+      }
+      buffer.add(Helper.intToBytes(value: 0, length: 2, reverse: true));
+
+      buffer.add(Helper.stringToBytes(value: "RGB ")); // Color model
+
+      // Color values
+      buffer.add(Helper.float32ToBytes(value: (color.red.toDouble() / 255.0), reverse: true));
+      buffer.add(Helper.float32ToBytes(value: (color.green.toDouble() / 255.0), reverse: true));
+      buffer.add(Helper.float32ToBytes(value: (color.blue.toDouble() / 255.0), reverse: true));
+
+      // Color type
+      buffer.add(Helper.intToBytes(value: 0, length: 2, reverse: true));
+    }
+    return buffer.toBytes();
+  }
+
+  static Future<Uint8List> getPaletteJascData({required final List<KPalRampData> rampList}) async
+  {
+    final List<ui.Color> colorList = _getColorList(ramps: rampList);
+    final StringBuffer stringBuffer = StringBuffer();
+    stringBuffer.writeln("JASC-PAL");
+    stringBuffer.writeln("0100");
+    stringBuffer.writeln(colorList.length.toString());
+    for (final ui.Color color in colorList)
+    {
+      stringBuffer.writeln("${color.red} ${color.green} ${color.blue}");
+    }
+    final String str = stringBuffer.toString();
+    return Uint8List.fromList(utf8.encode(str));
+  }
+
+  static Future<Uint8List> getPaletteCorelData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  {
+    final List<ui.Color> colorList = _getColorList(ramps: rampList);
+    final StringBuffer stringBuffer = StringBuffer();
+    stringBuffer.writeln("<? version = \"1.0\" ?>");
+    stringBuffer.writeln("<palette name=\"\" guid=\"\">");
+    stringBuffer.writeln("\t<colors>");
+    stringBuffer.writeln("\t\t<page>");
+
+    for (final ui.Color color in colorList)
+    {
+      stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${(color.red / 255.0).toStringAsFixed(6)},${(color.green / 255.0).toStringAsFixed(6)},${(color.blue / 255.0).toStringAsFixed(6)}"name="${Helper.escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue))}" />''');
+    }
+
+    stringBuffer.writeln("\t\t</page>");
+    stringBuffer.writeln("\t</colors>");
+    stringBuffer.writeln("</palette>");
+
+    final String str = stringBuffer.toString();
+    return Uint8List.fromList(utf8.encode(str));
+  }
+
+  static Future<Uint8List> getPaletteOpenOfficeData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  {
+    final List<ui.Color> colorList = _getColorList(ramps: rampList);
+    final stringBuffer = StringBuffer();
+    stringBuffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
+    stringBuffer.writeln(
+        '<office:color-table xmlns:office="http://openoffice.org/2000/office" '
+            'xmlns:style="http://openoffice.org/2000/style" '
+            'xmlns:text="http://openoffice.org/2000/text" '
+            'xmlns:table="http://openoffice.org/2000/table" '
+            'xmlns:draw="http://openoffice.org/2000/drawing" '
+            'xmlns:fo="http://www.w3.org/1999/XSL/Format" '
+            'xmlns:xlink="http://www.w3.org/1999/xlink" '
+            'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            'xmlns:meta="http://openoffice.org/2000/meta" '
+            'xmlns:number="http://openoffice.org/2000/datastyle" '
+            'xmlns:svg="http://www.w3.org/2000/svg" '
+            'xmlns:chart="http://openoffice.org/2000/chart" '
+            'xmlns:dr3d="http://openoffice.org/2000/dr3d" '
+            'xmlns:math="http://www.w3.org/1998/Math/MathML" '
+            'xmlns:form="http://openoffice.org/2000/form" '
+            'xmlns:script="http://openoffice.org/2000/script" '
+            'xmlns:config="http://openoffice.org/2001/config">');
+
+    for (final ui.Color color in colorList)
+    {
+      final String colorHex = Helper.colorToHexString(c: color).toLowerCase();
+      final String colorName = Helper.escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue));
+      stringBuffer.writeln('\t<draw:color draw:name="$colorName" draw:color="$colorHex"/>');
+    }
+
+    stringBuffer.writeln('</office:color-table>');
+    final String str = stringBuffer.toString();
+    return Uint8List.fromList(utf8.encode(str));
+  }
+
+
+
   static Future<Uint8List> _createAsepriteData({required final List<ui.Color> colorList, required final List<Uint8List> layerNames, required final List<List<int>> layerEncBytes, required final CoordinateSetI canvasSize, final List<LayerState>? layerList}) async
   {
-  const int headerSize = 128;
-  const int frameHeaderSize = 16;
-  const int colorProfileSize = 22;
-  final int paletteNewSize = 26 + (colorList.length * 6);
-  final int paletteOldSize = 10 + (colorList.length * 3);
+    const int headerSize = 128;
+    const int frameHeaderSize = 16;
+    const int colorProfileSize = 22;
+    final int paletteNewSize = 26 + (colorList.length * 6);
+    final int paletteOldSize = 10 + (colorList.length * 3);
 
-  //CALCULATE SIZE
-  int fileSize = 0;
-  fileSize += headerSize;
-  fileSize += frameHeaderSize;
-  fileSize += colorProfileSize;
-  fileSize += paletteNewSize;
-  fileSize += paletteOldSize;
+    //CALCULATE SIZE
+    int fileSize = 0;
+    fileSize += headerSize;
+    fileSize += frameHeaderSize;
+    fileSize += colorProfileSize;
+    fileSize += paletteNewSize;
+    fileSize += paletteOldSize;
 
-  for (int i = 0; i < layerNames.length; i++)
-  {
-  fileSize += (24 + layerNames[i].length);
-  }
-
-  for (int i = 0; i < layerEncBytes.length; i++)
-  {
-  fileSize += (26 + layerEncBytes[i].length);
-  }
-
-  final ByteData outBytes = ByteData(fileSize);
-  int offset = 0;
-
-  //WRITE HEADER
-  outBytes.setUint32(offset, fileSize, Endian.little); //file size
-  offset+=4;
-  outBytes.setUint16(offset, 0xA5E0, Endian.little); //magic number
-  offset+=2;
-  outBytes.setUint16(offset, 1, Endian.little); //frames
-  offset+=2;
-  outBytes.setUint16(offset, canvasSize.x, Endian.little); //width
-  offset+=2;
-  outBytes.setUint16(offset, canvasSize.y, Endian.little); //height
-  offset+=2;
-  outBytes.setUint16(offset, 8, Endian.little); //color depth
-  offset+=2;
-  outBytes.setUint32(offset, 1, Endian.little); //flags
-  offset+=4;
-  outBytes.setUint16(offset, 100, Endian.little); //speed
-  offset+=2;
-  outBytes.setUint32(offset, 0, Endian.little); //empty
-  offset+=4;
-  outBytes.setUint32(offset, 0, Endian.little); //empty
-  offset+=4;
-  outBytes.setUint8(offset, 0); //transparent index
-  offset++;
-  for (int i = 0; i < 3; i++) //ignore bytes
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-  outBytes.setUint16(offset, colorList.length, Endian.little); //color count
-  offset+=2;
-  outBytes.setUint8(offset, 1); //pixel width
-  offset++;
-  outBytes.setUint8(offset, 1); //pixel height
-  offset++;
-  outBytes.setInt16(offset, 0, Endian.little); //x pos grid
-  offset+=2;
-  outBytes.setInt16(offset, 0, Endian.little); //y pos grid
-  offset+=2;
-  outBytes.setUint16(offset, 16, Endian.little); //grid width
-  offset+=2;
-  outBytes.setUint16(offset, 16, Endian.little); //grid height
-  offset+=2;
-  for (int i = 0; i < 84; i++) //future bytes
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-
-  //FRAMES HEADER
-  outBytes.setUint32(offset, fileSize - headerSize, Endian.little); //frame size
-  offset+=4;
-  outBytes.setUint16(offset, 0xF1FA, Endian.little); //magic number
-  offset+=2;
-  outBytes.setUint16(offset, 3 + (layerEncBytes.length * 2), Endian.little); //chunk count
-  offset+=2;
-  outBytes.setUint16(offset, 100, Endian.little); //duration
-  offset+=2;
-  for (int i = 0; i < 2; i++) //empty bytes
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-  outBytes.setUint32(offset, 3 + (layerEncBytes.length * 2), Endian.little); //chunk count
-  offset+=4;
-
-  //COLOR PROFILE
-  outBytes.setUint32(offset, colorProfileSize, Endian.little); //chunk size
-  offset+=4;
-  outBytes.setUint16(offset, 0x2007, Endian.little); //chunk type
-  offset+=2;
-  outBytes.setUint16(offset, 1, Endian.little); //profile type
-  offset+=2;
-  outBytes.setUint16(offset, 0, Endian.little); //flags
-  offset+=2;
-  outBytes.setUint32(offset, 0, Endian.little); //gamma
-  offset+=4;
-  for (int i = 0; i < 8; i++) //reserved
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-
-  //PALETTE
-  outBytes.setUint32(offset, paletteNewSize, Endian.little); //chunk size
-  offset+=4;
-  outBytes.setUint16(offset, 0x2019, Endian.little); //chunk type
-  offset+=2;
-  outBytes.setUint32(offset, colorList.length, Endian.little); //color count
-  offset+=4;
-  outBytes.setUint32(offset, 0, Endian.little); //first color index
-  offset+=4;
-  outBytes.setUint32(offset, colorList.length - 1, Endian.little); //last color index
-  offset+=4;
-  for (int i = 0; i < 8; i++) //reserved
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-  for (int i = 0; i < colorList.length; i++)
-  {
-  outBytes.setUint16(offset, 0, Endian.little); //has name
-  offset+=2;
-  outBytes.setUint8(offset, colorList[i].red); //red
-  offset++;
-  outBytes.setUint8(offset, colorList[i].green); //green
-  offset++;
-  outBytes.setUint8(offset, colorList[i].blue); //blue
-  offset++;
-  outBytes.setUint8(offset, 255); //alpha
-  offset++;
-  }
-
-  //PALETTE OLD
-  outBytes.setUint32(offset, paletteOldSize, Endian.little); //chunk size
-  offset+=4;
-  outBytes.setUint16(offset, 0x0004, Endian.little); //chunk type
-  offset+=2;
-  outBytes.setUint16(offset, 1, Endian.little); //packet count
-  offset+=2;
-  outBytes.setUint8(offset, 0); //skip entries
-  offset++;
-  outBytes.setUint8(offset, colorList.length); //color count
-  offset++;
-  for (int i = 0; i < colorList.length; i++)
-  {
-  outBytes.setUint8(offset, colorList[i].red); //red
-  offset++;
-  outBytes.setUint8(offset, colorList[i].green); //green
-  offset++;
-  outBytes.setUint8(offset, colorList[i].blue); //blue
-  offset++;
-  }
-
-  //LAYERS AND CELS
-  for (int i = layerEncBytes.length - 1; i >= 0 ; i--)
-  {
-  //LAYER
-  outBytes.setUint32(offset, 24 + layerNames[i].length, Endian.little); //chunk size
-  offset+=4;
-  outBytes.setUint16(offset, 0x2004, Endian.little); //chunk type
-  offset+=2;
-  int flagVal = 0;
-  if (layerList != null)
-  {
-    if (layerList[i].visibilityState.value == LayerVisibilityState.visible)
+    for (int i = 0; i < layerNames.length; i++)
     {
-      flagVal += 1;
+      fileSize += (24 + layerNames[i].length);
     }
-    if (layerList[i].lockState.value != LayerLockState.locked)
+
+    for (int i = 0; i < layerEncBytes.length; i++)
     {
-      flagVal += 2;
+      fileSize += (26 + layerEncBytes[i].length);
     }
-  }
-  else
-  {
-    flagVal += 1;
-    flagVal += 2;
-  }
 
-  outBytes.setUint16(offset, flagVal, Endian.little); //flags
-  offset+=2;
-  outBytes.setUint16(offset, 0, Endian.little); //type
-  offset+=2;
-  outBytes.setUint16(offset, 0, Endian.little); //child level
-  offset+=2;
-  outBytes.setUint16(offset, 0, Endian.little); //ignored width
-  offset+=2;
-  outBytes.setUint16(offset, 0, Endian.little); //ignored height
-  offset+=2;
-  outBytes.setUint16(offset, 0, Endian.little); //blend mode
-  offset+=2;
-  outBytes.setUint8(offset, 255); //opacity
-  offset++;
-  for (int j = 0; j < 3; j++) //reserved
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-  outBytes.setUint16(offset, layerNames[i].length, Endian.little); //name length
-  offset+=2;
+    final ByteData outBytes = ByteData(fileSize);
+    int offset = 0;
 
-  for (int j = 0; j < layerNames[i].length; j++) //name
-      {
-  outBytes.setUint8(offset, layerNames[(layerEncBytes.length - 1) - i][j]);
-  offset++;
-  }
-
-  //CEL
-  outBytes.setUint32(offset, 26 + layerEncBytes[i].length, Endian.little); //chunk size
-  offset+=4;
-  outBytes.setUint16(offset, 0x2005, Endian.little); //chunk type
-  offset+=2;
-  outBytes.setUint16(offset, (layerEncBytes.length - 1) - i, Endian.little); //layer index
-  offset+=2;
-  outBytes.setInt16(offset, 0, Endian.little); //x pos
-  offset+=2;
-  outBytes.setInt16(offset, 0, Endian.little); //y pos
-  offset+=2;
-  outBytes.setUint8(offset, 255); //opacity
-  offset++;
-  outBytes.setUint16(offset, 2, Endian.little); //cel type
-  offset+=2;
-  outBytes.setInt16(offset, 0, Endian.little); //z index
-  offset+=2;
-  for (int j = 0; j < 5; j++) //reserved
-      {
-  outBytes.setUint8(offset, 0);
-  offset++;
-  }
-  if (layerList != null)
-  {
-    outBytes.setUint16(offset, layerList[i].size.x, Endian.little); //width
+    //WRITE HEADER
+    outBytes.setUint32(offset, fileSize, Endian.little); //file size
+    offset+=4;
+    outBytes.setUint16(offset, 0xA5E0, Endian.little); //magic number
     offset+=2;
-    outBytes.setUint16(offset, layerList[i].size.y, Endian.little); //height
+    outBytes.setUint16(offset, 1, Endian.little); //frames
     offset+=2;
-  }
-  else
-  {
     outBytes.setUint16(offset, canvasSize.x, Endian.little); //width
     offset+=2;
     outBytes.setUint16(offset, canvasSize.y, Endian.little); //height
     offset+=2;
-  }
+    outBytes.setUint16(offset, 8, Endian.little); //color depth
+    offset+=2;
+    outBytes.setUint32(offset, 1, Endian.little); //flags
+    offset+=4;
+    outBytes.setUint16(offset, 100, Endian.little); //speed
+    offset+=2;
+    outBytes.setUint32(offset, 0, Endian.little); //empty
+    offset+=4;
+    outBytes.setUint32(offset, 0, Endian.little); //empty
+    offset+=4;
+    outBytes.setUint8(offset, 0); //transparent index
+    offset++;
+    for (int i = 0; i < 3; i++) //ignore bytes
+    {
+      outBytes.setUint8(offset, 0);
+      offset++;
+    }
+    outBytes.setUint16(offset, colorList.length, Endian.little); //color count
+    offset+=2;
+    outBytes.setUint8(offset, 1); //pixel width
+    offset++;
+    outBytes.setUint8(offset, 1); //pixel height
+    offset++;
+    outBytes.setInt16(offset, 0, Endian.little); //x pos grid
+    offset+=2;
+    outBytes.setInt16(offset, 0, Endian.little); //y pos grid
+    offset+=2;
+    outBytes.setUint16(offset, 16, Endian.little); //grid width
+    offset+=2;
+    outBytes.setUint16(offset, 16, Endian.little); //grid height
+    offset+=2;
+    for (int i = 0; i < 84; i++) //future bytes
+    {
+      outBytes.setUint8(offset, 0);
+      offset++;
+    }
 
-  for (int j = 0; j < layerEncBytes[i].length; j++)
-  {
-  outBytes.setUint8(offset, layerEncBytes[i][j]);
-  offset++;
-  }
-  }
-  return outBytes.buffer.asUint8List();
+    //FRAMES HEADER
+    outBytes.setUint32(offset, fileSize - headerSize, Endian.little); //frame size
+    offset+=4;
+    outBytes.setUint16(offset, 0xF1FA, Endian.little); //magic number
+    offset+=2;
+    outBytes.setUint16(offset, 3 + (layerEncBytes.length * 2), Endian.little); //chunk count
+    offset+=2;
+    outBytes.setUint16(offset, 100, Endian.little); //duration
+    offset+=2;
+    for (int i = 0; i < 2; i++) //empty bytes
+    {
+      outBytes.setUint8(offset, 0);
+      offset++;
+    }
+    outBytes.setUint32(offset, 3 + (layerEncBytes.length * 2), Endian.little); //chunk count
+    offset+=4;
+
+    //COLOR PROFILE
+    outBytes.setUint32(offset, colorProfileSize, Endian.little); //chunk size
+    offset+=4;
+    outBytes.setUint16(offset, 0x2007, Endian.little); //chunk type
+    offset+=2;
+    outBytes.setUint16(offset, 1, Endian.little); //profile type
+    offset+=2;
+    outBytes.setUint16(offset, 0, Endian.little); //flags
+    offset+=2;
+    outBytes.setUint32(offset, 0, Endian.little); //gamma
+    offset+=4;
+    for (int i = 0; i < 8; i++) //reserved
+    {
+      outBytes.setUint8(offset, 0);
+      offset++;
+    }
+
+    //PALETTE
+    outBytes.setUint32(offset, paletteNewSize, Endian.little); //chunk size
+    offset+=4;
+    outBytes.setUint16(offset, 0x2019, Endian.little); //chunk type
+    offset+=2;
+    outBytes.setUint32(offset, colorList.length, Endian.little); //color count
+    offset+=4;
+    outBytes.setUint32(offset, 0, Endian.little); //first color index
+    offset+=4;
+    outBytes.setUint32(offset, colorList.length - 1, Endian.little); //last color index
+    offset+=4;
+    for (int i = 0; i < 8; i++) //reserved
+    {
+      outBytes.setUint8(offset, 0);
+      offset++;
+    }
+    for (int i = 0; i < colorList.length; i++)
+    {
+      outBytes.setUint16(offset, 0, Endian.little); //has name
+      offset+=2;
+      outBytes.setUint8(offset, colorList[i].red); //red
+      offset++;
+      outBytes.setUint8(offset, colorList[i].green); //green
+      offset++;
+      outBytes.setUint8(offset, colorList[i].blue); //blue
+      offset++;
+      outBytes.setUint8(offset, 255); //alpha
+      offset++;
+    }
+
+    //PALETTE OLD
+    outBytes.setUint32(offset, paletteOldSize, Endian.little); //chunk size
+    offset+=4;
+    outBytes.setUint16(offset, 0x0004, Endian.little); //chunk type
+    offset+=2;
+    outBytes.setUint16(offset, 1, Endian.little); //packet count
+    offset+=2;
+    outBytes.setUint8(offset, 0); //skip entries
+    offset++;
+    outBytes.setUint8(offset, colorList.length); //color count
+    offset++;
+    for (int i = 0; i < colorList.length; i++)
+    {
+      outBytes.setUint8(offset, colorList[i].red); //red
+      offset++;
+      outBytes.setUint8(offset, colorList[i].green); //green
+      offset++;
+      outBytes.setUint8(offset, colorList[i].blue); //blue
+      offset++;
+    }
+
+    //LAYERS AND CELS
+    for (int i = layerEncBytes.length - 1; i >= 0 ; i--)
+    {
+      //LAYER
+      outBytes.setUint32(offset, 24 + layerNames[i].length, Endian.little); //chunk size
+      offset+=4;
+      outBytes.setUint16(offset, 0x2004, Endian.little); //chunk type
+      offset+=2;
+      int flagVal = 0;
+      if (layerList != null)
+      {
+        if (layerList[i].visibilityState.value == LayerVisibilityState.visible)
+        {
+          flagVal += 1;
+        }
+        if (layerList[i].lockState.value != LayerLockState.locked)
+        {
+          flagVal += 2;
+        }
+      }
+      else
+      {
+        flagVal += 1;
+        flagVal += 2;
+      }
+
+      outBytes.setUint16(offset, flagVal, Endian.little); //flags
+      offset+=2;
+      outBytes.setUint16(offset, 0, Endian.little); //type
+      offset+=2;
+      outBytes.setUint16(offset, 0, Endian.little); //child level
+      offset+=2;
+      outBytes.setUint16(offset, 0, Endian.little); //ignored width
+      offset+=2;
+      outBytes.setUint16(offset, 0, Endian.little); //ignored height
+      offset+=2;
+      outBytes.setUint16(offset, 0, Endian.little); //blend mode
+      offset+=2;
+      outBytes.setUint8(offset, 255); //opacity
+      offset++;
+      for (int j = 0; j < 3; j++) //reserved
+      {
+        outBytes.setUint8(offset, 0);
+        offset++;
+      }
+      outBytes.setUint16(offset, layerNames[i].length, Endian.little); //name length
+      offset+=2;
+
+      for (int j = 0; j < layerNames[i].length; j++) //name
+      {
+        outBytes.setUint8(offset, layerNames[(layerEncBytes.length - 1) - i][j]);
+        offset++;
+      }
+
+      //CEL
+      outBytes.setUint32(offset, 26 + layerEncBytes[i].length, Endian.little); //chunk size
+      offset+=4;
+      outBytes.setUint16(offset, 0x2005, Endian.little); //chunk type
+      offset+=2;
+      outBytes.setUint16(offset, (layerEncBytes.length - 1) - i, Endian.little); //layer index
+      offset+=2;
+      outBytes.setInt16(offset, 0, Endian.little); //x pos
+      offset+=2;
+      outBytes.setInt16(offset, 0, Endian.little); //y pos
+      offset+=2;
+      outBytes.setUint8(offset, 255); //opacity
+      offset++;
+      outBytes.setUint16(offset, 2, Endian.little); //cel type
+      offset+=2;
+      outBytes.setInt16(offset, 0, Endian.little); //z index
+      offset+=2;
+      for (int j = 0; j < 5; j++) //reserved
+      {
+        outBytes.setUint8(offset, 0);
+        offset++;
+      }
+      if (layerList != null)
+      {
+        outBytes.setUint16(offset, layerList[i].size.x, Endian.little); //width
+        offset+=2;
+        outBytes.setUint16(offset, layerList[i].size.y, Endian.little); //height
+        offset+=2;
+      }
+      else
+      {
+        outBytes.setUint16(offset, canvasSize.x, Endian.little); //width
+        offset+=2;
+        outBytes.setUint16(offset, canvasSize.y, Endian.little); //height
+        offset+=2;
+      }
+
+      for (int j = 0; j < layerEncBytes[i].length; j++)
+      {
+        outBytes.setUint8(offset, layerEncBytes[i][j]);
+        offset++;
+      }
+    }
+    return outBytes.buffer.asUint8List();
   }
 
   static Future<ByteData> getKPixData({required final String path, required final AppState appState}) async

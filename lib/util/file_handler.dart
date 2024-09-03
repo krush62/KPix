@@ -28,6 +28,7 @@ import 'package:kpix/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
@@ -289,43 +290,50 @@ class FileHandler
 
   static void savePalettePressed({required PaletteSaveData saveData, required PaletteType paletteType})
   {
-
     final String finalPath = p.join(saveData.directory, "${saveData.fileName}.${saveData.extension}");
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
+    final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
+
     switch (paletteType)
     {
       case PaletteType.kpal:
-        ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath);}).then((final String? fileName) {_paletteSaved(fileName: fileName);});
+        ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
       case PaletteType.png:
-        ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);}).then((final String? fileName) {_paletteSaved(fileName: fileName);});
+        ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
       case PaletteType.aseprite:
-        ExportFunctions.getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);}).then((final String? fileName) {_paletteSaved(fileName: fileName);});
+        ExportFunctions.getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
       case PaletteType.gimp:
-        // TODO: Handle this case.
+        ExportFunctions.getPaletteGimpData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        break;
       case PaletteType.paintNet:
-        // TODO: Handle this case.
+        ExportFunctions.getPalettePaintNetData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        break;
       case PaletteType.adobe:
-        // TODO: Handle this case.
+        ExportFunctions.getPaletteAdobeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        break;
       case PaletteType.jasc:
-        // TODO: Handle this case.
+        ExportFunctions.getPaletteJascData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        break;
       case PaletteType.corel:
-        // TODO: Handle this case.
+        ExportFunctions.getPaletteCorelData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        break;
       case PaletteType.openOffice:
-        // TODO: Handle this case.
+        ExportFunctions.getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        break;
     }
   }
 
-  static Future<String?> _savePaletteDataToFile({required final Uint8List? data, required String path}) async
+  static Future<void> _savePaletteDataToFile({required final Uint8List? data, required String path}) async
   {
     if (data != null)
     {
       if (!kIsWeb)
       {
         await File(path).writeAsBytes(data);
-        return path;
+        GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $path");
       }
       else
       {
@@ -335,12 +343,13 @@ class FileHandler
           ext: fileExtensionKpal,
           mimeType: MimeType.other,
         );
-        return "$newPath/$path";
+        GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $newPath/$path");
       }
+
     }
     else
     {
-      return null;
+      GetIt.I.get<AppState>().showMessage(text: "Palette saving failed");
     }
   }
 
@@ -453,18 +462,6 @@ class FileHandler
     }
     return LoadPaletteSet(status: "loading okay", rampData: rampList);
 
-  }
-
-  static void _paletteSaved({required final String? fileName})
-  {
-    if (fileName != null)
-    {
-      GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $fileName");
-    }
-    else
-    {
-      GetIt.I.get<AppState>().showMessage(text: "Palette saving failed");
-    }
   }
 
   static Future<String?> getDirectory({required String startDir}) async

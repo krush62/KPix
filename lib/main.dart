@@ -115,12 +115,12 @@ class KPixApp extends StatefulWidget
 {
   //This is ugly, I know
   static Function({Function()? callback})? saveCallbackFunc;
+  static Function({Function()? callback})? openCallbackFunc;
   const KPixApp({super.key});
 
   @override
   State<KPixApp> createState() => _KPixAppState();
 }
-
 
 
 class _KPixAppState extends State<KPixApp>
@@ -131,14 +131,11 @@ class _KPixAppState extends State<KPixApp>
   late KPixOverlay _saveNewWarningDialog;
 
 
-
-
   @override
   void initState() {
     super.initState();
     _initPrefs();
   }
-
 
   Future<void> _initPrefs() async
   {
@@ -177,7 +174,8 @@ class _KPixAppState extends State<KPixApp>
     );
     _newProjectDialog = OverlayEntries.getNewProjectDialog(
         onDismiss: () {exit(0);},
-        onAccept: _newFilePressed
+        onAccept: _newFilePressed,
+        onOpen: _openPressed
     );
 
 
@@ -282,6 +280,20 @@ class _KPixAppState extends State<KPixApp>
   void _newFilePressed({required CoordinateSetI size})
   {
     GetIt.I.get<AppState>().init(dimensions: size);
+    _newProjectDialog.hide();
+  }
+
+  void _openPressed()
+  {
+    if (KPixApp.openCallbackFunc != null)
+    {
+      KPixApp.openCallbackFunc!(callback: _openPerformed);
+    }
+  }
+
+  void _openPerformed()
+  {
+    GetIt.I.get<AppState>().hasProjectNotifier.value = true;
     _newProjectDialog.hide();
   }
 

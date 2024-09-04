@@ -30,7 +30,8 @@ class NewProjectWidget extends StatefulWidget
 {
   final Function() dismiss;
   final NewFileFn accept;
-  const NewProjectWidget({super.key, required this.dismiss, required this.accept});
+  final Function() open;
+  const NewProjectWidget({super.key, required this.dismiss, required this.accept, required this.open});
 
   @override
   State<NewProjectWidget> createState() => _NewProjectWidgetState();
@@ -249,6 +250,19 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                         widget.dismiss();
                       },
                     )
+                  ),
+                  SizedBox(width: _options.padding),
+                  Expanded(
+                      flex: 1,
+                      child: IconButton.outlined(
+                        icon: FaIcon(
+                          FontAwesomeIcons.folderOpen,
+                          size: _options.iconSize,
+                        ),
+                        onPressed: () {
+                          widget.open();
+                        },
+                      )
                   ),
                   SizedBox(width: _options.padding),
                   Expanded(

@@ -858,6 +858,7 @@ class OverlayEntries
   static KPixOverlay getNewProjectDialog({
     required final Function() onDismiss,
     required final NewFileFn onAccept,
+    required final Function() onOpen
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -870,7 +871,7 @@ class OverlayEntries
               onDismiss: null,
             ),
             Center(
-              child: NewProjectWidget(accept: onAccept, dismiss: onDismiss),
+              child: NewProjectWidget(accept: onAccept, dismiss: onDismiss, open: onOpen),
             ),
           ]
         )

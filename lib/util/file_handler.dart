@@ -17,11 +17,9 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpal/kpal_widget.dart';
@@ -226,7 +224,7 @@ class FileHandler
 
 
 
-  static void loadFilePressed()
+  static void loadFilePressed({final Function()? finishCallback})
   {
     if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS)
     {
@@ -235,7 +233,7 @@ class FileHandler
           type: FileType.custom,
           allowedExtensions: [fileExtensionKpix],
           initialDirectory: GetIt.I.get<AppState>().saveDir
-      ).then((final FilePickerResult? result) {_loadFileChosen(result: result);});
+      ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
     }
     else //mobile
     {
@@ -243,11 +241,11 @@ class FileHandler
           allowMultiple: false,
           type: FileType.any,
           initialDirectory: GetIt.I.get<AppState>().saveDir
-      ).then((final FilePickerResult? result) {_loadFileChosen(result: result);});
+      ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
     }
   }
 
-  static void _loadFileChosen({final FilePickerResult? result})
+  static void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback})
   {
     if (result != null && result.files.isNotEmpty)
     {
@@ -256,13 +254,17 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      _loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){_fileLoaded(loadFileSet: loadFileSet);});
+      _loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){_fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 
-  static void _fileLoaded({required final LoadFileSet loadFileSet})
+  static void _fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback})
   {
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
+    if (finishCallback != null)
+    {
+      finishCallback();
+    }
   }
 
   static void saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false})

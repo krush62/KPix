@@ -136,6 +136,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _hotkeyManager.addListener(func: _exportFile, action: HotkeyAction.generalExport);
 
     KPixApp.saveCallbackFunc = _saveFile;
+    KPixApp.openCallbackFunc = _loadFile;
 
   }
 
@@ -185,7 +186,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _loadMenu.show(context: context);
   }
 
-  void _loadFile()
+  void _loadFile({Function()? callback})
   {
     if (_appState.hasChanges.value)
     {
@@ -193,7 +194,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      FileHandler.loadFilePressed();
+      FileHandler.loadFilePressed(finishCallback: callback);
       _closeAllMenus();
     }
   }

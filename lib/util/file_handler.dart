@@ -34,6 +34,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/save_palette_widget.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:path/path.dart' as p;
@@ -575,5 +576,106 @@ class FileHandler
     {
       return false;
     }
+  }
+
+  static Future<String> findExportDir() async
+  {
+    if (!kIsWeb)
+    {
+      if (Platform.isWindows || Platform.isMacOS || Platform.isWindows || Platform.isIOS)
+      {
+        final Directory? downloadDir = await getDownloadsDirectory();
+        if (downloadDir != null)
+        {
+          return downloadDir.path;
+        }
+      }
+      else if (Platform.isAndroid)
+      {
+        final Directory directoryDL = Directory("/storage/emulated/0/Download/");
+        final Directory directoryDLs = Directory("/storage/emulated/0/Downloads/");
+        if (await directoryDL.exists())
+        {
+          return directoryDL.path;
+        }
+        else if (await directoryDLs.exists())
+        {
+          return directoryDLs.path;
+        }
+        else
+        {
+          final Directory? directory = await getExternalStorageDirectory();
+          if (directory != null && await directory.exists())
+          {
+            return directory.path;
+          }
+        }
+      }
+    }
+    return "";
+  }
+
+  static Future<String> findSaveDir() async
+  {
+    if (!kIsWeb)
+    {
+      if (Platform.isWindows || Platform.isMacOS || Platform.isWindows || Platform.isIOS)
+      {
+        final Directory docDir = await getApplicationDocumentsDirectory();
+        if (await docDir.exists())
+        {
+          final Directory kPixDir = Directory(p.join(docDir.path, "KPix"));
+          if (!(await kPixDir.exists()))
+          {
+            final Directory kPixDir2 = await kPixDir.create();
+            if (await kPixDir2.exists())
+            {
+              return kPixDir2.path;
+            }
+            else
+            {
+              return docDir.path;
+            }
+          }
+          else
+          {
+            return kPixDir.path;
+          }
+        }
+      }
+      else if (Platform.isAndroid)
+      {
+        final Directory docDir = Directory("/storage/emulated/0/Documents/");
+        if (await docDir.exists())
+        {
+          final Directory kPixDir = Directory(p.join(docDir.path, "KPix"));
+          if (!(await kPixDir.exists()))
+          {
+            final Directory kPixDir2 = await kPixDir.create();
+            if (await kPixDir2.exists())
+            {
+              return kPixDir2.path;
+            }
+            else
+            {
+              return docDir.path;
+            }
+          }
+          else
+          {
+            return kPixDir.path;
+          }
+        }
+        else
+        {
+          final Directory directory = await getApplicationDocumentsDirectory();
+          if (await directory.exists())
+          {
+            return directory.path;
+          }
+        }
+      }
+    }
+    return "";
   }
 }

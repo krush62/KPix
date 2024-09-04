@@ -27,6 +27,7 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -146,17 +147,11 @@ class _KPixAppState extends State<KPixApp>
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
-    String saveDirString = "", exportDirString = "";
-    if (!kIsWeb)
-    {
-      final Directory saveDir = await getApplicationDocumentsDirectory();
-      final Directory? exportDir = await getDownloadsDirectory();
-      saveDirString = saveDir.path;
-      exportDirString = exportDir == null ? "" : exportDir.path;
-    }
+    final String saveDirString = await FileHandler.findSaveDir();
+    final String exportDirString = await FileHandler.findExportDir();
 
-    GetIt.I.registerSingleton<AppState>(AppState(saveDir: saveDirString, exportDir: exportDirString));
-    AppState appState = GetIt.I.get<AppState>();
+    final AppState appState = AppState(saveDir: saveDirString, exportDir: exportDirString);
+    GetIt.I.registerSingleton<AppState>(appState);
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 
     GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));

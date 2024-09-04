@@ -210,6 +210,7 @@ class AppState
     _layers.value = layerList;
     addNewLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();
+    GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
     projectName.value = null;
     hasChanges.value = false;

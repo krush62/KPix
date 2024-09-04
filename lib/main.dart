@@ -37,7 +37,6 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/canvas_widget.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 
@@ -259,6 +258,7 @@ class _KPixAppState extends State<KPixApp>
     {
       KPixApp.saveCallbackFunc!(callback: _saveBeforeNewFinished);
     }
+
   }
 
   void _saveNewWarningNo()

@@ -168,6 +168,14 @@ class HistoryManager
 
   HistoryManager({required int maxEntries}) : _maxEntries = maxEntries;
 
+  void clear()
+  {
+    _curPos = -1;
+    _states.clear();
+    hasUndo.value = false;
+    hasRedo.value = false;
+  }
+
   String getCurrentDescription()
   {
     return _states.elementAt(_curPos).description;

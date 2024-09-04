@@ -242,7 +242,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   {
     if (_appState.projectName.value == null && !kIsWeb)
     {
-      _saveAsFile();
+      _saveAsFile(callback: callback);
     }
     else
     {

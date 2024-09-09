@@ -11,6 +11,7 @@
 [Controls](#controls)\
 [Installation](#installation)\
 [Web Version](#web-version)\
+[Future](#future)\
 [License](#license)
 
 ## Overview
@@ -90,13 +91,18 @@ The complete control table can be found [here](docs/controls.md).
 ### Windows
 There are two ways to run KPix on Windows:
 #### Installer
-Just run the provided installer. The application can be easily uninstalled and a file association is created.
+Download and run the provided installer from [latest releases](https://github.com/krush62/KPix/releases/latest). The application can be easily uninstalled and a file association is created.
 #### Package
 This is a portable version. Extract the contents of the zip archive and run kpix.exe to start the application.
 ### Linux
 TBD
 ### Android
-TBD
+You can either download the Android apk file from [latest releases](https://github.com/krush62/KPix/releases/latest) and install manually, or you can install the application through the following app stores:\
+[![Play Store](https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com)
+[![F Droid](https://img.shields.io/badge/F_Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org)
+![AppGallery](https://img.shields.io/badge/AppGallery-C80A2D?style=for-the-badge&logo=huawei&logoColor=white)
+[![Samsung](https://img.shields.io/badge/Samsung-%231428A0.svg?style=for-the-badge&logo=samsung&logoColor=white)](https://galaxystore.samsung.com)
+[![APKMirror](https://img.shields.io/badge/APKMIRROR-f78e1d?style=for-the-badge&logo=android&logoColor=white)](https://www.apkmirror.com)
 
 ### MacOS
 Does not exist yet. Possible, but support is needed.
@@ -105,6 +111,9 @@ Does not exist yet. Possible, but support is needed.
 
 ## Web Version
 TBD
+
+## Future
+A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53).
 
 ## License
 This project is licensed under [AGPLv3](LICENSE).

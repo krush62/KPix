@@ -98,6 +98,7 @@ This is a portable version. Extract the contents of the zip archive and run kpix
 TBD
 ### Android
 You can either download the Android apk file from [latest releases](https://github.com/krush62/KPix/releases/latest) and install manually, or you can install the application through the following app stores:\
+\
 [![Play Store](https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com)
 [![F Droid](https://img.shields.io/badge/F_Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org)
 ![AppGallery](https://img.shields.io/badge/AppGallery-C80A2D?style=for-the-badge&logo=huawei&logoColor=white)

@@ -10,6 +10,7 @@
 [Features](#features)\
 [Controls](#controls)\
 [Installation](#installation)\
+[Web Version](#web-version)\
 [License](#license)
 
 ## Overview
@@ -18,7 +19,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - generative color ramps based on parameters
 - hsv based color representation
 - shading capabilities for all tools
-- cross-platform support 
+- multi-platform support 
 - stylus and touch support
 - automatic light/dark theme
 
@@ -48,7 +49,7 @@ Palettes can be saved using the kpal format which is also used by [KPal](https:/
 
 
 ### File Format Support
-Kpix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
+KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 #### Export Formats
 ##### Image Formats
 Projects can be exported to uncompressed images including transparency. Integer scaling is supported.
@@ -62,7 +63,7 @@ Projects can be exported for usage in other applications. Palettes and layers wi
 
 
 #### Import Formats
-Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. 
+Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. This is a planned feature. 
 
 ## Controls
 This application supports input by mouse/keyboard, touch screen and stylus.
@@ -79,16 +80,25 @@ The complete control table can be found [here](docs/controls.md).
 
 ## Installation
 ### Windows
-TBD
+There are two ways to run KPix on Windows:
+#### Installer
+Just run the provided installer. The application can be easily uninstalled and a file association is created.
+#### Package
+This is a portable version. Extract the contents of the zip archive and run kpix.exe to start the application.
 ### Linux
 TBD
 ### Android
 TBD
+
 ### MacOS
-possible, but not planned
-### iOS
+Does not exist yet. Possible, but support is needed.
+### iOS/iPadOS
+Does not exist yet. Possible, but support is needed.
+
+## Web Version
+TBD
 
 ## License
-TBD
+This project is licensed under [AGPLv3](LICENSE).
 
 

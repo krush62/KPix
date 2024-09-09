@@ -131,95 +131,103 @@ class FileHandler
   }
 
 
-  static Future<LoadFileSet> _loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path}) async
+  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path}) async
   {
-    fileData ??= await File(path).readAsBytes();
-    final ByteData byteData = fileData.buffer.asByteData();
-    int offset = 0;
-    final int mNumber = byteData.getUint32(offset);
-    offset+=4;
-    final int fVersion = byteData.getUint8(offset++);
-
-    if (mNumber != int.parse(magicNumber, radix: 16)) return LoadFileSet(status: "Wrong magic number: $mNumber");
-    if (fVersion != fileVersion) return LoadFileSet(status: "File Version: $fVersion");
-
-    final int rampCount = byteData.getUint8(offset++);
-    if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
-    List<HistoryRampData> rampList = [];
-    for (int i = 0; i < rampCount; i++)
+    try
     {
-      final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
-
-      kPalRampSettings.colorCount = byteData.getUint8(offset++);
-      if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
-      kPalRampSettings.baseHue = byteData.getInt16(offset);
-      offset+=2;
-      if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax) return LoadFileSet(status: "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}");
-      kPalRampSettings.baseSat = byteData.getUint8(offset++);
-      if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax) return LoadFileSet(status: "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}");
-      kPalRampSettings.hueShift = byteData.getInt8(offset++);
-      if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax) return LoadFileSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
-      kPalRampSettings.hueShiftExp =  byteData.getUint8(offset++).toDouble() / 100.0;
-      if (kPalRampSettings.hueShiftExp < constraints.hueShiftExpMin || kPalRampSettings.hueShiftExp > constraints.hueShiftExpMax) return LoadFileSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
-      kPalRampSettings.satShift = byteData.getInt8(offset++);
-      if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax) return LoadFileSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
-      kPalRampSettings.satShiftExp =  byteData.getUint8(offset++).toDouble() / 100.0;
-      if (kPalRampSettings.satShiftExp < constraints.satShiftExpMin || kPalRampSettings.satShiftExp > constraints.satShiftExpMax) return LoadFileSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
-      final int curveVal = byteData.getUint8(offset++);
-      final SatCurve? satCurve = satCurveMap[curveVal];
-      if (satCurve == null) return LoadFileSet(status: "Invalid sat curve for palette $i: $curveVal");
-      kPalRampSettings.satCurve = satCurve;
-      kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
-      kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
-      if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadFileSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
-      //not used at the moment (don't forget to check for constraints)
-      for (int j = 0; j < kPalRampSettings.colorCount; j++)
-      {
-        byteData.getInt8(offset++);
-        byteData.getInt8(offset++);
-        byteData.getInt8(offset++);
-      }
-      rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1()));
-    }
-
-    final int width = byteData.getUint16(offset);
-    offset+=2;
-    final int height = byteData.getUint16(offset);
-    offset+=2;
-    final CoordinateSetI canvasSize = CoordinateSetI(x: width, y: height);
-    final int layerCount = byteData.getUint8(offset++);
-    if (layerCount < 1) return LoadFileSet(status: "No layer found");
-    final List<HistoryLayer> layerList = [];
-    for (int i = 0; i < layerCount; i++)
-    {
-      //not used at the moment
-      final int layerType = byteData.getUint8(offset++);
-      if (layerType != 1) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
-      final int visibilityStateVal = byteData.getUint8(offset++);
-      final LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
-      if (visibilityState == null) return LoadFileSet(status: "Invalid visibility type for layer $i: $visibilityStateVal");
-      final int lockStateVal = byteData.getUint8(offset++);
-      final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
-      if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
-      final int dataCount = byteData.getUint32(offset);
+      fileData ??= await File(path).readAsBytes();
+      final ByteData byteData = fileData.buffer.asByteData();
+      int offset = 0;
+      final int mNumber = byteData.getUint32(offset);
       offset+=4;
-      final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
-      for (int j = 0; j < dataCount; j++)
-      {
-        final int x = byteData.getUint16(offset);
-        offset+=2;
-        final int y = byteData.getUint16(offset);
-        offset+=2;
-        final int colorRampIndex = byteData.getUint8(offset++);
-        final int colorIndex = byteData.getUint8(offset++);
-        data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
-      }
-      layerList.add(HistoryLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
-    }
-    final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
-    final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, description: "load data");
+      final int fVersion = byteData.getUint8(offset++);
 
-    return LoadFileSet(status: "loading okay", historyState: historyState, path: path);
+      if (mNumber != int.parse(magicNumber, radix: 16)) return LoadFileSet(status: "Wrong magic number: $mNumber");
+      if (fVersion != fileVersion) return LoadFileSet(status: "File Version: $fVersion");
+
+      final int rampCount = byteData.getUint8(offset++);
+      if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
+      List<HistoryRampData> rampList = [];
+      for (int i = 0; i < rampCount; i++)
+      {
+        final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
+
+        kPalRampSettings.colorCount = byteData.getUint8(offset++);
+        if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
+        kPalRampSettings.baseHue = byteData.getInt16(offset);
+        offset+=2;
+        if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax) return LoadFileSet(status: "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}");
+        kPalRampSettings.baseSat = byteData.getUint8(offset++);
+        if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax) return LoadFileSet(status: "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}");
+        kPalRampSettings.hueShift = byteData.getInt8(offset++);
+        if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax) return LoadFileSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
+        kPalRampSettings.hueShiftExp =  byteData.getUint8(offset++).toDouble() / 100.0;
+        if (kPalRampSettings.hueShiftExp < constraints.hueShiftExpMin || kPalRampSettings.hueShiftExp > constraints.hueShiftExpMax) return LoadFileSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
+        kPalRampSettings.satShift = byteData.getInt8(offset++);
+        if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax) return LoadFileSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
+        kPalRampSettings.satShiftExp =  byteData.getUint8(offset++).toDouble() / 100.0;
+        if (kPalRampSettings.satShiftExp < constraints.satShiftExpMin || kPalRampSettings.satShiftExp > constraints.satShiftExpMax) return LoadFileSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
+        final int curveVal = byteData.getUint8(offset++);
+        final SatCurve? satCurve = satCurveMap[curveVal];
+        if (satCurve == null) return LoadFileSet(status: "Invalid sat curve for palette $i: $curveVal");
+        kPalRampSettings.satCurve = satCurve;
+        kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
+        kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
+        if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadFileSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
+        //not used at the moment (don't forget to check for constraints)
+        for (int j = 0; j < kPalRampSettings.colorCount; j++)
+        {
+          byteData.getInt8(offset++);
+          byteData.getInt8(offset++);
+          byteData.getInt8(offset++);
+        }
+        rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1()));
+      }
+
+      final int width = byteData.getUint16(offset);
+      offset+=2;
+      final int height = byteData.getUint16(offset);
+      offset+=2;
+      final CoordinateSetI canvasSize = CoordinateSetI(x: width, y: height);
+      final int layerCount = byteData.getUint8(offset++);
+      if (layerCount < 1) return LoadFileSet(status: "No layer found");
+      final List<HistoryLayer> layerList = [];
+      for (int i = 0; i < layerCount; i++)
+      {
+        //not used at the moment
+        final int layerType = byteData.getUint8(offset++);
+        if (layerType != 1) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
+        final int visibilityStateVal = byteData.getUint8(offset++);
+        final LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
+        if (visibilityState == null) return LoadFileSet(status: "Invalid visibility type for layer $i: $visibilityStateVal");
+        final int lockStateVal = byteData.getUint8(offset++);
+        final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
+        if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
+        final int dataCount = byteData.getUint32(offset);
+        offset+=4;
+        final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
+        for (int j = 0; j < dataCount; j++)
+        {
+          final int x = byteData.getUint16(offset);
+          offset+=2;
+          final int y = byteData.getUint16(offset);
+          offset+=2;
+          final int colorRampIndex = byteData.getUint8(offset++);
+          final int colorIndex = byteData.getUint8(offset++);
+          data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+        }
+        layerList.add(HistoryLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
+      }
+      final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
+      final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, description: "load data");
+
+      return LoadFileSet(status: "loading okay", historyState: historyState, path: path);
+    }
+    catch (pnfe)
+    {
+      return LoadFileSet(status: "Could not load file $path");
+    }
+
   }
 
 
@@ -254,7 +262,7 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      _loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){_fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){_fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 

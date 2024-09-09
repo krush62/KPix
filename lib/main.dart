@@ -63,8 +63,10 @@ class ThemeNotifier extends ChangeNotifier
 }
 
 ThemeNotifier themeSettings = ThemeNotifier();
+late List<String> cmdLineArgs;
 
-void main() {
+void main(final List<String> args) {
+  cmdLineArgs = args;
   WidgetsFlutterBinding.ensureInitialized();
   final HotkeyManager hotkeyManager = HotkeyManager();
   final FocusNode focusNode = FocusNode();
@@ -187,8 +189,26 @@ class _KPixAppState extends State<KPixApp>
       themeSettings.themeMode =  currentTheme;
     }
     appState.hasProjectNotifier.addListener(_hasProjectChanged);
-    _hasProjectChanged();
 
+    if (cmdLineArgs.isNotEmpty && (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
+    {
+      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: cmdLineArgs[0]);
+      if (lfs.path != null && lfs.historyState != null)
+      {
+        GetIt.I.get<AppState>().restoreFromFile(loadFileSet: lfs);
+        GetIt.I.get<AppState>().hasProjectNotifier.value = true;
+        _newProjectDialog.hide();
+      }
+      else
+      {
+        //GetIt.I.get<AppState>().showMessage(text: lfs.status);
+        _hasProjectChanged();
+      }
+    }
+    else
+    {
+      _hasProjectChanged();
+    }
     initialized.value = true;
 
   }

@@ -496,6 +496,11 @@ class Helper
     }
   }
 
+  static String getBaseDir({required final String fullPath})
+  {
+    return p.dirname(fullPath);
+  }
+
   static List<int> intToBytes({required final int value, required final int length, bool reverse = false})
   {
     final bytes = ByteData(length)..setInt32(0, value, Endian.little);

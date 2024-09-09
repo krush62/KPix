@@ -421,6 +421,7 @@ class AppState
     {
       _restoreState(historyState: loadFileSet.historyState);
       projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
+      _saveDir.value = Helper.getBaseDir(fullPath: loadFileSet.path!);
       hasChanges.value = false;
     }
     else

@@ -60,7 +60,15 @@ Projects can be exported for usage in other applications. Palettes and layers wi
 - psd (Photoshop)
 - xcf (Gimp)
 
-
+Palettes can be exported for usage in other applications.
+- png
+- aseprite (Aseprite)
+- gpl (Gimp)
+- txt (Paint.NET)
+- ase (Adobe)
+- pal (JASC)
+- xml (Corel)
+- soc (Star/Open/Libre Office)
 
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. This is a planned feature. 

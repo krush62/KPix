@@ -29,6 +29,71 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter
+                android:icon="@mipmap/launcher_icon"
+                android:label="KPix"
+                android:priority="50" >
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="application/vnd.kpix" />
+            </intent-filter>
+            <intent-filter
+                android:icon="@mipmap/launcher_icon"
+                android:label="KPix"
+                android:priority="50" >
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="file" />
+                <data android:host="*" />
+
+                <!--
+                     Work around Android's ugly primitive PatternMatcher
+                     implementation that can't cope with finding a . early in
+                     the path unless it's explicitly matched.
+                -->
+                <data android:pathPattern=".*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.kpix" />
+            </intent-filter>
+
+            <intent-filter
+                android:icon="@mipmap/launcher_icon"
+                android:label="KPix"
+                android:priority="50" >
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+
+                <!--
+                     Work around Android's ugly primitive PatternMatcher
+                     implementation that can't cope with finding a . early in
+                     the path unless it's explicitly matched.
+                -->
+                <data android:pathPattern=".*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.kpix" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.kpix" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

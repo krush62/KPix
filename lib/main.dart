@@ -190,9 +190,23 @@ class _KPixAppState extends State<KPixApp>
     }
     appState.hasProjectNotifier.addListener(_hasProjectChanged);
 
+
+    String? initialFilePath;
+
     if (cmdLineArgs.isNotEmpty && (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
     {
-      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: cmdLineArgs[0]);
+
+      initialFilePath = cmdLineArgs[0];
+    }
+    else if (Platform.isAndroid)
+    {
+      const MethodChannel channel = MethodChannel('app.channel.shared.data');
+      initialFilePath = await channel.invokeMethod('getSharedFile');
+    }
+
+    if (initialFilePath != null && initialFilePath.isNotEmpty)
+    {
+      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: initialFilePath);
       if (lfs.path != null && lfs.historyState != null)
       {
         GetIt.I.get<AppState>().restoreFromFile(loadFileSet: lfs);
@@ -201,7 +215,6 @@ class _KPixAppState extends State<KPixApp>
       }
       else
       {
-        //GetIt.I.get<AppState>().showMessage(text: lfs.status);
         _hasProjectChanged();
       }
     }
@@ -209,6 +222,8 @@ class _KPixAppState extends State<KPixApp>
     {
       _hasProjectChanged();
     }
+
+
     initialized.value = true;
 
   }

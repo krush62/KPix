@@ -223,7 +223,6 @@ class _KPixAppState extends State<KPixApp>
       _hasProjectChanged();
     }
 
-
     initialized.value = true;
 
   }

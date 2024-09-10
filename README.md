@@ -1,9 +1,16 @@
-# KPix
+![KPIX](imgs/kpix_icon_small_transparent.png)
 
-### *A pixel art creation tool.*
 
-<span style="color:yellow">*SCREENSHOT PLACEHOLDER*</span>
+### *KPix: A pixel art creation tool.*
 
+![release](https://img.shields.io/github/v/release/krush62/KPix)
+![release-date](https://img.shields.io/github/release-date/krush62/KPix)
+![last-commit](https://img.shields.io/github/last-commit/krush62/KPix)
+![downloads](https://img.shields.io/github/downloads/krush62/KPix/total)
+
+![issues](https://img.shields.io/github/issues-raw/krush62/KPix)
+![pull-requests](https://img.shields.io/github/issues-pr-raw/krush62/KPix)
+![license](https://img.shields.io/github/license/krush62/KPix)
 ## Contents
 
 [Overview](#overview)\
@@ -23,6 +30,8 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - multi-platform support 
 - stylus and touch support
 - automatic light/dark theme
+
+<span style="color:yellow">*SCREENSHOT PLACEHOLDER*</span>
 
 ## Features
 ### Drawing Tools
@@ -100,9 +109,9 @@ TBD
 You can either download the Android apk file from [latest releases](https://github.com/krush62/KPix/releases/latest) and install manually, or you can install the application through the following app stores:\
 \
 [![Play Store](https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com)
-[![F Droid](https://img.shields.io/badge/F_Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org)
+[![F Droid](https://img.shields.io/badge/F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org)
 ![AppGallery](https://img.shields.io/badge/AppGallery-C80A2D?style=for-the-badge&logo=huawei&logoColor=white)
-[![Samsung](https://img.shields.io/badge/Samsung-%231428A0.svg?style=for-the-badge&logo=samsung&logoColor=white)](https://galaxystore.samsung.com)
+[![Samsung](https://img.shields.io/badge/Galaxy_Store-%231428A0.svg?style=for-the-badge&logo=samsung&logoColor=white)](https://galaxystore.samsung.com)
 [![APKMirror](https://img.shields.io/badge/APKMIRROR-f78e1d?style=for-the-badge&logo=android&logoColor=white)](https://www.apkmirror.com)
 
 ### MacOS

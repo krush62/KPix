@@ -228,6 +228,11 @@ class ShapePainter extends IToolPainter
   static Set<CoordinateSetI> _calculateSelectionContent({required ShapeOptions options, required CoordinateSetI selectionStart, required CoordinateSetI selectionEnd})
   {
     Set<CoordinateSetI> content = {};
+    final double centerX = (selectionStart.x + selectionEnd.x + 1) / 2.0;
+    final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
+    final double radiusX = (selectionEnd.x - selectionStart.x + 1) / 2.0;
+    final double radiusY = (selectionEnd.y - selectionStart.y + 1) / 2.0;
+
     //RECTANGLE
     if (options.shape.value == ShapeShape.rectangle)
     {
@@ -279,10 +284,14 @@ class ShapePainter extends IToolPainter
     //ELLIPSE
     else if (options.shape.value == ShapeShape.ellipse)
     {
-      final double centerX = (selectionStart.x + selectionEnd.x + 1) / 2.0;
-      final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
-      final double radiusX = (selectionEnd.x - selectionStart.x + 1) / 2.0;
-      final double radiusY = (selectionEnd.y - selectionStart.y + 1) / 2.0;
+      final double invRadiusXSquared = 1.0 / (radiusX * radiusX);
+      final double invRadiusYSquared = 1.0 / (radiusY * radiusY);
+      final double innerRadiusX = radiusX - options.strokeWidth.value;
+      final double innerRadiusY = radiusY - options.strokeWidth.value;
+
+
+      final double invInnerRadiusXSquared = 1.0 / (innerRadiusX * innerRadiusX);
+      final double invInnerRadiusYSquared = 1.0 / (innerRadiusY * innerRadiusY);
 
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
@@ -290,16 +299,29 @@ class ShapePainter extends IToolPainter
         {
           final double dx = (x + 0.5) - centerX;
           final double dy = (y + 0.5) - centerY;
-          if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
+          final double normalizedX = dx * dx * invRadiusXSquared;
+          final double normalizedY = dy * dy * invRadiusYSquared;
+
+          if (normalizedX + normalizedY <= 1.005)
           {
-            if (!options.strokeOnly.value || ((dx * dx) / ((radiusX - options.strokeWidth.value) * (radiusX - options.strokeWidth.value)) + (dy * dy) / ((radiusY - options.strokeWidth.value) * (radiusY - options.strokeWidth.value)) > 1))
+            if (!options.strokeOnly.value)
             {
               content.add(CoordinateSetI(x: x, y: y));
+            }
+            else
+            {
+              final double normalizedInnerX = dx * dx * invInnerRadiusXSquared;
+              final double normalizedInnerY = dy * dy * invInnerRadiusYSquared;
+              if (normalizedInnerX + normalizedInnerY >= 0.995)
+              {
+                content.add(CoordinateSetI(x: x, y: y));
+              }
             }
           }
         }
       }
     }
+    //OTHER SHAPES
     else
     {
       final List<CoordinateSetI> points = _getPolygonPoints(options: options, selectionStart: selectionStart, selectionEnd: selectionEnd);
@@ -309,10 +331,10 @@ class ShapePainter extends IToolPainter
       {
         for (int y = min.y; y <= max.y; y++)
         {
-          if (Helper.isPointInPolygon(point: CoordinateSetI(x: x, y: y), polygon: points))
+          final CoordinateSetI point = CoordinateSetI(x: x, y: y);
+          if (Helper.isPointInPolygon(point: point, polygon: points))
           {
-            final CoordinateSetI point = CoordinateSetI(x: x, y: y);
-            if (!options.strokeOnly.value || (Helper.getPointToEdgeDistance(point: point, polygon: points) < options.strokeWidth.value))
+            if (!options.strokeOnly.value || (Helper.getPointToEdgeDistance(point: point, polygon: points) <= options.strokeWidth.value))
             {
               content.add(point);
             }
@@ -321,6 +343,43 @@ class ShapePainter extends IToolPainter
       }
     }
 
+    //clean up algorithm
+    if ((options.shape.value == ShapeShape.ellipse || options.shape.value == ShapeShape.diamond || options.shape.value == ShapeShape.ngon || options.shape.value == ShapeShape.triangle) &&
+        options.strokeOnly.value && options.strokeWidth.value == 1 && content.length > 2 && (selectionEnd.x - selectionStart.x).abs() > 2 && (selectionEnd.y - selectionStart.y).abs() > 2)
+    {
+      final Set<CoordinateSetI> edgyPixels = {};
+      for (final CoordinateSetI curCoord in content)
+      {
+        final bool hasTop = content.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
+        final bool hasBottom = content.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
+        final bool hasLeft = content.contains(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
+        final bool hasRight = content.contains(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
+        if ((hasTop && hasLeft) || (hasTop && hasRight) || (hasBottom && hasLeft) || (hasBottom && hasRight))
+        {
+          edgyPixels.add(curCoord);
+        }
+      }
+
+      final Set<CoordinateSetI> removePixels = {};
+      for (final CoordinateSetI curCoord in edgyPixels)
+      {
+
+        final bool hasTop = edgyPixels.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
+        final bool hasBottom = edgyPixels.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
+        final bool hasLeft = edgyPixels.contains(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
+        final bool hasRight = edgyPixels.contains(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
+
+        if ((!hasTop && !hasBottom && !hasLeft && !hasRight) ||
+            ((hasTop && curCoord.y <= centerY.round()) || (hasBottom && curCoord.y > centerY.round()) || (hasLeft && curCoord.x <= centerX.round()) || (hasRight && curCoord.x > centerX.round())))
+        {
+          removePixels.add(curCoord);
+        }
+      }
+      for (final CoordinateSetI rPix in removePixels)
+      {
+        content.remove(rPix);
+      }
+    }
     return content;
   }
 
@@ -373,7 +432,6 @@ class ShapePainter extends IToolPainter
           points.add(CoordinateSetI(x: x, y: y));
         }
       }
-
     }
 
     return points;

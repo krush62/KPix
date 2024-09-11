@@ -97,19 +97,20 @@ The complete control table can be found [here](docs/controls.md).
 
 
 ## Installation
+All release versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).
 
 ### Windows
 There are two ways to run KPix on Windows:
 #### Installer
-Download and run the provided installer from [latest releases](https://github.com/krush62/KPix/releases/latest). The application can be easily uninstalled and a file association is created.
-#### Package
-This is a portable version. Extract the contents of the zip archive and run kpix.exe to start the application.\
+Download and run the provided Windows installer. The application can be easily uninstalled and a file association is created.
+#### Package (zip)
+This is a portable version. Extract the contents of the Windows Zip Package and run kpix.exe to start the application.\
 
 ### Linux
-TBD
+Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed.
 
 ### Android
-You can either download the Android apk file from [latest releases](https://github.com/krush62/KPix/releases/latest) and install manually, or you can install the application through the following app stores:\
+Download the Android apk file and install it manually, or you can install the application through the following app stores:\
 \
 [![Play Store](https://img.shields.io/badge/Google_Play-414141?logo=google-play&logoColor=white)](https://play.google.com)
 [![F Droid](https://img.shields.io/badge/F--Droid-1976D2?logo=f-droid&logoColor=white)](https://f-droid.org)

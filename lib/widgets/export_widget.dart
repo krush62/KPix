@@ -29,7 +29,7 @@ enum ExportType
 {
   png,
   aseprite,
-  photoshop,
+  //photoshop,
   gimp
 }
 
@@ -53,7 +53,7 @@ class ExportData
 const Map<ExportType, ExportData> exportTypeMap = {
   ExportType.png : ExportData(name: "PNG", extension: "png", scalable: true),
   ExportType.aseprite : ExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
-  ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
+  //ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
   ExportType.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false)
 };
 

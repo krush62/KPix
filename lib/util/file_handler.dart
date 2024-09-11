@@ -495,9 +495,9 @@ class FileHandler
       case ExportType.aseprite:
         data = await ExportFunctions.getAsepriteData(exportData: exportData, appState: appState);
         break;
-      case ExportType.photoshop:
+      //case ExportType.photoshop:
       // TODO: Handle this case.
-        break;
+      //  break;
       case ExportType.gimp:
         data = await ExportFunctions.getGimpData(exportData: exportData, appState: appState);
         break;

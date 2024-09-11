@@ -18,7 +18,7 @@
 [Controls](#controls)\
 [Installation](#installation)\
 [Web Version](#web-version)\
-[Future](#future)\
+[Roadmap](#roadmap)\
 [License](#license)
 
 ## Overview
@@ -67,7 +67,6 @@ Projects can be exported to uncompressed images including transparency. Integer 
 ##### Application Formats
 Projects can be exported for usage in other applications. Palettes and layers will be included.
 - aseprite (Aseprite)
-- psd (Photoshop)
 - xcf (Gimp)
 
 Palettes can be exported for usage in other applications.
@@ -110,25 +109,14 @@ This is a portable version. Extract the contents of the Windows Zip Package and 
 Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed.
 
 ### Android
-Download the Android apk file and install it manually, or you can install the application through the following app stores:\
-\
-[![Play Store](https://img.shields.io/badge/Google_Play-414141?logo=google-play&logoColor=white)](https://play.google.com)
-[![F Droid](https://img.shields.io/badge/F--Droid-1976D2?logo=f-droid&logoColor=white)](https://f-droid.org)
-![AppGallery](https://img.shields.io/badge/AppGallery-C80A2D?logo=huawei&logoColor=white)
-[![Samsung](https://img.shields.io/badge/Galaxy_Store-%231428A0.svg?logo=samsung&logoColor=white)](https://galaxystore.samsung.com)
-[![APKMirror](https://img.shields.io/badge/APKMirror-f78e1d?logo=android&logoColor=white)](https://www.apkmirror.com)
+Download the Android apk file and install it manually.
 
-### macOS
-Does not exist yet. Possible, but support is needed.
+[//]: # (### macOS)
+[//]: # (### iOS/iPadOS)
+[//]: # (## Web Version)
 
-### iOS/iPadOS
-Does not exist yet. Possible, but support is needed.
-
-## Web Version
-TBD
-
-## Future
-A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53).
+## Roadmap
+A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53). Prioritizing of items will happen when alpha tests were performed.
 
 ## License
 This project is licensed under [AGPLv3](LICENSE).

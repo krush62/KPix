@@ -11,6 +11,9 @@
 ![issues](https://img.shields.io/github/issues-raw/krush62/KPix)
 ![pull-requests](https://img.shields.io/github/issues-pr-raw/krush62/KPix)
 ![license](https://img.shields.io/github/license/krush62/KPix)
+
+![screenshot01](imgs/screenshot_01.png)
+
 ## Contents
 
 [Overview](#overview)\
@@ -30,8 +33,6 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - multi-platform support 
 - stylus and touch support
 - automatic light/dark theme
-
-<span style="color:yellow">*SCREENSHOT PLACEHOLDER*</span>
 
 ## Features
 ### Drawing Tools

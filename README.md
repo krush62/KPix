@@ -107,7 +107,7 @@ Download and run the provided Windows installer. The application can be easily u
 This is a portable version. Extract the contents of the Windows Zip Package and run kpix.exe to start the application.\
 
 ### Linux
-Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed.
+Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.
 
 ### Android
 Download the Android apk file and install it manually.

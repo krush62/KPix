@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
@@ -115,6 +116,7 @@ class KPixPainter extends CustomPainter
   late int _latestContrast = 50;
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
+  ui.Image? _rasterImg;
 
 
   KPixPainter({
@@ -152,6 +154,15 @@ class KPixPainter extends CustomPainter
       ToolType.line: LinePainter(painterOptions: _options),
       ToolType.stamp: StampPainter(painterOptions: _options)
     };
+    Timer.periodic(const Duration(milliseconds: 500), (final Timer t) {_rasterTimeout(t: t);});
+  }
+
+  Future<void> _rasterTimeout({required Timer t}) async
+  {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    paint(Canvas(recorder), Size(latestSize.width, latestSize.height));
+    final ui.Picture picture = recorder.endRecording();
+    _rasterImg = await picture.toImage(latestSize.width.round(), latestSize.height.round());
   }
 
   @override
@@ -178,7 +189,7 @@ class KPixPainter extends CustomPainter
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
         currentLayer: _appState.getSelectedLayer()!,
-        );
+    );
 
 
     _drawCheckerboard(drawParams: drawParams);
@@ -404,75 +415,94 @@ class KPixPainter extends CustomPainter
 
   void _drawLayers({required final DrawingParameters drawParams})
   {
-    final double pxlSzDbl = drawParams.pixelSize.toDouble();
-
     final List<LayerState> layers = _appState.layers;
-    for (int i = layers.length - 1; i >= 0; i--)
+    final bool hasRasterizingLayers = layers.where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
+
+    if (hasRasterizingLayers)
     {
-      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      if (_rasterImg != null)
       {
+        paintImage(
+            canvas: drawParams.canvas,
+            rect: ui.Rect.fromLTWH(0, 0,
+                drawParams.scaledCanvasSize.x.toDouble(),
+                drawParams.scaledCanvasSize.y.toDouble()),
+            image: _rasterImg!,
+            fit: BoxFit.none,
+            alignment: Alignment.topLeft,
+            filterQuality: FilterQuality.none);
+      }
+    }
+    else
+    {
+      final double pxlSzDbl = drawParams.pixelSize.toDouble();
 
-        if (layers[i].raster != null)
+      for (int i = layers.length - 1; i >= 0; i--)
+      {
+        if (layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
-          paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                  drawParams.scaledCanvasSize.x.toDouble(),
-                  drawParams.scaledCanvasSize.y.toDouble()),
-              image: layers[i].raster!,
-              scale: 1.0 / pxlSzDbl,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none);
-        }
 
-        if (layers[i].isSelected.value)
-        {
-          final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
-          final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
-          for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+          if (layers[i].raster != null)
           {
-            for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
+            paintImage(
+                canvas: drawParams.canvas,
+                rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                    drawParams.scaledCanvasSize.x.toDouble(),
+                    drawParams.scaledCanvasSize.y.toDouble()),
+                image: layers[i].raster!,
+                scale: 1.0 / pxlSzDbl,
+                fit: BoxFit.none,
+                alignment: Alignment.topLeft,
+                filterQuality: FilterQuality.none);
+          }
+
+          if (layers[i].isSelected.value)
+          {
+            final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
+            final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
+            for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
             {
-              Color? drawColor;
-              //DRAW CURSOR CONTENT PIXEL
-              final selLayerCoord = CoordinateSetI(x: x, y: y);
-              if (selectedLayerCursorContent.keys.contains(selLayerCoord))
+              for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
               {
-                drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
-              }
-
-              //DRAW TOOL CONTENT
-              if (drawColor == null && toolContent.keys.contains(selLayerCoord))
-              {
-                drawColor = toolContent[selLayerCoord]!.getIdColor().color;
-              }
-
-              //DRAW SELECTION PIXEL
-              if (drawColor == null)
-              {
-                ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
-                if (selColor != null)
+                Color? drawColor;
+                //DRAW CURSOR CONTENT PIXEL
+                final selLayerCoord = CoordinateSetI(x: x, y: y);
+                if (selectedLayerCursorContent.keys.contains(selLayerCoord))
                 {
-                  drawColor = selColor.getIdColor().color;
+                  drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
                 }
-              }
-              if (drawColor != null)
-              {
-                drawParams.paint.color = drawColor;
-                drawParams.canvas.drawRect(Rect.fromLTWH(
-                    _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
-                    _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
-                    pxlSzDbl + (2.0 * _options.pixelExtension),
-                    pxlSzDbl + (2.0 * _options.pixelExtension)),
-                    drawParams.paint);
+
+                //DRAW TOOL CONTENT
+                if (drawColor == null && toolContent.keys.contains(selLayerCoord))
+                {
+                  drawColor = toolContent[selLayerCoord]!.getIdColor().color;
+                }
+
+                //DRAW SELECTION PIXEL
+                if (drawColor == null)
+                {
+                  ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
+                  if (selColor != null)
+                  {
+                    drawColor = selColor.getIdColor().color;
+                  }
+                }
+                if (drawColor != null)
+                {
+                  drawParams.paint.color = drawColor;
+                  drawParams.canvas.drawRect(Rect.fromLTWH(
+                      _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
+                      _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
+                      pxlSzDbl + (2.0 * _options.pixelExtension),
+                      pxlSzDbl + (2.0 * _options.pixelExtension)),
+                      drawParams.paint);
+                }
               }
             }
           }
         }
       }
     }
-
   }
 
   (ui.Color, ui.Color) getCheckerBoardColors(final int contrast)

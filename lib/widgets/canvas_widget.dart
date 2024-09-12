@@ -580,11 +580,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.incrementColorSelection();
+          _appState.decrementColorSelection();
         }
         else
         {
-          _appState.decrementColorSelection();
+          _appState.incrementColorSelection();
         }
       }
     }

@@ -20,7 +20,6 @@
 [Features](#features)\
 [Controls](#controls)\
 [Installation](#installation)\
-[Web Version](#web-version)\
 [Roadmap](#roadmap)\
 [License](#license)
 

@@ -5,7 +5,8 @@ Andreas Kruschinski (krush62)
 Andreas Kruschinski (krush62)
 
 ## Testing
-Frank Kruschinski
+Frank Kruschinski\
+Arne Lehrke\
 
 ## Additional Resources
 ### Fonts

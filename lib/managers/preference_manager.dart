@@ -224,7 +224,7 @@ enum PreferenceInt
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
   Layout_CanvasSize_SizeMin(defaultValue: 4),
-  Layout_CanvasSize_SizeMax(defaultValue: 1024),
+  Layout_CanvasSize_SizeMax(defaultValue: 512),
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
@@ -263,7 +263,7 @@ enum PreferenceInt
   Tool_SprayCan_BlobSizeMax(defaultValue: 8),
   Tool_SprayCan_BlobSize(defaultValue: 1),
   Tool_SprayCan_IntensityMin(defaultValue: 1),
-  Tool_SprayCan_IntensityMax(defaultValue: 32),
+  Tool_SprayCan_IntensityMax(defaultValue: 128),
   Tool_SprayCan_Intensity(defaultValue: 8),
   Tool_Line_WidthMin(defaultValue: 1),
   Tool_Line_WidthMax(defaultValue: 16),

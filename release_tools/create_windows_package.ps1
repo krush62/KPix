@@ -18,8 +18,11 @@ if ($versionLine) {
 	Copy-Item $buildPath\*.dll -Destination $packagePath
 	Copy-Item $buildPath\kpix.exe -Destination $packagePath
 	Copy-Item -Path $buildPath\data -Destination $packagePath -Recurse
-	Compress-Archive -Path $packagePath -DestinationPath "$packagePath.zip"
+	Compress-Archive -Path $packagePath -Force -DestinationPath "$packagePath.zip"
     Remove-Item -LiteralPath $packagePath -Force -Recurse
+
+	# Open in Explorer
+	C:\Windows\explorer.exe "/select,`"$packagePath.zip"`"
 	
 } else {
     Write-Host "No version number found in the source file."

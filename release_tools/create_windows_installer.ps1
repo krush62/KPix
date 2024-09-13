@@ -19,8 +19,13 @@ if ($versionLine) {
 
     Write-Host "Version number updated successfully."
 	
-	# Run Installer
+	# Run Installer creation
 	&$innoLocation /Qp $destinationFile
+
+    $outputDir = "WinInstaller\kpix-installer-windows-x64-v$versionLine.exe"
+
+    # Open in Explorer
+    C:\Windows\explorer.exe "/select,`"$outputDir"`"
 	
 } else {
     Write-Host "No version number found in the source file."

@@ -175,4 +175,16 @@ class SprayCanPainter extends IToolPainter
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
+  @override
+  void reset()
+  {
+    _drawingPixels.clear();
+    _contentPoints.clear();
+    _paintPositions.clear();
+    _waitingForRasterization = false;
+    _isDown = false;
+    timer.cancel();
+    timerInitialized = false;
+  }
+
 }

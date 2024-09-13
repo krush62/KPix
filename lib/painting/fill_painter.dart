@@ -297,5 +297,12 @@ class FillPainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
+
+  @override
+  void reset()
+  {
+    _isDown = false;
+    _shouldDraw = false;
+  }
   
 }

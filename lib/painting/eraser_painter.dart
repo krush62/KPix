@@ -151,5 +151,12 @@ class EraserPainter extends IToolPainter
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
+  @override
+  void reset()
+  {
+    _isDown = false;
+    _hasErasedPixels = false;
+  }
+
 }
 

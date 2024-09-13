@@ -166,4 +166,13 @@ class FontPainter extends IToolPainter
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
+  @override
+  void reset()
+  {
+    _previousSize = -1;
+    _currentText = "";
+    _textContent.clear();
+    _down = false;
+  }
+
 }

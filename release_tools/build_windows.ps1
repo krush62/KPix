@@ -1,4 +1,4 @@
-$vsRedistDir = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.40.33807\x64\Microsoft.VC143.CRT"
+$vsRedistDir = "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT"
 $buildPath = "..\build\windows\x64\runner\Release"
 
 # Build KPix for Windows

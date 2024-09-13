@@ -45,15 +45,14 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   final ValueNotifier<int> _width = ValueNotifier(64);
   final ValueNotifier<int> _height = ValueNotifier(64);
   static const double _maxPreviewHeight = 128;
-  static const double _maxPreviewWidth = 192;
+  static const double _maxPreviewWidth = 224;
 
   void _widthInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      final int val = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
-      _width.value = val;
+      _width.value = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
     }
   }
 
@@ -62,9 +61,14 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      final int val = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
-      _height.value = val;
+      _height.value = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
     }
+  }
+
+  void _setResolutionViaButton({required final int width, required final int height})
+  {
+    _width.value = min(max(width, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
+    _height.value = min(max(height, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
   }
 
   @override
@@ -79,7 +83,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
           minHeight: _options.minHeight,
           minWidth: _options.minWidth,
           maxHeight: _options.maxHeight,
-          maxWidth: _options.maxWidth,
+          maxWidth: _options.maxWidth * 1.2,
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
@@ -97,7 +101,47 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text("Create New Project", style: Theme.of(context).textTheme.titleLarge),
+              SizedBox(height: _options.padding / 2),
+              Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
               SizedBox(height: _options.padding),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 16, height: 16);}, child: const Text("16x16"))),
+                  SizedBox(width: _options.padding),
+                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 32, height: 32);}, child: const Text("32x32"))),
+                  SizedBox(width: _options.padding),
+                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 64, height: 64);}, child: const Text("64x64"))),
+                  SizedBox(width: _options.padding),
+                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 128);}, child: const Text("128x128"))),
+                  SizedBox(width: _options.padding),
+                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 256);}, child: const Text("256x256"))),
+                  SizedBox(width: _options.padding),
+                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 512, height: 512);}, child: const Text("512x512"))),
+                  ]
+              ),
+              SizedBox(height: _options.padding),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 72);}, child: const Text("128x72"))),
+                    SizedBox(width: _options.padding),
+                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 192, height: 108);}, child: const Text("192x108"))),
+                    SizedBox(width: _options.padding),
+                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 224);}, child: const Text("256x224"))),
+                    SizedBox(width: _options.padding),
+                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 320, height: 180);}, child: const Text("320x180"))),
+                    SizedBox(width: _options.padding),
+                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 480, height: 270);}, child: const Text("480x270"))),
+                    SizedBox(width: _options.padding),
+                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 640, height: 360);}, child: const Text("640x360"))),
+                  ]
+              ),
+              SizedBox(height: _options.padding / 2),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -233,7 +277,9 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                   )
                 ],
               ),
-              SizedBox(height: _options.padding * 2),
+              SizedBox(height: _options.padding / 2),
+              Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
+              SizedBox(height: _options.padding),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -243,7 +289,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     flex: 1,
                     child: IconButton.outlined(
                       icon: FaIcon(
-                        FontAwesomeIcons.powerOff,
+                        FontAwesomeIcons.xmark,
                         size: _options.iconSize,
                       ),
                       onPressed: () {

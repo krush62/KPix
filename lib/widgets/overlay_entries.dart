@@ -619,7 +619,7 @@ class OverlayEntries
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
                                 icon: FaIcon(
-                                  FontAwesomeIcons.thumbsUp,
+                                  FontAwesomeIcons.check,
                                   size: options.iconSize,
                                 ),
                                 onPressed: () {
@@ -634,7 +634,7 @@ class OverlayEntries
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
                                 icon: FaIcon(
-                                  FontAwesomeIcons.thumbsDown,
+                                  FontAwesomeIcons.xmark,
                                   size: options.iconSize,
                                 ),
                                 onPressed: () {

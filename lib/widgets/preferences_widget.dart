@@ -206,7 +206,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                       padding: EdgeInsets.all(_options.padding),
                       child: IconButton.outlined(
                         icon: FaIcon(
-                          FontAwesomeIcons.thumbsUp,
+                          FontAwesomeIcons.check,
                           size: _options.iconSize,
                         ),
                         onPressed: widget.accept,
@@ -219,7 +219,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                       padding: EdgeInsets.all(_options.padding),
                       child: IconButton.outlined(
                         icon: FaIcon(
-                          FontAwesomeIcons.thumbsDown,
+                          FontAwesomeIcons.xmark,
                           size: _options.iconSize,
                         ),
                         onPressed: widget.dismiss,

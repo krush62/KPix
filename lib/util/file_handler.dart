@@ -94,7 +94,7 @@ const Map<FileNameStatus, String> fileNameStatusTextMap =
 
 const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 {
-  FileNameStatus.available:FontAwesomeIcons.thumbsUp,
+  FileNameStatus.available:FontAwesomeIcons.check,
   FileNameStatus.forbidden:FontAwesomeIcons.xmark,
   FileNameStatus.noRights:FontAwesomeIcons.ban,
   FileNameStatus.overwrite:FontAwesomeIcons.exclamation

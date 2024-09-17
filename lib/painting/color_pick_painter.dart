@@ -121,5 +121,4 @@ class ColorPickPainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
-
 }

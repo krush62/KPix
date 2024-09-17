@@ -491,4 +491,12 @@ class ShapePainter extends IToolPainter
     }
   }
 
+  @override
+  void reset()
+  {
+    _isStartOnCanvas = false;
+    _waitingForRasterization = false;
+    _drawingPixels.clear();
+  }
+
 }

@@ -334,4 +334,15 @@ class SelectionPainter extends IToolPainter
       }
     }
   }
+
+  @override
+  void reset()
+  {
+    hasNewSelection = false;
+    movementStarted = false;
+    polygonPoints.clear();
+    polygonDown = false;
+    _isStartOnCanvas = false;
+    _shouldMove = false;
+  }
 }

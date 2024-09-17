@@ -15,6 +15,7 @@
  */
 
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/foundation.dart';
@@ -421,7 +422,10 @@ class AppState
     {
       _restoreState(historyState: loadFileSet.historyState);
       projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-      _saveDir.value = Helper.getBaseDir(fullPath: loadFileSet.path!);
+      if (!Platform.isAndroid) //file picker on android does not return a valid path, but a cache path instead
+      {
+        _saveDir.value = Helper.getBaseDir(fullPath: loadFileSet.path!);
+      }
       hasChanges.value = false;
     }
     else

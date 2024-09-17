@@ -168,7 +168,15 @@ class KPixPainter extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    toolPainter = toolPainterMap[_appState.selectedTool];
+    final currentToolPainter = toolPainterMap[_appState.selectedTool];
+    if (currentToolPainter != toolPainter)
+    {
+      if (toolPainter != null)
+      {
+        toolPainter!.reset();
+      }
+      toolPainter = currentToolPainter;
+    }
     if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
     {
       latestSize = size;

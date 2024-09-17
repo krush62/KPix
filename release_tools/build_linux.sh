@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the path to the Flutter binary
-FLUTTER_BIN="/root/flutter/flutter/bin/flutter"
+FLUTTER_BIN=~/flutter/bin/flutter
 
 # Navigate to the Flutter project directory (one level up from release_tools)
 cd ..

@@ -136,6 +136,7 @@ abstract class IToolPainter
   CoordinateColorMap getCursorContent({required DrawingParameters drawParams}){return HashMap();}
   CoordinateColorMap getToolContent({required DrawingParameters drawParams}){return HashMap();}
   void drawCursorOutline({required DrawingParameters drawParams});
+  void reset() {}
   void setStatusBarData({required DrawingParameters drawParams})
   {
     statusBarData.cursorPos = null;

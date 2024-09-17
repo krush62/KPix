@@ -162,4 +162,12 @@ class StampPainter extends IToolPainter
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
 
+  @override
+  void reset()
+  {
+    _down = false;
+    _stampData.clear();
+    _previousSize = -1;
+  }
+
 }

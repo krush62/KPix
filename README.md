@@ -5,9 +5,9 @@
 
 ![release](https://img.shields.io/github/v/release/krush62/KPix)
 ![release-date](https://img.shields.io/github/release-date/krush62/KPix)
-![last-commit](https://img.shields.io/github/last-commit/krush62/KPix)
 ![downloads](https://img.shields.io/github/downloads/krush62/KPix/total)
 
+![last-commit](https://img.shields.io/github/last-commit/krush62/KPix)
 ![issues](https://img.shields.io/github/issues-raw/krush62/KPix)
 ![pull-requests](https://img.shields.io/github/issues-pr-raw/krush62/KPix)
 ![license](https://img.shields.io/github/license/krush62/KPix)

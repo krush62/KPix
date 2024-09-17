@@ -238,4 +238,16 @@ class PencilPainter extends IToolPainter
       super.setStatusBarData(drawParams: drawParams);
       statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
   }
+
+  @override
+  void reset()
+  {
+    _paintPositions.clear();
+    _previousToolSize = -1;
+    _contentPoints.clear();
+    _waitingForRasterization = false;
+    _drawingPixels.clear();
+    _lastDrawingPosition = null;
+    _isLineDrawing = false;
+  }
 }

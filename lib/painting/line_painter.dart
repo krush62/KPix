@@ -294,4 +294,15 @@ class LinePainter extends IToolPainter
       }
     }
   }
+
+  @override
+  void reset()
+  {
+    _contentPoints.clear();
+    _linePoints.clear();
+    _previousSize = -1;
+    _lineStarted = false;
+    _dragStarted = false;
+    _isDown = false;
+  }
 }

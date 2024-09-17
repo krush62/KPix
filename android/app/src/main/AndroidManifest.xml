@@ -4,6 +4,34 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
+    <supports-screens
+        android:resizable="true"
+        android:smallScreens="false"
+        android:normalScreens="false"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:requiresSmallestWidthDp="480"
+    />
+    <compatible-screens>
+        <screen android:screenSize="large" android:screenDensity="mdpi" />
+        <screen android:screenSize="large" android:screenDensity="hdpi" />
+        <screen android:screenSize="large" android:screenDensity="xhdpi" />
+        <screen android:screenSize="large" android:screenDensity="280" />
+        <screen android:screenSize="large" android:screenDensity="360" />
+        <screen android:screenSize="large" android:screenDensity="420" />
+        <screen android:screenSize="large" android:screenDensity="480" />
+        <screen android:screenSize="large" android:screenDensity="560" />
+        <screen android:screenSize="xlarge" android:screenDensity="mdpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="hdpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="xhdpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="280" />
+        <screen android:screenSize="xlarge" android:screenDensity="360" />
+        <screen android:screenSize="xlarge" android:screenDensity="420" />
+        <screen android:screenSize="xlarge" android:screenDensity="480" />
+        <screen android:screenSize="xlarge" android:screenDensity="560" />
+    </compatible-screens>
+
+
     <application
         android:label="KPix"
         android:name="${applicationName}"
@@ -17,6 +45,7 @@
             android:screenOrientation="landscape"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
+
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues

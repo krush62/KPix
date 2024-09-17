@@ -61,13 +61,13 @@ enum PreferenceDouble
   Layout_SplitView_GrooveGap(defaultValue: 8.0),
   Layout_SplitView_GrooveThickness(defaultValue: 4.0),
   Layout_SplitView_GrooveSize(defaultValue: 2.0),
-  Layout_SplitView_FlexLeftMin(defaultValue: 3),
+  Layout_SplitView_FlexLeftMin(defaultValue: 3.0),
+  Layout_SplitView_FlexLeftDefault(defaultValue: 4.0),
   Layout_SplitView_FlexLeftMax(defaultValue: 4.0),
-  Layout_SplitView_FlexRightMin(defaultValue: 2.0),
-  Layout_SplitView_FlexRightMax(defaultValue: 3.0),
-  Layout_SplitView_FlexLeftDefault(defaultValue: 3.5),
   Layout_SplitView_FlexCenterDefault(defaultValue: 12.0),
-  Layout_SplitView_FlexRightDefault(defaultValue: 2.0),
+  Layout_SplitView_FlexRightMin(defaultValue: 2.0),
+  Layout_SplitView_FlexRightDefault(defaultValue: 3.0),
+  Layout_SplitView_FlexRightMax(defaultValue: 3.0),
 
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
@@ -303,14 +303,15 @@ enum PreferenceInt
 
   KPal_Layout_SmokeOpacity(defaultValue: 128),
 
-  KPalRamp_Layout_CenterFlex(defaultValue: 4),
-  KPalRamp_Layout_RightFlex(defaultValue: 1),
+  KPalRamp_Layout_CenterFlex(defaultValue: 6),
+  KPalRamp_Layout_RightFlex(defaultValue: 2),
   KPalRamp_Layout_RowLabelFlex(defaultValue: 2),
   KPalRamp_Layout_RowControlFlex(defaultValue: 8),
   KPalRamp_Layout_RowValueFlex(defaultValue: 2),
+  KPalRamp_Layout_ColorShowThreshold(defaultValue: 8),
 
   KPalColorCard_Layout_ColorNameFlex(defaultValue: 1),
-  KPalColorCard_Layout_ColorFlex(defaultValue: 6),
+  KPalColorCard_Layout_ColorFlex(defaultValue: 4),
   KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
 
   Painter_CheckerBoardSize(defaultValue: 8),
@@ -857,6 +858,7 @@ class PreferenceManager
         rowControlFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowControlFlex),
         rowLabelFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
         rowValueFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
+        colorNameShowThreshold: _getValueI(PreferenceInt.KPalRamp_Layout_ColorShowThreshold),
         colorCardWidgetOptions: colorCardWidgetOptions);
 
     kPalWidgetOptions = KPalWidgetOptions(

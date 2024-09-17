@@ -40,10 +40,12 @@ class KPalColorCardWidgetOptions
 class KPalColorCardWidget extends StatefulWidget
 {
   final ValueNotifier<IdColor> _colorNotifier;
+  final bool showName;
   final bool _isLast;
 
   const KPalColorCardWidget({
     super.key,
+    required this.showName,
     required ValueNotifier<IdColor> colorNotifier,
     bool isLast = false,
   }) : _isLast = isLast, _colorNotifier = colorNotifier;
@@ -81,15 +83,17 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
 
          child: ValueListenableBuilder<IdColor>(
            valueListenable: widget._colorNotifier,
-           builder: (BuildContext context, IdColor currentColor, child)
+           builder: (final BuildContext context, final IdColor currentColor, final Widget? child)
            {
+             final HSVColor hsvColor =  HSVColor.fromColor(currentColor.color);
              return Column(
                children: [
                  Expanded(
                    flex: _options.colorNameFlex,
                    child: Center(
                      child: Text(
-                       _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue)
+                       textAlign: TextAlign.center,
+                       widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : ""
                      ),
                    )
                  ),
@@ -114,9 +118,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                      crossAxisAlignment: CrossAxisAlignment.center,
                      mainAxisSize: MainAxisSize.max,
                      children: [
-                       Text(
-                         Helper.colorToHSVString(c: currentColor.color)
-                       ),
+                       Text("${hsvColor.hue.round()}°"),
+                       Text("${(hsvColor.saturation * 100).round()}%"),
+                       Text("${(hsvColor.value * 100).round()}%"),
                      ]
                    )
                  )

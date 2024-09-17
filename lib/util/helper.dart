@@ -203,18 +203,6 @@ class Helper
         '${c.blue.toString()}';
   }
 
-  static String colorToHSVString({required final Color c})
-  {
-    return hsvColorToHSVString(c: HSVColor.fromColor(c));
-  }
-
-  static String hsvColorToHSVString({required final HSVColor c})
-  {
-    return "${c.hue.round().toString()}° | "
-        "${(c.saturation * 100.0).round().toString()}% | "
-        "${(c.value * 100.0).round().toString()}%";
-  }
-
   static bool isPerfectSquare({required final int number})
   {
     double squareRoot = sqrt(number);

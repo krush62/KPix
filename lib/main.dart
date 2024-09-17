@@ -85,6 +85,7 @@ void main(final List<String> args) {
               animation: themeSettings,
               builder: (final BuildContext context, final Widget? child) {
                 return MaterialApp(
+                  //debugShowCheckedModeBanner: false,
                   home: const KPixApp(),
                   theme: KPixTheme.monochromeTheme,
                   darkTheme: KPixTheme.monochromeThemeDark,

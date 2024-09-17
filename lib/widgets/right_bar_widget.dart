@@ -117,7 +117,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
                             waitDuration: AppState.toolTipDuration,
                             child: IconButton(
                               onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
-                              icon: const FaIcon(FontAwesomeIcons.plus)
+                              icon: const FaIcon(FontAwesomeIcons.plus),
+                              style: IconButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
                             ),
                           ),
                         ),

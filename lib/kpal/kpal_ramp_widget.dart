@@ -30,6 +30,7 @@ class KPalRampWidgetOptions
   final double borderWidth;
   final double borderRadius;
   final double dividerThickness;
+  final int colorNameShowThreshold;
 
 
   KPalRampWidgetOptions({
@@ -44,7 +45,8 @@ class KPalRampWidgetOptions
     required this.dividerThickness,
     required this.rowControlFlex,
     required this.rowLabelFlex,
-    required this.rowValueFlex
+    required this.rowValueFlex,
+    required this.colorNameShowThreshold
   });
 }
 
@@ -79,7 +81,8 @@ class _KPalRampState extends State<KPalRamp>
     {
       _colorCards.add(KPalColorCardWidget(
           colorNotifier: notifier,
-          isLast: notifier == widget.rampData.colors.last)
+          isLast: notifier == widget.rampData.colors.last,
+          showName: widget.rampData.colors.length < _options.colorNameShowThreshold)
       );
     }
   }
@@ -437,30 +440,42 @@ class _KPalRampState extends State<KPalRamp>
                             flex: _options.rowControlFlex + _options.rowValueFlex,
                           child: Row
                             (
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                style: IconButton.styleFrom(
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.noFlat,
                                 onPressed: () {_satCurveModeChanged(newCurve: SatCurve.noFlat);},
                                 icon: FaIcon(KPixIcons.noFlat, color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                style: IconButton.styleFrom(
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.darkFlat,
                                 onPressed: () {_satCurveModeChanged(newCurve: SatCurve.darkFlat);},
                                 icon: FaIcon(KPixIcons.darkFlat, color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                style: IconButton.styleFrom(
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.brightFlat,
                                 onPressed: () {_satCurveModeChanged(newCurve: SatCurve.brightFlat);},
                                 icon: FaIcon(KPixIcons.brightFlat, color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
                               IconButton(
                                 color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                style: IconButton.styleFrom(
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                                 isSelected: widget.rampData.settings.satCurve == SatCurve.linear,
                                 onPressed: () {_satCurveModeChanged(newCurve: SatCurve.linear);},
                                 icon: FaIcon(KPixIcons.linear, color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),

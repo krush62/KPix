@@ -14,11 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/util/helper.dart';
 
 enum HotkeyAction
 {
@@ -200,7 +199,7 @@ class HotkeyManager
   String getShortcutString({required final HotkeyAction action, final bool precededNewLine = true, final bool showSquareBrackets = true})
   {
     String result = "";
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
+    if (Helper.isDesktop())
     {
       final Iterable<SingleActivator> activators = _shortCutMap.keys.where((x) => _shortCutMap[x] == action);
       if (activators.isNotEmpty)

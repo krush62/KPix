@@ -16,9 +16,10 @@
 
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
@@ -201,6 +202,11 @@ class Helper
     return '${c.red.toString()} | '
         '${c.green.toString()} | '
         '${c.blue.toString()}';
+  }
+
+  static bool isDesktop({final bool includingWeb = false})
+  {
+    return (Platform.isMacOS || Platform.isLinux || Platform.isWindows || (kIsWeb && includingWeb));
   }
 
   static bool isPerfectSquare({required final int number})

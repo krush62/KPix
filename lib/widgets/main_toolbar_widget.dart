@@ -14,9 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/util/helper.dart';
@@ -55,8 +52,7 @@ class MainToolbarWidget extends StatelessWidget
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          (!kIsWeb &&
-              (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
+          (Helper.isDesktop()) ?
           Divider(
             color: Theme.of(context).primaryColorDark,
             thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,

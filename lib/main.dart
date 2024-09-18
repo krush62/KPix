@@ -18,7 +18,6 @@ import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fl_toast/fl_toast.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/managers/font_manager.dart';
@@ -99,7 +98,7 @@ void main(final List<String> args) {
     )
   );
 
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+  if (Helper.isDesktop()) {
     doWhenWindowReady(() {
       const initialSize = Size(1600, 900);
       appWindow.minSize = initialSize;
@@ -194,7 +193,7 @@ class _KPixAppState extends State<KPixApp>
 
     String? initialFilePath;
 
-    if (cmdLineArgs.isNotEmpty && (Platform.isWindows || Platform.isLinux || Platform.isMacOS))
+    if (cmdLineArgs.isNotEmpty && Helper.isDesktop())
     {
 
       initialFilePath = cmdLineArgs[0];
@@ -390,7 +389,7 @@ class MainWidget extends StatelessWidget
         //TOP BAR
         ColoredBox(
           color: Theme.of(context).primaryColor,
-          child: (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ?
+          child: (Helper.isDesktop()) ?
             Row(
               children: [
                 Expanded(
@@ -448,12 +447,14 @@ class MainWidget extends StatelessWidget
               ),
               child: MultiSplitView(
                 initialAreas: [
-                  Area(builder: (context, area) {
-                    return const MainToolbarWidget();
-                  },
-                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault,
-                  min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
-                  max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax),
+                  Area(
+                    builder: (final BuildContext context, final Area area) {
+                      return const MainToolbarWidget();
+                    },
+                    flex: Helper.isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax,
+                    min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
+                    max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax
+                  ),
                   Area(builder: (context, area) {
                     return ValueListenableBuilder(
                       valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
@@ -470,13 +471,13 @@ class MainWidget extends StatelessWidget
                   },
                   flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault
                 ),
-                Area(builder: (context, area)
-                {
-                 return const RightBarWidget();
-                },
-                flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault,
-                min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
-                max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
+                Area(
+                  builder: (final BuildContext context, final Area area){
+                    return const RightBarWidget();
+                  },
+                  flex: Helper.isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
+                  min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
+                  max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
                 )
               ],
             ),

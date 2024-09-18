@@ -106,8 +106,9 @@ class FileHandler
   static const String magicNumber = "4B504958";
   static const String fileExtensionKpix = "kpix";
   static const String fileExtensionKpal = "kpal";
-  static const String webFileName = "KPixExport";
-  static const String webPaletteFileName = "KPixPalette";
+  static const String _webFileName = "KPixExport";
+  static const String _storageSubDirName = "KPix";
+  static const String _androidDocumentsDirectory = "/storage/emulated/0/Documents/";
 
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
@@ -234,7 +235,7 @@ class FileHandler
 
   static void loadFilePressed({final Function()? finishCallback})
   {
-    if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+    if (Helper.isDesktop(includingWeb: true))
     {
       FilePicker.platform.pickFiles(
           allowMultiple: false,
@@ -285,7 +286,7 @@ class FileHandler
     }
     else
     {
-      _saveKPixFile(path: webFileName, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: webFileName, path: path, finishCallback: finishCallback);});
+      _saveKPixFile(path: _webFileName, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: _webFileName, path: path, finishCallback: finishCallback);});
     }
   }
 
@@ -367,7 +368,7 @@ class FileHandler
 
   static void loadPalettePressed({required PaletteReplaceBehavior paletteReplaceBehavior})
   {
-    if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+    if (Helper.isDesktop(includingWeb: true))
     {
       FilePicker.platform.pickFiles(
           allowMultiple: false,
@@ -482,7 +483,7 @@ class FileHandler
 
   static Future<String?> exportFile({required final ExportData exportData, required final ExportType exportType}) async
   {
-    final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : webFileName;
+    final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : _webFileName;
     final AppState appState = GetIt.I.get<AppState>();
 
     Uint8List? data;
@@ -514,7 +515,7 @@ class FileHandler
       else
       {
         String newPath = await FileSaver.instance.saveFile(
-          name: webFileName,
+          name: _webFileName,
           bytes: data,
           ext: exportData.extension,
           mimeType: MimeType.other,
@@ -592,7 +593,7 @@ class FileHandler
   {
     if (!kIsWeb)
     {
-      if (Platform.isWindows || Platform.isMacOS || Platform.isWindows || Platform.isIOS)
+      if (Helper.isDesktop() || Platform.isIOS)
       {
         final Directory? downloadDir = await getDownloadsDirectory();
         if (downloadDir != null)
@@ -629,63 +630,48 @@ class FileHandler
   {
     if (!kIsWeb)
     {
-      if (Platform.isWindows || Platform.isMacOS || Platform.isWindows || Platform.isIOS)
+      if (Helper.isDesktop() || Platform.isIOS)
       {
         final Directory docDir = await getApplicationDocumentsDirectory();
-        if (await docDir.exists())
-        {
-          final Directory kPixDir = Directory(p.join(docDir.path, "KPix"));
-          if (!(await kPixDir.exists()))
-          {
-            final Directory kPixDir2 = await kPixDir.create();
-            if (await kPixDir2.exists())
-            {
-              return kPixDir2.path;
-            }
-            else
-            {
-              return docDir.path;
-            }
-          }
-          else
-          {
-            return kPixDir.path;
-          }
-        }
+        return await _getOrCreateKPixDir(docDir: docDir);
       }
       else if (Platform.isAndroid)
       {
-        final Directory docDir = Directory("/storage/emulated/0/Documents/");
+        final Directory docDir = Directory(_androidDocumentsDirectory);
         if (await docDir.exists())
         {
-          final Directory kPixDir = Directory(p.join(docDir.path, "KPix"));
-          if (!(await kPixDir.exists()))
-          {
-            final Directory kPixDir2 = await kPixDir.create();
-            if (await kPixDir2.exists())
-            {
-              return kPixDir2.path;
-            }
-            else
-            {
-              return docDir.path;
-            }
-          }
-          else
-          {
-            return kPixDir.path;
-          }
+          return await _getOrCreateKPixDir(docDir: docDir);
         }
         else
         {
-          final Directory directory = await getApplicationDocumentsDirectory();
-          if (await directory.exists())
+          final Directory fallbackDir = await getApplicationDocumentsDirectory();
+          if (await fallbackDir.exists())
           {
-            return directory.path;
+            return fallbackDir.path;
           }
         }
       }
     }
     return "";
   }
+
+  static Future<String> _getOrCreateKPixDir({required final Directory docDir}) async
+  {
+    if (await docDir.exists())
+    {
+      final Directory kPixDir = Directory(p.join(docDir.path, _storageSubDirName));
+      if (!(await kPixDir.exists()))
+      {
+        final Directory kPixDirCreated = await kPixDir.create();
+        return await kPixDirCreated.exists() ? kPixDirCreated.path : docDir.path;
+      }
+      else
+      {
+        return kPixDir.path;
+      }
+    }
+    return docDir.path;
+  }
+
 }
+

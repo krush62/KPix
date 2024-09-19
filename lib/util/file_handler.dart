@@ -106,7 +106,6 @@ class FileHandler
   static const String magicNumber = "4B504958";
   static const String fileExtensionKpix = "kpix";
   static const String fileExtensionKpal = "kpal";
-  static const String _webFileName = "KPixExport";
   static const String _storageSubDirName = "KPix";
   static const String _androidDocumentsDirectory = "/storage/emulated/0/Documents/";
 
@@ -283,16 +282,17 @@ class FileHandler
     {
       final String finalPath = p.join(appState.saveDir, "$fileName.$fileExtensionKpix");
       _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
+
     }
     else
     {
-      _saveKPixFile(path: _webFileName, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: _webFileName, path: path, finishCallback: finishCallback);});
+      _saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
     }
   }
 
   static void _fileSaved({required final String fileName, required final String path, required final Function()? finishCallback})
   {
-    GetIt.I.get<AppState>().fileSaved(saveName: fileName, path: path);
+    GetIt.I.get<AppState>().fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
     if (finishCallback != null)
     {
       finishCallback();
@@ -302,60 +302,61 @@ class FileHandler
 
   static void savePalettePressed({required PaletteSaveData saveData, required PaletteType paletteType})
   {
-    final String finalPath = p.join(saveData.directory, "${saveData.fileName}.${saveData.extension}");
+    final String finalPath = !kIsWeb ? p.join(saveData.directory, saveData.fileName) : saveData.fileName;
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
     final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
 
     switch (paletteType)
     {
       case PaletteType.kpal:
-        ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.png:
-        ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.aseprite:
-        ExportFunctions.getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.gimp:
-        ExportFunctions.getPaletteGimpData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteGimpData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.paintNet:
-        ExportFunctions.getPalettePaintNetData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPalettePaintNetData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.adobe:
-        ExportFunctions.getPaletteAdobeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteAdobeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.jasc:
-        ExportFunctions.getPaletteJascData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteJascData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.corel:
-        ExportFunctions.getPaletteCorelData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteCorelData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteType.openOffice:
-        ExportFunctions.getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
+        ExportFunctions.getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
     }
   }
 
-  static Future<void> _savePaletteDataToFile({required final Uint8List? data, required String path}) async
+  static Future<void> _savePaletteDataToFile({required final Uint8List? data, required String path, required final String extension}) async
   {
+    final String pathWithExtension = "$path.$extension";;
     if (data != null)
     {
       if (!kIsWeb)
       {
-        await File(path).writeAsBytes(data);
-        GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $path");
+        await File(pathWithExtension).writeAsBytes(data);
+        GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $pathWithExtension");
       }
       else
       {
-        String newPath = await FileSaver.instance.saveFile(
+        final String newPath = await FileSaver.instance.saveFile(
           name: path,
           bytes: data,
-          ext: fileExtensionKpal,
+          ext: extension,
           mimeType: MimeType.other,
         );
-        GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $newPath/$path");
+        GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $newPath/$pathWithExtension");
       }
 
     }
@@ -483,7 +484,7 @@ class FileHandler
 
   static Future<String?> exportFile({required final ExportData exportData, required final ExportType exportType}) async
   {
-    final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : _webFileName;
+    final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : exportData.fileName;
     final AppState appState = GetIt.I.get<AppState>();
 
     Uint8List? data;
@@ -515,12 +516,12 @@ class FileHandler
       else
       {
         String newPath = await FileSaver.instance.saveFile(
-          name: _webFileName,
+          name: path,
           bytes: data,
           ext: exportData.extension,
           mimeType: MimeType.other,
         );
-        returnPath = "$newPath/$path";
+        returnPath = "$newPath/$path.${exportData.extension}";
       }
     }
 
@@ -538,6 +539,11 @@ class FileHandler
     if (fileName.isEmpty)
     {
       return FileNameStatus.forbidden;
+    }
+
+    if (kIsWeb)
+    {
+      return FileNameStatus.available;
     }
 
     if (Platform.isWindows)
@@ -671,6 +677,30 @@ class FileHandler
       }
     }
     return docDir.path;
+  }
+
+  static void setUint64({required final ByteData bytes, required final int offset, required final int value, final Endian endian = Endian.big})
+  {
+    if (kIsWeb)
+    {
+      final int low = value & 0xFFFFFFFF;
+      final int high = (value >> 32) & 0xFFFFFFFF;
+
+      if (endian == Endian.little)
+      {
+        bytes.setUint32(offset, low, Endian.little);
+        bytes.setUint32(offset + 4, high, Endian.little);
+      }
+      else
+      {
+        bytes.setUint32(offset, high, Endian.big);
+        bytes.setUint32(offset + 4, low, Endian.big);
+      }
+    }
+    else
+    {
+      bytes.setUint64(offset, value);
+    }
   }
 
 }

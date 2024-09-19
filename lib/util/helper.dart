@@ -206,7 +206,15 @@ class Helper
 
   static bool isDesktop({final bool includingWeb = false})
   {
-    return (Platform.isMacOS || Platform.isLinux || Platform.isWindows || (kIsWeb && includingWeb));
+    if (kIsWeb && !includingWeb)
+    {
+      return false;
+    }
+    else
+    {
+      return ((kIsWeb && includingWeb) || Platform.isMacOS ||
+          Platform.isLinux || Platform.isWindows);
+    }
   }
 
   static bool isPerfectSquare({required final int number})
@@ -497,7 +505,23 @@ class Helper
 
   static List<int> intToBytes({required final int value, required final int length, bool reverse = false})
   {
-    final bytes = ByteData(length)..setInt32(0, value, Endian.little);
+    final ByteData bytes = ByteData(length);
+    if (length == 1)
+    {
+      bytes.setInt8(0, value);
+    } else if (length == 2)
+    {
+      bytes.setInt16(0, value, Endian.little);
+    } else if (length == 4)
+    {
+      bytes.setInt32(0, value, Endian.little);
+    }
+    else
+    {
+      throw ArgumentError('Invalid byte length: $length. Supported lengths are 1, 2, or 4 bytes.');
+    }
+
+    // Convert to Uint8List and reverse if necessary
     return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
   }
 

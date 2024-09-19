@@ -18,6 +18,7 @@ import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fl_toast/fl_toast.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/managers/font_manager.dart';
@@ -198,7 +199,7 @@ class _KPixAppState extends State<KPixApp>
 
       initialFilePath = cmdLineArgs[0];
     }
-    else if (Platform.isAndroid)
+    else if (!kIsWeb && Platform.isAndroid)
     {
       const MethodChannel channel = MethodChannel('app.channel.shared.data');
       initialFilePath = await channel.invokeMethod('getSharedFile');

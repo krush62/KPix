@@ -35,21 +35,61 @@ class PaletteManagerEntryWidget extends StatelessWidget
   Widget build(BuildContext context)
   {
     final List<Widget> colorColumn = [];
-    colorColumn.add(Text(entryData.name));
+    int colorCount = 0;
     for (final KPalRampData rampData in entryData.rampDataList)
     {
       final List<Widget> colorRowWidgetList = [];
       for (final ValueNotifier<IdColor> idColor in rampData.colors)
       {
-        colorRowWidgetList.add(ColoredBox(color: idColor.value.color));
+        colorRowWidgetList.add(Expanded(child: ColoredBox(color: idColor.value.color)));
+        colorCount++;
       }
-      colorColumn.add(Row(children: colorRowWidgetList));
+      colorColumn.add(Expanded(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: colorRowWidgetList)));
     }
 
-    return Container(
-      child: Column(
-        children: colorColumn,
-      )
+    return Material(
+      elevation: 5, //TODO magic
+      shadowColor: Theme.of(context).primaryColorDark,
+      borderRadius: BorderRadius.all(Radius.circular(4)), //TODO magic
+
+      child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor,
+            border: Border.all(
+              color: Theme.of(context).primaryColorDark,
+              width: 2, //TODO magic
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(4)), //TODO magic
+          ),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: Text(
+                  entryData.name,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              )
+            ),
+            Expanded(
+              flex: 6, //TODO magic number
+              child: Column(
+                children: colorColumn
+              )
+            ),
+            Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text(
+                    "$colorCount colors",
+                    style: Theme.of(context).textTheme.bodySmall!,
+                  ),
+                )
+            ),
+          ],
+        )
+      ),
     );
   }
 }

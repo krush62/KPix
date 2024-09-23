@@ -36,6 +36,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 
 class PaletteWidgetOptions
@@ -65,11 +66,25 @@ class PaletteWidget extends StatefulWidget
 class _PaletteWidgetState extends State<PaletteWidget>
 {
   final ValueNotifier<List<ColorRampRowWidget>> _colorRampWidgetList = ValueNotifier([]);
+  late KPixOverlay _paletteManager;
+  @override
+  void initState()
+  {
+    super.initState();
+    _paletteManager = OverlayEntries.getPaletteManagerDialog(
+        onDismiss: _paletteManagerClosed);
+  }
 
   void _paletteManagerPressed()
   {
-    print("TODO");
+    _paletteManager.show(context: context);
   }
+
+  void _paletteManagerClosed()
+  {
+    _paletteManager.hide();
+  }
+
 
   @override
   Widget build(final BuildContext context) {

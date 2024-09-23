@@ -30,6 +30,7 @@ import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/licenses_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
+import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/preferences_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/file/save_palette_widget.dart';
@@ -876,6 +877,26 @@ class OverlayEntries
           ]
         )
       )
+    );
+  }
+
+  static KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+        entry: OverlayEntry(
+            builder: (context) => Stack(
+                children: [
+                  ModalBarrier(
+                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                    onDismiss: onDismiss,
+                  ),
+                  Center(
+                    child: PaletteManagerWidget(dismiss: onDismiss,)
+                  ),
+                ]
+            )
+        )
     );
   }
 

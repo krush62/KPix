@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KPix"
-#define MyAppVersion "0.8.2"
+#define MyAppVersion "0.8.7"
 #define MyAppPublisher "krush62"
 #define MyAppURL "https://github.com/krush62/KPix"
 #define MyAppExeName "kpix.exe"

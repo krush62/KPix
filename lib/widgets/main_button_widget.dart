@@ -26,9 +26,9 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/widgets/export_widget.dart';
+import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:kpix/widgets/save_palette_widget.dart';
+import 'package:kpix/widgets/file/save_palette_widget.dart';
 import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions

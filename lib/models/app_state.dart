@@ -26,7 +26,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
-import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/managers/preference_manager.dart';

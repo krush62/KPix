@@ -18,9 +18,18 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+
+class PaletteManagerOptions
+{
+  final int colCount;
+  final double entryAspectRatio;
+  PaletteManagerOptions({required this.colCount, required this.entryAspectRatio});
+}
 
 class PaletteManagerWidget extends StatefulWidget
 {
@@ -33,106 +42,178 @@ class PaletteManagerWidget extends StatefulWidget
 
 class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  final PaletteManagerOptions _options = GetIt.I.get<PreferenceManager>().paletteManagerOptions;
   final ValueNotifier<List<PaletteManagerEntryWidget>> _paletteEntries = ValueNotifier([]);
+  final ValueNotifier<PaletteManagerEntryWidget?> _selectedWidget = ValueNotifier(null);
+
+  late KPixOverlay _paletteWarningDialog;
+
   @override
   void initState()
   {
     super.initState();
     _createWidgetList();
+    _paletteWarningDialog = OverlayEntries.getThreeButtonDialog(
+        onYes: _paletteWarningYes,
+        onNo: _paletteWarningNo,
+        onCancel: _closeWarning,
+        outsideCancelable: false,
+        message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
+  }
+
+  void _closeWarning()
+  {
+    _paletteWarningDialog.hide();
+  }
+
+  void _paletteWarningYes()
+  {
+    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.remap);
+    _closeWarning();
+    widget.dismiss();
+  }
+
+  void _paletteWarningNo()
+  {
+    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList), paletteReplaceBehavior: PaletteReplaceBehavior.replace);
+    _closeWarning();
+    widget.dismiss();
   }
 
   void _createWidgetList()
   {
     final List<PaletteManagerEntryWidget> pList = [];
-    pList.add(PaletteManagerEntryWidget(entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints ), isLocked: true, name: "KPix Default")));
-    //TODO add saved palettes
-
+    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints ), isLocked: true, name: "Default")));
     _paletteEntries.value = pList;
+    FileHandler.loadPalettesFromInternal().then((List<PaletteManagerEntryData> palList)
+    {
+      final List<PaletteManagerEntryWidget> pList = [];
+      pList.addAll(_paletteEntries.value);
+      for (final PaletteManagerEntryData palData in palList)
+      {
+        pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
+      }
+      _paletteEntries.value = pList;
+    });
+  }
 
+  void _addCurrentPalette()
+  {
+    //TODO show (new) dialog to select name (including overwrite indicator)
+    print("ADD CURRENT PALETTE");
+  }
+
+  void _applyPalette()
+  {
+    _paletteWarningDialog.show(context: context);
+  }
+
+  void _dismissPressed()
+  {
+    widget.dismiss();
   }
 
   @override
   Widget build(BuildContext context)
   {
     return Material(
-      elevation: _options.elevation,
+      elevation: _alertOptions.elevation,
       shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+      borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
       child: Container(
         constraints: BoxConstraints(
-          minHeight: _options.minHeight,
-          minWidth: _options.minWidth,
-          maxHeight: _options.maxHeight,
-          maxWidth: _options.maxWidth,
+          minHeight: _alertOptions.minHeight,
+          minWidth: _alertOptions.minWidth,
+          maxHeight: _alertOptions.maxHeight,
+          maxWidth: _alertOptions.maxWidth,
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
           border: Border.all(
             color: Theme.of(context).primaryColorLight,
-            width: _options.borderWidth,
+            width: _alertOptions.borderWidth,
           ),
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+          borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
         ),
         child: Column(
           children: [
-            SizedBox(height: 12,), //TODO magic
+            SizedBox(height: _alertOptions.padding),
             Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
             Expanded(
               child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
                 valueListenable: _paletteEntries,
-                builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, Widget? child) {
+                builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
                   return GridView.extent(
-                    maxCrossAxisExtent: _options.maxWidth / 4, //TODO (4) think of padding
-                    padding: EdgeInsets.all(12), //TODO
-                    childAspectRatio: 0.5, //TODO
-                    mainAxisSpacing: 8, //TODO
-                    crossAxisSpacing: 8, //TODO
+                    maxCrossAxisExtent: _alertOptions.maxWidth / _options.colCount,
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    childAspectRatio: _options.entryAspectRatio,
+                    mainAxisSpacing: _alertOptions.padding,
+                    crossAxisSpacing: _alertOptions.padding,
                     children: pList,
                   );
                 },
               ),
             ),
-
-
             Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.padding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.xmark,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: () {
-                            widget.dismiss();
-                          },
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.xmark,
+                        size: _alertOptions.iconSize,
+                      ),
+                      onPressed: _dismissPressed,
+                    ),
+                  )
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Tooltip(
+                    message: "Save Current Palette",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Padding(
+                      padding: EdgeInsets.all(_alertOptions.padding),
+                      child: IconButton.outlined(
+                        icon: FaIcon(
+                          FontAwesomeIcons.plus,
+                          size: _alertOptions.iconSize,
                         ),
-                      )
-                  ),
-                  Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.padding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.folderOpen,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: null,
-                        ),
-                      )
-                  ),
-                ]
+                        onPressed: _addCurrentPalette,
+                      ),
+                    ),
+                  )
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Tooltip(
+                    message: "Apply Selected Palette",
+                    waitDuration: AppState.toolTipDuration,
+                    child: Padding(
+                      padding: EdgeInsets.all(_alertOptions.padding),
+                      child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
+                        valueListenable: _selectedWidget,
+                        builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
+                          return IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.fileImport,
+                              size: _alertOptions.iconSize,
+                            ),
+                            onPressed: selWidget != null ? _applyPalette : null,
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                ),
+              ]
             ),
-
-
-
           ],
         )
       )

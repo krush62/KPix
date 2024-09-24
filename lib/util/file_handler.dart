@@ -32,6 +32,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/file/save_palette_widget.dart';
+import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
@@ -527,13 +528,7 @@ class FileHandler
     return returnPath;
   }
 
-
-
-
-
-
-
-    static FileNameStatus checkFileName({required String fileName, required String directory, required String extension})
+  static FileNameStatus checkFileName({required String fileName, required String directory, required String extension})
   {
     if (fileName.isEmpty)
     {
@@ -626,6 +621,17 @@ class FileHandler
     return "";
   }
 
+  static Future<String> findInternalDir() async
+  {
+    if (kIsWeb)
+    {
+      return "";
+    }
+
+      final Directory internalDir = await getApplicationSupportDirectory();
+      return internalDir.path;
+  }
+
   static Future<String> findSaveDir() async
   {
     if (!kIsWeb)
@@ -673,5 +679,30 @@ class FileHandler
     return docDir.path;
   }
 
+  static Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
+  {
+    List<PaletteManagerEntryData> paletteData = [];
+    final Directory dir = Directory(GetIt.I.get<AppState>().internalDir);
+    final List<String> filesWithExtension = [];
+    if (await dir.exists())
+    {
+      dir.listSync(recursive: false, followLinks: false).forEach((entity)
+      {
+        if (entity is File && entity.path.endsWith(".$fileExtensionKpal"))
+        {
+          filesWithExtension.add(entity.absolute.path);
+        }
+      });
+    }
+    for (final String filePath in filesWithExtension)
+    {
+      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null);
+      if (palSet.rampData != null)
+      {
+         paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!));
+      }
+    }
+    return paletteData;
+  }
 }
 

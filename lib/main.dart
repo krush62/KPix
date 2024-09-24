@@ -147,8 +147,8 @@ class _KPixAppState extends State<KPixApp>
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
     final String saveDirString = await FileHandler.findSaveDir();
     final String exportDirString = await FileHandler.findExportDir();
-
-    final AppState appState = AppState(saveDir: saveDirString, exportDir: exportDirString);
+    final String internalDirString = await FileHandler.findInternalDir();
+    final AppState appState = AppState(saveDir: saveDirString, exportDir: exportDirString, internalDir: internalDirString);
     GetIt.I.registerSingleton<AppState>(appState);
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 

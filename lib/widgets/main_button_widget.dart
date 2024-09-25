@@ -28,7 +28,6 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:kpix/widgets/file/export_palette_widget.dart';
 import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions
@@ -63,12 +62,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _loadMenu;
   late KPixOverlay _saveMenu;
   late KPixOverlay _saveLoadWarningDialog;
-  late KPixOverlay _paletteWarningDialog;
   late KPixOverlay _exportDialog;
   late KPixOverlay _aboutDialog;
   late KPixOverlay _preferencesDialog;
   late KPixOverlay _saveAsDialog;
-  late KPixOverlay _exportPaletteDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -82,7 +79,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       layerLink: _loadMenuLayerLink,
       onNewFile: _newFile,
       onLoadFile: _loadFile,
-      onLoadPalette: _loadPalette,
     );
     _saveMenu = OverlayEntries.getSaveMenu(
       onDismiss: _closeAllMenus,
@@ -90,7 +86,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSaveFile: _saveFile,
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
-      onExportPalette: _exportPalette,
     );
     _saveLoadWarningDialog = OverlayEntries.getThreeButtonDialog(
       onYes: _saveLoadWarningYes,
@@ -99,15 +94,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       outsideCancelable: false,
       message: "There are unsaved changes, do you want to save first?"
     );
-    _paletteWarningDialog = OverlayEntries.getThreeButtonDialog(
-      onYes: _paletteWarningYes,
-      onNo: _paletteWarningNo,
-      onCancel: _closeAllMenus,
-      outsideCancelable: false,
-      message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
     _exportDialog = OverlayEntries.getExportDialog(
       onDismiss: _closeAllMenus,
-      onAccept: _exportFilePressed);
+      onAcceptFile: _exportFilePressed,
+      onAcceptPalette: _paletteSavePressed);
     _aboutDialog = OverlayEntries.getAboutDialog(
       onDismiss: _closeAllMenus,
       canvasSize: _appState.canvasSize);
@@ -121,10 +111,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
           _closeAllMenus();
           FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
         },
-    );
-    _exportPaletteDialog = OverlayEntries.getPaletteExportDialog(
-      onDismiss: _closeAllMenus,
-      onAccept: _paletteSavePressed,
     );
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
@@ -140,7 +126,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
-  void _exportFilePressed({required final ExportData exportData, required final ExportType exportType})
+  void _exportFilePressed({required final ExportData exportData, required final FileExportType exportType})
   {
     FileHandler.exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
@@ -167,12 +153,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _loadMenu.hide();
     _saveMenu.hide();
     _saveLoadWarningDialog.hide();
-    _paletteWarningDialog.hide();
     _exportDialog.hide();
     _aboutDialog.hide();
     _preferencesDialog.hide();
     _saveAsDialog.hide();
-    _exportPaletteDialog.hide();
   }
 
   void _newFile()
@@ -216,24 +200,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  void _loadPalette()
-  {
-    _paletteWarningDialog.show(context: context);
-  }
-
-  void _paletteWarningYes()
-  {
-    FileHandler.loadPalettePressed(paletteReplaceBehavior: PaletteReplaceBehavior.remap);
-    _closeAllMenus();
-  }
-
-  void _paletteWarningNo()
-  {
-    FileHandler.loadPalettePressed(paletteReplaceBehavior: PaletteReplaceBehavior.replace);
-    _closeAllMenus();
-  }
-
-
   void _savePressed()
   {
     _saveMenu.show(context: context);
@@ -271,18 +237,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  void _paletteSavePressed({required PaletteExportData saveData, required PaletteType paletteType})
+  void _paletteSavePressed({required PaletteExportData saveData, required PaletteExportType paletteType})
   {
     FileHandler.exportPalettePressed(saveData: saveData, paletteType: paletteType);
     _closeAllMenus();
   }
 
-  void _exportPalette()
-  {
-    _exportPaletteDialog.show(context: context);
-  }
-
-  void _settingsPressed()
+    void _settingsPressed()
   {
     _preferencesDialog.show(context: context);
   }

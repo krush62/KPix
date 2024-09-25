@@ -22,7 +22,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/file/export_palette_widget.dart';
+import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class SavePaletteWidget extends StatefulWidget
@@ -165,7 +165,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                 ),
                                 onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                                     () {
-                                  widget.accept(saveData: PaletteExportData(extension: FileHandler.fileExtensionKpal, directory: _appState.internalDir, fileName: _fileName.value, name: "KPAL"), paletteType: PaletteType.kpal);
+                                  widget.accept(saveData: PaletteExportData(extension: FileHandler.fileExtensionKpal, directory: _appState.internalDir, fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
                                 } : null,
                               );
                             },

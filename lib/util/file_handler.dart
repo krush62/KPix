@@ -32,7 +32,6 @@ import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/file/export_palette_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -324,7 +323,7 @@ class FileHandler
   }
 
 
-  static void exportPalettePressed({required PaletteExportData saveData, required PaletteType paletteType})
+  static void exportPalettePressed({required PaletteExportData saveData, required PaletteExportType paletteType})
   {
     final String finalPath = p.join(saveData.directory, "${saveData.fileName}.${saveData.extension}");
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
@@ -332,31 +331,31 @@ class FileHandler
 
     switch (paletteType)
     {
-      case PaletteType.kpal:
+      case PaletteExportType.kpal:
         ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.png:
+      case PaletteExportType.png:
         ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.aseprite:
+      case PaletteExportType.aseprite:
         ExportFunctions.getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.gimp:
+      case PaletteExportType.gimp:
         ExportFunctions.getPaletteGimpData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.paintNet:
+      case PaletteExportType.paintNet:
         ExportFunctions.getPalettePaintNetData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.adobe:
+      case PaletteExportType.adobe:
         ExportFunctions.getPaletteAdobeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.jasc:
+      case PaletteExportType.jasc:
         ExportFunctions.getPaletteJascData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.corel:
+      case PaletteExportType.corel:
         ExportFunctions.getPaletteCorelData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
-      case PaletteType.openOffice:
+      case PaletteExportType.openOffice:
         ExportFunctions.getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath);});
         break;
     }
@@ -506,7 +505,7 @@ class FileHandler
     return await FilePicker.platform.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir);
   }
 
-  static Future<String?> exportFile({required final ExportData exportData, required final ExportType exportType}) async
+  static Future<String?> exportFile({required final ExportData exportData, required final FileExportType exportType}) async
   {
     final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : _webFileName;
     final AppState appState = GetIt.I.get<AppState>();
@@ -515,16 +514,16 @@ class FileHandler
 
     switch (exportType)
     {
-      case ExportType.png:
+      case FileExportType.png:
         data = await ExportFunctions.exportPNG(exportData: exportData, appState: appState);
         break;
-      case ExportType.aseprite:
+      case FileExportType.aseprite:
         data = await ExportFunctions.getAsepriteData(exportData: exportData, appState: appState);
         break;
       //case ExportType.photoshop:
       // TODO: Handle this case.
       //  break;
-      case ExportType.gimp:
+      case FileExportType.gimp:
         data = await ExportFunctions.getGimpData(exportData: exportData, appState: appState);
         break;
     }

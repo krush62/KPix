@@ -15,13 +15,12 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/widgets/file/export_palette_widget.dart';
+import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
@@ -71,7 +70,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     });
   }
 
-  void _acceptAddPalette({required PaletteExportData saveData, required PaletteType paletteType})
+  void _acceptAddPalette({required PaletteExportData saveData, required PaletteExportType paletteType})
   {
     FileHandler.saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final bool success) {
       _paletteSaved(success: success);

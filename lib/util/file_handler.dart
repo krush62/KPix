@@ -319,13 +319,13 @@ class FileHandler
     final String finalPath = p.join(directory, "$fileName.$extension");
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
     Uint8List data = await ExportFunctions.getPaletteKPalData(rampList: rampList);
-    return await _savePaletteDataToFile(data: data, path: finalPath);
+    return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension);
   }
 
 
   static void exportPalettePressed({required PaletteExportData saveData, required PaletteExportType paletteType})
   {
-    final String finalPath = p.join(saveData.directory, "${saveData.fileName}.${saveData.extension}");
+    final String finalPath = p.join(saveData.directory, saveData.fileName);
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
     final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
 
@@ -361,7 +361,7 @@ class FileHandler
     }
   }
 
-  static Future<bool> _savePaletteDataToFile({required final Uint8List? data, required String path}) async
+  static Future<bool> _savePaletteDataToFile({required final Uint8List? data, required String path, required final String extension}) async
   {
     final String pathWithExtension = "$path.$extension";;
     if (data != null)

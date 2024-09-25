@@ -136,7 +136,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     if (fileName != null && fileName.isNotEmpty)
     {
       _appState.showMessage(text: "Exported to: $fileName");
-      if (Platform.isAndroid)
+      if (!kIsWeb && Platform.isAndroid)
       {
         MediaScanner.loadMedia(path: fileName);
       }
@@ -207,7 +207,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveFile({Function()? callback})
   {
-    if (_appState.projectName.value == null && !kIsWeb)
+    if (_appState.projectName.value == null)
     {
       _saveAsFile(callback: callback);
     }

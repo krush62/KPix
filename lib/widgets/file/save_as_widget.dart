@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -101,46 +102,49 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
             children: [
               Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
               SizedBox(height: _options.padding),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Text("Directory", style: Theme.of(context).textTheme.titleMedium)
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: ValueListenableBuilder<String>(
-                      valueListenable: _appState.saveDirNotifier,
-                      builder: (final BuildContext context, final String saveDir, Widget? child) {
-                        return Text(saveDir, textAlign: TextAlign.center);
-                      },
-                    )
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Tooltip(
-                      message: "Change Directory",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(_options.padding),
-                        onPressed: _changeDirectoryPressed,
-                        icon: FaIcon(
-                            FontAwesomeIcons.file,
-                            size: _options.iconSize / 2
+              Visibility(
+                visible: !kIsWeb,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Text("Directory", style: Theme.of(context).textTheme.titleMedium)
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: _appState.saveDirNotifier,
+                        builder: (final BuildContext context, final String saveDir, Widget? child) {
+                          return Text(saveDir, textAlign: TextAlign.center);
+                        },
+                      )
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Tooltip(
+                        message: "Change Directory",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(_options.padding),
+                          onPressed: _changeDirectoryPressed,
+                          icon: FaIcon(
+                              FontAwesomeIcons.file,
+                              size: _options.iconSize / 2
+                          ),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor
+                          ),
                         ),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor
-                        ),
-                      ),
+                      )
                     )
-                  )
-                ]
+                  ]
+                ),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,

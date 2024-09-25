@@ -436,7 +436,7 @@ class AppState
     {
       _restoreState(historyState: loadFileSet.historyState);
       projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-      if (!Platform.isAndroid) //file picker on android does not return a valid path, but a cache path instead
+      if (!kIsWeb && !Platform.isAndroid) //file picker on android does not return a valid path, but a cache path instead
       {
         _saveDir.value = Helper.getBaseDir(fullPath: loadFileSet.path!);
       }
@@ -475,14 +475,17 @@ class AppState
     }
   }
 
-  void fileSaved({required final String saveName, required final String path})
+  void fileSaved({required final String saveName, required final String path, final bool addKPixExtension = false})
   {
-    if (!kIsWeb)
+    projectName.value = saveName;
+    hasChanges.value = false;
+
+    String displayPath = kIsWeb ? ("$path/$saveName") : path;
+    if (addKPixExtension)
     {
-      projectName.value = saveName;
-      hasChanges.value = false;
-      showMessage(text: "File saved at: $path");
+      displayPath += ".${FileHandler.fileExtensionKpix}";
     }
+    showMessage(text: "File saved at: $displayPath");
   }
 
   void _restoreState({required final HistoryState? historyState})

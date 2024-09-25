@@ -1030,20 +1030,20 @@ class ExportFunctions
     for (int i = 0; i < appState.layers.length; i++)
     {
       layerOffsetsInsertPositions.add(offset);
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
     }
 
-    outBytes.setUint64(offset, 0); //end layer pointers
+    FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0); //end layer pointers
     offset+=8;
-    outBytes.setUint64(offset, 0); //start/end channel pointers
+    FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0); //start/end channel pointers
     offset+=8;
 
 
     //LAYERS
     for (int i = 0; i < appState.layers.length; i++)
     {
-      outBytes.setUint64(layerOffsetsInsertPositions[i], offset);
+      FileHandler.setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
       final LayerState currentLayer = appState.layers[i];
       outBytes.setUint32(offset, currentLayer.size.x);
@@ -1217,15 +1217,15 @@ class ExportFunctions
 
       //HIERARCHY OFFSET
       final int hierarchyOffsetInsertPosition = offset;
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //LAYER MASK
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //HIERARCHY
-      outBytes.setUint64(hierarchyOffsetInsertPosition, offset);
+      FileHandler.setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y);
@@ -1233,19 +1233,19 @@ class ExportFunctions
       outBytes.setUint32(offset, 2);
       offset+=4;
       final int pointerInsertToLevel1 = offset;
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
       final int pointerInsertToLevel2 = offset;
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
       final int pointerInsertToLevel3 = offset;
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //LEVEL1
-      outBytes.setUint64(pointerInsertToLevel1, offset);
+      FileHandler.setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y);
@@ -1255,16 +1255,16 @@ class ExportFunctions
       for (int j = 0; j < currentTiles.length; j++)
       {
         tileOffsetsLv1.add(offset);
-        outBytes.setUint64(offset, 0);
+        FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
         offset+=8;
       }
-      outBytes.setUint64(offset, 0);
+      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //TILE DATA FOR LEVEL1
       for (int j = 0; j < currentTiles.length; j++)
       {
-        outBytes.setUint64(tileOffsetsLv1[j], offset);
+        FileHandler.setUint64(bytes: outBytes, offset: tileOffsetsLv1[j], value: offset);
         final List<int> currentTile = currentTiles[j];
         for (int k = 0; k < currentTile.length; k++)
         {
@@ -1274,7 +1274,7 @@ class ExportFunctions
       }
 
       //LEVEL2
-      outBytes.setUint64(pointerInsertToLevel2, offset);
+      FileHandler.setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x ~/ 2);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y ~/ 2);
@@ -1282,7 +1282,7 @@ class ExportFunctions
       outBytes.setUint32(offset, 0);
       offset+=4;
       //LEVEL3
-      outBytes.setUint64(pointerInsertToLevel3, offset);
+      FileHandler.setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x ~/ 4);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y ~/ 4);

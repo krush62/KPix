@@ -28,7 +28,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:kpix/widgets/file/save_palette_widget.dart';
+import 'package:kpix/widgets/file/export_palette_widget.dart';
 import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions
@@ -68,7 +68,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _aboutDialog;
   late KPixOverlay _preferencesDialog;
   late KPixOverlay _saveAsDialog;
-  late KPixOverlay _savePaletteDialog;
+  late KPixOverlay _exportPaletteDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -90,7 +90,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onSaveFile: _saveFile,
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
-      onSavePalette: _savePalette,
+      onExportPalette: _exportPalette,
     );
     _saveLoadWarningDialog = OverlayEntries.getThreeButtonDialog(
       onYes: _saveLoadWarningYes,
@@ -122,7 +122,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
           FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
         },
     );
-    _savePaletteDialog = OverlayEntries.getPaletteSaveDialog(
+    _exportPaletteDialog = OverlayEntries.getPaletteExportDialog(
       onDismiss: _closeAllMenus,
       onAccept: _paletteSavePressed,
     );
@@ -172,7 +172,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _aboutDialog.hide();
     _preferencesDialog.hide();
     _saveAsDialog.hide();
-    _savePaletteDialog.hide();
+    _exportPaletteDialog.hide();
   }
 
   void _newFile()
@@ -271,15 +271,15 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  void _paletteSavePressed({required PaletteSaveData saveData, required PaletteType paletteType})
+  void _paletteSavePressed({required PaletteExportData saveData, required PaletteType paletteType})
   {
-    FileHandler.savePalettePressed(saveData: saveData, paletteType: paletteType);
+    FileHandler.exportPalettePressed(saveData: saveData, paletteType: paletteType);
     _closeAllMenus();
   }
 
-  void _savePalette()
+  void _exportPalette()
   {
-    _savePaletteDialog.show(context: context);
+    _exportPaletteDialog.show(context: context);
   }
 
   void _settingsPressed()

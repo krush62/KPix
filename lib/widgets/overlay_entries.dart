@@ -31,9 +31,10 @@ import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/licenses_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
+import 'package:kpix/widgets/palette/save_palette_widget.dart';
 import 'package:kpix/widgets/preferences_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
-import 'package:kpix/widgets/file/save_palette_widget.dart';
+import 'package:kpix/widgets/file/export_palette_widget.dart';
 
 
 class KPixOverlay
@@ -222,7 +223,7 @@ class OverlayEntries
     required Function onSaveFile,
     required Function onSaveAsFile,
     required Function onExportFile,
-    required Function onSavePalette,
+    required Function onExportPalette,
     required final LayerLink layerLink,
   })
   {
@@ -316,7 +317,7 @@ class OverlayEntries
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
                           padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onSavePalette();},
+                          onPressed: () {onExportPalette();},
                           icon: FaIcon(
                             Icons.palette,
                             size: options.buttonHeight),
@@ -693,6 +694,29 @@ class OverlayEntries
           ]
         )
       )
+    );
+  }
+
+  static KPixOverlay getPaletteExportDialog({
+    required final Function() onDismiss,
+    required final PaletteDataFn onAccept,
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+        entry: OverlayEntry(
+            builder: (context) => Stack(
+                children: [
+                  ModalBarrier(
+                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                    onDismiss: () {onDismiss();},
+                  ),
+                  Center(
+                    child: ExportPaletteWidget(accept: onAccept, dismiss: onDismiss),
+                  ),
+                ]
+            )
+        )
     );
   }
 

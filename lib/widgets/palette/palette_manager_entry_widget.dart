@@ -37,9 +37,10 @@ class PaletteManagerEntryOptions
 class PaletteManagerEntryData
 {
   final List<KPalRampData> rampDataList;
+  final String? path;
   final bool isLocked;
   final String name;
-  PaletteManagerEntryData({required this.rampDataList, required this.name, required this.isLocked});
+  PaletteManagerEntryData({required this.rampDataList, required this.name, required this.isLocked, required this.path});
 }
 
 

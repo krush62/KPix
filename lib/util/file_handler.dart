@@ -31,7 +31,7 @@ import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/file/save_palette_widget.dart';
+import 'package:kpix/widgets/file/export_palette_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -300,8 +300,30 @@ class FileHandler
     }
   }
 
+  static Future<bool> deleteFile({required String path}) async
+  {
+    File file = File(path);
+    if (await file.exists())
+    {
+      await file.delete();
+    }
+    else
+    {
+      return false;
+    }
+    return true;
+  }
 
-  static void savePalettePressed({required PaletteSaveData saveData, required PaletteType paletteType})
+  static Future<bool> saveCurrentPalette({required String fileName, required String directory, required String extension}) async
+  {
+    final String finalPath = p.join(directory, "$fileName.$extension");
+    final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
+    Uint8List data = await ExportFunctions.getPaletteKPalData(rampList: rampList);
+    return await _savePaletteDataToFile(data: data, path: finalPath);
+  }
+
+
+  static void exportPalettePressed({required PaletteExportData saveData, required PaletteType paletteType})
   {
     final String finalPath = p.join(saveData.directory, "${saveData.fileName}.${saveData.extension}");
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
@@ -339,7 +361,7 @@ class FileHandler
     }
   }
 
-  static Future<void> _savePaletteDataToFile({required final Uint8List? data, required String path}) async
+  static Future<bool> _savePaletteDataToFile({required final Uint8List? data, required String path}) async
   {
     if (data != null)
     {
@@ -358,11 +380,12 @@ class FileHandler
         );
         GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $newPath/$path");
       }
-
+      return true;
     }
     else
     {
       GetIt.I.get<AppState>().showMessage(text: "Palette saving failed");
+      return false;
     }
   }
 
@@ -699,7 +722,7 @@ class FileHandler
       LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null);
       if (palSet.rampData != null)
       {
-         paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!));
+         paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!, path: filePath));
       }
     }
     return paletteData;

@@ -37,43 +37,43 @@ enum PaletteType
   openOffice
 }
 
-class PaletteSaveData
+class PaletteExportData
 {
   final String extension;
   final String name;
   final String fileName;
   final String directory;
-  const PaletteSaveData({required this.name, required this.extension, this.fileName = "", this.directory = ""});
-  factory PaletteSaveData.fromWithConcreteData({required PaletteSaveData other, required String fileName, required String directory})
+  const PaletteExportData({required this.name, required this.extension, this.fileName = "", this.directory = ""});
+  factory PaletteExportData.fromWithConcreteData({required PaletteExportData other, required String fileName, required String directory})
   {
-    return PaletteSaveData(name: other.name, extension: other.extension, directory: directory, fileName: fileName);
+    return PaletteExportData(name: other.name, extension: other.extension, directory: directory, fileName: fileName);
   }
 }
 
-const Map<PaletteType, PaletteSaveData> paletteExportTypeMap =
+const Map<PaletteType, PaletteExportData> paletteExportTypeMap =
 {
-  PaletteType.kpal:PaletteSaveData(name: "KPAL", extension: FileHandler.fileExtensionKpal),
-  PaletteType.png:PaletteSaveData(name: "PNG", extension: "png"),
-  PaletteType.aseprite:PaletteSaveData(name: "ASEPRITE", extension: "aseprite"),
-  PaletteType.gimp:PaletteSaveData(name: "GIMP", extension: "gpl"),
-  PaletteType.paintNet:PaletteSaveData(name: "PAINT.NET", extension: "txt"),
-  PaletteType.adobe:PaletteSaveData(name: "ADOBE", extension: "ase"),
-  PaletteType.jasc:PaletteSaveData(name: "JASC", extension: "pal"),
-  PaletteType.corel:PaletteSaveData(name: "COREL", extension: "xml"),
-  PaletteType.openOffice:PaletteSaveData(name: "STAROFFICE", extension: "soc")
+  PaletteType.kpal:PaletteExportData(name: "KPAL", extension: FileHandler.fileExtensionKpal),
+  PaletteType.png:PaletteExportData(name: "PNG", extension: "png"),
+  PaletteType.aseprite:PaletteExportData(name: "ASEPRITE", extension: "aseprite"),
+  PaletteType.gimp:PaletteExportData(name: "GIMP", extension: "gpl"),
+  PaletteType.paintNet:PaletteExportData(name: "PAINT.NET", extension: "txt"),
+  PaletteType.adobe:PaletteExportData(name: "ADOBE", extension: "ase"),
+  PaletteType.jasc:PaletteExportData(name: "JASC", extension: "pal"),
+  PaletteType.corel:PaletteExportData(name: "COREL", extension: "xml"),
+  PaletteType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc")
 };
 
-class SavePaletteWidget extends StatefulWidget
+class ExportPaletteWidget extends StatefulWidget
 {
   final Function() dismiss;
   final PaletteDataFn accept;
-  const SavePaletteWidget({super.key, required this.dismiss, required this.accept});
+  const ExportPaletteWidget({super.key, required this.dismiss, required this.accept});
 
   @override
-  State<SavePaletteWidget> createState() => _SavePaletteWidgetState();
+  State<ExportPaletteWidget> createState() => _ExportPaletteWidgetState();
 }
 
-class _SavePaletteWidgetState extends State<SavePaletteWidget>
+class _ExportPaletteWidgetState extends State<ExportPaletteWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -138,7 +138,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("SAVE PALETTE", style: Theme.of(context).textTheme.titleLarge),
+                  Text("EXPORT PALETTE", style: Theme.of(context).textTheme.titleLarge),
                   SizedBox(height: _options.padding),
                   Row(
                       mainAxisSize: MainAxisSize.min,
@@ -227,7 +227,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                 controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                 return TextField(
                                   textAlign: TextAlign.end,
-                                  focusNode: _hotkeyManager.savePaletteNameTextFocus,
+                                  focusNode: _hotkeyManager.exportPaletteNameTextFocus,
                                   controller: controller,
                                   onChanged: (final String value) {
                                     _fileName.value = value;
@@ -298,7 +298,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                     ),
                                     onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                                         () {
-                                      widget.accept(saveData: PaletteSaveData.fromWithConcreteData(other: paletteExportTypeMap[_exportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _exportType.value);
+                                      widget.accept(saveData: PaletteExportData.fromWithConcreteData(other: paletteExportTypeMap[_exportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _exportType.value);
                                     } : null,
                                   );
                                 },

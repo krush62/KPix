@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -126,11 +127,15 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     }
 
     //Internal Palettes
-    final List<PaletteManagerEntryData> internalPalettes = await FileHandler.loadPalettesFromInternal();
-    for (final PaletteManagerEntryData palData in internalPalettes)
+    if (!kIsWeb)
     {
-      pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
+      final List<PaletteManagerEntryData> internalPalettes = await FileHandler.loadPalettesFromInternal();
+      for (final PaletteManagerEntryData palData in internalPalettes)
+      {
+        pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
+      }
     }
+
     return pList;
   }
 
@@ -241,7 +246,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                           FontAwesomeIcons.plus,
                           size: _alertOptions.iconSize,
                         ),
-                        onPressed: _addCurrentPalette,
+                        onPressed: kIsWeb ? null : _addCurrentPalette,
                       ),
                     ),
                   )

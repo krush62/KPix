@@ -717,7 +717,7 @@ class FileHandler
     for (final String filePath in imageAssetsList)
     {
       Uint8List? byteData;
-      if (!kIsWeb && !Helper.isDesktop())
+      if (kIsWeb || !Helper.isDesktop())
       {
           ByteData bytes = await rootBundle.load(filePath);
           byteData = bytes.buffer.asUint8List();

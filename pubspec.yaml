@@ -34,10 +34,10 @@ dependencies:
   bitsdojo_window: ^0.1.6
   font_awesome_flutter: ^10.7.0
   multi_split_view: ^3.5.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.1
   google_fonts: ^6.2.1
   shared_preferences: ^2.3.2
-  get_it: ^7.7.0
+  get_it: ^8.0.0
   fl_toast: ^3.2.0
   file_picker: ^8.1.2
   path_provider: ^2.1.4

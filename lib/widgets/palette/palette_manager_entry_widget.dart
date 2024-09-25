@@ -39,8 +39,21 @@ class PaletteManagerEntryData
   final List<KPalRampData> rampDataList;
   final String? path;
   final bool isLocked;
-  final String name;
-  PaletteManagerEntryData({required this.rampDataList, required this.name, required this.isLocked, required this.path});
+  final String _name;
+
+  String get name
+  {
+    if (isLocked)
+    {
+      return "[$_name]";
+    }
+    else
+    {
+      return _name;
+    }
+  }
+
+  PaletteManagerEntryData({required this.rampDataList, required final String name, required this.isLocked, required this.path}) : _name = name;
 }
 
 

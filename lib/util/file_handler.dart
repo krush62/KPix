@@ -20,6 +20,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
@@ -702,9 +703,26 @@ class FileHandler
     return docDir.path;
   }
 
+
+  static Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
+  {
+    final List<PaletteManagerEntryData> paletteData = [];
+    final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final List<String> imageAssetsList = assetManifest.listAssets().where((final String string) => (string.startsWith("palettes/") && string.endsWith(".${FileHandler.fileExtensionKpal}"))).toList();
+    for (final String filePath in imageAssetsList)
+    {
+      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null);
+      if (palSet.rampData != null)
+      {
+        paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: true, rampDataList: palSet.rampData!, path: filePath));
+      }
+    }
+    return paletteData;
+  }
+
   static Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
   {
-    List<PaletteManagerEntryData> paletteData = [];
+    final List<PaletteManagerEntryData> paletteData = [];
     final Directory dir = Directory(GetIt.I.get<AppState>().internalDir);
     final List<String> filesWithExtension = [];
     if (await dir.exists())

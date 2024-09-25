@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -115,7 +116,17 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   Future<List<PaletteManagerEntryWidget>> _createWidgetList() async
   {
     final List<PaletteManagerEntryWidget> pList = [];
+    //Default Palette
     pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints), isLocked: true, path: null, name: "Default")));
+
+    //Asset Palettes
+    final List<PaletteManagerEntryData> assetPalettes = await FileHandler.loadPalettesFromAssets();
+    for (final PaletteManagerEntryData palData in assetPalettes)
+    {
+      pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
+    }
+
+    //Internal Palettes
     final List<PaletteManagerEntryData> internalPalettes = await FileHandler.loadPalettesFromInternal();
     for (final PaletteManagerEntryData palData in internalPalettes)
     {

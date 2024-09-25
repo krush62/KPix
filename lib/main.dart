@@ -18,7 +18,6 @@ import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fl_toast/fl_toast.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/managers/font_manager.dart';
@@ -85,7 +84,7 @@ void main(final List<String> args) {
               animation: themeSettings,
               builder: (final BuildContext context, final Widget? child) {
                 return MaterialApp(
-                  //debugShowCheckedModeBanner: false,
+                  debugShowCheckedModeBanner: false,
                   home: const KPixApp(),
                   theme: KPixTheme.monochromeTheme,
                   darkTheme: KPixTheme.monochromeThemeDark,
@@ -148,8 +147,8 @@ class _KPixAppState extends State<KPixApp>
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
     final String saveDirString = await FileHandler.findSaveDir();
     final String exportDirString = await FileHandler.findExportDir();
-
-    final AppState appState = AppState(saveDir: saveDirString, exportDir: exportDirString);
+    final String internalDirString = await FileHandler.findInternalDir();
+    final AppState appState = AppState(saveDir: saveDirString, exportDir: exportDirString, internalDir: internalDirString);
     GetIt.I.registerSingleton<AppState>(appState);
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 
@@ -199,7 +198,7 @@ class _KPixAppState extends State<KPixApp>
 
       initialFilePath = cmdLineArgs[0];
     }
-    else if (!kIsWeb && Platform.isAndroid)
+    else if (Platform.isAndroid)
     {
       const MethodChannel channel = MethodChannel('app.channel.shared.data');
       initialFilePath = await channel.invokeMethod('getSharedFile');

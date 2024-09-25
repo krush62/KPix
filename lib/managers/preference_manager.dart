@@ -42,10 +42,12 @@ import 'package:kpix/widgets/canvas_size_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:kpix/widgets/color_entry_widget.dart';
+import 'package:kpix/widgets/palette/color_entry_widget.dart';
 import 'package:kpix/widgets/canvas_widget.dart';
 import 'package:kpix/widgets/main_toolbar_widget.dart';
-import 'package:kpix/widgets/palette_widget.dart';
+import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/palette/palette_manager_widget.dart';
+import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/selection_bar_widget.dart';
 import 'package:kpix/widgets/status_bar_widget.dart';
 import 'package:kpix/widgets/tool_settings_widget.dart';
@@ -53,7 +55,7 @@ import 'package:kpix/widgets/tools_widget.dart';
 import 'package:kpix/widgets/shader_widget.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../kpal/kpal_widget.dart';
+import '../widgets/kpal/kpal_widget.dart';
 
 enum PreferenceDouble
 {
@@ -76,6 +78,7 @@ enum PreferenceDouble
   Layout_Tools_ButtonSize(defaultValue: 48.0),
 
   Layout_Palette_Padding(defaultValue: 8.0),
+  Layout_Palette_ManagerButtonSize(defaultValue: 32.0),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
@@ -137,6 +140,12 @@ enum PreferenceDouble
 
   Layout_CanvasOperations_IconHeight(defaultValue: 12.0),
   Layout_CanvasOperations_Padding(defaultValue: 4.0),
+
+  Layout_PaletteManagerEntry_Elevation(defaultValue: 5.0),
+  Layout_PaletteManagerEntry_BorderWidth(defaultValue: 2.0),
+  Layout_PaletteManagerEntry_BorderRadius(defaultValue: 3.0),
+
+  Layout_PaletteManager_EntryAspectRatio(defaultValue: 0.75),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -226,6 +235,10 @@ enum PreferenceInt
   Layout_CanvasSize_SizeMin(defaultValue: 4),
   Layout_CanvasSize_SizeMax(defaultValue: 512),
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
+
+  Layout_PaletteManagerEntry_LayoutFlex(defaultValue: 6),
+
+  Layout_PaletteManager_ColCount(defaultValue: 4),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -506,6 +519,8 @@ class PreferenceManager
   late SelectionBarWidgetOptions selectionBarWidgetOptions;
   late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
   late CanvasSizeOptions canvasSizeOptions;
+  late PaletteManagerEntryOptions paletteManagerEntryOptions;
+  late PaletteManagerOptions paletteManagerOptions;
 
   late KPixPainterOptions kPixPainterOptions;
 
@@ -640,7 +655,8 @@ class PreferenceManager
         buttonSize: _getValueD(PreferenceDouble.Layout_Tools_ButtonSize),
         iconSize: _getValueD(PreferenceDouble.Layout_Tools_IconSize));
     paletteWidgetOptions = PaletteWidgetOptions(
-        padding: _getValueD(PreferenceDouble.Layout_Palette_Padding));
+        padding: _getValueD(PreferenceDouble.Layout_Palette_Padding),
+        managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize));
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
@@ -720,7 +736,14 @@ class PreferenceManager
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
         previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize));
-
+    paletteManagerEntryOptions = PaletteManagerEntryOptions(
+        borderRadius: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderRadius),
+        borderWidth: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderWidth),
+        elevation: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_Elevation),
+        layoutFlex: _getValueI(PreferenceInt.Layout_PaletteManagerEntry_LayoutFlex));
+    paletteManagerOptions = PaletteManagerOptions(
+      colCount: _getValueI(PreferenceInt.Layout_PaletteManager_ColCount),
+      entryAspectRatio: _getValueD(PreferenceDouble.Layout_PaletteManager_EntryAspectRatio));
   }
 
   void _loadToolOptions()

@@ -170,6 +170,7 @@ flutter:
     - fonts/
     - imgs/
     - stamps/
+    - palettes/
     - docs/credits.md
 
   # The following line ensures that the Material Icons font is

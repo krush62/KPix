@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -26,13 +26,14 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/about_screen_widget.dart';
 import 'package:kpix/widgets/canvas_size_widget.dart';
 import 'package:kpix/widgets/credits_widget.dart';
-import 'package:kpix/widgets/export_widget.dart';
+import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/licenses_widget.dart';
-import 'package:kpix/widgets/new_project_widget.dart';
+import 'package:kpix/widgets/file/new_project_widget.dart';
+import 'package:kpix/widgets/palette/palette_manager_widget.dart';
+import 'package:kpix/widgets/palette/save_palette_widget.dart';
 import 'package:kpix/widgets/preferences_widget.dart';
-import 'package:kpix/widgets/save_as_widget.dart';
-import 'package:kpix/widgets/save_palette_widget.dart';
+import 'package:kpix/widgets/file/save_as_widget.dart';
 
 
 class KPixOverlay
@@ -115,9 +116,7 @@ class OverlayEntries
     required final Function onDismiss,
     required Function onNewFile,
     required Function onLoadFile,
-    required Function onLoadPalette,
     required final LayerLink layerLink,
-
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -185,26 +184,6 @@ class OverlayEntries
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Open Palette",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(
-                              options.buttonSpacing),
-                          onPressed: () {onLoadPalette();},
-                          icon: FaIcon(
-                              FontAwesomeIcons.palette,
-                              size: options.buttonHeight),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor),
-                        ),
-                      ),
-                    ),
                   ],
                 )
               ),
@@ -221,7 +200,6 @@ class OverlayEntries
     required Function onSaveFile,
     required Function onSaveAsFile,
     required Function onExportFile,
-    required Function onSavePalette,
     required final LayerLink layerLink,
   })
   {
@@ -291,7 +269,7 @@ class OverlayEntries
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
-                        message: "Export Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}",
+                        message: "Export Project/Palette${hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
@@ -299,25 +277,6 @@ class OverlayEntries
                           onPressed: () {onExportFile();},
                           icon: FaIcon(
                             Icons.share,
-                            size: options.buttonHeight),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Save Palette",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onSavePalette();},
-                          icon: FaIcon(
-                            Icons.palette,
                             size: options.buttonHeight),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
@@ -674,7 +633,8 @@ class OverlayEntries
 
   static KPixOverlay getExportDialog({
     required final Function() onDismiss,
-    required final ExportDataFn onAccept,
+    required final ExportDataFn onAcceptFile,
+    required final PaletteDataFn onAcceptPalette
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -687,7 +647,7 @@ class OverlayEntries
               onDismiss: () {onDismiss();},
             ),
             Center(
-              child: ExportWidget(accept: onAccept, dismiss: onDismiss),
+              child: ExportWidget(acceptFile: onAcceptFile, acceptPalette: onAcceptPalette, dismiss: onDismiss),
             ),
           ]
         )
@@ -876,6 +836,26 @@ class OverlayEntries
           ]
         )
       )
+    );
+  }
+
+  static KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+        entry: OverlayEntry(
+            builder: (context) => Stack(
+                children: [
+                  ModalBarrier(
+                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                    onDismiss: onDismiss,
+                  ),
+                  Center(
+                    child: PaletteManagerWidget(dismiss: onDismiss,)
+                  ),
+                ]
+            )
+        )
     );
   }
 

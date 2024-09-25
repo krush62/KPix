@@ -109,9 +109,9 @@ This is a portable version. Extract the contents of the Windows Zip Package and 
 Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.
 
 ### Android
-Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities. A screen size larger than 10 inches is recommended.
 #### Manual Installation
 Download the Android apk file and install it manually.\
+*Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
 #### Google Play Store Internal Testing
 There is currently an internal testing happening on Google Play Store. You can participate [here](https://play.google.com/apps/internaltest/4701505348022193179).\
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.

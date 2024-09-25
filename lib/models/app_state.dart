@@ -26,7 +26,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
-import 'package:kpix/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -146,16 +146,30 @@ class AppState
   {
     _exportDir.value = dir;
   }
+
+  final ValueNotifier<String> _internalDir;
+  String get internalDir
+  {
+    return _internalDir.value;
+  }
+  ValueNotifier<String> get internalDirNotifier
+  {
+    return _internalDir;
+  }
+  set internalDir(final String dir)
+  {
+    _internalDir.value = dir;
+  }
+
   final ValueNotifier<String?> projectName = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
   static const Duration toolTipDuration = Duration(seconds: 1);
 
 
-  AppState({required String exportDir, required String saveDir}) : _saveDir = ValueNotifier(saveDir), _exportDir = ValueNotifier(exportDir)
+  AppState({required String exportDir, required String saveDir, required String internalDir}) : _saveDir = ValueNotifier(saveDir), _exportDir = ValueNotifier(exportDir), _internalDir = ValueNotifier(internalDir)
   {
-
-    for (ToolType toolType in toolList.keys)
+    for (final ToolType toolType in toolList.keys)
     {
       _toolMap[toolType] = false;
     }

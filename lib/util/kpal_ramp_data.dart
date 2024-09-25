@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-part of 'kpal_widget.dart';
+part of '../widgets/kpal/kpal_widget.dart';
 
 class KPalRampData
 {

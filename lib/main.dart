@@ -146,10 +146,9 @@ class _KPixAppState extends State<KPixApp>
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
-    final String saveDirString = await FileHandler.findSaveDir();
     final String exportDirString = await FileHandler.findExportDir();
     final String internalDirString = await FileHandler.findInternalDir();
-    final AppState appState = AppState(saveDir: saveDirString, exportDir: exportDirString, internalDir: internalDirString);
+    final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString);
     GetIt.I.registerSingleton<AppState>(appState);
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 
@@ -223,6 +222,8 @@ class _KPixAppState extends State<KPixApp>
     {
       _hasProjectChanged();
     }
+
+    await FileHandler.createInternalDirectories();
 
     initialized.value = true;
 

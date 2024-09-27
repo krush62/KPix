@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -662,19 +663,19 @@ class OverlayEntries
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
-        entry: OverlayEntry(
-            builder: (context) => Stack(
-                children: [
-                  ModalBarrier(
-                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                    onDismiss: () {onDismiss();},
-                  ),
-                  Center(
-                    child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
-                  ),
-                ]
-            )
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: () {onDismiss();},
+            ),
+            Center(
+              child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
+            ),
+          ]
         )
+      )
     );
   }
 
@@ -807,7 +808,7 @@ class OverlayEntries
               onDismiss: () {onDismiss();},
             ),
             Center(
-                child: PreferencesWidget(dismiss: onDismiss, accept: onAccept)
+              child: PreferencesWidget(dismiss: onDismiss, accept: onAccept)
             ),
           ]
         )
@@ -843,19 +844,39 @@ class OverlayEntries
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
-        entry: OverlayEntry(
-            builder: (context) => Stack(
-                children: [
-                  ModalBarrier(
-                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                    onDismiss: onDismiss,
-                  ),
-                  Center(
-                    child: PaletteManagerWidget(dismiss: onDismiss,)
-                  ),
-                ]
-            )
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: onDismiss,
+            ),
+            Center(
+              child: PaletteManagerWidget(dismiss: onDismiss,)
+            ),
+          ]
         )
+      )
+    );
+  }
+
+  static KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave})
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: onDismiss,
+            ),
+            Center(
+                child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave)
+            ),
+          ]
+        )
+      )
     );
   }
 

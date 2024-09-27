@@ -39,6 +39,8 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/widgets/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas_size_widget.dart';
+import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
+import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/layer_widget.dart';
 import 'package:kpix/widgets/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -147,6 +149,14 @@ enum PreferenceDouble
 
   Layout_PaletteManager_EntryAspectRatio(defaultValue: 0.75),
 
+  Layout_ProjectManagerEntry_Elevation(defaultValue: 5.0),
+  Layout_ProjectManagerEntry_BorderWidth(defaultValue: 2.0),
+  Layout_ProjectManagerEntry_BorderRadius(defaultValue: 3.0),
+
+  Layout_ProjectManager_EntryAspectRatio(defaultValue: 0.75),
+  Layout_ProjectManager_MaxWidth(defaultValue: 800.0),
+  Layout_ProjectManager_MaxHeight(defaultValue: 600.0),
+
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
   KPal_Constraints_hueShiftExpDefault(defaultValue: 1.0),
@@ -239,6 +249,10 @@ enum PreferenceInt
   Layout_PaletteManagerEntry_LayoutFlex(defaultValue: 6),
 
   Layout_PaletteManager_ColCount(defaultValue: 4),
+
+  Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
+
+  Layout_ProjectManager_ColCount(defaultValue: 5),
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -521,6 +535,8 @@ class PreferenceManager
   late CanvasSizeOptions canvasSizeOptions;
   late PaletteManagerEntryOptions paletteManagerEntryOptions;
   late PaletteManagerOptions paletteManagerOptions;
+  late ProjectManagerEntryOptions projectManagerEntryOptions;
+  late ProjectManagerOptions projectManagerOptions;
 
   late KPixPainterOptions kPixPainterOptions;
 
@@ -744,6 +760,16 @@ class PreferenceManager
     paletteManagerOptions = PaletteManagerOptions(
       colCount: _getValueI(PreferenceInt.Layout_PaletteManager_ColCount),
       entryAspectRatio: _getValueD(PreferenceDouble.Layout_PaletteManager_EntryAspectRatio));
+    projectManagerEntryOptions = ProjectManagerEntryOptions(
+        borderRadius: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderRadius),
+        borderWidth: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderWidth),
+        elevation: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_Elevation),
+        layoutFlex: _getValueI(PreferenceInt.Layout_ProjectManagerEntry_LayoutFlex));
+    projectManagerOptions = ProjectManagerOptions(
+        colCount: _getValueI(PreferenceInt.Layout_ProjectManager_ColCount),
+        entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
+        maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
+        maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight));
   }
 
   void _loadToolOptions()

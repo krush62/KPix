@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -37,6 +38,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:path/path.dart' as p;
+import 'dart:ui' as ui;
 
 class LoadFileSet
 {
@@ -44,6 +46,14 @@ class LoadFileSet
   final HistoryState? historyState;
   final String? path;
   LoadFileSet({required this.status, this.historyState, this.path});
+}
+
+class LoadProjectFileSet
+{
+  final String path;
+  final DateTime lastModifiedDate;
+  final ui.Image? thumbnail;
+  LoadProjectFileSet({required this.path, required this.lastModifiedDate, required this.thumbnail});
 }
 
 
@@ -107,8 +117,9 @@ class FileHandler
   static const String magicNumber = "4B504958";
   static const String fileExtensionKpix = "kpix";
   static const String fileExtensionKpal = "kpal";
-  static const String _storageSubDirName = "KPix";
-  static const String _androidDocumentsDirectory = "/storage/emulated/0/Documents/";
+  static const String palettesSubDirName = "palettes";
+  static const String projectsSubDirName = "projects";
+  static const String thumbnailExtension = "png";
 
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
@@ -241,7 +252,7 @@ class FileHandler
           allowMultiple: false,
           type: FileType.custom,
           allowedExtensions: [fileExtensionKpix],
-          initialDirectory: GetIt.I.get<AppState>().saveDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir
       ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
     }
     else //mobile
@@ -249,7 +260,7 @@ class FileHandler
       FilePicker.platform.pickFiles(
           allowMultiple: false,
           type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().saveDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir
       ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
     }
   }
@@ -263,11 +274,11 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){_fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 
-  static void _fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback})
+  static void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback})
   {
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
     if (finishCallback != null)
@@ -276,33 +287,55 @@ class FileHandler
     }
   }
 
-  static void saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false})
+  static Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false}) async
   {
     final AppState appState = GetIt.I.get<AppState>();
     if (!kIsWeb)
     {
-      final String finalPath = p.join(appState.saveDir, "$fileName.$fileExtensionKpix");
-      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
-
+      final String finalPath = p.join(appState.internalDir, projectsSubDirName, "$fileName.$fileExtensionKpix");
+      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String path){_projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
     }
     else
     {
-      _saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String path){_fileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
+      _saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String path){_projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
     }
   }
 
-  static void _fileSaved({required final String fileName, required final String path, required final Function()? finishCallback})
+  static Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback}) async
   {
-    GetIt.I.get<AppState>().fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
+    final AppState appState = GetIt.I.get<AppState>();
+    if (!kIsWeb)
+    {
+      final String? pngPath = await Helper.replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
+      if (pngPath != null)
+      {
+        final ui.Image img = await Helper.getImageFromLayers(canvasSize: appState.canvasSize, layers: appState.layers, size: appState.canvasSize);
+        final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
+      }
+    }
+
+    appState.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
     if (finishCallback != null)
     {
       finishCallback();
     }
   }
 
-  static Future<bool> deleteFile({required String path}) async
+  static Future<bool> deleteProject({required final String fullProjectPath}) async
   {
-    File file = File(path);
+    final bool success = await deleteFile(path: fullProjectPath);
+    final String? pngPath = await Helper.replaceFileExtension(filePath: fullProjectPath, newExtension: thumbnailExtension, inputFileMustExist: false);
+    if (pngPath != null)
+    {
+      await deleteFile(path: pngPath);
+    }
+    return success;
+  }
+
+  static Future<bool> deleteFile({required final String path}) async
+  {
+    final File file = File(path);
     if (await file.exists())
     {
       await file.delete();
@@ -316,7 +349,7 @@ class FileHandler
 
   static Future<bool> saveCurrentPalette({required String fileName, required String directory, required String extension}) async
   {
-    final String finalPath = p.join(directory, "$fileName.$extension");
+    final String finalPath = p.join(directory, fileName);
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
     Uint8List data = await ExportFunctions.getPaletteKPalData(rampList: rampList);
     return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension);
@@ -363,7 +396,7 @@ class FileHandler
 
   static Future<bool> _savePaletteDataToFile({required final Uint8List? data, required String path, required final String extension}) async
   {
-    final String pathWithExtension = "$path.$extension";;
+    final String pathWithExtension = "$path.$extension";
     if (data != null)
     {
       if (!kIsWeb)
@@ -388,54 +421,6 @@ class FileHandler
       GetIt.I.get<AppState>().showMessage(text: "Palette saving failed");
       return false;
     }
-  }
-
-
-  static void loadPalettePressed({required PaletteReplaceBehavior paletteReplaceBehavior})
-  {
-    if (Helper.isDesktop(includingWeb: true))
-    {
-      FilePicker.platform.pickFiles(
-          allowMultiple: false,
-          type: FileType.custom,
-          allowedExtensions: [fileExtensionKpal],
-          initialDirectory: GetIt.I.get<AppState>().saveDir
-      ).then((final FilePickerResult? result) {
-        _loadPaletteChosen(result: result, paletteReplaceBehavior: paletteReplaceBehavior);
-      });
-    }
-    else //mobile
-        {
-      FilePicker.platform.pickFiles(
-          allowMultiple: false,
-          type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().saveDir
-      ).then((final FilePickerResult? result) {
-        _loadPaletteChosen(result: result, paletteReplaceBehavior: paletteReplaceBehavior);
-      });
-    }
-  }
-
-  static void _loadPaletteChosen({required final FilePickerResult? result, required final PaletteReplaceBehavior paletteReplaceBehavior})
-  {
-
-    if (result != null && result.files.isNotEmpty)
-    {
-      String path = result.files.first.name;
-      if (!kIsWeb && result.files.first.path != null)
-      {
-        path = result.files.first.path!;
-      }
-      _loadKPalFile(path: path, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: result.files.first.bytes).then((final LoadPaletteSet loadPaletteSet) {
-        _paletteLoaded(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior);
-      });
-    }
-  }
-
-  //this method is not necessary, replacePalette can be called directly from _loadPaletteChosen
-  static void _paletteLoaded({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior})
-  {
-    GetIt.I.get<AppState>().replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior);
   }
 
   static Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints}) async
@@ -661,54 +646,6 @@ class FileHandler
       return internalDir.path;
   }
 
-  static Future<String> findSaveDir() async
-  {
-    if (!kIsWeb)
-    {
-      if (Helper.isDesktop() || Platform.isIOS)
-      {
-        final Directory docDir = await getApplicationDocumentsDirectory();
-        return await _getOrCreateKPixDir(docDir: docDir);
-      }
-      else if (Platform.isAndroid)
-      {
-        final Directory docDir = Directory(_androidDocumentsDirectory);
-        if (await docDir.exists())
-        {
-          return await _getOrCreateKPixDir(docDir: docDir);
-        }
-        else
-        {
-          final Directory fallbackDir = await getApplicationDocumentsDirectory();
-          if (await fallbackDir.exists())
-          {
-            return fallbackDir.path;
-          }
-        }
-      }
-    }
-    return "";
-  }
-
-  static Future<String> _getOrCreateKPixDir({required final Directory docDir}) async
-  {
-    if (await docDir.exists())
-    {
-      final Directory kPixDir = Directory(p.join(docDir.path, _storageSubDirName));
-      if (!(await kPixDir.exists()))
-      {
-        final Directory kPixDirCreated = await kPixDir.create();
-        return await kPixDirCreated.exists() ? kPixDirCreated.path : docDir.path;
-      }
-      else
-      {
-        return kPixDir.path;
-      }
-    }
-    return docDir.path;
-  }
-
-
   static Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
   {
     final List<PaletteManagerEntryData> paletteData = [];
@@ -735,7 +672,7 @@ class FileHandler
   static Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
   {
     final List<PaletteManagerEntryData> paletteData = [];
-    final Directory dir = Directory(GetIt.I.get<AppState>().internalDir);
+    final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName));
     final List<String> filesWithExtension = [];
     if (await dir.exists())
     {
@@ -757,6 +694,35 @@ class FileHandler
     }
     return paletteData;
   }
+
+  static Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async
+  {
+    final List<ProjectManagerEntryData> projectData = [];
+    final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName));
+
+    if (await dir.exists())
+    {
+      await for (FileSystemEntity entity in dir.list(recursive: false, followLinks: false))
+      {
+        if (entity is File && entity.path.endsWith(".$fileExtensionKpix"))
+        {
+          final String? pngPath = await Helper.replaceFileExtension(filePath: entity.absolute.path, newExtension: thumbnailExtension, inputFileMustExist: true);
+          ui.Image? thumbnail;
+          if (pngPath != null)
+          {
+            final File pngFile = File(pngPath);
+            final Uint8List imageBytes = await pngFile.readAsBytes();
+            final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
+            final ui.FrameInfo frame = await codec.getNextFrame();
+            thumbnail = frame.image;
+          }
+          projectData.add(ProjectManagerEntryData(name: Helper.extractFilenameFromPath(path: entity.absolute.path, keepExtension: false), path: entity.absolute.path, thumbnail: thumbnail, dateTime: await entity.lastModified()));
+        }
+      }
+    }
+    return projectData;
+  }
+
   static void setUint64({required final ByteData bytes, required final int offset, required final int value, final Endian endian = Endian.big})
   {
     if (kIsWeb)
@@ -778,6 +744,24 @@ class FileHandler
     else
     {
       bytes.setUint64(offset, value);
+    }
+  }
+
+  static Future<void> createInternalDirectories() async
+  {
+    final List<Directory> internalDirectories =
+    [
+      Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName)),
+      Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName))
+    ];
+
+    for (final Directory dir in internalDirectories)
+    {
+      final bool dirExists = await dir.exists();
+      if (!dirExists)
+      {
+        await dir.create();
+      }
     }
   }
 

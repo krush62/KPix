@@ -97,7 +97,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     );
     _projectManagerDialog = OverlayEntries.getProjectManagerDialog(
       onDismiss: _closeAllMenus,
-      onSave: _saveFile
+      onSave: _saveFile,
+      onLoad: _fileLoaded
     );
     _exportDialog = OverlayEntries.getExportDialog(
       onDismiss: _closeAllMenus,
@@ -212,6 +213,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _closeAllMenus();
   }
 
+  void _fileLoaded()
+  {
+    if (_projectManagerDialog.closeCallback != null)
+    {
+      _projectManagerDialog.closeCallback!();
+      _projectManagerDialog.closeCallback = null;
+    }
+  }
 
   void _savePressed()
   {

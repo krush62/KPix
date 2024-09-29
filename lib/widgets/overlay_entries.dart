@@ -42,7 +42,7 @@ class KPixOverlay
   bool isVisible;
   OverlayEntry entry;
   KPixOverlay({required this.entry, this.isVisible = false});
-  Function()? _closeCallback;
+  Function()? closeCallback;
 
   void show({required final BuildContext context, final Function()? callbackFunction})
   {
@@ -51,7 +51,7 @@ class KPixOverlay
       Overlay.of(context).insert(entry);
       isVisible = true;
     }
-    _closeCallback = callbackFunction;
+    closeCallback = callbackFunction;
   }
 
   void hide()
@@ -60,11 +60,6 @@ class KPixOverlay
     {
       entry.remove();
       isVisible = false;
-    }
-    if (_closeCallback != null)
-    {
-      _closeCallback!();
-      _closeCallback = null;
     }
   }
 }
@@ -867,7 +862,7 @@ class OverlayEntries
     );
   }
 
-  static KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave})
+  static KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
@@ -879,7 +874,7 @@ class OverlayEntries
               onDismiss: onDismiss,
             ),
             Center(
-                child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave)
+                child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,)
             ),
           ]
         )

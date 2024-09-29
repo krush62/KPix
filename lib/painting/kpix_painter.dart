@@ -168,24 +168,26 @@ class KPixPainter extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    final currentToolPainter = toolPainterMap[_appState.selectedTool];
-    if (currentToolPainter != toolPainter)
+    if (_appState.getSelectedLayer() != null)
     {
-      if (toolPainter != null)
+      final currentToolPainter = toolPainterMap[_appState.selectedTool];
+      if (currentToolPainter != toolPainter)
       {
-        toolPainter!.reset();
+        if (toolPainter != null)
+        {
+          toolPainter!.reset();
+        }
+        toolPainter = currentToolPainter;
       }
-      toolPainter = currentToolPainter;
-    }
-    if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
-    {
-      latestSize = size;
-      _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
-      _latestContrast = _guiOptions.rasterContrast.value;
-      _createCheckerboard();
-    }
+      if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
+      {
+        latestSize = size;
+        _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
+        _latestContrast = _guiOptions.rasterContrast.value;
+        _createCheckerboard();
+      }
 
-    DrawingParameters drawParams = DrawingParameters(
+      DrawingParameters drawParams = DrawingParameters(
         offset: _offset.value,
         canvas: canvas,
         paint: Paint(),
@@ -197,16 +199,17 @@ class KPixPainter extends CustomPainter
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
         currentLayer: _appState.getSelectedLayer()!,
-    );
+      );
 
 
-    _drawCheckerboard(drawParams: drawParams);
-    toolPainter?.calculate(drawParams: drawParams);
-    _drawLayers(drawParams: drawParams);
-    _drawSelection(drawParams: drawParams);
-    toolPainter?.drawExtras(drawParams: drawParams);
-    _drawCursor(drawParams: drawParams);
-    toolPainter?.setStatusBarData(drawParams: drawParams);
+      _drawCheckerboard(drawParams: drawParams);
+      toolPainter?.calculate(drawParams: drawParams);
+      _drawLayers(drawParams: drawParams);
+      _drawSelection(drawParams: drawParams);
+      toolPainter?.drawExtras(drawParams: drawParams);
+      _drawCursor(drawParams: drawParams);
+      toolPainter?.setStatusBarData(drawParams: drawParams);
+    }
   }
 
   void _drawSelection({required final DrawingParameters drawParams})

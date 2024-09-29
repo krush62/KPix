@@ -37,8 +37,9 @@ class ProjectManagerOptions
 class ProjectManagerWidget extends StatefulWidget
 {
   final Function() dismiss;
+  final Function() fileLoad;
   final SaveKnownFileFn saveKnownFileFn;
-  const ProjectManagerWidget({super.key, required this.dismiss, required this.saveKnownFileFn});
+  const ProjectManagerWidget({super.key, required this.dismiss, required this.saveKnownFileFn, required this.fileLoad});
 
   @override
   State<ProjectManagerWidget> createState() => _ProjectManagerWidgetState();
@@ -85,6 +86,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: _selectedWidget.value!.entryData.path).then((final LoadFileSet loadFileSet){FileHandler.fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
     _closeSaveBeforeLoadWarning();
     widget.dismiss();
+    widget.fileLoad();
   }
 
   void _dismissPressed()

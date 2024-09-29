@@ -192,7 +192,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      _projectManagerDialog.show(context: context);
+      _projectManagerDialog.show(context: context, callbackFunction: callback);
     }
   }
 

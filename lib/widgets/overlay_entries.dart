@@ -42,14 +42,16 @@ class KPixOverlay
   bool isVisible;
   OverlayEntry entry;
   KPixOverlay({required this.entry, this.isVisible = false});
+  Function()? _closeCallback;
 
-  void show({required BuildContext context})
+  void show({required final BuildContext context, final Function()? callbackFunction})
   {
     if (!isVisible)
     {
       Overlay.of(context).insert(entry);
       isVisible = true;
     }
+    _closeCallback = callbackFunction;
   }
 
   void hide()
@@ -58,6 +60,11 @@ class KPixOverlay
     {
       entry.remove();
       isVisible = false;
+    }
+    if (_closeCallback != null)
+    {
+      _closeCallback!();
+      _closeCallback = null;
     }
   }
 }

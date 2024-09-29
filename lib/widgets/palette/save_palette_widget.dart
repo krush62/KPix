@@ -24,6 +24,7 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:path/path.dart' as p;
 
 class SavePaletteWidget extends StatefulWidget
 {
@@ -46,7 +47,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: _appState.internalDir, extension: FileHandler.fileExtensionKpal);
+    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, FileHandler.palettesSubDirName), extension: FileHandler.fileExtensionKpal);
   }
 
   @override
@@ -165,7 +166,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                 ),
                                 onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                                     () {
-                                  widget.accept(saveData: PaletteExportData(extension: FileHandler.fileExtensionKpal, directory: _appState.internalDir, fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
+                                  widget.accept(saveData: PaletteExportData(extension: FileHandler.fileExtensionKpal, directory: p.join(_appState.internalDir, FileHandler.palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
                                 } : null,
                               );
                             },

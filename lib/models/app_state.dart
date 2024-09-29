@@ -15,7 +15,6 @@
  */
 
 import 'dart:collection';
-import 'dart:io';
 import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/foundation.dart';
@@ -119,19 +118,6 @@ class AppState
   }
   late SelectionState selectionState = SelectionState(repaintNotifier: repaintNotifier);
   final StatusBarState statusBarState = StatusBarState();
-  final ValueNotifier<String> _saveDir;
-  String get saveDir
-  {
-    return _saveDir.value;
-  }
-  ValueNotifier<String> get saveDirNotifier
-  {
-    return _saveDir;
-  }
-  set saveDir(final String dir)
-  {
-    _saveDir.value = dir;
-  }
 
   final ValueNotifier<String> _exportDir;
   String get exportDir
@@ -167,7 +153,7 @@ class AppState
   static const Duration toolTipDuration = Duration(seconds: 1);
 
 
-  AppState({required String exportDir, required String saveDir, required String internalDir}) : _saveDir = ValueNotifier(saveDir), _exportDir = ValueNotifier(exportDir), _internalDir = ValueNotifier(internalDir)
+  AppState({required String exportDir, required String internalDir}) : _exportDir = ValueNotifier(exportDir), _internalDir = ValueNotifier(internalDir)
   {
     for (final ToolType toolType in toolList.keys)
     {
@@ -436,10 +422,6 @@ class AppState
     {
       _restoreState(historyState: loadFileSet.historyState);
       projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-      if (!kIsWeb && !Platform.isAndroid) //file picker on android does not return a valid path, but a cache path instead
-      {
-        _saveDir.value = Helper.getBaseDir(fullPath: loadFileSet.path!);
-      }
       hasChanges.value = false;
     }
     else

@@ -48,7 +48,7 @@ class KPixPainterOptions
   final double selectionPolygonCircleRadius;
   final double selectionStrokeWidthLarge;
   final double selectionStrokeWidthSmall;
-
+  final int rasterIntervalMs;
 
   KPixPainterOptions({
     required this.cursorSize,
@@ -58,6 +58,7 @@ class KPixPainterOptions
     required this.selectionPolygonCircleRadius,
     required this.selectionStrokeWidthLarge,
     required this.selectionStrokeWidthSmall,
+    required this.rasterIntervalMs
   });
 }
 
@@ -154,10 +155,10 @@ class KPixPainter extends CustomPainter
       ToolType.line: LinePainter(painterOptions: _options),
       ToolType.stamp: StampPainter(painterOptions: _options)
     };
-    Timer.periodic(const Duration(milliseconds: 500), (final Timer t) {_rasterTimeout(t: t);});
+    Timer.periodic(Duration(milliseconds: _options.rasterIntervalMs), (final Timer t) {_rasterTimeout(t: t);});
   }
 
-  Future<void> _rasterTimeout({required Timer t}) async
+  Future<void> _rasterTimeout({required final Timer t}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     paint(Canvas(recorder), Size(latestSize.width, latestSize.height));
@@ -168,24 +169,26 @@ class KPixPainter extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    final currentToolPainter = toolPainterMap[_appState.selectedTool];
-    if (currentToolPainter != toolPainter)
+    if (_appState.getSelectedLayer() != null)
     {
-      if (toolPainter != null)
+      final currentToolPainter = toolPainterMap[_appState.selectedTool];
+      if (currentToolPainter != toolPainter)
       {
-        toolPainter!.reset();
+        if (toolPainter != null)
+        {
+          toolPainter!.reset();
+        }
+        toolPainter = currentToolPainter;
       }
-      toolPainter = currentToolPainter;
-    }
-    if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
-    {
-      latestSize = size;
-      _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
-      _latestContrast = _guiOptions.rasterContrast.value;
-      _createCheckerboard();
-    }
+      if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
+      {
+        latestSize = size;
+        _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
+        _latestContrast = _guiOptions.rasterContrast.value;
+        _createCheckerboard();
+      }
 
-    DrawingParameters drawParams = DrawingParameters(
+      DrawingParameters drawParams = DrawingParameters(
         offset: _offset.value,
         canvas: canvas,
         paint: Paint(),
@@ -197,16 +200,17 @@ class KPixPainter extends CustomPainter
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
         currentLayer: _appState.getSelectedLayer()!,
-    );
+      );
 
 
-    _drawCheckerboard(drawParams: drawParams);
-    toolPainter?.calculate(drawParams: drawParams);
-    _drawLayers(drawParams: drawParams);
-    _drawSelection(drawParams: drawParams);
-    toolPainter?.drawExtras(drawParams: drawParams);
-    _drawCursor(drawParams: drawParams);
-    toolPainter?.setStatusBarData(drawParams: drawParams);
+      _drawCheckerboard(drawParams: drawParams);
+      toolPainter?.calculate(drawParams: drawParams);
+      _drawLayers(drawParams: drawParams);
+      _drawSelection(drawParams: drawParams);
+      toolPainter?.drawExtras(drawParams: drawParams);
+      _drawCursor(drawParams: drawParams);
+      toolPainter?.setStatusBarData(drawParams: drawParams);
+    }
   }
 
   void _drawSelection({required final DrawingParameters drawParams})

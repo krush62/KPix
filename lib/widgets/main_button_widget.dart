@@ -66,6 +66,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _aboutDialog;
   late KPixOverlay _preferencesDialog;
   late KPixOverlay _saveAsDialog;
+  late KPixOverlay _projectManagerDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -93,6 +94,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onCancel: _closeAllMenus,
       outsideCancelable: false,
       message: "There are unsaved changes, do you want to save first?"
+    );
+    _projectManagerDialog = OverlayEntries.getProjectManagerDialog(
+      onDismiss: _closeAllMenus,
+      onSave: _saveFile,
+      onLoad: _fileLoaded
     );
     _exportDialog = OverlayEntries.getExportDialog(
       onDismiss: _closeAllMenus,
@@ -157,6 +163,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _aboutDialog.hide();
     _preferencesDialog.hide();
     _saveAsDialog.hide();
+    _projectManagerDialog.hide();
   }
 
   void _newFile()
@@ -172,14 +179,21 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _loadFile({Function()? callback})
   {
-    if (_appState.hasChanges.value)
+    if (kIsWeb)
     {
-      _saveLoadWarningDialog.show(context: context);
+      if (_appState.hasChanges.value)
+      {
+        _saveLoadWarningDialog.show(context: context);
+      }
+      else
+      {
+        FileHandler.loadFilePressed(finishCallback: callback);
+        _closeAllMenus();
+      }
     }
     else
     {
-      FileHandler.loadFilePressed(finishCallback: callback);
-      _closeAllMenus();
+      _projectManagerDialog.show(context: context, callbackFunction: callback);
     }
   }
 
@@ -199,6 +213,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _closeAllMenus();
   }
 
+  void _fileLoaded()
+  {
+    if (_projectManagerDialog.closeCallback != null)
+    {
+      _projectManagerDialog.closeCallback!();
+      _projectManagerDialog.closeCallback = null;
+    }
+  }
 
   void _savePressed()
   {

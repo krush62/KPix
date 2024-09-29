@@ -545,5 +545,31 @@ class Helper
         .replaceAll("'", '&apos;');
   }
 
+  static Future<String?> replaceFileExtension({required String filePath, required String newExtension, required bool inputFileMustExist}) async
+  {
+    if ((!await File(filePath).exists()) && inputFileMustExist)
+    {
+      return null;
+    }
+
+    final String currentExtension = p.extension(filePath);
+    if (currentExtension.isEmpty)
+    {
+      return null;
+    }
+    return filePath.replaceAll(RegExp(r'\.[^\.]+$'), '.$newExtension');
+  }
+
+  static String formatDateTime({required final DateTime dateTime})
+  {
+    String year = dateTime.year.toString();
+    String month = dateTime.month.toString().padLeft(2, '0'); // Pad with zero if needed
+    String day = dateTime.day.toString().padLeft(2, '0');
+    String hour = dateTime.hour.toString().padLeft(2, '0');
+    String minute = dateTime.minute.toString().padLeft(2, '0');
+
+    return '$year-$month-$day $hour:$minute';
+  }
+
 }
 

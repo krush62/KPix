@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -41,14 +42,16 @@ class KPixOverlay
   bool isVisible;
   OverlayEntry entry;
   KPixOverlay({required this.entry, this.isVisible = false});
+  Function()? closeCallback;
 
-  void show({required BuildContext context})
+  void show({required final BuildContext context, final Function()? callbackFunction})
   {
     if (!isVisible)
     {
       Overlay.of(context).insert(entry);
       isVisible = true;
     }
+    closeCallback = callbackFunction;
   }
 
   void hide()
@@ -630,6 +633,99 @@ class OverlayEntries
     );
   }
 
+  static KPixOverlay getTwoButtonDialog({
+    required final Function() onYes,
+    required final Function() onNo,
+    required bool outsideCancelable,
+    required final String message,
+  })
+  {
+    OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+        entry: OverlayEntry(
+          builder: (context) => Stack(
+            children: [
+              ModalBarrier(
+                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                onDismiss: outsideCancelable ? onNo : null,
+              ),
+              Center(
+                child: Material(
+                  elevation: options.elevation,
+                  shadowColor: Theme.of(context).primaryColorDark,
+                  borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                  child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: options.minHeight,
+                        minWidth: options.minWidth,
+                        maxHeight: options.maxHeight,
+                        maxWidth: options.maxWidth,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        border: Border.all(
+                          color: Theme.of(context).primaryColorLight,
+                          width: options.borderWidth,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Center(child: Padding(
+                            padding: EdgeInsets.all(options.padding),
+                            child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                          )),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsets.all(options.padding),
+                                  child: IconButton.outlined(
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.check,
+                                      size: options.iconSize,
+                                    ),
+                                    onPressed: () {
+                                      onYes();
+                                    },
+                                  ),
+                                )
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsets.all(options.padding),
+                                  child: IconButton.outlined(
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.xmark,
+                                      size: options.iconSize,
+                                    ),
+                                    onPressed: () {
+                                      onNo();
+                                    },
+                                  ),
+                                )
+                              ),
+                            ]
+                          ),
+                        ],
+                      )
+                    )
+                  ),
+                ),
+              ]
+            )
+        )
+    );
+  }
+
 
   static KPixOverlay getExportDialog({
     required final Function() onDismiss,
@@ -662,19 +758,19 @@ class OverlayEntries
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
-        entry: OverlayEntry(
-            builder: (context) => Stack(
-                children: [
-                  ModalBarrier(
-                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                    onDismiss: () {onDismiss();},
-                  ),
-                  Center(
-                    child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
-                  ),
-                ]
-            )
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: () {onDismiss();},
+            ),
+            Center(
+              child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
+            ),
+          ]
         )
+      )
     );
   }
 
@@ -807,7 +903,7 @@ class OverlayEntries
               onDismiss: () {onDismiss();},
             ),
             Center(
-                child: PreferencesWidget(dismiss: onDismiss, accept: onAccept)
+              child: PreferencesWidget(dismiss: onDismiss, accept: onAccept)
             ),
           ]
         )
@@ -843,19 +939,39 @@ class OverlayEntries
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
-        entry: OverlayEntry(
-            builder: (context) => Stack(
-                children: [
-                  ModalBarrier(
-                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                    onDismiss: onDismiss,
-                  ),
-                  Center(
-                    child: PaletteManagerWidget(dismiss: onDismiss,)
-                  ),
-                ]
-            )
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: onDismiss,
+            ),
+            Center(
+              child: PaletteManagerWidget(dismiss: onDismiss,)
+            ),
+          ]
         )
+      )
+    );
+  }
+
+  static KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: onDismiss,
+            ),
+            Center(
+                child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,)
+            ),
+          ]
+        )
+      )
     );
   }
 

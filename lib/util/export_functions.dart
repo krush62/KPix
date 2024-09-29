@@ -565,7 +565,7 @@ class ExportFunctions
     return outBytes.buffer.asUint8List();
   }
 
-  static Future<ByteData> getKPixData({required final String path, required final AppState appState}) async
+  static Future<ByteData> getKPixData({required final AppState appState}) async
   {
     //TODO perform sanity checks (max ramps, max layers, etc...)
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");

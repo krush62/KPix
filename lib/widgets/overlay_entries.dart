@@ -633,6 +633,99 @@ class OverlayEntries
     );
   }
 
+  static KPixOverlay getTwoButtonDialog({
+    required final Function() onYes,
+    required final Function() onNo,
+    required bool outsideCancelable,
+    required final String message,
+  })
+  {
+    OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+        entry: OverlayEntry(
+          builder: (context) => Stack(
+            children: [
+              ModalBarrier(
+                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                onDismiss: outsideCancelable ? onNo : null,
+              ),
+              Center(
+                child: Material(
+                  elevation: options.elevation,
+                  shadowColor: Theme.of(context).primaryColorDark,
+                  borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                  child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: options.minHeight,
+                        minWidth: options.minWidth,
+                        maxHeight: options.maxHeight,
+                        maxWidth: options.maxWidth,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        border: Border.all(
+                          color: Theme.of(context).primaryColorLight,
+                          width: options.borderWidth,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Center(child: Padding(
+                            padding: EdgeInsets.all(options.padding),
+                            child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                          )),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsets.all(options.padding),
+                                  child: IconButton.outlined(
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.check,
+                                      size: options.iconSize,
+                                    ),
+                                    onPressed: () {
+                                      onYes();
+                                    },
+                                  ),
+                                )
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsets.all(options.padding),
+                                  child: IconButton.outlined(
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.xmark,
+                                      size: options.iconSize,
+                                    ),
+                                    onPressed: () {
+                                      onNo();
+                                    },
+                                  ),
+                                )
+                              ),
+                            ]
+                          ),
+                        ],
+                      )
+                    )
+                  ),
+                ),
+              ]
+            )
+        )
+    );
+  }
+
 
   static KPixOverlay getExportDialog({
     required final Function() onDismiss,

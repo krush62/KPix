@@ -53,6 +53,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier(null);
 
   late KPixOverlay _saveBeforeLoadWarningDialog;
+  late KPixOverlay _deleteWarningDialog;
 
   @override
   void initState()
@@ -64,6 +65,12 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         onCancel: _closeSaveBeforeLoadWarning,
         outsideCancelable: false,
         message: "There are unsaved changes, do you want to save first?"
+    );
+    _deleteWarningDialog = OverlayEntries.getTwoButtonDialog(
+      message: "Do you really want to delete this project?",
+      onNo: _deleteWarningNo,
+      onYes: _deleteWarningYes,
+      outsideCancelable: false
     );
 
     _createWidgetList().then((final List<ProjectManagerEntryWidget> pList) {
@@ -106,7 +113,12 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     }
   }
 
-  void _deleteProject()
+  void _deleteProjectPressed()
+  {
+    _deleteWarningDialog.show(context: context);
+  }
+
+  void _deleteWarningYes()
   {
     if (_selectedWidget.value != null)
     {
@@ -114,6 +126,12 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         _fileDeleted(success: success);
       });
     }
+    _deleteWarningDialog.hide();
+  }
+
+  void _deleteWarningNo()
+  {
+    _deleteWarningDialog.hide();
   }
 
   void _fileDeleted({required bool success})
@@ -215,7 +233,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                               FontAwesomeIcons.trashCan,
                               size: _alertOptions.iconSize,
                             ),
-                            onPressed: (selWidget != null) ? _deleteProject : null,
+                            onPressed: (selWidget != null) ? _deleteProjectPressed : null,
                           );
                         },
                       ),

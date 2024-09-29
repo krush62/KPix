@@ -51,6 +51,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   late KPixOverlay _paletteWarningDialog;
   late KPixOverlay _addPaletteDialog;
+  late KPixOverlay _deleteWarningDialog;
 
   @override
   void initState()
@@ -66,6 +67,14 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
       onAccept: _acceptAddPalette,
       onDismiss: _dismissAddPalette
     );
+    _deleteWarningDialog = OverlayEntries.getTwoButtonDialog(
+        message: "Do you really want to delete this palette?",
+        onNo: _deleteWarningNo,
+        onYes: _deleteWarningYes,
+        outsideCancelable: false
+    );
+
+
     _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
       _paletteEntries.value = pList;
     });
@@ -149,7 +158,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     _paletteWarningDialog.show(context: context);
   }
 
-  void _deletePalette()
+  void _deletePalettePressed()
+  {
+    _deleteWarningDialog.show(context: context);
+  }
+
+  void _deleteWarningYes()
   {
     if (_selectedWidget.value != null && _selectedWidget.value!.entryData.path != null)
     {
@@ -157,6 +171,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         _fileDeleted(success: success);
       });
     }
+    _deleteWarningDialog.hide();
+  }
+
+  void _deleteWarningNo()
+  {
+    _deleteWarningDialog.hide();
   }
 
   void _fileDeleted({required bool success})
@@ -266,7 +286,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                                 FontAwesomeIcons.trashCan,
                                 size: _alertOptions.iconSize,
                               ),
-                              onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deletePalette : null,
+                              onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deletePalettePressed : null,
                             );
                           },
                         ),

@@ -154,10 +154,10 @@ class KPixPainter extends CustomPainter
       ToolType.line: LinePainter(painterOptions: _options),
       ToolType.stamp: StampPainter(painterOptions: _options)
     };
-    Timer.periodic(const Duration(milliseconds: 500), (final Timer t) {_rasterTimeout(t: t);});
+    Timer.periodic(const Duration(milliseconds: 500), (final Timer t) {_rasterTimeout(t: t);}); //TODO magic number
   }
 
-  Future<void> _rasterTimeout({required Timer t}) async
+  Future<void> _rasterTimeout({required final Timer t}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     paint(Canvas(recorder), Size(latestSize.width, latestSize.height));

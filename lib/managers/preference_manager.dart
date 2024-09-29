@@ -352,6 +352,8 @@ enum PreferenceInt
 
   ThemeType(defaultValue: 0),
 
+  Painter_RasterIntervalMs(defaultValue: 750),
+
   StylusOptions_LongPressDelay(defaultValue: 250),
   StylusOptions_LongPressDelayMin(defaultValue: 50),
   StylusOptions_LongPressDelayMax(defaultValue: 1000),
@@ -940,6 +942,7 @@ class PreferenceManager
         selectionPolygonCircleRadius: _getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
         selectionStrokeWidthLarge: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthLarge),
         selectionStrokeWidthSmall: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthSmall),
+        rasterIntervalMs: _getValueI(PreferenceInt.Painter_RasterIntervalMs),
     );
   }
 

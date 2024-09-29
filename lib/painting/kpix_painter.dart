@@ -48,7 +48,7 @@ class KPixPainterOptions
   final double selectionPolygonCircleRadius;
   final double selectionStrokeWidthLarge;
   final double selectionStrokeWidthSmall;
-
+  final int rasterIntervalMs;
 
   KPixPainterOptions({
     required this.cursorSize,
@@ -58,6 +58,7 @@ class KPixPainterOptions
     required this.selectionPolygonCircleRadius,
     required this.selectionStrokeWidthLarge,
     required this.selectionStrokeWidthSmall,
+    required this.rasterIntervalMs
   });
 }
 
@@ -154,7 +155,7 @@ class KPixPainter extends CustomPainter
       ToolType.line: LinePainter(painterOptions: _options),
       ToolType.stamp: StampPainter(painterOptions: _options)
     };
-    Timer.periodic(const Duration(milliseconds: 500), (final Timer t) {_rasterTimeout(t: t);}); //TODO magic number
+    Timer.periodic(Duration(milliseconds: _options.rasterIntervalMs), (final Timer t) {_rasterTimeout(t: t);});
   }
 
   Future<void> _rasterTimeout({required final Timer t}) async

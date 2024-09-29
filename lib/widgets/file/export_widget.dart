@@ -30,7 +30,8 @@ enum FileExportType
   png,
   aseprite,
   //photoshop,
-  gimp
+  gimp,
+  kpix
 }
 
 enum PaletteExportType
@@ -61,7 +62,6 @@ class PaletteExportData
 
 const Map<PaletteExportType, PaletteExportData> paletteExportTypeMap =
 {
-  PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: FileHandler.fileExtensionKpal),
   PaletteExportType.png:PaletteExportData(name: "PNG", extension: "png"),
   PaletteExportType.aseprite:PaletteExportData(name: "ASEPRITE", extension: "aseprite"),
   PaletteExportType.gimp:PaletteExportData(name: "GIMP", extension: "gpl"),
@@ -69,7 +69,8 @@ const Map<PaletteExportType, PaletteExportData> paletteExportTypeMap =
   PaletteExportType.adobe:PaletteExportData(name: "ADOBE", extension: "ase"),
   PaletteExportType.jasc:PaletteExportData(name: "JASC", extension: "pal"),
   PaletteExportType.corel:PaletteExportData(name: "COREL", extension: "xml"),
-  PaletteExportType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc")
+  PaletteExportType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc"),
+  PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: FileHandler.fileExtensionKpal),
 };
 
 enum ExportSectionType
@@ -99,7 +100,8 @@ const Map<FileExportType, ExportData> fileExportTypeMap = {
   FileExportType.png : ExportData(name: "PNG", extension: "png", scalable: true),
   FileExportType.aseprite : ExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
   //ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
-  FileExportType.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false)
+  FileExportType.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false),
+  FileExportType.kpix : ExportData(name: "KPIX", extension: FileHandler.fileExtensionKpix, scalable: false),
 };
 
 

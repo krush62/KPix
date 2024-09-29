@@ -124,7 +124,7 @@ class FileHandler
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
   {
-    final ByteData byteData = await ExportFunctions.getKPixData(path: path, appState: appState);
+    final ByteData byteData = await ExportFunctions.getKPixData(appState: appState);
     if (!kIsWeb)
     {
       await File(path).writeAsBytes(byteData.buffer.asUint8List());
@@ -512,6 +512,9 @@ class FileHandler
       case FileExportType.gimp:
         data = await ExportFunctions.getGimpData(exportData: exportData, appState: appState);
         break;
+      case FileExportType.kpix:
+        data = (await ExportFunctions.getKPixData(appState: appState)).buffer.asUint8List();
+        break;
     }
 
     String? returnPath;
@@ -711,10 +714,13 @@ class FileHandler
           if (pngPath != null)
           {
             final File pngFile = File(pngPath);
-            final Uint8List imageBytes = await pngFile.readAsBytes();
-            final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
-            final ui.FrameInfo frame = await codec.getNextFrame();
-            thumbnail = frame.image;
+            if (await pngFile.exists())
+            {
+              final Uint8List imageBytes = await pngFile.readAsBytes();
+              final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
+              final ui.FrameInfo frame = await codec.getNextFrame();
+              thumbnail = frame.image;
+            }
           }
           projectData.add(ProjectManagerEntryData(name: Helper.extractFilenameFromPath(path: entity.absolute.path, keepExtension: false), path: entity.absolute.path, thumbnail: thumbnail, dateTime: await entity.lastModified()));
         }

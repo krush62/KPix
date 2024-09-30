@@ -22,7 +22,7 @@ import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 
 class HistoryRampData

@@ -17,6 +17,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/widgets/extra/licenses_widget.dart';
+import 'package:kpix/widgets/extra/preferences_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -24,16 +26,14 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/about_screen_widget.dart';
-import 'package:kpix/widgets/canvas_size_widget.dart';
-import 'package:kpix/widgets/credits_widget.dart';
+import 'package:kpix/widgets/extra/about_screen_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/licenses_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
-import 'package:kpix/widgets/preferences_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 
 

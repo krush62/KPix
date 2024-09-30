@@ -31,8 +31,8 @@ import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas_operations_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:uuid/uuid.dart';
 
 

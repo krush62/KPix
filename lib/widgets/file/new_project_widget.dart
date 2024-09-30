@@ -23,7 +23,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas_size_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class NewProjectWidget extends StatefulWidget

@@ -14,6 +14,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -21,9 +37,9 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
-import 'package:kpix/widgets/canvas_operations_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/main_button_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
+import 'package:kpix/widgets/main/main_button_widget.dart';
 
 class RightBarWidget extends StatefulWidget
 {

@@ -24,7 +24,7 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 class SelectionPainter extends IToolPainter
 {

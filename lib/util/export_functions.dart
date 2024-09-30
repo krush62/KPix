@@ -30,7 +30,7 @@ import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 class ExportFunctions
 {

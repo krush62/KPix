@@ -19,7 +19,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/tool_settings_widget.dart';
+import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 enum SelectShape
 {

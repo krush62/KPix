@@ -19,7 +19,7 @@ import 'dart:collection';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 typedef IdColorSelectedFn = void Function({required IdColor newColor});
 typedef ColorReferenceSelectedFn = void Function({required ColorReference? color});

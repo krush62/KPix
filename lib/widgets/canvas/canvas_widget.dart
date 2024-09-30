@@ -14,6 +14,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * KPix
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -31,8 +47,8 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
-import 'package:kpix/widgets/layer_widget.dart';
-import 'package:kpix/widgets/selection_bar_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
+import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 
 
 class CanvasOptions

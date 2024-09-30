@@ -25,7 +25,7 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 enum ToolType
 {

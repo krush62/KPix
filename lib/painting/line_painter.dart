@@ -24,7 +24,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 class LinePainter extends IToolPainter
 {

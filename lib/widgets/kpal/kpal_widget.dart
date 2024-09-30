@@ -39,7 +39,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

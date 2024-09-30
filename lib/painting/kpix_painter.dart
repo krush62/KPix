@@ -37,7 +37,7 @@ import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/layer_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 
 class KPixPainterOptions
 {

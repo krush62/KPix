@@ -1,6 +1,5 @@
 $jarSigner = "C:\Program Files\Android\Android Studio\jbr\bin\jarsigner.exe"
 $keyStore = "upload-keystore.jks"
-$keyStorePW = "upload-keystore-pw.txt"
 $apkSourcePath = "..\build\app\outputs\flutter-apk\app-release.apk"
 $bundleSourcePath = "..\build\app\outputs\bundle\release\app-release.aab"
 $keyStoreAlias = "upload"
@@ -29,9 +28,6 @@ Write-Host "Building APK..."
 .\gradlew.bat assembleRelease | Out-Null
 Write-Host "Building Bundle..."
 .\gradlew.bat bundleRelease | Out-Null
-Write-Host "Signing Bundle..."
-$pw = (Get-Content $keyStorePW).Trim()
-&$jarSigner -keystore $keyStore -storepass $pw $bundleSourcePath $keyStoreAlias | Out-Null
 
 
 cd $PSScriptRoot

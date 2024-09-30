@@ -16,20 +16,33 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class CreditEntry
 {
-  String content;
+  String _content = "";
   TextStyle style;
-  CreditEntry({required this.content, required this.style});
+  CreditEntry({required final String content, required this.style, final removeTrailingBackslash = true})
+  {
+    if (content.endsWith("\\\r") && removeTrailingBackslash)
+    {
+      _content = content.replaceAll("\\\r", "\r");
+    }
+    else
+    {
+      _content = content;
+    }
+  }
 }
 
 class CreditsWidget extends StatefulWidget
 {
-  const CreditsWidget({super.key});
+  final Function() onDismiss;
+  const CreditsWidget({super.key, required this.onDismiss});
   @override
   State<CreditsWidget> createState() => _CreditsWidgetState();
 }
@@ -111,17 +124,40 @@ class _CreditsWidgetState extends State<CreditsWidget>
           ),
           borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
         ),
-        child: ValueListenableBuilder<List<CreditEntry>>(
-          valueListenable: _creditEntries,
-          builder: (final BuildContext context1, final List<CreditEntry> entryList, final Widget? child) {
-            return ListView.builder(
-              itemCount: entryList.length,
-              itemBuilder: (final BuildContext context2, final int index)
-              {
-                return Text(entryList[index].content, style: entryList[index].style);
-              },
-            );
-          },
+        child: Column(
+          children: [
+            Expanded(
+              child: ValueListenableBuilder<List<CreditEntry>>(
+                valueListenable: _creditEntries,
+                builder: (final BuildContext context1, final List<CreditEntry> entryList, final Widget? child) {
+                  return ListView.builder(
+                    itemCount: entryList.length,
+                    itemBuilder: (final BuildContext context2, final int index)
+                    {
+                      return Text(entryList[index]._content, style: entryList[index].style);
+                    },
+                  );
+                },
+              ),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Tooltip(
+                    message: "Close",
+                    waitDuration: AppState.toolTipDuration,
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.xmark,
+                        size: options.iconSize,
+                      ),
+                      onPressed: widget.onDismiss,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
         )
       )
     );

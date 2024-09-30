@@ -16,14 +16,17 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AboutScreenWidget extends StatefulWidget
 {
-  const AboutScreenWidget({super.key});
+  final Function() onDismiss;
+  const AboutScreenWidget({super.key, required this.onDismiss});
   @override
   State<AboutScreenWidget> createState() => _AboutScreenWidgetState();
 }
@@ -112,9 +115,49 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(flex: 1, child: OutlinedButton(onPressed: _creditsPressed, child: const Text("Credits"))),
+                          Expanded(
+                            child: Tooltip(
+                              message: "Credits",
+                              waitDuration: AppState.toolTipDuration,
+                              child: IconButton.outlined(
+                                icon: FaIcon(
+                                  FontAwesomeIcons.peopleGroup,
+                                  size: options.iconSize,
+                                ),
+                                onPressed: _creditsPressed,
+                              ),
+                            ),
+                          ),
+                          //Expanded(flex: 1, child: OutlinedButton(onPressed: _creditsPressed, child: const Text("Credits"))),
                           SizedBox(width: options.padding),
-                          Expanded(flex: 1, child: OutlinedButton(onPressed: _licensesPressed, child: const Text("Licenses")))
+                          //Expanded(flex: 1, child: OutlinedButton(onPressed: _licensesPressed, child: const Text("Licenses")))
+                          Expanded(
+                            child: Tooltip(
+                              message: "Licenses",
+                              waitDuration: AppState.toolTipDuration,
+                              child: IconButton.outlined(
+                                icon: FaIcon(
+                                  FontAwesomeIcons.section,
+                                  size: options.iconSize,
+                                ),
+                                onPressed: _licensesPressed,
+                              ),
+                            )
+                          ),
+                          SizedBox(width: options.padding),
+                          Expanded(
+                            child: Tooltip(
+                              message: "Close",
+                              waitDuration: AppState.toolTipDuration,
+                              child: IconButton.outlined(
+                                icon: FaIcon(
+                                  FontAwesomeIcons.xmark,
+                                  size: options.iconSize,
+                                ),
+                                onPressed: widget.onDismiss,
+                              ),
+                            ),
+                          ),
                         ],
                       )
                     ],

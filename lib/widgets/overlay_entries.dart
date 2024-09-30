@@ -810,10 +810,10 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
-            const Center(
-              child: AboutScreenWidget()
+            Center(
+              child: AboutScreenWidget(onDismiss: onDismiss)
             ),
           ]
         )
@@ -832,10 +832,10 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
-            const Center(
-              child: LicensesWidget(),
+            Center(
+              child: LicensesWidget(onDismiss: onDismiss),
             ),
           ]
         )
@@ -854,10 +854,10 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
-            const Center(
-              child: CreditsWidget(),
+            Center(
+              child: CreditsWidget(onDismiss: onDismiss),
             ),
           ]
         )

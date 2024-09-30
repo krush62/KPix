@@ -6,7 +6,7 @@ Andreas Kruschinski (krush62)
 
 ## Testing
 Frank Kruschinski\
-Arne Lehrke\
+Arne Lehrke
 
 ## Additional Resources
 ### Fonts

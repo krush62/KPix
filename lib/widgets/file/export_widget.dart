@@ -466,14 +466,18 @@ class _ExportWidgetState extends State<ExportWidget>
                     flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.xmark,
-                          size: _options.iconSize,
+                      child: Tooltip(
+                        waitDuration: AppState.toolTipDuration,
+                        message: "Close",
+                        child: IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.xmark,
+                            size: _options.iconSize,
+                          ),
+                          onPressed: () {
+                            widget.dismiss();
+                          },
                         ),
-                        onPressed: () {
-                          widget.dismiss();
-                        },
                       ),
                     )
                   ),
@@ -487,22 +491,26 @@ class _ExportWidgetState extends State<ExportWidget>
                           return ValueListenableBuilder<FileNameStatus>(
                             valueListenable: _fileNameStatus,
                             builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                              return IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.check,
-                                  size: _options.iconSize,
+                              return Tooltip(
+                                waitDuration: AppState.toolTipDuration,
+                                message: "Export File",
+                                child: IconButton.outlined(
+                                  icon: FaIcon(
+                                    FontAwesomeIcons.check,
+                                    size: _options.iconSize,
+                                  ),
+                                  onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
+                                    () {
+                                      if (selSection == ExportSectionType.project)
+                                      {
+                                        widget.acceptFile(exportData: ExportData.fromWithConcreteData(other: fileExportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir), exportType: _fileExportType.value);
+                                      }
+                                      else if (selSection == ExportSectionType.palette)
+                                      {
+                                        widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: paletteExportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _paletteExportType.value);
+                                      }
+                                    } : null,
                                 ),
-                                onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
-                                  () {
-                                    if (selSection == ExportSectionType.project)
-                                    {
-                                      widget.acceptFile(exportData: ExportData.fromWithConcreteData(other: fileExportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir), exportType: _fileExportType.value);
-                                    }
-                                    else if (selSection == ExportSectionType.palette)
-                                    {
-                                      widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: paletteExportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _paletteExportType.value);
-                                    }
-                                  } : null,
                               );
                             },
                           );

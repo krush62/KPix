@@ -229,9 +229,10 @@ class _KPalState extends State<KPal>
     widget._colorRamp;
     _originalData = KPalRampData.from(other: widget._colorRamp);
 
-    _alertDialog = OverlayEntries.getAlertDialog(
-        onDismiss: _dismissAlertDialog,
-        onAccept: _acceptDeletion,
+    _alertDialog = OverlayEntries.getTwoButtonDialog(
+        onNo: _dismissAlertDialog,
+        onYes: _acceptDeletion,
+        outsideCancelable: false,
         message: "Do you really want to delete this color ramp?",
       );
   }

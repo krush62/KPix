@@ -405,7 +405,6 @@ class OverlayEntries
     required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
     required final KPalRampData colorRamp,
-
   })
   {
     return KPixOverlay(entry:  OverlayEntry(
@@ -413,7 +412,7 @@ class OverlayEntries
         children: [
           ModalBarrier(
             color: Theme.of(context).primaryColorDark.withAlpha(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.smokeOpacity),
-            onDismiss: () {onDismiss();},
+            onDismiss: null, //() {onDismiss();},
           ),
           Padding(
             padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.outsidePadding),
@@ -430,98 +429,6 @@ class OverlayEntries
         ],
       ),
     ));
-  }
-
-  static KPixOverlay getAlertDialog({
-    required final Function() onDismiss,
-    required final Function() onAccept,
-    required final String message,
-})
-  {
-    OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return KPixOverlay(
-      entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
-            ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
-            ),
-            Center(
-              child: Material(
-                elevation: options.elevation,
-                shadowColor: Theme.of(context).primaryColorDark,
-                borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                child: Container(
-                  constraints: BoxConstraints(
-                    minHeight: options.minHeight,
-                    minWidth: options.minWidth,
-                    maxHeight: options.maxHeight,
-                    maxWidth: options.maxWidth,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    border: Border.all(
-                      color: Theme.of(context).primaryColorLight,
-                      width: options.borderWidth,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Center(child: Padding(
-                        padding: EdgeInsets.all(options.padding),
-                        child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
-                      )),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: EdgeInsets.all(options.padding),
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.xmark,
-                                  size: options.iconSize,
-                                ),
-                                onPressed: () {
-                                  onDismiss();
-                                },
-                              ),
-                            )
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: EdgeInsets.all(options.padding),
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.check,
-                                  size: options.iconSize,
-                                ),
-                                onPressed: () {
-                                  onAccept();
-                                },
-                              ),
-                            )
-                          ),
-                        ]
-                      ),
-                    ],
-                  )
-                )
-              ),
-            ),
-          ]
-        )
-      )
-    );
   }
 
   static KPixOverlay getThreeButtonDialog({
@@ -740,7 +647,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: ExportWidget(acceptFile: onAcceptFile, acceptPalette: onAcceptPalette, dismiss: onDismiss),
@@ -763,7 +670,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
@@ -787,7 +694,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: SaveAsWidget(accept: onAccept, dismiss: onDismiss, callback: callback),
@@ -877,7 +784,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: CanvasSizeWidget(accept: onAccept, dismiss: onDismiss),
@@ -900,7 +807,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: () {onDismiss();},
+              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: PreferencesWidget(dismiss: onDismiss, accept: onAccept)
@@ -944,7 +851,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: onDismiss,
+              onDismiss: null, //onDismiss,
             ),
             Center(
               child: PaletteManagerWidget(dismiss: onDismiss,)
@@ -964,7 +871,7 @@ class OverlayEntries
           children: [
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: onDismiss,
+              onDismiss: null, //onDismiss,
             ),
             Center(
                 child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,)

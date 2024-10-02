@@ -308,9 +308,9 @@ class Helper
     {
       for (int i = 0; i < kPalRampData.settings.colorCount; i++)
       {
-         final int r2 = kPalRampData.colors[i].value.color.red;
-         final int g2 = kPalRampData.colors[i].value.color.green;
-         final int b2 = kPalRampData.colors[i].value.color.blue;
+         final int r2 = kPalRampData.shiftedColors[i].value.color.red;
+         final int g2 = kPalRampData.shiftedColors[i].value.color.green;
+         final int b2 = kPalRampData.shiftedColors[i].value.color.blue;
          final double dist = getDeltaE(redA: r, greenA: g, blueA: b, redB: r2, greenB: g2, blueB: b2);
          if (dist < closestVal)
          {

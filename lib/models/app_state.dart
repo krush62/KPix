@@ -324,9 +324,9 @@ class AppState
     final List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
     _colorRamps.value = rampDataList;
 
-    if (ramp.colors.length != originalData.colors.length)
+    if (ramp.shiftedColors.length != originalData.shiftedColors.length)
     {
-      HashMap<int, int> indexMap = _remapIndices(oldLength: originalData.colors.length, newLength: ramp.colors.length);
+      HashMap<int, int> indexMap = _remapIndices(oldLength: originalData.shiftedColors.length, newLength: ramp.shiftedColors.length);
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _remapLayers(newData: ramp, map: indexMap);
     }

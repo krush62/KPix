@@ -77,13 +77,16 @@ class _KPalRampState extends State<KPalRamp>
   void _createColorCards()
   {
     _colorCards.clear();
-    for (ValueNotifier<IdColor> notifier in widget.rampData.colors)
+    for (int i = 0; i < widget.rampData.shiftedColors.length; i++)
     {
-      _colorCards.add(KPalColorCardWidget(
+      final ValueNotifier<IdColor> notifier = widget.rampData.shiftedColors[i];
+      final ShiftSet shiftSet = widget.rampData.shifts[i];
+      final KPalColorCardWidget card = KPalColorCardWidget(
           colorNotifier: notifier,
-          isLast: notifier == widget.rampData.colors.last,
-          showName: widget.rampData.colors.length < _options.colorNameShowThreshold)
-      );
+          shiftSet: shiftSet,
+          isLast: notifier == widget.rampData.shiftedColors.last,
+          showName: widget.rampData.shiftedColors.length < _options.colorNameShowThreshold);
+      _colorCards.add(card);
     }
   }
 

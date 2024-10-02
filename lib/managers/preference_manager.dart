@@ -341,6 +341,16 @@ enum PreferenceInt
   KPalColorCard_Layout_ColorFlex(defaultValue: 4),
   KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
 
+  KPalSliderConstraints_MinHue(defaultValue: -50),
+  KPalSliderConstraints_MinSat(defaultValue: -25),
+  KPalSliderConstraints_MinVal(defaultValue: -25),
+  KPalSliderConstraints_MaxHue(defaultValue: 50),
+  KPalSliderConstraints_MaxSat(defaultValue: 25),
+  KPalSliderConstraints_MaxVal(defaultValue: 25),
+  KPalSliderConstraints_DefaultHue(defaultValue: 0),
+  KPalSliderConstraints_DefaultSat(defaultValue: 0),
+  KPalSliderConstraints_DefaultVal(defaultValue: 0),
+
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
 
@@ -363,10 +373,7 @@ enum PreferenceInt
 
   TouchOptions_SingleTouchDelay(defaultValue: 50),
   TouchOptions_SingleTouchDelayMin(defaultValue: 10),
-  TouchOptions_SingleTouchDelayMax(defaultValue: 250),
-
-
-
+  TouchOptions_SingleTouchDelayMax(defaultValue: 250)
 
   ;
 
@@ -547,6 +554,7 @@ class PreferenceManager
 
   late KPalConstraints kPalConstraints;
   late KPalWidgetOptions kPalWidgetOptions;
+  late KPalSliderConstraints kPalSliderConstraints;
 
   late ColorNames colorNames;
 
@@ -888,6 +896,18 @@ class PreferenceManager
         valueRangeMax: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMax),
         valueRangeMaxDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMaxDefault),
         satCurveDefault: _getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault));
+
+    kPalSliderConstraints = KPalSliderConstraints(
+        minHue: _getValueI(PreferenceInt.KPalSliderConstraints_MinHue),
+        minSat: _getValueI(PreferenceInt.KPalSliderConstraints_MinSat),
+        minVal: _getValueI(PreferenceInt.KPalSliderConstraints_MinVal),
+        maxHue: _getValueI(PreferenceInt.KPalSliderConstraints_MaxHue),
+        maxSat: _getValueI(PreferenceInt.KPalSliderConstraints_MaxSat),
+        maxVal: _getValueI(PreferenceInt.KPalSliderConstraints_MaxVal),
+        defaultHue: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultHue),
+        defaultSat: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultSat),
+        defaultVal: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultVal),
+    );
 
     KPalColorCardWidgetOptions colorCardWidgetOptions = KPalColorCardWidgetOptions(
         borderRadius: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderRadius),

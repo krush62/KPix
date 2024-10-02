@@ -86,7 +86,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
     for (final KPalRampData rampData in widget.entryData.rampDataList)
     {
       final List<Widget> colorRowWidgetList = [];
-      for (final ValueNotifier<IdColor> idColor in rampData.colors)
+      for (final ValueNotifier<IdColor> idColor in rampData.shiftedColors)
       {
         colorRowWidgetList.add(Expanded(child: ColoredBox(color: idColor.value.color)));
         colorCount++;

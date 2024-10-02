@@ -33,6 +33,7 @@
 
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/util/color_names.dart';
@@ -46,6 +47,7 @@ import 'package:kpix/kpix_icons.dart';
 
 part 'kpal_ramp_widget.dart';
 part 'kpal_color_card_widget.dart';
+part 'kpal_vertical_slider_widget.dart';
 part '../../util/kpal_ramp_data.dart';
 
 

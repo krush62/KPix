@@ -86,9 +86,9 @@ class ColorRampRowWidget extends StatefulWidget {
     if (colorSelectedFn != null && rampData != null)
     {
       int index = -1;
-      for (int i = 0; i < rampData!.colors.length; i++)
+      for (int i = 0; i < rampData!.shiftedColors.length; i++)
       {
-        if (rampData!.colors[i].value == newColor)
+        if (rampData!.shiftedColors[i].value == newColor)
         {
           index = i;
           break;
@@ -106,7 +106,7 @@ class ColorRampRowWidget extends StatefulWidget {
     widgetList.clear();
     if (rampData != null)
     {
-      for (ValueNotifier<IdColor> color in rampData!.colors)
+      for (ValueNotifier<IdColor> color in rampData!.shiftedColors)
       {
         widgetList.add(
           ColorEntryWidget(

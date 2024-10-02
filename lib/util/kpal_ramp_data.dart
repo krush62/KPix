@@ -16,14 +16,25 @@
 
 part of '../widgets/kpal/kpal_widget.dart';
 
+class ShiftSet
+{
+  final ValueNotifier<int> hueShiftNotifier;
+  final ValueNotifier<int> satShiftNotifier;
+  final ValueNotifier<int> valShiftNotifier;
+  ShiftSet({required this.hueShiftNotifier, required this.satShiftNotifier, required this.valShiftNotifier});
+}
+
+
 class KPalRampData
 {
   final KPalRampSettings settings;
   final String uuid;
-  final List<ValueNotifier<IdColor>> colors = [];
+  final List<HSVColor> _originalColors = [];
+  final List<ValueNotifier<IdColor>> shiftedColors = [];
   final List<ColorReference> references = [];
+  final List<ShiftSet> shifts = [];
 
-    KPalRampData({
+  KPalRampData({
     required this.uuid,
     required this.settings
   })
@@ -137,18 +148,38 @@ class KPalRampData
     return rampList;
   }
 
+  void _shiftChanged()
+  {
+    _updateColors(colorCountChanged: false);
+  }
+
   void _updateColors({required bool colorCountChanged})
   {
     if (colorCountChanged)
     {
+      final KPalSliderConstraints shiftConstraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
       const Uuid uuid = Uuid();
-      colors.clear();
+      _originalColors.clear();
+      shiftedColors.clear();
       references.clear();
+      for (final ShiftSet shiftSet in shifts)
+      {
+        shiftSet.hueShiftNotifier.removeListener(_shiftChanged);
+        shiftSet.satShiftNotifier.removeListener(_shiftChanged);
+        shiftSet.valShiftNotifier.removeListener(_shiftChanged);
+      }
+      shifts.clear();
       for (int i = 0; i < settings.colorCount; i++)
       {
-        final IdColor color = IdColor(color: Colors.black, uuid: uuid.v1());
-        colors.add(ValueNotifier(color));
+        Color black = Colors.black;
+        _originalColors.add(HSVColor.fromColor(black));
+        shiftedColors.add(ValueNotifier(IdColor(color: black, uuid: uuid.v1())));
         references.add(ColorReference(colorIndex: i, ramp: this));
+        final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier(shiftConstraints.defaultHue), satShiftNotifier: ValueNotifier(shiftConstraints.defaultSat), valShiftNotifier: ValueNotifier(shiftConstraints.defaultVal));
+        shiftSet.hueShiftNotifier.addListener(_shiftChanged);
+        shiftSet.satShiftNotifier.addListener(_shiftChanged);
+        shiftSet.valShiftNotifier.addListener(_shiftChanged);
+        shifts.add(shiftSet);
       }
     }
 
@@ -166,7 +197,7 @@ class KPalRampData
     );
     if (!isEven)
     {
-      colors[centerIndex].value = IdColor(color: centerColor.toColor(), uuid: colors[centerIndex].value.uuid);
+      _originalColors[centerIndex] = centerColor;
     }
 
     //setting brighter colors
@@ -187,7 +218,7 @@ class KPalRampData
       {
         col = col.withSaturation((centerColor.saturation - ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0));
       }
-      colors[i].value = IdColor(color: col.toColor(), uuid: colors[i].value.uuid);
+      _originalColors[i] = col;
     }
 
     //setting darker colors
@@ -204,7 +235,20 @@ class KPalRampData
       {
         col = col.withSaturation(centerColor.saturation);
       }
-      colors[i].value = IdColor(color: col.toColor(), uuid: colors[i].value.uuid);
+      _originalColors[i] = col;
+    }
+
+    //SETTING SHIFTED COLORS
+    for (int i = 0; i < _originalColors.length; i++)
+    {
+      final HSVColor orig = _originalColors[i];
+      HSVColor shiftedColor = HSVColor.fromAHSV(
+          1.0,
+          (orig.hue + shifts[i].hueShiftNotifier.value) % 360,
+          (orig.saturation + (shifts[i].satShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
+          (orig.value + (shifts[i].valShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
+      );
+      shiftedColors[i].value = IdColor(color: shiftedColor.toColor(), uuid: shiftedColors[i].value.uuid);
     }
   }
 }

@@ -752,9 +752,9 @@ class ExportFunctions
     int index = 1;
     for (final KPalRampData kPalRampData in appState.colorRamps)
     {
-      for (int i = 0; i < kPalRampData.colors.length; i++)
+      for (int i = 0; i < kPalRampData.shiftedColors.length; i++)
       {
-        colorList.add(kPalRampData.colors[i].value.color);
+        colorList.add(kPalRampData.shiftedColors[i].value.color);
         colorMap[kPalRampData.references[i]] = index;
         index++;
       }
@@ -799,9 +799,9 @@ class ExportFunctions
     int index = 0;
     for (final KPalRampData kPalRampData in appState.colorRamps)
     {
-      for (int i = 0; i < kPalRampData.colors.length; i++)
+      for (int i = 0; i < kPalRampData.shiftedColors.length; i++)
       {
-        colorList.add(kPalRampData.colors[i].value.color);
+        colorList.add(kPalRampData.shiftedColors[i].value.color);
         colorMap[kPalRampData.references[i]] = index;
         index++;
       }

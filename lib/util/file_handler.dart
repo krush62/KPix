@@ -429,7 +429,7 @@ class FileHandler
     }
   }
 
-  static Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints}) async
+  static Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints, required final KPalSliderConstraints sliderConstraints}) async
   {
     fileData ??= await File(path).readAsBytes();
     final ByteData byteData = fileData.buffer.asByteData();
@@ -468,12 +468,18 @@ class FileHandler
       kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
       kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
       if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
-      //not used at the moment (don't forget to check for constraints)
+
+      final List<HistoryShiftSet> shifts = [];
       for (int j = 0; j < kPalRampSettings.colorCount; j++)
       {
-        byteData.getInt8(offset++);
-        byteData.getInt8(offset++);
-        byteData.getInt8(offset++);
+        final int hueShift = byteData.getInt8(offset++);
+        final int satShift = byteData.getInt8(offset++);
+        final int valShift = byteData.getInt8(offset++);
+        if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue) return LoadPaletteSet(status: "Invalid Hue Shift in Ramp $i, color $j: $hueShift");
+        if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat) return LoadPaletteSet(status: "Invalid Sat Shift in Ramp $i, color $j: $satShift");
+        if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) return LoadPaletteSet(status: "Invalid Val Shift in Ramp $i, color $j: $valShift");
+        final HistoryShiftSet shiftSet = HistoryShiftSet(hueShift: hueShift, satShift: satShift, valShift: valShift);
+        shifts.add(shiftSet);
       }
       final int rampOptionCount = byteData.getInt8(offset++);
       for (int j = 0; j < rampOptionCount; j++)
@@ -486,7 +492,7 @@ class FileHandler
         }
         offset++;
       }
-      rampList.add(KPalRampData(uuid: const Uuid().v1(), settings: kPalRampSettings));
+      rampList.add(KPalRampData(uuid: const Uuid().v1(), settings: kPalRampSettings, historyShifts: shifts));
     }
     return LoadPaletteSet(status: "loading okay", rampData: rampList);
 
@@ -669,7 +675,7 @@ class FileHandler
           byteData = bytes.buffer.asUint8List();
       }
 
-      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: byteData);
+      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: byteData, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
       if (palSet.rampData != null)
       {
         paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: true, rampDataList: palSet.rampData!, path: filePath));
@@ -695,7 +701,7 @@ class FileHandler
     }
     for (final String filePath in filesWithExtension)
     {
-      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null);
+      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
       if (palSet.rampData != null)
       {
          paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!, path: filePath));

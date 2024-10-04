@@ -627,7 +627,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       _needSecondaryStartLoc = true;
       _stylusButtonDown = true;
-      stylusBtnDown();
+      //stylusBtnDown();
       _timerStylusBtnLongPress = Timer(_timeoutLongPress, handleTimeoutStylusBtnLongPress);
       _timerStylusRunning = true;
     }
@@ -652,7 +652,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
 
       _needSecondaryStartLoc = false;
-      stylusBtnUp();
+      //stylusBtnUp();
       _stylusButtonDown = false;
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
@@ -681,17 +681,18 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
   }
 
-  //TODO delete me
+ /*
   void stylusBtnDown()
   {
     //print("SECONDARY DOWN");
   }
 
-  //TODO delete me
+
   void stylusBtnUp()
   {
     //print("SECONDARY UP");
   }
+*/
 
   void handleTimeoutStylusBtnLongPress()
   {

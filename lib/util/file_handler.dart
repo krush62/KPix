@@ -187,13 +187,17 @@ class FileHandler
         kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
         if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadFileSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
         //not used at the moment (don't forget to check for constraints)
+        final List<ShiftSet> shifts = [];
         for (int j = 0; j < kPalRampSettings.colorCount; j++)
         {
-          byteData.getInt8(offset++);
-          byteData.getInt8(offset++);
-          byteData.getInt8(offset++);
+          //TODO (fail if constraints were not met)
+          final int hueShift = byteData.getInt8(offset++);
+          final int satShift = byteData.getInt8(offset++);
+          final int valShift = byteData.getInt8(offset++);
+          final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier(hueShift), satShiftNotifier: ValueNotifier(satShift), valShiftNotifier: ValueNotifier(valShift));
+          shifts.add(shiftSet);
         }
-        rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1()));
+        rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1(), notifierShifts: shifts));
       }
 
       final int width = byteData.getUint16(offset);

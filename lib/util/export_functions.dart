@@ -618,11 +618,11 @@ class ExportFunctions
       for (int j = 0; j < rampSettings.colorCount; j++)
       {
         //hue shift
-        byteData.setInt8(offset++, 0);
+        byteData.setInt8(offset++, saveData.rampList[i].shiftSets[j].hueShift);
         //sat shift
-        byteData.setInt8(offset++, 0);
+        byteData.setInt8(offset++, saveData.rampList[i].shiftSets[j].satShift);
         //val shift
-        byteData.setInt8(offset++, 0);
+        byteData.setInt8(offset++, saveData.rampList[i].shiftSets[j].valShift);
       }
     }
 
@@ -724,11 +724,11 @@ class ExportFunctions
       for (int j = 0; j < rampData.settings.colorCount; j++)
       {
         //hue shift
-        byteData.setUint8(offset++, 0);
+        byteData.setUint8(offset++, rampData.shifts[j].hueShiftNotifier.value);
         //sat shift
-        byteData.setUint8(offset++, 0);
+        byteData.setUint8(offset++, rampData.shifts[j].satShiftNotifier.value);
         //val shift
-        byteData.setUint8(offset++, 0);
+        byteData.setUint8(offset++, rampData.shifts[j].valShiftNotifier.value);
       }
       //ramp option count
       byteData.setUint8(offset++, 1);

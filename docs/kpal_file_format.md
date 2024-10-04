@@ -53,9 +53,9 @@ The kpal file format consists of the following three consecutive sections:
   * val_min ``ubyte (1)``
   * val_max ``ubyte (1)``
   * Color_Shifts ``(color_count)``
-    * hue_shift ``byte (1)`` // -25...25
-    * sat_shift ``byte (1)`` // -15...15
-    * val_shift ``byte (1)`` // -15...15
+    * hue_shift ``byte (1)`` // -50...50
+    * sat_shift ``byte (1)`` // -25...25
+    * val_shift ``byte (1)`` // -25...25
   * ramp_option_count ``ubyte (1)``
   * Ramp_options ``(ramp_option_count)``
     * option_type ``ubyte (1)``

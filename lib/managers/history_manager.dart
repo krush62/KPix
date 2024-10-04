@@ -25,11 +25,28 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 
 
+class HistoryShiftSet
+{
+  final int hueShift;
+  final int satShift;
+  final int valShift;
+  HistoryShiftSet({required this.hueShift, required this.satShift, required this.valShift});
+}
+
 class HistoryRampData
 {
   final String uuid;
   final KPalRampSettings settings;
-  HistoryRampData({required KPalRampSettings otherSettings, required this.uuid}) : settings = KPalRampSettings.from(other: otherSettings);
+  final List<HistoryShiftSet> shiftSets = [];
+  HistoryRampData({required KPalRampSettings otherSettings, required List<ShiftSet> notifierShifts, required this.uuid}) : settings = KPalRampSettings.from(other: otherSettings)
+  {
+    for (int i = 0; i < settings.colorCount; i++)
+    {
+      final ShiftSet notifierShiftSet = notifierShifts[i];
+      shiftSets.add(HistoryShiftSet(hueShift: notifierShiftSet.hueShiftNotifier.value, satShift: notifierShiftSet.satShiftNotifier.value, valShift: notifierShiftSet.valShiftNotifier.value));
+    }
+  }
+
 }
 
 class HistoryColorReference
@@ -129,7 +146,7 @@ class HistoryState
     List<HistoryRampData> rampList = [];
     for (final KPalRampData rampData in appState.colorRamps)
     {
-      rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid));
+      rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid, notifierShifts: rampData.shifts));
     }
     final int? selectedColorRampIndex = _getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
     final HistoryColorReference selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);

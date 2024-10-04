@@ -482,7 +482,7 @@ class AppState
       for (final HistoryRampData hRampData in historyState.rampList)
       {
         final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
-        ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings));
+        ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
       }
       ColorReference selCol = ramps[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
 

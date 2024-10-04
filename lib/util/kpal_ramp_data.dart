@@ -36,22 +36,23 @@ class KPalRampData
 
   KPalRampData({
     required this.uuid,
-    required this.settings
+    required this.settings,
+    final List<HistoryShiftSet>? historyShifts
   })
   {
     for (int i = 0; i < settings.constraints.colorCountMax; i++)
     {
       final KPalSliderConstraints shiftConstraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
-      final ValueNotifier<int> hueNotifier = ValueNotifier(shiftConstraints.defaultHue);
-      final ValueNotifier<int> satNotifier = ValueNotifier(shiftConstraints.defaultSat);
-      final ValueNotifier<int> valNotifier = ValueNotifier(shiftConstraints.defaultVal);
+      final ValueNotifier<int> hueNotifier = ValueNotifier((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultHue : historyShifts[i].hueShift);
+      final ValueNotifier<int> satNotifier = ValueNotifier((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultSat : historyShifts[i].satShift);
+      final ValueNotifier<int> valNotifier = ValueNotifier((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultVal : historyShifts[i].valShift);
       final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: hueNotifier, satShiftNotifier: satNotifier, valShiftNotifier: valNotifier);
       shiftSet.hueShiftNotifier.addListener(_shiftChanged);
       shiftSet.satShiftNotifier.addListener(_shiftChanged);
       shiftSet.valShiftNotifier.addListener(_shiftChanged);
       shifts.add(shiftSet);
     }
-    _updateColors(colorCountChanged: true);
+    _updateColors(colorCountChanged: true, resetListeners: historyShifts == null);
   }
 
   factory KPalRampData.from({required KPalRampData other})
@@ -165,7 +166,7 @@ class KPalRampData
     _updateColors(colorCountChanged: false);
   }
 
-  void _updateColors({required bool colorCountChanged})
+  void _updateColors({required bool colorCountChanged, bool resetListeners = true})
   {
     if (colorCountChanged)
     {
@@ -176,9 +177,18 @@ class KPalRampData
       references.clear();
       for (final ShiftSet shiftSet in shifts)
       {
-        shiftSet.hueShiftNotifier.value = shiftConstraints.defaultHue;
-        shiftSet.satShiftNotifier.value = shiftConstraints.defaultSat;
-        shiftSet.valShiftNotifier.value = shiftConstraints.defaultVal;
+        shiftSet.hueShiftNotifier.removeListener(_shiftChanged);
+        shiftSet.satShiftNotifier.removeListener(_shiftChanged);
+        shiftSet.valShiftNotifier.removeListener(_shiftChanged);
+        if (resetListeners)
+        {
+          shiftSet.hueShiftNotifier.value = shiftConstraints.defaultHue;
+          shiftSet.satShiftNotifier.value = shiftConstraints.defaultSat;
+          shiftSet.valShiftNotifier.value = shiftConstraints.defaultVal;
+        }
+        shiftSet.hueShiftNotifier.addListener(_shiftChanged);
+        shiftSet.satShiftNotifier.addListener(_shiftChanged);
+        shiftSet.valShiftNotifier.addListener(_shiftChanged);
 
       }
       for (int i = 0; i < settings.colorCount; i++)

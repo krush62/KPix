@@ -36,6 +36,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';

@@ -64,7 +64,7 @@ class KPalRamp extends StatefulWidget
 
 class _KPalRampState extends State<KPalRamp>
 {
-  final List<KPalColorCardWidget> _colorCards = [];
+  final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier([]);
   final KPalRampWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions;
 
   @override
@@ -76,7 +76,7 @@ class _KPalRampState extends State<KPalRamp>
 
   void _createColorCards()
   {
-    _colorCards.clear();
+    List<KPalColorCardWidget> newList = [];
     for (int i = 0; i < widget.rampData.shiftedColors.length; i++)
     {
       final ValueNotifier<IdColor> notifier = widget.rampData.shiftedColors[i];
@@ -86,19 +86,22 @@ class _KPalRampState extends State<KPalRamp>
           shiftSet: shiftSet,
           isLast: notifier == widget.rampData.shiftedColors.last,
           showName: widget.rampData.shiftedColors.length < _options.colorNameShowThreshold);
-      _colorCards.add(card);
+
+      newList.add(card);
     }
+    _colorCards.value = newList;
   }
 
   void _settingsChanged({final bool colorCountChanged = false})
   {
     setState(() {
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
-      if (colorCountChanged)
-      {
-        _createColorCards();
-      }
     });
+
+    if (colorCountChanged)
+    {
+      _createColorCards();
+    }
   }
 
   void _colorCountSliderChanged({required final double newVal})
@@ -183,16 +186,21 @@ class _KPalRampState extends State<KPalRamp>
         children: [
           Expanded(
             flex: _options.centerFlex,
-            child: ColoredBox(
-              color: Theme.of(context).primaryColorDark,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ..._colorCards,
-                ],
-              )
+            child: ValueListenableBuilder<List<KPalColorCardWidget>>(
+              valueListenable: _colorCards,
+              builder: (final BuildContext context, final List<KPalColorCardWidget> cards, final Widget? child) {
+                return ColoredBox(
+                    color: Theme.of(context).primaryColorDark,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ...cards,
+                      ],
+                    )
+                );
+              },
             )
           ),
           Expanded(

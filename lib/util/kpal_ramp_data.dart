@@ -39,6 +39,18 @@ class KPalRampData
     required this.settings
   })
   {
+    for (int i = 0; i < settings.constraints.colorCountMax; i++)
+    {
+      final KPalSliderConstraints shiftConstraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
+      final ValueNotifier<int> hueNotifier = ValueNotifier(shiftConstraints.defaultHue);
+      final ValueNotifier<int> satNotifier = ValueNotifier(shiftConstraints.defaultSat);
+      final ValueNotifier<int> valNotifier = ValueNotifier(shiftConstraints.defaultVal);
+      final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: hueNotifier, satShiftNotifier: satNotifier, valShiftNotifier: valNotifier);
+      shiftSet.hueShiftNotifier.addListener(_shiftChanged);
+      shiftSet.satShiftNotifier.addListener(_shiftChanged);
+      shiftSet.valShiftNotifier.addListener(_shiftChanged);
+      shifts.add(shiftSet);
+    }
     _updateColors(colorCountChanged: true);
   }
 
@@ -164,22 +176,17 @@ class KPalRampData
       references.clear();
       for (final ShiftSet shiftSet in shifts)
       {
-        shiftSet.hueShiftNotifier.removeListener(_shiftChanged);
-        shiftSet.satShiftNotifier.removeListener(_shiftChanged);
-        shiftSet.valShiftNotifier.removeListener(_shiftChanged);
+        shiftSet.hueShiftNotifier.value = shiftConstraints.defaultHue;
+        shiftSet.satShiftNotifier.value = shiftConstraints.defaultSat;
+        shiftSet.valShiftNotifier.value = shiftConstraints.defaultVal;
+
       }
-      shifts.clear();
       for (int i = 0; i < settings.colorCount; i++)
       {
         Color black = Colors.black;
         _originalColors.add(HSVColor.fromColor(black));
         shiftedColors.add(ValueNotifier(IdColor(color: black, uuid: uuid.v1())));
         references.add(ColorReference(colorIndex: i, ramp: this));
-        final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier(shiftConstraints.defaultHue), satShiftNotifier: ValueNotifier(shiftConstraints.defaultSat), valShiftNotifier: ValueNotifier(shiftConstraints.defaultVal));
-        shiftSet.hueShiftNotifier.addListener(_shiftChanged);
-        shiftSet.satShiftNotifier.addListener(_shiftChanged);
-        shiftSet.valShiftNotifier.addListener(_shiftChanged);
-        shifts.add(shiftSet);
       }
     }
 

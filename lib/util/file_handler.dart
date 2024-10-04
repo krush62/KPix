@@ -143,7 +143,7 @@ class FileHandler
   }
 
 
-  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path}) async
+  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints}) async
   {
     try
     {
@@ -190,10 +190,12 @@ class FileHandler
         final List<ShiftSet> shifts = [];
         for (int j = 0; j < kPalRampSettings.colorCount; j++)
         {
-          //TODO (fail if constraints were not met)
           final int hueShift = byteData.getInt8(offset++);
           final int satShift = byteData.getInt8(offset++);
           final int valShift = byteData.getInt8(offset++);
+          if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue) return LoadFileSet(status: "Invalid Hue Shift in Ramp $i, color $j: $hueShift");
+          if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat) return LoadFileSet(status: "Invalid Sat Shift in Ramp $i, color $j: $satShift");
+          if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) return LoadFileSet(status: "Invalid Val Shift in Ramp $i, color $j: $valShift");
           final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier(hueShift), satShiftNotifier: ValueNotifier(satShift), valShiftNotifier: ValueNotifier(valShift));
           shifts.add(shiftSet);
         }
@@ -278,7 +280,7 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 

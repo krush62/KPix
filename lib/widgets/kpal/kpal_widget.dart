@@ -228,15 +228,24 @@ class _KPalState extends State<KPal>
   @override
   void initState() {
     super.initState();
-    widget._colorRamp;
     _originalData = KPalRampData.from(other: widget._colorRamp);
-
     _alertDialog = OverlayEntries.getTwoButtonDialog(
         onNo: _dismissAlertDialog,
         onYes: _acceptDeletion,
         outsideCancelable: false,
         message: "Do you really want to delete this color ramp?",
       );
+  }
+
+  void _acceptChange()
+  {
+    widget._accept(ramp: widget._colorRamp, originalData: _originalData);
+  }
+
+  void _discardChange()
+  {
+    widget._colorRamp.updateFromOther(other: _originalData);
+    widget._accept(ramp: widget._colorRamp, originalData: _originalData);
   }
 
   void _acceptDeletion()
@@ -293,9 +302,7 @@ class _KPalState extends State<KPal>
                             FontAwesomeIcons.xmark,
                             size: _options.iconSize,
                           ),
-                          onPressed: () {
-                            widget._dismiss();
-                          },
+                          onPressed: _discardChange
                         ),
                       )
                     ),
@@ -323,7 +330,7 @@ class _KPalState extends State<KPal>
                             FontAwesomeIcons.check,
                             size: _options.iconSize,
                           ),
-                          onPressed: () {widget._accept(ramp: widget._colorRamp, originalData: _originalData);},
+                          onPressed: _acceptChange,
                         ),
                       )
                     ),

@@ -55,11 +55,52 @@ class KPalRampData
     _updateColors(colorCountChanged: true, resetListeners: historyShifts == null);
   }
 
-  factory KPalRampData.from({required KPalRampData other})
+  factory KPalRampData.from({required final KPalRampData other})
   {
     const Uuid uuid = Uuid();
     final KPalRampSettings newSettings = KPalRampSettings.from(other: other.settings);
-    return KPalRampData(uuid: uuid.v1(), settings: newSettings);
+    List<HistoryShiftSet> shifts = [];
+    for (final ShiftSet shiftSet in other.shifts)
+    {
+       shifts.add(HistoryShiftSet(hueShift: shiftSet.hueShiftNotifier.value, satShift: shiftSet.satShiftNotifier.value, valShift: shiftSet.valShiftNotifier.value));
+    }
+    return KPalRampData(uuid: uuid.v1(), settings: newSettings, historyShifts: shifts);
+  }
+
+  void updateFromOther({required final KPalRampData other})
+  {
+    final bool colorChange = (settings.colorCount != other.settings.colorCount);
+    //SETTINGS
+    settings.satShift = other.settings.satShift;
+    settings.hueShift = other.settings.hueShift;
+    settings.colorCount = other.settings.colorCount;
+    settings.valueRangeMax = other.settings.valueRangeMax;
+    settings.valueRangeMin = other.settings.valueRangeMin;
+    settings.baseSat = other.settings.baseSat;
+    settings.baseHue = other.settings.baseHue;
+    settings.satCurve = other.settings.satCurve;
+    settings.satShiftExp = other.settings.satShiftExp;
+    settings.hueShiftExp = other.settings.hueShiftExp;
+
+    //SHIFTS
+    for (int i = 0; i < settings.colorCount; i++)
+    {
+      shifts[i].hueShiftNotifier.removeListener(_shiftChanged);
+      shifts[i].hueShiftNotifier.value = other.shifts[i].hueShiftNotifier.value;
+      shifts[i].hueShiftNotifier.addListener(_shiftChanged);
+
+      shifts[i].satShiftNotifier.removeListener(_shiftChanged);
+      shifts[i].satShiftNotifier.value = other.shifts[i].satShiftNotifier.value;
+      shifts[i].satShiftNotifier.addListener(_shiftChanged);
+
+      shifts[i].valShiftNotifier.removeListener(_shiftChanged);
+      shifts[i].valShiftNotifier.value = other.shifts[i].valShiftNotifier.value;
+      shifts[i].valShiftNotifier.addListener(_shiftChanged);
+    }
+
+
+    _updateColors(colorCountChanged: colorChange);
+
   }
 
   static List<KPalRampData> getDefaultPalette({required final KPalConstraints constraints})

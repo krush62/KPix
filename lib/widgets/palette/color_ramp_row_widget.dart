@@ -192,6 +192,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
   {
     kPal.hide();
   }
+
    @override
   Widget build(final BuildContext context) {
     widget._createWidgetList(createKPal: _createKPal);

@@ -41,6 +41,7 @@ class KPalColorCardWidgetOptions
   final int colorNameFlex;
   final int colorFlex;
   final int colorNumbersFlex;
+  final int editAnimationDuration;
 
   KPalColorCardWidgetOptions({
     required this.borderRadius,
@@ -49,6 +50,7 @@ class KPalColorCardWidgetOptions
     required this.colorFlex,
     required this.colorNameFlex,
     required this.colorNumbersFlex,
+    required this.editAnimationDuration
   });
 }
 
@@ -149,7 +151,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                            valueListenable: _shouldShowSliders,
                            builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
                              return AnimatedOpacity(
-                               duration: const Duration(milliseconds: 250), //TODO magic number
+                               duration: Duration(milliseconds: _options.editAnimationDuration),
                                curve: Curves.easeInOut,
                                opacity: shouldShow ? 1 : 0,
                                child: Row(
@@ -177,7 +179,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                        builder: (final BuildContext context4, final int valShift, final Widget? child4) {
                                          final bool editIsVisible = !shouldShow && (hueShift != _constraints.defaultHue || satShift != _constraints.defaultSat || valShift != _constraints.defaultVal);
                                          return AnimatedOpacity(
-                                           duration: const Duration(milliseconds: 250), //TODO magic number
+                                           duration: Duration(milliseconds: _options.editAnimationDuration),
                                            curve: Curves.easeInOut,
                                            opacity: editIsVisible ? 1 : 0,
                                            child: Padding(

@@ -42,6 +42,7 @@ class KPalColorCardWidgetOptions
   final int colorFlex;
   final int colorNumbersFlex;
   final int editAnimationDuration;
+  final int touchTimeout;
 
   KPalColorCardWidgetOptions({
     required this.borderRadius,
@@ -50,7 +51,8 @@ class KPalColorCardWidgetOptions
     required this.colorFlex,
     required this.colorNameFlex,
     required this.colorNumbersFlex,
-    required this.editAnimationDuration
+    required this.editAnimationDuration,
+    required this.touchTimeout
   });
 }
 
@@ -83,6 +85,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
   late KPalVerticalSliderWidget _hueSlider;
   late KPalVerticalSliderWidget _satSlider;
   late KPalVerticalSliderWidget _valSlider;
+  Timer? pressTimer;
 
   @override
   void initState()
@@ -91,6 +94,24 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
     _hueSlider = KPalVerticalSliderWidget(name: "hue", minVal: _constraints.minHue, maxVal: _constraints.maxHue, valueNotifier: widget.shiftSet.hueShiftNotifier);
     _satSlider = KPalVerticalSliderWidget(name: "sat", minVal: _constraints.minSat, maxVal: _constraints.maxSat, valueNotifier: widget.shiftSet.satShiftNotifier);
     _valSlider = KPalVerticalSliderWidget(name: "val", minVal: _constraints.minVal, maxVal: _constraints.maxVal, valueNotifier: widget.shiftSet.valShiftNotifier);
+    _hueSlider.valueNotifier.addListener(_showSliders);
+    _satSlider.valueNotifier.addListener(_showSliders);
+    _valSlider.valueNotifier.addListener(_showSliders);
+  }
+
+  void _showSliders()
+  {
+    _shouldShowSliders.value = true;
+    if (pressTimer != null)
+    {
+      pressTimer!.cancel();
+    }
+    pressTimer = Timer(Duration(milliseconds: _options.touchTimeout), _hide);
+  }
+
+  void _hide()
+  {
+    _shouldShowSliders.value = false;
   }
 
   @override
@@ -142,69 +163,76 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                      onExit: (final PointerExitEvent? event) {
                        _shouldShowSliders.value = false;
                      },
-                     child: Stack(
-                       children: [
-                         Container(
-                           color: currentColor.color
-                         ),
-                         ValueListenableBuilder<bool>(
-                           valueListenable: _shouldShowSliders,
-                           builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
-                             return AnimatedOpacity(
-                               duration: Duration(milliseconds: _options.editAnimationDuration),
-                               curve: Curves.easeInOut,
-                               opacity: shouldShow ? 1 : 0,
-                               child: Row(
-                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                 children: [
-                                   _hueSlider,
-                                   _satSlider,
-                                   _valSlider
-                                 ],
-                               ),
-                             );
-                           },
-                         ),
-                         ValueListenableBuilder<bool>(
-                           valueListenable: _shouldShowSliders,
-                           builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
-                             return ValueListenableBuilder<int>(
-                               valueListenable: widget.shiftSet.hueShiftNotifier,
-                               builder: (final BuildContext context2, final int hueShift, final Widget? child2) {
-                                 return ValueListenableBuilder<int>(
-                                   valueListenable: widget.shiftSet.satShiftNotifier,
-                                   builder: (final BuildContext context3, final int satShift, final Widget? child3) {
-                                     return ValueListenableBuilder<int>(
-                                       valueListenable: widget.shiftSet.valShiftNotifier,
-                                       builder: (final BuildContext context4, final int valShift, final Widget? child4) {
-                                         final bool editIsVisible = !shouldShow && (hueShift != _constraints.defaultHue || satShift != _constraints.defaultSat || valShift != _constraints.defaultVal);
-                                         return AnimatedOpacity(
-                                           duration: Duration(milliseconds: _options.editAnimationDuration),
-                                           curve: Curves.easeInOut,
-                                           opacity: editIsVisible ? 1 : 0,
-                                           child: Padding(
-                                             padding:  EdgeInsets.all(_options.outsidePadding),
-                                             child: FaIcon(
-                                               FontAwesomeIcons.pen,
-                                               shadows: <Shadow>[
-                                                 Shadow(
-                                                   offset: const Offset(0.0, 1.0),
-                                                   blurRadius: 2.0,
-                                                   color: Theme.of(context).primaryColorDark,
-                                                 ),
-                                               ],
+                     child: GestureDetector(
+                       onTap: _showSliders,
+                       child: Stack(
+                         children: [
+                           Container(
+                             color: currentColor.color
+                           ),
+                           ValueListenableBuilder<bool>(
+                             valueListenable: _shouldShowSliders,
+                             builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
+                               return AnimatedOpacity(
+                                 duration: Duration(milliseconds: _options.editAnimationDuration),
+                                 curve: Curves.easeInOut,
+                                 opacity: shouldShow ? 1 : 0,
+                                 alwaysIncludeSemantics: false,
+                                 child: IgnorePointer(
+                                   ignoring: !shouldShow,
+                                   child: Row(
+                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                     children: [
+                                       _hueSlider,
+                                       _satSlider,
+                                       _valSlider
+                                     ],
+                                   ),
+                                 ),
+                               );
+                             },
+                           ),
+                           ValueListenableBuilder<bool>(
+                             valueListenable: _shouldShowSliders,
+                             builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
+                               return ValueListenableBuilder<int>(
+                                 valueListenable: widget.shiftSet.hueShiftNotifier,
+                                 builder: (final BuildContext context2, final int hueShift, final Widget? child2) {
+                                   return ValueListenableBuilder<int>(
+                                     valueListenable: widget.shiftSet.satShiftNotifier,
+                                     builder: (final BuildContext context3, final int satShift, final Widget? child3) {
+                                       return ValueListenableBuilder<int>(
+                                         valueListenable: widget.shiftSet.valShiftNotifier,
+                                         builder: (final BuildContext context4, final int valShift, final Widget? child4) {
+                                           final bool editIsVisible = !shouldShow && (hueShift != _constraints.defaultHue || satShift != _constraints.defaultSat || valShift != _constraints.defaultVal);
+                                           return AnimatedOpacity(
+                                             duration: Duration(milliseconds: _options.editAnimationDuration),
+                                             curve: Curves.easeInOut,
+                                             opacity: editIsVisible ? 1 : 0,
+                                             child: Padding(
+                                               padding:  EdgeInsets.all(_options.outsidePadding),
+                                               child: FaIcon(
+                                                 FontAwesomeIcons.pen,
+                                                 shadows: <Shadow>[
+                                                   Shadow(
+                                                     offset: const Offset(0.0, 1.0),
+                                                     blurRadius: 2.0,
+                                                     color: Theme.of(context).primaryColorDark,
+                                                   ),
+                                                 ],
+                                               ),
                                              ),
-                                           ),
-                                         );
-                                       },
-                                     );
-                                   },
-                                 );
-                               },
-                             );
-                           },
-                         )
-                       ]
+                                           );
+                                         },
+                                       );
+                                     },
+                                   );
+                                 },
+                               );
+                             },
+                           )
+                         ]
+                       ),
                      ),
                    )
                  ),

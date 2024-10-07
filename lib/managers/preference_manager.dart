@@ -341,6 +341,7 @@ enum PreferenceInt
   KPalColorCard_Layout_ColorFlex(defaultValue: 4),
   KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
   KPalColorCard_Layout_EditAnimationDuration(defaultValue: 250),
+  KPalColorCard_Layout_TouchTimeout(defaultValue: 1500),
 
   KPalSliderConstraints_MinHue(defaultValue: -50),
   KPalSliderConstraints_MinSat(defaultValue: -25),
@@ -920,7 +921,8 @@ class PreferenceManager
         colorFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorFlex),
         colorNameFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNameFlex),
         colorNumbersFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNumbersFlex),
-        editAnimationDuration: _getValueI(PreferenceInt.KPalColorCard_Layout_EditAnimationDuration));
+        editAnimationDuration: _getValueI(PreferenceInt.KPalColorCard_Layout_EditAnimationDuration),
+        touchTimeout: _getValueI(PreferenceInt.KPalColorCard_Layout_TouchTimeout));
 
     KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
         padding: _getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),

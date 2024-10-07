@@ -370,6 +370,9 @@ enum PreferenceInt
   StylusOptions_PollInterval(defaultValue: 100),
   StylusOptions_PollIntervalMin(defaultValue: 20),
   StylusOptions_PollIntervalMax(defaultValue: 500),
+  StylusOptions_PickMaxDuration(defaultValue: 400),
+  StylusOptions_PickMaxDurationMin(defaultValue: 100),
+  StylusOptions_PickMaxDurationMax(defaultValue: 1000),
 
   TouchOptions_SingleTouchDelay(defaultValue: 50),
   TouchOptions_SingleTouchDelayMin(defaultValue: 10),
@@ -998,7 +1001,10 @@ class PreferenceManager
       stylusSizeStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMax),
       stylusZoomStepDistance: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistance),
       stylusZoomStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMin),
-      stylusZoomStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMax)
+      stylusZoomStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMax),
+      stylusPickMaxDuration: _getValueI(PreferenceInt.StylusOptions_PickMaxDuration),
+      stylusPickMaxDurationMin: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMin),
+      stylusPickMaxDurationMax: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMax),
     );
 
     touchPreferenceContent = TouchPreferenceContent(
@@ -1041,6 +1047,7 @@ class PreferenceManager
     _intMap[PreferenceInt.StylusOptions_PollInterval]!.value = stylusPreferenceContent.stylusPollInterval.value;
     _doubleMap[PreferenceDouble.StylusOptions_SizeStepDistance]!.value = stylusPreferenceContent.stylusSizeStepDistance.value;
     _doubleMap[PreferenceDouble.StylusOptions_ZoomStepDistance]!.value = stylusPreferenceContent.stylusZoomStepDistance.value;
+    _intMap[PreferenceInt.StylusOptions_PickMaxDuration]!.value = stylusPreferenceContent.stylusPickMaxDuration.value;
 
     //TOUCH PREFERENCES
     _intMap[PreferenceInt.TouchOptions_SingleTouchDelay]!.value = touchPreferenceContent.singleTouchDelay.value;

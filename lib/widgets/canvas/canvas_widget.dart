@@ -109,6 +109,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   bool _stylusButtonDetected = false;
   bool _stylusHoverDetected = false;
   bool _stylusButtonDown = false;
+  DateTime _stylusDownTimeStamp = DateTime.now();
 
   late Offset _dragStartLoc;
 
@@ -627,13 +628,16 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       _needSecondaryStartLoc = true;
       _stylusButtonDown = true;
+      _stylusDownTimeStamp = DateTime.now();
       //stylusBtnDown();
       _timerStylusBtnLongPress = Timer(_timeoutLongPress, handleTimeoutStylusBtnLongPress);
       _timerStylusRunning = true;
     }
     else if (!_stylusButtonDetected && _stylusButtonDown)
     {
-      if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
+      final int diffMs = DateTime.now().difference(_stylusDownTimeStamp).inMilliseconds;
+      //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
+      if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
       {
         final CoordinateSetI normPos = CoordinateSetI(
             x: _getClosestPixel(
@@ -647,7 +651,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
         if (colRef != null && colRef != _appState.selectedColor)
         {
-           _appState.colorSelected(color: colRef);
+          _appState.colorSelected(color: colRef);
         }
       }
 

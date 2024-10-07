@@ -25,6 +25,7 @@ class StylusPreferenceContent
   final ValueNotifier<double> stylusZoomStepDistance;
   final ValueNotifier<double> stylusSizeStepDistance;
   final ValueNotifier<int> stylusPollInterval;
+  final ValueNotifier<int> stylusPickMaxDuration;
   final int stylusLongPressDelayMin;
   final int stylusLongPressDelayMax;
   final double stylusLongPressCancelDistanceMin;
@@ -35,6 +36,8 @@ class StylusPreferenceContent
   final double stylusSizeStepDistanceMax;
   final int stylusPollIntervalMin;
   final int stylusPollIntervalMax;
+  final int stylusPickMaxDurationMin;
+  final int stylusPickMaxDurationMax;
 
   StylusPreferenceContent._({
     required this.stylusLongPressDelay,
@@ -42,6 +45,7 @@ class StylusPreferenceContent
     required this.stylusZoomStepDistance,
     required this.stylusSizeStepDistance,
     required this.stylusPollInterval,
+    required this.stylusPickMaxDuration,
     required this.stylusLongPressDelayMin,
     required this.stylusLongPressDelayMax,
     required this.stylusLongPressCancelDistanceMin,
@@ -51,7 +55,9 @@ class StylusPreferenceContent
     required this.stylusSizeStepDistanceMin,
     required this.stylusSizeStepDistanceMax,
     required this.stylusPollIntervalMin,
-    required this.stylusPollIntervalMax});
+    required this.stylusPollIntervalMax,
+    required this.stylusPickMaxDurationMin,
+    required this.stylusPickMaxDurationMax});
 
   factory StylusPreferenceContent({
     required final int stylusLongPressDelay,
@@ -69,6 +75,9 @@ class StylusPreferenceContent
     required final int stylusPollInterval,
     required final int stylusPollIntervalMin,
     required final int stylusPollIntervalMax,
+    required final int stylusPickMaxDuration,
+    required final int stylusPickMaxDurationMin,
+    required final int stylusPickMaxDurationMax,
   })
   {
     return StylusPreferenceContent._(
@@ -87,6 +96,9 @@ class StylusPreferenceContent
       stylusZoomStepDistance: ValueNotifier(max(min(stylusZoomStepDistance, stylusZoomStepDistanceMax), stylusZoomStepDistanceMin)),
       stylusZoomStepDistanceMin: stylusZoomStepDistanceMin,
       stylusZoomStepDistanceMax: stylusZoomStepDistanceMax,
+      stylusPickMaxDuration: ValueNotifier(max(min(stylusPickMaxDuration, stylusPickMaxDurationMax), stylusPickMaxDurationMin)),
+      stylusPickMaxDurationMin: stylusPickMaxDurationMin,
+      stylusPickMaxDurationMax: stylusLongPressDelayMax
     );
   }
 }
@@ -224,6 +236,30 @@ class _StylusPreferencesState extends State<StylusPreferences>
                     max: widget.prefs.stylusSizeStepDistanceMax,
                     label: "${sizeStepDistance.round()}px",
                     onChanged: (final double newVal) {widget.prefs.stylusSizeStepDistance.value = newVal;},
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(flex: 1, child: Text("Color Pick Timeout", style: Theme.of(context).textTheme.titleSmall)),
+            Expanded(
+              flex: 2,
+              child: ValueListenableBuilder<int>(
+                valueListenable: widget.prefs.stylusPickMaxDuration,
+                builder: (final BuildContext context, final int pickDuration, final Widget? child)
+                {
+                  return Slider(
+                    value: pickDuration.toDouble(),
+                    min: widget.prefs.stylusPickMaxDurationMin.toDouble(),
+                    max: widget.prefs.stylusPickMaxDurationMax.toDouble(),
+                    label: "${pickDuration}ms",
+                    onChanged: (final double newVal) {widget.prefs.stylusPickMaxDuration.value = newVal.toInt();},
                   );
                 },
               ),

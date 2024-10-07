@@ -115,7 +115,6 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
            valueListenable: widget._colorNotifier,
            builder: (final BuildContext context, final IdColor currentColor, final Widget? child)
            {
-             final HSVColor hsvColor =  HSVColor.fromColor(currentColor.color);
              return Column(
                children: [
                  Expanded(
@@ -219,9 +218,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                      crossAxisAlignment: CrossAxisAlignment.center,
                      mainAxisSize: MainAxisSize.max,
                      children: [
-                       Text("${hsvColor.hue.round()}°"),
-                       Text("${(hsvColor.saturation * 100).round()}%"),
-                       Text("${(hsvColor.value * 100).round()}%"),
+                       Text("${currentColor.hsvColor.hue.round()}°"),
+                       Text("${(currentColor.hsvColor.saturation * 100).round()}%"),
+                       Text("${(currentColor.hsvColor.value * 100).round()}%"),
                      ]
                    )
                  )

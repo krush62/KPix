@@ -168,7 +168,6 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
   void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
     kPal = OverlayEntries.getKPal(
-      onDismiss: _closeKPal,
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
       colorRamp: ramp,
@@ -178,22 +177,17 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
 
   void _colorRampUpdate({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
   {
-    _closeKPal();
+    kPal.hide();
     widget.colorsUpdatedFn!(ramp: ramp, originalData: originalData, addToHistoryStack: addToHistoryStack);
   }
 
   void _colorRampDelete({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    _closeKPal();
+    kPal.hide();
     widget.deleteRowFn!(ramp: ramp, addToHistoryStack: addToHistoryStack);
   }
 
-  void _closeKPal()
-  {
-    kPal.hide();
-  }
-
-   @override
+  @override
   Widget build(final BuildContext context) {
     widget._createWidgetList(createKPal: _createKPal);
     return Row(

@@ -54,9 +54,10 @@ part '../../util/kpal_ramp_data.dart';
 
 class IdColor
 {
+  final HSVColor hsvColor;
   final Color color;
   final String uuid;
-  IdColor({required this.color, required this.uuid});
+  IdColor({required this.hsvColor, required this.uuid}) : color = hsvColor.toColor();
 }
 
 enum SatCurve
@@ -203,17 +204,15 @@ class KPalWidgetOptions
 class KPal extends StatefulWidget
 {
   final KPalRampData _colorRamp;
-  final Function() _dismiss;
   final ColorRampUpdateFn _accept;
   final ColorRampFn _delete;
 
   const KPal({
     super.key,
     required KPalRampData colorRamp,
-    required dynamic Function() dismiss,
     required void Function({bool addToHistoryStack, required KPalRampData originalData, required KPalRampData ramp}) accept,
     required void Function({bool addToHistoryStack, required KPalRampData ramp}) delete,
-  }) : _delete = delete, _accept = accept, _dismiss = dismiss, _colorRamp = colorRamp;
+  }) : _delete = delete, _accept = accept, _colorRamp = colorRamp;
 
   @override
   State<KPal> createState() => _KPalState();

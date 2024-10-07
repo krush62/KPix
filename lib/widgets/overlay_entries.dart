@@ -401,7 +401,6 @@ class OverlayEntries
 
 
   static KPixOverlay getKPal({
-    required final Function() onDismiss,
     required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
     required final KPalRampData colorRamp,
@@ -419,7 +418,6 @@ class OverlayEntries
             child: Align(
               alignment: Alignment.center,
               child: KPal(
-                dismiss: onDismiss,
                 accept: onAccept,
                 delete: onDelete,
                 colorRamp: colorRamp,

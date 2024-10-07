@@ -236,7 +236,7 @@ class KPalRampData
       {
         Color black = Colors.black;
         _originalColors.add(HSVColor.fromColor(black));
-        shiftedColors.add(ValueNotifier(IdColor(color: black, uuid: uuid.v1())));
+        shiftedColors.add(ValueNotifier(IdColor(hsvColor: HSVColor.fromColor(black), uuid: uuid.v1())));
         references.add(ColorReference(colorIndex: i, ramp: this));
       }
     }
@@ -306,7 +306,7 @@ class KPalRampData
           (orig.saturation + (shifts[i].satShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
           (orig.value + (shifts[i].valShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
       );
-      shiftedColors[i].value = IdColor(color: shiftedColor.toColor(), uuid: shiftedColors[i].value.uuid);
+      shiftedColors[i].value = IdColor(hsvColor: shiftedColor, uuid: shiftedColors[i].value.uuid);
     }
   }
 }

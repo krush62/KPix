@@ -86,6 +86,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
   late KPalVerticalSliderWidget _satSlider;
   late KPalVerticalSliderWidget _valSlider;
   Timer? pressTimer;
+  bool _isInside = false;
 
   @override
   void initState()
@@ -111,7 +112,10 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
 
   void _hide()
   {
-    _shouldShowSliders.value = false;
+    if (!_isInside)
+    {
+      _shouldShowSliders.value = false;
+    }
   }
 
   @override
@@ -158,9 +162,11 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                    flex: _options.colorFlex,
                    child: MouseRegion(
                      onEnter: (final PointerEnterEvent? event) {
+                       _isInside = true;
                        _shouldShowSliders.value = true;
                      },
                      onExit: (final PointerExitEvent? event) {
+                       _isInside = false;
                        _shouldShowSliders.value = false;
                      },
                      child: GestureDetector(

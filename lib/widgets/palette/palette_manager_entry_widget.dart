@@ -134,7 +134,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                     flex: 1,
                     child: Center(
                       child: Text(
-                        "${widget.entryData.rampDataList.length} ramps | $colorCount colors",
+                        widget.entryData.rampDataList.length == 1 ? "$colorCount colors" : "${widget.entryData.rampDataList.length} ramps | $colorCount colors",
                         style: Theme.of(context).textTheme.bodySmall!.apply(color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight),
                       ),
                     )

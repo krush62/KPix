@@ -699,7 +699,7 @@ class ExportFunctions
         final HistoryReferenceLayer referenceLayer = saveData.layerList[i] as HistoryReferenceLayer;
 
         //path (string)
-        final Uint8List encodedPath = utf8.encode(referenceLayer.path!);
+        final Uint8List encodedPath = utf8.encode(referenceLayer.path);
         byteData.setUint16(offset, encodedPath.length);
         offset += 2;
         for (int i = 0; i < encodedPath.length; i++)
@@ -720,14 +720,6 @@ class ExportFunctions
         //aspect_ratio ``float (1)``
         byteData.setFloat32(offset, referenceLayer.aspectRatio);
         offset += 4;
-
-
-
-
-
-
-
-
       }
     }
 
@@ -1428,18 +1420,18 @@ class ExportFunctions
         final HistoryReferenceLayer referenceLayer = saveData.layerList[i] as HistoryReferenceLayer;
         //path (string)
         size += 2;
-        if (referenceLayer.path != null)
-        {
-          size += utf8.encode(referenceLayer.path!).length;
-        }
+        size += utf8.encode(referenceLayer.path).length;
         //opacity ``ubyte (1)`` // 0...100
         size += 1;
         //offset_x ``short (1)``
         size += 2;
         //offset_y ``short (1)``
         size += 2;
-        //zoom ``float (1)``
+        //zoom ``ubyte (1)``
+        size += 1;
+        //aspect_ratio ``float (1)``
         size += 4;
+
       }
     }
 

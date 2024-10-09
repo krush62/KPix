@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
@@ -59,6 +60,11 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
   final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
 
+  void _onLoadPressed()
+  {
+
+  }
+
   void _expandHorizontal()
   {
 
@@ -96,6 +102,62 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                   Expanded(
                     flex: 1,
                     child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "File",
+                          style: Theme.of(context).textTheme.labelLarge,
+                        )
+                    ),
+                  ),
+                  Expanded(
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: ValueListenableBuilder<String>(
+                              valueListenable: widget.referenceState.pathNotifier,
+                              builder: (final BuildContext context, final String path, final Widget? child) {
+                                return Text(
+                                  path.isEmpty ? "<NO FILE LOADED>" : path,
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                );
+                              },
+                            )
+                          ),
+                        ),
+                        SizedBox(
+                          width: toolSettingsWidgetOptions.padding,
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Tooltip(
+                            waitDuration: AppState.toolTipDuration,
+                            message: "Open Reference File",
+                            child: IconButton.outlined(
+                              onPressed: _onLoadPressed,
+                              icon: FaIcon(
+                                FontAwesomeIcons.file
+                              )
+                            ),
+                          )
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Opacity",
@@ -107,8 +169,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     flex: toolSettingsWidgetOptions.columnWidthRatio,
                     child: ValueListenableBuilder<int>(
                       valueListenable: widget.referenceState.opacityNotifier,
-                      builder: (final BuildContext context, final int opacity, final Widget? child)
-                      {
+                      builder: (final BuildContext context, final int opacity, final Widget? child){
                         return Slider(
                           value: opacity.toDouble(),
                           min: refSettings.opacityMin.toDouble(),

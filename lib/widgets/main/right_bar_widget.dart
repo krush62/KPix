@@ -72,8 +72,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _widgetList = [];
     for (int i = 0; i < layers.length; i++)
     {
-      _widgetList.add(DragTarget<DrawingLayerState>(
-        builder: (final BuildContext context, final List<DrawingLayerState?> candidateItems, final List<dynamic> rejectedItems) {
+      _widgetList.add(DragTarget<LayerState>(
+        builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
           return AnimatedContainer(
             height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
             color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
@@ -89,8 +89,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
         layerState: layers[i],
       ));
     }
-    _widgetList.add(DragTarget<DrawingLayerState>(
-      builder: (final BuildContext context, final List<DrawingLayerState?> candidateItems, final List<dynamic> rejectedItems) {
+    _widgetList.add(DragTarget<LayerState>(
+      builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
         return Divider(
           height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
           thickness: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,

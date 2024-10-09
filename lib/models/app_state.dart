@@ -952,7 +952,8 @@ class AppState
         }
         else if (duplicateLayer.runtimeType == ReferenceLayerState)
         {
-          //TODO implement me
+          final ReferenceLayerState referenceLayer = duplicateLayer as ReferenceLayerState;
+          layerList.add(ReferenceLayerState.from(other: referenceLayer));
         }
       }
       layerList.add(_layers.value[i]);

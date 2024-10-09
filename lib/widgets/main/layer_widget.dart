@@ -139,6 +139,11 @@ class ReferenceLayerState extends LayerState
     offsetXNotifier = ValueNotifier(offsetX),
     offsetYNotifier = ValueNotifier(offsetY),
     pathNotifier = ValueNotifier(path);
+
+  factory ReferenceLayerState.from({required ReferenceLayerState other})
+  {
+    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacityNotifier.value, zoom: other.zoomNotifier.value, path: other.pathNotifier.value, offsetX: other.offsetXNotifier.value, offsetY: other.offsetYNotifier.value);
+  }
 }
 
 class DrawingLayerState extends LayerState
@@ -165,7 +170,7 @@ class DrawingLayerState extends LayerState
   factory DrawingLayerState.from({required DrawingLayerState other})
   {
     CoordinateColorMap data2 = HashMap();
-  for (final CoordinateColor ref in other._data.entries)
+    for (final CoordinateColor ref in other._data.entries)
     {
       data2[ref.key] = ref.value;
     }

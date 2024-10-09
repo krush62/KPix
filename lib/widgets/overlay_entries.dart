@@ -408,7 +408,7 @@ class OverlayEntries
     OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    const int buttonCount = 3;
+    const int buttonCount = 2;
     final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
     final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return KPixOverlay(

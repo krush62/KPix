@@ -35,6 +35,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
@@ -125,7 +126,7 @@ class FileHandler
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
   {
-    final ByteData byteData = await ExportFunctions.getKPixData(appState: appState);
+    final ByteData byteData = await ExportFunctions.createKPixData(appState: appState);
     if (!kIsWeb)
     {
       await File(path).writeAsBytes(byteData.buffer.asUint8List());
@@ -144,7 +145,7 @@ class FileHandler
   }
 
 
-  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints}) async
+  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings}) async
   {
     try
     {
@@ -242,8 +243,6 @@ class FileHandler
         }
         else if (layerType == 2) //REFERENCE LAYER
         {
-          //TODO sanity checks for ranges
-
           //path (string)
           final int pathLength = byteData.getInt16(offset);
           offset += 2;
@@ -255,6 +254,7 @@ class FileHandler
           String pathString = utf8.decode(pathBytes);
           //opacity ``ubyte (1)`` // 0...100
           final int opacity = byteData.getUint8(offset++);
+          if (opacity < referenceLayerSettings.opacityMin || opacity > referenceLayerSettings.opacityMax) return LoadFileSet(status: "Opacity for reference layer is out of range: $opacity");
           //offset_x ``short (1)``
           final int offsetX = byteData.getUint16(offset);
           offset += 2;
@@ -263,15 +263,14 @@ class FileHandler
           offset += 2;
           //zoom ``ubyte (1)``
           final int zoom = byteData.getUint8(offset++);
+          if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax) return LoadFileSet(status: "Zoom for reference layer is out of range: $zoom");
           //aspect_ratio ``float (1)``
           final double aspectRatio = byteData.getFloat32(offset);
+          if (aspectRatio < referenceLayerSettings.aspectRatioMin || aspectRatio > referenceLayerSettings.aspectRatioMax) return LoadFileSet(status: "Aspect ratio for reference layer is out of range: $aspectRatio");
           offset+=4;
-
 
           layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio));
         }
-
-
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
       final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, description: "load data");
@@ -317,7 +316,7 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 
@@ -394,7 +393,7 @@ class FileHandler
   {
     final String finalPath = p.join(directory, fileName);
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
-    Uint8List data = await ExportFunctions.getPaletteKPalData(rampList: rampList);
+    Uint8List data = await ExportFunctions.createPaletteKPalData(rampList: rampList);
     return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension);
   }
 
@@ -408,7 +407,7 @@ class FileHandler
     switch (paletteType)
     {
       case PaletteExportType.kpal:
-        ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        ExportFunctions.createPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteExportType.png:
         ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
@@ -562,7 +561,7 @@ class FileHandler
         data = await ExportFunctions.getGimpData(exportData: exportData, appState: appState);
         break;
       case FileExportType.kpix:
-        data = (await ExportFunctions.getKPixData(appState: appState)).buffer.asUint8List();
+        data = (await ExportFunctions.createKPixData(appState: appState)).buffer.asUint8List();
         break;
     }
 

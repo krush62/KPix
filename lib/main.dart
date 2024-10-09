@@ -206,7 +206,7 @@ class _KPixAppState extends State<KPixApp>
 
     if (initialFilePath != null && initialFilePath.isNotEmpty)
     {
-      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: initialFilePath, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
+      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: initialFilePath, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings);
       if (lfs.path != null && lfs.historyState != null)
       {
         GetIt.I.get<AppState>().restoreFromFile(loadFileSet: lfs);
@@ -352,7 +352,6 @@ class _KPixAppState extends State<KPixApp>
         else
         {
           return  Padding(
-            //TODO magic
             padding: const EdgeInsets.all(32.0),
             child: Stack(
               children: [

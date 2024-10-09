@@ -566,9 +566,8 @@ class ExportFunctions
     return outBytes.buffer.asUint8List();
   }
 
-  static Future<ByteData> getKPixData({required final AppState appState}) async
+  static Future<ByteData> createKPixData({required final AppState appState}) async
   {
-    //TODO perform sanity checks (max ramps, max layers, etc...)
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");
     final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
 
@@ -726,9 +725,8 @@ class ExportFunctions
     return byteData;
   }
 
-  static Future<Uint8List> getPaletteKPalData({required final List<KPalRampData> rampList}) async
+  static Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampList}) async
   {
-    //TODO perform sanity checks (ramp count, color count, ...)
     final ByteData byteData = ByteData(_calculateKPalFileSize(rampList: rampList));
     int offset = 0;
 

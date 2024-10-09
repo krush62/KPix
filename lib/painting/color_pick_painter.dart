@@ -64,16 +64,17 @@ class ColorPickPainter extends IToolPainter
     ColorReference? colRef;
     for (final LayerState layer in appState.layers)
     {
-      if (layer.visibilityState.value == LayerVisibilityState.visible)
+      if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)
       {
-        if (appState.currentLayer == layer && appState.selectionState.selection.getColorReference(coord: normPos) != null)
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        if (appState.currentLayer == drawingLayer && appState.selectionState.selection.getColorReference(coord: normPos) != null)
         {
           colRef = appState.selectionState.selection.getColorReference(coord: normPos);
           break;
         }
-        if (layer.getDataEntry(coord: normPos) != null)
+        if (drawingLayer.getDataEntry(coord: normPos) != null)
         {
-          colRef = layer.getDataEntry(coord: normPos);
+          colRef = drawingLayer.getDataEntry(coord: normPos);
           break;
         }
       }

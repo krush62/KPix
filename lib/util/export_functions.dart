@@ -71,14 +71,15 @@ class ExportFunctions
         final CoordinateSetI currentCoord = CoordinateSetI(x: x, y: y);
         for (int l = 0; l < layers.length; l++)
         {
-          if (layers[l].visibilityState.value == LayerVisibilityState.visible)
+          if (layers[l].visibilityState.value == LayerVisibilityState.visible && layers[l].runtimeType == DrawingLayerState)
           {
+            final DrawingLayerState drawingLayer = layers[l] as DrawingLayerState;
             ColorReference? col;
-            if (selectedLayer == layers[l])
+            if (selectedLayer == drawingLayer)
             {
               col = selectionState.selection.getColorReference(coord: currentCoord);
             }
-            col ??= layers[l].getDataEntry(coord: currentCoord);
+            col ??= drawingLayer.getDataEntry(coord: currentCoord);
 
             if (col != null)
             {
@@ -303,7 +304,7 @@ class ExportFunctions
 
 
 
-  static Future<Uint8List> _createAsepriteData({required final List<ui.Color> colorList, required final List<Uint8List> layerNames, required final List<List<int>> layerEncBytes, required final CoordinateSetI canvasSize, final List<LayerState>? layerList}) async
+  static Future<Uint8List> _createAsepriteData({required final List<ui.Color> colorList, required final List<Uint8List> layerNames, required final List<List<int>> layerEncBytes, required final CoordinateSetI canvasSize, final List<DrawingLayerState>? layerList}) async
   {
     const int headerSize = 128;
     const int frameHeaderSize = 16;
@@ -638,7 +639,15 @@ class ExportFunctions
     for (int i = 0; i < saveData.layerList.length; i++)
     {
       //layer type
-      byteData.setUint8(offset++, 1);
+      if (saveData.layerList[i].runtimeType == HistoryDrawingLayer)
+      {
+        byteData.setUint8(offset++, 1);
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryReferenceLayer)
+      {
+        byteData.setUint8(offset++, 2);
+      }
+
       //visibility
       int visVal = 0;
       for (int j = 0; j < layerVisibilityStateValueMap.length; j++)
@@ -650,34 +659,75 @@ class ExportFunctions
         }
       }
       byteData.setUint8(offset++, visVal);
-      //lock type
-      int lockVal = 0;
-      for (int j = 0; j < layerLockStateValueMap.length; j++)
+
+
+      if (saveData.layerList[i].runtimeType == HistoryDrawingLayer)
       {
-        if (layerLockStateValueMap[j] == saveData.layerList[i].lockState)
+        final HistoryDrawingLayer drawingLayer = saveData.layerList[i] as HistoryDrawingLayer;
+        //lock type
+        int lockVal = 0;
+        for (int j = 0; j < layerLockStateValueMap.length; j++)
         {
-          lockVal = j;
-          break;
+          if (layerLockStateValueMap[j] == drawingLayer.lockState)
+          {
+            lockVal = j;
+            break;
+          }
+        }
+        byteData.setUint8(offset++, lockVal);
+        //data count
+        final int dataLength = drawingLayer.data.length;
+        byteData.setUint32(offset, dataLength);
+        offset+=4;
+        //image data
+        for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
+        {
+          //x
+          byteData.setUint16(offset, entry.key.x);
+          offset+=2;
+          //y
+          byteData.setUint16(offset, entry.key.y);
+          offset+=2;
+          //ramp index
+          byteData.setUint8(offset++, entry.value.rampIndex);
+          //color index
+          byteData.setUint8(offset++, entry.value.colorIndex);
         }
       }
-      byteData.setUint8(offset++, lockVal);
-      //data count
-      final int dataLength = saveData.layerList[i].data.length;
-      byteData.setUint32(offset, dataLength);
-      offset+=4;
-      //image data
-      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in saveData.layerList[i].data.entries)
+      else if (saveData.layerList[i].runtimeType == HistoryReferenceLayer)
       {
-        //x
-        byteData.setUint16(offset, entry.key.x);
-        offset+=2;
-        //y
-        byteData.setUint16(offset, entry.key.y);
-        offset+=2;
-        //ramp index
-        byteData.setUint8(offset++, entry.value.rampIndex);
-        //color index
-        byteData.setUint8(offset++, entry.value.colorIndex);
+        final HistoryReferenceLayer referenceLayer = saveData.layerList[i] as HistoryReferenceLayer;
+
+        //path (string)
+        final Uint8List encodedPath = utf8.encode(referenceLayer.path!);
+        byteData.setUint16(offset, encodedPath.length);
+        offset += 2;
+        for (int i = 0; i < encodedPath.length; i++)
+        {
+          byteData.setUint8(offset++, encodedPath[i]);
+        }
+
+        //opacity ``ubyte (1)`` // 0...100
+        byteData.setUint8(offset++, referenceLayer.opacity);
+        //offset_x ``short (1)``
+        byteData.setUint16(offset, referenceLayer.offsetX);
+        offset += 2;
+        //offset_y ``short (1)``
+        byteData.setUint16(offset, referenceLayer.offsetY);
+        offset += 2;
+        //zoom ``ubyte (1)``
+        byteData.setUint8(offset++, referenceLayer.zoom);
+        //aspect_ratio ``float (1)``
+        byteData.setFloat32(offset, referenceLayer.aspectRatio);
+        offset += 4;
+
+
+
+
+
+
+
+
       }
     }
 
@@ -763,9 +813,11 @@ class ExportFunctions
 
     final List<List<int>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    for (int l = 0; l < appState.layers.length; l++)
+    final List<DrawingLayerState> drawingLayers = appState.layers.whereType<DrawingLayerState>().toList();
+
+    for (int l = 0; l < drawingLayers.length; l++)
     {
-      final LayerState layerState = appState.layers[l];
+      final DrawingLayerState layerState = drawingLayers[l];
       final List<int> imgBytes = [];
       for (int y = 0; y < layerState.size.y; y++)
       {
@@ -789,7 +841,7 @@ class ExportFunctions
       layerNames.add(utf8.encode("Layer$l"));
     }
 
-    return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: appState.layers);
+    return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
   }
 
   static Future<Uint8List?> getGimpData({required final ExportData exportData, required final AppState appState}) async
@@ -858,9 +910,10 @@ class ExportFunctions
     final List<List<List<int>>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
     const int tileSize = 64;
-    for (int l = 0; l < appState.layers.length; l++)
+    final List<DrawingLayerState> drawingLayers = appState.layers.whereType<DrawingLayerState>().toList();
+    for (int l = 0; l < drawingLayers.length; l++)
     {
-      final LayerState layerState = appState.layers[l];
+      final DrawingLayerState layerState = drawingLayers[l];
       int x = 0;
       int y = 0;
       final List<List<int>> tileList = [];
@@ -904,7 +957,7 @@ class ExportFunctions
     //CALCULATING SIZE
     bool activeLayerSet = false;
     int fileSize = fullHeaderSize;
-    for (int i = 0; i < appState.layers.length; i++)
+    for (int i = 0; i < drawingLayers.length; i++)
     {
       final List<List<int>> tiles = layerEncBytes[i];
       fileSize += singleLayerSize;
@@ -1027,7 +1080,7 @@ class ExportFunctions
     offset+=4;
 
     //LAYER POINTERS
-    for (int i = 0; i < appState.layers.length; i++)
+    for (int i = 0; i < drawingLayers.length; i++)
     {
       layerOffsetsInsertPositions.add(offset);
       FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
@@ -1045,7 +1098,7 @@ class ExportFunctions
     {
       FileHandler.setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
-      final LayerState currentLayer = appState.layers[i];
+      final DrawingLayerState currentLayer = drawingLayers[i];
       outBytes.setUint32(offset, currentLayer.size.x);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y);
@@ -1344,26 +1397,49 @@ class ExportFunctions
     size += 2;
     //layer count
     size += 1;
+
     for (int i = 0; i < saveData.layerList.length; i++)
     {
       //type
       size += 1;
       //visibility
       size += 1;
-      //lock type
-      size += 1;
-      //data count
-      size += 4;
-      for (int j = 0; j < saveData.layerList[i].data.length; j++)
+      if (saveData.layerList[i].runtimeType == HistoryDrawingLayer)
       {
-        //x
-        size += 2;
-        //y
-        size += 2;
-        //color ramp index
+        final HistoryDrawingLayer drawingLayer = saveData.layerList[i] as HistoryDrawingLayer;
+        //lock type
         size += 1;
-        //color index
+        //data count
+        size += 4;
+        for (int j = 0; j < drawingLayer.data.length; j++)
+        {
+          //x
+          size += 2;
+          //y
+          size += 2;
+          //color ramp index
+          size += 1;
+          //color index
+          size += 1;
+        }
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryReferenceLayer)
+      {
+        final HistoryReferenceLayer referenceLayer = saveData.layerList[i] as HistoryReferenceLayer;
+        //path (string)
+        size += 2;
+        if (referenceLayer.path != null)
+        {
+          size += utf8.encode(referenceLayer.path!).length;
+        }
+        //opacity ``ubyte (1)`` // 0...100
         size += 1;
+        //offset_x ``short (1)``
+        size += 2;
+        //offset_y ``short (1)``
+        size += 2;
+        //zoom ``float (1)``
+        size += 4;
       }
     }
 

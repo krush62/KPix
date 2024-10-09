@@ -46,58 +46,61 @@ class SprayCanPainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null)
+    if (drawParams.currentDrawingLayer != null)
     {
-      _cursorPosNorm.x = getClosestPixel(
-          value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
-      _cursorPosNorm.y = getClosestPixel(
-          value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
-
-      _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: _cursorPosNorm);
-
-    }
-
-    if (!_waitingForRasterization && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
-    {
-      if (drawParams.primaryDown)
+      if (drawParams.cursorPos != null)
       {
-        if (!timerInitialized || !timer.isActive)
-        {
-          timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {_timeout(timer: timer);});
-          timerInitialized = true;
-        }
+        _cursorPosNorm.x = getClosestPixel(
+            value: drawParams.cursorPos!.x - drawParams.offset.dx,
+            pixelSize: drawParams.pixelSize.toDouble())
+            .round();
+        _cursorPosNorm.y = getClosestPixel(
+            value: drawParams.cursorPos!.y - drawParams.offset.dy,
+            pixelSize: drawParams.pixelSize.toDouble())
+            .round();
 
-        if (!_isDown)
+        _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: _cursorPosNorm);
+
+      }
+
+      if (!_waitingForRasterization && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+      {
+        if (drawParams.primaryDown)
         {
-          _isDown = true;
+          if (!timerInitialized || !timer.isActive)
+          {
+            timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {_timeout(timer: timer);});
+            timerInitialized = true;
+          }
+
+          if (!_isDown)
+          {
+            _isDown = true;
+          }
+          if (_paintPositions.isNotEmpty)
+          {
+            _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+            _paintPositions.clear();
+          }
         }
-        if (_paintPositions.isNotEmpty)
+        else if (!drawParams.primaryDown && _isDown)
         {
-          _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+          timer.cancel();
+          _dump(currentLayer: drawParams.currentDrawingLayer!);
+          _waitingForRasterization = true;
           _paintPositions.clear();
+          _isDown = false;
         }
       }
-      else if (!drawParams.primaryDown && _isDown)
+      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForRasterization)
       {
-        timer.cancel();
-        _dump(currentLayer: drawParams.currentLayer);
-        _waitingForRasterization = true;
-        _paintPositions.clear();
-        _isDown = false;
+        _drawingPixels.clear();
+        _waitingForRasterization = false;
       }
-    }
-    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _waitingForRasterization)
-    {
-      _drawingPixels.clear();
-      _waitingForRasterization = false;
     }
   }
 
-  void _dump({required final LayerState currentLayer})
+  void _dump({required final DrawingLayerState currentLayer})
   {
     if (_drawingPixels.isNotEmpty)
     {
@@ -183,7 +186,10 @@ class SprayCanPainter extends IToolPainter
     _paintPositions.clear();
     _waitingForRasterization = false;
     _isDown = false;
-    timer.cancel();
+    if (timerInitialized)
+    {
+      timer.cancel();
+    }
     timerInitialized = false;
   }
 

@@ -52,6 +52,7 @@ import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
@@ -152,10 +153,13 @@ enum PreferenceDouble
   Layout_ProjectManagerEntry_Elevation(defaultValue: 5.0),
   Layout_ProjectManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_ProjectManagerEntry_BorderRadius(defaultValue: 3.0),
-
   Layout_ProjectManager_EntryAspectRatio(defaultValue: 0.75),
   Layout_ProjectManager_MaxWidth(defaultValue: 800.0),
   Layout_ProjectManager_MaxHeight(defaultValue: 600.0),
+
+  ReferenceLayer_AspectRatioDefault(defaultValue: 1.0),
+  ReferenceLayer_AspectRatioMax(defaultValue: 4.0),
+  ReferenceLayer_AspectRatioMin(defaultValue: 0.25),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -247,12 +251,17 @@ enum PreferenceInt
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
   Layout_PaletteManagerEntry_LayoutFlex(defaultValue: 6),
-
   Layout_PaletteManager_ColCount(defaultValue: 4),
-
   Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
-
   Layout_ProjectManager_ColCount(defaultValue: 5),
+
+  ReferenceLayer_OpacityDefault(defaultValue: 100),
+  ReferenceLayer_OpacityMax(defaultValue: 100),
+  ReferenceLayer_OpacityMin(defaultValue: 0),
+  ReferenceLayer_ZoomDefault(defaultValue: 100),
+  ReferenceLayer_ZoomMax(defaultValue: 1000),
+  ReferenceLayer_ZoomMin(defaultValue: 10),
+
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -561,6 +570,8 @@ class PreferenceManager
   late KPalWidgetOptions kPalWidgetOptions;
   late KPalSliderConstraints kPalSliderConstraints;
 
+  late ReferenceLayerSettings referenceLayerSettings;
+
   late ColorNames colorNames;
 
   final FontManager _fontManager;
@@ -570,6 +581,8 @@ class PreferenceManager
   late BehaviorPreferenceContent behaviorPreferenceContent;
   late StylusPreferenceContent stylusPreferenceContent;
   late TouchPreferenceContent touchPreferenceContent;
+
+
 
   PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
   {
@@ -785,6 +798,18 @@ class PreferenceManager
         entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
         maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
         maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight));
+
+    referenceLayerSettings = ReferenceLayerSettings(
+      opacityDefault: _getValueI(PreferenceInt.ReferenceLayer_OpacityDefault),
+      opacityMin: _getValueI(PreferenceInt.ReferenceLayer_OpacityMin),
+      opacityMax: _getValueI(PreferenceInt.ReferenceLayer_OpacityMax),
+      zoomDefault: _getValueI(PreferenceInt.ReferenceLayer_ZoomDefault),
+      zoomMin: _getValueI(PreferenceInt.ReferenceLayer_ZoomMin),
+      zoomMax: _getValueI(PreferenceInt.ReferenceLayer_ZoomMax),
+      aspectRatioDefault: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioDefault),
+      aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
+      aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
+    );
   }
 
   void _loadToolOptions()

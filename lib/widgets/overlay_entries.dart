@@ -299,7 +299,7 @@ class OverlayEntries
   }
 
 
-  static KPixOverlay getLayerMenu({
+  static KPixOverlay getDrawingLayerMenu({
     required final Function onDismiss,
     required Function onDelete,
     required Function onMergeDown,
@@ -395,6 +395,88 @@ class OverlayEntries
           ],
         ),
       )
+    );
+  }
+
+  static KPixOverlay getReferenceLayerMenu({
+    required final Function onDismiss,
+    required Function onDelete,
+    required Function onDuplicate,
+    required final LayerLink layerLink,
+  })
+  {
+    OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    const int buttonCount = 3;
+    final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
+    final double height = options.buttonHeight + 2 * options.buttonSpacing;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: () {onDismiss();},
+            ),
+            Positioned(
+              width: width,
+              height: height,
+              child: CompositedTransformFollower(
+                link: layerLink,
+                showWhenUnlinked: false,
+                offset: Offset(
+                  -width,
+                  layerWidgetOptions.height/2 - height/2 - layerWidgetOptions.innerPadding,
+                ),
+                child: Material(
+                    color: Colors.transparent,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Tooltip(
+                          message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.all(
+                                options.buttonSpacing),
+                            onPressed: () {onDelete();},
+                            icon: FaIcon(
+                                FontAwesomeIcons.trashCan,
+                                size: options.buttonHeight),
+                            color: Theme.of(context).primaryColorLight,
+                            style: IconButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                backgroundColor: Theme.of(context).primaryColor),
+                          ),
+                        ),
+                        Tooltip(
+                          message: "Duplicate Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                              constraints: const BoxConstraints(),
+                              padding: EdgeInsets.all(options.buttonSpacing),
+                              onPressed: () {onDuplicate();},
+                              icon: FaIcon(
+                                FontAwesomeIcons.clone,
+                                size: options.buttonHeight,),
+                              color: Theme.of(context).primaryColorLight,
+                              style: IconButton.styleFrom(
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  backgroundColor: Theme.of(context).primaryColor)
+                          ),
+                        ),
+                      ],
+                    )
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )
     );
   }
 

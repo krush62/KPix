@@ -35,7 +35,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
@@ -69,36 +71,73 @@ class MainToolbarWidget extends StatelessWidget
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           (Helper.isDesktop()) ?
-          Divider(
-            color: Theme.of(context).primaryColorDark,
-            thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-          ) : const SizedBox.shrink(),
-          ShaderWidget(
-            titleStyle: Theme.of(context).textTheme.titleLarge,
-            labelStyle: Theme.of(context).textTheme.bodySmall,
-          ),
-          ValueListenableBuilder<bool>(
-            valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
-            builder: (final BuildContext context, final bool hasProject, final Widget? child)
-            {
-              return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
-            },
-          ),
-          const ToolsWidget(),
-          SizedBox(
-            width: double.infinity,
-            //TODO MAGIC NUMBER
-            height: 200,
-            child: ValueListenableBuilder<ToolType>(
-              valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-              builder: (BuildContext context, ToolType value,child) {
-
-                return const ToolSettingsWidget();
-              }
-           ),
-        ),
-      ]
+            Divider(
+              color: Theme.of(context).primaryColorDark,
+              thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
+              height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
+            ) : const SizedBox.shrink(),
+            ShaderWidget(
+              titleStyle: Theme.of(context).textTheme.titleLarge,
+              labelStyle: Theme.of(context).textTheme.bodySmall,
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+              builder: (final BuildContext context, final bool hasProject, final Widget? child)
+              {
+                return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
+              },
+            ),
+            ValueListenableBuilder<LayerState?>
+            (
+              valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
+              builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
+                if (layer != null)
+                {
+                  if (layer.runtimeType == ReferenceLayerState) //TODO TEMP
+                  {
+                    return SizedBox(
+                      width: double.infinity,
+                      //TODO MAGIC NUMBER
+                      height: 280,
+                      child: ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState)
+                    );
+                  }
+                  else if (layer.runtimeType == DrawingLayerState)
+                  {
+                    return Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          //TODO MAGIC NUMBER
+                          height: 80,
+                          child: const ToolsWidget()
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          //TODO MAGIC NUMBER
+                          height: 200,
+                          child: ValueListenableBuilder<ToolType>(
+                            valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+                            builder: (BuildContext context, ToolType value,child) {
+                              return const ToolSettingsWidget();
+                            }
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  else
+                  {
+                    return SizedBox.shrink();
+                  }
+                }
+                else
+                {
+                  return SizedBox.shrink();
+                }
+              },
+            )
+        ]
       ),
     );
   }

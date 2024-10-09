@@ -72,8 +72,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _widgetList = [];
     for (int i = 0; i < layers.length; i++)
     {
-      _widgetList.add(DragTarget<LayerState>(
-        builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
+      _widgetList.add(DragTarget<DrawingLayerState>(
+        builder: (final BuildContext context, final List<DrawingLayerState?> candidateItems, final List<dynamic> rejectedItems) {
           return AnimatedContainer(
             height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
             color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
@@ -89,8 +89,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
         layerState: layers[i],
       ));
     }
-    _widgetList.add(DragTarget<LayerState>(
-      builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
+    _widgetList.add(DragTarget<DrawingLayerState>(
+      builder: (final BuildContext context, final List<DrawingLayerState?> candidateItems, final List<dynamic> rejectedItems) {
         return Divider(
           height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
           thickness: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
@@ -128,16 +128,37 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       children: [
                         Padding(
                           padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                          child: Tooltip(
-                            message: "Add New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNew)}",
-                            waitDuration: AppState.toolTipDuration,
-                            child: IconButton(
-                              onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
-                              icon: const FaIcon(FontAwesomeIcons.plus),
-                              style: IconButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3, //TODO magic number
+                                child: Tooltip(
+                                  message: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNew)}",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: IconButton.outlined(
+                                    onPressed: () {_appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
+                                    icon: const FaIcon(FontAwesomeIcons.plus),
+                                    style: IconButton.styleFrom(
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                              Expanded(
+                                flex: 1, //TODO magic number
+                                child: Tooltip(
+                                  message: "Add New Reference Layer",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: IconButton.outlined(
+                                    onPressed: () {_appState.addNewReferenceLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
+                                    icon: const FaIcon(FontAwesomeIcons.fileCirclePlus),
+                                    style: IconButton.styleFrom(
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         ValueListenableBuilder<List<LayerState>>(

@@ -41,7 +41,7 @@ class EraserPainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null)
+    if (drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
@@ -55,7 +55,7 @@ class EraserPainter extends IToolPainter
 
       //if (_cursorPosNorm != _previousCursorPosNorm)
       {
-        if (drawParams.primaryDown && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
+        if (drawParams.primaryDown && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
         {
           List<CoordinateSetI> pixelsToDelete = [_cursorPosNorm];
           if (!_cursorPosNorm.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
@@ -75,7 +75,7 @@ class EraserPainter extends IToolPainter
               {
                 if (selection.selection.isEmpty())
                 {
-                  if (drawParams.currentLayer.getDataEntry(coord: coord) != null)
+                  if (drawParams.currentDrawingLayer!.getDataEntry(coord: coord) != null)
                   {
                     refs[coord] = null;
                   }
@@ -88,7 +88,7 @@ class EraserPainter extends IToolPainter
               _hasErasedPixels = true;
             }
           }
-          drawParams.currentLayer.setDataAll(list: refs);
+          drawParams.currentDrawingLayer!.setDataAll(list: refs);
         }
         _previousCursorPosNorm.x = _cursorPosNorm.x;
         _previousCursorPosNorm.y = _cursorPosNorm.y;

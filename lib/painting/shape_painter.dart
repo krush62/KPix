@@ -50,107 +50,110 @@ class ShapePainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    bool selectionChanged = false;
-    if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
+    if (drawParams.currentDrawingLayer != null)
     {
-      _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-      _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
-      _lastStartPos = drawParams.primaryPressStart;
-    }
-    if (drawParams.cursorPos != null)
-    {
-      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
-    }
-
-    if (_normStartPos != _lastNormStartPos)
-    {
-      _lastNormStartPos.x = _normStartPos.x;
-      _lastNormStartPos.y = _normStartPos.y;
-      selectionChanged = true;
-    }
-    if (_cursorPosNorm != _lastNormEndPos)
-    {
-      _lastNormEndPos.x = _cursorPosNorm.x;
-      _lastNormEndPos.y = _cursorPosNorm.y;
-      selectionChanged = true;
-    }
-
-    if (!_waitingForRasterization && drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
-    {
-      _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
-      if (_isStartOnCanvas)
+      bool selectionChanged = false;
+      if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
       {
-        final CoordinateSetI endPos = CoordinateSetI.from(other: _normStartPos);
+        _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+        _lastStartPos = drawParams.primaryPressStart;
+      }
+      if (drawParams.cursorPos != null)
+      {
+        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
+        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+      }
 
-        if (_hotkeyManager.shiftIsPressed)
+      if (_normStartPos != _lastNormStartPos)
+      {
+        _lastNormStartPos.x = _normStartPos.x;
+        _lastNormStartPos.y = _normStartPos.y;
+        selectionChanged = true;
+      }
+      if (_cursorPosNorm != _lastNormEndPos)
+      {
+        _lastNormEndPos.x = _cursorPosNorm.x;
+        _lastNormEndPos.y = _cursorPosNorm.y;
+        selectionChanged = true;
+      }
+
+      if (!_waitingForRasterization && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+      {
+        _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
+        if (_isStartOnCanvas)
         {
-          endPos.x = _normStartPos.x + (_normStartPos.x - _cursorPosNorm.x);
-          endPos.y = _normStartPos.y + (_normStartPos.y - _cursorPosNorm.y);
-        }
+          final CoordinateSetI endPos = CoordinateSetI.from(other: _normStartPos);
 
-        _selectionStart.x = max(endPos.x < _cursorPosNorm.x ? endPos.x: _cursorPosNorm.x, 0);
-        _selectionStart.y = max(endPos.y < _cursorPosNorm.y ? endPos.y : _cursorPosNorm.y, 0);
-        _selectionEnd.x = min(endPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (endPos.x), appState.canvasSize.x - 1);
-        _selectionEnd.y = min(endPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (endPos.y), appState.canvasSize.y - 1);
-
-        if (_options.keepRatio.value)
-        {
-          final int width = _selectionEnd.x - _selectionStart.x;
-          final int height = _selectionEnd.y - _selectionStart.y;
           if (_hotkeyManager.shiftIsPressed)
           {
-            final int diff = (width - height).abs();
-            if (width > height)
+            endPos.x = _normStartPos.x + (_normStartPos.x - _cursorPosNorm.x);
+            endPos.y = _normStartPos.y + (_normStartPos.y - _cursorPosNorm.y);
+          }
+
+          _selectionStart.x = max(endPos.x < _cursorPosNorm.x ? endPos.x: _cursorPosNorm.x, 0);
+          _selectionStart.y = max(endPos.y < _cursorPosNorm.y ? endPos.y : _cursorPosNorm.y, 0);
+          _selectionEnd.x = min(endPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (endPos.x), appState.canvasSize.x - 1);
+          _selectionEnd.y = min(endPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (endPos.y), appState.canvasSize.y - 1);
+
+          if (_options.keepRatio.value)
+          {
+            final int width = _selectionEnd.x - _selectionStart.x;
+            final int height = _selectionEnd.y - _selectionStart.y;
+            if (_hotkeyManager.shiftIsPressed)
             {
-               _selectionStart.x += diff ~/ 2;
-               _selectionEnd.x -= ((diff ~/ 2) + (diff % 2));
+              final int diff = (width - height).abs();
+              if (width > height)
+              {
+                _selectionStart.x += diff ~/ 2;
+                _selectionEnd.x -= ((diff ~/ 2) + (diff % 2));
+              }
+              else
+              {
+                _selectionStart.y += diff ~/ 2;
+                _selectionEnd.y -= ((diff ~/ 2) + (diff % 2));
+              }
             }
             else
             {
-              _selectionStart.y += diff ~/ 2;
-              _selectionEnd.y -= ((diff ~/ 2) + (diff % 2));
+              if (width > height) {
+                if (_normStartPos.x < _cursorPosNorm.x) {
+                  _selectionEnd.x = _selectionStart.x + height;
+                } else {
+                  _selectionStart.x = _selectionEnd.x - height;
+                }
+              } else {
+                if (_normStartPos.y < _cursorPosNorm.y) {
+                  _selectionEnd.y = _selectionStart.y + width;
+                } else {
+                  _selectionStart.y = _selectionEnd.y - width;
+                }
+              }
             }
           }
-          else
+
+          if (selectionChanged)
           {
-            if (width > height) {
-              if (_normStartPos.x < _cursorPosNorm.x) {
-                _selectionEnd.x = _selectionStart.x + height;
-              } else {
-                _selectionStart.x = _selectionEnd.x - height;
-              }
-            } else {
-              if (_normStartPos.y < _cursorPosNorm.y) {
-                _selectionEnd.y = _selectionStart.y + width;
-              } else {
-                _selectionStart.y = _selectionEnd.y - width;
-              }
-            }
+            final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
+            _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+
           }
         }
-
-        if (selectionChanged)
+        if (!drawParams.primaryDown && _drawingPixels.isNotEmpty)
         {
-          final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
-          _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-
+          _dump(layer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize);
+          _waitingForRasterization = true;
         }
       }
-      if (!drawParams.primaryDown && _drawingPixels.isNotEmpty)
+      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _drawingPixels.isNotEmpty && _waitingForRasterization)
       {
-        _dump(layer: drawParams.currentLayer, canvasSize: drawParams.canvasSize);
-        _waitingForRasterization = true;
+        _drawingPixels.clear();
+        _waitingForRasterization = false;
       }
-    }
-    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _drawingPixels.isNotEmpty && _waitingForRasterization)
-    {
-      _drawingPixels.clear();
-      _waitingForRasterization = false;
     }
   }
 
-  void _dump({required final LayerState layer, required CoordinateSetI canvasSize})
+  void _dump({required final DrawingLayerState layer, required CoordinateSetI canvasSize})
   {
     if (_drawingPixels.isNotEmpty)
     {

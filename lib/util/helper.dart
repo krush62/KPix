@@ -466,17 +466,17 @@ class Helper
     final Canvas canvas = Canvas(recorder);
     for (int i = layers.length - 1; i >= 0; i--)
     {
-      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      if (layers[i].visibilityState.value == LayerVisibilityState.visible && layers[i].runtimeType == DrawingLayerState)
       {
-
-        if (layers[i].raster != null)
+        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+        if (drawingLayer.raster != null)
         {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
                   canvasSize.x.toDouble(),
                   canvasSize.y.toDouble()),
-              image: layers[i].raster!,
+              image: drawingLayer.raster!,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none);

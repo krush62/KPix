@@ -70,7 +70,7 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {selection.isEmpty() ? null : copyMerged();}, action: HotkeyAction.selectionCopyMerged);
     hotkeyManager.addListener(func: () {selection.isEmpty() ? null : cut();}, action: HotkeyAction.selectionCut);
     hotkeyManager.addListener(func: () {clipboard == null ? null : paste();}, action: HotkeyAction.selectionPaste);
-    hotkeyManager.addListener(func: () {clipboard == null ? null : _appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
+    hotkeyManager.addListener(func: () {clipboard == null ? null : _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
     hotkeyManager.addListener(func: () {selection.isEmpty() ? null : delete();}, action: HotkeyAction.selectionDelete);
     hotkeyManager.addListener(func: () {selection.isEmpty() ? null : flipH();}, action: HotkeyAction.selectionFlipH);
     hotkeyManager.addListener(func: () {selection.isEmpty() ? null : flipV();}, action: HotkeyAction.selectionFlipV);
@@ -168,28 +168,30 @@ class SelectionState with ChangeNotifier
 
   void newSelectionFromWand({required final CoordinateSetI coord, required final SelectionMode mode, required final bool continuous, required final bool selectFromWholeRamp, final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (selectionOptions.mode.value == SelectionMode.replace)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      deselect(notify: false, addToHistoryStack: false);
-    }
-
-    if (!selection.contains(coord: coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
-    {
-      final Set<CoordinateSetI> selectData = continuous ?
-        _getFloodReferences(layer: _appState.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
-        _getSameReferences(layer: _appState.currentLayer!, start: coord, selectFromWholeRamp: selectFromWholeRamp);
-
-
-      _addPixelsWithMode(coords: selectData, mode: mode);
-      createSelectionLines();
-      if (notify)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (selectionOptions.mode.value == SelectionMode.replace)
       {
-        notifyRepaint();
+        deselect(notify: false, addToHistoryStack: false);
       }
-    }
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "new selection");
+
+      if (!selection.contains(coord: coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
+      {
+        final Set<CoordinateSetI> selectData = continuous ?
+        _getFloodReferences(layer: drawingLayer, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
+        _getSameReferences(layer: drawingLayer, start: coord, selectFromWholeRamp: selectFromWholeRamp);
+        _addPixelsWithMode(coords: selectData, mode: mode);
+        createSelectionLines();
+        if (notify)
+        {
+          notifyRepaint();
+        }
+      }
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "new selection");
+      }
     }
   }
 
@@ -201,7 +203,7 @@ class SelectionState with ChangeNotifier
   }
 
   Set<CoordinateSetI> _getFloodReferences({
-    required final LayerState layer,
+    required final DrawingLayerState layer,
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp})
   {
@@ -248,7 +250,7 @@ class SelectionState with ChangeNotifier
   }
 
   Set<CoordinateSetI> _getSameReferences({
-    required final LayerState layer,
+    required final DrawingLayerState layer,
     required final CoordinateSetI start,
     required final bool selectFromWholeRamp})
   {
@@ -482,53 +484,60 @@ class SelectionState with ChangeNotifier
 
   void delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
   {
-    if (_appState.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      _appState.showMessage(text: "Cannot delete from hidden layer!");
-    }
-    else if (_appState.currentLayer!.lockState.value == LayerLockState.locked)
-    {
-      _appState.showMessage(text: "Cannot delete from locked layer!");
-    }
-    else
-    {
-      selection.delete(keepSelection: keepSelection);
-      if (addToHistoryStack)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "delete selection");
+        _appState.showMessage(text: "Cannot delete from hidden layer!");
       }
-      if (!keepSelection)
+      else if (drawingLayer.lockState.value == LayerLockState.locked)
       {
-        createSelectionLines();
+        _appState.showMessage(text: "Cannot delete from locked layer!");
       }
-    }
-
-    if (notify)
-    {
-      notifyRepaint();
+      else
+      {
+        selection.delete(keepSelection: keepSelection);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "delete selection");
+        }
+        if (!keepSelection)
+        {
+          createSelectionLines();
+        }
+      }
+      if (notify)
+      {
+        notifyRepaint();
+      }
     }
   }
 
   void cut({final bool notify = true, final bool keepSelection = false, final bool addToHistoryStack = true})
   {
-    if (_appState.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      _appState.showMessage(text: "Cannot cut from hidden layer!");
-    }
-    else if (_appState.currentLayer!.lockState.value == LayerLockState.locked)
-    {
-      _appState.showMessage(text: "Cannot cut from locked layer!");
-    }
-    else if (copy(notify: false, keepSelection: true))
-    {
-      delete(keepSelection: true, notify: false);
-      if (addToHistoryStack)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "cut selection");
+        _appState.showMessage(text: "Cannot cut from hidden layer!");
       }
-      if (notify)
+      else if (drawingLayer.lockState.value == LayerLockState.locked)
       {
-        notifyRepaint();
+        _appState.showMessage(text: "Cannot cut from locked layer!");
+      }
+      else if (copy(notify: false, keepSelection: true))
+      {
+        delete(keepSelection: true, notify: false);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "cut selection");
+        }
+        if (notify)
+        {
+          notifyRepaint();
+        }
       }
     }
   }
@@ -573,21 +582,25 @@ class SelectionState with ChangeNotifier
       bool pixelFound = false;
       for (final LayerState layer in visibleLayers)
       {
-        ColorReference? colRef = layer.getDataEntry(coord: coord);
-        if (layer == _appState.currentLayer)
+        if (layer.runtimeType == DrawingLayerState)
         {
-          final ColorReference? selColRef = selection.getColorReference(coord: coord);
-          if (selColRef != null)
+          final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+          ColorReference? colRef = drawingLayer.getDataEntry(coord: coord);
+          if (drawingLayer == _appState.currentLayer)
           {
-            colRef = selColRef;
+            final ColorReference? selColRef = selection.getColorReference(coord: coord);
+            if (selColRef != null)
+            {
+              colRef = selColRef;
+            }
           }
-        }
-        if (colRef != null)
-        {
-          hasValues = true;
-          tempCB[coord] = colRef;
-          pixelFound = true;
-          break;
+          if (colRef != null)
+          {
+            hasValues = true;
+            tempCB[coord] = colRef;
+            pixelFound = true;
+            break;
+          }
         }
       }
       if (!pixelFound)
@@ -617,13 +630,14 @@ class SelectionState with ChangeNotifier
 
   void paste({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (clipboard != null && _appState.currentLayer != null) //should always be the case
+    if (clipboard != null && _appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState) //should always be the case
     {
-      if (_appState.currentLayer!.lockState.value == LayerLockState.locked)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (drawingLayer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot paste to a locked layer!");
       }
-      else if (_appState.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+      else if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot paste to a hidden layer!");
       }
@@ -655,78 +669,92 @@ class SelectionState with ChangeNotifier
 
   void flipH({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      _appState.showMessage(text: "Cannot transform on a hidden layer!");
-    }
-    else if (_appState.currentLayer!.lockState.value == LayerLockState.locked)
-    {
-      _appState.showMessage(text: "Cannot transform on a locked layer!");
-    }
-    else
-    {
-      selection.flipH();
-      createSelectionLines();
-      if (addToHistoryStack)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection horizontally");
+        _appState.showMessage(text: "Cannot transform on a hidden layer!");
       }
+      else if (drawingLayer.lockState.value == LayerLockState.locked)
+      {
+        _appState.showMessage(text: "Cannot transform on a locked layer!");
+      }
+      else
+      {
+        selection.flipH();
+        createSelectionLines();
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection horizontally");
+        }
 
-      if (notify)
-      {
-        notifyRepaint();
+        if (notify)
+        {
+          notifyRepaint();
+        }
       }
     }
+
+
   }
 
   void flipV({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      _appState.showMessage(text: "Cannot transform on a hidden layer!");
-    }
-    else if (_appState.currentLayer!.lockState.value == LayerLockState.locked)
-    {
-      _appState.showMessage(text: "Cannot transform on a locked layer!");
-    }
-    else
-    {
-      selection.flipV();
-      createSelectionLines();
-      if (addToHistoryStack)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection vertically");
+        _appState.showMessage(text: "Cannot transform on a hidden layer!");
       }
-
-      if (notify)
+      else if (drawingLayer.lockState.value == LayerLockState.locked)
       {
-        notifyRepaint();
+        _appState.showMessage(text: "Cannot transform on a locked layer!");
+      }
+      else
+      {
+        selection.flipV();
+        createSelectionLines();
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection vertically");
+        }
+
+        if (notify)
+        {
+          notifyRepaint();
+        }
       }
     }
   }
 
   void rotate({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.currentLayer!.visibilityState.value == LayerVisibilityState.hidden)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      _appState.showMessage(text: "Cannot transform on a hidden layer!");
-    }
-    else if (_appState.currentLayer!.lockState.value == LayerLockState.locked)
-    {
-      _appState.showMessage(text: "Cannot transform on a locked layer!");
-    }
-    else
-    {
-      selection.rotate90cw();
-      createSelectionLines();
-      if (addToHistoryStack)
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection vertically");
+        _appState.showMessage(text: "Cannot transform on a hidden layer!");
       }
-
-      if (notify)
+      else if (drawingLayer.lockState.value == LayerLockState.locked)
       {
-        notifyRepaint();
+        _appState.showMessage(text: "Cannot transform on a locked layer!");
+      }
+      else
+      {
+        selection.rotate90cw();
+        createSelectionLines();
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection vertically");
+        }
+
+        if (notify)
+        {
+          notifyRepaint();
+        }
       }
     }
   }
@@ -747,7 +775,11 @@ class SelectionState with ChangeNotifier
   {
     selection.resetLastOffset();
     GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "selection moved");
-    _appState.currentLayer!.doManualRaster = true;
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      drawingLayer.doManualRaster = true;
+    }
   }
 }
 
@@ -774,28 +806,42 @@ class SelectionList
         //oldLayer.setData(key, curVal);
         refsOld[key] = curVal;
       }
-      if (newLayer.lockState.value != LayerLockState.locked)
+      if (newLayer.runtimeType == DrawingLayerState)
       {
-        _content[key] = newLayer.getDataEntry(coord: key);
-        //newLayer.setData(key, null);
-        refsNew[key] = null;
+        final DrawingLayerState newDrawingLayer = newLayer as DrawingLayerState;
+        if (newDrawingLayer.lockState.value != LayerLockState.locked)
+        {
+          _content[key] = newDrawingLayer.getDataEntry(coord: key);
+          //newLayer.setData(key, null);
+          refsNew[key] = null;
+        }
       }
     }
-    if (oldLayer != null)
+    if (oldLayer != null && oldLayer.runtimeType == DrawingLayerState)
     {
-      oldLayer.setDataAll(list: refsOld);
+      final DrawingLayerState oldDrawingLayer = oldLayer as DrawingLayerState;
+      oldDrawingLayer.setDataAll(list: refsOld);
     }
 
-    newLayer.setDataAll(list: refsNew);
+    if (newLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState newDrawingLayer = newLayer as DrawingLayerState;
+      newDrawingLayer.setDataAll(list: refsNew);
+    }
   }
 
   void addAll({required final Set<CoordinateSetI> coords})
   {
-    for (final CoordinateSetI coord in coords)
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
-      _content[coord] = _appState.currentLayer!.getDataEntry(coord: coord);
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      for (final CoordinateSetI coord in coords)
+      {
+        _content[coord] = drawingLayer.getDataEntry(coord: coord);
+      }
+      drawingLayer.removeDataAll(removeCoordList: coords);
+
     }
-    _appState.currentLayer!.removeDataAll(removeCoordList: coords);
   }
 
   void addEmpty({required final CoordinateSetI coord})
@@ -828,7 +874,12 @@ class SelectionList
         _content.remove(coord);
       }
     }
-    _appState.currentLayer!.setDataAll(list: refs);
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      drawingLayer.setDataAll(list: refs);
+    }
+
   }
 
   void clear()
@@ -841,7 +892,11 @@ class SelectionList
         refs[entry.key] = entry.value;
       }
     }
-    _appState.currentLayer!.setDataAll(list: refs);
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      drawingLayer.setDataAll(list: refs);
+    }
     _content.clear();
   }
 

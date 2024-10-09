@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -212,29 +213,65 @@ class FileHandler
       final List<HistoryLayer> layerList = [];
       for (int i = 0; i < layerCount; i++)
       {
-        //not used at the moment
         final int layerType = byteData.getUint8(offset++);
-        if (layerType != 1) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
+        if (layerType != 1 && layerType != 2) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
+
         final int visibilityStateVal = byteData.getUint8(offset++);
         final LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
         if (visibilityState == null) return LoadFileSet(status: "Invalid visibility type for layer $i: $visibilityStateVal");
-        final int lockStateVal = byteData.getUint8(offset++);
-        final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
-        if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
-        final int dataCount = byteData.getUint32(offset);
-        offset+=4;
-        final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
-        for (int j = 0; j < dataCount; j++)
+
+        if (layerType == 1) //DRAWING LAYER
         {
-          final int x = byteData.getUint16(offset);
-          offset+=2;
-          final int y = byteData.getUint16(offset);
-          offset+=2;
-          final int colorRampIndex = byteData.getUint8(offset++);
-          final int colorIndex = byteData.getUint8(offset++);
-          data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+          final int lockStateVal = byteData.getUint8(offset++);
+          final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
+          if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
+          final int dataCount = byteData.getUint32(offset);
+          offset+=4;
+          final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
+          for (int j = 0; j < dataCount; j++)
+          {
+            final int x = byteData.getUint16(offset);
+            offset+=2;
+            final int y = byteData.getUint16(offset);
+            offset+=2;
+            final int colorRampIndex = byteData.getUint8(offset++);
+            final int colorIndex = byteData.getUint8(offset++);
+            data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+          }
+          layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
         }
-        layerList.add(HistoryLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
+        else if (layerType == 2) //REFERENCE LAYER
+        {
+          //TODO sanity checks for ranges
+
+          //path (string)
+          final int pathLength = byteData.getInt16(offset);
+          offset += 2;
+          List<int> pathBytes = [];
+          for (int i = 0; i < pathLength; i++)
+          {
+            pathBytes.add(byteData.getUint8(offset++));
+          }
+          String pathString = utf8.decode(pathBytes);
+          //opacity ``ubyte (1)`` // 0...100
+          final int opacity = byteData.getUint8(offset++);
+          //offset_x ``short (1)``
+          final int offsetX = byteData.getUint16(offset);
+          offset += 2;
+          //offset_y ``short (1)``
+          final int offsetY = byteData.getUint16(offset);
+          offset += 2;
+          //zoom ``ubyte (1)``
+          final int zoom = byteData.getUint8(offset++);
+          //aspect_ratio ``float (1)``
+          final double aspectRatio = byteData.getFloat32(offset);
+          offset+=4;
+
+
+          layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio));
+        }
+
+
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
       final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, description: "load data");

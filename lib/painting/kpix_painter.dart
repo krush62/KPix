@@ -77,7 +77,7 @@ class DrawingParameters
   final bool primaryDown;
   final bool secondaryDown;
   final Offset primaryPressStart;
-  final LayerState currentLayer;
+  final DrawingLayerState? currentDrawingLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -89,12 +89,14 @@ class DrawingParameters
     required this.primaryDown,
     required this.secondaryDown,
     required this.primaryPressStart,
-    required this.currentLayer
+    required LayerState currentLayer
 }) :
         scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
         drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
         drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
-                                    y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor());
+                                    y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor()),
+        currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null;
+
 }
 
 class KPixPainter extends CustomPainter
@@ -204,12 +206,24 @@ class KPixPainter extends CustomPainter
 
 
       _drawCheckerboard(drawParams: drawParams);
-      toolPainter?.calculate(drawParams: drawParams);
+      if (drawParams.currentDrawingLayer != null)
+      {
+        toolPainter?.calculate(drawParams: drawParams);
+      }
       _drawLayers(drawParams: drawParams);
-      _drawSelection(drawParams: drawParams);
-      toolPainter?.drawExtras(drawParams: drawParams);
+      if (drawParams.currentDrawingLayer != null)
+      {
+        _drawSelection(drawParams: drawParams);
+      }
+      if (drawParams.currentDrawingLayer != null)
+      {
+        toolPainter?.drawExtras(drawParams: drawParams);
+      }
       _drawCursor(drawParams: drawParams);
-      toolPainter?.setStatusBarData(drawParams: drawParams);
+      if (drawParams.currentDrawingLayer != null)
+      {
+        toolPainter?.setStatusBarData(drawParams: drawParams);
+      }
     }
   }
 
@@ -428,7 +442,7 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final List<LayerState> layers = _appState.layers;
-    final bool hasRasterizingLayers = layers.where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
+    final bool hasRasterizingLayers = layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
 
     if (hasRasterizingLayers)
     {
@@ -451,17 +465,17 @@ class KPixPainter extends CustomPainter
 
       for (int i = layers.length - 1; i >= 0; i--)
       {
-        if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+        if (layers[i].visibilityState.value == LayerVisibilityState.visible && layers[i].runtimeType == DrawingLayerState)
         {
-
-          if (layers[i].raster != null)
+          final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+          if (drawingLayer.raster != null)
           {
             paintImage(
                 canvas: drawParams.canvas,
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
                     drawParams.scaledCanvasSize.x.toDouble(),
                     drawParams.scaledCanvasSize.y.toDouble()),
-                image: layers[i].raster!,
+                image: drawingLayer.raster!,
                 scale: 1.0 / pxlSzDbl,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,

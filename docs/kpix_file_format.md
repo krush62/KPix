@@ -14,18 +14,20 @@ An optional comment starting with ``//`` may be appended.
 
 ### Data Types
 
-| type   | bytes | min                        | max                        |
-|--------|-------|----------------------------|----------------------------|
-| byte   | 1     | -128                       | 127                        |
-| ubyte  | 1     | 0                          | 255                        |
-| short  | 2     | -32,768                    | 32,767                     |
-| ushort | 2     | 0                          | 65,535                     |
-| int    | 4     | -2,147,483,648             | 2,147,483,647              |
-| uint   | 4     | 0                          | 4,294,967,295              |
-| int64  | 8     | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807  |
-| uint64 | 8     | 0                          | 18,446,744,073,709,551,615 |
-| float  | 4     | 3.4E -38 (7 digits)        | 3.4E +38 (7 digits)        |
-| double | 8     | 1.7E -308 (15 digits)      | 1.7E -308 (15 digits)      |
+| type       | bytes | min                        | max                        |
+|------------|-------|----------------------------|----------------------------|
+| ``byte``   | 1     | -128                       | 127                        |
+| ``ubyte``  | 1     | 0                          | 255                        |
+| ``short``  | 2     | -32,768                    | 32,767                     |
+| ``ushort`` | 2     | 0                          | 65,535                     |
+| ``int``    | 4     | -2,147,483,648             | 2,147,483,647              |
+| ``uint``   | 4     | 0                          | 4,294,967,295              |
+| ``int64``  | 8     | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807  |
+| ``uint64`` | 8     | 0                          | 18,446,744,073,709,551,615 |
+| ``float``  | 4     | 3.4E -38 (7 digits)        | 3.4E +38 (7 digits)        |
+| ``double`` | 8     | 1.7E -308 (15 digits)      | 1.7E -308 (15 digits)      |
+
+Strings (``string``) are represented by an ``ushort`` for the length of the string followed by UTF8 encoded characters (``ubyte``). 
 
 ## File Structure
 
@@ -58,12 +60,23 @@ The kpix file format consists of the following three consecutive sections:
 * rows ``ushort (1)`` // height of image
 * layer_count ``ubyte (1)`` // how many layers
 * Layers ``(layer_count)``
-  * type ``ubyte (1)`` // currently only ``01`` is supported
-  * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden
+  * type ``ubyte (1)`` // ``01``= drawing layer, ``02``= reference layer
+  * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden  
+    // data for type ``01``  
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``01`` = transparency locked, ``02`` = locked
   * data_count ``uint (1)`` //how many non-transparent pixels on layer
   * Image_Data ``(data_count)`` // for type ``01``
     * x ``ushort (1)`` // x position
     * y ``ushort (1)`` // y position
     * color_ramp_index ``ubyte (1)`` // color ramp index
-    * color_index ``ubyte (1)`` // index in color ramp
+    * color_index ``ubyte (1)`` // index in color ramp\
+    
+    // data for type ``02``
+  * path (string)  
+  * opacity ``ubyte (1)`` // 0...100
+  * offset_x ``short (1)``
+  * offset_y ``short (1)``
+  * zoom ``ubyte (1)``
+  * aspect_ratio ``float (1)``
+  
+  

@@ -56,14 +56,34 @@ class HistoryColorReference
   HistoryColorReference({required this.colorIndex, required this.rampIndex});
 }
 
-class HistoryLayer
+abstract class HistoryLayer
 {
   final LayerVisibilityState visibilityState;
+  HistoryLayer({required this.visibilityState});
+}
+
+class HistoryReferenceLayer extends HistoryLayer
+{
+  final String path;
+  final int opacity;
+  final int offsetX;
+  final int offsetY;
+  final int zoom;
+  final double aspectRatio;
+  HistoryReferenceLayer({required super.visibilityState, required this.opacity, required this.offsetX, required this.offsetY, required this.path, required this.zoom, required this.aspectRatio});
+  factory HistoryReferenceLayer.fromReferenceLayer({required final ReferenceLayerState referenceState})
+  {
+    return HistoryReferenceLayer(visibilityState: referenceState.visibilityState.value, path: referenceState.pathNotifier.value, offsetX: referenceState.offsetXNotifier.value, offsetY: referenceState.offsetYNotifier.value, opacity: referenceState.opacityNotifier.value, zoom: referenceState.zoomNotifier.value, aspectRatio: referenceState.aspectRatioNotifier.value);
+  }
+}
+
+class HistoryDrawingLayer extends HistoryLayer
+{
   final LayerLockState lockState;
   final CoordinateSetI size;
   final HashMap<CoordinateSetI, HistoryColorReference> data;
-  HistoryLayer({required this.visibilityState, required this.lockState, required this.size, required this.data});
-  factory HistoryLayer.fromLayerState({required final LayerState layerState, required final List<HistoryRampData> ramps })
+  HistoryDrawingLayer({required super.visibilityState, required this.lockState, required this.size, required this.data});
+  factory HistoryDrawingLayer.fromDrawingLayerState({required final DrawingLayerState layerState, required final List<HistoryRampData> ramps })
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
@@ -94,7 +114,7 @@ class HistoryLayer
       }
     }
 
-    return HistoryLayer(visibilityState: visState, lockState: lState, size: sz, data: dt);
+    return HistoryDrawingLayer(visibilityState: visState, lockState: lState, size: sz, data: dt);
   }
 }
 
@@ -156,7 +176,16 @@ class HistoryState
     for (int i = 0; i < appState.layers.length; i++)
     {
       final LayerState layerState = appState.layers[i];
-      final HistoryLayer hLayer = HistoryLayer.fromLayerState(layerState: layerState, ramps: rampList);
+      final HistoryLayer hLayer;
+      if (layerState.runtimeType == DrawingLayerState)
+      {
+        hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
+      }
+      else
+      {
+        hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
+      }
+
       layerList.add(hLayer);
       if (layerState.isSelected.value)
       {

@@ -55,7 +55,7 @@ class StampPainter extends IToolPainter
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
 
-    if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
+    if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
     {
       if (_oldCursorPos != _cursorPosNorm || _previousSize != _options.scale.value)
       {
@@ -91,7 +91,7 @@ class StampPainter extends IToolPainter
       }
       else if (!drawParams.primaryDown && _down)
       {
-        _dump(drawParams: drawParams);
+        _dump(canvasSize: drawParams.canvasSize, drawingLayer: drawParams.currentDrawingLayer!);
         _down = false;
       }
     }
@@ -101,9 +101,9 @@ class StampPainter extends IToolPainter
 
   }
 
-  void _dump({required final DrawingParameters drawParams})
+  void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer})
   {
-    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
     if (!appState.selectionState.selection.isEmpty())
     {
       appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
@@ -114,7 +114,7 @@ class StampPainter extends IToolPainter
     }*/
     else
     {
-      drawParams.currentLayer.setDataAll(list: drawingPixels);
+      drawingLayer.setDataAll(list: drawingPixels);
     }
     hasHistoryData = true;
   }
@@ -145,9 +145,9 @@ class StampPainter extends IToolPainter
   @override
   CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor != null && drawParams.cursorPos != null)
+    if(appState.selectedColor != null && drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
     {
-      return getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+      return getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
     }
     else
     {

@@ -47,17 +47,22 @@ class MainToolbarWidgetOptions {
   final int toolSettingsFlex;
   final double dividerHeight;
   final double dividerPadding;
+  final int toolHeight1;
+  final int toolHeight2;
 
   const MainToolbarWidgetOptions({
     required this.paletteFlex,
     required this.dividerPadding,
     required this.toolSettingsFlex,
-    required this.dividerHeight});
+    required this.dividerHeight,
+    required this.toolHeight1,
+    required this.toolHeight2});
 }
 
 
 class MainToolbarWidget extends StatelessWidget
 {
+
   const MainToolbarWidget({
     super.key
 });
@@ -93,12 +98,11 @@ class MainToolbarWidget extends StatelessWidget
               builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
                 if (layer != null)
                 {
-                  if (layer.runtimeType == ReferenceLayerState) //TODO TEMP
+                  if (layer.runtimeType == ReferenceLayerState)
                   {
                     return SizedBox(
                       width: double.infinity,
-                      //TODO MAGIC NUMBER
-                      height: 280,
+                      height: (GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight1 + GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight2).toDouble(),
                       child: ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState)
                     );
                   }
@@ -108,17 +112,15 @@ class MainToolbarWidget extends StatelessWidget
                       children: [
                         SizedBox(
                           width: double.infinity,
-                          //TODO MAGIC NUMBER
-                          height: 80,
+                          height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight1.toDouble(),
                           child: const ToolsWidget()
                         ),
                         SizedBox(
                           width: double.infinity,
-                          //TODO MAGIC NUMBER
-                          height: 200,
+                          height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight2.toDouble(),
                           child: ValueListenableBuilder<ToolType>(
                             valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-                            builder: (BuildContext context, ToolType value,child) {
+                            builder: (final BuildContext context, final ToolType value, final Widget? child) {
                               return const ToolSettingsWidget();
                             }
                           ),

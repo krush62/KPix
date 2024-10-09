@@ -381,7 +381,7 @@ class KPixPainter extends CustomPainter
   {
     if (_coords.value != null)
     {
-      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter != null)
+      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter != null && drawParams.currentDrawingLayer != null)
       {
         toolPainter!.drawCursorOutline(drawParams: drawParams);
       }
@@ -393,7 +393,7 @@ class KPixPainter extends CustomPainter
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize, drawParams.paint);
       }
 
-      if (_stylusLongMoveStarted.value)
+      if (_stylusLongMoveStarted.value && drawParams.currentDrawingLayer != null)
       {
         if (_stylusLongMoveHorizontal.value)
         {

@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -91,11 +92,11 @@ class DrawingParameters
     required this.primaryPressStart,
     required LayerState currentLayer
 }) :
-        scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
-        drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
-        drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
-                                    y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor()),
-        currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null;
+    scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
+    drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
+    drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
+                                y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor()),
+    currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null;
 
 }
 
@@ -465,65 +466,122 @@ class KPixPainter extends CustomPainter
 
       for (int i = layers.length - 1; i >= 0; i--)
       {
-        if (layers[i].visibilityState.value == LayerVisibilityState.visible && layers[i].runtimeType == DrawingLayerState)
+        if (layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
-          final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-          if (drawingLayer.raster != null)
+          if (layers[i].runtimeType == DrawingLayerState)
           {
-            paintImage(
-                canvas: drawParams.canvas,
-                rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                    drawParams.scaledCanvasSize.x.toDouble(),
-                    drawParams.scaledCanvasSize.y.toDouble()),
-                image: drawingLayer.raster!,
-                scale: 1.0 / pxlSzDbl,
-                fit: BoxFit.none,
-                alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none);
-          }
-
-          if (layers[i].isSelected.value)
-          {
-            final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
-            final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
-            for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+            final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+            if (drawingLayer.raster != null)
             {
-              for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
+              //TODO can we optimize this by not drawing the full raster image???
+              paintImage(
+                  canvas: drawParams.canvas,
+                  rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                      drawParams.scaledCanvasSize.x.toDouble(),
+                      drawParams.scaledCanvasSize.y.toDouble()),
+                  image: drawingLayer.raster!,
+                  scale: 1.0 / pxlSzDbl,
+                  fit: BoxFit.none,
+                  alignment: Alignment.topLeft,
+                  filterQuality: FilterQuality.none);
+            }
+
+            if (layers[i].isSelected.value)
+            {
+              final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
+              final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
+              for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
               {
-                Color? drawColor;
-                //DRAW CURSOR CONTENT PIXEL
-                final selLayerCoord = CoordinateSetI(x: x, y: y);
-                if (selectedLayerCursorContent.keys.contains(selLayerCoord))
+                for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
                 {
-                  drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
-                }
-
-                //DRAW TOOL CONTENT
-                if (drawColor == null && toolContent.keys.contains(selLayerCoord))
-                {
-                  drawColor = toolContent[selLayerCoord]!.getIdColor().color;
-                }
-
-                //DRAW SELECTION PIXEL
-                if (drawColor == null)
-                {
-                  ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
-                  if (selColor != null)
+                  Color? drawColor;
+                  //DRAW CURSOR CONTENT PIXEL
+                  final selLayerCoord = CoordinateSetI(x: x, y: y);
+                  if (selectedLayerCursorContent.keys.contains(selLayerCoord))
                   {
-                    drawColor = selColor.getIdColor().color;
+                    drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
+                  }
+
+                  //DRAW TOOL CONTENT
+                  if (drawColor == null && toolContent.keys.contains(selLayerCoord))
+                  {
+                    drawColor = toolContent[selLayerCoord]!.getIdColor().color;
+                  }
+
+                  //DRAW SELECTION PIXEL
+                  if (drawColor == null)
+                  {
+                    ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
+                    if (selColor != null)
+                    {
+                      drawColor = selColor.getIdColor().color;
+                    }
+                  }
+                  if (drawColor != null)
+                  {
+                    drawParams.paint.color = drawColor;
+                    drawParams.canvas.drawRect(Rect.fromLTWH(
+                        _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
+                        _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
+                        pxlSzDbl + (2.0 * _options.pixelExtension),
+                        pxlSzDbl + (2.0 * _options.pixelExtension)),
+                        drawParams.paint);
                   }
                 }
-                if (drawColor != null)
-                {
-                  drawParams.paint.color = drawColor;
-                  drawParams.canvas.drawRect(Rect.fromLTWH(
-                      _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
-                      _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
-                      pxlSzDbl + (2.0 * _options.pixelExtension),
-                      pxlSzDbl + (2.0 * _options.pixelExtension)),
-                      drawParams.paint);
-                }
               }
+            }
+          }
+          else if (layers[i].runtimeType == ReferenceLayerState)
+          {
+            final ReferenceLayerState refLayer = layers[i] as ReferenceLayerState;
+            if (refLayer.image != null)
+            {
+              final ui.Image image = refLayer.image!.image;
+              final ui.Rect drawingCanvasRect = ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                  drawParams.scaledCanvasSize.x.toDouble(),
+                  drawParams.scaledCanvasSize.y.toDouble());
+
+              /*paintImage(
+                  canvas: drawParams.canvas,
+                  rect: drawingCanvasRect,
+                  image: refLayer.image!.image,
+                  scale: (1.0 / pxlSzDbl) * (100.0 / refLayer.zoom.toDouble()),
+                  fit: BoxFit.cover,
+                  opacity: refLayer.opacity.toDouble() / 100.0,
+                  alignment: Alignment.topLeft,
+                  filterQuality: FilterQuality.none);*/
+
+              double aspectRatioX = 1.0;
+              double aspectRatioY = 1.0;
+              if (refLayer.aspectRatio > 0)
+              {
+                aspectRatioX += refLayer.aspectRatio;
+              }
+              else if (refLayer.aspectRatio < 0)
+              {
+                aspectRatioY += -refLayer.aspectRatio;
+              }
+
+              //TODO temp
+              final double offsetX = 5;
+              final double offsetY = 5;
+
+              ui.Rect srcRect = ui.Rect.fromLTWH(
+                -offsetX / (refLayer.zoom.toDouble() / 100.0),
+                -offsetY / (refLayer.zoom.toDouble() / 100.0),
+                drawParams.canvasSize.x.toDouble() / (refLayer.zoom.toDouble() / 100.0) / aspectRatioX,
+                drawParams.canvasSize.y.toDouble() / (refLayer.zoom.toDouble() / 100.0) / aspectRatioY
+              );
+
+              ui.Rect targetRect = ui.Rect.fromLTWH(
+                drawParams.offset.dx,
+                drawParams.offset.dy,
+                drawParams.scaledCanvasSize.x.toDouble(),
+                drawParams.scaledCanvasSize.y.toDouble(),
+              );
+
+              Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
+              drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
             }
           }
         }

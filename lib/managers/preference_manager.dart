@@ -157,9 +157,9 @@ enum PreferenceDouble
   Layout_ProjectManager_MaxWidth(defaultValue: 800.0),
   Layout_ProjectManager_MaxHeight(defaultValue: 600.0),
 
-  ReferenceLayer_AspectRatioDefault(defaultValue: 1.0),
-  ReferenceLayer_AspectRatioMax(defaultValue: 4.0),
-  ReferenceLayer_AspectRatioMin(defaultValue: 0.25),
+  ReferenceLayer_AspectRatioDefault(defaultValue: 0.0),
+  ReferenceLayer_AspectRatioMax(defaultValue: 5.0),
+  ReferenceLayer_AspectRatioMin(defaultValue: -5.0),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -261,8 +261,8 @@ enum PreferenceInt
   ReferenceLayer_OpacityMax(defaultValue: 100),
   ReferenceLayer_OpacityMin(defaultValue: 0),
   ReferenceLayer_ZoomDefault(defaultValue: 100),
-  ReferenceLayer_ZoomMax(defaultValue: 1000),
-  ReferenceLayer_ZoomMin(defaultValue: 10),
+  ReferenceLayer_ZoomMax(defaultValue: 100),
+  ReferenceLayer_ZoomMin(defaultValue: 1),
 
 
   Tool_Pencil_SizeMin(defaultValue: 1),

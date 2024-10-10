@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
@@ -120,7 +121,6 @@ abstract class LayerState
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier(LayerVisibilityState.visible);
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
-
 }
 
 class ReferenceLayerState extends LayerState
@@ -128,22 +128,54 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<int> opacityNotifier;
   final ValueNotifier<double> aspectRatioNotifier;
   final ValueNotifier<int> zoomNotifier;
-  final ValueNotifier<String> pathNotifier;
   final ValueNotifier<int> offsetXNotifier;
   final ValueNotifier<int> offsetYNotifier;
-
-  ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final String path, required final int offsetX, required final int offsetY}) :
+  final ValueNotifier<ReferenceImage?> imageNotifier;
+  ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final int offsetX, required final int offsetY}) :
     opacityNotifier = ValueNotifier(opacity),
     aspectRatioNotifier = ValueNotifier(aspectRatio),
     zoomNotifier = ValueNotifier(zoom),
     offsetXNotifier = ValueNotifier(offsetX),
     offsetYNotifier = ValueNotifier(offsetY),
-    pathNotifier = ValueNotifier(path);
+    imageNotifier = ValueNotifier(image)
+  {
+    if (image != null)
+    {
+      imageNotifier.value = image;
+      thumbnail.value = image.image;
+    }
+  }
 
   factory ReferenceLayerState.from({required ReferenceLayerState other})
   {
-    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacityNotifier.value, zoom: other.zoomNotifier.value, path: other.pathNotifier.value, offsetX: other.offsetXNotifier.value, offsetY: other.offsetYNotifier.value);
+    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacityNotifier.value, zoom: other.zoomNotifier.value, image: other.imageNotifier.value, offsetX: other.offsetXNotifier.value, offsetY: other.offsetYNotifier.value);
   }
+
+  int get opacity
+  {
+    return opacityNotifier.value;
+  }
+
+  double get aspectRatio
+  {
+    return aspectRatioNotifier.value;
+  }
+
+  int get zoom
+  {
+    return zoomNotifier.value;
+  }
+
+  CoordinateSetI get offset
+  {
+    return CoordinateSetI(x: offsetXNotifier.value, y: offsetYNotifier.value);
+  }
+
+  ReferenceImage? get image
+  {
+    return imageNotifier.value;
+  }
+
 }
 
 class DrawingLayerState extends LayerState

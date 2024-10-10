@@ -122,6 +122,7 @@ class FileHandler
   static const String palettesSubDirName = "palettes";
   static const String projectsSubDirName = "projects";
   static const String thumbnailExtension = "png";
+  static const List<String> imageExtensions = ["png", "jpg", "jpeg", "gif"];
 
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
@@ -281,10 +282,42 @@ class FileHandler
     {
       return LoadFileSet(status: "Could not load file $path");
     }
-
   }
 
-
+  static Future<String?> getPathForReferenceImage() async
+  {
+    FilePickerResult? result;
+    if (Helper.isDesktop(includingWeb: true))
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.image,
+          allowedExtensions: imageExtensions,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    else //mobile
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    if (result != null && result.files.isNotEmpty)
+    {
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      return path;
+    }
+    else
+    {
+      return null;
+    }
+  }
 
   static void loadFilePressed({final Function()? finishCallback})
   {

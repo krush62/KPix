@@ -21,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
@@ -374,7 +375,7 @@ class AppState
   {
     final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
     final List<LayerState> layerList = [];
-    final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, path: "", offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
+    final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
     if (_layers.value.isEmpty)
     {
       newLayer.isSelected.value = true;
@@ -515,7 +516,7 @@ class AppState
     showMessage(text: "File saved at: $displayPath");
   }
 
-  void _restoreState({required final HistoryState? historyState})
+  void _restoreState({required final HistoryState? historyState}) async
   {
     if (historyState != null)
     {
@@ -566,7 +567,7 @@ class AppState
         else //if (historyLayer.runtimeType == HistoryReferenceLayer)
         {
           final HistoryReferenceLayer referenceLayer = historyLayer as HistoryReferenceLayer;
-          layerState = ReferenceLayerState(zoom: referenceLayer.zoom, opacity: referenceLayer.opacity, offsetX: referenceLayer.offsetX, offsetY: referenceLayer.offsetY, path: referenceLayer.path, aspectRatio: referenceLayer.aspectRatio);
+          layerState = ReferenceLayerState(zoom: referenceLayer.zoom, opacity: referenceLayer.opacity, offsetX: referenceLayer.offsetX, offsetY: referenceLayer.offsetY, image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path), aspectRatio: referenceLayer.aspectRatio);
         }
 
         layerState.visibilityState.value = historyLayer.visibilityState;

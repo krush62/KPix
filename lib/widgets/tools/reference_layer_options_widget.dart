@@ -17,8 +17,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
@@ -34,16 +37,18 @@ class ReferenceLayerSettings
   final int zoomMin;
   final int zoomMax;
 
-  ReferenceLayerSettings({
-    required this.opacityDefault,
-    required this.opacityMin,
-    required this.opacityMax,
-    required this.aspectRatioDefault,
-    required this.aspectRatioMin,
-    required this.aspectRatioMax,
-    required this.zoomDefault,
-    required this.zoomMin,
-    required this.zoomMax});
+  ReferenceLayerSettings
+  (
+      {required this.opacityDefault,
+      required this.opacityMin,
+      required this.opacityMax,
+      required this.aspectRatioDefault,
+      required this.aspectRatioMin,
+      required this.aspectRatioMax,
+      required this.zoomDefault,
+      required this.zoomMin,
+      required this.zoomMax}
+  );
 }
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
@@ -52,17 +57,52 @@ class ReferenceLayerOptionsWidget extends StatefulWidget
   const ReferenceLayerOptionsWidget({super.key, required this.referenceState});
 
   @override
-  State<ReferenceLayerOptionsWidget> createState() => _ReferenceLayerOptionsWidgetState();
-}
+  State<ReferenceLayerOptionsWidget> createState() => _ReferenceLayerOptionsWidgetState();}
 
 class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidget>
 {
-  final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
-  final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+  final ToolSettingsWidgetOptions _toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
+  final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+  final ReferenceImageManager _refManager = GetIt.I.get<ReferenceImageManager>();
 
   void _onLoadPressed()
   {
+    FileHandler.getPathForReferenceImage().then((final String? loadPath) {
+      _loadPathChosen(loadPath: loadPath);
+    });
+  }
 
+  void _loadPathChosen({required final String? loadPath})
+  {
+    if (loadPath != null && loadPath.isNotEmpty) {
+      _refManager.loadImageFile(path: loadPath).then((final ReferenceImage? img) {
+        if (img != null)
+        {
+          final ReferenceImage? oldImage =
+              widget.referenceState.imageNotifier.value;
+          widget.referenceState.imageNotifier.value = img;
+          widget.referenceState.thumbnail.value = img.image;
+          if (oldImage != null) {
+            GetIt.I
+                .get<ReferenceImageManager>()
+                .removeImage(refImage: oldImage);
+          }
+          GetIt.I.get<HistoryManager>().addState(
+              appState: GetIt.I.get<AppState>(),
+              description: "add new reference image");
+        } else {
+          GetIt.I
+              .get<AppState>()
+              .showMessage(text: "Could not load image from $loadPath");
+        }
+      });
+    }
+  }
+
+  void _resetAspectRatio()
+  {
+    widget.referenceState.aspectRatioNotifier.value =
+        _refSettings.aspectRatioDefault;
   }
 
   void _expandHorizontal()
@@ -80,210 +120,223 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
 
   }
 
-
   @override
   Widget build(BuildContext context)
   {
-    return Material (
-      color: Theme.of(context).primaryColor,
-      child: Padding(
-        padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "File",
-                          style: Theme.of(context).textTheme.labelLarge,
-                        )
-                    ),
-                  ),
-                  Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
-                    child: Row(
+    return Material(
+        color: Theme.of(context).primaryColor,
+        child: Padding(
+          padding: EdgeInsets.all(_toolSettingsWidgetOptions.padding),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: ValueListenableBuilder<ReferenceImage?>(
+              valueListenable: widget.referenceState.imageNotifier,
+              builder: (final BuildContext context,
+                  final ReferenceImage? refImg, final Widget? child) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          flex: 4,
+                          flex: 1,
                           child: Align(
-                            alignment: Alignment.center,
-                            child: ValueListenableBuilder<String>(
-                              valueListenable: widget.referenceState.pathNotifier,
-                              builder: (final BuildContext context, final String path, final Widget? child) {
-                                return Text(
-                                  path.isEmpty ? "<NO FILE LOADED>" : path,
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                );
-                              },
-                            )
-                          ),
-                        ),
-                        SizedBox(
-                          width: toolSettingsWidgetOptions.padding,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "File",
+                                style: Theme.of(context).textTheme.labelLarge,
+                              )),
                         ),
                         Expanded(
-                          flex: 1,
-                          child: Tooltip(
-                            waitDuration: AppState.toolTipDuration,
-                            message: "Open Reference File",
-                            child: IconButton.outlined(
-                              onPressed: _onLoadPressed,
-                              icon: FaIcon(
-                                FontAwesomeIcons.file
-                              )
-                            ),
-                          )
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 4,
+                                child: Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      refImg == null
+                                          ? "<NO FILE LOADED>"
+                                          : refImg.path,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall,
+                                    )),
+                              ),
+                              SizedBox(
+                                width: _toolSettingsWidgetOptions.padding,
+                              ),
+                              Expanded(
+                                  flex: 1,
+                                  child: Tooltip(
+                                    waitDuration: AppState.toolTipDuration,
+                                    message: "Open Reference File",
+                                    child: IconButton.outlined(
+                                        onPressed: _onLoadPressed,
+                                        icon: FaIcon(FontAwesomeIcons.file)),
+                                  ))
+                            ],
+                          ),
                         )
                       ],
                     ),
-                  )
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Opacity",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      )
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Opacity",
+                                style: Theme.of(context).textTheme.labelLarge,
+                              )),
+                        ),
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable:
+                                widget.referenceState.opacityNotifier,
+                            builder: (final BuildContext context,
+                                final int opacity, final Widget? child) {
+                              return Slider(
+                                value: opacity.toDouble(),
+                                min: _refSettings.opacityMin.toDouble(),
+                                max: _refSettings.opacityMax.toDouble(),
+                                divisions: _refSettings.opacityMax -
+                                    _refSettings.opacityMin,
+                                onChanged: refImg == null ? null : (final double newVal) {
+                                  widget.referenceState.opacityNotifier.value =
+                                      newVal.round();
+                                },
+                                label: opacity.round().toString(),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: widget.referenceState.opacityNotifier,
-                      builder: (final BuildContext context, final int opacity, final Widget? child){
-                        return Slider(
-                          value: opacity.toDouble(),
-                          min: refSettings.opacityMin.toDouble(),
-                          max: refSettings.opacityMax.toDouble(),
-                          divisions: refSettings.opacityMax - refSettings.opacityMin,
-                          onChanged: (final double newVal) {widget.referenceState.opacityNotifier.value = newVal.round();},
-                          label: opacity.round().toString(),
-                        );
-                      },
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Aspect Ratio",
+                                style: Theme.of(context).textTheme.labelLarge,
+                              )),
+                        ),
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ValueListenableBuilder<double>(
+                                  valueListenable:
+                                      widget.referenceState.aspectRatioNotifier,
+                                  builder: (final BuildContext context,
+                                      final double aspectRatio,
+                                      final Widget? child) {
+                                    return Slider(
+                                      value: aspectRatio.toDouble(),
+                                      min: _refSettings.aspectRatioMin
+                                          .toDouble(),
+                                      max: _refSettings.aspectRatioMax
+                                          .toDouble(),
+                                      onChanged: refImg == null ? null : (final double newVal) {
+                                        widget.referenceState
+                                            .aspectRatioNotifier.value = newVal;
+                                      },
+                                      label: aspectRatio.toStringAsFixed(2),
+                                    );
+                                  },
+                                ),
+                              ),
+                              IconButton.outlined(
+                                onPressed: refImg == null ? null: _resetAspectRatio,
+                                icon: FaIcon(FontAwesomeIcons.arrowRotateLeft),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Aspect Ratio",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      )
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Zoom",
+                                style: Theme.of(context).textTheme.labelLarge,
+                              )),
+                        ),
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: widget.referenceState.zoomNotifier,
+                            builder: (final BuildContext context,
+                                final int zoom, final Widget? child) {
+                              return Slider(
+                                value: zoom.toDouble(),
+                                min: _refSettings.zoomMin.toDouble(),
+                                max: _refSettings.zoomMax.toDouble(),
+                                divisions:
+                                    _refSettings.zoomMax - _refSettings.zoomMin,
+                                onChanged: refImg == null ? null : (final double newVal) {
+                                  widget.referenceState.zoomNotifier.value =
+                                      newVal.round();
+                                },
+                                label: zoom.round().toString(),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: widget.referenceState.aspectRatioNotifier,
-                      builder: (final BuildContext context, final double aspectRatio, final Widget? child)
-                      {
-                        return Slider(
-                          value: aspectRatio.toDouble(),
-                          min: refSettings.aspectRatioMin.toDouble(),
-                          max: refSettings.aspectRatioMax.toDouble(),
-                          onChanged: (final double newVal) {widget.referenceState.aspectRatioNotifier.value = newVal;},
-                          label: aspectRatio.toString(),
-                        );
-                      },
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                            flex: 1,
+                            child: IconButton.outlined(
+                                onPressed: refImg == null ? null : _expandHorizontal,
+                                icon:
+                                    FaIcon(FontAwesomeIcons.arrowsLeftRight))),
+                        Expanded(
+                            flex: 1,
+                            child: IconButton.outlined(
+                                onPressed: refImg == null ? null : _expandVertical,
+                                icon: FaIcon(FontAwesomeIcons.arrowsUpDown))),
+                        Expanded(
+                            flex: 1,
+                            child: IconButton.outlined(
+                              onPressed: refImg == null ? null : _fill,
+                              icon: FaIcon(
+                                  FontAwesomeIcons.arrowsUpDownLeftRight),
+                            )),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Zoom",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      )
-                    ),
-                  ),
-                  Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: widget.referenceState.zoomNotifier,
-                      builder: (final BuildContext context, final int zoom, final Widget? child) {
-                        return Slider(
-                          value: zoom.toDouble(),
-                          min: refSettings.zoomMin.toDouble(),
-                          max: refSettings.zoomMax.toDouble(),
-                          divisions: refSettings.zoomMax - refSettings.zoomMin,
-                          onChanged: (final double newVal) {widget.referenceState.zoomNotifier.value = newVal.round();},
-                          label: zoom.round().toString(),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: IconButton.outlined(
-                      onPressed: _expandHorizontal,
-                      icon: FaIcon(
-                        FontAwesomeIcons.arrowsLeftRight
-                      )
-                    )
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: IconButton.outlined(
-                      onPressed: _expandVertical,
-                      icon: FaIcon(
-                        FontAwesomeIcons.arrowsUpDown
-                      )
-                    )
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: IconButton.outlined(
-                      onPressed: _fill,
-                      icon: FaIcon(
-                        FontAwesomeIcons.arrowsUpDownLeftRight
-                      ),
-                    )
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                );
+              },
+            ),
           ),
-        ),
-      )
-    );
+        ));
   }
 }

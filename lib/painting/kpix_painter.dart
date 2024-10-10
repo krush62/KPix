@@ -207,6 +207,10 @@ class KPixPainter extends CustomPainter
         currentLayer: _appState.getSelectedLayer()!,
       );
 
+      if (drawParams.currentReferenceLayer != null)
+      {
+        _drawReferenceBorder(drawParams: drawParams, refLayer: drawParams.currentReferenceLayer!);
+      }
 
       _drawCheckerboard(drawParams: drawParams);
       if (drawParams.currentDrawingLayer != null)
@@ -234,33 +238,79 @@ class KPixPainter extends CustomPainter
     }
   }
 
+  void _drawReferenceBorder({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
+  {
+    if (refLayer.image != null)
+    {
+      final double pxlSzDbl = drawParams.pixelSize.toDouble();
+      final ui.Image image = refLayer.image!.image;
+      double aspectRatioX = 1.0;
+      double aspectRatioY = 1.0;
+      if (refLayer.aspectRatio > 0)
+      {
+        aspectRatioX += refLayer.aspectRatio;
+      }
+      else if (refLayer.aspectRatio < 0)
+      {
+        aspectRatioY += -refLayer.aspectRatio;
+      }
 
-  bool referenceMovementStarted = false;
+      final ui.Rect theoryRect = ui.Rect.fromLTWH(
+          drawParams.offset.dx + (refLayer.offsetX * pxlSzDbl),
+          drawParams.offset.dy + (refLayer.offsetY * pxlSzDbl),
+          image.width * (refLayer.zoom.toDouble() / 100.0) * aspectRatioX * pxlSzDbl,
+          image.height * (refLayer.zoom.toDouble() / 100.0) * aspectRatioY * pxlSzDbl
+      );
+
+      final Paint p = Paint();
+      p.color = Colors.black;
+      p.style = ui.PaintingStyle.stroke;
+      p.strokeWidth = 1;
+      drawParams.canvas.drawRect(theoryRect, p);
+
+
+    }
+
+  }
+
+  //TODO put us somewhere else, please!!
+  bool _referenceMovementStarted = false;
   final CoordinateSetD _normStartPos = CoordinateSetD(x: 0, y: 0);
   final CoordinateSetD _cursorPosNorm = CoordinateSetD(x: 0, y: 0);
-  Offset _lastStartPos = const Offset(0,0);
+  Offset _lastStartPos = const Offset(0, 0);
+  final CoordinateSetD _lastReferenceOffset = CoordinateSetD(x: 0, y: 0);
   void _handleReferenceLayer({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
   {
-
     if (_lastStartPos != drawParams.primaryPressStart)
     {
       _normStartPos.x = (drawParams.primaryPressStart.dx - drawParams.offset.dx) / drawParams.pixelSize.toDouble();
       _normStartPos.y = (drawParams.primaryPressStart.dy - drawParams.offset.dy) / drawParams.pixelSize.toDouble();
       _lastStartPos = drawParams.primaryPressStart;
+      _referenceMovementStarted = true;
     }
     if (drawParams.cursorPos != null)
     {
        _cursorPosNorm.x = (drawParams.cursorPos!.x - drawParams.offset.dx) / drawParams.pixelSize.toDouble();
        _cursorPosNorm.y = (drawParams.cursorPos!.y - drawParams.offset.dy) / drawParams.pixelSize.toDouble();
 
-
-       final bool isStartOnCanvas = drawParams.primaryDown && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < _appState.canvasSize.x && _normStartPos.y < _appState.canvasSize.y;
-       if (isStartOnCanvas)
+       if (drawParams.primaryDown)
        {
-
-         refLayer.offsetXNotifier.value = _cursorPosNorm.x - _normStartPos.x;
-         refLayer.offsetYNotifier.value = _cursorPosNorm.y - _normStartPos.y;
+         final CoordinateSetD offset = CoordinateSetD(x: _cursorPosNorm.x - _normStartPos.x, y: _cursorPosNorm.y - _normStartPos.y);
+         if (offset != _lastReferenceOffset)
+         {
+           refLayer.offsetXNotifier.value += offset.x - _lastReferenceOffset.x;
+           refLayer.offsetYNotifier.value += offset.y - _lastReferenceOffset.y;
+           _lastReferenceOffset.x = offset.x;
+           _lastReferenceOffset.y = offset.y;
+         }
        }
+    }
+
+    if (!drawParams.primaryDown && _referenceMovementStarted)
+    {
+      _lastReferenceOffset.x = 0;
+      _lastReferenceOffset.y = 0;
+      _referenceMovementStarted = false;
     }
 
 
@@ -576,20 +626,6 @@ class KPixPainter extends CustomPainter
             if (refLayer.image != null)
             {
               final ui.Image image = refLayer.image!.image;
-              final ui.Rect drawingCanvasRect = ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                  drawParams.scaledCanvasSize.x.toDouble(),
-                  drawParams.scaledCanvasSize.y.toDouble());
-
-              /*paintImage(
-                  canvas: drawParams.canvas,
-                  rect: drawingCanvasRect,
-                  image: refLayer.image!.image,
-                  scale: (1.0 / pxlSzDbl) * (100.0 / refLayer.zoom.toDouble()),
-                  fit: BoxFit.cover,
-                  opacity: refLayer.opacity.toDouble() / 100.0,
-                  alignment: Alignment.topLeft,
-                  filterQuality: FilterQuality.none);*/
-
               double aspectRatioX = 1.0;
               double aspectRatioY = 1.0;
               if (refLayer.aspectRatio > 0)
@@ -602,8 +638,8 @@ class KPixPainter extends CustomPainter
               }
 
               ui.Rect srcRect = ui.Rect.fromLTWH(
-                -refLayer.offsetX / (refLayer.zoom.toDouble() / 100.0),
-                -refLayer.offsetY / (refLayer.zoom.toDouble() / 100.0),
+                -refLayer.offsetX / (refLayer.zoom.toDouble() / 100.0) / aspectRatioX,
+                -refLayer.offsetY / (refLayer.zoom.toDouble() / 100.0) / aspectRatioY,
                 drawParams.canvasSize.x.toDouble() / (refLayer.zoom.toDouble() / 100.0) / aspectRatioX,
                 drawParams.canvasSize.y.toDouble() / (refLayer.zoom.toDouble() / 100.0) / aspectRatioY
               );

@@ -79,6 +79,7 @@ class DrawingParameters
   final bool secondaryDown;
   final Offset primaryPressStart;
   final DrawingLayerState? currentDrawingLayer;
+  final ReferenceLayerState? currentReferenceLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -96,7 +97,8 @@ class DrawingParameters
     drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
     drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
                                 y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor()),
-    currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null;
+    currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
+    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null;
 
 }
 
@@ -211,6 +213,10 @@ class KPixPainter extends CustomPainter
       {
         toolPainter?.calculate(drawParams: drawParams);
       }
+      if (drawParams.currentReferenceLayer != null)
+      {
+        _handleReferenceLayer(drawParams: drawParams, refLayer: drawParams.currentReferenceLayer!);
+      }
       _drawLayers(drawParams: drawParams);
       if (drawParams.currentDrawingLayer != null)
       {
@@ -226,6 +232,39 @@ class KPixPainter extends CustomPainter
         toolPainter?.setStatusBarData(drawParams: drawParams);
       }
     }
+  }
+
+
+  bool referenceMovementStarted = false;
+  final CoordinateSetD _normStartPos = CoordinateSetD(x: 0, y: 0);
+  final CoordinateSetD _cursorPosNorm = CoordinateSetD(x: 0, y: 0);
+  Offset _lastStartPos = const Offset(0,0);
+  void _handleReferenceLayer({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
+  {
+
+    if (_lastStartPos != drawParams.primaryPressStart)
+    {
+      _normStartPos.x = (drawParams.primaryPressStart.dx - drawParams.offset.dx) / drawParams.pixelSize.toDouble();
+      _normStartPos.y = (drawParams.primaryPressStart.dy - drawParams.offset.dy) / drawParams.pixelSize.toDouble();
+      _lastStartPos = drawParams.primaryPressStart;
+    }
+    if (drawParams.cursorPos != null)
+    {
+       _cursorPosNorm.x = (drawParams.cursorPos!.x - drawParams.offset.dx) / drawParams.pixelSize.toDouble();
+       _cursorPosNorm.y = (drawParams.cursorPos!.y - drawParams.offset.dy) / drawParams.pixelSize.toDouble();
+
+
+       final bool isStartOnCanvas = drawParams.primaryDown && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < _appState.canvasSize.x && _normStartPos.y < _appState.canvasSize.y;
+       if (isStartOnCanvas)
+       {
+
+         refLayer.offsetXNotifier.value = _cursorPosNorm.x - _normStartPos.x;
+         refLayer.offsetYNotifier.value = _cursorPosNorm.y - _normStartPos.y;
+       }
+    }
+
+
+
   }
 
   void _drawSelection({required final DrawingParameters drawParams})
@@ -562,13 +601,9 @@ class KPixPainter extends CustomPainter
                 aspectRatioY += -refLayer.aspectRatio;
               }
 
-              //TODO temp
-              final double offsetX = 5;
-              final double offsetY = 5;
-
               ui.Rect srcRect = ui.Rect.fromLTWH(
-                -offsetX / (refLayer.zoom.toDouble() / 100.0),
-                -offsetY / (refLayer.zoom.toDouble() / 100.0),
+                -refLayer.offsetX / (refLayer.zoom.toDouble() / 100.0),
+                -refLayer.offsetY / (refLayer.zoom.toDouble() / 100.0),
                 drawParams.canvasSize.x.toDouble() / (refLayer.zoom.toDouble() / 100.0) / aspectRatioX,
                 drawParams.canvasSize.y.toDouble() / (refLayer.zoom.toDouble() / 100.0) / aspectRatioY
               );

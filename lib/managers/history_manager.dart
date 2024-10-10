@@ -66,8 +66,8 @@ class HistoryReferenceLayer extends HistoryLayer
 {
   final String path;
   final int opacity;
-  final int offsetX;
-  final int offsetY;
+  final double offsetX;
+  final double offsetY;
   final int zoom;
   final double aspectRatio;
   HistoryReferenceLayer({required super.visibilityState, required this.opacity, required this.offsetX, required this.offsetY, required this.path, required this.zoom, required this.aspectRatio});

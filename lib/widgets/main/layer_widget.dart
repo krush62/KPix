@@ -128,10 +128,10 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<int> opacityNotifier;
   final ValueNotifier<double> aspectRatioNotifier;
   final ValueNotifier<int> zoomNotifier;
-  final ValueNotifier<int> offsetXNotifier;
-  final ValueNotifier<int> offsetYNotifier;
+  final ValueNotifier<double> offsetXNotifier;
+  final ValueNotifier<double> offsetYNotifier;
   final ValueNotifier<ReferenceImage?> imageNotifier;
-  ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final int offsetX, required final int offsetY}) :
+  ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final double offsetX, required final double offsetY}) :
     opacityNotifier = ValueNotifier(opacity),
     aspectRatioNotifier = ValueNotifier(aspectRatio),
     zoomNotifier = ValueNotifier(zoom),
@@ -166,9 +166,14 @@ class ReferenceLayerState extends LayerState
     return zoomNotifier.value;
   }
 
-  CoordinateSetI get offset
+  double get offsetX
   {
-    return CoordinateSetI(x: offsetXNotifier.value, y: offsetYNotifier.value);
+    return offsetXNotifier.value;
+  }
+
+  double get offsetY
+  {
+    return offsetYNotifier.value;
   }
 
   ReferenceImage? get image

@@ -256,12 +256,12 @@ class FileHandler
           //opacity ``ubyte (1)`` // 0...100
           final int opacity = byteData.getUint8(offset++);
           if (opacity < referenceLayerSettings.opacityMin || opacity > referenceLayerSettings.opacityMax) return LoadFileSet(status: "Opacity for reference layer is out of range: $opacity");
-          //offset_x ``short (1)``
-          final int offsetX = byteData.getUint16(offset);
-          offset += 2;
-          //offset_y ``short (1)``
-          final int offsetY = byteData.getUint16(offset);
-          offset += 2;
+          //offset_x ``float (1)``
+          final double offsetX = byteData.getFloat32(offset);
+          offset += 4;
+          //offset_y ``float (1)``
+          final double offsetY = byteData.getFloat32(offset);
+          offset += 4;
           //zoom ``ubyte (1)``
           final int zoom = byteData.getUint8(offset++);
           if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax) return LoadFileSet(status: "Zoom for reference layer is out of range: $zoom");

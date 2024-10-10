@@ -74,8 +74,8 @@ The kpix file format consists of the following three consecutive sections:
     // data for type ``02``
   * path (string)  
   * opacity ``ubyte (1)`` // 0...100
-  * offset_x ``short (1)``
-  * offset_y ``short (1)``
+  * offset_x ``float (1)``
+  * offset_y ``float (1)``
   * zoom ``ubyte (1)``
   * aspect_ratio ``float (1)``
   

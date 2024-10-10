@@ -708,12 +708,12 @@ class ExportFunctions
 
         //opacity ``ubyte (1)`` // 0...100
         byteData.setUint8(offset++, referenceLayer.opacity);
-        //offset_x ``short (1)``
-        byteData.setUint16(offset, referenceLayer.offsetX);
-        offset += 2;
-        //offset_y ``short (1)``
-        byteData.setUint16(offset, referenceLayer.offsetY);
-        offset += 2;
+        //offset_x ``float (1)``
+        byteData.setFloat32(offset, referenceLayer.offsetX);
+        offset += 4;
+        //offset_y ``float (1)``
+        byteData.setFloat32(offset, referenceLayer.offsetY);
+        offset += 4;
         //zoom ``ubyte (1)``
         byteData.setUint8(offset++, referenceLayer.zoom);
         //aspect_ratio ``float (1)``
@@ -1421,10 +1421,10 @@ class ExportFunctions
         size += utf8.encode(referenceLayer.path).length;
         //opacity ``ubyte (1)`` // 0...100
         size += 1;
-        //offset_x ``short (1)``
-        size += 2;
-        //offset_y ``short (1)``
-        size += 2;
+        //offset_x ``float (1)``
+        size += 4;
+        //offset_y ``float (1)``
+        size += 4;
         //zoom ``ubyte (1)``
         size += 1;
         //aspect_ratio ``float (1)``

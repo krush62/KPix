@@ -436,6 +436,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
       if (_stylusLongMoveHorizontal.value)
       {
+        //TODO check layer type and call setZoom
+
         _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
       }
 
@@ -560,11 +562,33 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.setToolSize(1, _appState.getCurrentToolSize());
+          if (_appState.currentLayer != null)
+          {
+            if (_appState.currentLayer.runtimeType == DrawingLayerState)
+            {
+              _appState.setToolSize(1, _appState.getCurrentToolSize());
+            }
+            else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+            {
+              final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+              refLayer.increaseZoom();
+            }
+          }
         }
         else
         {
-          _appState.setToolSize(-1, _appState.getCurrentToolSize());
+          if (_appState.currentLayer != null)
+          {
+            if (_appState.currentLayer.runtimeType == DrawingLayerState)
+            {
+              _appState.setToolSize(-1, _appState.getCurrentToolSize());
+            }
+            else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+            {
+              final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+              refLayer.decreaseZoom();
+            }
+          }
         }
         _appState.repaintNotifier.repaint();
       }

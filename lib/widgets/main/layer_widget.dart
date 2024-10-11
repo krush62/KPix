@@ -30,6 +30,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 
 
 class LayerWidgetOptions
@@ -125,6 +126,7 @@ abstract class LayerState
 
 class ReferenceLayerState extends LayerState
 {
+  final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
   final ValueNotifier<int> opacityNotifier;
   final ValueNotifier<double> aspectRatioNotifier;
   final ValueNotifier<int> zoomNotifier;
@@ -149,6 +151,34 @@ class ReferenceLayerState extends LayerState
   factory ReferenceLayerState.from({required ReferenceLayerState other})
   {
     return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacityNotifier.value, zoom: other.zoomNotifier.value, image: other.imageNotifier.value, offsetX: other.offsetXNotifier.value, offsetY: other.offsetYNotifier.value);
+  }
+
+  void increaseZoom({final int step = 1})
+  {
+    final int newVal = zoom + step;
+    setZoom(newVal: newVal);
+  }
+
+  void decreaseZoom({final int step = 1})
+  {
+    final int newVal = zoom - step;
+    setZoom(newVal: newVal);
+  }
+
+  void setZoom({required final int newVal})
+  {
+    if (newVal < _refSettings.zoomMin)
+    {
+      zoomNotifier.value = _refSettings.zoomMin;
+    }
+    else if (newVal > _refSettings.zoomMax)
+    {
+      zoomNotifier.value = _refSettings.zoomMax;
+    }
+    else
+    {
+      zoomNotifier.value = newVal;
+    }
   }
 
   int get opacity

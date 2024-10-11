@@ -434,11 +434,18 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
 
-      if (_stylusLongMoveHorizontal.value)
+      if (_stylusLongMoveHorizontal.value && _appState.currentLayer != null)
       {
-        //TODO check layer type and call setZoom
+        if (_appState.currentLayer.runtimeType == DrawingLayerState)
+        {
+          _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
+        }
+        else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+        {
+           final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+           refLayer.setZoom(newVal: -toolSizeSteps + _stylusToolStartSize);
+        }
 
-        _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
       }
 
       if (_stylusLongMoveVertical.value && _appState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
@@ -728,7 +735,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = _appState.zoomFactor;
-    _stylusToolStartSize = _appState.getCurrentToolSize();
+    if (_appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      _stylusToolStartSize = _appState.getCurrentToolSize();
+    }
+    else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+    {
+      _stylusToolStartSize = (_appState.currentLayer as ReferenceLayerState).zoom;
+    }
+
   }
 
   void setMouseCursor({required final MouseCursor cursor})

@@ -47,16 +47,14 @@ class MainToolbarWidgetOptions {
   final int toolSettingsFlex;
   final double dividerHeight;
   final double dividerPadding;
-  final int toolHeight1;
-  final int toolHeight2;
+  final int toolHeight;
 
   const MainToolbarWidgetOptions({
     required this.paletteFlex,
     required this.dividerPadding,
     required this.toolSettingsFlex,
     required this.dividerHeight,
-    required this.toolHeight1,
-    required this.toolHeight2});
+    required this.toolHeight});
 }
 
 
@@ -76,69 +74,66 @@ class MainToolbarWidget extends StatelessWidget
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           (Helper.isDesktop()) ?
-            Divider(
-              color: Theme.of(context).primaryColorDark,
-              thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-              height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            ) : const SizedBox.shrink(),
-            ShaderWidget(
-              titleStyle: Theme.of(context).textTheme.titleLarge,
-              labelStyle: Theme.of(context).textTheme.bodySmall,
-            ),
-            ValueListenableBuilder<bool>(
-              valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
-              builder: (final BuildContext context, final bool hasProject, final Widget? child)
+          Divider(
+            color: Theme.of(context).primaryColorDark,
+            thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
+            height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
+          ) : const SizedBox.shrink(),
+          ShaderWidget(
+            titleStyle: Theme.of(context).textTheme.titleLarge,
+            labelStyle: Theme.of(context).textTheme.bodySmall,
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+            builder: (final BuildContext context, final bool hasProject, final Widget? child)
+            {
+              return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
+            },
+          ),
+          ValueListenableBuilder<LayerState?>
+          (
+            valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
+            builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
+
+              if (layer != null)
               {
-                return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
-              },
-            ),
-            ValueListenableBuilder<LayerState?>
-            (
-              valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
-              builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
-                if (layer != null)
+                Widget contentWidget;
+                if (layer.runtimeType == ReferenceLayerState)
                 {
-                  if (layer.runtimeType == ReferenceLayerState)
-                  {
-                    return SizedBox(
-                      width: double.infinity,
-                      height: (GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight1 + GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight2).toDouble(),
-                      child: ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState)
-                    );
-                  }
-                  else if (layer.runtimeType == DrawingLayerState)
-                  {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight1.toDouble(),
-                          child: const ToolsWidget()
-                        ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight2.toDouble(),
-                          child: ValueListenableBuilder<ToolType>(
-                            valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-                            builder: (final BuildContext context, final ToolType value, final Widget? child) {
-                              return const ToolSettingsWidget();
-                            }
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  else
-                  {
-                    return SizedBox.shrink();
-                  }
+                  contentWidget = ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState);
+                }
+                else if (layer.runtimeType == DrawingLayerState)
+                {
+                  contentWidget = Column(
+                    children: [
+                      const ToolsWidget(),
+                      ValueListenableBuilder<ToolType>(
+                          valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+                          builder: (final BuildContext context, final ToolType value, final Widget? child) {
+                            return Expanded(child: const ToolSettingsWidget());
+                          }
+                      ),
+                    ],
+                  );
                 }
                 else
                 {
                   return SizedBox.shrink();
                 }
-              },
-            )
+
+                return SizedBox(
+                  width: double.infinity,
+                  height: (GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight).toDouble(),
+                  child: contentWidget,
+
+                );
+              }
+              else
+              {
+                return SizedBox.shrink();
+              }
+            },
+          )
         ]
       ),
     );

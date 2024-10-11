@@ -236,8 +236,7 @@ enum PreferenceInt
 
   Layout_MainToolbar_PaletteFlex(defaultValue: 2),
   Layout_MainToolbar_ToolSettingsFlex(defaultValue: 1),
-  Layout_MainToolbar_ToolHeight1(defaultValue: 80),
-  Layout_MainToolbar_ToolHeight2(defaultValue: 200),
+  Layout_MainToolbar_ToolHeight(defaultValue: 300),
 
   Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
 
@@ -722,8 +721,7 @@ class PreferenceManager
         toolSettingsFlex: _getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
         dividerHeight: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
         dividerPadding: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),
-        toolHeight1: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight1),
-        toolHeight2: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight2),);
+        toolHeight: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight));
     shaderWidgetOptions = ShaderWidgetOptions(
         outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
     statusBarWidgetOptions = StatusBarWidgetOptions(

@@ -78,21 +78,28 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   void _loadPathChosen({required final String? loadPath})
   {
     if (loadPath != null && loadPath.isNotEmpty) {
-      _refManager.loadImageFile(path: loadPath).then((final ReferenceImage? img) {
+      _refManager.loadImageFile(path: loadPath).then((final ReferenceImage? img)
+      {
         if (img != null)
         {
-          final ReferenceImage? oldImage =
-              widget.referenceState.imageNotifier.value;
+          final ReferenceImage? oldImage = widget.referenceState.imageNotifier.value;
           widget.referenceState.imageNotifier.value = img;
           widget.referenceState.thumbnail.value = img.image;
-          if (oldImage != null) {
-            GetIt.I
-                .get<ReferenceImageManager>()
-                .removeImage(refImage: oldImage);
+          final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
+          final double targetZoomX = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
+          final double targetZoomY = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
+          if (targetZoomX < targetZoomY)
+          {
+            _fitHorizontal();
           }
-          GetIt.I.get<HistoryManager>().addState(
-              appState: GetIt.I.get<AppState>(),
-              description: "add new reference image");
+          else
+          {
+            _fitVertical();
+          }
+          if (oldImage != null) {
+            GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
+          }
+          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), description: "add new reference image");
         }
         else
         {
@@ -194,11 +201,11 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              flex: 4,
+                              flex: 3,
                               child: Align(
                                 alignment: Alignment.center,
                                 child: Text(
-                                  refImg == null ? "<NO FILE LOADED>" : refImg.path,
+                                  refImg == null ? "<NO FILE LOADED>" : Helper.extractFilenameFromPath(path: refImg.path),
                                   style: Theme.of(context).textTheme.labelSmall,
                                 )
                               ),
@@ -213,7 +220,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                 message: "Open Reference File",
                                 child: IconButton.outlined(
                                   onPressed: _onLoadPressed,
-                                  icon: FaIcon(FontAwesomeIcons.file)
+                                  icon: FaIcon(FontAwesomeIcons.image)
                                 ),
                               )
                             )

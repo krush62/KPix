@@ -156,9 +156,14 @@ class ReferenceLayerState extends LayerState
     return opacityNotifier.value;
   }
 
-  double get aspectRatio
+  double get aspectRatioFactorX
   {
-    return aspectRatioNotifier.value;
+    return (aspectRatioNotifier.value > 0) ? 1.0 + aspectRatioNotifier.value : 1.0;
+  }
+
+  double get aspectRatioFactorY
+  {
+    return (aspectRatioNotifier.value < 0) ? 1.0 - aspectRatioNotifier.value : 1.0;
   }
 
   int get zoom

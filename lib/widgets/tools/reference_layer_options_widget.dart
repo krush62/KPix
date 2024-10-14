@@ -39,6 +39,7 @@ class ReferenceLayerSettings
   final int zoomDefault;
   final int zoomMin;
   final int zoomMax;
+  final double zoomCurveExponent;
 
   ReferenceLayerSettings
   (
@@ -50,7 +51,8 @@ class ReferenceLayerSettings
       required this.aspectRatioMax,
       required this.zoomDefault,
       required this.zoomMin,
-      required this.zoomMax}
+      required this.zoomMax,
+      required this.zoomCurveExponent}
   );
 }
 

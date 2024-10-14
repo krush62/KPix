@@ -160,6 +160,7 @@ enum PreferenceDouble
   ReferenceLayer_AspectRatioDefault(defaultValue: 0.0),
   ReferenceLayer_AspectRatioMax(defaultValue: 5.0),
   ReferenceLayer_AspectRatioMin(defaultValue: -5.0),
+  ReferenceLayer_ZoomCurveExponent(defaultValue: 2.0),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -811,6 +812,7 @@ class PreferenceManager
       aspectRatioDefault: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioDefault),
       aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
       aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
+      zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent)
     );
   }
 

@@ -134,8 +134,6 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<double> offsetXNotifier;
   final ValueNotifier<double> offsetYNotifier;
   final ValueNotifier<ReferenceImage?> imageNotifier;
-  //TODO preference
-  static const int zoomCurveExponent = 2;
 
   ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final double offsetX, required final double offsetY}) :
     opacityNotifier = ValueNotifier(opacity),
@@ -171,7 +169,7 @@ class ReferenceLayerState extends LayerState
 
   void setZoomSliderFromZoomFactor({required final double factor})
   {
-    setZoomSliderValue(newVal: (pow(factor, 1.0 / zoomCurveExponent.toDouble()) * _refSettings.zoomDefault).round());
+    setZoomSliderValue(newVal: (pow(factor, 1.0 / _refSettings.zoomCurveExponent.toDouble()) * _refSettings.zoomDefault).round());
   }
 
   void setZoomSliderValue({required final int newVal})
@@ -212,7 +210,7 @@ class ReferenceLayerState extends LayerState
 
   double get zoomFactor
   {
-    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), zoomCurveExponent.toDouble()).toDouble();
+    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), _refSettings.zoomCurveExponent.toDouble()).toDouble();
   }
 
 

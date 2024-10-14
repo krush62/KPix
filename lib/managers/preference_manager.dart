@@ -250,7 +250,7 @@ enum PreferenceInt
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
   Layout_CanvasSize_SizeMin(defaultValue: 4),
-  Layout_CanvasSize_SizeMax(defaultValue: 512),
+  Layout_CanvasSize_SizeMax(defaultValue: 640),
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
   Layout_PaletteManagerEntry_LayoutFlex(defaultValue: 6),

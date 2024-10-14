@@ -304,9 +304,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                 },
                               ),
                             ),
-                            IconButton.outlined(
-                              onPressed: refImg == null ? null: _resetAspectRatio,
-                              icon: FaIcon(FontAwesomeIcons.arrowRotateLeft),
+                            Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message: "Reset Aspect Ratio",
+                              child: IconButton.outlined(
+                                onPressed: refImg == null ? null: _resetAspectRatio,
+                                icon: FaIcon(FontAwesomeIcons.arrowRotateLeft),
+                              ),
                             )
                           ],
                         ),

@@ -51,6 +51,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
     super.initState();
     _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
     _updateFileNameStatus();
+    _hotkeyManager.saveAsFileNameTextFocus.requestFocus();
   }
 
   void _updateFileNameStatus()

@@ -156,6 +156,7 @@ class _ExportWidgetState extends State<ExportWidget>
     super.initState();
     _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
     _updateFileNameStatus();
+    _hotkeyManager.exportFileNameTextFocus.requestFocus();
   }
 
   void _updateFileNameStatus()

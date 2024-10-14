@@ -1,8 +1,5 @@
-$jarSigner = "C:\Program Files\Android\Android Studio\jbr\bin\jarsigner.exe"
-$keyStore = "upload-keystore.jks"
 $apkSourcePath = "..\build\app\outputs\flutter-apk\app-release.apk"
 $bundleSourcePath = "..\build\app\outputs\bundle\release\app-release.aab"
-$keyStoreAlias = "upload"
 $yamlFile = "..\pubspec.yaml"
 $versionLine = Select-String -Path $yamlFile -Pattern "version: (\d+\.\d+\.\d+)" | ForEach-Object { $_.Matches.Groups[1].Value }
 $versionCode = ($versionLine -replace '\.')
@@ -23,14 +20,14 @@ $gradleContent = $gradleContent -replace "flutterVersionCode = '.*'", "flutterVe
 Set-Content -Path $gradleFilePath -Value $gradleContent
 
 
-cd ..\android
+Set-Location ..\android
 Write-Host "Building APK..."
 .\gradlew.bat assembleRelease | Out-Null
 Write-Host "Building Bundle..."
 .\gradlew.bat bundleRelease | Out-Null
 
 
-cd $PSScriptRoot
+Set-Location $PSScriptRoot
 
 
 Write-Host "Copying APK..."

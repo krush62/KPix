@@ -809,12 +809,32 @@ class _LayerWidgetState extends State<LayerWidget>
                       onTap: () {
                         _appState.layerSelected(newLayer: widget.layerState);
                       },
-                      child: ValueListenableBuilder<ui.Image?>(
-                        valueListenable: widget.layerState.thumbnail,
-                        builder: (final BuildContext context, final ui.Image? img, final Widget? child)
-                        {
-                          return RawImage(image: img,);
-                        },
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ValueListenableBuilder<ui.Image?>(
+                            valueListenable: widget.layerState.thumbnail,
+                            builder: (final BuildContext context, final ui.Image? img, final Widget? child)
+                            {
+                              return RawImage(image: img,);
+                            },
+                          ),
+                          Center(
+                            child: Text(
+                              (widget.layerState.runtimeType == ReferenceLayerState) ? "REF" : "",
+                              style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+                                color: Theme.of(context).primaryColorLight,
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    offset: const Offset(0.0, 1.0),
+                                    blurRadius: 2.0,
+                                    color: Theme.of(context).primaryColorDark,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     )
                   ),

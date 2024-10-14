@@ -443,7 +443,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
         {
            final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
-           refLayer.setZoom(newVal: -toolSizeSteps + _stylusToolStartSize);
+           refLayer.setZoomSliderValue(newVal: -toolSizeSteps + _stylusToolStartSize);
         }
 
       }
@@ -741,7 +741,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
     {
-      _stylusToolStartSize = (_appState.currentLayer as ReferenceLayerState).zoom;
+      _stylusToolStartSize = (_appState.currentLayer as ReferenceLayerState).zoomSliderValue.round();
     }
 
   }

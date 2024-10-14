@@ -259,8 +259,8 @@ enum PreferenceInt
   ReferenceLayer_OpacityDefault(defaultValue: 100),
   ReferenceLayer_OpacityMax(defaultValue: 100),
   ReferenceLayer_OpacityMin(defaultValue: 0),
-  ReferenceLayer_ZoomDefault(defaultValue: 100),
-  ReferenceLayer_ZoomMax(defaultValue: 100),
+  ReferenceLayer_ZoomDefault(defaultValue: 1000),
+  ReferenceLayer_ZoomMax(defaultValue: 2000),
   ReferenceLayer_ZoomMin(defaultValue: 1),
 
 

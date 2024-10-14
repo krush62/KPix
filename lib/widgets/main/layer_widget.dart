@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -133,6 +134,9 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<double> offsetXNotifier;
   final ValueNotifier<double> offsetYNotifier;
   final ValueNotifier<ReferenceImage?> imageNotifier;
+  //TODO preference
+  static const int zoomCurveExponent = 2;
+
   ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final double offsetX, required final double offsetY}) :
     opacityNotifier = ValueNotifier(opacity),
     aspectRatioNotifier = ValueNotifier(aspectRatio),
@@ -155,17 +159,22 @@ class ReferenceLayerState extends LayerState
 
   void increaseZoom({final int step = 1})
   {
-    final int newVal = zoom + step;
-    setZoom(newVal: newVal);
+    final int newVal = zoomSliderValue + step;
+    setZoomSliderValue(newVal: newVal);
   }
 
   void decreaseZoom({final int step = 1})
   {
-    final int newVal = zoom - step;
-    setZoom(newVal: newVal);
+    final int newVal = zoomSliderValue - step;
+    setZoomSliderValue(newVal: newVal);
   }
 
-  void setZoom({required final int newVal})
+  void setZoomSliderFromZoomFactor({required final double factor})
+  {
+    setZoomSliderValue(newVal: (pow(factor, 1.0 / zoomCurveExponent.toDouble()) * _refSettings.zoomDefault).round());
+  }
+
+  void setZoomSliderValue({required final int newVal})
   {
     if (newVal < _refSettings.zoomMin)
     {
@@ -196,10 +205,16 @@ class ReferenceLayerState extends LayerState
     return (aspectRatioNotifier.value < 0) ? 1.0 - aspectRatioNotifier.value : 1.0;
   }
 
-  int get zoom
+  int get zoomSliderValue
   {
     return zoomNotifier.value;
   }
+
+  double get zoomFactor
+  {
+    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), zoomCurveExponent.toDouble()).toDouble();
+  }
+
 
   double get offsetX
   {

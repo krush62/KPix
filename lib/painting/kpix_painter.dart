@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -251,12 +252,11 @@ class KPixPainter extends CustomPainter
       final double pxlSzDbl = drawParams.pixelSize.toDouble();
       final ui.Image image = refLayer.image!.image;
 
-
       final ui.Rect borderRect = ui.Rect.fromLTWH(
           drawParams.offset.dx + (refLayer.offsetX * pxlSzDbl),
           drawParams.offset.dy + (refLayer.offsetY * pxlSzDbl),
-          image.width * (refLayer.zoom.toDouble() / 100.0) * refLayer.aspectRatioFactorX * pxlSzDbl,
-          image.height * (refLayer.zoom.toDouble() / 100.0) * refLayer.aspectRatioFactorY * pxlSzDbl
+          image.width * refLayer.zoomFactor * refLayer.aspectRatioFactorX * pxlSzDbl,
+          image.height * refLayer.zoomFactor * refLayer.aspectRatioFactorY * pxlSzDbl
       );
 
       final Paint p = Paint();
@@ -613,10 +613,10 @@ class KPixPainter extends CustomPainter
               final ui.Image image = refLayer.image!.image;
 
               final ui.Rect srcRect = ui.Rect.fromLTWH(
-                -refLayer.offsetX / (refLayer.zoom.toDouble() / 100.0) / refLayer.aspectRatioFactorX,
-                -refLayer.offsetY / (refLayer.zoom.toDouble() / 100.0) / refLayer.aspectRatioFactorY,
-                drawParams.canvasSize.x.toDouble() / (refLayer.zoom.toDouble() / 100.0) / refLayer.aspectRatioFactorX,
-                drawParams.canvasSize.y.toDouble() / (refLayer.zoom.toDouble() / 100.0) / refLayer.aspectRatioFactorY
+                -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+                drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY
               );
 
               final ui.Rect targetRect = ui.Rect.fromLTWH(

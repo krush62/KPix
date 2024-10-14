@@ -121,7 +121,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
     {
       final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
       final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
-      widget.referenceState.zoomNotifier.value = max(min((targetZoom * 100.0).round(), _refSettings.zoomMax), _refSettings.zoomMin);
+      widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
       widget.referenceState.offsetXNotifier.value = 0;
       widget.referenceState.offsetYNotifier.value = (canvasSize.y - (widget.referenceState.image!.image.height.toDouble() * targetZoom * widget.referenceState.aspectRatioFactorY)) / 2.0;
     }
@@ -133,7 +133,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
     {
       final CoordinateSetI canvasSize = GetIt.I.get<AppState>().canvasSize;
       final double targetZoom = canvasSize.y.toDouble() / (widget.referenceState.image!.image.height.toDouble() * widget.referenceState.aspectRatioFactorY);
-      widget.referenceState.zoomNotifier.value = max(min((targetZoom * 100.0).round(), _refSettings.zoomMax), _refSettings.zoomMin);
+      widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
       widget.referenceState.offsetYNotifier.value = 0;
       widget.referenceState.offsetXNotifier.value = (canvasSize.x - (widget.referenceState.image!.image.width.toDouble() * targetZoom * widget.referenceState.aspectRatioFactorX)) / 2.0;
     }
@@ -158,7 +158,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
         widget.referenceState.aspectRatioNotifier.value = max(min((-(1.0 / scalingFactor) + 1), _refSettings.aspectRatioMax), _refSettings.aspectRatioMin);
       }
       final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
-      widget.referenceState.zoomNotifier.value = max(min((targetZoom * 100.0).round(), _refSettings.zoomMax), _refSettings.zoomMin);
+      widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
     }
   }
 
@@ -341,7 +341,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               onChanged: refImg == null ? null : (final double newVal) {
                                 widget.referenceState.zoomNotifier.value = newVal.round();
                               },
-                              label: zoom.round().toString(),
+                              label: "${(zoom / 10.0).toStringAsFixed(1)}%",
                             );
                           },
                         ),

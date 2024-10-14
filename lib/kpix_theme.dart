@@ -138,6 +138,9 @@ class KPixTheme {
           foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? lightColors.normal : lightColors.light),
           backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? lightColors.light : lightColors.normal),
         )
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: lightColors.light
     )
 
   );
@@ -246,7 +249,10 @@ class KPixTheme {
           foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? darkColors.normal : darkColors.light),
           backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? darkColors.light : darkColors.normal),
         )
-    )
+    ),
+      textSelectionTheme: TextSelectionThemeData(
+          cursorColor: darkColors.light
+      )
   );
 
 }

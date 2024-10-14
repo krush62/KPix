@@ -714,8 +714,9 @@ class ExportFunctions
         //offset_y ``float (1)``
         byteData.setFloat32(offset, referenceLayer.offsetY);
         offset += 4;
-        //zoom ``ubyte (1)``
-        byteData.setUint8(offset++, referenceLayer.zoom);
+        //zoom ``ushort (1)``
+        byteData.setUint16(offset, referenceLayer.zoom);
+        offset+=2;
         //aspect_ratio ``float (1)``
         byteData.setFloat32(offset, referenceLayer.aspectRatio);
         offset += 4;
@@ -1425,8 +1426,8 @@ class ExportFunctions
         size += 4;
         //offset_y ``float (1)``
         size += 4;
-        //zoom ``ubyte (1)``
-        size += 1;
+        //zoom ``ushort (1)``
+        size += 2;
         //aspect_ratio ``float (1)``
         size += 4;
 

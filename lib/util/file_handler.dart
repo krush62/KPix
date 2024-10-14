@@ -262,8 +262,9 @@ class FileHandler
           //offset_y ``float (1)``
           final double offsetY = byteData.getFloat32(offset);
           offset += 4;
-          //zoom ``ubyte (1)``
-          final int zoom = byteData.getUint8(offset++);
+          //zoom ``ushort (1)``
+          final int zoom = byteData.getUint16(offset);
+          offset += 2;
           if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax) return LoadFileSet(status: "Zoom for reference layer is out of range: $zoom");
           //aspect_ratio ``float (1)``
           final double aspectRatio = byteData.getFloat32(offset);

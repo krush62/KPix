@@ -76,7 +76,7 @@ The kpix file format consists of the following three consecutive sections:
   * opacity ``ubyte (1)`` // 0...100
   * offset_x ``float (1)``
   * offset_y ``float (1)``
-  * zoom ``ubyte (1)``
-  * aspect_ratio ``float (1)``
+  * zoom ``ushort (1)`` // 1...2000 (representing zoom factor * 1000)
+  * aspect_ratio ``float (1)``// -5...5 (vertical/horizontal stretch max. 6x)
   
   

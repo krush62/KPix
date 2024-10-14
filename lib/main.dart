@@ -25,6 +25,7 @@ import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -149,10 +150,13 @@ class _KPixAppState extends State<KPixApp>
     final String exportDirString = await FileHandler.findExportDir();
     final String internalDirString = await FileHandler.findInternalDir();
     final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString);
+
     GetIt.I.registerSingleton<AppState>(appState);
     GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
-
+    GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
     GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
+
+    //For the future: Device independent canvas scaling
     if (context.mounted)
     {
       final BuildContext c = context;
@@ -206,7 +210,7 @@ class _KPixAppState extends State<KPixApp>
 
     if (initialFilePath != null && initialFilePath.isNotEmpty)
     {
-      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: initialFilePath, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
+      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: initialFilePath, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings);
       if (lfs.path != null && lfs.historyState != null)
       {
         GetIt.I.get<AppState>().restoreFromFile(loadFileSet: lfs);
@@ -352,7 +356,6 @@ class _KPixAppState extends State<KPixApp>
         else
         {
           return  Padding(
-            //TODO magic
             padding: const EdgeInsets.all(32.0),
             child: Stack(
               children: [

@@ -94,17 +94,17 @@ class FillPainter extends IToolPainter
 
   @override
   void drawExtras({required DrawingParameters drawParams}) {
-    if (_shouldDraw)
+    if (_shouldDraw && drawParams.currentDrawingLayer != null)
     {
-      if (drawParams.currentLayer.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentLayer.lockState.value == LayerLockState.unlocked || (drawParams.currentLayer.lockState.value == LayerLockState.transparency && drawParams.currentLayer.getDataEntry(coord: _cursorPosNorm) != null)))
+      if (drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.unlocked || (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.transparency && drawParams.currentDrawingLayer!.getDataEntry(coord: _cursorPosNorm) != null)))
       {
         if (_options.fillAdjacent.value)
         {
-          _floodFill(fillColor: appState.selectedColor!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+          _floodFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
         }
         else
         {
-          _wholeFill(fillColor: appState.selectedColor!, layer: drawParams.currentLayer, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+          _wholeFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
         }
         hasHistoryData = true;
       }
@@ -114,7 +114,7 @@ class FillPainter extends IToolPainter
 
   void _floodFill({
     required final ColorReference fillColor,
-    required final LayerState layer,
+    required final DrawingLayerState layer,
     required final CoordinateSetI start,
     required final bool doShade,
     required final ShaderDirection shadeDirection,
@@ -215,7 +215,7 @@ class FillPainter extends IToolPainter
 
   void _wholeFill({
     required final ColorReference fillColor,
-    required final LayerState layer,
+    required final DrawingLayerState layer,
     required final CoordinateSetI start,
     required final bool doShade,
     required final ShaderDirection shadeDirection,

@@ -47,121 +47,124 @@ class SelectionPainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    if (_lastStartPos != drawParams.primaryPressStart)
+    if (drawParams.currentDrawingLayer != null)
     {
-      _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-      _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
-      _lastStartPos = drawParams.primaryPressStart;
-    }
-    if (drawParams.cursorPos != null)
-    {
-      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
-    }
-
-    _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
-    if (_isStartOnCanvas)
-    {
-      _shouldMove = (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden) &&
-          (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
-      if (_shouldMove)
+      if (_lastStartPos != drawParams.primaryPressStart)
       {
-        movementStarted = true;
-        appState.selectionState.setOffset(offset: CoordinateSetI(
-            x: _cursorPosNorm.x - _normStartPos.x,
-            y: _cursorPosNorm.y - _normStartPos.y));
+        _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+        _lastStartPos = drawParams.primaryPressStart;
       }
-      else
+      if (drawParams.cursorPos != null)
       {
-        if (options.shape.value == SelectShape.polygon)
+        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
+        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+      }
+
+      _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
+      if (_isStartOnCanvas)
+      {
+        _shouldMove = (drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) &&
+            (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+        if (_shouldMove)
         {
-          polygonDown = true;
-        }
-        else if (options.shape.value == SelectShape.wand)
-        {
-          selectionEnd.x = _cursorPosNorm.x;
-          selectionEnd.y = _cursorPosNorm.y;
-          hasNewSelection = true;
+          movementStarted = true;
+          appState.selectionState.setOffset(offset: CoordinateSetI(
+              x: _cursorPosNorm.x - _normStartPos.x,
+              y: _cursorPosNorm.y - _normStartPos.y));
         }
         else
         {
-          selectionStart.x = max(_normStartPos.x < _cursorPosNorm.x ? _normStartPos.x: _cursorPosNorm.x, 0);
-          selectionStart.y = max(_normStartPos.y < _cursorPosNorm.y ? _normStartPos.y : _cursorPosNorm.y, 0);
-          selectionEnd.x = min(_normStartPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (_normStartPos.x), appState.canvasSize.x - 1);
-          selectionEnd.y = min(_normStartPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (_normStartPos.y), appState.canvasSize.y - 1);
-
-
-          if (options.keepAspectRatio.value)
+          if (options.shape.value == SelectShape.polygon)
           {
-            final int width = selectionEnd.x - selectionStart.x;
-            final int height = selectionEnd.y - selectionStart.y;
-            if (width > height)
-            {
-              if (_normStartPos.x < _cursorPosNorm.x)
-              {
-                selectionEnd.x = selectionStart.x + height;
-              }
-              else
-              {
-                selectionStart.x = selectionEnd.x - height;
-              }
-            }
-            else
-            {
-              if (_normStartPos.y < _cursorPosNorm.y)
-              {
-                selectionEnd.y = selectionStart.y + width;
-              }
-              else
-              {
-                selectionStart.y = selectionEnd.y - width;
-              }
-            }
+            polygonDown = true;
           }
-          hasNewSelection = true;
-        }
-      }
-    }
-    else if (!drawParams.primaryDown)
-    {
-      if (movementStarted)
-      {
-        movementStarted = false;
-        appState.selectionState.finishMovement();
-      }
-      if (polygonDown)
-      {
-        final CoordinateSetI point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
-        bool isInsideCircle = false;
-        if (polygonPoints.isNotEmpty)
-        {
-          if (Helper.getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+          else if (options.shape.value == SelectShape.wand)
           {
-            isInsideCircle = true;
-          }
-        }
-
-        if (polygonPoints.isEmpty || !isInsideCircle)
-        {
-          polygonPoints.add(point);
-          polygonDown = false;
-        }
-        else
-        {
-          if (polygonPoints.length > 2)
-          {
+            selectionEnd.x = _cursorPosNorm.x;
+            selectionEnd.y = _cursorPosNorm.y;
             hasNewSelection = true;
           }
           else
           {
-            polygonDown = false;
+            selectionStart.x = max(_normStartPos.x < _cursorPosNorm.x ? _normStartPos.x: _cursorPosNorm.x, 0);
+            selectionStart.y = max(_normStartPos.y < _cursorPosNorm.y ? _normStartPos.y : _cursorPosNorm.y, 0);
+            selectionEnd.x = min(_normStartPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (_normStartPos.x), appState.canvasSize.x - 1);
+            selectionEnd.y = min(_normStartPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (_normStartPos.y), appState.canvasSize.y - 1);
+
+
+            if (options.keepAspectRatio.value)
+            {
+              final int width = selectionEnd.x - selectionStart.x;
+              final int height = selectionEnd.y - selectionStart.y;
+              if (width > height)
+              {
+                if (_normStartPos.x < _cursorPosNorm.x)
+                {
+                  selectionEnd.x = selectionStart.x + height;
+                }
+                else
+                {
+                  selectionStart.x = selectionEnd.x - height;
+                }
+              }
+              else
+              {
+                if (_normStartPos.y < _cursorPosNorm.y)
+                {
+                  selectionEnd.y = selectionStart.y + width;
+                }
+                else
+                {
+                  selectionStart.y = selectionEnd.y - width;
+                }
+              }
+            }
+            hasNewSelection = true;
           }
         }
       }
-    }
-    else //NO BUTTON PRESS AND NOT ON CANVAS
-    {
+      else if (!drawParams.primaryDown)
+      {
+        if (movementStarted)
+        {
+          movementStarted = false;
+          appState.selectionState.finishMovement();
+        }
+        if (polygonDown)
+        {
+          final CoordinateSetI point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
+          bool isInsideCircle = false;
+          if (polygonPoints.isNotEmpty)
+          {
+            if (Helper.getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+            {
+              isInsideCircle = true;
+            }
+          }
 
+          if (polygonPoints.isEmpty || !isInsideCircle)
+          {
+            polygonPoints.add(point);
+            polygonDown = false;
+          }
+          else
+          {
+            if (polygonPoints.length > 2)
+            {
+              hasNewSelection = true;
+            }
+            else
+            {
+              polygonDown = false;
+            }
+          }
+        }
+      }
+      else //NO BUTTON PRESS AND NOT ON CANVAS
+      {
+
+      }
     }
   }
 

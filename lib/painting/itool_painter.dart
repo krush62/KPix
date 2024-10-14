@@ -396,7 +396,7 @@ abstract class IToolPainter
     return path;
   }
 
-  CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
+  CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
     final CoordinateColorMap pixelMap = HashMap();
     for (final CoordinateSetI coord in coords)
@@ -449,7 +449,7 @@ abstract class IToolPainter
     return pixelMap;
   }
 
-  CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final LayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
+  CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
     final CoordinateColorMap pixelMap = HashMap();
     for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)

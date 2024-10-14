@@ -54,7 +54,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
 
   void _pasteNewPressed()
   {
-    _appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);
+    _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);
   }
 
   @override

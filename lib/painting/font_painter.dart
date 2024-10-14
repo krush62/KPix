@@ -91,7 +91,7 @@ class FontPainter extends IToolPainter
       _previousSize = _options.size.value;
     }
 
-    if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
+    if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
     {
       if (drawParams.primaryDown && !_down)
       {
@@ -111,9 +111,9 @@ class FontPainter extends IToolPainter
 
   void _dump({required final DrawingParameters drawParams})
   {
-    if (_textContent.isNotEmpty)
+    if (_textContent.isNotEmpty && drawParams.currentDrawingLayer != null)
     {
-      final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
       if (!appState.selectionState.selection.isEmpty())
       {
         appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
@@ -124,7 +124,7 @@ class FontPainter extends IToolPainter
       }*/
       else
       {
-        drawParams.currentLayer.setDataAll(list: drawingPixels);
+        drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
       }
       hasHistoryData = true;
     }
@@ -149,9 +149,9 @@ class FontPainter extends IToolPainter
   @override
   CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor != null && drawParams.cursorPos != null)
+    if(appState.selectedColor != null && drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
     {
-      return getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      return getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {

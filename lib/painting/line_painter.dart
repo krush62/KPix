@@ -109,7 +109,7 @@ class LinePainter extends IToolPainter
       }
     }
 
-    if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
+    if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
     {
       if (drawParams.primaryDown)
       {
@@ -141,14 +141,14 @@ class LinePainter extends IToolPainter
         }
         else
         {
-          final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
           if (!appState.selectionState.selection.isEmpty())
           {
             appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
           }
           else
           {
-            drawParams.currentLayer.setDataAll(list: drawingPixels);
+            drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
           }
           hasHistoryData = true;
           _lineStarted = false;
@@ -195,9 +195,9 @@ class LinePainter extends IToolPainter
   @override
   CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
   {
-    if(appState.selectedColor != null && drawParams.cursorPos != null && _lineStarted)
+    if(drawParams.currentDrawingLayer != null && appState.selectedColor != null && drawParams.cursorPos != null && _lineStarted)
     {
-      return getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      return getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
     }
     else
     {

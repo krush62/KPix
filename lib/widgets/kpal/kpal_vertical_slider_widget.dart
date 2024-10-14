@@ -69,7 +69,7 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
               Shadow(
                 offset: const Offset(0.0, 1.0),
                 blurRadius: 2.0,
-                color: Theme.of(context).primaryColorDark,
+                color: Theme.of(context).primaryColor,
               ),
             ],
           ),
@@ -85,7 +85,7 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
                   return PhysicalModel(
                     color: Colors.transparent,
                     elevation: 10,
-                    shadowColor: Theme.of(context).primaryColorDark,
+                    shadowColor: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                     child: Slider(
                       value: value.toDouble(),
@@ -112,7 +112,7 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
                   Shadow(
                     offset: const Offset(0.0, 1.0),
                     blurRadius: 2.0,
-                    color: Theme.of(context).primaryColorDark,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ],
               ),

@@ -33,13 +33,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 
 class RightBarWidget extends StatefulWidget
 {
@@ -58,13 +58,38 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final AppState _appState = GetIt.I.get<AppState>();
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
-  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+
+  final LayerLink _layerLink = LayerLink();
+  late KPixOverlay addLayerMenu;
 
   @override
   void initState()
   {
     super.initState();
     _createWidgetList(_appState.layers);
+    addLayerMenu = OverlayEntries.getAddLayerMenu(
+      onDismiss: _closeLayerMenu,
+      layerLink: _layerLink,
+      onNewDrawingLayer: _newDrawingLayerPressed,
+      onNewReferenceLayer: _newReferenceLayerPressed
+    );
+  }
+
+  void _closeLayerMenu()
+  {
+    addLayerMenu.hide();
+  }
+
+  void _newDrawingLayerPressed()
+  {
+    _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _closeLayerMenu();
+  }
+
+  void _newReferenceLayerPressed()
+  {
+    _appState.addNewReferenceLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _closeLayerMenu();
   }
 
   void _createWidgetList(final List<LayerState> layers)
@@ -128,14 +153,21 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       children: [
                         Padding(
                           padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                          child: Tooltip(
-                            message: "Add New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNew)}",
-                            waitDuration: AppState.toolTipDuration,
-                            child: IconButton(
-                              onPressed: () {_appState.addNewLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
-                              icon: const FaIcon(FontAwesomeIcons.plus),
-                              style: IconButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          child: CompositedTransformTarget(
+                            link: _layerLink,
+                            child: Tooltip(
+                              message: "Add New Layer...",
+                              waitDuration: AppState.toolTipDuration,
+                              child: IconButton.outlined(
+                                onPressed: () {addLayerMenu.show(context: context);},
+                                icon: const FaIcon(FontAwesomeIcons.plus),
+                                style: IconButton.styleFrom(
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                    maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                    iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
+                                    padding: EdgeInsets.zero
+                                ),
                               ),
                             ),
                           ),

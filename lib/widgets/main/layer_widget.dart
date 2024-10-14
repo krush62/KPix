@@ -16,12 +16,14 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
@@ -29,6 +31,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 
 
 class LayerWidgetOptions
@@ -48,6 +51,7 @@ class LayerWidgetOptions
   final int dragDelay;
   final int thumbUpdateTimerSec;
   final int thumbUpdateTimerMsec;
+  final int addButtonSize;
 
   LayerWidgetOptions({
     required this.outerPadding,
@@ -64,7 +68,8 @@ class LayerWidgetOptions
     required this.dragTargetShowDuration,
     required this.dragDelay,
     required this.thumbUpdateTimerSec,
-    required this.thumbUpdateTimerMsec});
+    required this.thumbUpdateTimerMsec,
+    required this.addButtonSize});
 }
 
 enum LayerVisibilityState
@@ -115,21 +120,131 @@ class ColorReference
   int get hashCode => ramp.hashCode ^ colorIndex.hashCode;
 }
 
-class LayerState
+abstract class LayerState
 {
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier(LayerVisibilityState.visible);
-  final ValueNotifier<LayerLockState> lockState = ValueNotifier(LayerLockState.unlocked);
   final ValueNotifier<bool> isSelected = ValueNotifier(false);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
+}
+
+class ReferenceLayerState extends LayerState
+{
+  final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+  final ValueNotifier<int> opacityNotifier;
+  final ValueNotifier<double> aspectRatioNotifier;
+  final ValueNotifier<int> zoomNotifier;
+  final ValueNotifier<double> offsetXNotifier;
+  final ValueNotifier<double> offsetYNotifier;
+  final ValueNotifier<ReferenceImage?> imageNotifier;
+
+  ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final double offsetX, required final double offsetY}) :
+    opacityNotifier = ValueNotifier(opacity),
+    aspectRatioNotifier = ValueNotifier(aspectRatio),
+    zoomNotifier = ValueNotifier(zoom),
+    offsetXNotifier = ValueNotifier(offsetX),
+    offsetYNotifier = ValueNotifier(offsetY),
+    imageNotifier = ValueNotifier(image)
+  {
+    if (image != null)
+    {
+      imageNotifier.value = image;
+      thumbnail.value = image.image;
+    }
+  }
+
+  factory ReferenceLayerState.from({required ReferenceLayerState other})
+  {
+    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacityNotifier.value, zoom: other.zoomNotifier.value, image: other.imageNotifier.value, offsetX: other.offsetXNotifier.value, offsetY: other.offsetYNotifier.value);
+  }
+
+  void increaseZoom({final int step = 1})
+  {
+    final int newVal = zoomSliderValue + step;
+    setZoomSliderValue(newVal: newVal);
+  }
+
+  void decreaseZoom({final int step = 1})
+  {
+    final int newVal = zoomSliderValue - step;
+    setZoomSliderValue(newVal: newVal);
+  }
+
+  void setZoomSliderFromZoomFactor({required final double factor})
+  {
+    setZoomSliderValue(newVal: (pow(factor, 1.0 / _refSettings.zoomCurveExponent.toDouble()) * _refSettings.zoomDefault).round());
+  }
+
+  void setZoomSliderValue({required final int newVal})
+  {
+    if (newVal < _refSettings.zoomMin)
+    {
+      zoomNotifier.value = _refSettings.zoomMin;
+    }
+    else if (newVal > _refSettings.zoomMax)
+    {
+      zoomNotifier.value = _refSettings.zoomMax;
+    }
+    else
+    {
+      zoomNotifier.value = newVal;
+    }
+  }
+
+  int get opacity
+  {
+    return opacityNotifier.value;
+  }
+
+  double get aspectRatioFactorX
+  {
+    return (aspectRatioNotifier.value > 0) ? 1.0 + aspectRatioNotifier.value : 1.0;
+  }
+
+  double get aspectRatioFactorY
+  {
+    return (aspectRatioNotifier.value < 0) ? 1.0 - aspectRatioNotifier.value : 1.0;
+  }
+
+  int get zoomSliderValue
+  {
+    return zoomNotifier.value;
+  }
+
+  double get zoomFactor
+  {
+    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), _refSettings.zoomCurveExponent.toDouble()).toDouble();
+  }
+
+
+  double get offsetX
+  {
+    return offsetXNotifier.value;
+  }
+
+  double get offsetY
+  {
+    return offsetYNotifier.value;
+  }
+
+  ReferenceImage? get image
+  {
+    return imageNotifier.value;
+  }
+
+}
+
+class DrawingLayerState extends LayerState
+{
+  final ValueNotifier<LayerLockState> lockState = ValueNotifier(LayerLockState.unlocked);
   final CoordinateSetI size;
+
   final CoordinateColorMap _data;
   ui.Image? raster;
   bool isRasterizing = false;
   bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = {};
 
-
-  LayerState._({required CoordinateColorMap data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
+  DrawingLayerState._({required CoordinateColorMap data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
   {
     _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2));
     lockState.value = lState;
@@ -139,18 +254,18 @@ class LayerState
 
   }
 
-  factory LayerState.from({required LayerState other})
+  factory DrawingLayerState.from({required DrawingLayerState other})
   {
     CoordinateColorMap data2 = HashMap();
-  for (final CoordinateColor ref in other._data.entries)
+    for (final CoordinateColor ref in other._data.entries)
     {
       data2[ref.key] = ref.value;
     }
-    return LayerState._(size: other.size, data2: data2, lState: other.lockState.value, vState: other.visibilityState.value);
+    return DrawingLayerState._(size: other.size, data2: data2, lState: other.lockState.value, vState: other.visibilityState.value);
   }
 
 
-  factory LayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
+  factory DrawingLayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
   {
     CoordinateColorMap data2 = HashMap();
 
@@ -164,7 +279,7 @@ class LayerState
         }
       }
     }
-    return LayerState._(data2: data2, size: size);
+    return DrawingLayerState._(data2: data2, size: size);
   }
 
   void updateTimerCallback({required final Timer timer}) async
@@ -359,7 +474,7 @@ class LayerState
   }
 
 
-  LayerState getTransformedLayer({required final CanvasTransformation transformation})
+  DrawingLayerState getTransformedLayer({required final CanvasTransformation transformation})
   {
     final CoordinateColorMap rotatedContent = HashMap();
     final CoordinateSetI newSize = CoordinateSetI.from(other: size);
@@ -415,10 +530,10 @@ class LayerState
         }
       }
     }
-    return LayerState(size: newSize, content: rotatedContent);
+    return DrawingLayerState(size: newSize, content: rotatedContent);
   }
 
-  LayerState getResizedLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
+  DrawingLayerState getResizedLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     final CoordinateColorMap croppedContent = HashMap();
     for (final CoordinateColor entry in _data.entries)
@@ -448,7 +563,7 @@ class LayerState
         }
       }
     }
-    return LayerState(size: newSize, content: croppedContent);
+    return DrawingLayerState(size: newSize, content: croppedContent);
   }
 }
 
@@ -495,16 +610,23 @@ class _LayerWidgetState extends State<LayerWidget>
   };
 
   final LayerLink settingsLink = LayerLink();
-  late KPixOverlay settingsMenu;
+  late KPixOverlay settingsMenuDrawing;
+  late KPixOverlay settingsMenuReference;
 
   @override
   void initState() {
     super.initState();
-    settingsMenu = OverlayEntries.getLayerMenu(
-      onDismiss: _closeSettingsMenu,
+    settingsMenuDrawing = OverlayEntries.getDrawingLayerMenu(
+      onDismiss: _closeSettingsMenus,
       layerLink: settingsLink,
       onDelete: _deletePressed,
       onMergeDown: _mergeDownPressed,
+      onDuplicate: _duplicatePressed,
+    );
+    settingsMenuReference = OverlayEntries.getReferenceLayerMenu(
+      onDismiss: _closeSettingsMenus,
+      layerLink: settingsLink,
+      onDelete: _deletePressed,
       onDuplicate: _duplicatePressed,
     );
   }
@@ -512,29 +634,37 @@ class _LayerWidgetState extends State<LayerWidget>
   void _deletePressed()
   {
     _appState.layerDeleted(deleteLayer: widget.layerState);
-    _closeSettingsMenu();
+    _closeSettingsMenus();
   }
 
   void _mergeDownPressed()
   {
     _appState.layerMerged(mergeLayer: widget.layerState);
-    _closeSettingsMenu();
+    _closeSettingsMenus();
   }
 
   void _duplicatePressed()
   {
     _appState.layerDuplicated(duplicateLayer: widget.layerState);
-    _closeSettingsMenu();
+    _closeSettingsMenus();
   }
 
-  void _closeSettingsMenu()
+  void _closeSettingsMenus()
   {
-    settingsMenu.hide();
+    settingsMenuDrawing.hide();
+    settingsMenuReference.hide();
   }
 
   void _settingsButtonPressed()
   {
-    settingsMenu.show(context: context);
+    if (widget.layerState.runtimeType == DrawingLayerState)
+    {
+      settingsMenuDrawing.show(context: context);
+    }
+    else if (widget.layerState.runtimeType == ReferenceLayerState)
+    {
+      settingsMenuReference.show(context: context);
+    }
   }
 
 
@@ -628,37 +758,49 @@ class _LayerWidgetState extends State<LayerWidget>
                           ),
                         ),
                         SizedBox(height: _options.innerPadding),
-                        Expanded(
-                          child: ValueListenableBuilder<LayerLockState>(
-                            valueListenable: widget.layerState.lockState,
-                            builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
-                              return Tooltip(
-                                message: _lockStringMap[lock]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchLock),
-                                waitDuration: AppState.toolTipDuration,
-                                child: IconButton.outlined(
-                                  padding: EdgeInsets.zero,
-                                  constraints: BoxConstraints(
-                                    maxHeight: _options.buttonSizeMax,
-                                    maxWidth: _options.buttonSizeMax,
-                                    minWidth: _options.buttonSizeMin,
-                                    minHeight: _options.buttonSizeMin,
-                                  ),
-                                  style: ButtonStyle(
-                                    tapTargetSize: MaterialTapTargetSize
-                                        .shrinkWrap,
-                                    backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
-                                    iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
-                                  ),
-                                  onPressed: _lockButtonPressed,
-                                  icon: FaIcon(
-                                    _lockIconMap[lock],
-                                    size: _options.iconSize,
-                                  )
+                        Builder(
+                          builder: (final BuildContext context) {
+                            if (widget.layerState.runtimeType == DrawingLayerState)
+                            {
+                              final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                              return Expanded(
+                                child: ValueListenableBuilder<LayerLockState>(
+                                    valueListenable: drawingLayer.lockState,
+                                    builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
+                                      return Tooltip(
+                                        message: _lockStringMap[lock]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchLock),
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: IconButton.outlined(
+                                            padding: EdgeInsets.zero,
+                                            constraints: BoxConstraints(
+                                              maxHeight: _options.buttonSizeMax,
+                                              maxWidth: _options.buttonSizeMax,
+                                              minWidth: _options.buttonSizeMin,
+                                              minHeight: _options.buttonSizeMin,
+                                            ),
+                                            style: ButtonStyle(
+                                              tapTargetSize: MaterialTapTargetSize
+                                                  .shrinkWrap,
+                                              backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
+                                              iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
+                                            ),
+                                            onPressed: _lockButtonPressed,
+                                            icon: FaIcon(
+                                              _lockIconMap[lock],
+                                              size: _options.iconSize,
+                                            )
+                                        ),
+                                      );
+                                    }
                                 ),
                               );
                             }
-                          ),
-                        ),
+                            else //REFERENCE LAYER
+                            {
+                               return SizedBox.shrink();
+                            }
+                          },
+                        )
                       ],
                     ),
                   ),
@@ -667,12 +809,32 @@ class _LayerWidgetState extends State<LayerWidget>
                       onTap: () {
                         _appState.layerSelected(newLayer: widget.layerState);
                       },
-                      child: ValueListenableBuilder<ui.Image?>(
-                        valueListenable: widget.layerState.thumbnail,
-                        builder: (final BuildContext context, final ui.Image? img, final Widget? child)
-                        {
-                          return RawImage(image: img,);
-                        },
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ValueListenableBuilder<ui.Image?>(
+                            valueListenable: widget.layerState.thumbnail,
+                            builder: (final BuildContext context, final ui.Image? img, final Widget? child)
+                            {
+                              return RawImage(image: img,);
+                            },
+                          ),
+                          Center(
+                            child: Text(
+                              (widget.layerState.runtimeType == ReferenceLayerState) ? "REF" : "",
+                              style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+                                color: Theme.of(context).primaryColorLight,
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    offset: const Offset(0.0, 1.0),
+                                    blurRadius: 2.0,
+                                    color: Theme.of(context).primaryColorDark,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     )
                   ),

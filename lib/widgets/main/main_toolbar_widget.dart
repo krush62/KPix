@@ -35,7 +35,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
@@ -45,17 +47,20 @@ class MainToolbarWidgetOptions {
   final int toolSettingsFlex;
   final double dividerHeight;
   final double dividerPadding;
+  final int toolHeight;
 
   const MainToolbarWidgetOptions({
     required this.paletteFlex,
     required this.dividerPadding,
     required this.toolSettingsFlex,
-    required this.dividerHeight});
+    required this.dividerHeight,
+    required this.toolHeight});
 }
 
 
 class MainToolbarWidget extends StatelessWidget
 {
+
   const MainToolbarWidget({
     super.key
 });
@@ -85,20 +90,51 @@ class MainToolbarWidget extends StatelessWidget
               return hasProject? const PaletteWidget() : Expanded(child: Container(color: Theme.of(context).primaryColorDark));
             },
           ),
-          const ToolsWidget(),
-          SizedBox(
-            width: double.infinity,
-            //TODO MAGIC NUMBER
-            height: 200,
-            child: ValueListenableBuilder<ToolType>(
-              valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-              builder: (BuildContext context, ToolType value,child) {
+          ValueListenableBuilder<LayerState?>
+          (
+            valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
+            builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
 
-                return const ToolSettingsWidget();
+              if (layer != null)
+              {
+                Widget contentWidget;
+                if (layer.runtimeType == ReferenceLayerState)
+                {
+                  contentWidget = ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState);
+                }
+                else if (layer.runtimeType == DrawingLayerState)
+                {
+                  contentWidget = Column(
+                    children: [
+                      const ToolsWidget(),
+                      ValueListenableBuilder<ToolType>(
+                          valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+                          builder: (final BuildContext context, final ToolType value, final Widget? child) {
+                            return Expanded(child: const ToolSettingsWidget());
+                          }
+                      ),
+                    ],
+                  );
+                }
+                else
+                {
+                  return SizedBox.shrink();
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  height: (GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight).toDouble(),
+                  child: contentWidget,
+
+                );
               }
-           ),
-        ),
-      ]
+              else
+              {
+                return SizedBox.shrink();
+              }
+            },
+          )
+        ]
       ),
     );
   }

@@ -77,7 +77,8 @@ class DrawingParameters
   final bool primaryDown;
   final bool secondaryDown;
   final Offset primaryPressStart;
-  final LayerState currentLayer;
+  final DrawingLayerState? currentDrawingLayer;
+  final ReferenceLayerState? currentReferenceLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -89,12 +90,15 @@ class DrawingParameters
     required this.primaryDown,
     required this.secondaryDown,
     required this.primaryPressStart,
-    required this.currentLayer
+    required LayerState currentLayer
 }) :
-        scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
-        drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
-        drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
-                                    y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor());
+    scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
+    drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
+    drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
+                                y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor()),
+    currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
+    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null;
+
 }
 
 class KPixPainter extends CustomPainter
@@ -118,6 +122,13 @@ class KPixPainter extends CustomPainter
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
   ui.Image? _rasterImg;
+
+  // status for reference layer movements
+  bool _referenceImgMovementStarted = false;
+  final CoordinateSetD _referenceImgNormStartPos = CoordinateSetD(x: 0, y: 0);
+  final CoordinateSetD _referenceImgcursorPosNorm = CoordinateSetD(x: 0, y: 0);
+  Offset _referenceImglastStartPos = const Offset(0, 0);
+  final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD(x: 0, y: 0);
 
 
   KPixPainter({
@@ -202,14 +213,91 @@ class KPixPainter extends CustomPainter
         currentLayer: _appState.getSelectedLayer()!,
       );
 
+      if (drawParams.currentReferenceLayer != null)
+      {
+        _drawReferenceBorder(drawParams: drawParams, refLayer: drawParams.currentReferenceLayer!);
+      }
 
       _drawCheckerboard(drawParams: drawParams);
-      toolPainter?.calculate(drawParams: drawParams);
+      if (drawParams.currentDrawingLayer != null)
+      {
+        toolPainter?.calculate(drawParams: drawParams);
+      }
+      if (drawParams.currentReferenceLayer != null)
+      {
+        _handleReferenceLayer(drawParams: drawParams, refLayer: drawParams.currentReferenceLayer!);
+      }
       _drawLayers(drawParams: drawParams);
-      _drawSelection(drawParams: drawParams);
-      toolPainter?.drawExtras(drawParams: drawParams);
+      if (drawParams.currentDrawingLayer != null)
+      {
+        _drawSelection(drawParams: drawParams);
+      }
+      if (drawParams.currentDrawingLayer != null)
+      {
+        toolPainter?.drawExtras(drawParams: drawParams);
+      }
       _drawCursor(drawParams: drawParams);
-      toolPainter?.setStatusBarData(drawParams: drawParams);
+      if (drawParams.currentDrawingLayer != null)
+      {
+        toolPainter?.setStatusBarData(drawParams: drawParams);
+      }
+    }
+  }
+
+  void _drawReferenceBorder({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
+  {
+    if (refLayer.image != null)
+    {
+      final double pxlSzDbl = drawParams.pixelSize.toDouble();
+      final ui.Image image = refLayer.image!.image;
+
+      final ui.Rect borderRect = ui.Rect.fromLTWH(
+          drawParams.offset.dx + (refLayer.offsetX * pxlSzDbl),
+          drawParams.offset.dy + (refLayer.offsetY * pxlSzDbl),
+          image.width * refLayer.zoomFactor * refLayer.aspectRatioFactorX * pxlSzDbl,
+          image.height * refLayer.zoomFactor * refLayer.aspectRatioFactorY * pxlSzDbl
+      );
+
+      final Paint p = Paint();
+      p.color = Colors.black;
+      p.style = ui.PaintingStyle.stroke;
+      p.strokeWidth = 1;
+      drawParams.canvas.drawRect(borderRect, p);
+    }
+  }
+
+  void _handleReferenceLayer({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
+  {
+    if (_referenceImglastStartPos != drawParams.primaryPressStart)
+    {
+      _referenceImgNormStartPos.x = (drawParams.primaryPressStart.dx - drawParams.offset.dx) / drawParams.pixelSize.toDouble();
+      _referenceImgNormStartPos.y = (drawParams.primaryPressStart.dy - drawParams.offset.dy) / drawParams.pixelSize.toDouble();
+      _referenceImglastStartPos = drawParams.primaryPressStart;
+      _referenceImgMovementStarted = true;
+    }
+    if (drawParams.cursorPos != null)
+    {
+       _referenceImgcursorPosNorm.x = (drawParams.cursorPos!.x - drawParams.offset.dx) / drawParams.pixelSize.toDouble();
+       _referenceImgcursorPosNorm.y = (drawParams.cursorPos!.y - drawParams.offset.dy) / drawParams.pixelSize.toDouble();
+
+       if (drawParams.primaryDown)
+       {
+         final CoordinateSetD offset = CoordinateSetD(x: _referenceImgcursorPosNorm.x - _referenceImgNormStartPos.x, y: _referenceImgcursorPosNorm.y - _referenceImgNormStartPos.y);
+         if (offset != _referenceImgLastReferenceOffset)
+         {
+           refLayer.offsetXNotifier.value += offset.x - _referenceImgLastReferenceOffset.x;
+           refLayer.offsetYNotifier.value += offset.y - _referenceImgLastReferenceOffset.y;
+           _referenceImgLastReferenceOffset.x = offset.x;
+           _referenceImgLastReferenceOffset.y = offset.y;
+         }
+       }
+    }
+
+    if (!drawParams.primaryDown && _referenceImgMovementStarted)
+    {
+      _referenceImgLastReferenceOffset.x = 0;
+      _referenceImgLastReferenceOffset.y = 0;
+      _referenceImgMovementStarted = false;
     }
   }
 
@@ -367,11 +455,11 @@ class KPixPainter extends CustomPainter
   {
     if (_coords.value != null)
     {
-      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter != null)
+      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter != null && drawParams.currentDrawingLayer != null)
       {
         toolPainter!.drawCursorOutline(drawParams: drawParams);
       }
-      else
+      else if (!_stylusLongMoveStarted.value)
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize + _options.cursorBorderWidth, drawParams.paint);
@@ -428,7 +516,7 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final List<LayerState> layers = _appState.layers;
-    final bool hasRasterizingLayers = layers.where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
+    final bool hasRasterizingLayers = layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
 
     if (hasRasterizingLayers)
     {
@@ -453,63 +541,92 @@ class KPixPainter extends CustomPainter
       {
         if (layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
-
-          if (layers[i].raster != null)
+          if (layers[i].runtimeType == DrawingLayerState)
           {
-            paintImage(
-                canvas: drawParams.canvas,
-                rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                    drawParams.scaledCanvasSize.x.toDouble(),
-                    drawParams.scaledCanvasSize.y.toDouble()),
-                image: layers[i].raster!,
-                scale: 1.0 / pxlSzDbl,
-                fit: BoxFit.none,
-                alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none);
-          }
-
-          if (layers[i].isSelected.value)
-          {
-            final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
-            final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
-            for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+            final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+            if (drawingLayer.raster != null)
             {
-              for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
+              //TODO can we optimize this by not drawing the full raster image???
+              paintImage(
+                  canvas: drawParams.canvas,
+                  rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                      drawParams.scaledCanvasSize.x.toDouble(),
+                      drawParams.scaledCanvasSize.y.toDouble()),
+                  image: drawingLayer.raster!,
+                  scale: 1.0 / pxlSzDbl,
+                  fit: BoxFit.none,
+                  alignment: Alignment.topLeft,
+                  filterQuality: FilterQuality.none);
+            }
+
+            if (layers[i].isSelected.value)
+            {
+              final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
+              final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
+              for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
               {
-                Color? drawColor;
-                //DRAW CURSOR CONTENT PIXEL
-                final selLayerCoord = CoordinateSetI(x: x, y: y);
-                if (selectedLayerCursorContent.keys.contains(selLayerCoord))
+                for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
                 {
-                  drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
-                }
-
-                //DRAW TOOL CONTENT
-                if (drawColor == null && toolContent.keys.contains(selLayerCoord))
-                {
-                  drawColor = toolContent[selLayerCoord]!.getIdColor().color;
-                }
-
-                //DRAW SELECTION PIXEL
-                if (drawColor == null)
-                {
-                  ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
-                  if (selColor != null)
+                  Color? drawColor;
+                  //DRAW CURSOR CONTENT PIXEL
+                  final selLayerCoord = CoordinateSetI(x: x, y: y);
+                  if (selectedLayerCursorContent.keys.contains(selLayerCoord))
                   {
-                    drawColor = selColor.getIdColor().color;
+                    drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
+                  }
+
+                  //DRAW TOOL CONTENT
+                  if (drawColor == null && toolContent.keys.contains(selLayerCoord))
+                  {
+                    drawColor = toolContent[selLayerCoord]!.getIdColor().color;
+                  }
+
+                  //DRAW SELECTION PIXEL
+                  if (drawColor == null)
+                  {
+                    ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
+                    if (selColor != null)
+                    {
+                      drawColor = selColor.getIdColor().color;
+                    }
+                  }
+                  if (drawColor != null)
+                  {
+                    drawParams.paint.color = drawColor;
+                    drawParams.canvas.drawRect(Rect.fromLTWH(
+                        _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
+                        _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
+                        pxlSzDbl + (2.0 * _options.pixelExtension),
+                        pxlSzDbl + (2.0 * _options.pixelExtension)),
+                        drawParams.paint);
                   }
                 }
-                if (drawColor != null)
-                {
-                  drawParams.paint.color = drawColor;
-                  drawParams.canvas.drawRect(Rect.fromLTWH(
-                      _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
-                      _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
-                      pxlSzDbl + (2.0 * _options.pixelExtension),
-                      pxlSzDbl + (2.0 * _options.pixelExtension)),
-                      drawParams.paint);
-                }
               }
+            }
+          }
+          else if (layers[i].runtimeType == ReferenceLayerState)
+          {
+            final ReferenceLayerState refLayer = layers[i] as ReferenceLayerState;
+            if (refLayer.image != null)
+            {
+              final ui.Image image = refLayer.image!.image;
+
+              final ui.Rect srcRect = ui.Rect.fromLTWH(
+                -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+                drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY
+              );
+
+              final ui.Rect targetRect = ui.Rect.fromLTWH(
+                drawParams.offset.dx,
+                drawParams.offset.dy,
+                drawParams.scaledCanvasSize.x.toDouble(),
+                drawParams.scaledCanvasSize.y.toDouble(),
+              );
+
+              final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
+              drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
             }
           }
         }

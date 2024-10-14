@@ -52,6 +52,7 @@ import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
@@ -152,10 +153,14 @@ enum PreferenceDouble
   Layout_ProjectManagerEntry_Elevation(defaultValue: 5.0),
   Layout_ProjectManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_ProjectManagerEntry_BorderRadius(defaultValue: 3.0),
-
   Layout_ProjectManager_EntryAspectRatio(defaultValue: 0.75),
   Layout_ProjectManager_MaxWidth(defaultValue: 800.0),
   Layout_ProjectManager_MaxHeight(defaultValue: 600.0),
+
+  ReferenceLayer_AspectRatioDefault(defaultValue: 0.0),
+  ReferenceLayer_AspectRatioMax(defaultValue: 5.0),
+  ReferenceLayer_AspectRatioMin(defaultValue: -5.0),
+  ReferenceLayer_ZoomCurveExponent(defaultValue: 2.0),
 
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
@@ -232,6 +237,7 @@ enum PreferenceInt
 
   Layout_MainToolbar_PaletteFlex(defaultValue: 2),
   Layout_MainToolbar_ToolSettingsFlex(defaultValue: 1),
+  Layout_MainToolbar_ToolHeight(defaultValue: 300),
 
   Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
 
@@ -239,6 +245,7 @@ enum PreferenceInt
   Layout_LayerWidget_DragDelay(defaultValue: 200),
   Layout_LayerWidget_ThumbUpdateTimerSec(defaultValue: 0),
   Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 50),
+  Layout_LayerWidget_AddLayerButtonSize(defaultValue: 32),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
@@ -247,12 +254,17 @@ enum PreferenceInt
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
   Layout_PaletteManagerEntry_LayoutFlex(defaultValue: 6),
-
   Layout_PaletteManager_ColCount(defaultValue: 4),
-
   Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
-
   Layout_ProjectManager_ColCount(defaultValue: 5),
+
+  ReferenceLayer_OpacityDefault(defaultValue: 100),
+  ReferenceLayer_OpacityMax(defaultValue: 100),
+  ReferenceLayer_OpacityMin(defaultValue: 0),
+  ReferenceLayer_ZoomDefault(defaultValue: 1000),
+  ReferenceLayer_ZoomMax(defaultValue: 2000),
+  ReferenceLayer_ZoomMin(defaultValue: 1),
+
 
   Tool_Pencil_SizeMin(defaultValue: 1),
   Tool_Pencil_SizeMax(defaultValue: 32),
@@ -561,6 +573,8 @@ class PreferenceManager
   late KPalWidgetOptions kPalWidgetOptions;
   late KPalSliderConstraints kPalSliderConstraints;
 
+  late ReferenceLayerSettings referenceLayerSettings;
+
   late ColorNames colorNames;
 
   final FontManager _fontManager;
@@ -570,6 +584,8 @@ class PreferenceManager
   late BehaviorPreferenceContent behaviorPreferenceContent;
   late StylusPreferenceContent stylusPreferenceContent;
   late TouchPreferenceContent touchPreferenceContent;
+
+
 
   PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
   {
@@ -706,7 +722,8 @@ class PreferenceManager
         paletteFlex: _getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: _getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
         dividerHeight: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
-        dividerPadding: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),);
+        dividerPadding: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),
+        toolHeight: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight));
     shaderWidgetOptions = ShaderWidgetOptions(
         outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
     statusBarWidgetOptions = StatusBarWidgetOptions(
@@ -755,7 +772,8 @@ class PreferenceManager
         dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
         dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
         thumbUpdateTimerSec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerSec),
-        thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec));
+        thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
+        addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize));
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
@@ -785,6 +803,19 @@ class PreferenceManager
         entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
         maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
         maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight));
+
+    referenceLayerSettings = ReferenceLayerSettings(
+      opacityDefault: _getValueI(PreferenceInt.ReferenceLayer_OpacityDefault),
+      opacityMin: _getValueI(PreferenceInt.ReferenceLayer_OpacityMin),
+      opacityMax: _getValueI(PreferenceInt.ReferenceLayer_OpacityMax),
+      zoomDefault: _getValueI(PreferenceInt.ReferenceLayer_ZoomDefault),
+      zoomMin: _getValueI(PreferenceInt.ReferenceLayer_ZoomMin),
+      zoomMax: _getValueI(PreferenceInt.ReferenceLayer_ZoomMax),
+      aspectRatioDefault: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioDefault),
+      aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
+      aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
+      zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent)
+    );
   }
 
   void _loadToolOptions()

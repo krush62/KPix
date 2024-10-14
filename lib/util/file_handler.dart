@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -34,6 +35,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_saver/file_saver.dart';
@@ -120,11 +122,12 @@ class FileHandler
   static const String palettesSubDirName = "palettes";
   static const String projectsSubDirName = "projects";
   static const String thumbnailExtension = "png";
+  static const List<String> imageExtensions = ["png", "jpg", "jpeg", "gif"];
 
 
   static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
   {
-    final ByteData byteData = await ExportFunctions.getKPixData(appState: appState);
+    final ByteData byteData = await ExportFunctions.createKPixData(appState: appState);
     if (!kIsWeb)
     {
       await File(path).writeAsBytes(byteData.buffer.asUint8List());
@@ -143,7 +146,7 @@ class FileHandler
   }
 
 
-  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints}) async
+  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings}) async
   {
     try
     {
@@ -212,29 +215,63 @@ class FileHandler
       final List<HistoryLayer> layerList = [];
       for (int i = 0; i < layerCount; i++)
       {
-        //not used at the moment
         final int layerType = byteData.getUint8(offset++);
-        if (layerType != 1) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
+        if (layerType != 1 && layerType != 2) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
+
         final int visibilityStateVal = byteData.getUint8(offset++);
         final LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
         if (visibilityState == null) return LoadFileSet(status: "Invalid visibility type for layer $i: $visibilityStateVal");
-        final int lockStateVal = byteData.getUint8(offset++);
-        final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
-        if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
-        final int dataCount = byteData.getUint32(offset);
-        offset+=4;
-        final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
-        for (int j = 0; j < dataCount; j++)
+
+        if (layerType == 1) //DRAWING LAYER
         {
-          final int x = byteData.getUint16(offset);
-          offset+=2;
-          final int y = byteData.getUint16(offset);
-          offset+=2;
-          final int colorRampIndex = byteData.getUint8(offset++);
-          final int colorIndex = byteData.getUint8(offset++);
-          data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+          final int lockStateVal = byteData.getUint8(offset++);
+          final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
+          if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
+          final int dataCount = byteData.getUint32(offset);
+          offset+=4;
+          final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
+          for (int j = 0; j < dataCount; j++)
+          {
+            final int x = byteData.getUint16(offset);
+            offset+=2;
+            final int y = byteData.getUint16(offset);
+            offset+=2;
+            final int colorRampIndex = byteData.getUint8(offset++);
+            final int colorIndex = byteData.getUint8(offset++);
+            data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
+          }
+          layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
         }
-        layerList.add(HistoryLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
+        else if (layerType == 2) //REFERENCE LAYER
+        {
+          //path (string)
+          final int pathLength = byteData.getInt16(offset);
+          offset += 2;
+          List<int> pathBytes = [];
+          for (int i = 0; i < pathLength; i++)
+          {
+            pathBytes.add(byteData.getUint8(offset++));
+          }
+          String pathString = utf8.decode(pathBytes);
+          //opacity ``ubyte (1)`` // 0...100
+          final int opacity = byteData.getUint8(offset++);
+          if (opacity < referenceLayerSettings.opacityMin || opacity > referenceLayerSettings.opacityMax) return LoadFileSet(status: "Opacity for reference layer is out of range: $opacity");
+          //offset_x ``float (1)``
+          final double offsetX = byteData.getFloat32(offset);
+          offset += 4;
+          //offset_y ``float (1)``
+          final double offsetY = byteData.getFloat32(offset);
+          offset += 4;
+          //zoom ``ubyte (1)``
+          final int zoom = byteData.getUint8(offset++);
+          if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax) return LoadFileSet(status: "Zoom for reference layer is out of range: $zoom");
+          //aspect_ratio ``float (1)``
+          final double aspectRatio = byteData.getFloat32(offset);
+          if (aspectRatio < referenceLayerSettings.aspectRatioMin || aspectRatio > referenceLayerSettings.aspectRatioMax) return LoadFileSet(status: "Aspect ratio for reference layer is out of range: $aspectRatio");
+          offset+=4;
+
+          layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio));
+        }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
       final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, description: "load data");
@@ -245,10 +282,42 @@ class FileHandler
     {
       return LoadFileSet(status: "Could not load file $path");
     }
-
   }
 
-
+  static Future<String?> getPathForReferenceImage() async
+  {
+    FilePickerResult? result;
+    if (Helper.isDesktop(includingWeb: true))
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.image,
+          allowedExtensions: imageExtensions,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    else //mobile
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    if (result != null && result.files.isNotEmpty)
+    {
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      return path;
+    }
+    else
+    {
+      return null;
+    }
+  }
 
   static void loadFilePressed({final Function()? finishCallback})
   {
@@ -280,7 +349,7 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 
@@ -357,7 +426,7 @@ class FileHandler
   {
     final String finalPath = p.join(directory, fileName);
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
-    Uint8List data = await ExportFunctions.getPaletteKPalData(rampList: rampList);
+    Uint8List data = await ExportFunctions.createPaletteKPalData(rampList: rampList);
     return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension);
   }
 
@@ -371,7 +440,7 @@ class FileHandler
     switch (paletteType)
     {
       case PaletteExportType.kpal:
-        ExportFunctions.getPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        ExportFunctions.createPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         break;
       case PaletteExportType.png:
         ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
@@ -525,7 +594,7 @@ class FileHandler
         data = await ExportFunctions.getGimpData(exportData: exportData, appState: appState);
         break;
       case FileExportType.kpix:
-        data = (await ExportFunctions.getKPixData(appState: appState)).buffer.asUint8List();
+        data = (await ExportFunctions.createKPixData(appState: appState)).buffer.asUint8List();
         break;
     }
 

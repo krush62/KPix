@@ -434,9 +434,18 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
 
-      if (_stylusLongMoveHorizontal.value)
+      if (_stylusLongMoveHorizontal.value && _appState.currentLayer != null)
       {
-        _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
+        if (_appState.currentLayer.runtimeType == DrawingLayerState)
+        {
+          _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
+        }
+        else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+        {
+           final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+           refLayer.setZoomSliderValue(newVal: -toolSizeSteps + _stylusToolStartSize);
+        }
+
       }
 
       if (_stylusLongMoveVertical.value && _appState.setZoomLevelByDistance(startZoomLevel: _stylusZoomStartLevel, steps: zoomSteps))
@@ -560,11 +569,33 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.setToolSize(1, _appState.getCurrentToolSize());
+          if (_appState.currentLayer != null)
+          {
+            if (_appState.currentLayer.runtimeType == DrawingLayerState)
+            {
+              _appState.setToolSize(1, _appState.getCurrentToolSize());
+            }
+            else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+            {
+              final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+              refLayer.increaseZoom();
+            }
+          }
         }
         else
         {
-          _appState.setToolSize(-1, _appState.getCurrentToolSize());
+          if (_appState.currentLayer != null)
+          {
+            if (_appState.currentLayer.runtimeType == DrawingLayerState)
+            {
+              _appState.setToolSize(-1, _appState.getCurrentToolSize());
+            }
+            else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+            {
+              final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+              refLayer.decreaseZoom();
+            }
+          }
         }
         _appState.repaintNotifier.repaint();
       }
@@ -704,7 +735,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = _appState.zoomFactor;
-    _stylusToolStartSize = _appState.getCurrentToolSize();
+    if (_appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      _stylusToolStartSize = _appState.getCurrentToolSize();
+    }
+    else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+    {
+      _stylusToolStartSize = (_appState.currentLayer as ReferenceLayerState).zoomSliderValue.round();
+    }
+
   }
 
   void setMouseCursor({required final MouseCursor cursor})

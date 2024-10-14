@@ -47,107 +47,110 @@ class PencilPainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null) {
-      _cursorPosNorm.x = getClosestPixel(
-          value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
-      _cursorPosNorm.y = getClosestPixel(
-          value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
-       if (_cursorPosNorm != _previousCursorPosNorm || _previousToolSize != _options.size.value)
-       {
-         _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
-         _previousCursorPosNorm.x = _cursorPosNorm.x;
-         _previousCursorPosNorm.y = _cursorPosNorm.y;
-         _previousToolSize = _options.size.value;
-       }
-    }
-    if (!_waitingForRasterization)
+    if (drawParams.currentDrawingLayer != null)
     {
-      if (drawParams.primaryDown)
-      {
-        if (drawParams.currentLayer.lockState.value != LayerLockState.locked && drawParams.currentLayer.visibilityState.value != LayerVisibilityState.hidden)
+      if (drawParams.cursorPos != null) {
+        _cursorPosNorm.x = getClosestPixel(
+            value: drawParams.cursorPos!.x - drawParams.offset.dx,
+            pixelSize: drawParams.pixelSize.toDouble())
+            .round();
+        _cursorPosNorm.y = getClosestPixel(
+            value: drawParams.cursorPos!.y - drawParams.offset.dy,
+            pixelSize: drawParams.pixelSize.toDouble())
+            .round();
+        if (_cursorPosNorm != _previousCursorPosNorm || _previousToolSize != _options.size.value)
         {
-          if (_hotkeyManager.shiftIsPressed)
+          _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
+          _previousCursorPosNorm.x = _cursorPosNorm.x;
+          _previousCursorPosNorm.y = _cursorPosNorm.y;
+          _previousToolSize = _options.size.value;
+        }
+      }
+      if (!_waitingForRasterization)
+      {
+        if (drawParams.primaryDown)
+        {
+          if (drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
           {
-             _isLineDrawing = true;
-          }
-          else
-          {
-            if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true))
+            if (_hotkeyManager.shiftIsPressed)
             {
-              final CoordinateSetI drawPos = CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y);
-              _paintPositions.add(drawPos);
-              _lastDrawingPosition = drawPos;
-              //PIXEL PERFECT
-              if (_paintPositions.length >= 3)
-              {
-                if (_options.pixelPerfect.value &&
-                    _paintPositions[_paintPositions.length - 1].isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
-                {
-                  _paintPositions.removeAt(_paintPositions.length - 2);
-                }
-              }
+              _isLineDrawing = true;
             }
             else
             {
-              _paintPositions.addAll(Helper.bresenham(start: _paintPositions[_paintPositions.length - 1], end: _cursorPosNorm).sublist(1));
-              _lastDrawingPosition = CoordinateSetI.from(other: _cursorPosNorm);
+              if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true))
+              {
+                final CoordinateSetI drawPos = CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y);
+                _paintPositions.add(drawPos);
+                _lastDrawingPosition = drawPos;
+                //PIXEL PERFECT
+                if (_paintPositions.length >= 3)
+                {
+                  if (_options.pixelPerfect.value &&
+                      _paintPositions[_paintPositions.length - 1].isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
+                  {
+                    _paintPositions.removeAt(_paintPositions.length - 2);
+                  }
+                }
+              }
+              else
+              {
+                _paintPositions.addAll(Helper.bresenham(start: _paintPositions[_paintPositions.length - 1], end: _cursorPosNorm).sublist(1));
+                _lastDrawingPosition = CoordinateSetI.from(other: _cursorPosNorm);
+              }
             }
           }
-        }
-        if (_paintPositions.length > 3)
-        {
-          final Set<CoordinateSetI> posSet = _paintPositions.sublist(0, _paintPositions.length - 3).toSet();
-          final Set<CoordinateSetI> paintPoints = {};
-          for (final CoordinateSetI pos in posSet)
+          if (_paintPositions.length > 3)
           {
-            paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
-          }
+            final Set<CoordinateSetI> posSet = _paintPositions.sublist(0, _paintPositions.length - 3).toSet();
+            final Set<CoordinateSetI> paintPoints = {};
+            for (final CoordinateSetI pos in posSet)
+            {
+              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+            }
 
-          _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
-          _paintPositions.removeRange(0, _paintPositions.length - 3);
-        }
-      }
-      else //final dumping
-      {
-        if (_paintPositions.isNotEmpty)
-        {
-          final Set<CoordinateSetI> posSet = _paintPositions.toSet();
-          final Set<CoordinateSetI> paintPoints = {};
-          for (final CoordinateSetI pos in posSet)
-          {
-            paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+            _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+            _paintPositions.removeRange(0, _paintPositions.length - 3);
           }
-          _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
-          _dump(currentLayer: drawParams.currentLayer);
-          _waitingForRasterization = true;
-          _paintPositions.clear();
         }
-        else if (_hotkeyManager.shiftIsPressed && _isLineDrawing)
-        {
-          final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
+        else //final dumping
+            {
+          if (_paintPositions.isNotEmpty)
+          {
+            final Set<CoordinateSetI> posSet = _paintPositions.toSet();
+            final Set<CoordinateSetI> paintPoints = {};
+            for (final CoordinateSetI pos in posSet)
+            {
+              paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+            }
+            _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+            _dump(currentLayer: drawParams.currentDrawingLayer!);
+            _waitingForRasterization = true;
+            _paintPositions.clear();
+          }
+          else if (_hotkeyManager.shiftIsPressed && _isLineDrawing)
+          {
+            final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
             getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
             getLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, shape: _options.shape.value);
-          _drawingPixels.addAll(getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
-          _dump(currentLayer: drawParams.currentLayer);
-          _waitingForRasterization = true;
-          _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
-        }
-        _isLineDrawing = false;
+            _drawingPixels.addAll(getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+            _dump(currentLayer: drawParams.currentDrawingLayer!);
+            _waitingForRasterization = true;
+            _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
+          }
+          _isLineDrawing = false;
 
+        }
       }
-    }
-    else if (drawParams.currentLayer.rasterQueue.isEmpty && !drawParams.currentLayer.isRasterizing && _waitingForRasterization)
-    {
-      _drawingPixels.clear();
-      _waitingForRasterization = false;
+      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForRasterization)
+      {
+        _drawingPixels.clear();
+        _waitingForRasterization = false;
+      }
     }
   }
 
-  void _dump({required final LayerState currentLayer})
+  void _dump({required final DrawingLayerState currentLayer})
   {
     if (_drawingPixels.isNotEmpty)
     {
@@ -206,11 +209,11 @@ class PencilPainter extends IToolPainter
         final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
         getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
         getLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, shape: _options.shape.value);
-        return getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+        return getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
       }
       else
       {
-        return getPixelsToDraw(coords: _contentPoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+        return getPixelsToDraw(coords: _contentPoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
       }
     }
     else

@@ -65,7 +65,8 @@ enum HotkeyAction
   //LAYERS
   layersSwitchVisibility,
   layersSwitchLock,
-  layersNew,
+  layersNewDrawing,
+  layersNewReference,
   layersDuplicate,
   layersDelete,
   layersMerge,
@@ -296,7 +297,8 @@ class HotkeyManager
     //LAYERS
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyX, shift: true)] = HotkeyAction.layersSwitchVisibility;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyL, shift: true)] = HotkeyAction.layersSwitchLock;
-    _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyN, shift: true)] = HotkeyAction.layersNew;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyN, shift: true)] = HotkeyAction.layersNewDrawing;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyR, shift: true)] = HotkeyAction.layersNewReference;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyD, shift: true)] = HotkeyAction.layersDuplicate;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.delete, shift: true)] = HotkeyAction.layersDelete;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyM, shift: true)] = HotkeyAction.layersMerge;

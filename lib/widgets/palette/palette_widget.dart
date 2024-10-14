@@ -130,7 +130,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                       waitDuration: AppState.toolTipDuration,
                       child: Padding(
                         padding: EdgeInsets.only(top: paletteWidgetOptions.padding, left: paletteWidgetOptions.padding, right: paletteWidgetOptions.padding),
-                        child: IconButton(
+                        child: IconButton.outlined(
                           onPressed: _paletteManagerPressed,
                           icon: const FaIcon(FontAwesomeIcons.palette),
                           style: IconButton.styleFrom(

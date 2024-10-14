@@ -59,7 +59,8 @@
 | <h3>Layers</h3>          |                     |                  |                                 |                              |                           |
 | Switch Visibility        | shift + x           |                  |                                 |                              |                           |
 | Switch Lock              | shift + l           |                  |                                 |                              |                           |
-| New Layer                | shift + n           |                  |                                 |                              |                           |
+| New Drawing Layer        | shift + n           |                  |                                 |                              |                           |
+| New Reference Layer      | shift + r           |                  |                                 |                              |                           |
 | Duplicate                | shift + d           |                  |                                 |                              |                           |
 | Delete                   | shift + del         |                  |                                 |                              |                           |
 | Merge Down               | shift + m           |                  |                                 |                              |                           |

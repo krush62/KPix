@@ -187,7 +187,8 @@ class AppState
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.stamp);}, action: HotkeyAction.selectToolStamp);
     hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: currentLayer!);}, action: HotkeyAction.layersSwitchVisibility);
     hotkeyManager.addListener(func: () {changeLayerLockState(layerState: currentLayer!);}, action: HotkeyAction.layersSwitchLock);
-    hotkeyManager.addListener(func: addNewDrawingLayer, action: HotkeyAction.layersNew);
+    hotkeyManager.addListener(func: addNewDrawingLayer, action: HotkeyAction.layersNewDrawing);
+    hotkeyManager.addListener(func: addNewReferenceLayer, action: HotkeyAction.layersNewReference);
     hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: currentLayer!);}, action: HotkeyAction.layersDuplicate);
     hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: currentLayer!);}, action: HotkeyAction.layersDelete);
     hotkeyManager.addListener(func: () {layerMerged(mergeLayer: currentLayer!);}, action: HotkeyAction.layersMerge);

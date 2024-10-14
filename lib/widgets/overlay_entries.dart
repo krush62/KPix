@@ -962,4 +962,84 @@ class OverlayEntries
     );
   }
 
+  static KPixOverlay getAddLayerMenu({
+    required final Function onDismiss,
+    required Function onNewDrawingLayer,
+    required Function onNewReferenceLayer,
+    required final LayerLink layerLink,
+  })
+  {
+    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    return KPixOverlay(entry: OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            onDismiss: () {onDismiss();},
+          ),
+          Positioned(
+            width: options.width / 2,
+            child: CompositedTransformFollower(
+              link: layerLink,
+              showWhenUnlinked: false,
+              offset: Offset(
+                options.offsetX,
+                options.offsetY + options.buttonSpacing,
+              ),
+              child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: Tooltip(
+                          message: "Add New Drawing Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.all(options.buttonSpacing),
+                            onPressed: () {onNewDrawingLayer();},
+                            icon: FaIcon(
+                                FontAwesomeIcons.paintbrush,
+                                size: options.buttonHeight),
+                            color: Theme.of(context).primaryColorLight,
+                            style: IconButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                backgroundColor: Theme.of(context).primaryColor),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: Tooltip(
+                          message: "Add New Reference Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.all(options.buttonSpacing),
+                            onPressed: () {onNewReferenceLayer();},
+                            icon: FaIcon(
+                                FontAwesomeIcons.image,
+                                size: options.buttonHeight),
+                            color: Theme.of(context).primaryColorLight,
+                            style: IconButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                backgroundColor: Theme.of(context).primaryColor),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+              ),
+            ),
+          ),
+        ],
+      ),
+    ));
+  }
+
 }

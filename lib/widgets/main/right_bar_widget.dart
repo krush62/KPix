@@ -40,6 +40,7 @@ import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 
 class RightBarWidget extends StatefulWidget
 {
@@ -60,11 +61,37 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
+  final LayerLink _layerLink = LayerLink();
+  late KPixOverlay addLayerMenu;
+
   @override
   void initState()
   {
     super.initState();
     _createWidgetList(_appState.layers);
+    addLayerMenu = OverlayEntries.getAddLayerMenu(
+      onDismiss: _closeLayerMenu,
+      layerLink: _layerLink,
+      onNewDrawingLayer: _newDrawingLayerPressed,
+      onNewReferenceLayer: _newReferenceLayerPressed
+    );
+  }
+
+  void _closeLayerMenu()
+  {
+    addLayerMenu.hide();
+  }
+
+  void _newDrawingLayerPressed()
+  {
+    _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _closeLayerMenu();
+  }
+
+  void _newReferenceLayerPressed()
+  {
+    _appState.addNewReferenceLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _closeLayerMenu();
   }
 
   void _createWidgetList(final List<LayerState> layers)
@@ -128,37 +155,23 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       children: [
                         Padding(
                           padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 3, //TODO magic number
-                                child: Tooltip(
-                                  message: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNew)}",
-                                  waitDuration: AppState.toolTipDuration,
-                                  child: IconButton.outlined(
-                                    onPressed: () {_appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
-                                    icon: const FaIcon(FontAwesomeIcons.plus),
-                                    style: IconButton.styleFrom(
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                  ),
+                          child: CompositedTransformTarget(
+                            link: _layerLink,
+                            child: Tooltip(
+                              message: "Add New Layer...",
+                              waitDuration: AppState.toolTipDuration,
+                              child: IconButton.outlined(
+                                onPressed: () {addLayerMenu.show(context: context);},
+                                icon: const FaIcon(FontAwesomeIcons.plus),
+                                style: IconButton.styleFrom(
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                    maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                    iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
+                                    padding: EdgeInsets.zero
                                 ),
                               ),
-                              Expanded(
-                                flex: 1, //TODO magic number
-                                child: Tooltip(
-                                  message: "Add New Reference Layer",
-                                  waitDuration: AppState.toolTipDuration,
-                                  child: IconButton.outlined(
-                                    onPressed: () {_appState.addNewReferenceLayer(select: _behaviorOptions.selectLayerAfterInsert.value);},
-                                    icon: const FaIcon(FontAwesomeIcons.fileCirclePlus),
-                                    style: IconButton.styleFrom(
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         ValueListenableBuilder<List<LayerState>>(

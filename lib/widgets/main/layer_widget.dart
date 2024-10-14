@@ -51,6 +51,7 @@ class LayerWidgetOptions
   final int dragDelay;
   final int thumbUpdateTimerSec;
   final int thumbUpdateTimerMsec;
+  final int addButtonSize;
 
   LayerWidgetOptions({
     required this.outerPadding,
@@ -67,7 +68,8 @@ class LayerWidgetOptions
     required this.dragTargetShowDuration,
     required this.dragDelay,
     required this.thumbUpdateTimerSec,
-    required this.thumbUpdateTimerMsec});
+    required this.thumbUpdateTimerMsec,
+    required this.addButtonSize});
 }
 
 enum LayerVisibilityState

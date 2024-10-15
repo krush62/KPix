@@ -176,8 +176,6 @@ enum PreferenceDouble
   KPal_Layout_IconSize(defaultValue: 32.0),
 
   KPalRamp_Layout_OutsidePadding(defaultValue: 8.0),
-  KPalRamp_Layout_MinHeight(defaultValue: 128.0),
-  KPalRamp_Layout_MaxHeight(defaultValue: 400.0),
   KPalRamp_Layout_BorderWidth(defaultValue: 4.0),
   KPalRamp_Layout_DividerThickness(defaultValue: 2.0),
   KPalRamp_Layout_BorderRadius(defaultValue: 8.0),
@@ -344,8 +342,8 @@ enum PreferenceInt
 
   KPalRamp_Layout_CenterFlex(defaultValue: 6),
   KPalRamp_Layout_RightFlex(defaultValue: 2),
-  KPalRamp_Layout_RowLabelFlex(defaultValue: 2),
-  KPalRamp_Layout_RowControlFlex(defaultValue: 8),
+  KPalRamp_Layout_RowLabelFlex(defaultValue: 3),
+  KPalRamp_Layout_RowControlFlex(defaultValue: 24),
   KPalRamp_Layout_RowValueFlex(defaultValue: 2),
   KPalRamp_Layout_ColorShowThreshold(defaultValue: 8),
 
@@ -959,8 +957,6 @@ class PreferenceManager
         padding: _getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
         centerFlex: _getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
         rightFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
-        minHeight: _getValueD(PreferenceDouble.KPalRamp_Layout_MinHeight),
-        maxHeight: _getValueD(PreferenceDouble.KPalRamp_Layout_MaxHeight),
         borderWidth: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderWidth),
         borderRadius: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderRadius),
         dividerThickness: _getValueD(PreferenceDouble.KPalRamp_Layout_DividerThickness),

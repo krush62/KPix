@@ -272,6 +272,11 @@ class _KPalState extends State<KPal>
       child: Align(
         alignment: Alignment.center,
         child: Container(
+          constraints: BoxConstraints(
+            maxHeight: 1000,
+            maxWidth: 1600
+
+          ),
           decoration: BoxDecoration(
             border: Border.all(
               color: Theme.of(context).primaryColorLight,
@@ -283,10 +288,12 @@ class _KPalState extends State<KPal>
             color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               children: [
-                KPalRamp(
-                  rampData: widget._colorRamp,
+                Expanded(
+                  child: KPalRamp(
+                    rampData: widget._colorRamp,
+                  ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.max,

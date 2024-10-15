@@ -342,14 +342,15 @@ enum PreferenceInt
 
   KPalRamp_Layout_CenterFlex(defaultValue: 6),
   KPalRamp_Layout_RightFlex(defaultValue: 2),
-  KPalRamp_Layout_RowLabelFlex(defaultValue: 3),
-  KPalRamp_Layout_RowControlFlex(defaultValue: 24),
-  KPalRamp_Layout_RowValueFlex(defaultValue: 2),
-  KPalRamp_Layout_ColorShowThreshold(defaultValue: 8),
+  KPalRamp_Layout_RowLabelFlex(defaultValue: 4),
+  KPalRamp_Layout_RowControlFlex(defaultValue: 25),
+  KPalRamp_Layout_RowValueFlex(defaultValue: 3),
+  KPalRamp_Layout_ColorShowThreshold(defaultValue: 10),
+  KPalRamp_Layout_RenderIntervalMs(defaultValue: 250),
 
-  KPalColorCard_Layout_ColorNameFlex(defaultValue: 1),
-  KPalColorCard_Layout_ColorFlex(defaultValue: 4),
-  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
+  KPalColorCard_Layout_ColorNameFlex(defaultValue: 2),
+  KPalColorCard_Layout_ColorFlex(defaultValue: 9),
+  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 3),
   KPalColorCard_Layout_EditAnimationDuration(defaultValue: 250),
   KPalColorCard_Layout_TouchTimeout(defaultValue: 1500),
 
@@ -964,7 +965,8 @@ class PreferenceManager
         rowLabelFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
         rowValueFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
         colorNameShowThreshold: _getValueI(PreferenceInt.KPalRamp_Layout_ColorShowThreshold),
-        colorCardWidgetOptions: colorCardWidgetOptions);
+        colorCardWidgetOptions: colorCardWidgetOptions,
+        renderIntervalMs: _getValueI(PreferenceInt.KPalRamp_Layout_RenderIntervalMs));
 
     kPalWidgetOptions = KPalWidgetOptions(
         borderWidth: _getValueD(PreferenceDouble.KPal_Layout_BorderWidth),

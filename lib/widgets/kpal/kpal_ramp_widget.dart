@@ -29,7 +29,7 @@ class KPalRampWidgetOptions
   final double borderRadius;
   final double dividerThickness;
   final int colorNameShowThreshold;
-
+  final int renderIntervalMs;
 
   KPalRampWidgetOptions({
     required this.colorCardWidgetOptions,
@@ -42,7 +42,8 @@ class KPalRampWidgetOptions
     required this.rowControlFlex,
     required this.rowLabelFlex,
     required this.rowValueFlex,
-    required this.colorNameShowThreshold
+    required this.colorNameShowThreshold,
+    required this.renderIntervalMs
   });
 }
 
@@ -62,12 +63,46 @@ class _KPalRampState extends State<KPalRamp>
 {
   final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier([]);
   final KPalRampWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions;
+  final AppState _appState = GetIt.I.get<AppState>();
+  final ValueNotifier<ui.Image?> _previewImage = ValueNotifier(null);
+  bool _hasRenderChanges = false;
+  late Timer renderTimer;
 
   @override
   void initState()
   {
     super.initState();
     _createColorCards();
+    Helper.getImageFromLayers(size: _appState.canvasSize, layers: _appState.layers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
+      _setPreviewImage(img: img);
+    });
+    renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    renderTimer.cancel();
+  }
+
+  void _setPreviewImage({required final ui.Image img})
+  {
+    _previewImage.value = img;
+  }
+
+  void _renderCheck({required final Timer t})
+  {
+    if (_hasRenderChanges)
+    {
+      Helper.getImageFromLayers(size: _appState.canvasSize, layers: _appState.layers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
+        _setPreviewImage(img: img);
+      });
+      final bool hasRasterizingLayers = _appState.layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
+      if (!hasRasterizingLayers)
+      {
+        _hasRenderChanges = false;
+      }
+    }
   }
 
   void _createColorCards()
@@ -92,6 +127,8 @@ class _KPalRampState extends State<KPalRamp>
   {
     setState(() {
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
+      GetIt.I.get<AppState>().reRaster();
+      _hasRenderChanges = true;
     });
 
     if (colorCountChanged)
@@ -181,8 +218,11 @@ class _KPalRampState extends State<KPalRamp>
             child: ValueListenableBuilder<List<KPalColorCardWidget>>(
               valueListenable: _colorCards,
               builder: (final BuildContext context, final List<KPalColorCardWidget> cards, final Widget? child) {
-                return ColoredBox(
-                  color: Theme.of(context).primaryColorDark,
+                return Container(
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColorDark,
+                      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -434,7 +474,7 @@ class _KPalRampState extends State<KPalRamp>
                                 child: const Text("Sat Curve")
                               ),
                               Expanded(
-                                flex: _options.rowControlFlex + _options.rowValueFlex,
+                                flex: _options.rowControlFlex,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -479,6 +519,10 @@ class _KPalRampState extends State<KPalRamp>
                                   ],
                                 )
                               ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: SizedBox.shrink(),
+                              )
                             ],
                           ),
                         ),
@@ -524,9 +568,22 @@ class _KPalRampState extends State<KPalRamp>
                   flex: 1,
                   child: Padding(
                     padding: EdgeInsets.all(_options.padding),
-                    child: ColoredBox(
-                      color: Colors.green,
-                    ),
+                    child: ValueListenableBuilder<ui.Image?>(
+                      valueListenable: _previewImage,
+                      builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+                          child: RawImage(
+                            fit: BoxFit.contain,
+                            isAntiAlias: false,
+                            filterQuality: ui.FilterQuality.none,
+                            color: Theme.of(context).primaryColorDark,
+                            colorBlendMode: ui.BlendMode.dstATop,
+                            image: img,
+                          ),
+                        );
+                      },
+                    )
                   ),
                 ),
               ],

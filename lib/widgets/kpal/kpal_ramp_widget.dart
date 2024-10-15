@@ -25,28 +25,25 @@ class KPalRampWidgetOptions
   final int rowLabelFlex;
   final int rowControlFlex;
   final int rowValueFlex;
-  final double minHeight;
-  final double maxHeight;
   final double borderWidth;
   final double borderRadius;
   final double dividerThickness;
   final int colorNameShowThreshold;
-
+  final int renderIntervalMs;
 
   KPalRampWidgetOptions({
     required this.colorCardWidgetOptions,
     required this.padding,
     required this.centerFlex,
     required this.rightFlex,
-    required this.minHeight,
-    required this.maxHeight,
     required this.borderWidth,
     required this.borderRadius,
     required this.dividerThickness,
     required this.rowControlFlex,
     required this.rowLabelFlex,
     required this.rowValueFlex,
-    required this.colorNameShowThreshold
+    required this.colorNameShowThreshold,
+    required this.renderIntervalMs
   });
 }
 
@@ -66,12 +63,46 @@ class _KPalRampState extends State<KPalRamp>
 {
   final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier([]);
   final KPalRampWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions;
+  final AppState _appState = GetIt.I.get<AppState>();
+  final ValueNotifier<ui.Image?> _previewImage = ValueNotifier(null);
+  bool _hasRenderChanges = false;
+  late Timer renderTimer;
 
   @override
   void initState()
   {
     super.initState();
     _createColorCards();
+    Helper.getImageFromLayers(size: _appState.canvasSize, layers: _appState.layers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
+      _setPreviewImage(img: img);
+    });
+    renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    renderTimer.cancel();
+  }
+
+  void _setPreviewImage({required final ui.Image img})
+  {
+    _previewImage.value = img;
+  }
+
+  void _renderCheck({required final Timer t})
+  {
+    if (_hasRenderChanges)
+    {
+      Helper.getImageFromLayers(size: _appState.canvasSize, layers: _appState.layers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
+        _setPreviewImage(img: img);
+      });
+      final bool hasRasterizingLayers = _appState.layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
+      if (!hasRasterizingLayers)
+      {
+        _hasRenderChanges = false;
+      }
+    }
   }
 
   void _createColorCards()
@@ -96,6 +127,8 @@ class _KPalRampState extends State<KPalRamp>
   {
     setState(() {
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
+      GetIt.I.get<AppState>().reRaster();
+      _hasRenderChanges = true;
     });
 
     if (colorCountChanged)
@@ -171,368 +204,389 @@ class _KPalRampState extends State<KPalRamp>
   Widget build(final BuildContext context) {
     return Container(
       padding: EdgeInsets.all(_options.padding),
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        maxHeight: _options.maxHeight,
-      ),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            flex: _options.centerFlex,
+            flex: 1,
             child: ValueListenableBuilder<List<KPalColorCardWidget>>(
               valueListenable: _colorCards,
               builder: (final BuildContext context, final List<KPalColorCardWidget> cards, final Widget? child) {
-                return ColoredBox(
-                    color: Theme.of(context).primaryColorDark,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ...cards,
-                      ],
-                    )
+                return Container(
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColorDark,
+                      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ...cards,
+                    ],
+                  )
                 );
               },
             )
           ),
           Expanded(
-            flex: _options.rightFlex,
-            child: Container(
-              color: Theme.of(context).primaryColor,
-              padding: EdgeInsets.all(_options.padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            flex: 1,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.padding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("Color Count")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: Slider(
-                            value: widget.rampData.settings.colorCount.toDouble(),
-                            min: widget.rampData.settings.constraints.colorCountMin.toDouble(),
-                            max: widget.rampData.settings.constraints.colorCountMax.toDouble(),
-                            divisions: (widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin),
-                            onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
-                            label: widget.rampData.settings.colorCount.toString(),
-                          ),
-                        ),
-                        Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text(widget.rampData.settings.colorCount.toString(), textAlign: TextAlign.end)
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(
-                    color: Theme.of(context).primaryColorDark,
-                    thickness: _options.dividerThickness,
-                    height: _options.dividerThickness,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("Base Hue")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: Slider(
-                            value: widget.rampData.settings.baseHue.toDouble(),
-                            min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
-                            max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
-                            divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
-                            onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
-                            label: widget.rampData.settings.baseHue.toString(),
-                          ),
-                        ),
-                        Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text(widget.rampData.settings.baseHue.toString(), textAlign: TextAlign.end)
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(
-                    color: Theme.of(context).primaryColorDark,
-                    thickness: _options.dividerThickness,
-                    height: _options.dividerThickness,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("Base Sat")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: Slider(
-                            value: widget.rampData.settings.baseSat.toDouble(),
-                            min: widget.rampData.settings.constraints.baseSatMin.toDouble(),
-                            max: widget.rampData.settings.constraints.baseSatMax.toDouble(),
-                            divisions: widget.rampData.settings.constraints.baseSatMax - widget.rampData.settings.constraints.baseSatMin,
-                            onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
-                            label: widget.rampData.settings.baseSat.toString(),
-                          ),
-                        ),
-                        Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text(widget.rampData.settings.baseSat.toString(), textAlign: TextAlign.end)
-                        ),
-                      ],
-                    ),
-                  ),
-              Divider(
-                color: Theme.of(context).primaryColorDark,
-                thickness: _options.dividerThickness,
-                height: _options.dividerThickness,
-              ),
-              Expanded(
-                flex: 1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                     Expanded(
-                        flex: _options.rowLabelFlex,
-                        child: const Text("Hue Shift")
-                    ),
-                    Expanded(
-                      flex: _options.rowControlFlex,
-                      child: Slider(
-                        value: widget.rampData.settings.hueShift.toDouble(),
-                        min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
-                        max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
-                        divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
-                        onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
-                        label: widget.rampData.settings.hueShift.toString(),
-                      ),
-                    ),
-                    Expanded(
-                        flex: _options.rowValueFlex,
-                        child: Text(widget.rampData.settings.hueShift.toString(), textAlign: TextAlign.end)
-                    ),
-                  ],
-                ),
-              ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                         Expanded(
-                             flex: _options.rowLabelFlex,
-                            child: const Text("↳ Exponent")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: Slider(
-                            value: widget.rampData.settings.hueShiftExp.toDouble(),
-                            min: widget.rampData.settings.constraints.hueShiftExpMin.toDouble(),
-                            max: widget.rampData.settings.constraints.hueShiftExpMax.toDouble(),
-                            divisions: (widget.rampData.settings.constraints.hueShiftExpMax * 100.0 - widget.rampData.settings.constraints.hueShiftExpMin * 100.0).round(),
-                            onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
-                            label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
-                          ),
-                        ),
-                        Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text(widget.rampData.settings.hueShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(
-                    color: Theme.of(context).primaryColorDark,
-                    thickness: _options.dividerThickness,
-                    height: _options.dividerThickness,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("Sat Shift")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: Slider(
-                            value: widget.rampData.settings.satShift.toDouble(),
-                            min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
-                            max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
-                            divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
-                            onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
-                            label: widget.rampData.settings.satShift.toString(),
-                          ),
-                        ),
-                        Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text(widget.rampData.settings.satShift.toString(), textAlign: TextAlign.end)
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("↳ Exponent")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: Slider(
-                            value: widget.rampData.settings.satShiftExp.toDouble(),
-                            min: widget.rampData.settings.constraints.satShiftExpMin.toDouble(),
-                            max: widget.rampData.settings.constraints.satShiftExpMax.toDouble(),
-                            divisions: (widget.rampData.settings.constraints.satShiftExpMax * 100.0 - widget.rampData.settings.constraints.satShiftExpMin * 100.0).round(),
-                            onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
-                            label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
-                          ),
-                        ),
-                        Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text(widget.rampData.settings.satShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("Sat Curve")
-                        ),
-                        Expanded(
-                            flex: _options.rowControlFlex + _options.rowValueFlex,
-                          child: Row
-                            (
+                          flex: 1,
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              IconButton(
-                                color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-                                style: IconButton.styleFrom(
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                isSelected: widget.rampData.settings.satCurve == SatCurve.noFlat,
-                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.noFlat);},
-                                icon: FaIcon(KPixIcons.noFlat, color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                              Expanded(
+                                  flex: _options.rowLabelFlex,
+                                  child: const Text("Color Count")
                               ),
-                              IconButton(
-                                color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-                                style: IconButton.styleFrom(
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.colorCount.toDouble(),
+                                  min: widget.rampData.settings.constraints.colorCountMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.colorCountMax.toDouble(),
+                                  divisions: (widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin),
+                                  onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.colorCount.toString(),
                                 ),
-                                isSelected: widget.rampData.settings.satCurve == SatCurve.darkFlat,
-                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.darkFlat);},
-                                icon: FaIcon(KPixIcons.darkFlat, color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
                               ),
-                              IconButton(
-                                color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-                                style: IconButton.styleFrom(
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                isSelected: widget.rampData.settings.satCurve == SatCurve.brightFlat,
-                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.brightFlat);},
-                                icon: FaIcon(KPixIcons.brightFlat, color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                              Expanded(
+                                  flex: _options.rowValueFlex,
+                                  child: Text(widget.rampData.settings.colorCount.toString(), textAlign: TextAlign.end)
                               ),
-                              IconButton(
-                                color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
-                                style: IconButton.styleFrom(
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ],
+                          ),
+                        ),
+                        Divider(
+                          color: Theme.of(context).primaryColorDark,
+                          thickness: _options.dividerThickness,
+                          height: _options.dividerThickness,
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  flex: _options.rowLabelFlex,
+                                  child: const Text("Base Hue")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.baseHue.toDouble(),
+                                  min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
+                                  divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
+                                  onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.baseHue.toString(),
                                 ),
-                                isSelected: widget.rampData.settings.satCurve == SatCurve.linear,
-                                onPressed: () {_satCurveModeChanged(newCurve: SatCurve.linear);},
-                                icon: FaIcon(KPixIcons.linear, color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                              ),
+                              Expanded(
+                                  flex: _options.rowValueFlex,
+                                  child: Text(widget.rampData.settings.baseHue.toString(), textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  flex: _options.rowLabelFlex,
+                                  child: const Text("Hue Shift")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.hueShift.toDouble(),
+                                  min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
+                                  divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
+                                  onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.hueShift.toString(),
+                                ),
+                              ),
+                              Expanded(
+                                  flex: _options.rowValueFlex,
+                                  child: Text(widget.rampData.settings.hueShift.toString(), textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: _options.rowLabelFlex,
+                                child: const Text("↳ Exponent")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.hueShiftExp.toDouble(),
+                                  min: widget.rampData.settings.constraints.hueShiftExpMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.hueShiftExpMax.toDouble(),
+                                  divisions: (widget.rampData.settings.constraints.hueShiftExpMax * 100.0 - widget.rampData.settings.constraints.hueShiftExpMin * 100.0).round(),
+                                  onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
+                                ),
+                              ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: Text(widget.rampData.settings.hueShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
+                        ),
+                        Divider(
+                          color: Theme.of(context).primaryColorDark,
+                          thickness: _options.dividerThickness,
+                          height: _options.dividerThickness,
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  flex: _options.rowLabelFlex,
+                                  child: const Text("Base Sat")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.baseSat.toDouble(),
+                                  min: widget.rampData.settings.constraints.baseSatMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.baseSatMax.toDouble(),
+                                  divisions: widget.rampData.settings.constraints.baseSatMax - widget.rampData.settings.constraints.baseSatMin,
+                                  onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.baseSat.toString(),
+                                ),
+                              ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: Text(widget.rampData.settings.baseSat.toString(), textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: _options.rowLabelFlex,
+                                child: const Text("Sat Shift")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.satShift.toDouble(),
+                                  min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
+                                  divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
+                                  onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.satShift.toString(),
+                                ),
+                              ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: Text(widget.rampData.settings.satShift.toString(), textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: _options.rowLabelFlex,
+                                child: const Text("↳ Exponent")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Slider(
+                                  value: widget.rampData.settings.satShiftExp.toDouble(),
+                                  min: widget.rampData.settings.constraints.satShiftExpMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.satShiftExpMax.toDouble(),
+                                  divisions: (widget.rampData.settings.constraints.satShiftExpMax * 100.0 - widget.rampData.settings.constraints.satShiftExpMin * 100.0).round(),
+                                  onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
+                                  label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
+                                ),
+                              ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: Text(widget.rampData.settings.satShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: _options.rowLabelFlex,
+                                child: const Text("Sat Curve")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    IconButton(
+                                      color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                      style: IconButton.styleFrom(
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      isSelected: widget.rampData.settings.satCurve == SatCurve.noFlat,
+                                      onPressed: () {_satCurveModeChanged(newCurve: SatCurve.noFlat);},
+                                      icon: FaIcon(KPixIcons.noFlat, color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                    ),
+                                    IconButton(
+                                      color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                      style: IconButton.styleFrom(
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      isSelected: widget.rampData.settings.satCurve == SatCurve.darkFlat,
+                                      onPressed: () {_satCurveModeChanged(newCurve: SatCurve.darkFlat);},
+                                      icon: FaIcon(KPixIcons.darkFlat, color: widget.rampData.settings.satCurve == SatCurve.darkFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                    ),
+                                    IconButton(
+                                      color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                      style: IconButton.styleFrom(
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      isSelected: widget.rampData.settings.satCurve == SatCurve.brightFlat,
+                                      onPressed: () {_satCurveModeChanged(newCurve: SatCurve.brightFlat);},
+                                      icon: FaIcon(KPixIcons.brightFlat, color: widget.rampData.settings.satCurve == SatCurve.brightFlat ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                    ),
+                                    IconButton(
+                                      color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
+                                      style: IconButton.styleFrom(
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      isSelected: widget.rampData.settings.satCurve == SatCurve.linear,
+                                      onPressed: () {_satCurveModeChanged(newCurve: SatCurve.linear);},
+                                      icon: FaIcon(KPixIcons.linear, color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
+                                    )
+                                  ],
+                                )
+                              ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: SizedBox.shrink(),
                               )
                             ],
-                          )
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(
-                    color: Theme.of(context).primaryColorDark,
-                    thickness: _options.dividerThickness,
-                    height: _options.dividerThickness,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            flex: _options.rowLabelFlex,
-                            child: const Text("Value Range")
-                        ),
-                        Expanded(
-                          flex: _options.rowControlFlex,
-                          child: RangeSlider(
-                            values: RangeValues(widget.rampData.settings.valueRangeMin.toDouble(), widget.rampData.settings.valueRangeMax.toDouble()),
-                            min: widget.rampData.settings.constraints.valueRangeMin.toDouble(),
-                            max: widget.rampData.settings.constraints.valueRangeMax.toDouble(),
-                            divisions: widget.rampData.settings.constraints.valueRangeMax - widget.rampData.settings.constraints.valueRangeMin,
-                            onChanged: (final RangeValues newVals) {_valueRangeSliderChanged(newVals: newVals);},
-                            labels: RangeLabels(widget.rampData.settings.valueRangeMin.toString(), widget.rampData.settings.valueRangeMax.toString()),
                           ),
                         ),
+                        Divider(
+                          color: Theme.of(context).primaryColorDark,
+                          thickness: _options.dividerThickness,
+                          height: _options.dividerThickness,
+                        ),
                         Expanded(
-                            flex: _options.rowValueFlex,
-                            child: Text("${widget.rampData.settings.valueRangeMin.toString()}-${widget.rampData.settings.valueRangeMax.toString()}", textAlign: TextAlign.end)
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: _options.rowLabelFlex,
+                                child: const Text("Value Range")
+                              ),
+                              Expanded(
+                                flex: _options.rowControlFlex,
+                                child: RangeSlider(
+                                  values: RangeValues(widget.rampData.settings.valueRangeMin.toDouble(), widget.rampData.settings.valueRangeMax.toDouble()),
+                                  min: widget.rampData.settings.constraints.valueRangeMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.valueRangeMax.toDouble(),
+                                  divisions: widget.rampData.settings.constraints.valueRangeMax - widget.rampData.settings.constraints.valueRangeMin,
+                                  onChanged: (final RangeValues newVals) {_valueRangeSliderChanged(newVals: newVals);},
+                                  labels: RangeLabels(widget.rampData.settings.valueRangeMin.toString(), widget.rampData.settings.valueRangeMax.toString()),
+                                ),
+                              ),
+                              Expanded(
+                                flex: _options.rowValueFlex,
+                                child: Text("${widget.rampData.settings.valueRangeMin.toString()}-${widget.rampData.settings.valueRangeMax.toString()}", textAlign: TextAlign.end)
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
+                  )
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.padding),
+                    child: ValueListenableBuilder<ui.Image?>(
+                      valueListenable: _previewImage,
+                      builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+                          child: RawImage(
+                            fit: BoxFit.contain,
+                            isAntiAlias: false,
+                            filterQuality: ui.FilterQuality.none,
+                            color: Theme.of(context).primaryColorDark,
+                            colorBlendMode: ui.BlendMode.dstATop,
+                            image: img,
+                          ),
+                        );
+                      },
+                    )
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

@@ -314,7 +314,7 @@ class AppState
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
       _deleteRampFromLayers(ramp: ramp);
-      _reRaster();
+      reRaster();
       repaintNotifier.repaint();
       if (addToHistoryStack)
       {
@@ -338,7 +338,7 @@ class AppState
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _remapLayers(newData: ramp, map: indexMap);
     }
-    _reRaster();
+    reRaster();
     repaintNotifier.repaint();
     if (addToHistoryStack)
     {
@@ -1023,7 +1023,7 @@ class AppState
     }
   }
 
-  void _reRaster()
+  void reRaster()
   {
     for (final LayerState layer in _layers.value)
     {

@@ -176,8 +176,6 @@ enum PreferenceDouble
   KPal_Layout_IconSize(defaultValue: 32.0),
 
   KPalRamp_Layout_OutsidePadding(defaultValue: 8.0),
-  KPalRamp_Layout_MinHeight(defaultValue: 128.0),
-  KPalRamp_Layout_MaxHeight(defaultValue: 400.0),
   KPalRamp_Layout_BorderWidth(defaultValue: 4.0),
   KPalRamp_Layout_DividerThickness(defaultValue: 2.0),
   KPalRamp_Layout_BorderRadius(defaultValue: 8.0),
@@ -344,14 +342,15 @@ enum PreferenceInt
 
   KPalRamp_Layout_CenterFlex(defaultValue: 6),
   KPalRamp_Layout_RightFlex(defaultValue: 2),
-  KPalRamp_Layout_RowLabelFlex(defaultValue: 2),
-  KPalRamp_Layout_RowControlFlex(defaultValue: 8),
-  KPalRamp_Layout_RowValueFlex(defaultValue: 2),
-  KPalRamp_Layout_ColorShowThreshold(defaultValue: 8),
+  KPalRamp_Layout_RowLabelFlex(defaultValue: 4),
+  KPalRamp_Layout_RowControlFlex(defaultValue: 25),
+  KPalRamp_Layout_RowValueFlex(defaultValue: 3),
+  KPalRamp_Layout_ColorShowThreshold(defaultValue: 10),
+  KPalRamp_Layout_RenderIntervalMs(defaultValue: 250),
 
-  KPalColorCard_Layout_ColorNameFlex(defaultValue: 1),
-  KPalColorCard_Layout_ColorFlex(defaultValue: 4),
-  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 1),
+  KPalColorCard_Layout_ColorNameFlex(defaultValue: 2),
+  KPalColorCard_Layout_ColorFlex(defaultValue: 9),
+  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 3),
   KPalColorCard_Layout_EditAnimationDuration(defaultValue: 250),
   KPalColorCard_Layout_TouchTimeout(defaultValue: 1500),
 
@@ -959,8 +958,6 @@ class PreferenceManager
         padding: _getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
         centerFlex: _getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
         rightFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
-        minHeight: _getValueD(PreferenceDouble.KPalRamp_Layout_MinHeight),
-        maxHeight: _getValueD(PreferenceDouble.KPalRamp_Layout_MaxHeight),
         borderWidth: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderWidth),
         borderRadius: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderRadius),
         dividerThickness: _getValueD(PreferenceDouble.KPalRamp_Layout_DividerThickness),
@@ -968,7 +965,8 @@ class PreferenceManager
         rowLabelFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
         rowValueFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
         colorNameShowThreshold: _getValueI(PreferenceInt.KPalRamp_Layout_ColorShowThreshold),
-        colorCardWidgetOptions: colorCardWidgetOptions);
+        colorCardWidgetOptions: colorCardWidgetOptions,
+        renderIntervalMs: _getValueI(PreferenceInt.KPalRamp_Layout_RenderIntervalMs));
 
     kPalWidgetOptions = KPalWidgetOptions(
         borderWidth: _getValueD(PreferenceDouble.KPal_Layout_BorderWidth),

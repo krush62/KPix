@@ -15,8 +15,10 @@
  */
 
 import 'dart:collection';
+import 'package:vector_math/vector_math.dart';
 
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
@@ -31,8 +33,10 @@ typedef CanvasSizeFn = void Function({required CoordinateSetI size, required Coo
 typedef NewFileFn = void Function({required CoordinateSetI size});
 typedef SaveFileFn = void Function({required String fileName, required Function()? callback});
 typedef SaveKnownFileFn = void Function({Function()? callback});
+typedef ImportImageFn = void Function({required ImportData importData});
 
 typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
 typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;
 typedef CoordinateColorNullable = MapEntry<CoordinateSetI, ColorReference?>;
+typedef VectorRamp = List<Vector3>;

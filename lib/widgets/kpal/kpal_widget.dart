@@ -153,6 +153,9 @@ class KPalConstraints
   final int valueRangeMax;
   final int valueRangeMaxDefault;
   final int satCurveDefault;
+  final int rampCountMin;
+  final int rampCountMax;
+  final int rampCountDefault;
 
   KPalConstraints({
     required this.colorCountMin,
@@ -181,6 +184,9 @@ class KPalConstraints
     required this.valueRangeMax,
     required this.valueRangeMaxDefault,
     required this.satCurveDefault,
+    required this.rampCountMin,
+    required this.rampCountMax,
+    required this.rampCountDefault,
   });
 }
 

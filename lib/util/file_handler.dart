@@ -285,7 +285,7 @@ class FileHandler
     }
   }
 
-  static Future<String?> getPathForReferenceImage() async
+  static Future<String?> getPathForImage() async
   {
     FilePickerResult? result;
     if (Helper.isDesktop(includingWeb: true))

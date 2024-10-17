@@ -307,9 +307,10 @@ class AppState
 
   void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    if (_colorRamps.value.length > 1)
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    if (colorRamps.length > constraints.rampCountMin)
     {
-      List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
+      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       rampDataList.remove(ramp);
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
@@ -323,13 +324,13 @@ class AppState
     }
     else
     {
-      showMessage(text: "Cannot delete the only color ramp!");
+      showMessage(text: "Need at least ${constraints.rampCountMin} color ramp(s)!");
     }
   }
 
   void updateRamp({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
   {
-    final List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
+    final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
     _colorRamps.value = rampDataList;
 
     if (ramp.shiftedColors.length != originalData.shiftedColors.length)
@@ -354,22 +355,30 @@ class AppState
 
   void addNewRamp({bool addToHistoryStack = true})
   {
-    const Uuid uuid = Uuid();
-    List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
-    final KPalRampData newRamp = KPalRampData(
-        uuid: uuid.v1(),
-        settings: KPalRampSettings(
-            constraints: prefs.kPalConstraints
-        )
-    );
-    rampDataList.add(newRamp);
-    _colorRamps.value = rampDataList;
-    _selectedColor.value = newRamp.references[0];
-    if (addToHistoryStack)
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    if (colorRamps.length < constraints.rampCountMax)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new ramp");
-    }
 
+      const Uuid uuid = Uuid();
+      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
+      final KPalRampData newRamp = KPalRampData(
+          uuid: uuid.v1(),
+          settings: KPalRampSettings(
+              constraints: prefs.kPalConstraints
+          )
+      );
+      rampDataList.add(newRamp);
+      _colorRamps.value = rampDataList;
+      _selectedColor.value = newRamp.references[0];
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new ramp");
+      }
+    }
+    else
+    {
+      showMessage(text: "Not more than ${constraints.rampCountMax} color ramps allowed!");
+    }
   }
 
   ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})

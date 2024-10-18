@@ -26,6 +26,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -215,7 +216,7 @@ class AppState
   void init({required CoordinateSetI dimensions})
   {
     setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
-    final List<DrawingLayerState> layerList = [];
+    final List<LayerState> layerList = [];
     _layers.value = layerList;
     addNewDrawingLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();
@@ -307,9 +308,10 @@ class AppState
 
   void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    if (_colorRamps.value.length > 1)
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    if (colorRamps.length > constraints.rampCountMin)
     {
-      List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
+      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       rampDataList.remove(ramp);
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
@@ -323,13 +325,13 @@ class AppState
     }
     else
     {
-      showMessage(text: "Cannot delete the only color ramp!");
+      showMessage(text: "Need at least ${constraints.rampCountMin} color ramp(s)!");
     }
   }
 
   void updateRamp({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
   {
-    final List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
+    final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
     _colorRamps.value = rampDataList;
 
     if (ramp.shiftedColors.length != originalData.shiftedColors.length)
@@ -354,22 +356,30 @@ class AppState
 
   void addNewRamp({bool addToHistoryStack = true})
   {
-    const Uuid uuid = Uuid();
-    List<KPalRampData> rampDataList = List<KPalRampData>.from(_colorRamps.value);
-    final KPalRampData newRamp = KPalRampData(
-        uuid: uuid.v1(),
-        settings: KPalRampSettings(
-            constraints: prefs.kPalConstraints
-        )
-    );
-    rampDataList.add(newRamp);
-    _colorRamps.value = rampDataList;
-    _selectedColor.value = newRamp.references[0];
-    if (addToHistoryStack)
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    if (colorRamps.length < constraints.rampCountMax)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new ramp");
-    }
 
+      const Uuid uuid = Uuid();
+      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
+      final KPalRampData newRamp = KPalRampData(
+          uuid: uuid.v1(),
+          settings: KPalRampSettings(
+              constraints: prefs.kPalConstraints
+          )
+      );
+      rampDataList.add(newRamp);
+      _colorRamps.value = rampDataList;
+      _selectedColor.value = newRamp.references[0];
+      if (addToHistoryStack)
+      {
+        GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new ramp");
+      }
+    }
+    else
+    {
+      showMessage(text: "Not more than ${constraints.rampCountMax} color ramps allowed!");
+    }
   }
 
   ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
@@ -1217,6 +1227,33 @@ class AppState
           );
         },
         context: ToastProvider.context);
+  }
+
+  void importFile({required ImportResult importResult})
+  {
+    if (importResult.data != null)
+    {
+      final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
+      final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
+      setCanvasDimensions(width: drawingLayer.size.x, height: drawingLayer.size.y, addToHistoryStack: false);
+      drawingLayer.isSelected.value = true;
+      final List<LayerState> layerList = [];
+      layerList.add(drawingLayer);
+      if (referenceLayer != null)
+      {
+        layerList.add(referenceLayer);
+      }
+      _layers.value = layerList;
+      layerSelected(newLayer: drawingLayer);
+      _colorRamps.value = importResult.data!.rampDataList;
+      _selectedColor.value = _colorRamps.value[0].references[0];
+      GetIt.I.get<HistoryManager>().clear();
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+      projectName.value = null;
+      hasChanges.value = false;
+      hasProjectNotifier.value = true;
+    }
+    showMessage(text: importResult.message);
   }
 
 }

@@ -319,7 +319,7 @@ enum PreferenceInt
 
   KPal_Constraints_ColorCountMin(defaultValue: 3),
   KPal_Constraints_ColorCountMax(defaultValue: 15),
-  KPal_Constraints_ColorCountDefault(defaultValue: 5),
+  KPal_Constraints_ColorCountDefault(defaultValue: 7),
   KPal_Constraints_BaseHueMin(defaultValue: 0),
   KPal_Constraints_BaseHueMax(defaultValue: 360),
   KPal_Constraints_BaseHueDefault(defaultValue: 180),
@@ -337,6 +337,10 @@ enum PreferenceInt
   KPal_Constraints_ValueRangeMax(defaultValue: 100),
   KPal_Constraints_ValueRangeMaxDefault(defaultValue: 95),
   KPal_Constraints_SatCurveDefault(defaultValue: 0),
+  KPal_Constraints_RampCountMin(defaultValue: 1),
+  KPal_Constraints_RampCountMax(defaultValue: 64),
+  KPal_Constraints_RampCountDefault(defaultValue: 8),
+  KPal_Constraints_MaxClusters(defaultValue: 16),
 
   KPal_Layout_SmokeOpacity(defaultValue: 128),
 
@@ -930,7 +934,11 @@ class PreferenceManager
         valueRangeMinDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMinDefault),
         valueRangeMax: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMax),
         valueRangeMaxDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMaxDefault),
-        satCurveDefault: _getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault));
+        satCurveDefault: _getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault),
+        rampCountMin: _getValueI(PreferenceInt.KPal_Constraints_RampCountMin),
+        rampCountMax: _getValueI(PreferenceInt.KPal_Constraints_RampCountMax),
+        rampCountDefault: _getValueI(PreferenceInt.KPal_Constraints_RampCountDefault),
+        maxClusters: _getValueI(PreferenceInt.KPal_Constraints_MaxClusters));
 
     kPalSliderConstraints = KPalSliderConstraints(
         minHue: _getValueI(PreferenceInt.KPalSliderConstraints_MinHue),

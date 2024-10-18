@@ -20,6 +20,9 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
+import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
@@ -484,6 +487,71 @@ class Helper
       }
     }
     return recorder.endRecording().toImage(size.x, size.y);
+  }
+
+  static Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
+  {
+    if (loadFileSet.historyState != null)
+    {
+      final HistoryState state = loadFileSet.historyState!;
+
+      final List<KPalRampData> ramps = [];
+      for (final HistoryRampData hRampData in state.rampList)
+      {
+        final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
+        ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
+      }
+
+      final ui.PictureRecorder recorder = ui.PictureRecorder();
+      final Canvas canvas = Canvas(recorder);
+      for (int i = state.layerList.length - 1; i >= 0; i--)
+      {
+        if (state.layerList[i].visibilityState == LayerVisibilityState.visible && state.layerList[i].runtimeType == HistoryDrawingLayer)
+        {
+          final HistoryDrawingLayer historyDrawingLayer = state.layerList[i] as HistoryDrawingLayer;
+          final CoordinateColorMap content = HashMap();
+          for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
+          {
+            KPalRampData? ramp;
+            for (int i = 0; i < ramps.length; i++)
+            {
+              if (ramps[i].uuid == state.rampList[entry.value.rampIndex].uuid)
+              {
+                ramp = ramps[i];
+                break;
+              }
+            }
+            if (ramp != null)
+            {
+              content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
+            }
+          }
+          final DrawingLayerState drawingLayer = DrawingLayerState(size: state.canvasSize, content: content);
+          drawingLayer.doManualRaster = true;
+          while (drawingLayer.isRasterizing)
+          {
+            await Future.delayed(Duration(milliseconds: 20));
+          }
+          if (drawingLayer.raster != null)
+          {
+            paintImage(
+                canvas: canvas,
+                rect: ui.Rect.fromLTWH(0, 0,
+                    state.canvasSize.x.toDouble(),
+                    state.canvasSize.y.toDouble()),
+                image: drawingLayer.raster!,
+                fit: BoxFit.none,
+                alignment: Alignment.topLeft,
+                filterQuality: FilterQuality.none);
+          }
+        }
+      }
+      return recorder.endRecording().toImage(size.x, size.y);
+    }
+    else
+    {
+      return null;
+    }
   }
 
   static String extractFilenameFromPath({required String? path, bool keepExtension = true})

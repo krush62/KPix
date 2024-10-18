@@ -85,9 +85,9 @@ class KPalRampSettings
   final KPalConstraints constraints;
   late int colorCount;
   late int baseHue;
-  late int baseSat;
   late int hueShift;
   late double hueShiftExp;
+  late int baseSat;
   late int satShift;
   late double satShiftExp;
   late int valueRangeMin;
@@ -107,6 +107,20 @@ class KPalRampSettings
     valueRangeMax = constraints.valueRangeMaxDefault;
     satCurve = satCurveMap[constraints.satCurveDefault] ?? SatCurve.noFlat;
   }
+
+  KPalRampSettings.fromValues({
+    required this.constraints,
+    required this.colorCount,
+    required this.baseHue,
+    required this.hueShift,
+    required this.hueShiftExp,
+    required this.baseSat,
+    required this.satShift,
+    required this.satShiftExp,
+    required this.valueRangeMin,
+    required this.valueRangeMax,
+    required this.satCurve
+  });
 
   factory KPalRampSettings.from({required KPalRampSettings other})
   {
@@ -153,6 +167,10 @@ class KPalConstraints
   final int valueRangeMax;
   final int valueRangeMaxDefault;
   final int satCurveDefault;
+  final int rampCountMin;
+  final int rampCountMax;
+  final int rampCountDefault;
+  final int maxClusters;
 
   KPalConstraints({
     required this.colorCountMin,
@@ -181,6 +199,10 @@ class KPalConstraints
     required this.valueRangeMax,
     required this.valueRangeMaxDefault,
     required this.satCurveDefault,
+    required this.rampCountMin,
+    required this.rampCountMax,
+    required this.rampCountDefault,
+    required this.maxClusters
   });
 }
 

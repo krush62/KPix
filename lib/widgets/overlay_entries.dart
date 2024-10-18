@@ -19,6 +19,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
 import 'package:kpix/widgets/extra/preferences_widget.dart';
+import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -119,6 +120,7 @@ class OverlayEntries
     required final Function onDismiss,
     required Function onNewFile,
     required Function onLoadFile,
+    required Function onImportFile,
     required final LayerLink layerLink,
   })
   {
@@ -178,7 +180,27 @@ class OverlayEntries
                               options.buttonSpacing),
                           onPressed: () {onLoadFile();},
                           icon: FaIcon(
-                              Icons.file_open,
+                              FontAwesomeIcons.folderOpen,
+                              size: options.buttonHeight),
+                          color: Theme.of(context).primaryColorLight,
+                          style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(options.buttonSpacing / 2),
+                      child: Tooltip(
+                        message: "Import Image",
+                        waitDuration: AppState.toolTipDuration,
+                        child: IconButton.outlined(
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.all(
+                              options.buttonSpacing),
+                          onPressed: () {onImportFile();},
+                          icon: FaIcon(
+                              FontAwesomeIcons.fileImport,
                               size: options.buttonHeight),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
@@ -731,6 +753,29 @@ class OverlayEntries
             ),
             Center(
               child: ExportWidget(acceptFile: onAcceptFile, acceptPalette: onAcceptPalette, dismiss: onDismiss),
+            ),
+          ]
+        )
+      )
+    );
+  }
+
+  static KPixOverlay getImportDialog({
+    required final Function() onDismiss,
+    required final ImportImageFn onAcceptImage
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: null, //() {onDismiss();},
+            ),
+            Center(
+              child: ImportWidget(dismiss: onDismiss, import: onAcceptImage,),
             ),
           ]
         )

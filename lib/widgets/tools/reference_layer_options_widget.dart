@@ -72,7 +72,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
 
   void _onLoadPressed()
   {
-    FileHandler.getPathForReferenceImage().then((final String? loadPath) {
+    FileHandler.getPathForImage().then((final String? loadPath) {
       _loadPathChosen(loadPath: loadPath);
     });
   }

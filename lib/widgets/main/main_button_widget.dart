@@ -26,7 +26,9 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
+import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:media_scanner/media_scanner.dart';
 
@@ -62,11 +64,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _loadMenu;
   late KPixOverlay _saveMenu;
   late KPixOverlay _saveLoadWarningDialog;
+  late KPixOverlay _saveImportWarningDialog;
   late KPixOverlay _exportDialog;
   late KPixOverlay _aboutDialog;
   late KPixOverlay _preferencesDialog;
   late KPixOverlay _saveAsDialog;
   late KPixOverlay _projectManagerDialog;
+  late KPixOverlay _importDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -80,6 +84,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       layerLink: _loadMenuLayerLink,
       onNewFile: _newFile,
       onLoadFile: _loadFile,
+      onImportFile: _importFile
     );
     _saveMenu = OverlayEntries.getSaveMenu(
       onDismiss: _closeAllMenus,
@@ -94,6 +99,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onCancel: _closeAllMenus,
       outsideCancelable: false,
       message: "There are unsaved changes, do you want to save first?"
+    );
+    _saveImportWarningDialog = OverlayEntries.getThreeButtonDialog(
+        onYes: _saveImportWarningYes,
+        onNo: _saveImportWarningNo,
+        onCancel: _closeAllMenus,
+        outsideCancelable: false,
+        message: "There are unsaved changes, do you want to save first?"
     );
     _projectManagerDialog = OverlayEntries.getProjectManagerDialog(
       onDismiss: _closeAllMenus,
@@ -118,6 +130,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
           FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
         },
     );
+    _importDialog = OverlayEntries.getImportDialog(
+      onDismiss: _closeAllMenus,
+      onAcceptImage: _importImage
+    );
+
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
     _hotkeyManager.addListener(func: _saveFile, action: HotkeyAction.generalSave);
@@ -164,6 +181,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _preferencesDialog.hide();
     _saveAsDialog.hide();
     _projectManagerDialog.hide();
+    _saveImportWarningDialog.hide();
+    _importDialog.hide();
   }
 
   void _newFile()
@@ -172,7 +191,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _closeAllMenus();
   }
 
-  void _loadPressed()
+  void _newOpenPressed()
   {
     _loadMenu.show(context: context);
   }
@@ -195,6 +214,33 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       _projectManagerDialog.show(context: context, callbackFunction: callback);
     }
+  }
+
+  void _importFile()
+  {
+    if (_appState.hasChanges.value)
+    {
+      _saveImportWarningDialog.show(context: context);
+    }
+    else
+    {
+      _saveBeforeImportFinished();
+    }
+  }
+
+  void _saveImportWarningYes()
+  {
+    _saveFile(callback: _saveBeforeImportFinished);
+  }
+
+  void _saveImportWarningNo()
+  {
+    _saveBeforeImportFinished();
+  }
+
+  void _saveBeforeImportFinished()
+  {
+    _importDialog.show(context: context);
   }
 
   void _saveLoadWarningYes()
@@ -295,6 +341,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     GetIt.I.get<PreferenceManager>().loadPreferences().then((void _){_closeAllMenus();});
   }
 
+  void _importImage({required final ImportData importData})
+  {
+    ImageImporter.import(importData: importData).then((final ImportResult result) { _closeAllMenus(); _appState.importFile(importResult: result);});
+  }
 
   @override
   Widget build(final BuildContext context) {
@@ -319,15 +369,15 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: CompositedTransformTarget(
                     link: _loadMenuLayerLink,
                     child: Tooltip(
-                      message: "Open...",
+                      message: "New/Open...",
                       waitDuration: AppState.toolTipDuration,
                       child: IconButton.outlined(
                         color: Theme.of(context).primaryColorLight,
                         icon:  FaIcon(
-                          FontAwesomeIcons.folderOpen,
+                          FontAwesomeIcons.folder,
                           size: _options.menuIconSize,
                         ),
-                        onPressed: _loadPressed,
+                        onPressed: _newOpenPressed,
                       ),
                     ),
                   ),

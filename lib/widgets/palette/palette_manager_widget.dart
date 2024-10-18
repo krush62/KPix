@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,10 +23,12 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:path/path.dart' as p;
 
 class PaletteManagerOptions
 {
@@ -195,6 +199,56 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     widget.dismiss();
   }
 
+  void _importPalettePressed()
+  {
+    FileHandler.getPathForKPalFile().then((final String? loadPath) {
+      _importFileChosen(path: loadPath);
+    });
+  }
+
+  void _importFileChosen({required final String? path})
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    if (path != null && path.isNotEmpty)
+    {
+      if (path.endsWith(FileHandler.fileExtensionKpal))
+      {
+        final String fileName = Helper.extractFilenameFromPath(path: path);
+        final String targetPath = p.join(appState.internalDir, FileHandler.palettesSubDirName, fileName);
+        if (!File(targetPath).existsSync())
+        {
+          File(path).copy(targetPath).then((final File newFile) {
+            _importFinished(newFile: newFile);
+          });
+        }
+        else
+        {
+          appState.showMessage(text: "A palette with the same name already exists!");
+        }
+      }
+      else
+      {
+        appState.showMessage(text: "Please select a KPal file!");
+      }
+    }
+  }
+
+  void _importFinished({required final File newFile})
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    if (newFile.existsSync())
+    {
+      _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
+        _paletteEntries.value = pList;
+      });
+      appState.showMessage(text: "Import successful!");
+    }
+    else
+    {
+      appState.showMessage(text: "Import failed!");
+    }
+  }
+
   @override
   Widget build(BuildContext context)
   {
@@ -243,16 +297,37 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
               children: [
                 Expanded(
                   flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: _alertOptions.iconSize,
+                  child: Tooltip(
+                    waitDuration: AppState.toolTipDuration,
+                    message: "Close",
+                    child: Padding(
+                      padding: EdgeInsets.all(_alertOptions.padding),
+                      child: IconButton.outlined(
+                        icon: FaIcon(
+                          FontAwesomeIcons.xmark,
+                          size: _alertOptions.iconSize,
+                        ),
+                        onPressed: _dismissPressed,
                       ),
-                      onPressed: _dismissPressed,
                     ),
                   )
+                ),
+                Expanded(
+                    flex: 1,
+                    child: Tooltip(
+                      message: "Import Palette",
+                      waitDuration: AppState.toolTipDuration,
+                      child: Padding(
+                        padding: EdgeInsets.all(_alertOptions.padding),
+                        child: IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.fileImport,
+                            size: _alertOptions.iconSize,
+                          ),
+                          onPressed: kIsWeb ? null : _importPalettePressed,
+                        ),
+                      ),
+                    )
                 ),
                 Expanded(
                   flex: 1,
@@ -305,7 +380,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                         builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
                           return IconButton.outlined(
                             icon: FaIcon(
-                              FontAwesomeIcons.fileImport,
+                              FontAwesomeIcons.check,
                               size: _alertOptions.iconSize,
                             ),
                             onPressed: selWidget != null ? _applyPalette : null,

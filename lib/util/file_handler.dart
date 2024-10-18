@@ -285,7 +285,77 @@ class FileHandler
     }
   }
 
-  static Future<String?> getPathForReferenceImage() async
+  static Future<String?> getPathForKPixFile() async
+  {
+    FilePickerResult? result;
+    if (Helper.isDesktop(includingWeb: true))
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
+          allowedExtensions: [fileExtensionKpix],
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    else //mobile
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    if (result != null && result.files.isNotEmpty)
+    {
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      return path;
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+  static Future<String?> getPathForKPalFile() async
+  {
+    FilePickerResult? result;
+    if (Helper.isDesktop(includingWeb: true))
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
+          allowedExtensions: [fileExtensionKpal],
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    else //mobile
+        {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    if (result != null && result.files.isNotEmpty)
+    {
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      return path;
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+  static Future<String?> getPathForImage() async
   {
     FilePickerResult? result;
     if (Helper.isDesktop(includingWeb: true))
@@ -396,6 +466,34 @@ class FileHandler
     {
       finishCallback();
     }
+  }
+
+  static Future<bool> copyImportFile({required final String inputPath, required final ui.Image image, required final String targetPath}) async
+  {
+    final String? pngPath = await Helper.replaceFileExtension(filePath: targetPath, newExtension: FileHandler.thumbnailExtension, inputFileMustExist: false);
+    final File projectFile = File(inputPath);
+    if (pngPath != null && await projectFile.exists())
+    {
+      final ByteData? pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (pngBytes != null)
+      {
+        await File(pngPath).writeAsBytes(pngBytes.buffer.asUint8List());
+        final File createdFile = await projectFile.copy(targetPath);
+        if (!await createdFile.exists())
+        {
+          return false;
+        }
+      }
+      else
+      {
+        return false;
+      }
+    }
+    else
+    {
+      return false;
+    }
+    return true;
   }
 
   static Future<bool> deleteProject({required final String fullProjectPath}) async

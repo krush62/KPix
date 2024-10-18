@@ -15,7 +15,7 @@
  */
 
 import 'dart:collection';
-import 'package:vector_math/vector_math.dart';
+
 
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
@@ -39,4 +39,3 @@ typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
 typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;
 typedef CoordinateColorNullable = MapEntry<CoordinateSetI, ColorReference?>;
-typedef VectorRamp = List<Vector3>;

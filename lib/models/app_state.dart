@@ -26,6 +26,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -215,7 +216,7 @@ class AppState
   void init({required CoordinateSetI dimensions})
   {
     setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
-    final List<DrawingLayerState> layerList = [];
+    final List<LayerState> layerList = [];
     _layers.value = layerList;
     addNewDrawingLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();
@@ -1226,6 +1227,33 @@ class AppState
           );
         },
         context: ToastProvider.context);
+  }
+
+  void importFile({required ImportResult importResult})
+  {
+    if (importResult.data != null)
+    {
+      final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
+      final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
+      setCanvasDimensions(width: drawingLayer.size.x, height: drawingLayer.size.y, addToHistoryStack: false);
+      drawingLayer.isSelected.value = true;
+      final List<LayerState> layerList = [];
+      layerList.add(drawingLayer);
+      if (referenceLayer != null)
+      {
+        layerList.add(referenceLayer);
+      }
+      _layers.value = layerList;
+      layerSelected(newLayer: drawingLayer);
+      _colorRamps.value = importResult.data!.rampDataList;
+      _selectedColor.value = _colorRamps.value[0].references[0];
+      GetIt.I.get<HistoryManager>().clear();
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+      projectName.value = null;
+      hasChanges.value = false;
+      hasProjectNotifier.value = true;
+    }
+    showMessage(text: importResult.message);
   }
 
 }

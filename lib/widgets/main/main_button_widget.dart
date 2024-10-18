@@ -26,6 +26,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -342,7 +343,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _importImage({required final ImportData importData})
   {
-    //TODO
+    ImageImporter.import(importData: importData).then((final ImportResult result) { _closeAllMenus(); _appState.importFile(importResult: result);});
   }
 
   @override

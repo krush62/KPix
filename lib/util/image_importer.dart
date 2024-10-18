@@ -14,41 +14,365 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
+import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/main/layer_widget.dart';
+import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:uuid/uuid.dart';
+
+class ImportDataSet
+{
+  final ReferenceLayerState? referenceLayer;
+  final DrawingLayerState drawingLayer;
+  final List<KPalRampData> rampDataList;
+
+  ImportDataSet({required this.referenceLayer, required this.rampDataList, required this.drawingLayer});
+}
+
+class ImportResult
+{
+  final ImportDataSet? data;
+  final String message;
+  ImportResult({this.data, required this.message});
+}
 
 class ImageImporter
 {
-  //TODO this should return the layer and the ramp
-  static Future<void> import({required final ImportData importData}) async
+  static Future<ImportResult> import({required final ImportData importData}) async
   {
-    final ByteData? imageData = await _loadImage(path: importData.filePath);
-    if (imageData == null)
+    final CanvasSizeOptions canvasSizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
+    final ui.Image? image = await _loadImage(path: importData.filePath);
+    if (image == null)
     {
-      return; //TODO error
+      return ImportResult(message: "Could not load image!");
     }
     else
     {
-      final List<HSVColor> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
-      //TODO do checks
-      List<List<HSVColor>> clusteredColors = await _adaptiveClusterWithMaxRamps(maxRamps: importData.maxRamps, colors: hsvColorList, initialClusters: 5); //TODO magic number
+      final ByteData? imageData = await image.toByteData();
+      if (imageData == null)
+      {
+        return ImportResult(message: "Could not convert image data!");
+      }
+      else
+      {
+        if (image.width > canvasSizeOptions.sizeMax || image.height > canvasSizeOptions.sizeMax)
+        {
+          return ImportResult(message: "Image dimensions cannot exceed ${canvasSizeOptions.sizeMax}x${canvasSizeOptions.sizeMax}!!");
+        }
+        else
+        {
+          final List<HSVColor> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
+          final List<HSVColor> distinctHsvColorList = hsvColorList.toSet().toList(growable: false);
+          final List<List<HSVColor>> clusteredColors = await _adaptiveClusterWithMaxRamps(maxRamps: importData.maxRamps, colors: distinctHsvColorList, initialClusters: 16);
 
+          final List<List<HSVColor>> interpolatedColors = [];
+          for (final List<HSVColor> clusterColorRamp in clusteredColors)
+          {
+            final List<HSVColor> interpolatedRamp = await _interpolateColorsFromRamp(ramp: clusterColorRamp, maxColors: importData.maxColors);
+            interpolatedColors.add(interpolatedRamp);
+          }
 
-      //TODO interpolating
+          final List<KPalRampData> ramps = [];
+          for (final List<HSVColor> interRamp in interpolatedColors)
+          {
+            ramps.add(await _getParamsFromColorList(colors: interRamp));
+          }
+
+          final DrawingLayerState drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: image.width, height: image.height, ramps: ramps);
+          ReferenceLayerState? referenceLayer;
+          if (importData.includeReference)
+          {
+            referenceLayer = await _getReferenceLayer(img: image, imgPath: importData.filePath);
+          }
+          _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
+          final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer);
+          return ImportResult(message: "SUCCESS", data: importDataSet);
+        }
+      }
     }
+  }
+
+  static Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, required final Set<ColorReference> references}) async
+  {
+    final List<bool> rampUsed = List.filled(ramps.length, false, growable: false);
+
+    for (final ColorReference reference in references)
+    {
+      for (int i = 0; i < ramps.length; i++)
+      {
+        if (ramps[i].references.contains(reference))
+        {
+          rampUsed[i] = true;
+          break;
+        }
+      }
+    }
+
+    final List<KPalRampData> deleteRamps = [];
+    for (int i = 0; i < rampUsed.length; i++)
+    {
+      if (rampUsed[i] == false)
+      {
+         deleteRamps.add(ramps[i]);
+      }
+    }
+
+    for (final KPalRampData deleteRamp in deleteRamps)
+    {
+      ramps.remove(deleteRamp);
+    }
+  }
+
+  static Future<ReferenceLayerState> _getReferenceLayer({required final ui.Image img, required final String imgPath}) async
+  {
+    final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+    final ReferenceLayerState refState = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
+    final ReferenceImage refImg = await GetIt.I.get<ReferenceImageManager>().addLoadedImage(path: imgPath, img: img);
+    refState.imageNotifier.value = refImg;
+    refState.thumbnail.value = refImg.image;
+    return refState;
+  }
+
+  static Future<DrawingLayerState> _createDrawingLayer({required final List<HSVColor> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+  {
+    final HashMap<CoordinateSetI, ColorReference?> layerContent = HashMap();
+    int row = 0;
+    int col = 0;
+    for (int i = 0; i < colorList.length; i++)
+    {
+      if (col >= width)
+      {
+        col = 0;
+        row++;
+      }
+      final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
+      final ColorReference reference = _findClosestColor(hsvColor: colorList[i], ramps: ramps);
+      layerContent[coord] = reference;
+      col++;
+    }
+    return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent);
+  }
+
+  static ColorReference _findClosestColor({required final HSVColor hsvColor, required final List<KPalRampData> ramps})
+  {
+    late ColorReference closestReference;
+    double closestDelta = double.maxFinite;
+
+    for (int i = 0; i < ramps.length; i++)
+    {
+      for (int j = 0; j < ramps[i].references.length; j++)
+      {
+        final Color convertColor = hsvColor.toColor();
+        final ColorReference reference = ramps[i].references[j];
+        /*final double delta = Helper.getDeltaE(
+            redA: reference.getIdColor().color.red,
+            greenA: reference.getIdColor().color.green,
+            blueA: reference.getIdColor().color.blue,
+            redB: convertColor.red,
+            greenB: convertColor.green,
+            blueB: convertColor.blue);*/
+        final int redDelta = (reference.getIdColor().color.red - convertColor.red).abs();
+        final int greenDelta = (reference.getIdColor().color.green - convertColor.green).abs();
+        final int blueDelta = (reference.getIdColor().color.blue - convertColor.blue).abs();
+        final double delta = (redDelta + greenDelta + blueDelta).toDouble();
+
+        if (delta < closestDelta || (i == 0 && j == 0))
+        {
+          closestReference = reference;
+          closestDelta = delta;
+        }
+      }
+    }
+    return closestReference;
+  }
+
+  static Future<KPalRampData> _getParamsFromColorList({required final List<HSVColor> colors}) async
+  {
+    colors.sort((a, b) => a.value.compareTo(b.value));
+    HSVColor virtualCenterColor;
+    if (colors.length % 2 == 0)
+    {
+      final int centerIndex2 = colors.length ~/ 2;
+      final int centerIndex1 = centerIndex2 - 1;
+      final HSVColor centerColor1 = colors[centerIndex1];
+      final HSVColor centerColor2 = colors[centerIndex2];
+
+      final double virtualCenterHue = _interpolateHue(hue1: centerColor1.hue, hue2: centerColor2.hue);
+      final double virtualCenterSaturation = (centerColor1.saturation + centerColor2.saturation) / 2;
+      final double virtualCenterValue = (centerColor1.value + centerColor2.value) / 2;
+      virtualCenterColor = HSVColor.fromAHSV(1.0, virtualCenterHue, virtualCenterSaturation, virtualCenterValue);
+    }
+    else
+    {
+      virtualCenterColor = colors[colors.length ~/ 2];
+    }
+    final double baseHue = virtualCenterColor.hue;
+    final double baseSaturation = virtualCenterColor.saturation;
+    final List<double> hueShifts = [];
+    for (int i = 1; i < colors.length; i++)
+    {
+      final double shift = (colors[i].hue - colors[i - 1].hue).abs();
+      hueShifts.add(shift);
+    }
+    double hueShift = hueShifts.reduce((a, b) => a + b) / hueShifts.length;
+    double hueShiftExponent = _estimateExponent(shifts: hueShifts);
+
+    // Calculate saturation shift and exponent
+    List<double> satShifts = [];
+    for (int i = 1; i < colors.length; i++) {
+      double shift = (colors[i].saturation - colors[i - 1].saturation).abs();
+      satShifts.add(shift);
+    }
+    final double saturationShift = satShifts.reduce((a, b) => a + b) / satShifts.length;
+    final double saturationShiftExponent = _estimateExponent(shifts: satShifts);
+
+    final SatCurve saturationCurveType = _detectSaturationCurve(colors: colors);
+
+    final double minValue = colors.first.value;
+    final double maxValue = colors.last.value;
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    final KPalRampSettings rampSettings = KPalRampSettings.fromValues(
+      constraints: constraints,
+      satShift: (saturationShift * 100).round(),
+      satShiftExp: saturationShiftExponent,
+      satCurve: saturationCurveType,
+      hueShift: hueShift.round(),
+      hueShiftExp: hueShiftExponent,
+      baseHue: baseHue.round(),
+      baseSat: (baseSaturation * 100).round(),
+      colorCount: colors.length,
+      valueRangeMin: (minValue * 100).round(),
+      valueRangeMax: (maxValue * 100).round()
+    );
+    //TODO maybe add shifts
+    return KPalRampData(uuid: Uuid().v1(), settings: rampSettings);
+
+  }
+
+  static SatCurve _detectSaturationCurve({required final List<HSVColor> colors})
+  {
+    final int colorCount = colors.length;
+    final int centerIndex1 = (colorCount ~/ 2) - 1;
+    final int centerIndex2 = colorCount ~/ 2;
+
+    final double firstSat = colors.first.saturation;
+    final double lastSat = colors.last.saturation;
+
+    final double virtualCenterSaturation = (colors[centerIndex1].saturation + colors[centerIndex2].saturation) / 2;
+    double linearError = 0.0;
+    for (int i = 0; i < colorCount; i++)
+    {
+      final double expectedSat = firstSat + (lastSat - firstSat) * (i / (colorCount - 1));
+      linearError += (colors[i].saturation - expectedSat).abs();
+    }
+
+    double keepDarkError = 0.0;
+    for (int i = 0; i <= centerIndex1; i++)
+    {
+      keepDarkError += (colors[i].saturation - firstSat).abs();
+    }
+    for (int i = centerIndex2; i < colorCount; i++)
+    {
+      final double expectedSat = firstSat + (lastSat - firstSat) * ((i - centerIndex1) / (colorCount - centerIndex1 - 1));
+      keepDarkError += (colors[i].saturation - expectedSat).abs();
+    }
+
+    double keepLightError = 0.0;
+    for (int i = 0; i <= centerIndex1; i++)
+    {
+      final double expectedSat = firstSat + (lastSat - firstSat) * (i / (centerIndex1));
+      keepLightError += (colors[i].saturation - expectedSat).abs();
+    }
+    for (int i = centerIndex2; i < colorCount; i++)
+    {
+      keepLightError += (colors[i].saturation - lastSat).abs();
+    }
+
+    double flipError = 0.0;
+    for (int i = 0; i <= centerIndex1; i++)
+    {
+      final double expectedSat = firstSat + (virtualCenterSaturation - firstSat) * (i / (centerIndex1));
+      flipError += (colors[i].saturation - expectedSat).abs();
+    }
+    for (int i = centerIndex2; i < colorCount; i++)
+    {
+      final double expectedSat = virtualCenterSaturation + (virtualCenterSaturation - lastSat) * ((i - centerIndex2) / (colorCount - centerIndex2 - 1));
+      flipError += (colors[i].saturation - expectedSat).abs();
+    }
+
+    Map<SatCurve, double> errors = {
+      SatCurve.linear: linearError,
+      SatCurve.darkFlat: keepDarkError,
+      SatCurve.brightFlat: keepLightError,
+      SatCurve.noFlat: flipError,
+    };
+
+    SatCurve bestFit = errors.keys.reduce((a, b) => errors[a]! < errors[b]! ? a : b);
+    return bestFit;
+  }
+
+  static double _estimateExponent({required final List<double> shifts})
+  {
+    final double avgShift = shifts.reduce((a, b) => a + b) / shifts.length;
+    if (avgShift == 0 || avgShift.isNaN)
+    {
+      return 1.0;
+    }
+
+    double exponentSum = 0.0;
+    int validShiftCount = 0;
+    for (int i = 1; i < shifts.length; i++)
+    {
+      if (shifts[i] != 0)
+      {
+        exponentSum += log(shifts[i] / avgShift).abs();
+        validShiftCount++;
+      }
+    }
+
+    if (validShiftCount == 0)
+    {
+      return 1.0;  // Default exponent when all shifts are zero
+    }
+
+    return exponentSum / validShiftCount;
+  }
+
+  static double _interpolateHue({required double hue1, required double hue2})
+  {
+    final double diff = (hue2 - hue1).abs();
+    if (diff > 180)
+    {
+      if (hue1  < hue2)
+      {
+        hue1 += 360;
+      }
+      else
+      {
+        hue2 += 360;
+      }
+    }
+    return (hue1 + hue2) / 2 % 360;
   }
 
 
 
-  static Future<ByteData?> _loadImage({required final String path}) async
+  static Future<ui.Image?> _loadImage({required final String path}) async
   {
     final File imageFile = File(path);
-    if (await imageFile.exists())
+    if (!await imageFile.exists())
     {
       return null;
     }
@@ -59,8 +383,7 @@ class ImageImporter
         final Uint8List imageBytes = await imageFile.readAsBytes();
         final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
         final ui.FrameInfo frame = await codec.getNextFrame();
-        final ui.Image image = frame.image;
-        return image.toByteData();
+        return frame.image;
       }
       catch(_)
       {
@@ -90,16 +413,25 @@ class ImageImporter
     List<List<HSVColor>> finalClusters = [];
     for (final List<HSVColor> cluster in clusters)
     {
-      final double variance = await _calculateClusterVariance(cluster: cluster);
-      if (variance > 0.05)  // Threshold for splitting
+      if (cluster.length >= 2)
       {
-        finalClusters.addAll(await _clusterByHue(colors: cluster, numClusters: 2));
+        final double variance = await _calculateClusterVariance(cluster: cluster);
+        if (variance > 0.05) //TODO magic number
+            {
+          finalClusters.addAll(await _clusterByHue(colors: cluster, numClusters: 2));
+        }
+        else
+        {
+          finalClusters.add(cluster);
+        }
       }
       else
       {
         finalClusters.add(cluster);
       }
+
     }
+    finalClusters.removeWhere((final List<HSVColor> element) => element.isEmpty);
     while (finalClusters.length > maxRamps)
     {
       await _mergeMostSimilarClusters(clusters: finalClusters);
@@ -164,19 +496,52 @@ class ImageImporter
   static Future<List<HSVColor>> _interpolateColorsFromRamp({required final List<HSVColor> ramp, required final int maxColors}) async
   {
     final List<HSVColor> interpolatedColors = [];
-    final HSVColor darkestColor = ramp.first;
-    final HSVColor lightestColor = ramp.last;
-    interpolatedColors.add(darkestColor);
-
-    // Linearly interpolate between colors
-    for (int i = 1; i < maxColors - 1; i++)
+    if (ramp.length == 1)
     {
-      final double factor = i / (maxColors - 1);
-      HSVColor interpolatedColor = _interpolateHSV(c1: darkestColor, c2: lightestColor, t: factor, originalRamp: ramp);
-      interpolatedColors.add(interpolatedColor);
+      final HSVColor singleColor = ramp[0];
+      double shift = singleColor.value;
+      if (singleColor.value > 0.5)
+      {
+        shift = 1.0 - singleColor.value;
+      }
+      final HSVColor darkerColor = HSVColor.fromAHSV(1.0, singleColor.hue, singleColor.saturation, singleColor.value - shift);
+      final HSVColor lighterColor = HSVColor.fromAHSV(1.0, singleColor.hue, singleColor.saturation, singleColor.value + shift);
+      interpolatedColors.add(darkerColor);
+      interpolatedColors.add(singleColor);
+      interpolatedColors.add(lighterColor);
     }
+    else if (ramp.length == 2)
+    {
+      HSVColor darkerColor = ramp[0];
+      HSVColor lighterColor = ramp[1];
+      HSVColor middleColor = _interpolateHSV(c1: darkerColor, c2: lighterColor, t: 0.5, originalRamp: ramp);
+      interpolatedColors.add(darkerColor);
+      interpolatedColors.add(middleColor);
+      interpolatedColors.add(lighterColor);
+      return interpolatedColors;
+    }
+    else if (ramp.length >= 3)
+    {
+      if ( ramp.length <= maxColors)
+      {
+        return List.from(ramp);
+      }
+      else
+      {
+        final HSVColor darkestColor = ramp.first;
+        final HSVColor lightestColor = ramp.last;
+        interpolatedColors.add(darkestColor);
 
-    interpolatedColors.add(lightestColor);
+        for (int i = 1; i < maxColors - 1; i++)
+        {
+          double factor = i / (maxColors - 1);
+          HSVColor interpolatedColor = _interpolateHSV(c1: darkestColor, c2: lightestColor, t: factor, originalRamp: ramp);
+          interpolatedColors.add(interpolatedColor);
+        }
+
+        interpolatedColors.add(lightestColor);
+      }
+    }
 
     return interpolatedColors;
   }

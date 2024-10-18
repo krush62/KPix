@@ -28,11 +28,12 @@ import 'package:kpix/widgets/overlay_entries.dart';
 
 class ImportData
 {
+  final int maxClusters;
   final int maxRamps;
   final int maxColors;
   final String filePath;
   final bool includeReference;
-  ImportData({required this.maxRamps, required this.maxColors, required this.filePath, required this.includeReference});
+  ImportData({required this.maxRamps, required this.maxColors, required this.filePath, required this.includeReference, required this.maxClusters});
 }
 
 class ImportWidget extends StatefulWidget
@@ -74,7 +75,7 @@ class _ImportWidgetState extends State<ImportWidget>
   {
     if (_fileNameNotifier.value != null) //should never happen
     {
-      final ImportData data = ImportData(filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value);
+      final ImportData data = ImportData(filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: _constraints.maxClusters);
       widget.import(importData: data);
     }
   }
@@ -171,8 +172,8 @@ class _ImportWidgetState extends State<ImportWidget>
                         return Slider(
                           value: maxRampValue.toDouble(),
                           min: _constraints.rampCountMin.toDouble(),
-                          max: _constraints.rampCountMax.toDouble(),
-                          divisions: _constraints.rampCountMax - _constraints.rampCountMin,
+                          max: _constraints.maxClusters.toDouble(),
+                          divisions: _constraints.maxClusters - _constraints.rampCountMin,
                           label: maxRampValue.toString(),
                           onChanged: (final double newValue) {
                             _maxRampsNotifier.value = newValue.round();

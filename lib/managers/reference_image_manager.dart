@@ -31,6 +31,22 @@ class ReferenceImageManager
 {
   final List<ReferenceImage> _images = [];
 
+  Future<ReferenceImage> addLoadedImage({required ui.Image img, required String path}) async
+  {
+    final String absolutePath = File(path).absolute.path;
+    final List<ReferenceImage> duplicateImages = _images.where((i) => i.path == absolutePath).toList();
+    if (duplicateImages.isNotEmpty)
+    {
+      return duplicateImages[0];
+    }
+    else
+    {
+      final ReferenceImage refImg = ReferenceImage(path: absolutePath, image: img);
+      _images.add(refImg);
+      return refImg;
+    }
+  }
+
   Future<ReferenceImage?> loadImageFile({required final String path}) async
   {
     try
@@ -54,7 +70,9 @@ class ReferenceImageManager
           final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
           final ui.FrameInfo frame = await codec.getNextFrame();
           final ui.Image image = frame.image;
-          return ReferenceImage(path: imageFile.absolute.path, image: image);
+          final ReferenceImage refImg = ReferenceImage(path: imageFile.absolute.path, image: image);
+          _images.add(refImg);
+          return refImg;
         }
       }
     }
@@ -63,6 +81,7 @@ class ReferenceImageManager
       return null;
     }
   }
+
 
   Future<void> removeImageByPath({required final String path}) async
   {

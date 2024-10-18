@@ -320,6 +320,41 @@ class FileHandler
     }
   }
 
+  static Future<String?> getPathForKPalFile() async
+  {
+    FilePickerResult? result;
+    if (Helper.isDesktop(includingWeb: true))
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
+          allowedExtensions: [fileExtensionKpal],
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    else //mobile
+        {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.any,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    if (result != null && result.files.isNotEmpty)
+    {
+      String path = result.files.first.name;
+      if (!kIsWeb && result.files.first.path != null)
+      {
+        path = result.files.first.path!;
+      }
+      return path;
+    }
+    else
+    {
+      return null;
+    }
+  }
+
   static Future<String?> getPathForImage() async
   {
     FilePickerResult? result;

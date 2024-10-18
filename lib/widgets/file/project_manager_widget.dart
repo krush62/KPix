@@ -312,7 +312,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                           FontAwesomeIcons.fileImport,
                           size: _alertOptions.iconSize,
                         ),
-                        onPressed: _importProjectPressed,
+                        onPressed: kIsWeb ? null : _importProjectPressed,
                       ),
                     ),
                   )

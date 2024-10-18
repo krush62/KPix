@@ -176,17 +176,17 @@ class ImageImporter
       {
         final Color convertColor = hsvColor.toColor();
         final ColorReference reference = ramps[i].references[j];
-        /*final double delta = Helper.getDeltaE(
+        final double delta = Helper.getDeltaE(
             redA: reference.getIdColor().color.red,
             greenA: reference.getIdColor().color.green,
             blueA: reference.getIdColor().color.blue,
             redB: convertColor.red,
             greenB: convertColor.green,
-            blueB: convertColor.blue);*/
-        final int redDelta = (reference.getIdColor().color.red - convertColor.red).abs();
+            blueB: convertColor.blue);
+        /*final int redDelta = (reference.getIdColor().color.red - convertColor.red).abs();
         final int greenDelta = (reference.getIdColor().color.green - convertColor.green).abs();
         final int blueDelta = (reference.getIdColor().color.blue - convertColor.blue).abs();
-        final double delta = (redDelta + greenDelta + blueDelta).toDouble();
+        final double delta = (redDelta + greenDelta + blueDelta).toDouble();*/
 
         if (delta < closestDelta || (i == 0 && j == 0))
         {

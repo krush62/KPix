@@ -244,8 +244,9 @@ class DrawingLayerState extends LayerState
   bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = {};
 
-  DrawingLayerState._({required CoordinateColorMap data2, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data2
+  DrawingLayerState._({required CoordinateColorMap data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
   {
+    isRasterizing = true;
     _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2));
     lockState.value = lState;
     visibilityState.value = vState;
@@ -256,12 +257,12 @@ class DrawingLayerState extends LayerState
 
   factory DrawingLayerState.from({required DrawingLayerState other})
   {
-    CoordinateColorMap data2 = HashMap();
+    CoordinateColorMap data = HashMap();
     for (final CoordinateColor ref in other._data.entries)
     {
-      data2[ref.key] = ref.value;
+      data[ref.key] = ref.value;
     }
-    return DrawingLayerState._(size: other.size, data2: data2, lState: other.lockState.value, vState: other.visibilityState.value);
+    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
   }
 
 
@@ -279,7 +280,7 @@ class DrawingLayerState extends LayerState
         }
       }
     }
-    return DrawingLayerState._(data2: data2, size: size);
+    return DrawingLayerState._(data: data2, size: size);
   }
 
   void updateTimerCallback({required final Timer timer}) async

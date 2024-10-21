@@ -105,7 +105,7 @@ class ColorReference
   ColorReference({required this.colorIndex, required this.ramp});
   IdColor getIdColor()
   {
-    return ramp.shiftedColors[colorIndex].value;
+    return ramp.shiftedColors[colorIndex.clamp(0, ramp.shiftedColors.length - 1)].value;
   }
 
   @override

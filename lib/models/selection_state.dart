@@ -510,6 +510,7 @@ class SelectionState with ChangeNotifier
       if (notify)
       {
         notifyRepaint();
+        drawingLayer.doManualRaster = true;
       }
     }
   }
@@ -537,6 +538,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
+          drawingLayer.doManualRaster = true;
         }
       }
     }
@@ -662,6 +664,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
+          drawingLayer.doManualRaster = true;
         }
       }
     }
@@ -692,11 +695,10 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
+          drawingLayer.doManualRaster = true;
         }
       }
     }
-
-
   }
 
   void flipV({final bool notify = true, final bool addToHistoryStack = true})
@@ -724,6 +726,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
+          drawingLayer.doManualRaster = true;
         }
       }
     }
@@ -754,6 +757,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
+          drawingLayer.doManualRaster = true;
         }
       }
     }

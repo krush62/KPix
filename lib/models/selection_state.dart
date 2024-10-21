@@ -586,7 +586,7 @@ class SelectionState with ChangeNotifier
       {
         if (layer.runtimeType == DrawingLayerState)
         {
-          final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+          final DrawingLayerState drawingLayer = layer as DrawingLayerState;
           ColorReference? colRef = drawingLayer.getDataEntry(coord: coord);
           if (drawingLayer == _appState.currentLayer)
           {

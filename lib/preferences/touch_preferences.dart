@@ -47,10 +47,10 @@ class TouchPreferenceContent
   })
   {
     return TouchPreferenceContent._(
-      singleTouchDelay: ValueNotifier(max(min(singleTouchDelay, singleTouchDelayMax), singleTouchDelayMin)),
+      singleTouchDelay: ValueNotifier(singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax)),
       singleTouchDelayMin: singleTouchDelayMin,
       singleTouchDelayMax: singleTouchDelayMax,
-      zoomStepDistance: ValueNotifier(max(min(zoomStepDistance, zoomStepDistanceMax), zoomStepDistanceMin)),
+      zoomStepDistance: ValueNotifier(zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax)),
       zoomStepDistanceMin: zoomStepDistanceMin,
       zoomStepDistanceMax: zoomStepDistanceMax
     );

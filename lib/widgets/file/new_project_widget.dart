@@ -52,7 +52,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      _width.value = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
+      _width.value = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
     }
   }
 
@@ -61,14 +61,14 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      _height.value = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
+      _height.value = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
     }
   }
 
   void _setResolutionViaButton({required final int width, required final int height})
   {
-    _width.value = min(max(width, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
-    _height.value = min(max(height, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
+    _width.value = width.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+    _height.value = height.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
   }
 
   @override

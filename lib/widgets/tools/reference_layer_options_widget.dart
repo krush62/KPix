@@ -153,11 +153,11 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
       final double scalingFactor = targetAspectRatioX / referenceAspectRatioX;
       if (scalingFactor > 1)
       {
-        widget.referenceState.aspectRatioNotifier.value = max(min(targetAspectRatioX - 1, _refSettings.aspectRatioMax), _refSettings.aspectRatioMin);
+        widget.referenceState.aspectRatioNotifier.value = (targetAspectRatioX - 1).clamp(_refSettings.aspectRatioMin, _refSettings.aspectRatioMax);
       }
       else
       {
-        widget.referenceState.aspectRatioNotifier.value = max(min((-(1.0 / scalingFactor) + 1), _refSettings.aspectRatioMax), _refSettings.aspectRatioMin);
+        widget.referenceState.aspectRatioNotifier.value = (-(1.0 / scalingFactor) + 1).clamp(_refSettings.aspectRatioMin, _refSettings.aspectRatioMax);
       }
       final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);

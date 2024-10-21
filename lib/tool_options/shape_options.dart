@@ -437,7 +437,7 @@ class ShapeOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    strokeWidth.value = min(max(originalValue + steps, strokeWidthMin), strokeWidthMax);
+    strokeWidth.value = (originalValue + steps).clamp(strokeWidthMin, strokeWidthMax);
   }
 
   @override

@@ -213,7 +213,7 @@ class StampOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    scale.value = min(max(originalValue + steps, scaleMin), scaleMax);
+    scale.value = (originalValue + steps).clamp(scaleMin, scaleMax);
   }
 
   @override

@@ -81,22 +81,22 @@ class StylusPreferenceContent
   })
   {
     return StylusPreferenceContent._(
-      stylusLongPressCancelDistance: ValueNotifier(max(min(stylusLongPressCancelDistance, stylusLongPressCancelDistanceMax), stylusLongPressCancelDistanceMin)),
+      stylusLongPressCancelDistance: ValueNotifier(stylusLongPressCancelDistance.clamp(stylusLongPressCancelDistanceMin, stylusLongPressCancelDistanceMax)),
       stylusLongPressCancelDistanceMin: stylusLongPressCancelDistanceMin,
       stylusLongPressCancelDistanceMax: stylusLongPressCancelDistanceMax,
-      stylusLongPressDelay: ValueNotifier(max(min(stylusLongPressDelay, stylusLongPressDelayMax), stylusLongPressDelayMin)),
+      stylusLongPressDelay: ValueNotifier(stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax)),
       stylusLongPressDelayMin: stylusLongPressDelayMin,
       stylusLongPressDelayMax: stylusLongPressDelayMax,
-      stylusPollInterval: ValueNotifier(max(min(stylusPollInterval, stylusLongPressDelayMax), stylusLongPressDelayMin)),
+      stylusPollInterval: ValueNotifier(stylusPollInterval.clamp(stylusPollIntervalMin, stylusPollIntervalMax)),
       stylusPollIntervalMin: stylusLongPressDelayMin,
       stylusPollIntervalMax: stylusLongPressDelayMax,
-      stylusSizeStepDistance: ValueNotifier(max(min(stylusSizeStepDistance, stylusSizeStepDistanceMax), stylusSizeStepDistanceMin)),
+      stylusSizeStepDistance: ValueNotifier(stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax)),
       stylusSizeStepDistanceMin: stylusSizeStepDistanceMin,
       stylusSizeStepDistanceMax: stylusSizeStepDistanceMax,
-      stylusZoomStepDistance: ValueNotifier(max(min(stylusZoomStepDistance, stylusZoomStepDistanceMax), stylusZoomStepDistanceMin)),
+      stylusZoomStepDistance: ValueNotifier(stylusZoomStepDistance.clamp(stylusZoomStepDistanceMin, stylusZoomStepDistanceMax)),
       stylusZoomStepDistanceMin: stylusZoomStepDistanceMin,
       stylusZoomStepDistanceMax: stylusZoomStepDistanceMax,
-      stylusPickMaxDuration: ValueNotifier(max(min(stylusPickMaxDuration, stylusPickMaxDurationMax), stylusPickMaxDurationMin)),
+      stylusPickMaxDuration: ValueNotifier(stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax)),
       stylusPickMaxDurationMin: stylusPickMaxDurationMin,
       stylusPickMaxDurationMax: stylusLongPressDelayMax
     );

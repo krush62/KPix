@@ -187,7 +187,7 @@ class LineOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    width.value = min(max(originalValue + steps, widthMin), widthMax);
+    width.value = (originalValue + steps).clamp(widthMin, widthMax);
   }
 
   @override

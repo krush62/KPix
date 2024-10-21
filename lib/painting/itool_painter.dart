@@ -462,7 +462,7 @@ abstract class IToolPainter
       {
         if (!shaderOptions.isEnabled.value) //without shading
         {
-          final int index = min(max(selectedColor.colorIndex + stampEntry.value, 0), selectedColor.ramp.shiftedColors.length - 1);
+          final int index = (selectedColor.colorIndex + stampEntry.value).clamp(0, selectedColor.ramp.shiftedColors.length - 1);
           final ColorReference drawColor = selectedColor.ramp.references[index];
           //if no selection and current pixel is different
           if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != drawColor) ||
@@ -487,12 +487,12 @@ abstract class IToolPainter
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
-              final int index = min(max(layerRef.colorIndex + stampEntry.value + 1, 0), layerRef.ramp.shiftedColors.length - 1);
+              final int index = (layerRef.colorIndex + stampEntry.value + 1).clamp(0, layerRef.ramp.shiftedColors.length - 1);
               pixelMap[coord] = layerRef.ramp.references[index];
             }
             else
             {
-              final int index = min(max(layerRef.colorIndex - stampEntry.value - 1, 0), layerRef.ramp.shiftedColors.length - 1);
+              final int index = (layerRef.colorIndex - stampEntry.value - 1).clamp(0, layerRef.ramp.shiftedColors.length - 1);
               pixelMap[coord] = layerRef.ramp.references[index];
             }
           }

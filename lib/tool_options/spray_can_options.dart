@@ -169,7 +169,7 @@ class SprayCanOptions extends IToolOptions
   @override
   void changeSize({required int steps, required int originalValue})
   {
-    radius.value = min(max(originalValue + steps, radiusMin), radiusMax);
+    radius.value = (originalValue + steps).clamp(radiusMin, radiusMax);
   }
 
   @override

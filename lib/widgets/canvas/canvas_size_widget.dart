@@ -90,7 +90,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      final int val = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
+      final int val = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
       final CoordinateSetI newCoords = CoordinateSetI(x: val, y: _size.value.y);
       _setSize(newSize: newCoords);
     }
@@ -112,7 +112,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      final int val = min(max(parsedVal, _sizeOptions.sizeMin), _sizeOptions.sizeMax);
+      final int val = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
       final CoordinateSetI newCoords = CoordinateSetI(x: _size.value.x, y: val);
       _setSize(newSize: newCoords);
     }
@@ -162,8 +162,8 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _maxOffset.value = oMax;
 
     final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
-    newOffset.x = min(max(newOffset.x, _minOffset.value.x), _maxOffset.value.x);
-    newOffset.y = min(max(newOffset.y, _minOffset.value.y), _maxOffset.value.y);
+    newOffset.x = newOffset.x.clamp(_minOffset.value.x, _maxOffset.value.x);
+    newOffset.y = newOffset.y.clamp(_minOffset.value.y, _maxOffset.value.y);
     _offset.value = newOffset;
 
   }
@@ -179,7 +179,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      final int val = min(max(parsedVal, _minOffset.value.x), _maxOffset.value.x);
+      final int val = parsedVal.clamp(_minOffset.value.x, _maxOffset.value.x);
       final CoordinateSetI newCoords = CoordinateSetI(x: val, y: _offset.value.y);
       _offset.value = newCoords;
     }
@@ -201,7 +201,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     final int? parsedVal = int.tryParse(newVal);
     if (parsedVal != null)
     {
-      final int val = min(max(parsedVal, _minOffset.value.y), _maxOffset.value.y);
+      final int val = parsedVal.clamp(_minOffset.value.y, _maxOffset.value.y);
       final CoordinateSetI newCoords = CoordinateSetI(x: _offset.value.x, y: val);
       _offset.value = newCoords;
     }

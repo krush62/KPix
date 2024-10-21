@@ -35,7 +35,7 @@ class BehaviorPreferenceContent
   factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin})
   {
       return BehaviorPreferenceContent._(
-        undoSteps: ValueNotifier(max(min(undoSteps, undoStepsMax), undoStepsMin)),
+        undoSteps: ValueNotifier(undoSteps.clamp(undoStepsMin, undoStepsMax)),
         selectShapeAfterInsert: ValueNotifier(selectAfterInsert),
         selectLayerAfterInsert: ValueNotifier(selectLayerAfterInsert),
         undoStepsMax: undoStepsMax,

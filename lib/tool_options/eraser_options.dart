@@ -130,7 +130,7 @@ class EraserOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    size.value = min(max(originalValue + steps, sizeMin), sizeMax);
+    size.value = (originalValue + steps).clamp(sizeMin, sizeMax);
   }
 
   @override

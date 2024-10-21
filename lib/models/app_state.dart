@@ -985,7 +985,7 @@ class AppState
     for (int i = 0; i < oldLength; i++)
     {
       final int dist = i - centerOld;
-      final int newIndex = min(max(0, centerNew + dist), newLength - 1);
+      final int newIndex = (centerNew + dist).clamp(0, newLength - 1);
       indexMap[i] = newIndex;
     }
 

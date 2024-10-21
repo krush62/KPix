@@ -81,7 +81,7 @@ class GuiPreferenceContent
   {
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
-    final int rasterContrastNormalized = max(min(rasterContrast, rasterContrastMax), rasterContrastMin);
+    final int rasterContrastNormalized = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
     final ColorNameScheme colorNameScheme = colorNameSchemeIndexMap[colorNameSchemeValue]?? ColorNameScheme.general;
 
     return GuiPreferenceContent._(

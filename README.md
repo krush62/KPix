@@ -115,7 +115,7 @@ Extract the contents of the Linux tar.gz Package and run kpix to start the appli
 Download the Android apk file and install it manually.\
 *Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
 #### Google Play Store Internal Testing
-There is currently an internal testing happening on Google Play Store. You can participate [here](https://play.google.com/apps/internaltest/4701505348022193179).\
+There is currently an internal testing happening on Google Play Store. You can participate [here](https://play.google.com/store/apps/details?id=de.krush62.kpix).\
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
 [//]: # (### macOS)

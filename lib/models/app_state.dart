@@ -475,6 +475,7 @@ class AppState
       _restoreState(historyState: loadFileSet.historyState);
       projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
       hasChanges.value = false;
+      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     }
     else
     {

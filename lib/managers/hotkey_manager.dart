@@ -246,6 +246,19 @@ class HotkeyManager
     return result;
   }
 
+  void triggerShortcut({required final HotkeyAction action})
+  {
+    Iterable<SingleActivator> foundActivators = _shortCutMap.keys.where((e) => _shortCutMap[e] == action);
+    for (final SingleActivator act in foundActivators)
+    {
+      VoidCallback? f = _callbackMap.value[act];
+      if (f != null)
+      {
+        f();
+      }
+    }
+  }
+
   void _createShortcuts()
   {
     _shortCutMap.clear();

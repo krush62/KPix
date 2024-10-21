@@ -18,6 +18,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 
@@ -86,6 +87,11 @@ class StatusBarWidget extends StatefulWidget
 
 class _StatusBarWidgetState extends State<StatusBarWidget>
 {
+  void _zoomPressed()
+  {
+    GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+  }
+
   @override
   Widget build(final BuildContext context) {
     return Column(
@@ -185,11 +191,14 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   ),
                   Expanded(
                     flex: 1,
-                    child: _StatusBarWidgetEntry(
-                      listenable: widget.zoomFactorString,
-                      icon: FontAwesomeIcons.magnifyingGlass,
-                      iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                    child: GestureDetector(
+                      onTap: _zoomPressed,
+                      child: _StatusBarWidgetEntry(
+                        listenable: widget.zoomFactorString,
+                        icon: FontAwesomeIcons.magnifyingGlass,
+                        iconSize: widget.iconSize,
+                        padding: widget.options.padding,
+                      ),
                     )
                   ),
                 ],

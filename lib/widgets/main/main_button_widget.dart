@@ -348,7 +348,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _importImage({required final ImportData importData})
   {
     _importLoadingDialog.show(context: context);
-    ImageImporter.import(importData: importData).then((final ImportResult result) { _closeAllMenus(); _appState.importFile(importResult: result);});
+    ImageImporter.import(importData: importData).then((final ImportResult result)
+    {
+      _appState.importFile(importResult: result);
+      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      _closeAllMenus();
+    });
   }
 
   @override
@@ -511,5 +516,4 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       )
     );
   }
-
 }

@@ -157,9 +157,12 @@ class ImageImporter
         col = 0;
         row++;
       }
-      final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
-      final ColorReference reference = _findClosestColor(hsvColor: colorList[i], ramps: ramps);
-      layerContent[coord] = reference;
+      if (colorList[i].alpha > 0.0)
+      {
+        final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
+        final ColorReference reference = _findClosestColor(hsvColor: colorList[i], ramps: ramps);
+        layerContent[coord] = reference;
+      }
       col++;
     }
     return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent);

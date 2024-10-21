@@ -200,6 +200,7 @@ class ImageImporter
 
   static Future<KPalRampData> _getParamsFromColorList({required final List<HSVColor> colors}) async
   {
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     colors.sort((a, b) => a.value.compareTo(b.value));
     HSVColor virtualCenterColor;
     if (colors.length % 2 == 0)
@@ -220,14 +221,18 @@ class ImageImporter
     }
     final double baseHue = virtualCenterColor.hue;
     final double baseSaturation = virtualCenterColor.saturation;
-    final List<double> hueShifts = [];
+
+    List<double> hueShifts = [];
     for (int i = 1; i < colors.length; i++)
     {
       final double shift = (colors[i].hue - colors[i - 1].hue).abs();
       hueShifts.add(shift);
     }
     double hueShift = hueShifts.reduce((a, b) => a + b) / hueShifts.length;
-    double hueShiftExponent = _estimateExponent(shifts: hueShifts);
+    double hueShiftExponent = _estimateExponent(shifts: hueShifts).clamp(constraints.hueShiftExpMin, constraints.hueShiftExpMax);
+    hueShifts = _recalculateShifts(originalShifts: hueShifts, clampedExponent: hueShiftExponent);
+    hueShift = hueShifts.reduce((a, b) => a + b) / hueShifts.length;
+    hueShift = hueShift.clamp(constraints.hueShiftMin.toDouble() / 100.0, constraints.hueShiftMax.toDouble() / 100.0);
 
     // Calculate saturation shift and exponent
     List<double> satShifts = [];
@@ -235,14 +240,16 @@ class ImageImporter
       double shift = (colors[i].saturation - colors[i - 1].saturation).abs();
       satShifts.add(shift);
     }
-    final double saturationShift = satShifts.reduce((a, b) => a + b) / satShifts.length;
-    final double saturationShiftExponent = _estimateExponent(shifts: satShifts);
+    double saturationShift = satShifts.reduce((a, b) => a + b) / satShifts.length;
+    final double saturationShiftExponent = _estimateExponent(shifts: satShifts).clamp(constraints.satShiftExpMin, constraints.satShiftExpMax);
+    satShifts = _recalculateShifts(originalShifts: satShifts, clampedExponent: saturationShiftExponent);
+    saturationShift = satShifts.reduce((a, b) => a + b) / satShifts.length;
+    saturationShift = saturationShift.clamp(constraints.satShiftMin.toDouble() / 100.0, constraints.satShiftMax.toDouble() / 100.0);
 
     final SatCurve saturationCurveType = _detectSaturationCurve(colors: colors);
 
     final double minValue = colors.first.value;
     final double maxValue = colors.last.value;
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     final KPalRampSettings rampSettings = KPalRampSettings.fromValues(
       constraints: constraints,
       satShift: (saturationShift * 100).round(),
@@ -259,6 +266,17 @@ class ImageImporter
     //TODO maybe add shifts
     return KPalRampData(uuid: Uuid().v1(), settings: rampSettings);
 
+  }
+
+  static List<double> _recalculateShifts({required final List<double> originalShifts, required final double clampedExponent})
+  {
+    final int shiftCount = originalShifts.length;
+    final List<double> adjustedShifts = List.filled(shiftCount, 0);
+    for (int i = 0; i < shiftCount; i++)
+    {
+      adjustedShifts[i] = pow(originalShifts[i].abs(), clampedExponent).toDouble();
+    }
+    return adjustedShifts;
   }
 
   static SatCurve _detectSaturationCurve({required final List<HSVColor> colors})

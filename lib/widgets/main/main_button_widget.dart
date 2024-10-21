@@ -71,6 +71,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _saveAsDialog;
   late KPixOverlay _projectManagerDialog;
   late KPixOverlay _importDialog;
+  late KPixOverlay _importLoadingDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -135,6 +136,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onAcceptImage: _importImage
     );
 
+    _importLoadingDialog = OverlayEntries.getLoadingDialog(message: "Importing Image...");
+
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
     _hotkeyManager.addListener(func: _saveFile, action: HotkeyAction.generalSave);
@@ -183,6 +186,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _projectManagerDialog.hide();
     _saveImportWarningDialog.hide();
     _importDialog.hide();
+    _importLoadingDialog.hide();
   }
 
   void _newFile()
@@ -343,6 +347,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _importImage({required final ImportData importData})
   {
+    _importLoadingDialog.show(context: context);
     ImageImporter.import(importData: importData).then((final ImportResult result) { _closeAllMenus(); _appState.importFile(importResult: result);});
   }
 

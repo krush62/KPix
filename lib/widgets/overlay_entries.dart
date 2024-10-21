@@ -1087,4 +1087,51 @@ class OverlayEntries
     ));
   }
 
+  static KPixOverlay getLoadingDialog({required final String message})
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+      entry: OverlayEntry(
+        builder: (context) => Stack(
+          children: [
+            ModalBarrier(
+              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              onDismiss: null, //() {onDismiss();},
+            ),
+            Center(
+              child: Material(
+                elevation: options.elevation,
+                shadowColor: Theme.of(context).primaryColorDark,
+                borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: options.maxHeight / 4.0,
+                    maxWidth: options.maxWidth / 2.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    border: Border.all(
+                      color: Theme.of(context).primaryColorLight,
+                      width: options.borderWidth,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                  ),
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(options.padding),
+                      child: Text(
+                        message,
+                        style: Theme.of(context).textTheme.headlineLarge,
+                      ),
+                    ),
+                  )
+                )
+              )
+            ),
+          ]
+        )
+      )
+    );
+  }
+
 }

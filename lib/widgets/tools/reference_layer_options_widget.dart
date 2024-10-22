@@ -15,6 +15,8 @@
  */
 
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -71,15 +73,16 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
 
   void _onLoadPressed()
   {
-    FileHandler.getPathForImage().then((final String? loadPath) {
-      _loadPathChosen(loadPath: loadPath);
+    FileHandler.getPathAndDataForImage().then((final (String?, Uint8List?) loadData,) {
+      _loadPathChosen(loadPath: loadData.$1, imageData: loadData.$2);
     });
   }
 
-  void _loadPathChosen({required final String? loadPath})
+  void _loadPathChosen({required final String? loadPath, required final Uint8List? imageData})
   {
-    if (loadPath != null && loadPath.isNotEmpty) {
-      _refManager.loadImageFile(path: loadPath).then((final ReferenceImage? img)
+    if (loadPath != null && loadPath.isNotEmpty)
+    {
+      _refManager.loadImageFile(path: loadPath, imageData: imageData).then((final ReferenceImage? img)
       {
         if (img != null)
         {

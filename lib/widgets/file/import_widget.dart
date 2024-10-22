@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -32,8 +34,9 @@ class ImportData
   final int maxRamps;
   final int maxColors;
   final String filePath;
+  final Uint8List? imageBytes;
   final bool includeReference;
-  ImportData({required this.maxRamps, required this.maxColors, required this.filePath, required this.includeReference, required this.maxClusters});
+  ImportData({required this.maxRamps, required this.maxColors, required this.filePath, required this.includeReference, required this.maxClusters, required this.imageBytes});
 }
 
 class ImportWidget extends StatefulWidget
@@ -54,6 +57,7 @@ class _ImportWidgetState extends State<ImportWidget>
   late ValueNotifier<int> _maxColorsPerRampNotifier;
   final ValueNotifier<String?> _fileNameNotifier = ValueNotifier(null);
   final ValueNotifier<bool> _includeReferenceNotifier = ValueNotifier(false);
+  Uint8List? _imageData;
 
   @override
   void initState()
@@ -66,8 +70,9 @@ class _ImportWidgetState extends State<ImportWidget>
 
   void _chooseImagePressed()
   {
-    FileHandler.getPathForImage().then((final String? loadPath) {
-      _fileNameNotifier.value = loadPath;
+    FileHandler.getPathAndDataForImage().then((final (String?, Uint8List?) loadData) {
+      _fileNameNotifier.value = loadData.$1;
+      _imageData = loadData.$2;
     });
   }
 
@@ -75,7 +80,7 @@ class _ImportWidgetState extends State<ImportWidget>
   {
     if (_fileNameNotifier.value != null) //should never happen
     {
-      final ImportData data = ImportData(filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: _constraints.maxClusters);
+      final ImportData data = ImportData(filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: _constraints.maxClusters, imageBytes: _imageData);
       widget.import(importData: data);
     }
   }

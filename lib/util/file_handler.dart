@@ -355,14 +355,23 @@ class FileHandler
     }
   }
 
-  static Future<String?> getPathForImage() async
+  static Future<(String?, Uint8List?)> getPathAndDataForImage() async
   {
     FilePickerResult? result;
-    if (Helper.isDesktop(includingWeb: true))
+    if (Helper.isDesktop(includingWeb: false))
     {
       result = await FilePicker.platform.pickFiles(
           allowMultiple: false,
           type: FileType.image,
+          allowedExtensions: imageExtensions,
+          initialDirectory: GetIt.I.get<AppState>().exportDir
+      );
+    }
+    else if (kIsWeb)
+    {
+      result = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
           allowedExtensions: imageExtensions,
           initialDirectory: GetIt.I.get<AppState>().exportDir
       );
@@ -382,11 +391,11 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      return path;
+      return (path, result.files.first.bytes);
     }
     else
     {
-      return null;
+      return (null, null);
     }
   }
 

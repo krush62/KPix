@@ -19,6 +19,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
+
 class ReferenceImage
 {
   final String path;
@@ -47,11 +49,11 @@ class ReferenceImageManager
     }
   }
 
-  Future<ReferenceImage?> loadImageFile({required final String path}) async
+  Future<ReferenceImage?> loadImageFile({required final String path, final Uint8List? imageData}) async
   {
     try
     {
-      final String absolutePath = File(path).absolute.path;
+      final String absolutePath = kIsWeb ? path : File(path).absolute.path;
       final List<ReferenceImage> duplicateImages = _images.where((i) => i.path == absolutePath).toList();
       if (duplicateImages.isNotEmpty)
       {
@@ -60,17 +62,17 @@ class ReferenceImageManager
       else
       {
         final File imageFile = File(path);
-        if (!await imageFile.exists())
+        if (imageData == null && !await imageFile.exists())
         {
           return null;
         }
         else
         {
-          final Uint8List imageBytes = await imageFile.readAsBytes();
+          final Uint8List imageBytes = imageData ?? await imageFile.readAsBytes();
           final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
           final ui.FrameInfo frame = await codec.getNextFrame();
           final ui.Image image = frame.image;
-          final ReferenceImage refImg = ReferenceImage(path: imageFile.absolute.path, image: image);
+          final ReferenceImage refImg = ReferenceImage(path: kIsWeb ? path : imageFile.absolute.path, image: image);
           _images.add(refImg);
           return refImg;
         }

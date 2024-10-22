@@ -20,6 +20,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -53,7 +54,7 @@ class ImageImporter
   static Future<ImportResult> import({required final ImportData importData}) async
   {
     final CanvasSizeOptions canvasSizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
-    final ui.Image? image = await _loadImage(path: importData.filePath);
+    final ui.Image? image = await _loadImage(path: importData.filePath, bytes: importData.imageBytes);
     if (image == null)
     {
       return ImportResult(message: "Could not load image!");
@@ -390,10 +391,10 @@ class ImageImporter
 
 
 
-  static Future<ui.Image?> _loadImage({required final String path}) async
+  static Future<ui.Image?> _loadImage({required final String path, final Uint8List? bytes}) async
   {
     final File imageFile = File(path);
-    if (!await imageFile.exists())
+    if (bytes == null && !await imageFile.exists())
     {
       return null;
     }
@@ -401,7 +402,7 @@ class ImageImporter
     {
       try
       {
-        final Uint8List imageBytes = await imageFile.readAsBytes();
+        final Uint8List imageBytes = bytes ?? await imageFile.readAsBytes();
         final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
         final ui.FrameInfo frame = await codec.getNextFrame();
         return frame.image;
@@ -412,6 +413,8 @@ class ImageImporter
       }
     }
   }
+
+
 
   static Future<List<HSVColor>> _extractColorsFromImage({required final ByteData imgBytes}) async
   {

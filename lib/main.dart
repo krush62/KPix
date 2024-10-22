@@ -227,7 +227,11 @@ class _KPixAppState extends State<KPixApp>
       _hasProjectChanged();
     }
 
-    await FileHandler.createInternalDirectories();
+    if (!kIsWeb)
+    {
+      await FileHandler.createInternalDirectories();
+    }
+
 
     initialized.value = true;
 

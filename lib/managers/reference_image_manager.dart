@@ -34,7 +34,7 @@ class ReferenceImageManager
 
   Future<ReferenceImage> addLoadedImage({required ui.Image img, required String path}) async
   {
-    final String absolutePath = File(path).absolute.path;
+    final String absolutePath = kIsWeb ? path : File(path).absolute.path;
     final List<ReferenceImage> duplicateImages = _images.where((i) => i.path == absolutePath).toList();
     if (duplicateImages.isNotEmpty)
     {

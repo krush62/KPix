@@ -121,9 +121,9 @@ Feedback can be shared via the [discussions page](https://github.com/krush62/KPi
 [//]: # (### macOS)
 [//]: # (### iOS/iPadOS)
 ### Web Version
-A html/javascript version can be found here: [KPix Web](https://andikrusch.com/kpix/) (the server will change at some point). This version has some limitations:
+A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)). The web version has some limitations:
 - General performance is lower compared to the native versions
-- No project manager (simple load and save)
+- No project manager (simple load and save via up/download)
 - No palette import
 - Limited stylus and keyboard shortcut support
 

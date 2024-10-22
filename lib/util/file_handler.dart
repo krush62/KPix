@@ -845,13 +845,8 @@ class FileHandler
     final List<String> imageAssetsList = assetManifest.listAssets().where((final String string) => (string.startsWith("palettes/") && string.endsWith(".${FileHandler.fileExtensionKpal}"))).toList();
     for (final String filePath in imageAssetsList)
     {
-      Uint8List? byteData;
-      if (kIsWeb || !Helper.isDesktop())
-      {
-          ByteData bytes = await rootBundle.load(filePath);
-          byteData = bytes.buffer.asUint8List();
-      }
-
+      final ByteData bytes = await rootBundle.load(filePath);
+      final Uint8List byteData = bytes.buffer.asUint8List();
       LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: byteData, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
       if (palSet.rampData != null)
       {

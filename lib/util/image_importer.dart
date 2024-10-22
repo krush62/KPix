@@ -256,7 +256,7 @@ class ImageImporter
     final double maxValue = colors.last.value;
     final KPalRampSettings rampSettings = KPalRampSettings.fromValues(
       constraints: constraints,
-      satShift: (saturationShift * 100).round(),
+      satShift: (saturationShift * 100).round() * -1,
       satShiftExp: saturationShiftExponent,
       satCurve: saturationCurveType,
       hueShift: hueShift.round(),

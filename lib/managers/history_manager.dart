@@ -252,7 +252,8 @@ class HistoryManager
   {
     if (_curPos >= 0 && _curPos < _states.length - 1)
     {
-      for (int i = 0; i < (_states.length - _curPos + 1); i++)
+      final int removeCount = _states.length - (_curPos + 1);
+      for (int i = 0; i < removeCount; i++)
       {
         _states.removeLast();
       }

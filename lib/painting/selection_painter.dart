@@ -61,7 +61,7 @@ class SelectionPainter extends IToolPainter
         _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
       }
 
-      _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
+      _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null;
       if (_isStartOnCanvas)
       {
         _shouldMove = (drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) &&
@@ -87,10 +87,10 @@ class SelectionPainter extends IToolPainter
           }
           else
           {
-            selectionStart.x = max(_normStartPos.x < _cursorPosNorm.x ? _normStartPos.x: _cursorPosNorm.x, 0);
-            selectionStart.y = max(_normStartPos.y < _cursorPosNorm.y ? _normStartPos.y : _cursorPosNorm.y, 0);
-            selectionEnd.x = min(_normStartPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (_normStartPos.x), appState.canvasSize.x - 1);
-            selectionEnd.y = min(_normStartPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (_normStartPos.y), appState.canvasSize.y - 1);
+            selectionStart.x = min(_normStartPos.x, _cursorPosNorm.x);
+            selectionStart.y = min(_normStartPos.y, _cursorPosNorm.y);
+            selectionEnd.x = max(_normStartPos.x, _cursorPosNorm.x);
+            selectionEnd.y = max(_normStartPos.y, _cursorPosNorm.y);
 
 
             if (options.keepAspectRatio.value)

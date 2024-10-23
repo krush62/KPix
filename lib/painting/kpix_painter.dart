@@ -455,7 +455,7 @@ class KPixPainter extends CustomPainter
   {
     if (_coords.value != null)
     {
-      if (!_isDragging.value && isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter != null && drawParams.currentDrawingLayer != null)
+      if (!_isDragging.value /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && drawParams.currentDrawingLayer != null)
       {
         toolPainter!.drawCursorOutline(drawParams: drawParams);
       }

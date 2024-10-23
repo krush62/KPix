@@ -98,7 +98,8 @@ class SelectionState with ChangeNotifier
       deselect(notify: false, addToHistoryStack: false);
     }
 
-    _addPixelsWithMode(coords: points, mode: selectionOptions.mode.value);
+    final Set<CoordinateSetI> canvasPoints = points.where((p) => (p.x >= 0 && p.y >= 0 && p.x < _appState.canvasSize.x && p.y < _appState.canvasSize.y)).toSet();
+    _addPixelsWithMode(coords: canvasPoints, mode: selectionOptions.mode.value);
     createSelectionLines();
 
     if (notify)
@@ -107,13 +108,12 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true, final bool addToHistoryStack = true})
+ void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true, final bool addToHistoryStack = true})
   {
     if (selectionOptions.mode.value == SelectionMode.replace)
     {
       deselect(notify: false, addToHistoryStack: false);
     }
-
     if (selectionOptions.mode.value != SelectionMode.replace || end.x != start.x || end.y != start.y)
     {
       final Set<CoordinateSetI> coords = {};
@@ -123,7 +123,10 @@ class SelectionState with ChangeNotifier
         {
           for (int y = start.y; y <= end.y; y++)
           {
-            coords.add(CoordinateSetI(x: x, y: y));
+            if (x >= 0 && x < _appState.canvasSize.x && y >= 0 && y < _appState.canvasSize.y)
+            {
+              coords.add(CoordinateSetI(x: x, y: y));
+            }
           }
         }
         _addPixelsWithMode(coords: coords, mode: selectionOptions.mode.value);
@@ -136,13 +139,18 @@ class SelectionState with ChangeNotifier
         final double radiusX = (end.x - start.x + 1) / 2.0;
         final double radiusY = (end.y - start.y + 1) / 2.0;
 
-        for (int x = start.x; x <= end.x; x++) {
-          for (int y = start.y; y <= end.y; y++) {
-            final double dx = (x + 0.5) - centerX;
-            final double dy = (y + 0.5) - centerY;
-            if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
+        for (int x = start.x; x <= end.x; x++)
+        {
+          for (int y = start.y; y <= end.y; y++)
+          {
+            if (x >= 0 && x < _appState.canvasSize.x && y >= 0 && y < _appState.canvasSize.y)
             {
-              coords.add(CoordinateSetI(x: x, y: y));
+              final double dx = (x + 0.5) - centerX;
+              final double dy = (y + 0.5) - centerY;
+              if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
+              {
+                coords.add(CoordinateSetI(x: x, y: y));
+              }
             }
           }
         }

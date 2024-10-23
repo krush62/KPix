@@ -40,7 +40,7 @@ class ShapePainter extends IToolPainter
   final CoordinateSetI _lastNormStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormEndPos = CoordinateSetI(x: 0, y: 0);
-  bool _isStartOnCanvas = false;
+  bool _isStarted = false;
   bool _waitingForRasterization = false;
   CoordinateColorMap _drawingPixels = HashMap();
 
@@ -80,8 +80,8 @@ class ShapePainter extends IToolPainter
 
       if (!_waitingForRasterization && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
       {
-        _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null && _normStartPos.x >= 0 && _normStartPos.y >= 0 && _normStartPos.x < appState.canvasSize.x && _normStartPos.y < appState.canvasSize.y;
-        if (_isStartOnCanvas)
+        _isStarted = drawParams.primaryDown && drawParams.cursorPos != null;
+        if (_isStarted)
         {
           final CoordinateSetI endPos = CoordinateSetI.from(other: _normStartPos);
 
@@ -91,10 +91,10 @@ class ShapePainter extends IToolPainter
             endPos.y = _normStartPos.y + (_normStartPos.y - _cursorPosNorm.y);
           }
 
-          _selectionStart.x = max(endPos.x < _cursorPosNorm.x ? endPos.x: _cursorPosNorm.x, 0);
-          _selectionStart.y = max(endPos.y < _cursorPosNorm.y ? endPos.y : _cursorPosNorm.y, 0);
-          _selectionEnd.x = min(endPos.x < _cursorPosNorm.x ? (_cursorPosNorm.x) : (endPos.x), appState.canvasSize.x - 1);
-          _selectionEnd.y = min(endPos.y < _cursorPosNorm.y ? (_cursorPosNorm.y) : (endPos.y), appState.canvasSize.y - 1);
+          _selectionStart.x = min(endPos.x, _cursorPosNorm.x);
+          _selectionStart.y = min(endPos.y, _cursorPosNorm.y);
+          _selectionEnd.x = max(endPos.x, _cursorPosNorm.x);
+          _selectionEnd.y = max(endPos.y, _cursorPosNorm.y);
 
           if (_options.keepRatio.value)
           {
@@ -192,7 +192,7 @@ class ShapePainter extends IToolPainter
   {
     assert(drawParams.cursorPos != null);
 
-    if (_isStartOnCanvas)
+    if (_isStarted)
     {
       drawParams.paint.style = PaintingStyle.stroke;
       final CoordinateSetD cursorStartPos = CoordinateSetD(
@@ -497,7 +497,7 @@ class ShapePainter extends IToolPainter
   @override
   void reset()
   {
-    _isStartOnCanvas = false;
+    _isStarted = false;
     _waitingForRasterization = false;
     _drawingPixels.clear();
   }

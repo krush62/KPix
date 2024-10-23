@@ -37,8 +37,9 @@ class FillPainter extends IToolPainter
   bool _shouldDraw = false;
 
   @override
-  void calculate({required DrawingParameters drawParams}) {
-    if (drawParams.cursorPos != null && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+  void calculate({required DrawingParameters drawParams})
+  {
+    if (drawParams.cursorPos != null)
     {
       _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
       _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
@@ -56,12 +57,13 @@ class FillPainter extends IToolPainter
 
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams}) {
+  void drawCursorOutline({required DrawingParameters drawParams})
+  {
     assert(drawParams.cursorPos != null);
+
     final CoordinateSetD cursorPos = CoordinateSetD(
         x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
         y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
-
     final Path outlinePath = Path();
     outlinePath.moveTo(cursorPos.x, cursorPos.y);
     outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));

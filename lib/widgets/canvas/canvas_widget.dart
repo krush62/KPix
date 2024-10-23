@@ -293,15 +293,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _timerRunning = true;
       _timerLongPress = Timer(_timeoutLongPress, handleTimeoutLongPress);
     }
-
-    //deselect if outside is clicked
-    if (_pressStartLoc.value.dx < _canvasOffset.value.dx || _pressStartLoc.value.dx > _canvasOffset.value.dx + (_appState.canvasSize.x * _appState.zoomFactor) ||
-        _pressStartLoc.value.dy < _canvasOffset.value.dy || _pressStartLoc.value.dy > _canvasOffset.value.dy + (_appState.canvasSize.y * _appState.zoomFactor))
-    {
-      _appState.selectionState.deselect(addToHistoryStack: true);
-    }
-
-    //print("PRIMARY DOWN");
   }
 
   void checkTouchDraw()

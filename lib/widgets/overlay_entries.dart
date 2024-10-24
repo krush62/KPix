@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
 import 'package:kpix/widgets/extra/preferences_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
@@ -31,7 +32,6 @@ import 'package:kpix/widgets/extra/about_screen_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';

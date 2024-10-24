@@ -20,6 +20,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -28,7 +30,6 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 
 enum ToolType
 {

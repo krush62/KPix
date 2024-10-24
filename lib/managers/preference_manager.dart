@@ -16,6 +16,7 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
@@ -41,7 +42,6 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';

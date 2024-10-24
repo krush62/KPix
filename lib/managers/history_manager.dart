@@ -17,12 +17,14 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 
 
 class HistoryShiftSet

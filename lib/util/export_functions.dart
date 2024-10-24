@@ -22,6 +22,8 @@ import 'dart:convert' show utf8;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -30,7 +32,6 @@ import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 
 class ExportFunctions
 {

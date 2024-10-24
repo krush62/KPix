@@ -19,6 +19,9 @@ import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
@@ -33,7 +36,6 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:uuid/uuid.dart';
 

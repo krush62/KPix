@@ -104,7 +104,7 @@ class StampPainter extends IToolPainter
   void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer})
   {
     final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
-    if (!appState.selectionState.selection.isEmpty())
+    if (!appState.selectionState.selection.isEmpty)
     {
       appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
     }

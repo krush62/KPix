@@ -307,7 +307,7 @@ class KPixPainter extends CustomPainter
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = _options.selectionSolidStrokeWidth;
 
-    if (!_appState.selectionState.selection.isEmpty())
+    if (!_appState.selectionState.selection.isEmpty)
     {
       for (final SelectionLine line in _appState.selectionState.selectionLines) {
         if (line.selectDir == SelectionDirection.left) {

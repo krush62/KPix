@@ -89,7 +89,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Deselect${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                      onPressed: _selectionState.selection.isEmpty() ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
+                      onPressed: _selectionState.selection.isEmpty ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
                       icon: FaIcon(
                         FontAwesomeIcons.objectUngroup,
                         size: _options.iconHeight
@@ -103,7 +103,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Inverse Selection${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                      onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.inverse,
+                      onPressed: _selectionState.selection.isEmpty ? null : _selectionState.inverse,
                       icon: FaIcon(
                         FontAwesomeIcons.circleHalfStroke,
                         size: _options.iconHeight
@@ -117,7 +117,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copy,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copy,
                     icon: FaIcon(
                       FontAwesomeIcons.copy,
                       size: _options.iconHeight
@@ -131,7 +131,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.copyMerged,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copyMerged,
                     icon: FaIcon(
                       FontAwesomeIcons.clone,
                       size: _options.iconHeight
@@ -145,7 +145,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.cut,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.cut,
                     icon: FaIcon(
                       FontAwesomeIcons.scissors,
                       size: _options.iconHeight
@@ -187,7 +187,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipH,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipH,
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsLeftRight,
                       size: _options.iconHeight
@@ -201,7 +201,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.flipV,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipV,
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsUpDown,
                       size: _options.iconHeight
@@ -215,7 +215,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.rotate,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.rotate,
                     icon: FaIcon(
                       FontAwesomeIcons.rotateRight,
                       size: _options.iconHeight
@@ -229,7 +229,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty() ? null : _selectionState.delete,
+                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
                     icon: FaIcon(
                       FontAwesomeIcons.ban,
                       size: _options.iconHeight

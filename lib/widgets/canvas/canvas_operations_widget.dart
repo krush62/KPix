@@ -169,7 +169,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                         message: "Crop To Selection",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
-                          onPressed: _appState.selectionState.selection.isEmpty()? null : _crop,
+                          onPressed: _appState.selectionState.selection.isEmpty ? null : _crop,
                           icon: FaIcon(
                             FontAwesomeIcons.cropSimple,
                             size: _options.iconHeight

@@ -66,18 +66,18 @@ class SelectionState with ChangeNotifier
   void _setHotkeys()
   {
     HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : copy();}, action: HotkeyAction.selectionCopy);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : copyMerged();}, action: HotkeyAction.selectionCopyMerged);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : cut();}, action: HotkeyAction.selectionCut);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : copy();}, action: HotkeyAction.selectionCopy);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : copyMerged();}, action: HotkeyAction.selectionCopyMerged);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : cut();}, action: HotkeyAction.selectionCut);
     hotkeyManager.addListener(func: () {clipboard == null ? null : paste();}, action: HotkeyAction.selectionPaste);
     hotkeyManager.addListener(func: () {clipboard == null ? null : _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);}, action: HotkeyAction.selectionPasteAsNewLayer);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : delete();}, action: HotkeyAction.selectionDelete);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : flipH();}, action: HotkeyAction.selectionFlipH);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : flipV();}, action: HotkeyAction.selectionFlipV);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : rotate();}, action: HotkeyAction.selectionRotate);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : inverse();}, action: HotkeyAction.selectionInvert);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : delete();}, action: HotkeyAction.selectionDelete);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : flipH();}, action: HotkeyAction.selectionFlipH);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : flipV();}, action: HotkeyAction.selectionFlipV);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : rotate();}, action: HotkeyAction.selectionRotate);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : inverse();}, action: HotkeyAction.selectionInvert);
     hotkeyManager.addListener(func: selectAll, action: HotkeyAction.selectionSelectAll);
-    hotkeyManager.addListener(func: () {selection.isEmpty() ? null : deselect(addToHistoryStack: true);}, action: HotkeyAction.selectionDeselect);
+    hotkeyManager.addListener(func: () {selection.isEmpty ? null : deselect(addToHistoryStack: true);}, action: HotkeyAction.selectionDeselect);
     hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: -1));}, action: HotkeyAction.selectionMoveUp);
     hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: 1));}, action: HotkeyAction.selectionMoveDown);
     hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: -1, y: 0));}, action: HotkeyAction.selectionMoveLeft);
@@ -799,9 +799,15 @@ class SelectionList
 {
   CoordinateColorMapNullable _content = HashMap();
   final AppState _appState = GetIt.I.get<AppState>();
+  final ValueNotifier<bool> isEmptyNotifer = ValueNotifier(false);
   CoordinateColorMapNullable get selectedPixels
   {
     return _content;
+  }
+
+  bool get isEmpty
+  {
+    return isEmptyNotifer.value;
   }
 
   final CoordinateSetI _lastOffset = CoordinateSetI(x: 0, y: 0);
@@ -840,6 +846,7 @@ class SelectionList
       final DrawingLayerState newDrawingLayer = newLayer as DrawingLayerState;
       newDrawingLayer.setDataAll(list: refsNew);
     }
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void addAll({required final Set<CoordinateSetI> coords})
@@ -852,24 +859,26 @@ class SelectionList
         _content[coord] = drawingLayer.getDataEntry(coord: coord);
       }
       drawingLayer.removeDataAll(removeCoordList: coords);
-
     }
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void addEmpty({required final CoordinateSetI coord})
   {
     _content[coord] = null;
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})
   {
     _content[coord] = colRef;
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
     _content.addAll(list);
-
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void removeAll({required final Set<CoordinateSetI> coords})
@@ -891,7 +900,7 @@ class SelectionList
       final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
       drawingLayer.setDataAll(list: refs);
     }
-
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void clear()
@@ -910,6 +919,7 @@ class SelectionList
       drawingLayer.setDataAll(list: refs);
     }
     _content.clear();
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void deleteDirectly({required final CoordinateSetI coord})
@@ -918,6 +928,7 @@ class SelectionList
     {
       _content[coord] = null;
     }
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void delete({required bool keepSelection})
@@ -933,6 +944,7 @@ class SelectionList
     {
       _content.clear();
     }
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void flipH()
@@ -946,6 +958,7 @@ class SelectionList
       newContent[CoordinateSetI(x: maxXcoord.x - entry.key.x + minXcoord.x , y: entry.key.y)] = entry.value;
     }
     _content = newContent;
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void flipV()
@@ -959,6 +972,7 @@ class SelectionList
       newContent[CoordinateSetI(x: entry.key.x, y: maxYcoord.y - entry.key.y + minYcoord.y)] = entry.value;
     }
     _content = newContent;
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void rotate90cw()
@@ -980,6 +994,7 @@ class SelectionList
       newContent[CoordinateSetI(x: centerCoord.y - entry.key.y + centerCoord.x, y: entry.key.x - centerCoord.x + centerCoord.y)] = entry.value;
     }
     _content = newContent;
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   bool contains({required final CoordinateSetI coord})
@@ -987,10 +1002,10 @@ class SelectionList
     return _content.containsKey(coord);
   }
 
-  bool isEmpty()
+  /*bool isEmpty()
   {
     return _content.isEmpty;
-  }
+  }*/
 
   Iterable<CoordinateSetI> getCoordinates()
   {
@@ -1016,6 +1031,7 @@ class SelectionList
       _lastOffset.x = offset.x;
       _lastOffset.y = offset.y;
     }
+    isEmptyNotifer.value = _content.isEmpty;
   }
 
   void resetLastOffset()

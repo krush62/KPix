@@ -408,9 +408,9 @@ abstract class IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
             {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != selectedColor) ||
+          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != selectedColor) ||
               //if selection and selection contains pixel and selection pixel is different
-              (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != selectedColor))
+              (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != selectedColor))
           {
             if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord: coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
             {
@@ -421,11 +421,11 @@ abstract class IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != null) ||
+        if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != null) ||
             //if selection and selection contains pixel and pixel is not null
-            (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
+            (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
           if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
@@ -465,9 +465,9 @@ abstract class IToolPainter
           final int index = (selectedColor.colorIndex + stampEntry.value).clamp(0, selectedColor.ramp.shiftedColors.length - 1);
           final ColorReference drawColor = selectedColor.ramp.references[index];
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != drawColor) ||
+          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != drawColor) ||
               //if selection and selection contains pixel and selection pixel is different
-              (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != drawColor))
+              (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != drawColor))
           {
             if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord: coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
             {
@@ -478,11 +478,11 @@ abstract class IToolPainter
         //with shading
         else
           //if no selection and pixel is not null
-        if ((selection.selection.isEmpty() && currentLayer.getDataEntry(coord: coord) != null) ||
+        if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != null) ||
             //if selection and selection contains pixel and pixel is not null
-            (!selection.selection.isEmpty() && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
+            (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty() ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
+          final ColorReference layerRef = selection.selection.isEmpty ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
           if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value) //all ramps
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)

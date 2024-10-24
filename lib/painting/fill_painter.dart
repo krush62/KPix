@@ -138,7 +138,7 @@ class FillPainter extends IToolPainter
       final CoordinateSetI curCoord = pointStack.pop();
       final ColorReference? refAtPos = (appState.currentLayer == layer && appState.selectionState.selection.contains(coord: curCoord)) ? appState.selectionState.selection.getColorReference(coord: curCoord) : layer.getDataEntry(coord: curCoord);
       if (!visited[curCoord.x][curCoord.y] &&
-          (appState.selectionState.selection.isEmpty() || (!appState.selectionState.selection.isEmpty() && appState.selectionState.selection.contains(coord: curCoord))) &&
+          (appState.selectionState.selection.isEmpty || (!appState.selectionState.selection.isEmpty && appState.selectionState.selection.contains(coord: curCoord))) &&
           (
               refAtPos == startValue ||
                   (refAtPos != null && startValue != null && fillWholeRamp && refAtPos.ramp == startValue.ramp) ||
@@ -226,7 +226,7 @@ class FillPainter extends IToolPainter
   {
 
     //on layer
-    if (appState.selectionState.selection.isEmpty())
+    if (appState.selectionState.selection.isEmpty)
     {
       final ColorReference? startValue = layer.getDataEntry(coord: start);
       final CoordinateColorMapNullable refs = HashMap();
@@ -262,7 +262,7 @@ class FillPainter extends IToolPainter
       layer.setDataAll(list: refs);
     }
     //on selection
-    else if (!appState.selectionState.selection.isEmpty() && appState.selectionState.selection.contains(coord: start))
+    else if (!appState.selectionState.selection.isEmpty && appState.selectionState.selection.contains(coord: start))
     {
       final ColorReference? startValue = appState.selectionState.selection.getColorReference(coord: start);
       final Iterable<CoordinateSetI> selectionCoords = appState.selectionState.selection.getCoordinates();

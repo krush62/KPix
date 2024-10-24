@@ -758,9 +758,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   @override
   Widget build(final BuildContext context) {
     return Expanded(
-      child: ValueListenableBuilder(
+      child: ValueListenableBuilder<MouseCursor>(
         valueListenable: _mouseCursor,
-        builder: (BuildContext context, MouseCursor cursor, child)
+        builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
         {
           return Stack(
             children: [
@@ -783,24 +783,28 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                   ),
                 ),
               ),
-              ValueListenableBuilder(
-                valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-                builder: (BuildContext context, ToolType toolType, child)
-                {
-                  return IgnorePointer(
-                    ignoring: toolType != ToolType.select,
-                    child: AnimatedScale(
-                      duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                      scale: toolType == ToolType.select ? 1.0 : 0.0,
-                      alignment: Alignment.bottomCenter,
-                      //opacity: toolType == ToolType.select ? 1.0 : 0.0,
-                      child: const Align(
-                        alignment: Alignment.bottomCenter,
-                        child: SelectionBarWidget()
-                      ),
-                    ),
+              ValueListenableBuilder<bool>(
+                valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
+                builder: (final BuildContext contextS, final bool hasNoSelection, final Widget? childS) {
+                  return ValueListenableBuilder<ToolType>(
+                      valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+                      builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
+                        return IgnorePointer(
+                          ignoring: (toolType != ToolType.select && hasNoSelection),
+                          child: AnimatedScale(
+                            duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+                            scale: (toolType == ToolType.select || !hasNoSelection) ? 1.0 : 0.0,
+                            alignment: Alignment.bottomCenter,
+                            //opacity: toolType == ToolType.select ? 1.0 : 0.0,
+                            child: const Align(
+                                alignment: Alignment.bottomCenter,
+                                child: SelectionBarWidget()
+                            ),
+                          ),
+                        );
+                      }
                   );
-                }
+                },
               ),
             ],
           );

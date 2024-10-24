@@ -114,7 +114,7 @@ class FontPainter extends IToolPainter
     if (_textContent.isNotEmpty && drawParams.currentDrawingLayer != null)
     {
       final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-      if (!appState.selectionState.selection.isEmpty())
+      if (!appState.selectionState.selection.isEmpty)
       {
         appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
       }

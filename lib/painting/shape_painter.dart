@@ -157,7 +157,7 @@ class ShapePainter extends IToolPainter
   {
     if (_drawingPixels.isNotEmpty)
     {
-      if (!appState.selectionState.selection.isEmpty())
+      if (!appState.selectionState.selection.isEmpty)
       {
         appState.selectionState.selection.addDirectlyAll(list: _drawingPixels);
       }

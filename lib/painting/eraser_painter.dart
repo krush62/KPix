@@ -73,7 +73,7 @@ class EraserPainter extends IToolPainter
                   coord.x < drawParams.canvasSize.x &&
                   coord.y < drawParams.canvasSize.y)
               {
-                if (selection.selection.isEmpty())
+                if (selection.selection.isEmpty)
                 {
                   if (drawParams.currentDrawingLayer!.getDataEntry(coord: coord) != null)
                   {

@@ -142,7 +142,7 @@ class LinePainter extends IToolPainter
         else
         {
           final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-          if (!appState.selectionState.selection.isEmpty())
+          if (!appState.selectionState.selection.isEmpty)
           {
             appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
           }

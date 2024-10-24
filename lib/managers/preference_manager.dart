@@ -82,6 +82,7 @@ enum PreferenceDouble
 
   Layout_Palette_Padding(defaultValue: 8.0),
   Layout_Palette_ManagerButtonSize(defaultValue: 32.0),
+  Layout_Palette_BorderRadius(defaultValue: 8.0),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
@@ -144,13 +145,11 @@ enum PreferenceDouble
   Layout_CanvasOperations_IconHeight(defaultValue: 12.0),
   Layout_CanvasOperations_Padding(defaultValue: 4.0),
 
-  Layout_PaletteManagerEntry_Elevation(defaultValue: 5.0),
   Layout_PaletteManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_PaletteManagerEntry_BorderRadius(defaultValue: 3.0),
 
   Layout_PaletteManager_EntryAspectRatio(defaultValue: 0.75),
 
-  Layout_ProjectManagerEntry_Elevation(defaultValue: 5.0),
   Layout_ProjectManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_ProjectManagerEntry_BorderRadius(defaultValue: 3.0),
   Layout_ProjectManager_EntryAspectRatio(defaultValue: 0.75),
@@ -706,7 +705,8 @@ class PreferenceManager
         iconSize: _getValueD(PreferenceDouble.Layout_Tools_IconSize));
     paletteWidgetOptions = PaletteWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_Palette_Padding),
-        managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize));
+        managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize),
+        borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius));
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
@@ -791,7 +791,6 @@ class PreferenceManager
     paletteManagerEntryOptions = PaletteManagerEntryOptions(
         borderRadius: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderRadius),
         borderWidth: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderWidth),
-        elevation: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_Elevation),
         layoutFlex: _getValueI(PreferenceInt.Layout_PaletteManagerEntry_LayoutFlex));
     paletteManagerOptions = PaletteManagerOptions(
       colCount: _getValueI(PreferenceInt.Layout_PaletteManager_ColCount),
@@ -799,7 +798,6 @@ class PreferenceManager
     projectManagerEntryOptions = ProjectManagerEntryOptions(
         borderRadius: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderRadius),
         borderWidth: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderWidth),
-        elevation: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_Elevation),
         layoutFlex: _getValueI(PreferenceInt.Layout_ProjectManagerEntry_LayoutFlex));
     projectManagerOptions = ProjectManagerOptions(
         colCount: _getValueI(PreferenceInt.Layout_ProjectManager_ColCount),

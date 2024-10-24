@@ -264,18 +264,24 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             SizedBox(height: _alertOptions.padding),
             Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
             Expanded(
-              child: ValueListenableBuilder<List<ProjectManagerEntryWidget>>(
-                valueListenable: _fileEntries,
-                builder: (final BuildContext context, final List<ProjectManagerEntryWidget> pList, final Widget? child) {
-                  return GridView.extent(
-                    maxCrossAxisExtent: _options.maxWidth / _options.colCount,
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    childAspectRatio: _options.entryAspectRatio,
-                    mainAxisSpacing: _alertOptions.padding,
-                    crossAxisSpacing: _alertOptions.padding,
-                    children: pList,
-                  );
-                },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorDark,
+                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius))
+                ),
+                child: ValueListenableBuilder<List<ProjectManagerEntryWidget>>(
+                  valueListenable: _fileEntries,
+                  builder: (final BuildContext context, final List<ProjectManagerEntryWidget> pList, final Widget? child) {
+                    return GridView.extent(
+                      maxCrossAxisExtent: _options.maxWidth / _options.colCount,
+                      padding: EdgeInsets.all(_alertOptions.padding),
+                      childAspectRatio: _options.entryAspectRatio,
+                      mainAxisSpacing: _alertOptions.padding,
+                      crossAxisSpacing: _alertOptions.padding,
+                      children: pList,
+                    );
+                  },
+                ),
               ),
             ),
             Row(

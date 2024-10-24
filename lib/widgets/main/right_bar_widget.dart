@@ -140,7 +140,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
           ),
           Expanded(
             child: Container(
-              color: Theme.of(context).primaryColorDark,
+              decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorDark,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius))
+              ),
               child: ValueListenableBuilder<bool>(
                 valueListenable: _appState.hasProjectNotifier,
                 builder: (final BuildContext context, final bool hasProject, final Widget? child) {

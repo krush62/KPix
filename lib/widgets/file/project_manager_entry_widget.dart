@@ -22,13 +22,11 @@ import 'package:kpix/util/helper.dart';
 
 class ProjectManagerEntryOptions
 {
-  final double elevation;
   final double borderWidth;
   final double borderRadius;
   final int layoutFlex;
 
   ProjectManagerEntryOptions({
-    required this.elevation,
     required this.borderWidth,
     required this.borderRadius,
     required this.layoutFlex
@@ -72,48 +70,43 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
       valueListenable: widget.selectedWidget,
       builder: (final BuildContext context, final ProjectManagerEntryWidget? selectedWidget, final Widget? child) {
         final bool isSelected = (selectedWidget == widget);
-        return Material(
-          elevation: isSelected ? _options.elevation * 2 : _options.elevation,
-          shadowColor: Theme.of(context).primaryColorDark,
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-          child: GestureDetector(
-            onTap: _onTap,
-            child: Container(
-              decoration: BoxDecoration(
+        return GestureDetector(
+          onTap: _onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              border: Border.all(
                 color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
-                border: Border.all(
-                  color: Theme.of(context).primaryColorDark,
-                  width: _options.borderWidth,
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+                width: _options.borderWidth,
               ),
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text(
-                        widget.entryData.name,
-                        style: Theme.of(context).textTheme.titleSmall!.apply(color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight),
-                      ),
-                    )
-                  ),
-                  Expanded(
-                    flex: _options.layoutFlex,
-                    child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, isAntiAlias: false, filterQuality: ui.FilterQuality.none,),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text(
-                        Helper.formatDateTime(dateTime: widget.entryData.dateTime),
-                        style: Theme.of(context).textTheme.titleSmall!.apply(color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight),
-                      ),
-                    )
-                  ),
-                ],
-              )
+              borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             ),
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: Text(
+                      widget.entryData.name,
+                      style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
+                    ),
+                  )
+                ),
+                Expanded(
+                  flex: _options.layoutFlex,
+                  child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, isAntiAlias: false, filterQuality: ui.FilterQuality.none,),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: Text(
+                      Helper.formatDateTime(dateTime: widget.entryData.dateTime),
+                      style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
+                    ),
+                  )
+                ),
+              ],
+            )
           ),
         );
       },

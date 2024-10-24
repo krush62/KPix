@@ -276,18 +276,24 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
             SizedBox(height: _alertOptions.padding),
             Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
             Expanded(
-              child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
-                valueListenable: _paletteEntries,
-                builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
-                  return GridView.extent(
-                    maxCrossAxisExtent: _alertOptions.maxWidth / _options.colCount,
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    childAspectRatio: _options.entryAspectRatio,
-                    mainAxisSpacing: _alertOptions.padding,
-                    crossAxisSpacing: _alertOptions.padding,
-                    children: pList,
-                  );
-                },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorDark,
+                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius))
+                ),
+                child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
+                  valueListenable: _paletteEntries,
+                  builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
+                    return GridView.extent(
+                      maxCrossAxisExtent: _alertOptions.maxWidth / _options.colCount,
+                      padding: EdgeInsets.all(_alertOptions.padding),
+                      childAspectRatio: _options.entryAspectRatio,
+                      mainAxisSpacing: _alertOptions.padding,
+                      crossAxisSpacing: _alertOptions.padding,
+                      children: pList,
+                    );
+                  },
+                ),
               ),
             ),
             Row(

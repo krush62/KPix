@@ -43,10 +43,12 @@ class PaletteWidgetOptions
 {
   final double padding;
   final double managerButtonSize;
+  final double borderRadius;
 
   PaletteWidgetOptions({
     required this.padding,
-    required this.managerButtonSize
+    required this.managerButtonSize,
+    required this.borderRadius
   });
 
 }
@@ -119,6 +121,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 height: double.infinity,
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorDark,
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(paletteWidgetOptions.borderRadius), bottomRight: Radius.circular(paletteWidgetOptions.borderRadius))
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -50,9 +50,11 @@ class KPalRampWidgetOptions
 class KPalRamp extends StatefulWidget
 {
   final KPalRampData rampData;
+  final KPalRampData originalRampData;
   const KPalRamp({
     super.key,
     required this.rampData,
+    required this.originalRampData
   });
 
   @override
@@ -68,15 +70,29 @@ class _KPalRampState extends State<KPalRamp>
   bool _hasRenderChanges = false;
   late Timer renderTimer;
 
+  late List<DrawingLayerState> _drawingLayers;
+
   @override
   void initState()
   {
     super.initState();
     _createColorCards();
-    Helper.getImageFromLayers(size: _appState.canvasSize, layers: _appState.layers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
-      _setPreviewImage(img: img);
-    });
+    _drawingLayers = _copyLayers(originalLayers: _appState.layers);
+    _hasRenderChanges = true;
     renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
+  }
+
+  List<DrawingLayerState> _copyLayers({required final List<LayerState> originalLayers})
+  {
+    final Iterable<LayerState> visibleDrawingLayers = originalLayers.where((l) => l.visibilityState.value == LayerVisibilityState.visible && l.runtimeType == DrawingLayerState);
+    final List<DrawingLayerState> drawingLayers = [];
+    for (final LayerState visibleLayer in visibleDrawingLayers)
+    {
+      //final DrawingLayerState drawingLayer = DrawingLayerState.deepClone(other: visibleLayer as DrawingLayerState, rampData: widget.rampData, originalRampData: widget.originalRampData);
+      final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState);
+      drawingLayers.add(drawingLayer);
+    }
+    return drawingLayers;
   }
 
   @override
@@ -92,16 +108,13 @@ class _KPalRampState extends State<KPalRamp>
 
   void _renderCheck({required final Timer t})
   {
-    if (_hasRenderChanges)
+    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.raster == null || l.isRasterizing))).isNotEmpty;
+    if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      Helper.getImageFromLayers(size: _appState.canvasSize, layers: _appState.layers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
+      Helper.getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
         _setPreviewImage(img: img);
       });
-      final bool hasRasterizingLayers = _appState.layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
-      if (!hasRasterizingLayers)
-      {
-        _hasRenderChanges = false;
-      }
+      _hasRenderChanges = false;
     }
   }
 
@@ -127,14 +140,22 @@ class _KPalRampState extends State<KPalRamp>
   {
     setState(() {
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
-      GetIt.I.get<AppState>().reRaster();
+      if (colorCountChanged)
+      {
+        _drawingLayers = _copyLayers(originalLayers: _appState.layers);
+        final HashMap<int, int> indexMap = Helper.remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
+        for (final DrawingLayerState drawingLayer in _drawingLayers)
+        {
+          drawingLayer.remapSingleRamp(newData: widget.rampData, map: indexMap);
+        }
+        _createColorCards();
+      }
+      for (final DrawingLayerState drawingLayer in _drawingLayers)
+      {
+        drawingLayer.doManualRaster = true;
+      }
       _hasRenderChanges = true;
     });
-
-    if (colorCountChanged)
-    {
-      _createColorCards();
-    }
   }
 
   void _colorCountSliderChanged({required final double newVal})

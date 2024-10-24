@@ -639,5 +639,20 @@ class Helper
     return '$year-$month-$day $hour:$minute';
   }
 
+  static HashMap<int, int> remapIndices({required final int oldLength, required final int newLength})
+  {
+    final HashMap<int, int> indexMap = HashMap();
+    final int centerOld = oldLength ~/ 2;
+    final int centerNew = newLength ~/ 2;
+    for (int i = 0; i < oldLength; i++)
+    {
+      final int dist = i - centerOld;
+      final int newIndex = (centerNew + dist).clamp(0, newLength - 1);
+      indexMap[i] = newIndex;
+    }
+
+    return indexMap;
+  }
+
 }
 

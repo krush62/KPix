@@ -32,6 +32,7 @@
 
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -318,6 +319,7 @@ class _KPalState extends State<KPal>
                 Expanded(
                   child: KPalRamp(
                     rampData: widget._colorRamp,
+                    originalRampData: _originalData,
                   ),
                 ),
                 Row(

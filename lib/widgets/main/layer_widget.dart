@@ -247,7 +247,7 @@ class DrawingLayerState extends LayerState
   DrawingLayerState._({required CoordinateColorMap data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
   {
     isRasterizing = true;
-    _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2));
+    _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2, startedFromManual: false));
     lockState.value = lState;
     visibilityState.value = vState;
     LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
@@ -257,13 +257,30 @@ class DrawingLayerState extends LayerState
 
   factory DrawingLayerState.from({required DrawingLayerState other})
   {
-    CoordinateColorMap data = HashMap();
+    final CoordinateColorMap data = HashMap();
     for (final CoordinateColor ref in other._data.entries)
     {
       data[ref.key] = ref.value;
     }
     return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
   }
+
+  factory DrawingLayerState.deepClone({required DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
+  {
+    final CoordinateColorMap data = HashMap();
+    for (final CoordinateColor ref in other._data.entries)
+    {
+      ColorReference colRef = ref.value;
+
+      if (colRef.ramp == originalRampData)
+      {
+        colRef = rampData.references[colRef.colorIndex];
+      }
+      data[ref.key] = colRef;
+    }
+    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
+  }
+
 
 
   factory DrawingLayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
@@ -288,7 +305,7 @@ class DrawingLayerState extends LayerState
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
-      _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2));
+      _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2, startedFromManual: doManualRaster));
     }
   }
 
@@ -336,12 +353,15 @@ class DrawingLayerState extends LayerState
   }
 
 
-  void _rasterizingDone({required final ui.Image image, required final ui.Image thb})
+  void _rasterizingDone({required final ui.Image image, required final ui.Image thb, required final bool startedFromManual})
   {
     isRasterizing = false;
     raster = image;
     thumbnail.value = thb;
-    doManualRaster = false;
+    if (startedFromManual)
+    {
+      doManualRaster = false;
+    }
     GetIt.I.get<AppState>().repaintNotifier.repaint();
   }
 

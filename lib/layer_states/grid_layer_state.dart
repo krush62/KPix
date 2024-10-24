@@ -14,13 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
 class GridLayerState extends LayerState
@@ -30,6 +30,10 @@ class GridLayerState extends LayerState
   final ValueNotifier<int> brightnessNotifier;
   final ValueNotifier<int> intervalXNotifier;
   final ValueNotifier<int> intervalYNotifier;
+  bool _isRendering = false;
+  bool _shouldRender = true;
+  late Timer timer;
+  ui.Image? raster;
 
   GridLayerState({
     required final int opacity,
@@ -41,7 +45,18 @@ class GridLayerState extends LayerState
       gridTypeNotifier = ValueNotifier(gridType),
       brightnessNotifier = ValueNotifier(brightness),
       intervalXNotifier = ValueNotifier(intervalX),
-      intervalYNotifier = ValueNotifier(intervalY);
+      intervalYNotifier = ValueNotifier(intervalY)
+  {
+    opacityNotifier.addListener(_valueChanged);
+    gridTypeNotifier.addListener(_valueChanged);
+    brightnessNotifier.addListener(_valueChanged);
+    intervalXNotifier.addListener(_valueChanged);
+    intervalYNotifier.addListener(_valueChanged);
+    //TODO magic number
+    timer = Timer.periodic(Duration(milliseconds: 250), (final Timer t) {_updateTimerCallback(timer: t);});
+  }
+
+
 
   int get opacity
   {
@@ -68,80 +83,95 @@ class GridLayerState extends LayerState
     return intervalYNotifier.value;
   }
 
+  void _valueChanged()
+  {
+    _shouldRender = true;
+  }
+
+  void _updateTimerCallback({required final Timer timer})
+  {
+    if (_shouldRender && !_isRendering)
+    {
+      _isRendering = true;
+      _createRaster().then((final ui.Image image)
+      {
+        _rasterCreated(image: image);
+      });
+    }
+  }
+
+  void _rasterCreated({required final ui.Image image})
+  {
+    raster = image;
+    thumbnail.value = image;
+    _isRendering = false;
+    _shouldRender = false;
+  }
+
   Future<ui.Image> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
     final ByteData byteDataImg = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
-    final int colorBrightness = ((brightness.toDouble() / 100.0) * 255.0).round();
     final int colorOpacity = ((opacity.toDouble() / 100.0) * 255.0).round();
-    final int colorValue = Helper.argbToRgba(argb: ui.Color.fromARGB(colorOpacity, colorBrightness, colorBrightness, colorBrightness).value);
+    final int colorBrightness = ((brightness.toDouble() / 100.0) * 255.0).round();
+    final int colorBrightnessPremultiplied = (colorBrightness * colorOpacity) ~/ 255;
 
-    if (gridType == GridType.rectangular)
+    for (int y = 0; y < appState.canvasSize.y; y++)
     {
-      for (int y = 0; y < appState.canvasSize.y; y+=intervalY)
+      for (int x = 0; x < appState.canvasSize.x; x++)
       {
-        for (int x = 0; x < appState.canvasSize.x; x++)
+        bool shouldDraw = false;
+
+        if (gridType == GridType.rectangular)
         {
-          final int index = (y * appState.canvasSize.x + x) * 4;
-          if (index < byteDataImg.lengthInBytes)
+          if (x % intervalX == 0 || y % intervalY == 0)
           {
-            byteDataImg.setUint32(index, colorValue);
+            shouldDraw = true;
           }
         }
-      }
-
-      for (int x = 0; x < appState.canvasSize.x; x+=intervalX)
-      {
-        for (int y = 0; y < appState.canvasSize.y; y++)
+        else if (gridType == GridType.diagonal)
         {
-          final int index = (y * appState.canvasSize.x + x) * 4;
-          if (index < byteDataImg.lengthInBytes)
+          if ((x + y) % intervalX == 0 || (x - y).abs() % intervalY == 0)
           {
-            byteDataImg.setUint32(index, colorValue);
+            shouldDraw = true;
+          }
+        }
+        else if (gridType == GridType.isometric)
+        {
+          if (((x ~/ 2) + y) % intervalX == 0)
+          {
+            shouldDraw = true;
+          }
+          if (((x ~/ 2) - y).abs() % intervalY == 0)
+          {
+            shouldDraw = true;
+          }
+        }
+
+        if (shouldDraw)
+        {
+          if (x >= 0 && x < appState.canvasSize.x && y >= 0 && y < appState.canvasSize.y)
+          {
+            int pixelIndex = (y * appState.canvasSize.x + x) * 4;
+            byteDataImg.setUint8(pixelIndex + 0, colorBrightnessPremultiplied);
+            byteDataImg.setUint8(pixelIndex + 1, colorBrightnessPremultiplied);
+            byteDataImg.setUint8(pixelIndex + 2, colorBrightnessPremultiplied);
+            byteDataImg.setUint8(pixelIndex + 3, colorOpacity);
           }
         }
       }
     }
-    else if (gridType == GridType.diagonal)
-    {
-      //top-left to bottom-right
-      for (int y = 0; y < appState.canvasSize.y; y+=intervalY)
-      {
-        int x = 0;
-        int y2 = y;
-        while (y2 < appState.canvasSize.y && x < appState.canvasSize.x)
-        {
-          final int index = (y * appState.canvasSize.x + x) * 4;
-          if (index < byteDataImg.lengthInBytes)
-          {
-            byteDataImg.setUint32(index, colorValue);
-          }
-          x++;
-          y2++;
-        }
-      }
-      for (int x = intervalY; x < appState.canvasSize.x; x+=intervalY)
-      {
-        int y = 0;
-        int x2 = x;
-        while (x2 < appState.canvasSize.x && y < appState.canvasSize.y)
-        {
-          final int index = (y * appState.canvasSize.x + x) * 4;
-          if (index < byteDataImg.lengthInBytes)
-          {
-            byteDataImg.setUint32(index, colorValue);
-          }
-          x2++;
-          y++;
-        }
-      }
-      //top-right to bottom-left
-      //TODO
 
-    }
-    else if (gridType == GridType.isometric)
-    {
-      //TODO
-    }
+    final Completer<ui.Image> completerImg = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      byteDataImg.buffer.asUint8List(),
+      appState.canvasSize.x,
+      appState.canvasSize.y,
+      ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+      {
+        completerImg.complete(convertedImage);
+      }
+    );
+    return completerImg.future;
   }
 }

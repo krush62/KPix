@@ -475,6 +475,8 @@ class AppState
       _restoreState(historyState: loadFileSet.historyState);
       projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
       hasChanges.value = false;
+      GetIt.I.get<HistoryManager>().clear();
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     }
     else
@@ -1237,6 +1239,7 @@ class AppState
       projectName.value = null;
       hasChanges.value = false;
       hasProjectNotifier.value = true;
+      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     }
     showMessage(text: importResult.message);
   }

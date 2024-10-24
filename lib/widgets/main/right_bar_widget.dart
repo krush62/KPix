@@ -72,7 +72,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
       onDismiss: _closeLayerMenu,
       layerLink: _layerLink,
       onNewDrawingLayer: _newDrawingLayerPressed,
-      onNewReferenceLayer: _newReferenceLayerPressed
+      onNewReferenceLayer: _newReferenceLayerPressed,
+      onNewGridLayer: _newGridLayerPressed,
     );
   }
 
@@ -90,6 +91,12 @@ class _RightBarWidgetState extends State<RightBarWidget>
   void _newReferenceLayerPressed()
   {
     _appState.addNewReferenceLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _closeLayerMenu();
+  }
+
+  void _newGridLayerPressed()
+  {
+    _appState.addNewGridLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 

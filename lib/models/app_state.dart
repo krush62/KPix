@@ -20,6 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -36,6 +37,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:uuid/uuid.dart';
 
@@ -383,7 +385,7 @@ class AppState
     }
   }
 
-  ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
+  ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
     final List<LayerState> layerList = [];
@@ -414,6 +416,47 @@ class AppState
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new reference layer");
+    }
+    return newLayer;
+  }
+
+  GridLayerState addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
+  {
+    final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
+    final List<LayerState> layerList = [];
+    final GridLayerState newLayer = GridLayerState(
+      brightness: gridSettings.brightnessDefault,
+      gridType: gridSettings.gridTypeDefault,
+      intervalX: gridSettings.intervalXDefault,
+      intervalY: gridSettings.intervalYDefault,
+      opacity: gridSettings.opacityDefault
+    );
+    if (_layers.value.isEmpty)
+    {
+      newLayer.isSelected.value = true;
+      _currentLayer.value = newLayer;
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+      layerList.add(newLayer);
+    }
+    else
+    {
+      for (int i = 0; i < _layers.value.length; i++)
+      {
+        if (_layers.value[i].isSelected.value)
+        {
+          layerList.add(newLayer);
+        }
+        layerList.add(_layers.value[i]);
+      }
+    }
+    _layers.value = layerList;
+    if (select)
+    {
+      layerSelected(newLayer: newLayer);
+    }
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new grid layer");
     }
     return newLayer;
   }

@@ -1011,6 +1011,7 @@ class OverlayEntries
     required final Function onDismiss,
     required Function onNewDrawingLayer,
     required Function onNewReferenceLayer,
+    required Function onNewGridLayer,
     required final LayerLink layerLink,
   })
   {
@@ -1074,6 +1075,25 @@ class OverlayEntries
                             style: IconButton.styleFrom(
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 backgroundColor: Theme.of(context).primaryColor),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: Tooltip(
+                          message: "Add New Grid Layer",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.all(options.buttonSpacing),
+                            onPressed: () {onNewGridLayer();},
+                            icon: FaIcon(
+                              FontAwesomeIcons.tableCells,
+                              size: options.buttonHeight),
+                            color: Theme.of(context).primaryColorLight,
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor),
                           ),
                         ),
                       ),

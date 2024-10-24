@@ -19,12 +19,19 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+
+const Map<Type, String> overlayStringMap =
+{
+  ReferenceLayerState: "REF",
+  GridLayerState: "GRID"
+};
 
 class LayerWidget extends StatefulWidget
 {
@@ -278,7 +285,7 @@ class _LayerWidgetState extends State<LayerWidget>
                           ),
                           Center(
                             child: Text(
-                              (widget.layerState.runtimeType == ReferenceLayerState) ? "REF" : "",
+                              overlayStringMap[widget.layerState.runtimeType] ?? "",
                               style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                                 color: Theme.of(context).primaryColorLight,
                                 shadows: <Shadow>[

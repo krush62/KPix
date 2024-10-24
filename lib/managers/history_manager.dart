@@ -178,24 +178,28 @@ class HistoryState
     for (int i = 0; i < appState.layers.length; i++)
     {
       final LayerState layerState = appState.layers[i];
-      final HistoryLayer hLayer;
+      HistoryLayer? hLayer;
       if (layerState.runtimeType == DrawingLayerState)
       {
         hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
       }
-      else
+      else if (layerState.runtimeType == ReferenceLayerState)
       {
         hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
       }
+      //TODO add grid layer!
 
-      layerList.add(hLayer);
-      if (layerState.isSelected.value)
+      if (hLayer != null)
       {
-        selectedLayerIndex = i;
-      }
-      if (layerState == appState.currentLayer)
-      {
-        selectLayer = hLayer;
+        layerList.add(hLayer);
+        if (layerState.isSelected.value)
+        {
+          selectedLayerIndex = i;
+        }
+        if (layerState == appState.currentLayer)
+        {
+          selectLayer = hLayer;
+        }
       }
     }
 

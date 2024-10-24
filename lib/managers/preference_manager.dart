@@ -52,6 +52,7 @@ import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
+import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
@@ -261,6 +262,21 @@ enum PreferenceInt
   ReferenceLayer_ZoomDefault(defaultValue: 1000),
   ReferenceLayer_ZoomMax(defaultValue: 2000),
   ReferenceLayer_ZoomMin(defaultValue: 1),
+
+  GridLayer_OpacityDefault(defaultValue: 100),
+  GridLayer_OpacityMin(defaultValue: 0),
+  GridLayer_OpacityMax(defaultValue: 100),
+  GridLayer_BrightnessDefault(defaultValue: 0),
+  GridLayer_BrightnessMin(defaultValue: 0),
+  GridLayer_BrightnessMax(defaultValue: 100),
+  GridLayer_IntervalXDefault(defaultValue: 8),
+  GridLayer_IntervalXMin(defaultValue: 2),
+  GridLayer_IntervalXMax(defaultValue: 64),
+  GridLayer_IntervalYDefault(defaultValue: 8),
+  GridLayer_IntervalYMin(defaultValue: 2),
+  GridLayer_IntervalYMax(defaultValue: 64),
+  GridLayer_GridTypeDefault(defaultValue: 0),
+
 
 
   Tool_Pencil_SizeMin(defaultValue: 1),
@@ -576,6 +592,7 @@ class PreferenceManager
   late KPalSliderConstraints kPalSliderConstraints;
 
   late ReferenceLayerSettings referenceLayerSettings;
+  late GridLayerSettings gridLayerSettings;
 
   late ColorNames colorNames;
 
@@ -816,6 +833,22 @@ class PreferenceManager
       aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
       aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
       zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent)
+    );
+
+    gridLayerSettings = GridLayerSettings(
+      opacityDefault: _getValueI(PreferenceInt.GridLayer_OpacityDefault),
+      opacityMin: _getValueI(PreferenceInt.GridLayer_OpacityMin),
+      opacityMax: _getValueI(PreferenceInt.GridLayer_OpacityMax),
+      brightnessDefault: _getValueI(PreferenceInt.GridLayer_BrightnessDefault),
+      brightnessMin: _getValueI(PreferenceInt.GridLayer_BrightnessMin),
+      brightnessMax: _getValueI(PreferenceInt.GridLayer_BrightnessMax),
+      intervalXDefault: _getValueI(PreferenceInt.GridLayer_IntervalXDefault),
+      intervalXMin: _getValueI(PreferenceInt.GridLayer_IntervalXMin),
+      intervalXMax: _getValueI(PreferenceInt.GridLayer_IntervalXMax),
+      intervalYDefault: _getValueI(PreferenceInt.GridLayer_IntervalYDefault),
+      intervalYMin: _getValueI(PreferenceInt.GridLayer_IntervalYMin),
+      intervalYMax: _getValueI(PreferenceInt.GridLayer_IntervalYMax),
+      gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault)
     );
   }
 

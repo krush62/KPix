@@ -420,7 +420,7 @@ class OverlayEntries
     );
   }
 
-  static KPixOverlay getReferenceLayerMenu({
+  static KPixOverlay getReducedLayerMenu({
     required final Function onDismiss,
     required Function onDelete,
     required Function onDuplicate,

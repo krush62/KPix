@@ -23,7 +23,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';

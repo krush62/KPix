@@ -50,7 +50,7 @@ class ReferenceLayerState extends LayerState
 
   factory ReferenceLayerState.from({required ReferenceLayerState other})
   {
-    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacityNotifier.value, zoom: other.zoomNotifier.value, image: other.imageNotifier.value, offsetX: other.offsetXNotifier.value, offsetY: other.offsetYNotifier.value);
+    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacity, zoom: other.zoomNotifier.value, image: other.image, offsetX: other.offsetX, offsetY: other.offsetY);
   }
 
   void increaseZoom({final int step = 1})

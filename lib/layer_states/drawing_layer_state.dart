@@ -45,8 +45,8 @@ class DrawingLayerState extends LayerState
     _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2, startedFromManual: false));
     lockState.value = lState;
     visibilityState.value = vState;
-    LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(seconds: options.thumbUpdateTimerSec, milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
+    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
 
   }
 

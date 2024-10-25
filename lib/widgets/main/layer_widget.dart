@@ -75,7 +75,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
   final LayerLink settingsLink = LayerLink();
   late KPixOverlay settingsMenuDrawing;
-  late KPixOverlay settingsMenuReference;
+  late KPixOverlay settingsMenuReduced;
 
   @override
   void initState() {
@@ -87,7 +87,7 @@ class _LayerWidgetState extends State<LayerWidget>
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
     );
-    settingsMenuReference = OverlayEntries.getReferenceLayerMenu(
+    settingsMenuReduced = OverlayEntries.getReducedLayerMenu(
       onDismiss: _closeSettingsMenus,
       layerLink: settingsLink,
       onDelete: _deletePressed,
@@ -116,7 +116,7 @@ class _LayerWidgetState extends State<LayerWidget>
   void _closeSettingsMenus()
   {
     settingsMenuDrawing.hide();
-    settingsMenuReference.hide();
+    settingsMenuReduced.hide();
   }
 
   void _settingsButtonPressed()
@@ -125,9 +125,9 @@ class _LayerWidgetState extends State<LayerWidget>
     {
       settingsMenuDrawing.show(context: context);
     }
-    else if (widget.layerState.runtimeType == ReferenceLayerState)
+    else
     {
-      settingsMenuReference.show(context: context);
+      settingsMenuReduced.show(context: context);
     }
   }
 

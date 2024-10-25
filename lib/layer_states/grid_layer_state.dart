@@ -20,6 +20,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
@@ -32,7 +33,6 @@ class GridLayerState extends LayerState
   final ValueNotifier<int> intervalYNotifier;
   bool _isRendering = false;
   bool _shouldRender = true;
-  late Timer timer;
   ui.Image? raster;
 
   GridLayerState({
@@ -52,8 +52,19 @@ class GridLayerState extends LayerState
     brightnessNotifier.addListener(_valueChanged);
     intervalXNotifier.addListener(_valueChanged);
     intervalYNotifier.addListener(_valueChanged);
-    //TODO magic number
-    timer = Timer.periodic(Duration(milliseconds: 250), (final Timer t) {_updateTimerCallback(timer: t);});
+    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+  }
+
+  factory GridLayerState.from({required GridLayerState other})
+  {
+    return GridLayerState(
+      opacity: other.opacity,
+      brightness: other.brightness,
+      gridType: other.gridType,
+      intervalX: other.intervalX,
+      intervalY: other.intervalY
+    );
   }
 
 

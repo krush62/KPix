@@ -17,7 +17,7 @@
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
@@ -241,8 +241,7 @@ enum PreferenceInt
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
-  Layout_LayerWidget_ThumbUpdateTimerSec(defaultValue: 0),
-  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 50),
+  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 100),
   Layout_LayerWidget_AddLayerButtonSize(defaultValue: 32),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
@@ -266,7 +265,7 @@ enum PreferenceInt
   GridLayer_OpacityDefault(defaultValue: 100),
   GridLayer_OpacityMin(defaultValue: 0),
   GridLayer_OpacityMax(defaultValue: 100),
-  GridLayer_BrightnessDefault(defaultValue: 0),
+  GridLayer_BrightnessDefault(defaultValue: 50),
   GridLayer_BrightnessMin(defaultValue: 0),
   GridLayer_BrightnessMax(defaultValue: 100),
   GridLayer_IntervalXDefault(defaultValue: 8),
@@ -791,7 +790,6 @@ class PreferenceManager
         dragTargetHeight: _getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
         dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
         dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
-        thumbUpdateTimerSec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerSec),
         thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
         addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize));
     selectionBarWidgetOptions = SelectionBarWidgetOptions(

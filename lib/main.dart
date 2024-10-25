@@ -22,7 +22,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/managers/font_manager.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
@@ -210,7 +210,13 @@ class _KPixAppState extends State<KPixApp>
 
     if (initialFilePath != null && initialFilePath.isNotEmpty)
     {
-      final LoadFileSet lfs = await FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: initialFilePath, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings);
+      final LoadFileSet lfs = await FileHandler.loadKPixFile(
+        fileData: null,
+        constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
+        path: initialFilePath,
+        sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
+        referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
+        gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings);
       if (lfs.path != null && lfs.historyState != null)
       {
         GetIt.I.get<AppState>().restoreFromFile(loadFileSet: lfs);

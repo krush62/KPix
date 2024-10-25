@@ -43,7 +43,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';

@@ -27,7 +27,7 @@ enum GridType
   isometric
 }
 
-const Map<int, GridType> gridTypeValueMap =
+const Map<int, GridType> gridValueTypeMap =
 {
   0: GridType.rectangular,
   1: GridType.diagonal,
@@ -63,7 +63,7 @@ class GridLayerSettings
     required this.intervalYDefault,
     required this.intervalYMin,
     required this.intervalYMax,
-    required int gridTypeValue}) : gridTypeDefault = gridTypeValueMap[gridTypeValue] ?? GridType.rectangular;
+    required int gridTypeValue}) : gridTypeDefault = gridValueTypeMap[gridTypeValue] ?? GridType.rectangular;
 
 }
 

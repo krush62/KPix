@@ -49,12 +49,21 @@ class ProjectManagerWidget extends StatefulWidget
   State<ProjectManagerWidget> createState() => _ProjectManagerWidgetState();
 }
 
+enum ProjectViewOrder
+{
+  nameAsc,
+  nameDesc,
+  lastModifiedAsc,
+  lastModifiedDesc,
+}
+
 class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 {
   final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ProjectManagerOptions _options = GetIt.I.get<PreferenceManager>().projectManagerOptions;
   final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier([]);
   final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier(null);
+  final ValueNotifier<ProjectViewOrder> _projectViewOrder = ValueNotifier(ProjectViewOrder.lastModifiedDesc);
 
   late KPixOverlay _saveBeforeLoadWarningDialog;
   late KPixOverlay _deleteWarningDialog;
@@ -167,8 +176,40 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         fList.add(ProjectManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
       }
     }
+    _sortWidgetEntries(fList: fList, order: _projectViewOrder.value);
 
     return fList;
+  }
+
+  static void _sortWidgetEntries({required final ProjectViewOrder order, required final List<ProjectManagerEntryWidget> fList})
+  {
+    if (order== ProjectViewOrder.lastModifiedAsc)
+    {
+      fList.sort((a, b) => a.entryData.dateTime.compareTo(b.entryData.dateTime));
+    }
+    else if (order == ProjectViewOrder.lastModifiedDesc)
+    {
+      fList.sort((a, b) => b.entryData.dateTime.compareTo(a.entryData.dateTime));
+    }
+    else if (order == ProjectViewOrder.nameAsc)
+    {
+      fList.sort((a, b) => a.entryData.name.compareTo(b.entryData.name));
+    }
+    else if (order == ProjectViewOrder.nameDesc)
+    {
+      fList.sort((a, b) => b.entryData.name.compareTo(a.entryData.name));
+    }
+  }
+
+  void changeOrder({required final ProjectViewOrder newOrder})
+  {
+    final List<ProjectManagerEntryWidget> fList = _fileEntries.value;
+    _fileEntries.value = [];
+    _sortWidgetEntries(fList: fList, order: newOrder);
+    _fileEntries.value = fList;
+    _projectViewOrder.value = newOrder;
+
+
   }
 
   void _importProjectPressed()
@@ -277,6 +318,61 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
           children: [
             SizedBox(height: _alertOptions.padding),
             Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
+            ValueListenableBuilder<ProjectViewOrder>(
+              valueListenable: _projectViewOrder,
+              builder: (final BuildContext context, final ProjectViewOrder viewOrder, final Widget? child) {
+                return SegmentedButton<ProjectViewOrder>(
+                  segments: [
+                    ButtonSegment(
+                      value: ProjectViewOrder.nameAsc,
+                      label: Tooltip(
+                        message: "Order by file name (ascending)",
+                        waitDuration: AppState.toolTipDuration,
+                        child: FaIcon(
+                            FontAwesomeIcons.arrowDownAZ
+                        ),
+                      )
+                    ),
+                    ButtonSegment(
+                      value: ProjectViewOrder.nameDesc,
+                      label: Tooltip(
+                        message: "Order by file name (descending)",
+                        waitDuration: AppState.toolTipDuration,
+                        child: FaIcon(
+                            FontAwesomeIcons.arrowDownZA
+                        ),
+                      )
+                    ),
+                    ButtonSegment(
+                      value: ProjectViewOrder.lastModifiedAsc,
+                      label: Tooltip(
+                        message: "Order by last modification (ascending)",
+                        waitDuration: AppState.toolTipDuration,
+                        child: FaIcon(
+                            FontAwesomeIcons.arrowDown19
+                        ),
+                      )
+                    ),
+                    ButtonSegment(
+                      value: ProjectViewOrder.lastModifiedDesc,
+                      label: Tooltip(
+                        message: "Order by last modification (descending)",
+                        waitDuration: AppState.toolTipDuration,
+                        child: FaIcon(
+                            FontAwesomeIcons.arrowDown91
+                        ),
+                      )
+                    ),
+                  ],
+                  selected: <ProjectViewOrder>{viewOrder},
+                  emptySelectionAllowed: false,
+                  multiSelectionEnabled: false,
+                  showSelectedIcon: false,
+                  onSelectionChanged: (final Set<ProjectViewOrder> newOrders){changeOrder(newOrder: newOrders.first);},
+                );
+              },
+            ),
+            SizedBox(height: _alertOptions.padding),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -292,7 +388,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                       childAspectRatio: _options.entryAspectRatio,
                       mainAxisSpacing: _alertOptions.padding,
                       crossAxisSpacing: _alertOptions.padding,
-                      children: pList,
+                      children: pList.toList()
                     );
                   },
                 ),

@@ -20,6 +20,10 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
@@ -37,7 +41,6 @@ import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 
 class KPixPainterOptions
 {
@@ -627,6 +630,24 @@ class KPixPainter extends CustomPainter
 
               final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
               drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
+            }
+          }
+          else if (layers[i].runtimeType == GridLayerState)
+          {
+            final GridLayerState gridLayer = layers[i] as GridLayerState;
+            if (gridLayer.raster != null)
+            {
+              //TODO can we optimize this by not drawing the full raster image???
+              paintImage(
+                  canvas: drawParams.canvas,
+                  rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                      drawParams.scaledCanvasSize.x.toDouble(),
+                      drawParams.scaledCanvasSize.y.toDouble()),
+                  image: gridLayer.raster!,
+                  scale: 1.0 / pxlSzDbl,
+                  fit: BoxFit.none,
+                  alignment: Alignment.topLeft,
+                  filterQuality: FilterQuality.none);
             }
           }
         }

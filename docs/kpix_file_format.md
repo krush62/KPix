@@ -60,23 +60,31 @@ The kpix file format consists of the following three consecutive sections:
 * rows ``ushort (1)`` // height of image
 * layer_count ``ubyte (1)`` // how many layers
 * Layers ``(layer_count)``
-  * type ``ubyte (1)`` // ``01``= drawing layer, ``02``= reference layer
+  * type ``ubyte (1)`` // ``01``= drawing layer, ``02``= reference layer, ``03``= grid layer
   * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden  
     // data for type ``01``  
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``01`` = transparency locked, ``02`` = locked
   * data_count ``uint (1)`` //how many non-transparent pixels on layer
-  * Image_Data ``(data_count)`` // for type ``01``
+  * Image_Data ``(data_count)`` // for type ``01`` (drawing layer)
     * x ``ushort (1)`` // x position
     * y ``ushort (1)`` // y position
     * color_ramp_index ``ubyte (1)`` // color ramp index
     * color_index ``ubyte (1)`` // index in color ramp\
     
-    // data for type ``02``
+    // data for type ``02`` (reference layer)
   * path (string)  
   * opacity ``ubyte (1)`` // 0...100
   * offset_x ``float (1)``
   * offset_y ``float (1)``
   * zoom ``ushort (1)`` // 1...2000 (representing zoom factor * 1000)
   * aspect_ratio ``float (1)``// -5...5 (vertical/horizontal stretch max. 6x)
+
+    // data for type ``03`` (grid layer)  
+  * opacity ``ubyte (1)`` // 0...100
+  * brightness ``ubyte (1)`` // 0...100
+  * grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+  * interval_x ``ubyte (1)`` // 2...64
+  * interval_x ``ubyte (1)`` // 2...64
+  
   
   

@@ -19,12 +19,23 @@ import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_grid_layer.dart';
+import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -33,7 +44,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
+import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:uuid/uuid.dart';
 
@@ -381,7 +392,7 @@ class AppState
     }
   }
 
-  ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
+  ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
     final List<LayerState> layerList = [];
@@ -412,6 +423,47 @@ class AppState
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new reference layer");
+    }
+    return newLayer;
+  }
+
+  GridLayerState addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
+  {
+    final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
+    final List<LayerState> layerList = [];
+    final GridLayerState newLayer = GridLayerState(
+      brightness: gridSettings.brightnessDefault,
+      gridType: gridSettings.gridTypeDefault,
+      intervalX: gridSettings.intervalXDefault,
+      intervalY: gridSettings.intervalYDefault,
+      opacity: gridSettings.opacityDefault
+    );
+    if (_layers.value.isEmpty)
+    {
+      newLayer.isSelected.value = true;
+      _currentLayer.value = newLayer;
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+      layerList.add(newLayer);
+    }
+    else
+    {
+      for (int i = 0; i < _layers.value.length; i++)
+      {
+        if (_layers.value[i].isSelected.value)
+        {
+          layerList.add(newLayer);
+        }
+        layerList.add(_layers.value[i]);
+      }
+    }
+    _layers.value = layerList;
+    if (select)
+    {
+      layerSelected(newLayer: newLayer);
+    }
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new grid layer");
     }
     return newLayer;
   }
@@ -552,7 +604,7 @@ class AppState
       int layerIndex = 0;
       for (final HistoryLayer historyLayer in historyState.layerList)
       {
-        LayerState layerState;
+        LayerState? layerState;
         if (historyLayer.runtimeType == HistoryDrawingLayer)
         {
           final HistoryDrawingLayer historyDrawingLayer = historyLayer as HistoryDrawingLayer;
@@ -577,21 +629,29 @@ class AppState
           drawingLayer.lockState.value = historyLayer.lockState;
           layerState = drawingLayer;
         }
-        else //if (historyLayer.runtimeType == HistoryReferenceLayer)
+        else if (historyLayer.runtimeType == HistoryReferenceLayer)
         {
           final HistoryReferenceLayer referenceLayer = historyLayer as HistoryReferenceLayer;
           layerState = ReferenceLayerState(zoom: referenceLayer.zoom, opacity: referenceLayer.opacity, offsetX: referenceLayer.offsetX, offsetY: referenceLayer.offsetY, image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path), aspectRatio: referenceLayer.aspectRatio);
         }
-
-        layerState.visibilityState.value = historyLayer.visibilityState;
-        final bool currentLayerIsSelected = (layerIndex == historyState.selectedLayerIndex);
-        layerState.isSelected.value = currentLayerIsSelected;
-        layerList.add(layerState);
-        if (historyLayer == historyState.selectionState.currentLayer)
+        else if (historyLayer.runtimeType == HistoryGridLayer)
         {
-          curSelLayer = layerState;
+          final HistoryGridLayer gridLayer = historyLayer as HistoryGridLayer;
+          layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY);
         }
-        layerIndex++;
+
+        if (layerState != null)
+        {
+          layerState.visibilityState.value = historyLayer.visibilityState;
+          final bool currentLayerIsSelected = (layerIndex == historyState.selectedLayerIndex);
+          layerState.isSelected.value = currentLayerIsSelected;
+          layerList.add(layerState);
+          if (historyLayer == historyState.selectionState.currentLayer)
+          {
+            curSelLayer = layerState;
+          }
+          layerIndex++;
+        }
       }
 
       //SELECTION
@@ -949,6 +1009,10 @@ class AppState
         }
       }
     }
+    else
+    {
+      showMessage(text: "Can only merge Drawing Layers!");
+    }
   }
 
   void layerDuplicated({required final LayerState duplicateLayer, final bool addToHistoryStack = true})
@@ -968,6 +1032,11 @@ class AppState
         {
           final ReferenceLayerState referenceLayer = duplicateLayer as ReferenceLayerState;
           layerList.add(ReferenceLayerState.from(other: referenceLayer));
+        }
+        else if (duplicateLayer.runtimeType == GridLayerState)
+        {
+          final GridLayerState gridLayer = duplicateLayer as GridLayerState;
+          layerList.add(GridLayerState.from(other: gridLayer));
         }
       }
       layerList.add(_layers.value[i]);

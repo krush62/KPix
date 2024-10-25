@@ -20,7 +20,12 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:path/path.dart' as p;
@@ -28,7 +33,6 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 
 enum ToolType
 {
@@ -652,6 +656,20 @@ class Helper
     }
 
     return indexMap;
+  }
+
+  static int? getRampIndex({required String uuid, required final List<HistoryRampData> ramps})
+  {
+    int? rampIndex;
+    for (int i = 0; i < ramps.length; i++)
+    {
+      if (ramps[i].uuid == uuid)
+      {
+        rampIndex = i;
+        break;
+      }
+    }
+    return rampIndex;
   }
 
 }

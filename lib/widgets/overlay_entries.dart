@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
 import 'package:kpix/widgets/extra/preferences_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
@@ -31,7 +32,6 @@ import 'package:kpix/widgets/extra/about_screen_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
@@ -420,7 +420,7 @@ class OverlayEntries
     );
   }
 
-  static KPixOverlay getReferenceLayerMenu({
+  static KPixOverlay getReducedLayerMenu({
     required final Function onDismiss,
     required Function onDelete,
     required Function onDuplicate,
@@ -1011,6 +1011,7 @@ class OverlayEntries
     required final Function onDismiss,
     required Function onNewDrawingLayer,
     required Function onNewReferenceLayer,
+    required Function onNewGridLayer,
     required final LayerLink layerLink,
   })
   {
@@ -1074,6 +1075,25 @@ class OverlayEntries
                             style: IconButton.styleFrom(
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 backgroundColor: Theme.of(context).primaryColor),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: Tooltip(
+                          message: "Add New Grid Layer",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.all(options.buttonSpacing),
+                            onPressed: () {onNewGridLayer();},
+                            icon: FaIcon(
+                              FontAwesomeIcons.tableCells,
+                              size: options.buttonHeight),
+                            color: Theme.of(context).primaryColorLight,
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor),
                           ),
                         ),
                       ),

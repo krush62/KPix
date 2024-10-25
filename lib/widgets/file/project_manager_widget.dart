@@ -94,7 +94,14 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _saveBeforeLoadWarningNo()
   {
-    FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: _selectedWidget.value!.entryData.path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings).then((final LoadFileSet loadFileSet){FileHandler.fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
+    FileHandler.loadKPixFile(
+      fileData: null,
+      constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
+      path: _selectedWidget.value!.entryData.path,
+      sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
+      referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
+      gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
+    ).then((final LoadFileSet loadFileSet){FileHandler.fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
     _closeSaveBeforeLoadWarning();
     widget.dismiss();
     widget.fileLoad();
@@ -177,7 +184,14 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     {
       if (path.endsWith(FileHandler.fileExtensionKpix))
       {
-        FileHandler.loadKPixFile(fileData: null, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings).then((final LoadFileSet lfs) {_importFileLoaded(loadFileSet: lfs);});
+        FileHandler.loadKPixFile(
+          fileData: null,
+          constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
+          path: path,
+          sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
+          referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
+          gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
+        ).then((final LoadFileSet lfs) {_importFileLoaded(loadFileSet: lfs);});
       }
       else
       {

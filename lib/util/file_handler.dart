@@ -24,17 +24,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_grid_layer.dart';
+import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_selection_state.dart';
+import 'package:kpix/managers/history/history_shift_set.dart';
+import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -87,6 +96,13 @@ const Map<int, SatCurve> _kpalKpixSatCurveMap =
   0:SatCurve.darkFlat,
   3:SatCurve.brightFlat,
   2: SatCurve.linear
+};
+
+const Map<int, Type> historyLayerValueMap =
+{
+  1: HistoryDrawingLayer,
+  2: HistoryReferenceLayer,
+  3: HistoryGridLayer
 };
 
 enum FileNameStatus
@@ -146,7 +162,7 @@ class FileHandler
   }
 
 
-  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings}) async
+  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings}) async
   {
     try
     {
@@ -216,13 +232,13 @@ class FileHandler
       for (int i = 0; i < layerCount; i++)
       {
         final int layerType = byteData.getUint8(offset++);
-        if (layerType != 1 && layerType != 2) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
+        if (!historyLayerValueMap.keys.contains(layerType)) return LoadFileSet(status: "Invalid layer type for layer $i: $layerType");
 
         final int visibilityStateVal = byteData.getUint8(offset++);
         final LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
         if (visibilityState == null) return LoadFileSet(status: "Invalid visibility type for layer $i: $visibilityStateVal");
 
-        if (layerType == 1) //DRAWING LAYER
+        if (historyLayerValueMap[layerType] == HistoryDrawingLayer) //DRAWING LAYER
         {
           final int lockStateVal = byteData.getUint8(offset++);
           final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
@@ -242,7 +258,7 @@ class FileHandler
           }
           layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
         }
-        else if (layerType == 2) //REFERENCE LAYER
+        else if (historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
         {
           //path (string)
           final int pathLength = byteData.getInt16(offset);
@@ -272,6 +288,30 @@ class FileHandler
           offset+=4;
 
           layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio));
+        }
+        else if (historyLayerValueMap[layerType] == HistoryGridLayer) //GRID LAYER
+        {
+          //opacity ``ubyte (1)`` // 0...100
+          final int opacity = byteData.getUint8(offset++);
+          if (opacity < gridLayerSettings.opacityMin || opacity > gridLayerSettings.opacityMax) return LoadFileSet(status: "Opacity for grid layer is out of range: $opacity");
+          //brightness ``ubyte (1)`` // 0...100
+          final int brightness = byteData.getUint8(offset++);
+          if (brightness < gridLayerSettings.brightnessMin || brightness > gridLayerSettings.brightnessMax) return LoadFileSet(status: "Brightness for grid layer is out of range: $brightness");
+          //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+          final int gridTypeValue = byteData.getUint8(offset++);
+          final GridType? gridType = gridValueTypeMap[gridTypeValue];
+          if (gridType == null)
+          {
+            return LoadFileSet(status: "Unknown type of grid layer: $gridTypeValue");
+          }
+          //interval_x ``ubyte (1)`` // 2...64
+          final int intervalX = byteData.getUint8(offset++);
+          if (intervalX < gridLayerSettings.intervalXMin || intervalX > gridLayerSettings.intervalXMax) return LoadFileSet(status: "Interval X for grid layer is out of range: $intervalX");
+          //interval_x ``ubyte (1)`` // 2...64
+          final int intervalY = byteData.getUint8(offset++);
+          if (intervalY < gridLayerSettings.intervalYMin || intervalY > gridLayerSettings.intervalYMax) return LoadFileSet(status: "Interval Y for grid layer is out of range: $intervalY");
+
+          layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY));
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
@@ -429,7 +469,14 @@ class FileHandler
       {
         path = result.files.first.path!;
       }
-      loadKPixFile(fileData: result.files.first.bytes, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, path: path, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints, referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      loadKPixFile(
+        fileData: result.files.first.bytes,
+        constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
+        path: path,
+        sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
+        referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
+        gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
+      ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 

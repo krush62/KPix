@@ -16,7 +16,8 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/history_manager.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
@@ -41,7 +42,6 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
-import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
@@ -52,6 +52,7 @@ import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
+import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
@@ -240,8 +241,7 @@ enum PreferenceInt
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
-  Layout_LayerWidget_ThumbUpdateTimerSec(defaultValue: 0),
-  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 50),
+  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 100),
   Layout_LayerWidget_AddLayerButtonSize(defaultValue: 32),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
@@ -261,6 +261,21 @@ enum PreferenceInt
   ReferenceLayer_ZoomDefault(defaultValue: 1000),
   ReferenceLayer_ZoomMax(defaultValue: 2000),
   ReferenceLayer_ZoomMin(defaultValue: 1),
+
+  GridLayer_OpacityDefault(defaultValue: 100),
+  GridLayer_OpacityMin(defaultValue: 0),
+  GridLayer_OpacityMax(defaultValue: 100),
+  GridLayer_BrightnessDefault(defaultValue: 50),
+  GridLayer_BrightnessMin(defaultValue: 0),
+  GridLayer_BrightnessMax(defaultValue: 100),
+  GridLayer_IntervalXDefault(defaultValue: 8),
+  GridLayer_IntervalXMin(defaultValue: 2),
+  GridLayer_IntervalXMax(defaultValue: 64),
+  GridLayer_IntervalYDefault(defaultValue: 8),
+  GridLayer_IntervalYMin(defaultValue: 2),
+  GridLayer_IntervalYMax(defaultValue: 64),
+  GridLayer_GridTypeDefault(defaultValue: 0),
+
 
 
   Tool_Pencil_SizeMin(defaultValue: 1),
@@ -576,6 +591,7 @@ class PreferenceManager
   late KPalSliderConstraints kPalSliderConstraints;
 
   late ReferenceLayerSettings referenceLayerSettings;
+  late GridLayerSettings gridLayerSettings;
 
   late ColorNames colorNames;
 
@@ -774,7 +790,6 @@ class PreferenceManager
         dragTargetHeight: _getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
         dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
         dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
-        thumbUpdateTimerSec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerSec),
         thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
         addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize));
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
@@ -816,6 +831,22 @@ class PreferenceManager
       aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
       aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
       zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent)
+    );
+
+    gridLayerSettings = GridLayerSettings(
+      opacityDefault: _getValueI(PreferenceInt.GridLayer_OpacityDefault),
+      opacityMin: _getValueI(PreferenceInt.GridLayer_OpacityMin),
+      opacityMax: _getValueI(PreferenceInt.GridLayer_OpacityMax),
+      brightnessDefault: _getValueI(PreferenceInt.GridLayer_BrightnessDefault),
+      brightnessMin: _getValueI(PreferenceInt.GridLayer_BrightnessMin),
+      brightnessMax: _getValueI(PreferenceInt.GridLayer_BrightnessMax),
+      intervalXDefault: _getValueI(PreferenceInt.GridLayer_IntervalXDefault),
+      intervalXMin: _getValueI(PreferenceInt.GridLayer_IntervalXMin),
+      intervalXMax: _getValueI(PreferenceInt.GridLayer_IntervalXMax),
+      intervalYDefault: _getValueI(PreferenceInt.GridLayer_IntervalYDefault),
+      intervalYMin: _getValueI(PreferenceInt.GridLayer_IntervalYMin),
+      intervalYMax: _getValueI(PreferenceInt.GridLayer_IntervalYMax),
+      gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault)
     );
   }
 

@@ -30,6 +30,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - hsv based color representation
 - shading capabilities for all tools
 - multiple reference layers per project (scaling, moving, stretching, changing opacity)
+- customizable grid layers (rectangular, diagonal, isometric)
 - image importing including automatic palette creation
 - multi-platform support 
 - stylus and touch support

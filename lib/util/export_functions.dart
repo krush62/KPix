@@ -24,17 +24,37 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_grid_layer.dart';
+import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/managers/history_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
+import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
 class ExportFunctions
 {
+  static Map<Type, int> historyLayerValueMap =
+  {
+    HistoryDrawingLayer: 1,
+    HistoryReferenceLayer: 2,
+    HistoryGridLayer: 3
+  };
+
+  static Map<GridType, int> gridTypeValueMap =
+  {
+    GridType.rectangular: 0,
+    GridType.diagonal: 1,
+    GridType.isometric: 2
+  };
+
+
   static Future<Uint8List?> exportPNG({required ExportData exportData, required final AppState appState}) async
   {
     final ByteData byteData = await _getImageData(
@@ -639,14 +659,7 @@ class ExportFunctions
     for (int i = 0; i < saveData.layerList.length; i++)
     {
       //layer type
-      if (saveData.layerList[i].runtimeType == HistoryDrawingLayer)
-      {
-        byteData.setUint8(offset++, 1);
-      }
-      else if (saveData.layerList[i].runtimeType == HistoryReferenceLayer)
-      {
-        byteData.setUint8(offset++, 2);
-      }
+      byteData.setUint8(offset++, historyLayerValueMap[saveData.layerList[i].runtimeType]!);
 
       //visibility
       int visVal = 0;
@@ -721,6 +734,20 @@ class ExportFunctions
         //aspect_ratio ``float (1)``
         byteData.setFloat32(offset, referenceLayer.aspectRatio);
         offset += 4;
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryGridLayer)
+      {
+        final HistoryGridLayer gridLayer = saveData.layerList[i] as HistoryGridLayer;
+        //opacity ``ubyte (1)`` // 0...100
+        byteData.setUint8(offset++, gridLayer.opacity);
+        //brightness ``ubyte (1)`` // 0...100
+        byteData.setUint8(offset++, gridLayer.brightness);
+        //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+        byteData.setUint8(offset++, gridTypeValueMap[gridLayer.gridType]!);
+        //interval_x ``ubyte (1)`` // 2...64
+        byteData.setUint8(offset++, gridLayer.intervalX);
+        //interval_x ``ubyte (1)`` // 2...64
+        byteData.setUint8(offset++, gridLayer.intervalY);
       }
     }
 
@@ -1431,7 +1458,19 @@ class ExportFunctions
         size += 2;
         //aspect_ratio ``float (1)``
         size += 4;
-
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryGridLayer)
+      {
+        //opacity ``ubyte (1)`` // 0...100
+        size += 1;
+        //brightness ``ubyte (1)`` // 0...100
+        size += 1;
+        //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+        size += 1;
+        //interval_x ``ubyte (1)`` // 2...64
+        size += 1;
+        //interval_x ``ubyte (1)`` // 2...64
+        size += 1;
       }
     }
 

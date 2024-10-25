@@ -22,9 +22,9 @@ Set-Content -Path $gradleFilePath -Value $gradleContent
 
 Set-Location ..\android
 Write-Host "Building APK..."
-.\gradlew.bat assembleRelease | Out-Null
+.\gradlew.bat assembleRelease
 Write-Host "Building Bundle..."
-.\gradlew.bat bundleRelease | Out-Null
+.\gradlew.bat bundleRelease
 
 
 Set-Location $PSScriptRoot

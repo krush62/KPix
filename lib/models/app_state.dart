@@ -524,12 +524,12 @@ class AppState
   {
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
-      _restoreState(historyState: loadFileSet.historyState);
-      projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-      hasChanges.value = false;
-      GetIt.I.get<HistoryManager>().clear();
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
-      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      _restoreState(historyState: loadFileSet.historyState).then((value) {
+        projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
+        hasChanges.value = false;
+        GetIt.I.get<HistoryManager>().clear();
+        GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+      });
     }
     else
     {
@@ -581,7 +581,7 @@ class AppState
     showMessage(text: "File saved at: $displayPath");
   }
 
-  void _restoreState({required final HistoryState? historyState}) async
+  Future<void> _restoreState({required final HistoryState? historyState}) async
   {
     if (historyState != null)
     {
@@ -1101,12 +1101,16 @@ class AppState
     }
   }
 
-  void colorSelected({required final ColorReference? color})
+  void colorSelected({required final ColorReference? color, final addToHistory = true})
   {
     if (_selectedColor.value != color)
     {
       _selectedColor.value = color;
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
+      if (addToHistory)
+      {
+        GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
+      }
+
       if (!Tool.isDrawTool(type: _selectedTool.value))
       {
         setToolSelection(tool: _previousDrawTool);

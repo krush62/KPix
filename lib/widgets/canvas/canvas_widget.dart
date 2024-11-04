@@ -39,6 +39,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
@@ -191,45 +192,43 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   {
     if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasHistoryData)
     {
-      String description = "drawing";
+      HistoryStateTypeIdentifier identifier = HistoryStateTypeIdentifier.generic;
       if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.pencil])
       {
-        description = "pencil drawing";
+        identifier = HistoryStateTypeIdentifier.toolPen;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.shape])
       {
-        description = "shape drawing";
+        identifier = HistoryStateTypeIdentifier.toolShape;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.stamp])
       {
-        description = "stamp drawing";
+        identifier = HistoryStateTypeIdentifier.toolStamp;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.line])
       {
-        description = "line drawing";
+        identifier = HistoryStateTypeIdentifier.toolLine;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.spraycan])
       {
-        description = "spray can drawing";
+        identifier = HistoryStateTypeIdentifier.toolSprayCan;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.font])
       {
-        description = "font drawing";
+        identifier = HistoryStateTypeIdentifier.toolText;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.erase])
       {
-        description = "erase";
+        identifier = HistoryStateTypeIdentifier.toolEraser;
       }
       else if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.fill])
       {
-        description = "fill";
+        identifier = HistoryStateTypeIdentifier.toolFill;
       }
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, description: description);
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier);
       kPixPainter.toolPainter!.hasHistoryData = false;
     }
-
   }
-
 
   void handleTimeoutLongPress()
   {

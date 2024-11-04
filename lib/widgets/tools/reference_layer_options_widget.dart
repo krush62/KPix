@@ -20,6 +20,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -101,7 +102,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           if (oldImage != null) {
             GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
           }
-          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), description: "add new reference image");
+          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage);
         }
         else
         {

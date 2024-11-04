@@ -33,7 +33,10 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history/history_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 
 
@@ -41,6 +44,7 @@ class HistoryManager
 {
   final ValueNotifier<bool> hasUndo = ValueNotifier(false);
   final ValueNotifier<bool> hasRedo = ValueNotifier(false);
+  final int _minEntries = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoStepsMin;
   int _maxEntries;
   int _curPos = -1;
   final Queue<HistoryState> _states = Queue();
@@ -57,7 +61,7 @@ class HistoryManager
 
   String getCurrentDescription()
   {
-    return _states.elementAt(_curPos).description;
+    return _states.elementAt(_curPos).type.description;
   }
 
   void changeMaxEntries({required int maxEntries})
@@ -94,10 +98,10 @@ class HistoryManager
     }
   }
 
-  void addState({required final AppState appState, required final String description, final setHasChanges = true})
+  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final setHasChanges = true})
   {
     _removeFutureEntries();
-    _states.add(HistoryState.fromAppState(appState: appState, description: description));
+    _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier));
     _curPos++;
     final int entriesLeft = (_maxEntries - _states.length);
 
@@ -109,6 +113,7 @@ class HistoryManager
         _curPos--;
       }
     }
+    _compressHistory();
     _updateNotifiers();
     appState.hasChanges.value = setHasChanges;
   }
@@ -143,5 +148,45 @@ class HistoryManager
   {
     hasUndo.value = (_curPos > 0);
     hasRedo.value = (_curPos < _states.length - 1);
+  }
+
+  void _compressHistory()
+  {
+    int index = 0;
+    final int maxIndex = _states.length - 1 - _minEntries;
+    final List<HistoryState> deleteStates = [];
+    HistoryState? previousMergeState;
+    for (final HistoryState state in _states)
+    {
+      if (index <= maxIndex)
+      {
+        if (state.type.compressionBehavior == HistoryStateCompressionBehavior.merge)
+        {
+          if (previousMergeState != null && previousMergeState.type.identifier == state.type.identifier)
+          {
+            deleteStates.add(previousMergeState);
+          }
+          previousMergeState = state;
+        }
+        else
+        {
+          previousMergeState = null;
+          if (state.type.compressionBehavior == HistoryStateCompressionBehavior.delete)
+          {
+            deleteStates.add(state);
+          }
+        }
+      }
+      else
+      {
+        break;
+      }
+      index++;
+    }
+    for (final HistoryState deleteState in deleteStates)
+    {
+      _states.remove(deleteState);
+      _curPos--;
+    }
   }
 }

@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/helper.dart';
@@ -166,7 +167,7 @@ class SelectionState with ChangeNotifier
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "new selection");
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew);
     }
 
     if (notify)
@@ -199,7 +200,7 @@ class SelectionState with ChangeNotifier
       }
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "new selection");
+        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew);
       }
     }
   }
@@ -442,7 +443,7 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "inverse selection");
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionInverse);
     }
     if (notify)
     {
@@ -457,7 +458,7 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "deselect");
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDeselect);
     }
     if (notify)
     {
@@ -483,7 +484,7 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "select all");
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionSelectAll);
     }
     if (notify)
     {
@@ -509,7 +510,7 @@ class SelectionState with ChangeNotifier
         selection.delete(keepSelection: keepSelection);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "delete selection");
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDelete);
         }
         if (!keepSelection)
         {
@@ -542,7 +543,7 @@ class SelectionState with ChangeNotifier
         delete(keepSelection: true, notify: false);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "cut selection");
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionCut);
         }
         if (notify)
         {
@@ -667,7 +668,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "paste");
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionPaste);
         }
 
         if (notify)
@@ -698,7 +699,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection horizontally");
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipH);
         }
 
         if (notify)
@@ -729,7 +730,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection vertically");
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipV);
         }
 
         if (notify)
@@ -760,7 +761,7 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "flip selection vertically");
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionRotate);
         }
 
         if (notify)
@@ -787,7 +788,7 @@ class SelectionState with ChangeNotifier
   void finishMovement()
   {
     selection.resetLastOffset();
-    GetIt.I.get<HistoryManager>().addState(appState: _appState, description: "selection moved");
+    GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove);
     if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
       final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;

@@ -30,6 +30,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
@@ -231,7 +232,7 @@ class AppState
     addNewDrawingLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();
     GetIt.I.get<HistoryManager>().clear();
-    GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+    GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
     projectName.value = null;
     hasChanges.value = false;
     hasProjectNotifier.value = true;
@@ -249,7 +250,7 @@ class AppState
     statusBarState.setStatusBarDimensions(width: width, height: height);
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "change canvas size");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasSizeChange);
     }
   }
 
@@ -330,7 +331,7 @@ class AppState
       repaintNotifier.repaint();
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "delete ramp");
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalDelete);
       }
     }
     else
@@ -354,7 +355,7 @@ class AppState
     repaintNotifier.repaint();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "update ramp");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalChange);
     }
   }
 
@@ -383,7 +384,7 @@ class AppState
       _selectedColor.value = newRamp.references[0];
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new ramp");
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
       }
     }
     else
@@ -422,7 +423,7 @@ class AppState
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new reference layer");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
     }
     return newLayer;
   }
@@ -463,7 +464,7 @@ class AppState
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new grid layer");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
     }
     return newLayer;
   }
@@ -497,7 +498,7 @@ class AppState
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "add new drawing layer");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDrawing);
     }
     return newLayer;
   }
@@ -528,7 +529,7 @@ class AppState
         projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
         hasChanges.value = false;
         GetIt.I.get<HistoryManager>().clear();
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
       });
     }
     else
@@ -560,7 +561,7 @@ class AppState
       }
       _selectedColor.value = loadPaletteSet.rampData![0].references[0];
       _colorRamps.value = loadPaletteSet.rampData!;
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "replace color ramp");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
     }
     else
     {
@@ -796,7 +797,7 @@ class AppState
       _layers.value = stateList;
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "change layer order");
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
       }
       repaintNotifier.repaint();
     }
@@ -812,7 +813,7 @@ class AppState
     {
       layerState.visibilityState.value = LayerVisibilityState.visible;
     }
-    GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer visibility changed");
+    GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
   }
 
   void changeLayerLockState({required final LayerState layerState})
@@ -832,7 +833,7 @@ class AppState
       {
         drawingLayerState.lockState.value = LayerLockState.unlocked;
       }
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "layer lock state changed");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
     }
   }
 
@@ -888,7 +889,7 @@ class AppState
       selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "select layer");
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
       }
     }
 
@@ -924,7 +925,7 @@ class AppState
       _layers.value = layerList;
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "delete layer");
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
       }
     }
     else
@@ -1005,7 +1006,7 @@ class AppState
         _layers.value = layerList;
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, description: "merge layer");
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge);
         }
       }
     }
@@ -1044,7 +1045,7 @@ class AppState
     _layers.value = layerList;
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "duplicate layer");
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
     }
   }
 
@@ -1108,7 +1109,7 @@ class AppState
       _selectedColor.value = color;
       if (addToHistory)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, description: "change color selection");
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.colorChange);
       }
 
       if (!Tool.isDrawTool(type: _selectedTool.value))
@@ -1183,8 +1184,16 @@ class AppState
     if (transformation == CanvasTransformation.rotate)
     {
       setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasRotate);
     }
-    GetIt.I.get<HistoryManager>().addState(appState: this, description: transformationDescriptions[transformation]!);
+    else if (transformation == CanvasTransformation.flipH)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasFlipH);
+    }
+    else if (transformation == CanvasTransformation.flipV)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasFlipV);
+    }
   }
 
   void cropToSelection()
@@ -1308,7 +1317,7 @@ class AppState
       _colorRamps.value = importResult.data!.rampDataList;
       _selectedColor.value = _colorRamps.value[0].references[0];
       GetIt.I.get<HistoryManager>().clear();
-      GetIt.I.get<HistoryManager>().addState(appState: this, description: "initial", setHasChanges: false);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
       projectName.value = null;
       hasChanges.value = false;
       hasProjectNotifier.value = true;

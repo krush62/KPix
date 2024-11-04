@@ -16,16 +16,16 @@
 
 ## Contents
 
-[Overview](#overview)\
-[Features](#features)\
-[Controls](#controls)\
-[Installation](#installation)\
-[Build](#build)\
-[Roadmap](#roadmap)\
-[Feedback](#feedback)\
-[License](#license)
+- [About](#about)
+- [Features](#features)
+- [Controls](#controls)
+- [Installation](#installation)
+- [Build](#build)
+- [Roadmap](#roadmap)
+- [Feedback](#feedback)
+- [License](#license)
 
-## Overview
+## 🚀About
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
 - exclusive use of indexed colors
 - generative color ramps based on parameters
@@ -38,7 +38,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - stylus and touch support
 - automatic light/dark theme
 
-## Features
+## 🔥Features
 ### Drawing Tools
 - Pen
 - Shape
@@ -87,7 +87,7 @@ Palettes can be exported for usage in other applications.
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. This is a planned feature. 
 
-## Controls
+## 🎮Controls
 This application supports input by mouse/keyboard, touch screen and stylus.
 The complete control table can be found [here](docs/controls.md).
 
@@ -100,7 +100,7 @@ The complete control table can be found [here](docs/controls.md).
 | color pick  | right click         | one finger down long | quick button down and up         |
 
 
-## Installation
+## 💾Installation
 All release versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).
 
 ### Windows
@@ -127,19 +127,19 @@ A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)
 - No palette import
 - Limited stylus and keyboard shortcut support
 
-## Build
+## 💻Build
 - Clone the repository
 - [Install the Flutter SDK](https://docs.flutter.dev/get-started/install)
 - Open the project in your configured IDE or use gradle directly to build your variant
 - you might use the scripts in the release_tools folder to create Linux/Windows/Android/Web versions
 
-## Roadmap
+## 🔜Roadmap
 A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53). Prioritizing of items will happen when alpha tests were performed.
 
-## Feedback
+## 🤝Feedback
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
-## License
+## 📃License
 This project is licensed under [AGPLv3](LICENSE).
 
 

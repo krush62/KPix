@@ -20,7 +20,9 @@
 [Features](#features)\
 [Controls](#controls)\
 [Installation](#installation)\
+[Build](#build)\
 [Roadmap](#roadmap)\
+[Feedback](#feedback)\
 [License](#license)
 
 ## Overview
@@ -115,9 +117,6 @@ Extract the contents of the Linux tar.gz Package and run kpix to start the appli
 #### Manual Installation
 Download the Android apk file and install it manually.\
 *Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
-#### Google Play Store Internal Testing
-There is currently an internal testing happening on Google Play Store. You can participate [here](https://play.google.com/store/apps/details?id=de.krush62.kpix).\
-Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
 [//]: # (### macOS)
 [//]: # (### iOS/iPadOS)
@@ -128,8 +127,17 @@ A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)
 - No palette import
 - Limited stylus and keyboard shortcut support
 
+## Build
+- Clone the repository
+- [Install the Flutter SDK](https://docs.flutter.dev/get-started/install)
+- Open the project in your configured IDE or use gradle directly to build your variant
+- you might use the scripts in the release_tools folder to create Linux/Windows/Android/Web versions
+
 ## Roadmap
 A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53). Prioritizing of items will happen when alpha tests were performed.
+
+## Feedback
+Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
 ## License
 This project is licensed under [AGPLv3](LICENSE).

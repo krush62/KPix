@@ -25,13 +25,14 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 class HistoryState
 {
-  final String description;
+  final HistoryStateType type;
   final List<HistoryRampData> rampList;
   final HistoryColorReference selectedColor;
   final List<HistoryLayer> layerList;
@@ -39,11 +40,13 @@ class HistoryState
   final CoordinateSetI canvasSize;
   final HistorySelectionState selectionState;
 
-  HistoryState({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex, required this.description});
+  HistoryState({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex, required this.type});
 
-  factory HistoryState.fromAppState({required final AppState appState, required String description})
+  factory HistoryState.fromAppState({required final AppState appState, required HistoryStateTypeIdentifier identifier})
   {
-    List<HistoryRampData> rampList = [];
+    final HistoryStateType type = allStateTypeMap[identifier] ?? HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
+
+    final List<HistoryRampData> rampList = [];
     for (final KPalRampData rampData in appState.colorRamps)
     {
       rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid, notifierShifts: rampData.shifts));
@@ -87,6 +90,6 @@ class HistoryState
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
     final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectLayer);
 
-    return HistoryState(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex, description: description);
+    return HistoryState(layerList: layerList, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: selectedLayerIndex, type: type);
   }
 }

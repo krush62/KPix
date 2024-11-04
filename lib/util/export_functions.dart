@@ -29,6 +29,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -589,7 +590,7 @@ class ExportFunctions
 
   static Future<ByteData> createKPixData({required final AppState appState}) async
   {
-    final HistoryState saveData = HistoryState.fromAppState(appState: appState, description: "saveData");
+    final HistoryState saveData = HistoryState.fromAppState(appState: appState, identifier: HistoryStateTypeIdentifier.saveData);
     final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
 
     int offset = 0;

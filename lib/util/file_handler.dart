@@ -34,6 +34,7 @@ import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/history/history_state.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -315,7 +316,7 @@ class FileHandler
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
-      final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, description: "load data");
+      final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, type: HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
       return LoadFileSet(status: "loading okay", historyState: historyState, path: path);
     }

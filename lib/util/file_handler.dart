@@ -206,7 +206,6 @@ class FileHandler
         kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
         kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
         if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadFileSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
-        //not used at the moment (don't forget to check for constraints)
         final List<ShiftSet> shifts = [];
         for (int j = 0; j < kPalRampSettings.colorCount; j++)
         {

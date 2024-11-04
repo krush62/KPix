@@ -623,7 +623,7 @@ class ExportFunctions
       byteData.setUint8(offset++, (rampSettings.satShiftExp * 100).round());
       //sat curve
       int satCurveVal = 0;
-      for (int j = 0; i < satCurveMap.length; j++)
+      for (int j = 0; j < satCurveMap.length; j++)
       {
         if (satCurveMap[j] == rampSettings.satCurve)
         {

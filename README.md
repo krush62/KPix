@@ -128,6 +128,8 @@ A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)
 - Limited stylus and keyboard shortcut support
 
 ## 💻Build
+![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?logo=dart&logoColor=white)
+![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=fff)
 - Clone the repository
 - [Install the Flutter SDK](https://docs.flutter.dev/get-started/install)
 - Open the project in your configured IDE or use gradle directly to build your variant

@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -23,11 +21,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:path/path.dart' as p;
 
 class ProjectManagerOptions
 {
@@ -208,71 +204,20 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     _sortWidgetEntries(fList: fList, order: newOrder);
     _fileEntries.value = fList;
     _projectViewOrder.value = newOrder;
-
-
   }
 
   void _importProjectPressed()
   {
-    FileHandler.getPathForKPixFile().then((final String? loadPath) {
-      _importFileChosen(path: loadPath);
-    });
-  }
-
-  void _importFileChosen({required final String? path})
-  {
-    if (path != null && path.isNotEmpty)
+    FileHandler.getPathForKPixFile().then((final String? loadPath)
     {
-      if (path.endsWith(FileHandler.fileExtensionKpix))
-      {
-        FileHandler.loadKPixFile(
-          fileData: null,
-          constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
-          path: path,
-          sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
-          referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-          gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
-        ).then((final LoadFileSet lfs) {_importFileLoaded(loadFileSet: lfs);});
-      }
-      else
-      {
-        GetIt.I.get<AppState>().showMessage(text: "Please select a KPix file!");
-      }
-    }
-  }
-
-  void _importFileLoaded({required final LoadFileSet loadFileSet})
-  {
-    final AppState appState = GetIt.I.get<AppState>();
-    if (loadFileSet.historyState != null && loadFileSet.path != null)
-    {
-      final String fileName = Helper.extractFilenameFromPath(path: loadFileSet.path!);
-      final String projectPath = p.join(appState.internalDir, FileHandler.projectsSubDirName, fileName);
-      if (!File(projectPath).existsSync())
-      {
-        Helper.getImageFromLoadFileSet(loadFileSet: loadFileSet, size: loadFileSet.historyState!.canvasSize).then((final ui.Image? img)
+      FileHandler.importProject(path: loadPath).then(
+        (final bool success)
         {
-          if (img != null)
-          {
-            FileHandler.copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath).then((final bool success) {
-              _importFileCompleted(success: success);
-            });
-          }
-          else
-          {
-            appState.showMessage(text: "Could not open file!");
-          }
-        });
-      }
-      else
-      {
-        appState.showMessage(text: "Project with the same name already exists!");
-      }
-    }
-    else
-    {
-      appState.showMessage(text: "Could not open file!");
-    }
+          _importFileCompleted(success: success);
+        },
+      );
+      //
+    });
   }
 
   void _importFileCompleted({required bool success})
@@ -285,13 +230,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       });
       appState.showMessage(text: "Project imported successfully!");
     }
-    else
-    {
-      appState.showMessage(text: "Project import failed!");
-    }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
@@ -24,6 +25,7 @@ import 'package:flutter/services.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/kpix_theme.dart';
+import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -40,6 +42,7 @@ import 'package:multi_split_view/multi_split_view.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
+import 'package:path/path.dart' as p;
 
 
 class ThemeNotifier extends ChangeNotifier
@@ -64,7 +67,7 @@ class ThemeNotifier extends ChangeNotifier
 }
 
 ThemeNotifier themeSettings = ThemeNotifier();
-late List<String> cmdLineArgs;
+late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
 void main(final List<String> args) {
   cmdLineArgs = args;
@@ -127,18 +130,87 @@ class KPixApp extends StatefulWidget
 }
 
 
-class _KPixAppState extends State<KPixApp>
+class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 {
   final ValueNotifier<bool> initialized = ValueNotifier(false);
   late KPixOverlay _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
   late KPixOverlay _saveNewWarningDialog;
+  late Timer _recoverTimer;
+  late AppLifecycleState _lastAppLifeCycleState;
+  HistoryState? _lastHistoryState;
 
 
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
     _initPrefs();
+    WidgetsBinding.instance.addObserver(this);
+    _lastAppLifeCycleState = AppLifecycleState.resumed;
+    if (!kIsWeb)
+    {
+      _recoverTimer = Timer.periodic(Duration(minutes: 2), (final Timer _) {_recoverCheck();});
+    }
+  }
+
+  @override
+  void dispose()
+  {
+    WidgetsBinding.instance.removeObserver(this);
+    _recoverTimer.cancel();
+    super.dispose();
+  }
+
+  void _recoverCheck({final bool ignoreState = false})
+  {
+    _lastAppLifeCycleState = WidgetsBinding.instance.lifecycleState ?? _lastAppLifeCycleState;
+    final AppState appState = GetIt.I.get<AppState>();
+    if (appState.hasProject && appState.hasChanges.value)
+    {
+      if ((ignoreState || _lastAppLifeCycleState == AppLifecycleState.resumed) && GetIt.I.get<HistoryManager>().getCurrentState() != _lastHistoryState)
+      {
+        _lastHistoryState = GetIt.I.get<HistoryManager>().getCurrentState();
+        FileHandler.clearRecoverDir().then((final void value)
+        {
+          final String fileName = appState.projectName.value ?? FileHandler.recoverFileName;
+          final String finalPath = p.join(appState.internalDir, FileHandler.recoverSubDirName, "$fileName.${FileHandler.fileExtensionKpix}");
+          FileHandler.saveKPixFile(appState: appState, path: finalPath);
+        },);
+      }
+    }
+    else
+    {
+      FileHandler.clearRecoverDir();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state)
+  {
+    switch (state)
+    {
+      case AppLifecycleState.detached:
+        //This state is only entered on iOS, Android, and web, although on all platforms it is the default state before the application begins running.
+        break;
+      case AppLifecycleState.resumed:
+        //On all platforms, this state indicates that the application is in the default running mode for a running application that has input focus and is visible.
+        break;
+      case AppLifecycleState.inactive:
+        //At least one view of the application is visible, but none have input focus. The application is otherwise running normally.
+        if (!kIsWeb)
+        {
+          _recoverCheck(ignoreState: true);
+        }
+        break;
+      case AppLifecycleState.hidden:
+        //All views of an application are hidden, either because the application is about to be paused (on iOS and Android), or because it has been minimized or placed on a desktop that is no longer visible (on non-web desktop), or is running in a window or tab that is no longer visible (on the web).
+        break;
+      case AppLifecycleState.paused:
+        //The application is not currently visible to the user, and not responding to user input.
+        break;
+    }
+
   }
 
   Future<void> _initPrefs() async
@@ -179,7 +251,7 @@ class _KPixAppState extends State<KPixApp>
         message: "There are unsaved changes, do you want to save first?"
     );
     _newProjectDialog = OverlayEntries.getNewProjectDialog(
-        onDismiss: () {exit(0);},
+        onDismiss: () {Helper.exitApplication();},
         onAccept: _newFilePressed,
         onOpen: _openPressed
     );
@@ -194,33 +266,72 @@ class _KPixAppState extends State<KPixApp>
     }
     appState.hasProjectNotifier.addListener(_hasProjectChanged);
 
-
-    String? initialFilePath;
-
-    if (cmdLineArgs.isNotEmpty && Helper.isDesktop())
+    if (!kIsWeb)
     {
-
-      initialFilePath = cmdLineArgs[0];
+      await FileHandler.createInternalDirectories();
     }
-    else if (!kIsWeb && Platform.isAndroid)
+
+    if (!kIsWeb)
     {
-      const MethodChannel channel = MethodChannel('app.channel.shared.data');
-      initialFilePath = await channel.invokeMethod('getSharedFile');
+      await _handleInitialFile();
+    }
+
+    initialized.value = true;
+  }
+
+
+  Future<void> _handleInitialFile() async
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
+
+    bool fromRecovery = false;
+    String? initialFilePath = await FileHandler.getRecoveryFile();
+
+    if (initialFilePath == null)
+    {
+      if (cmdLineArgs.isNotEmpty && Helper.isDesktop())
+      {
+        initialFilePath = cmdLineArgs[0];
+      }
+      else if (!kIsWeb && Platform.isAndroid)
+      {
+        const MethodChannel channel = MethodChannel('app.channel.shared.data');
+        initialFilePath = await channel.invokeMethod('getSharedFile');
+      }
+
+      await FileHandler.importProject(path: initialFilePath, showMessages: false);
+      final String fileName = Helper.extractFilenameFromPath(path: initialFilePath);
+      final String expectedFileName = initialFilePath = p.join(appState.internalDir, FileHandler.projectsSubDirName, fileName);
+      final File expectedFile = File(expectedFileName);
+
+      if (await expectedFile.exists())
+      {
+        initialFilePath = expectedFileName;
+      }
+      else
+      {
+        initialFilePath = null;
+      }
+    }
+    else
+    {
+      fromRecovery = true;
     }
 
     if (initialFilePath != null && initialFilePath.isNotEmpty)
     {
       final LoadFileSet lfs = await FileHandler.loadKPixFile(
-        fileData: null,
-        constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
-        path: initialFilePath,
-        sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
-        referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-        gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings);
+          fileData: null,
+          constraints: preferenceManager.kPalConstraints,
+          path: initialFilePath,
+          sliderConstraints: preferenceManager.kPalSliderConstraints,
+          referenceLayerSettings: preferenceManager.referenceLayerSettings,
+          gridLayerSettings: preferenceManager.gridLayerSettings);
       if (lfs.path != null && lfs.historyState != null)
       {
-        GetIt.I.get<AppState>().restoreFromFile(loadFileSet: lfs);
-        GetIt.I.get<AppState>().hasProjectNotifier.value = true;
+        appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
+        appState.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
       }
       else
@@ -232,15 +343,6 @@ class _KPixAppState extends State<KPixApp>
     {
       _hasProjectChanged();
     }
-
-    if (!kIsWeb)
-    {
-      await FileHandler.createInternalDirectories();
-    }
-
-
-    initialized.value = true;
-
   }
 
   void _hasProjectChanged()
@@ -259,7 +361,7 @@ class _KPixAppState extends State<KPixApp>
     }
     else
     {
-      exit(0);
+      Helper.exitApplication();
     }
   }
 
@@ -274,12 +376,12 @@ class _KPixAppState extends State<KPixApp>
 
   void _closeWarningNo()
   {
-    exit(0);
+    Helper.exitApplication();
   }
 
   void _saveBeforeClosedFinished()
   {
-    exit(0);
+    Helper.exitApplication();
   }
 
   void _closeAllMenus()

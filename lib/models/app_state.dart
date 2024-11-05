@@ -521,15 +521,17 @@ class AppState
     }
   }
 
-  void restoreFromFile({required final LoadFileSet loadFileSet})
+  void restoreFromFile({required final LoadFileSet loadFileSet, final setHasChanges = false})
   {
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
-      _restoreState(historyState: loadFileSet.historyState).then((value) {
-        projectName.value = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-        hasChanges.value = false;
+      _restoreState(historyState: loadFileSet.historyState).then((value)
+      {
+        final String projectNameExtracted = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
+        projectName.value = projectNameExtracted == FileHandler.recoverFileName ? null : projectNameExtracted;
+        hasChanges.value = setHasChanges;
         GetIt.I.get<HistoryManager>().clear();
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
       });
     }
     else
@@ -1250,7 +1252,8 @@ class AppState
   }
 
 
-  void showMessage({required final String text}) {
+  void showMessage({required final String text})
+  {
     showStyledToast(
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.zero,

@@ -864,32 +864,41 @@ class ExportFunctions
 
     final List<List<int>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
-    final List<DrawingLayerState> drawingLayers = appState.layers.whereType<DrawingLayerState>().toList();
+    final List<DrawingLayerState> drawingLayers = [];
 
-    for (int l = 0; l < drawingLayers.length; l++)
+    for (int l = 0; l < appState.layers.length; l++)
     {
-      final DrawingLayerState layerState = drawingLayers[l];
-      final List<int> imgBytes = [];
-      for (int y = 0; y < layerState.size.y; y++)
+      if (appState.layers[l].runtimeType == DrawingLayerState)
       {
-        for (int x = 0; x < layerState.size.x; x++)
+        final DrawingLayerState layerState = appState.layers[l] as DrawingLayerState;
+        final List<int> imgBytes = [];
+        for (int y = 0; y < layerState.size.y; y++)
         {
-          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          final ColorReference? colAtPos = layerState.getDataEntry(coord: curCoord);
-          if (colAtPos == null)
+          for (int x = 0; x < layerState.size.x; x++)
           {
-            imgBytes.add(0);
-          }
-          else
-          {
-            imgBytes.add(colorMap[colAtPos]!);
+            final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+            ColorReference? colAtPos;
+            if (appState.getSelectedLayer() == appState.layers[l])
+            {
+              colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
+            }
+            colAtPos ??= layerState.getDataEntry(coord: curCoord);
+
+            if (colAtPos == null)
+            {
+              imgBytes.add(0);
+            }
+            else
+            {
+              imgBytes.add(colorMap[colAtPos]!);
+            }
           }
         }
+        final List<int> encData = const ZLibEncoder().encode(imgBytes);
+        layerEncBytes.add(encData);
+        layerNames.add(utf8.encode("Layer$l"));
+        drawingLayers.add(layerState);
       }
-
-      final List<int> encData = const ZLibEncoder().encode(imgBytes);
-      layerEncBytes.add(encData);
-      layerNames.add(utf8.encode("Layer$l"));
     }
 
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
@@ -961,48 +970,58 @@ class ExportFunctions
     final List<List<List<int>>> layerEncBytes = [];
     final List<Uint8List> layerNames = [];
     const int tileSize = 64;
-    final List<DrawingLayerState> drawingLayers = appState.layers.whereType<DrawingLayerState>().toList();
-    for (int l = 0; l < drawingLayers.length; l++)
+    final List<DrawingLayerState> drawingLayers = [];
+    for (int l = 0; l < appState.layers.length; l++)
     {
-      final DrawingLayerState layerState = drawingLayers[l];
-      int x = 0;
-      int y = 0;
-      final List<List<int>> tileList = [];
-      do //TILING
-          {
-        final List<int> imgBytes = [];
-        int endX = min(x + tileSize, layerState.size.x);
-        int endY = min(y + tileSize, layerState.size.y);
-        for (int b = y; b < endY; b++)
+      if (appState.layers[l].runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState layerState = appState.layers[l] as DrawingLayerState;
+        int x = 0;
+        int y = 0;
+        final List<List<int>> tileList = [];
+        do //TILING
         {
-          for (int a = x; a < endX; a++)
+          final List<int> imgBytes = [];
+          int endX = min(x + tileSize, layerState.size.x);
+          int endY = min(y + tileSize, layerState.size.y);
+          for (int b = y; b < endY; b++)
           {
-            final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
-            final ColorReference? colAtPos = layerState.getDataEntry(coord: curCoord);
-            if (colAtPos == null)
+            for (int a = x; a < endX; a++)
             {
-              imgBytes.add(0);
-              imgBytes.add(0);
-            }
-            else
-            {
-              imgBytes.add(colorMap[colAtPos]!);
-              imgBytes.add(255);
+              final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
+              ColorReference? colAtPos;
+              if (appState.getSelectedLayer() == appState.layers[l])
+              {
+                colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
+              }
+              colAtPos ??= layerState.getDataEntry(coord: curCoord);
+
+              if (colAtPos == null)
+              {
+                imgBytes.add(0);
+                imgBytes.add(0);
+              }
+              else
+              {
+                imgBytes.add(colorMap[colAtPos]!);
+                imgBytes.add(255);
+              }
+
             }
 
           }
+          final List<int> encData = const ZLibEncoder().encode(imgBytes);
+          tileList.add(encData);
 
+          x = (endX >= layerState.size.x) ? 0 : endX;
+          y = (endX >= layerState.size.x) ? endY : y;
         }
-        final List<int> encData = const ZLibEncoder().encode(imgBytes);
-        tileList.add(encData);
+        while (y < layerState.size.y);
 
-        x = (endX >= layerState.size.x) ? 0 : endX;
-        y = (endX >= layerState.size.x) ? endY : y;
+        layerNames.add(utf8.encode("Layer$l"));
+        layerEncBytes.add(tileList);
+        drawingLayers.add(layerState);
       }
-      while (y < layerState.size.y);
-
-      layerNames.add(utf8.encode("Layer$l"));
-      layerEncBytes.add(tileList);
     }
 
     //CALCULATING SIZE

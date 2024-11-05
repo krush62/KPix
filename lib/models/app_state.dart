@@ -228,6 +228,7 @@ class AppState
   {
     setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
     final List<LayerState> layerList = [];
+    selectionState.deselect(addToHistoryStack: false, notify: false);
     _layers.value = layerList;
     addNewDrawingLayer(select: true, addToHistoryStack: false);
     setDefaultPalette();

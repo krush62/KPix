@@ -630,7 +630,7 @@ class Helper
     {
       return null;
     }
-    return filePath.replaceAll(RegExp(r'\.[^.]+$'), '.$newExtension');
+    return filePath.replaceAll(RegExp(r'\.[^\.]+$'), '.$newExtension');
   }
 
   static String formatDateTime({required final DateTime dateTime})

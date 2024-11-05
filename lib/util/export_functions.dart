@@ -690,22 +690,53 @@ class ExportFunctions
         }
         byteData.setUint8(offset++, lockVal);
         //data count
-        final int dataLength = drawingLayer.data.length;
+        int dataLength = drawingLayer.data.length;
+        if (i == saveData.selectedLayerIndex)
+        {
+          dataLength += saveData.selectionState.content.values.whereType<HistoryColorReference>().length;
+        }
         byteData.setUint32(offset, dataLength);
         offset+=4;
         //image data
         for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
         {
-          //x
-          byteData.setUint16(offset, entry.key.x);
-          offset+=2;
-          //y
-          byteData.setUint16(offset, entry.key.y);
-          offset+=2;
-          //ramp index
-          byteData.setUint8(offset++, entry.value.rampIndex);
-          //color index
-          byteData.setUint8(offset++, entry.value.colorIndex);
+          final HistoryColorReference? selectionReference = (i == saveData.selectedLayerIndex) ? saveData.selectionState.content[entry.key] : null;
+          if (selectionReference == null)
+          {
+            //x
+            byteData.setUint16(offset, entry.key.x);
+            offset+=2;
+            //y
+            byteData.setUint16(offset, entry.key.y);
+            offset+=2;
+
+            //ramp index
+            byteData.setUint8(offset++, entry.value.rampIndex);
+
+            //color index
+            byteData.setUint8(offset++, entry.value.colorIndex);
+          }
+        }
+        if (i == saveData.selectedLayerIndex) //draw selected pixels
+        {
+          for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
+          {
+            if (entry.value != null)
+            {
+              //x
+              byteData.setUint16(offset, entry.key.x);
+              offset+=2;
+              //y
+              byteData.setUint16(offset, entry.key.y);
+              offset+=2;
+
+              //ramp index
+              byteData.setUint8(offset++, entry.value!.rampIndex);
+
+              //color index
+              byteData.setUint8(offset++, entry.value!.colorIndex);
+            }
+          }
         }
       }
       else if (saveData.layerList[i].runtimeType == HistoryReferenceLayer)
@@ -1431,16 +1462,37 @@ class ExportFunctions
         size += 1;
         //data count
         size += 4;
-        for (int j = 0; j < drawingLayer.data.length; j++)
+        for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
         {
-          //x
-          size += 2;
-          //y
-          size += 2;
-          //color ramp index
-          size += 1;
-          //color index
-          size += 1;
+          final HistoryColorReference? selectionReference = (i == saveData.selectedLayerIndex) ? saveData.selectionState.content[entry.key] : null;
+          if (selectionReference == null)
+          {
+            //x
+            size += 2;
+            //y
+            size += 2;
+            //color ramp index
+            size += 1;
+            //color index
+            size += 1;
+          }
+        }
+        if (i == saveData.selectedLayerIndex) //draw selected pixels
+        {
+          for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
+          {
+            if (entry.value != null)
+            {
+              //x
+              size += 2;
+              //y
+              size += 2;
+              //color ramp index
+              size += 1;
+              //color index
+              size += 1;
+            }
+          }
         }
       }
       else if (saveData.layerList[i].runtimeType == HistoryReferenceLayer)

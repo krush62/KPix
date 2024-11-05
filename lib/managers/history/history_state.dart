@@ -42,7 +42,7 @@ class HistoryState
 
   HistoryState({required this.layerList, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.selectedLayerIndex, required this.type});
 
-  factory HistoryState.fromAppState({required final AppState appState, required HistoryStateTypeIdentifier identifier})
+  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier})
   {
     final HistoryStateType type = allStateTypeMap[identifier] ?? HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
 

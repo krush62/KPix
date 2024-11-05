@@ -138,11 +138,13 @@ class FileHandler
   static const String fileExtensionKpal = "kpal";
   static const String palettesSubDirName = "palettes";
   static const String projectsSubDirName = "projects";
+  static const String recoverSubDirName = "recover";
   static const String thumbnailExtension = "png";
   static const List<String> imageExtensions = ["png", "jpg", "jpeg", "gif"];
+  static const String recoverFileName = "___recover___";
 
 
-  static Future<String> _saveKPixFile({required final String path, required final AppState appState}) async
+  static Future<String> saveKPixFile({required final String path, required final AppState appState}) async
   {
     final ByteData byteData = await ExportFunctions.createKPixData(appState: appState);
     if (!kIsWeb)
@@ -495,11 +497,11 @@ class FileHandler
     if (!kIsWeb)
     {
       final String finalPath = p.join(appState.internalDir, projectsSubDirName, "$fileName.$fileExtensionKpix");
-      _saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String path){_projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
+      saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String path){_projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
     }
     else
     {
-      _saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String path){_projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
+      saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String path){_projectFileSaved(fileName: fileName, path: path, finishCallback: finishCallback);});
     }
   }
 
@@ -776,7 +778,7 @@ class FileHandler
     return returnPath;
   }
 
-  static FileNameStatus checkFileName({required String fileName, required String directory, required String extension})
+  static FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true})
   {
     if (fileName.isEmpty)
     {
@@ -798,6 +800,11 @@ class FileHandler
       {
         return FileNameStatus.forbidden;
       }
+    }
+
+    if (fileName == recoverFileName && !allowRecoverFile)
+    {
+      return FileNameStatus.forbidden;
     }
 
     final List<String> invalidCharacters = ['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'];
@@ -989,7 +996,8 @@ class FileHandler
     final List<Directory> internalDirectories =
     [
       Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName)),
-      Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName))
+      Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName)),
+      Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName))
     ];
 
     for (final Directory dir in internalDirectories)
@@ -1001,6 +1009,82 @@ class FileHandler
       }
     }
   }
+
+  static Future<void> clearRecoverDir() async
+  {
+    final Directory recoverDir = Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName));
+    final List<FileSystemEntity> files = await recoverDir.list().toList();
+    for (final FileSystemEntity file in files)
+    {
+      await file.delete(recursive: true);
+    }
+  }
+
+  static Future<String?> getRecoveryFile() async
+  {
+    final Directory recoverDir = Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName));
+    final List<FileSystemEntity> files = await recoverDir.list().toList();
+    if (files.length == 1)
+    {
+      return files[0].path;
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+  static Future<bool> importProject({required final String? path, final bool showMessages = true}) async
+  {
+    bool success = false;
+    if (path != null && path.isNotEmpty)
+    {
+      if (path.endsWith(FileHandler.fileExtensionKpix))
+      {
+        final LoadFileSet loadFileSet = await FileHandler.loadKPixFile(
+            fileData: null,
+            constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
+            path: path,
+            sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
+            referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
+            gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
+        );
+        final AppState appState = GetIt.I.get<AppState>();
+        if (loadFileSet.historyState != null && loadFileSet.path != null)
+        {
+          final String fileName = Helper.extractFilenameFromPath(path: loadFileSet.path!);
+          final String projectPath = p.join(appState.internalDir, FileHandler.projectsSubDirName, fileName);
+          if (!File(projectPath).existsSync())
+          {
+            final ui.Image? img = await Helper.getImageFromLoadFileSet(loadFileSet: loadFileSet, size: loadFileSet.historyState!.canvasSize);
+            if (img != null)
+            {
+              success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath);
+            }
+            else
+            {
+              if (showMessages) appState.showMessage(text: "Could not open file!");
+            }
+          }
+          else
+          {
+            if (showMessages) appState.showMessage(text: "Project with the same name already exists!");
+          }
+        }
+        else
+        {
+          if (showMessages) appState.showMessage(text: "Could not open file!");
+        }
+      }
+      else
+      {
+        GetIt.I.get<AppState>().showMessage(text: "Please select a KPix file!");
+      }
+    }
+    return success;
+  }
+
+
 
 }
 

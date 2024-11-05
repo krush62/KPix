@@ -56,7 +56,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, FileHandler.projectsSubDirName), extension: FileHandler.fileExtensionKpix);
+    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, FileHandler.projectsSubDirName), extension: FileHandler.fileExtensionKpix, allowRecoverFile: false);
   }
 
   @override

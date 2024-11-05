@@ -20,6 +20,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -670,6 +671,21 @@ class Helper
       }
     }
     return rampIndex;
+  }
+
+  static void exitApplication({final int exitCode = 0})
+  {
+    FileHandler.clearRecoverDir().then((value)
+    {
+      if (Platform.isAndroid)
+      {
+        SystemNavigator.pop();
+      }
+      else
+      {
+        exit(exitCode);
+      }
+    },);
   }
 
 }

@@ -144,6 +144,11 @@ class HistoryManager
     return hState;
   }
 
+  HistoryState getCurrentState()
+  {
+    return _states.elementAt(_curPos);
+  }
+
   void _updateNotifiers()
   {
     hasUndo.value = (_curPos > 0);

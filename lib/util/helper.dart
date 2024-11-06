@@ -27,6 +27,7 @@ import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:path/path.dart' as p;
@@ -468,7 +469,9 @@ class Helper
   static Future<ui.Image> getImageFromLayers({
     required final CoordinateSetI canvasSize,
     required final List<LayerState> layers,
-    required final CoordinateSetI size}) async
+    required final CoordinateSetI size,
+    required final int selectedLayerIndex,
+    required final SelectionList selectionList}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
@@ -488,6 +491,23 @@ class Helper
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none);
+          if (selectionList.hasValues() && i == selectedLayerIndex)
+          {
+            final Paint paint = Paint();
+            for (final MapEntry<CoordinateSetI, ColorReference?> entry in selectionList.selectedPixels.entries)
+            {
+              if (entry.value != null)
+              {
+                paint.color = entry.value!.getIdColor().color;
+                canvas.drawRect(Rect.fromLTWH(
+                    entry.key.x.toDouble(),
+                    entry.key.y.toDouble(),
+                    1,
+                    1),
+                    paint);
+              }
+            }
+          }
         }
       }
     }

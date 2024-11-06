@@ -854,6 +854,18 @@ class AppState
     return selectedLayer;
   }
 
+  int getSelectedLayerIndex()
+  {
+    if (currentLayer != null)
+    {
+      return _layers.value.indexOf(currentLayer!);
+    }
+    else
+    {
+      return -1;
+    }
+  }
+
   void selectLayerAbove()
   {
     int index = _getLayerPosition(state: currentLayer!);

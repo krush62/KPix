@@ -513,7 +513,7 @@ class FileHandler
       final String? pngPath = await Helper.replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
       if (pngPath != null)
       {
-        final ui.Image img = await Helper.getImageFromLayers(canvasSize: appState.canvasSize, layers: appState.layers, size: appState.canvasSize);
+        final ui.Image img = await Helper.getImageFromLayers(canvasSize: appState.canvasSize, layers: appState.layers, size: appState.canvasSize, selectionList: appState.selectionState.selection, selectedLayerIndex: appState.getSelectedLayerIndex());
         final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
         await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
       }

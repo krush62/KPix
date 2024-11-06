@@ -111,7 +111,7 @@ class _KPalRampState extends State<KPalRamp>
     final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.raster == null || l.isRasterizing))).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      Helper.getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize).then((final ui.Image img) {
+      Helper.getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
         _setPreviewImage(img: img);
       });
       _hasRenderChanges = false;

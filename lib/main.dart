@@ -18,7 +18,6 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,6 +42,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path/path.dart' as p;
+import 'package:toastification/toastification.dart';
 
 
 class ThemeNotifier extends ChangeNotifier
@@ -88,12 +88,14 @@ void main(final List<String> args) {
             child: AnimatedBuilder(
               animation: themeSettings,
               builder: (final BuildContext context, final Widget? child) {
-                return MaterialApp(
-                  debugShowCheckedModeBanner: false,
-                  home: const KPixApp(),
-                  theme: KPixTheme.monochromeTheme,
-                  darkTheme: KPixTheme.monochromeThemeDark,
-                  themeMode: themeSettings.themeMode,
+                return ToastificationWrapper(
+                  child: MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    home: const KPixApp(),
+                    theme: KPixTheme.monochromeTheme,
+                    darkTheme: KPixTheme.monochromeThemeDark,
+                    themeMode: themeSettings.themeMode,
+                  ),
                 );
               },
             ),
@@ -300,7 +302,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         initialFilePath = await channel.invokeMethod('getSharedFile');
       }
 
-      await FileHandler.importProject(path: initialFilePath, showMessages: false);
+      await FileHandler.importProject(path: initialFilePath, showMessages: true);
       final String fileName = Helper.extractFilenameFromPath(path: initialFilePath);
       final String expectedFileName = initialFilePath = p.join(appState.internalDir, FileHandler.projectsSubDirName, fileName);
       final File expectedFile = File(expectedFileName);
@@ -333,6 +335,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
         appState.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
+        appState.showMessage(text: "work recovered");
       }
       else
       {
@@ -459,10 +462,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       {
         if (init)
         {
-          return ToastProvider(
-            child: MainWidget(
-              closePressed: _closePressed
-            )
+          return MainWidget(
+            closePressed: _closePressed
           );
         }
         else

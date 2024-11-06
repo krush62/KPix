@@ -15,7 +15,7 @@
  */
 
 import 'dart:collection';
-import 'package:fl_toast/fl_toast.dart';
+import 'package:toastification/toastification.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -1267,51 +1267,42 @@ class AppState
 
   void showMessage({required final String text})
   {
-    showStyledToast(
+    toastification.showCustom(
         alignment: Alignment.bottomCenter,
-        margin: EdgeInsets.zero,
-        contentPadding: EdgeInsets.zero,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
-        child: Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: Theme
-                .of(ToastProvider.context)
-                .primaryColorDark,
-            border: Border(
-              left: BorderSide(color: Theme
-                  .of(ToastProvider.context)
-                  .primaryColor, width: 2.0,),
-              right: BorderSide(color: Theme
-                  .of(ToastProvider.context)
-                  .primaryColor, width: 2.0,),
-              top: BorderSide(color: Theme
-                  .of(ToastProvider.context)
-                  .primaryColor, width: 2.0,),
+        autoCloseDuration: const Duration(seconds: 3),
+        builder: (final BuildContext context, final ToastificationItem holder) {
+          final double padding = 8.0;
+          return Container(
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.only(left: padding, right: padding, top: padding, bottom: padding * 2),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColorDark,
+              border: Border(
+                left: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
+                right: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
+                top: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
             ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
-          ),
-
-          child: Text(
-            text,
-            style: Theme
-              .of(ToastProvider.context)
-              .textTheme
-              .titleMedium,),
-        ),
-        animationBuilder: (final BuildContext context, final Animation<double> animation, final Widget? child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: const Offset(0, 0),
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.fastOutSlowIn,
-            )),
-            child: child,
+            child: Text(
+              text,
+              softWrap: true,
+              style: Theme.of(context).textTheme.titleMedium,),
           );
         },
-        context: ToastProvider.context);
+      animationBuilder: (final BuildContext context, Animation<double> animation, Alignment alignment, final Widget? child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: const Offset(0, 0.25), //this is hacky
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.fastOutSlowIn,
+          )),
+          child: child,
+        );
+      },
+    );
   }
 
   void importFile({required ImportResult importResult})

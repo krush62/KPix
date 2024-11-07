@@ -35,12 +35,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/preferences/desktop_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/util/helper.dart';
@@ -89,6 +91,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   final CanvasOptions _options = GetIt.I.get<PreferenceManager>().canvasWidgetOptions;
   final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
+  final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier(false);
@@ -106,7 +109,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   int _stylusZoomStartLevel = 100;
   int _stylusToolStartSize = 1;
 
-
   late Timer _timerStylusBtnLongPress;
   bool _timerStylusRunning = false;
   bool _stylusButtonDetected = false;
@@ -117,8 +119,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   late Offset _dragStartLoc;
 
   final ValueNotifier<Offset> _canvasOffset = ValueNotifier(const Offset(0.0, 0.0));
-
-  final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier(SystemMouseCursors.none);
+  late MouseCursor _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
+  late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier(_defaultMouseCursor);
   bool _mouseIsInside = false;
   final Map<int, TouchPointerStatus> _touchPointers = {};
   double _initialTouchZoomDistance = 0.0;
@@ -146,15 +148,24 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
+  void _setDefaultCursor()
+  {
+    _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
+    setMouseCursor(cursor: _defaultMouseCursor);
+  }
+
   @override
   void initState()
   {
     super.initState();
-
+    _desktopPrefs.cursorType.addListener(() {
+      _setDefaultCursor();
+    });
     Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);});
     Timer.periodic(Duration(milliseconds: _options.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_)
+    {
       _setOptimalZoom();
     });
 
@@ -164,7 +175,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _stylusPrefs.stylusPollInterval.addListener(() {
       _hasNewStylusPollValue = true;
     });
-
 
     _hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
   }
@@ -335,7 +345,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
     {
       _isDragging.value = false;
-      setMouseCursor(cursor: SystemMouseCursors.none);
+      _setDefaultCursor();
     }
     _timerRunning = false;
 
@@ -687,7 +697,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _stylusLongMoveVertical.value = false;
       _stylusLongMoveHorizontal.value = false;
       _isDragging.value = false;
-      setMouseCursor(cursor: SystemMouseCursors.none);
+      _setDefaultCursor();
     }
     _stylusButtonDetected = false;
 

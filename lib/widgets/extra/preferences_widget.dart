@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
+import 'package:kpix/preferences/desktop_preferences.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
@@ -120,7 +121,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                         )
                       ),
                       //for a future release
-                      /*ButtonSegment(
+                      ButtonSegment(
                         value: PreferenceSectionType.controlsPC,
                         label: Tooltip(
                           message: preferenceMap[PreferenceSectionType.controlsPC]!.title,
@@ -129,7 +130,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                             preferenceMap[PreferenceSectionType.controlsPC]!.icon
                           )
                         )
-                      ),*/
+                      ),
                       ButtonSegment(
                         value: PreferenceSectionType.controlsStylus,
                         label: Tooltip(
@@ -181,6 +182,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                       case PreferenceSectionType.controlsTouch:
                         return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
                       case PreferenceSectionType.controlsPC:
+                        return DesktopPreferences(prefs: GetIt.I.get<PreferenceManager>().desktopPreferenceContent);
                       default:
                         return const Placeholder();
                     }

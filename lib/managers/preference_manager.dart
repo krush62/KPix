@@ -19,6 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
+import 'package:kpix/preferences/desktop_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/util/color_names.dart';
@@ -407,7 +408,9 @@ enum PreferenceInt
 
   TouchOptions_SingleTouchDelay(defaultValue: 50),
   TouchOptions_SingleTouchDelayMin(defaultValue: 10),
-  TouchOptions_SingleTouchDelayMax(defaultValue: 250)
+  TouchOptions_SingleTouchDelayMax(defaultValue: 250),
+
+  DesktopOptions_CursorType(defaultValue: 1),
 
   ;
 
@@ -602,6 +605,7 @@ class PreferenceManager
   late BehaviorPreferenceContent behaviorPreferenceContent;
   late StylusPreferenceContent stylusPreferenceContent;
   late TouchPreferenceContent touchPreferenceContent;
+  late DesktopPreferenceContent desktopPreferenceContent;
 
 
 
@@ -1085,6 +1089,10 @@ class PreferenceManager
       zoomStepDistanceMin: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMin),
       zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
     );
+
+    desktopPreferenceContent = DesktopPreferenceContent(
+      cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType)
+    );
   }
 
   Future<void> saveUserPrefs() async
@@ -1123,6 +1131,11 @@ class PreferenceManager
     _intMap[PreferenceInt.TouchOptions_SingleTouchDelay]!.value = touchPreferenceContent.singleTouchDelay.value;
     _doubleMap[PreferenceDouble.TouchOptions_ZoomStepDistanceMax]!.value = touchPreferenceContent.zoomStepDistance.value;
 
+    //DESKTOP PREFERENCES
+    if (desktopPreferenceContent.cursorType.value != cursorTypeIndexMap[_intMap[PreferenceInt.DesktopOptions_CursorType]!.value])
+    {
+      _intMap[PreferenceInt.DesktopOptions_CursorType]!.value = cursorTypeIndexMap.keys.firstWhere((x) => cursorTypeIndexMap[x] == desktopPreferenceContent.cursorType.value, orElse:() => PreferenceInt.DesktopOptions_CursorType.defaultValue);
+    }
 
     await _savePreferences();
 

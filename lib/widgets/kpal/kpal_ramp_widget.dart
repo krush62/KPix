@@ -16,6 +16,57 @@
 
 part of 'kpal_widget.dart';
 
+class GradientSliderTrackShape extends SliderTrackShape {
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+
+    final double horizontalPadding = 24.0;
+    final double trackHeight = sliderTheme.trackHeight ?? 4.0;
+    final double trackLeft = offset.dx + horizontalPadding;
+    final double trackTop = offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final double trackWidth = parentBox.size.width - (2 * horizontalPadding);
+    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
+  }
+
+  @override
+  void paint(
+      PaintingContext context,
+      ui.Offset offset,
+      {
+        required RenderBox parentBox,
+        required SliderThemeData sliderTheme,
+        required Animation<double> enableAnimation,
+        required ui.Offset thumbCenter,
+        ui.Offset? secondaryOffset,
+        bool isEnabled = false,
+        bool isDiscrete = false,
+        required ui.TextDirection textDirection}) {
+    final Rect trackRect = getPreferredRect(
+      parentBox: parentBox,
+      offset: offset,
+      sliderTheme: sliderTheme,
+    );
+
+    final Radius cornerRadius = Radius.circular(trackRect.height / 2);
+    final RRect roundedRect = RRect.fromRectAndRadius(trackRect, cornerRadius);
+
+    final Paint paint = Paint()
+      ..shader = LinearGradient(
+        colors: List.generate(361, (hue) => HSVColor.fromAHSV(1, hue.toDouble(), 1, 1).toColor()),
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(trackRect);
+
+    context.canvas.drawRRect(roundedRect, paint);
+  }
+}
+
 class KPalRampWidgetOptions
 {
   final KPalColorCardWidgetOptions colorCardWidgetOptions;
@@ -317,13 +368,19 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
-                                  value: widget.rampData.settings.baseHue.toDouble(),
-                                  min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
-                                  divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
-                                  onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.baseHue.toString(),
+                                child: SliderTheme(
+                                  data: SliderTheme.of(context).copyWith(
+                                    trackShape: GradientSliderTrackShape(), // Custom track shape
+                                  ),
+                                  child: Slider(
+                                    value: widget.rampData.settings.baseHue.toDouble(),
+                                    min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
+                                    max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
+                                    divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
+                                    onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
+                                    label: widget.rampData.settings.baseHue.toString(),
+
+                                  ),
                                 ),
                               ),
                               Expanded(

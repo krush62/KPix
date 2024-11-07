@@ -200,7 +200,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         break;
       case AppLifecycleState.inactive:
         //At least one view of the application is visible, but none have input focus. The application is otherwise running normally.
-        if (!kIsWeb)
+        if (!kIsWeb && initialized.value)
         {
           _recoverCheck(ignoreState: true);
         }

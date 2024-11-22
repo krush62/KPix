@@ -34,7 +34,9 @@ class ColorSet
   });
 }
 
-class KPixTheme {
+class KPixTheme
+{
+  static Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
 
   static ColorSet lightColors = ColorSet(normal: Colors.grey[400]!, light: Colors.grey[700]!, dark: Colors.grey[350]!);
   static ThemeData monochromeTheme = ThemeData(

@@ -20,6 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -439,13 +440,36 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: Tooltip(
                     message: "About",
                     waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      color: Theme.of(context).primaryColorLight,
-                      icon:  FaIcon(
-                        FontAwesomeIcons.question,
-                        size: _options.menuIconSize,
-                      ),
-                      onPressed: _questionPressed,
+                    child: Stack(
+                      alignment: Alignment.topCenter,
+                      fit: StackFit.passthrough,
+                      children: [
+                        IconButton.outlined(
+                          color: Theme.of(context).primaryColorLight,
+                          icon:  FaIcon(
+                            FontAwesomeIcons.question,
+                            size: _options.menuIconSize,
+                          ),
+                          onPressed: _questionPressed,
+                        ),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _appState.hasUpdateNotifier,
+                          builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                          {
+                            if (hasUpdate)
+                            {
+                              return Align(
+                                alignment: Alignment.topRight,
+                                child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: KPixTheme.notificationGreen))
+                              );
+                            }
+                            else
+                            {
+                              return SizedBox.shrink();
+                            }
+                          },
+                        )
+                      ]
                     ),
                   ),
                 )

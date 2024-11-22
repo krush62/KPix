@@ -35,6 +35,8 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:version/version.dart';
 
 enum ToolType
 {
@@ -706,6 +708,32 @@ class Helper
         exit(exitCode);
       }
     },);
+  }
+
+  static Version? convertStringToVersion({required final String version})
+  {
+    final versionRegex = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?$');
+    final match = versionRegex.firstMatch(version);
+    if (match != null)
+    {
+      final List<int> numbers = match.groups([1, 2, 3, 4])
+          .whereType<String>() // Filter out null values
+          .map((str) => int.parse(str)) // Parse remaining strings to integers
+          .toList();
+      return Version(numbers[0], numbers[1], numbers[2]);
+    }
+    else
+    {
+      return null;
+    }
+  }
+
+  static Future<void> launchURL({required final String url}) async
+  {
+    if (!await launchUrl(Uri.parse(url)))
+    {
+      throw Exception("Could not launch");
+    }
   }
 
 }

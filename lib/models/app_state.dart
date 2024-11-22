@@ -15,6 +15,7 @@
  */
 
 import 'dart:collection';
+import 'package:kpix/util/update_helper.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -166,13 +167,25 @@ class AppState
     _internalDir.value = dir;
   }
 
+  final ValueNotifier<bool> _hasUpdate;
+  bool get hasUpdate
+  {
+    return _hasUpdate.value;
+  }
+  ValueNotifier<bool> get hasUpdateNotifier
+  {
+    return _hasUpdate;
+  }
+
+  UpdateInfoPackage? updatePackage;
+
   final ValueNotifier<String?> projectName = ValueNotifier(null);
   final ValueNotifier<bool> hasChanges = ValueNotifier(false);
 
   static const Duration toolTipDuration = Duration(seconds: 1);
 
 
-  AppState({required String exportDir, required String internalDir}) : _exportDir = ValueNotifier(exportDir), _internalDir = ValueNotifier(internalDir)
+  AppState({required String exportDir, required String internalDir}) : _exportDir = ValueNotifier(exportDir), _internalDir = ValueNotifier(internalDir), _hasUpdate = ValueNotifier(false)
   {
     for (final ToolType toolType in toolList.keys)
     {

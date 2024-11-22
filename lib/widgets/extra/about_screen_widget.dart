@@ -15,11 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -33,8 +37,8 @@ class AboutScreenWidget extends StatefulWidget
 
 class _AboutScreenWidgetState extends State<AboutScreenWidget>
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final PackageInfo pInfo = GetIt.I.get<PackageInfo>();
+  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  final PackageInfo _pInfo = GetIt.I.get<PackageInfo>();
 
   late KPixOverlay _licenseScreen;
   late KPixOverlay _creditsScreen;
@@ -61,33 +65,32 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   {
     _licenseScreen.hide();
     _creditsScreen.hide();
-
   }
 
   @override
   Widget build(BuildContext context)
   {
     return Material(
-      elevation: options.elevation,
+      elevation: _options.elevation,
       shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
       child: Container(
         constraints: BoxConstraints(
-          minHeight: options.minHeight,
-          minWidth: options.minWidth,
-          maxHeight: options.minHeight,
-          maxWidth: options.maxWidth,
+          minHeight: _options.minHeight,
+          minWidth: _options.minWidth,
+          maxHeight: _options.minHeight,
+          maxWidth: _options.maxWidth,
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
           border: Border.all(
             color: Theme.of(context).primaryColorLight,
-            width: options.borderWidth,
+            width: _options.borderWidth,
           ),
-          borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
         ),
         child: Padding(
-          padding: EdgeInsets.all(options.padding),
+          padding: EdgeInsets.all(_options.padding),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -100,16 +103,56 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.only(left: options.padding),
+                  padding: EdgeInsets.only(left: _options.padding),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("KPix ${pInfo.version}", style: Theme.of(context).textTheme.titleLarge),
-                      Text("A Pixel Art Creation Tool", style: Theme.of(context).textTheme.titleSmall),
-                      Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.bodyMedium),
-                      SizedBox(height: options.padding,),
+                      Row(
+                        children: [
+                          Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
+                          Expanded(child: SizedBox(width: _options.padding)),
+                          ValueListenableBuilder(
+                            valueListenable: GetIt.I.get<AppState>().hasUpdateNotifier,
+                            builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                            {
+                              final UpdateInfoPackage? updateInfo = GetIt.I.get<AppState>().updatePackage;
+                              if (hasUpdate && updateInfo != null)
+                              {
+                                return RichText(
+                                  textAlign: TextAlign.right,
+                                  text: TextSpan(
+                                    text: "New version available (${updateInfo.version}).\n",
+                                    style: Theme.of(context).textTheme.bodySmall!.apply(color: KPixTheme.notificationGreen),
+                                    children: [
+                                      TextSpan(
+                                          text: "Download from GitHub.",
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              if (GetIt.I.get<AppState>().updatePackage != null)
+                                              {
+                                                Helper.launchURL(url: updateInfo.url);
+                                              }
+                                            },
+                                          style: Theme.of(context).textTheme.bodySmall!.apply(color: KPixTheme.notificationGreen, decoration: TextDecoration.underline, decorationColor: KPixTheme.notificationGreen)
+                                      )
+                                    ]
+                                  ),
+                                );
+                              }
+                              else
+                              {
+                                return SizedBox.shrink();
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+
+                      Text("A Pixel Art Creation Tool", style: Theme.of(context).textTheme.labelMedium),
+                      Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
+                      SizedBox(height: _options.padding,),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -122,15 +165,13 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                               child: IconButton.outlined(
                                 icon: FaIcon(
                                   FontAwesomeIcons.peopleGroup,
-                                  size: options.iconSize,
+                                  size: _options.iconSize,
                                 ),
                                 onPressed: _creditsPressed,
                               ),
                             ),
                           ),
-                          //Expanded(flex: 1, child: OutlinedButton(onPressed: _creditsPressed, child: const Text("Credits"))),
-                          SizedBox(width: options.padding),
-                          //Expanded(flex: 1, child: OutlinedButton(onPressed: _licensesPressed, child: const Text("Licenses")))
+                          SizedBox(width: _options.padding),
                           Expanded(
                             child: Tooltip(
                               message: "Licenses",
@@ -138,13 +179,13 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                               child: IconButton.outlined(
                                 icon: FaIcon(
                                   FontAwesomeIcons.section,
-                                  size: options.iconSize,
+                                  size: _options.iconSize,
                                 ),
                                 onPressed: _licensesPressed,
                               ),
                             )
                           ),
-                          SizedBox(width: options.padding),
+                          SizedBox(width: _options.padding),
                           Expanded(
                             child: Tooltip(
                               message: "Close",
@@ -152,7 +193,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                               child: IconButton.outlined(
                                 icon: FaIcon(
                                   FontAwesomeIcons.xmark,
-                                  size: options.iconSize,
+                                  size: _options.iconSize,
                                 ),
                                 onPressed: widget.onDismiss,
                               ),
@@ -170,5 +211,4 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
       )
     );
   }
-
 }

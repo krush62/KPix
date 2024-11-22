@@ -31,6 +31,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
@@ -43,6 +44,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path/path.dart' as p;
 import 'package:toastification/toastification.dart';
+import 'package:version/version.dart';
 
 
 class ThemeNotifier extends ChangeNotifier
@@ -264,22 +266,42 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
     if (themeSettings.themeMode != currentTheme)
     {
-      themeSettings.themeMode =  currentTheme;
+      themeSettings.themeMode = currentTheme;
     }
     appState.hasProjectNotifier.addListener(_hasProjectChanged);
 
     if (!kIsWeb)
     {
       await FileHandler.createInternalDirectories();
-    }
-
-    if (!kIsWeb)
-    {
       await _handleInitialFile();
+      if (Helper.isDesktop())
+      {
+        UpdateHelper.getLatestVersionInfo().then((final UpdateInfoPackage? value) {
+          updateDataReceived(updateInfo: value);
+        });
+      }
     }
-
     initialized.value = true;
   }
+
+  void updateDataReceived({required final UpdateInfoPackage? updateInfo})
+  {
+    bool hasUpdate = false;
+    if (updateInfo != null)
+    {
+      final Version? currentVersion = Helper.convertStringToVersion(version: GetIt.I.get<PackageInfo>().version);
+      if (currentVersion != null)
+      {
+        if (updateInfo.version > currentVersion)
+        {
+          GetIt.I.get<AppState>().updatePackage = updateInfo;
+          hasUpdate = true;
+        }
+      }
+    }
+    GetIt.I.get<AppState>().hasUpdateNotifier.value = hasUpdate;
+  }
+
 
 
   Future<void> _handleInitialFile() async

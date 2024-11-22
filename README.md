@@ -23,7 +23,7 @@
 - [Build](#build)
 - [Roadmap](#roadmap)
 - [Feedback](#feedback)
-- [License](#license)
+- [License](#license-and-privacy)
 
 ## 🚀About
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
@@ -141,7 +141,8 @@ A list of ideas and features for future versions can be found here: [#53](https:
 ## 🤝Feedback
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
-## 📃License
-This project is licensed under [AGPLv3](LICENSE).
+## 📃License and Privacy
+This project is licensed under [AGPLv3](LICENSE).\
+Please read the [privacy statement](PRIVACY.md).
 
 

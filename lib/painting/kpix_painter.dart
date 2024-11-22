@@ -285,8 +285,8 @@ class KPixPainter extends CustomPainter
 
     final Paint p = Paint();
     p.color = _blackBorderAlphaColor;
-    p.style = ui.PaintingStyle.fill;
-    p.strokeWidth = 1;
+    p.style = ui.PaintingStyle.stroke;
+    p.strokeWidth = width.toDouble();
     drawParams.canvas.drawRect(borderRect, p);
 
   }

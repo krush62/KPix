@@ -531,8 +531,12 @@ class AppState
         final String projectNameExtracted = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
         projectName.value = projectNameExtracted == FileHandler.recoverFileName ? null : projectNameExtracted;
         hasChanges.value = setHasChanges;
+        hasProjectNotifier.value = true;
         GetIt.I.get<HistoryManager>().clear();
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
+        setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
+        GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+
       });
     }
     else

@@ -195,6 +195,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     _appState.setZoomLevel(val: bestZoomLevel);
     _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (_appState.canvasSize.x * _appState.zoomFactor)) / 2, (kPixPainter.latestSize.height - (_appState.canvasSize.y * _appState.zoomFactor)) / 2));
+    _appState.repaintNotifier.repaint();
   }
 
 

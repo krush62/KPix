@@ -118,6 +118,9 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<Offset> _primaryPressStart;
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
   final GuiPreferenceContent _guiOptions = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
+  late Color _blackSelectionAlphaColor;
+  late Color _whiteSelectionAlphaColor;
+  late Color _blackBorderAlphaColor;
   late Map<ToolType, IToolPainter> toolPainterMap;
   late Size latestSize = const Size(0,0);
   late int _latestRasterSize = 8;
@@ -157,6 +160,16 @@ class KPixPainter extends CustomPainter
         _primaryPressStart = primaryPressStart,
         super(repaint: appState.repaintNotifier)
   {
+    _guiOptions.selectionOpacity.addListener(() {
+      _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
+    },);
+    _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
+
+    _guiOptions.canvasBorderOpacity.addListener(() {
+      _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
+    },);
+    _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
+
     toolPainterMap = {
       ToolType.select: SelectionPainter(painterOptions: _options),
       ToolType.erase: EraserPainter(painterOptions: _options),
@@ -170,6 +183,19 @@ class KPixPainter extends CustomPainter
       ToolType.stamp: StampPainter(painterOptions: _options)
     };
     Timer.periodic(Duration(milliseconds: _options.rasterIntervalMs), (final Timer t) {_rasterTimeout(t: t);});
+  }
+
+  void _setSelectionColors({required final int percentageValue})
+  {
+    final int alignedValue = (percentageValue.toDouble() * 2.55).round();
+    _blackSelectionAlphaColor = Colors.black.withAlpha(alignedValue);
+    _whiteSelectionAlphaColor = Colors.white.withAlpha(alignedValue);
+  }
+
+  void _setCanvasBorderColor({required final int percentageValue})
+  {
+    final int alignedValue = (percentageValue.toDouble() * 2.55).round();
+    _blackBorderAlphaColor = Colors.black.withAlpha(alignedValue);
   }
 
   Future<void> _rasterTimeout({required final Timer t}) async
@@ -222,6 +248,7 @@ class KPixPainter extends CustomPainter
       }
 
       _drawCheckerboard(drawParams: drawParams);
+      _drawCanvasBorder(drawParams: drawParams);
       if (drawParams.currentDrawingLayer != null)
       {
         toolPainter?.calculate(drawParams: drawParams);
@@ -247,6 +274,23 @@ class KPixPainter extends CustomPainter
     }
   }
 
+  void _drawCanvasBorder({required final DrawingParameters drawParams, final int width = 2})
+  {
+    final double pxlSzDbl = drawParams.pixelSize.toDouble();
+    final ui.Rect borderRect = ui.Rect.fromLTWH(
+        drawParams.offset.dx - width,
+        drawParams.offset.dy - width,
+        drawParams.canvasSize.x * pxlSzDbl + (width * 2),
+        drawParams.canvasSize.y * pxlSzDbl + (width * 2));
+
+    final Paint p = Paint();
+    p.color = _blackBorderAlphaColor;
+    p.style = ui.PaintingStyle.fill;
+    p.strokeWidth = 1;
+    drawParams.canvas.drawRect(borderRect, p);
+
+  }
+
   void _drawReferenceBorder({required final DrawingParameters drawParams, required final ReferenceLayerState refLayer})
   {
     if (refLayer.image != null)
@@ -262,7 +306,7 @@ class KPixPainter extends CustomPainter
       );
 
       final Paint p = Paint();
-      p.color = Colors.black;
+      p.color = _blackSelectionAlphaColor;
       p.style = ui.PaintingStyle.stroke;
       p.strokeWidth = 1;
       drawParams.canvas.drawRect(borderRect, p);
@@ -314,7 +358,7 @@ class KPixPainter extends CustomPainter
     {
       for (final SelectionLine line in _appState.selectionState.selectionLines) {
         if (line.selectDir == SelectionDirection.left) {
-          drawParams.paint.color = Colors.black;
+          drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -332,7 +376,7 @@ class KPixPainter extends CustomPainter
                       pxlSzDbl +
                       _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
-          drawParams.paint.color = Colors.white;
+          drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -346,7 +390,7 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
               drawParams.paint);
         } else if (line.selectDir == SelectionDirection.right) {
-          drawParams.paint.color = Colors.black;
+          drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -366,7 +410,7 @@ class KPixPainter extends CustomPainter
                       pxlSzDbl +
                       _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
-          drawParams.paint.color = Colors.white;
+          drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -382,7 +426,7 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
               drawParams.paint);
         } else if (line.selectDir == SelectionDirection.top) {
-          drawParams.paint.color = Colors.black;
+          drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -400,7 +444,7 @@ class KPixPainter extends CustomPainter
                       (line.endLoc.y * pxlSzDbl) -
                       _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
-          drawParams.paint.color = Colors.white;
+          drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx + (line.startLoc.x * pxlSzDbl),
@@ -414,7 +458,7 @@ class KPixPainter extends CustomPainter
                       _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
         } else if (line.selectDir == SelectionDirection.bottom) {
-          drawParams.paint.color = Colors.black;
+          drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
@@ -434,7 +478,7 @@ class KPixPainter extends CustomPainter
                       pxlSzDbl +
                       _options.selectionSolidStrokeWidth / 2),
               drawParams.paint);
-          drawParams.paint.color = Colors.white;
+          drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx + (line.startLoc.x * pxlSzDbl),
@@ -466,7 +510,7 @@ class KPixPainter extends CustomPainter
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize + _options.cursorBorderWidth, drawParams.paint);
-        drawParams.paint.color = Colors.white;
+        drawParams.paint.color = _whiteSelectionAlphaColor;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize, drawParams.paint);
       }
 

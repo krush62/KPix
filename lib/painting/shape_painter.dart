@@ -207,10 +207,10 @@ class ShapePainter extends IToolPainter
               (_selectionEnd.y + 1) * drawParams.pixelSize);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
+      drawParams.paint.color = whiteToolAlphaColor;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
     }
 
@@ -221,10 +221,10 @@ class ShapePainter extends IToolPainter
           y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
+      drawParams.paint.color = whiteToolAlphaColor;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
     }
   }

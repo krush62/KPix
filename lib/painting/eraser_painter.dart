@@ -137,10 +137,10 @@ class EraserPainter extends IToolPainter
 
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = Colors.black;
+    drawParams.paint.color = blackToolAlphaColor;
     drawParams.canvas.drawPath(path, drawParams.paint);
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = Colors.white;
+    drawParams.paint.color = whiteToolAlphaColor;
     drawParams.canvas.drawPath(path, drawParams.paint);
   }
 

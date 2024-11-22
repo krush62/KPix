@@ -187,14 +187,14 @@ class SelectionPainter extends IToolPainter
               (selectionEnd.y + 1) * drawParams.pixelSize);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
 
       //RECTANGLE
       if (options.shape.value == SelectShape.rectangle)
       {
         drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-        drawParams.paint.color = Colors.white;
+        drawParams.paint.color = whiteToolAlphaColor;
         drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
       }
 
@@ -203,7 +203,7 @@ class SelectionPainter extends IToolPainter
       {
         drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-        drawParams.paint.color = Colors.white;
+        drawParams.paint.color = whiteToolAlphaColor;
         drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
       }
     }
@@ -215,10 +215,10 @@ class SelectionPainter extends IToolPainter
           y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
+      drawParams.paint.color = whiteToolAlphaColor;
       drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
     }
     else if (options.shape.value == SelectShape.polygon)
@@ -236,10 +236,10 @@ class SelectionPainter extends IToolPainter
 
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
+      drawParams.paint.color = whiteToolAlphaColor;
       drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
     }
     else if (options.shape.value == SelectShape.wand)
@@ -263,15 +263,15 @@ class SelectionPainter extends IToolPainter
 
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawPath(fillPath, drawParams.paint);
 
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawPath(outlinePath, drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
+      drawParams.paint.color = whiteToolAlphaColor;
       drawParams.canvas.drawPath(outlinePath, drawParams.paint);
     }
   }
@@ -311,12 +311,12 @@ class SelectionPainter extends IToolPainter
 
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
+      drawParams.paint.color = blackToolAlphaColor;
       drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
       drawParams.canvas.drawPath(path, drawParams.paint);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
+      drawParams.paint.color = whiteToolAlphaColor;
       drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
       drawParams.canvas.drawPath(path, drawParams.paint);
     }

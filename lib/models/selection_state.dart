@@ -323,98 +323,122 @@ class SelectionState with ChangeNotifier
 
   void createSelectionLines()
   {
-    selectionLines.clear();
+    List<SelectionLine> unMergedLines = [];
+
     final Iterable<CoordinateSetI> selectedCoordinates = selection.getCoordinates();
+
+    // Step 1: Add all boundary lines
     for (final CoordinateSetI coord in selectedCoordinates)
     {
       if (coord.x == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x - 1, y: coord.y)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.left);
-        bool inserted = false;
-        for (final SelectionLine selLine in leftLines)
-        {
-          if (selLine.startLoc.x == coord.x && selLine.startLoc.y == coord.y + 1)
-          {
-            selLine.startLoc = coord;
-            inserted = true;
-          }
-          else if (selLine.endLoc.x == coord.x && selLine.endLoc.y == coord.y - 1)
-          {
-            selLine.endLoc = coord;
-            inserted = true;
-          }
-        }
-        if (!inserted)
-        {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
-        }
+        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
       }
       if (coord.x == _appState.canvasSize.x - 1 || !selection.contains(coord: CoordinateSetI(x: coord.x + 1, y: coord.y)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.right);
-        bool inserted = false;
-        for (final SelectionLine selLine in leftLines)
-        {
-          if (selLine.startLoc.x == coord.x && selLine.startLoc.y == coord.y + 1)
-          {
-            selLine.startLoc = coord;
-            inserted = true;
-          }
-          else if (selLine.endLoc.x == coord.x && selLine.endLoc.y == coord.y - 1)
-          {
-            selLine.endLoc = coord;
-            inserted = true;
-          }
-        }
-        if (!inserted)
-        {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
-        }
+        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
       }
-      if (coord.y == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y - 1)))
-      {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.top);
-        bool inserted = false;
-        for (final SelectionLine selLine in leftLines)
-        {
-          if (selLine.startLoc.x == coord.x + 1 && selLine.startLoc.y == coord.y)
-          {
-            selLine.startLoc = coord;
-            inserted = true;
-          }
-          else if (selLine.endLoc.x == coord.x - 1 && selLine.endLoc.y == coord.y)
-          {
-            selLine.endLoc = coord;
-            inserted = true;
-          }
-        }
-        if (!inserted)
-        {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
-        }
+      if (coord.y == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y - 1))) {
+        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
       }
       if (coord.y == _appState.canvasSize.y - 1 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y + 1)))
       {
-        Iterable<SelectionLine> leftLines = selectionLines.where((x) => x.selectDir == SelectionDirection.bottom);
-        bool inserted = false;
-        for (final SelectionLine selLine in leftLines)
-        {
-          if (selLine.startLoc.x == coord.x + 1 && selLine.startLoc.y == coord.y)
+        unMergedLines.add(SelectionLine(selectDir: SelectionDirection.bottom, startLoc: coord, endLoc: coord));
+      }
+    }
+
+    // Step 2: Merge contiguous lines
+    selectionLines.clear();
+    if (unMergedLines.isNotEmpty)
+    {
+      final Map<SelectionDirection, List<SelectionLine>> groupedLines =
+      {
+        SelectionDirection.left: [],
+        SelectionDirection.right: [],
+        SelectionDirection.top: [],
+        SelectionDirection.bottom: [],
+        SelectionDirection.undefined: [],
+      };
+
+      for (final line in unMergedLines)
+      {
+        groupedLines[line.selectDir]!.add(line);
+      }
+
+      for (final direction in SelectionDirection.values)
+      {
+        final List<SelectionLine> directionLines = groupedLines[direction]!;
+
+        directionLines.sort((a, b) {
+          if (direction == SelectionDirection.top || direction == SelectionDirection.bottom)
           {
-            selLine.startLoc = coord;
-            inserted = true;
+            return (a.startLoc.y != b.startLoc.y)
+                ? a.startLoc.y - b.startLoc.y
+                : a.startLoc.x - b.startLoc.x;
           }
-          else if (selLine.endLoc.x == coord.x - 1 && selLine.endLoc.y == coord.y)
+          else
           {
-            selLine.endLoc = coord;
-            inserted = true;
+            return (a.startLoc.x != b.startLoc.x)
+                ? a.startLoc.x - b.startLoc.x
+                : a.startLoc.y - b.startLoc.y;
+          }
+        });
+
+        SelectionLine? currentLine;
+        for (final line in directionLines)
+        {
+          if (currentLine == null)
+          {
+            currentLine = line;
+          }
+          else if (_areContiguous(a: currentLine, b: line))
+          {
+            extendLine(a: currentLine, b: line);
+          }
+          else
+          {
+            selectionLines.add(currentLine);
+            currentLine = line;
           }
         }
-        if (!inserted)
+
+        if (currentLine != null)
         {
-          selectionLines.add(SelectionLine(selectDir: SelectionDirection.bottom, startLoc: coord, endLoc: coord));
+          selectionLines.add(currentLine);
         }
       }
+    }
+  }
+
+
+  bool _areContiguous({required final SelectionLine a, required final SelectionLine b})
+  {
+    if (a.selectDir == SelectionDirection.top || a.selectDir == SelectionDirection.bottom) {
+      // Horizontal: same y, touching or overlapping in x
+      return a.startLoc.y == b.startLoc.y &&
+          (a.endLoc.x + 1 == b.startLoc.x || b.endLoc.x + 1 == a.startLoc.x);
+    } else {
+      // Vertical: same x, touching or overlapping in y
+      return a.startLoc.x == b.startLoc.x &&
+          (a.endLoc.y + 1 == b.startLoc.y || b.endLoc.y + 1 == a.startLoc.y);
+    }
+  }
+
+  void extendLine({required final SelectionLine a, required final SelectionLine b})
+  {
+    if (a.selectDir == SelectionDirection.top || a.selectDir == SelectionDirection.bottom)
+    {
+      // Horizontal: extend x bounds
+      a.startLoc = CoordinateSetI(
+          x: min(a.startLoc.x, b.startLoc.x), y: a.startLoc.y);
+      a.endLoc = CoordinateSetI(x: max(a.endLoc.x, b.endLoc.x), y: a.endLoc.y);
+    }
+    else
+    {
+      // Vertical: extend y bounds
+      a.startLoc = CoordinateSetI(
+          x: a.startLoc.x, y: min(a.startLoc.y, b.startLoc.y));
+      a.endLoc = CoordinateSetI(x: a.endLoc.x, y: max(a.endLoc.y, b.endLoc.y));
     }
   }
 

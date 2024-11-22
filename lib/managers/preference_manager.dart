@@ -388,6 +388,10 @@ enum PreferenceInt
 
   ColorNames_Scheme(defaultValue: 0),
 
+  Opacity_Tool(defaultValue: 50),
+  Opacity_Selection(defaultValue: 50),
+  Opacity_CanvasBorder(defaultValue: 50),
+
   HistoryOptions_Steps(defaultValue: 100),
   HistoryOptions_StepsMax(defaultValue: 1000),
   HistoryOptions_StepsMin(defaultValue: 10),
@@ -1049,7 +1053,10 @@ class PreferenceManager
       colorNameSchemeValue: _getValueI(PreferenceInt.ColorNames_Scheme),
       rasterContrast: _getValueI(PreferenceInt.Painter_CheckerBoardContrast),
       rasterSizeValue: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
-      themeTypeValue: _getValueI(PreferenceInt.ThemeType)
+      themeTypeValue: _getValueI(PreferenceInt.ThemeType),
+      canvasBorderOpacityValue: _getValueI(PreferenceInt.Opacity_CanvasBorder),
+      selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
+      toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool)
     );
 
     behaviorPreferenceContent = BehaviorPreferenceContent(
@@ -1110,6 +1117,9 @@ class PreferenceManager
       _intMap[PreferenceInt.ThemeType]!.value = themeTypeIndexMap.keys.firstWhere((x) => themeTypeIndexMap[x] == guiPreferenceContent.themeType.value, orElse:() => PreferenceInt.ThemeType.defaultValue);
       themeSettings.themeMode =  guiPreferenceContent.themeType.value;
     }
+    _intMap[PreferenceInt.Opacity_Tool]!.value = guiPreferenceContent.toolOpacity.value;
+    _intMap[PreferenceInt.Opacity_Selection]!.value = guiPreferenceContent.selectionOpacity.value;
+    _intMap[PreferenceInt.Opacity_CanvasBorder]!.value = guiPreferenceContent.canvasBorderOpacity.value;
 
     //BEHAVIOR PREFERENCES
     if (_intMap[PreferenceInt.HistoryOptions_Steps]!.value != behaviorPreferenceContent.undoSteps.value)

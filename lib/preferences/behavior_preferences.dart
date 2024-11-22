@@ -85,7 +85,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
             ),
           ],
         ),
-        Row(
+        /*Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -105,7 +105,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
               ),
             ),
           ],
-        ),
+        ),*/
         Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,

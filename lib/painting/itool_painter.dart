@@ -16,9 +16,12 @@
 
 import 'dart:collection';
 import 'dart:math';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/models/app_state.dart';
@@ -126,11 +129,28 @@ abstract class IToolPainter
 {
   final AppState appState = GetIt.I.get<AppState>();
   final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final GuiPreferenceContent guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final KPixPainterOptions painterOptions;
   final StatusBarData statusBarData = StatusBarData();
+  late Color blackToolAlphaColor;
+  late Color whiteToolAlphaColor;
   bool hasHistoryData = false;
 
-  IToolPainter({required this.painterOptions});
+  IToolPainter({required this.painterOptions})
+  {
+    guiPrefs.toolOpacity.addListener(() {
+      _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
+    },);
+    _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
+  }
+
+  void _setOutlineColors({required final int percentageValue})
+  {
+    final int alignedValue = (percentageValue.toDouble() * 2.55).round();
+    blackToolAlphaColor = Colors.black.withAlpha(alignedValue);
+    whiteToolAlphaColor = Colors.white.withAlpha(alignedValue);
+  }
+
 
   void calculate({required DrawingParameters drawParams}){}
   void drawExtras({required DrawingParameters drawParams}){}

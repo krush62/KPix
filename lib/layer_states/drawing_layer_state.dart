@@ -210,7 +210,7 @@ class DrawingLayerState extends LayerState
       for (final CoordinateSetI coord in selectionCoords)
       {
         final ColorReference? colRef = appState.selectionState.selection.getColorReference(coord: coord);
-        if (colRef != null)
+        if (colRef != null && coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
         {
           final Color dColor = colRef.getIdColor().color;
           final int index = (coord.y * size.x + coord.x) * 4;

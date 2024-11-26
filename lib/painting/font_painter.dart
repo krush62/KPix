@@ -154,6 +154,33 @@ class FontPainter extends IToolPainter
     drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-2 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), drawParams.paint);
     drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), drawParams.paint);
 
+    if (drawParams.currentDrawingLayer != null)
+    {
+      final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
+      int width = 0;
+      final int height = currentFont.height * _options.size.value;
+      for (int i = 0; i < _options.text.value.length; i++)
+      {
+        final int unicodeVal = _options.text.value.codeUnitAt(i);
+        final Glyph? glyph = currentFont.glyphMap[unicodeVal];
+        if (glyph != null)
+        {
+          final int space = (i < _options.text.value.length - 1) ? 1 : 0;
+          width += (glyph.width + space) * _options.size.value;
+
+        }
+      }
+      final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = blackToolAlphaColor;
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (width * drawParams.pixelSize).toDouble(), (height * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+      drawParams.paint.color = whiteToolAlphaColor;
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (width * drawParams.pixelSize).toDouble(), (height * drawParams.pixelSize).toDouble()), drawParams.paint);
+    }
   }
 
   @override

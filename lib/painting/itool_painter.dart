@@ -225,13 +225,11 @@ abstract class IToolPainter
   {
     if (drawingPixels.isNotEmpty)
     {
-      final int minX = drawingPixels.keys.map((c) => c.x).reduce((a, b) => a < b ? a : b);
-      final int minY = drawingPixels.keys.map((c) => c.y).reduce((a, b) => a < b ? a : b);
-      final int maxX = drawingPixels.keys.map((c) => c.x).reduce((a, b) => a > b ? a : b);
-      final int maxY = drawingPixels.keys.map((c) => c.y).reduce((a, b) => a > b ? a : b);
+      final CoordinateSetI min = Helper.getMin(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI max = Helper.getMax(coordList: drawingPixels.keys.toList());
       //print("min: $minX|$minY max: $maxX|$maxY");
-      final CoordinateSetI offset = CoordinateSetI(x: minX, y: minY);
-      final CoordinateSetI size = CoordinateSetI(x: maxX - minX + 1, y: maxY - minY + 1);
+      final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
+      final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
       final ByteData byteDataImg = ByteData(size.x * size.y * 4);
       for (final CoordinateColor entry in drawingPixels.entries)
       {
@@ -526,6 +524,8 @@ abstract class IToolPainter
     }
     return pixelMap;
   }
+
+
 
   CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {

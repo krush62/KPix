@@ -154,6 +154,21 @@ class StampPainter extends IToolPainter
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
+
+    if (drawParams.currentDrawingLayer != null)
+    {
+      final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
+      final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = blackToolAlphaColor;
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+      drawParams.paint.color = whiteToolAlphaColor;
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
+    }
   }
 
   @override

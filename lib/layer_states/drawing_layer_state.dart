@@ -37,6 +37,7 @@ class DrawingLayerState extends LayerState
   bool isRasterizing = false;
   bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = {};
+  ui.Image? previousRaster;
 
   DrawingLayerState._({required CoordinateColorMap data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
   {
@@ -150,6 +151,7 @@ class DrawingLayerState extends LayerState
   void _rasterizingDone({required final ui.Image image, required final bool startedFromManual})
   {
     isRasterizing = false;
+    previousRaster = thumbnail.value;
     thumbnail.value = image;
     if (startedFromManual)
     {

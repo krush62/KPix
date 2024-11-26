@@ -242,7 +242,7 @@ enum PreferenceInt
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
-  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 100),
+  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 20),
   Layout_LayerWidget_AddLayerButtonSize(defaultValue: 32),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
@@ -397,8 +397,6 @@ enum PreferenceInt
   HistoryOptions_StepsMin(defaultValue: 10),
 
   ThemeType(defaultValue: 0),
-
-  Painter_RasterIntervalMs(defaultValue: 750),
 
   StylusOptions_LongPressDelay(defaultValue: 250),
   StylusOptions_LongPressDelayMin(defaultValue: 50),
@@ -1043,7 +1041,6 @@ class PreferenceManager
         selectionPolygonCircleRadius: _getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
         selectionStrokeWidthLarge: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthLarge),
         selectionStrokeWidthSmall: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthSmall),
-        rasterIntervalMs: _getValueI(PreferenceInt.Painter_RasterIntervalMs),
     );
   }
 

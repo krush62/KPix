@@ -330,18 +330,18 @@ class SelectionState with ChangeNotifier
     // Step 1: Add all boundary lines
     for (final CoordinateSetI coord in selectedCoordinates)
     {
-      if (coord.x == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x - 1, y: coord.y)))
+      if (!selection.contains(coord: CoordinateSetI(x: coord.x - 1, y: coord.y)))
       {
         unMergedLines.add(SelectionLine(selectDir: SelectionDirection.left, startLoc: coord, endLoc: coord));
       }
-      if (coord.x == _appState.canvasSize.x - 1 || !selection.contains(coord: CoordinateSetI(x: coord.x + 1, y: coord.y)))
+      if (!selection.contains(coord: CoordinateSetI(x: coord.x + 1, y: coord.y)))
       {
         unMergedLines.add(SelectionLine(selectDir: SelectionDirection.right, startLoc: coord, endLoc: coord));
       }
-      if (coord.y == 0 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y - 1))) {
+      if (!selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y - 1))) {
         unMergedLines.add(SelectionLine(selectDir: SelectionDirection.top, startLoc: coord, endLoc: coord));
       }
-      if (coord.y == _appState.canvasSize.y - 1 || !selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y + 1)))
+      if (!selection.contains(coord: CoordinateSetI(x: coord.x, y: coord.y + 1)))
       {
         unMergedLines.add(SelectionLine(selectDir: SelectionDirection.bottom, startLoc: coord, endLoc: coord));
       }
@@ -1056,6 +1056,13 @@ class SelectionList
       _content = newContent;
       _lastOffset.x = offset.x;
       _lastOffset.y = offset.y;
+
+      if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+        drawingLayer.doManualRaster = true;
+      }
+
     }
     isEmptyNotifer.value = _content.isEmpty;
   }

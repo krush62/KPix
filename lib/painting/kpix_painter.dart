@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:async';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
@@ -51,7 +50,6 @@ class KPixPainterOptions
   final double selectionPolygonCircleRadius;
   final double selectionStrokeWidthLarge;
   final double selectionStrokeWidthSmall;
-  final int rasterIntervalMs;
 
   KPixPainterOptions({
     required this.cursorSize,
@@ -61,7 +59,6 @@ class KPixPainterOptions
     required this.selectionPolygonCircleRadius,
     required this.selectionStrokeWidthLarge,
     required this.selectionStrokeWidthSmall,
-    required this.rasterIntervalMs
   });
 }
 
@@ -127,7 +124,6 @@ class KPixPainter extends CustomPainter
   late int _latestContrast = 50;
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
-  ui.Image? _rasterImg;
 
   // status for reference layer movements
   bool _referenceImgMovementStarted = false;
@@ -182,7 +178,7 @@ class KPixPainter extends CustomPainter
       ToolType.line: LinePainter(painterOptions: _options),
       ToolType.stamp: StampPainter(painterOptions: _options)
     };
-    Timer.periodic(Duration(milliseconds: _options.rasterIntervalMs), (final Timer t) {_rasterTimeout(t: t);});
+
   }
 
   void _setSelectionColors({required final int percentageValue})
@@ -196,14 +192,6 @@ class KPixPainter extends CustomPainter
   {
     final int alignedValue = (percentageValue.toDouble() * 2.55).round();
     _blackBorderAlphaColor = Colors.black.withAlpha(alignedValue);
-  }
-
-  Future<void> _rasterTimeout({required final Timer t}) async
-  {
-    final ui.PictureRecorder recorder = ui.PictureRecorder();
-    paint(Canvas(recorder), Size(latestSize.width, latestSize.height));
-    final ui.Picture picture = recorder.endRecording();
-    _rasterImg = await picture.toImage(latestSize.width.round(), latestSize.height.round());
   }
 
   @override
@@ -563,22 +551,11 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final List<LayerState> layers = _appState.layers;
-    final bool hasRasterizingLayers = layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.raster == null || l.isRasterizing))).isNotEmpty;
+    final bool hasRasterizingLayers = layers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.thumbnail.value == null || l.isRasterizing))).isNotEmpty;
 
     if (hasRasterizingLayers)
     {
-      if (_rasterImg != null)
-      {
-        paintImage(
-            canvas: drawParams.canvas,
-            rect: ui.Rect.fromLTWH(0, 0,
-                drawParams.scaledCanvasSize.x.toDouble(),
-                drawParams.scaledCanvasSize.y.toDouble()),
-            image: _rasterImg!,
-            fit: BoxFit.none,
-            alignment: Alignment.topLeft,
-            filterQuality: FilterQuality.none);
-      }
+      //SKIP FRAME
     }
     else
     {
@@ -591,7 +568,7 @@ class KPixPainter extends CustomPainter
           if (layers[i].runtimeType == DrawingLayerState)
           {
             final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-            if (drawingLayer.raster != null)
+            if (drawingLayer.thumbnail.value != null)
             {
               //TODO can we optimize this by not drawing the full raster image???
               paintImage(
@@ -599,7 +576,7 @@ class KPixPainter extends CustomPainter
                   rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
                       drawParams.scaledCanvasSize.x.toDouble(),
                       drawParams.scaledCanvasSize.y.toDouble()),
-                  image: drawingLayer.raster!,
+                  image: drawingLayer.thumbnail.value!,
                   scale: 1.0 / pxlSzDbl,
                   fit: BoxFit.none,
                   alignment: Alignment.topLeft,
@@ -629,14 +606,14 @@ class KPixPainter extends CustomPainter
                   }
 
                   //DRAW SELECTION PIXEL
-                  if (drawColor == null)
+                  /*if (drawColor == null)
                   {
                     ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
                     if (selColor != null)
                     {
                       drawColor = selColor.getIdColor().color;
                     }
-                  }
+                  }*/
                   if (drawColor != null)
                   {
                     drawParams.paint.color = drawColor;

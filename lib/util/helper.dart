@@ -482,14 +482,14 @@ class Helper
       if (layers[i].visibilityState.value == LayerVisibilityState.visible && layers[i].runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-        if (drawingLayer.raster != null)
+        if (drawingLayer.thumbnail.value != null)
         {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
                   canvasSize.x.toDouble(),
                   canvasSize.y.toDouble()),
-              image: drawingLayer.raster!,
+              image: drawingLayer.thumbnail.value!,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none);
@@ -559,14 +559,14 @@ class Helper
           {
             await Future.delayed(Duration(milliseconds: 20));
           }
-          if (drawingLayer.raster != null)
+          if (drawingLayer.thumbnail.value != null)
           {
             paintImage(
                 canvas: canvas,
                 rect: ui.Rect.fromLTWH(0, 0,
                     state.canvasSize.x.toDouble(),
                     state.canvasSize.y.toDouble()),
-                image: drawingLayer.raster!,
+                image: drawingLayer.thumbnail.value!,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none);

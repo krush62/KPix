@@ -282,6 +282,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _previousTool = _appState.selectedTool;
       _appState.setToolSelection(tool: ToolType.pick);
     }
+
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _dragStartLoc = details.localPosition;

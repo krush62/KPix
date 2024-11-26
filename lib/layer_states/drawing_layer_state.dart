@@ -34,7 +34,6 @@ class DrawingLayerState extends LayerState
   final CoordinateSetI size;
 
   final CoordinateColorMap _data;
-  ui.Image? raster;
   bool isRasterizing = false;
   bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = {};
@@ -42,7 +41,7 @@ class DrawingLayerState extends LayerState
   DrawingLayerState._({required CoordinateColorMap data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
   {
     isRasterizing = true;
-    _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2, startedFromManual: false));
+    _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: false));
     lockState.value = lState;
     visibilityState.value = vState;
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
@@ -100,7 +99,7 @@ class DrawingLayerState extends LayerState
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
-      _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thb: images.$2, startedFromManual: doManualRaster));
+      _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: doManualRaster));
     }
   }
 
@@ -148,11 +147,10 @@ class DrawingLayerState extends LayerState
   }
 
 
-  void _rasterizingDone({required final ui.Image image, required final ui.Image thb, required final bool startedFromManual})
+  void _rasterizingDone({required final ui.Image image, required final bool startedFromManual})
   {
     isRasterizing = false;
-    raster = image;
-    thumbnail.value = thb;
+    thumbnail.value = image;
     if (startedFromManual)
     {
       doManualRaster = false;
@@ -160,14 +158,10 @@ class DrawingLayerState extends LayerState
     GetIt.I.get<AppState>().repaintNotifier.repaint();
   }
 
-  Future<(ui.Image, ui.Image)> _createRaster() async
+  Future<ui.Image> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
-    bool differentThumb = false;
-    if (appState.currentLayer == this && appState.selectionState.selection.hasValues())
-    {
-      differentThumb = true;
-    }
+    bool hasSelection = (appState.currentLayer == this && appState.selectionState.selection.hasValues());
 
     for (final CoordinateColorNullable entry in rasterQueue.entries)
     {
@@ -183,11 +177,6 @@ class DrawingLayerState extends LayerState
     rasterQueue.clear();
 
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
-    ByteData? byteDataThumb;
-    if (differentThumb)
-    {
-      byteDataThumb = ByteData(size.x * size.y * 4);
-    }
     for (final CoordinateColorNullable entry in _data.entries)
     {
       if (entry.value != null)
@@ -197,14 +186,10 @@ class DrawingLayerState extends LayerState
         if (index < byteDataImg.lengthInBytes)
         {
           byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
-          if (byteDataThumb != null)
-          {
-            byteDataThumb.setUint32(index, Helper.argbToRgba(argb: dColor.value));
-          }
         }
       }
     }
-    if (differentThumb)
+    if (hasSelection)
     {
       final Iterable<CoordinateSetI> selectionCoords = appState.selectionState.selection.getCoordinates();
       for (final CoordinateSetI coord in selectionCoords)
@@ -214,9 +199,9 @@ class DrawingLayerState extends LayerState
         {
           final Color dColor = colRef.getIdColor().color;
           final int index = (coord.y * size.x + coord.x) * 4;
-          if (index > 0 && index < byteDataThumb!.lengthInBytes)
+          if (index > 0 && index < byteDataImg.lengthInBytes)
           {
-            byteDataThumb.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+            byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
           }
         }
       }
@@ -234,27 +219,7 @@ class DrawingLayerState extends LayerState
     }
     );
 
-    final ui.Image img = await completerImg.future;
-
-    if (differentThumb)
-    {
-      final Completer<ui.Image> completerThumb = Completer<ui.Image>();
-      ui.decodeImageFromPixels(
-          byteDataThumb!.buffer.asUint8List(),
-          size.x,
-          size.y,
-          ui.PixelFormat.rgba8888, (ui.Image convertedImage)
-      {
-        completerThumb.complete(convertedImage);
-      }
-      );
-      final ui.Image thumb = await completerThumb.future;
-      return (img, thumb);
-    }
-    else
-    {
-      return (img, img);
-    }
+    return await completerImg.future;
   }
 
 

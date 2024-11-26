@@ -313,7 +313,7 @@ class SelectionState with ChangeNotifier
     }
     if (addCoords.isNotEmpty)
     {
-      selection.addAll(coords: addCoords);
+      selection.transferAll(coords: addCoords);
     }
     if (removeCoords.isNotEmpty)
     {
@@ -463,7 +463,7 @@ class SelectionState with ChangeNotifier
     }
 
     selection.removeAll(coords: removeSet);
-    selection.addAll(coords: addSet);
+    selection.transferAll(coords: addSet);
     createSelectionLines();
     if (addToHistoryStack)
     {
@@ -504,7 +504,7 @@ class SelectionState with ChangeNotifier
         }
       }
     }
-    selection.addAll(coords: addSet);
+    selection.transferAll(coords: addSet);
     createSelectionLines();
     if (addToHistoryStack)
     {
@@ -875,7 +875,7 @@ class SelectionList
     isEmptyNotifer.value = _content.isEmpty;
   }
 
-  void addAll({required final Set<CoordinateSetI> coords})
+  void transferAll({required final Set<CoordinateSetI> coords})
   {
     if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
@@ -899,12 +899,22 @@ class SelectionList
   {
     _content[coord] = colRef;
     isEmptyNotifer.value = _content.isEmpty;
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      drawingLayer.doManualRaster = true;
+    }
   }
 
   void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
     _content.addAll(list);
     isEmptyNotifer.value = _content.isEmpty;
+    if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState drawingLayer = _appState.currentLayer as DrawingLayerState;
+      drawingLayer.doManualRaster = true;
+    }
   }
 
   void removeAll({required final Set<CoordinateSetI> coords})

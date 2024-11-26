@@ -126,9 +126,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   double _initialTouchZoomDistance = 0.0;
   int _touchZoomStartLevel = 1;
 
-  late Timer _idleTimer;
-  bool _idleTimerInitialized = false;
-
   bool _hasNewStylusPollValue = false;
 
   late KPixPainter kPixPainter = KPixPainter(
@@ -163,6 +160,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     });
     Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);});
     Timer.periodic(Duration(milliseconds: _options.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
+    Timer.periodic(Duration(milliseconds: _options.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((_)
     {
@@ -270,11 +268,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
       _startDown(details.localPosition);
-      if (_appState.selectedTool == ToolType.spraycan)
-      {
-        _idleTimer = Timer.periodic(Duration(milliseconds: _options.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
-        _idleTimerInitialized = true;
-      }
     }
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
@@ -295,7 +288,12 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   void _idleTimeout({required final Timer t})
   {
-    _appState.repaintNotifier.repaint();
+    if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasAsyncUpdate)
+    {
+      _appState.repaintNotifier.repaint();
+      kPixPainter.toolPainter!.hasAsyncUpdate = false;
+    }
+
   }
 
   void _startDown(final Offset position)
@@ -329,10 +327,6 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       //print("PRIMARY UP");
       _timerLongPress.cancel();
       _primaryIsDown.value = false;
-      if (_idleTimerInitialized)
-      {
-        _idleTimer.cancel();
-      }
     }
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {

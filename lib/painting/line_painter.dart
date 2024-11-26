@@ -48,7 +48,8 @@ class LinePainter extends IToolPainter
   @override
   void calculate({required DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null) {
+    if (drawParams.cursorPos != null)
+    {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
           pixelSize: drawParams.pixelSize.toDouble())
@@ -105,6 +106,11 @@ class LinePainter extends IToolPainter
               _linePoints = widePoints;
             }
           }
+          final CoordinateColorMap cursorPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
+            cursorRaster = rasterSet;
+            hasAsyncUpdate = true;
+          });
         }
       }
     }
@@ -158,6 +164,11 @@ class LinePainter extends IToolPainter
         _isDown = false;
       }
     }
+
+    if (drawParams.cursorPos == null || !_lineStarted)
+    {
+      cursorRaster = null;
+    }
   }
 
   @override
@@ -190,19 +201,6 @@ class LinePainter extends IToolPainter
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
     drawParams.paint.color = whiteToolAlphaColor;
     drawParams.canvas.drawPath(path, drawParams.paint);
-  }
-
-  @override
-  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
-  {
-    if(drawParams.currentDrawingLayer != null && appState.selectedColor != null && drawParams.cursorPos != null && _lineStarted)
-    {
-      return getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-    }
-    else
-    {
-      return super.getCursorContent(drawParams: drawParams);
-    }
   }
 
   @override

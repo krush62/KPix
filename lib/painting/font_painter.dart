@@ -89,6 +89,12 @@ class FontPainter extends IToolPainter
       }
       _currentText = _options.text.value;
       _previousSize = _options.size.value;
+
+      final CoordinateColorMap cursorPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
+        cursorRaster = rasterSet;
+        hasAsyncUpdate = true;
+      });
     }
 
     if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
@@ -107,6 +113,10 @@ class FontPainter extends IToolPainter
     _oldCursorPos.x = _cursorPosNorm.x;
     _oldCursorPos.y = _cursorPosNorm.y;
 
+    if (drawParams.cursorPos == null)
+    {
+      cursorRaster = null;
+    }
   }
 
   void _dump({required final DrawingParameters drawParams})
@@ -144,19 +154,6 @@ class FontPainter extends IToolPainter
     drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-2 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), drawParams.paint);
     drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), drawParams.paint);
 
-  }
-
-  @override
-  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
-  {
-    if(appState.selectedColor != null && drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
-    {
-      return getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-    }
-    else
-    {
-      return super.getCursorContent(drawParams: drawParams);
-    }
   }
 
   @override

@@ -137,7 +137,10 @@ class ShapePainter extends IToolPainter
           {
             final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
             _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-
+            rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+              cursorRaster = rasterSet;
+              hasAsyncUpdate = true;
+            });
           }
         }
         if (!drawParams.primaryDown && _drawingPixels.isNotEmpty)
@@ -150,6 +153,10 @@ class ShapePainter extends IToolPainter
       {
         _drawingPixels.clear();
         _waitingForRasterization = false;
+      }
+      if (!drawParams.primaryDown && !_waitingForRasterization)
+      {
+        cursorRaster = null;
       }
     }
   }
@@ -171,19 +178,6 @@ class ShapePainter extends IToolPainter
         layer.setDataAll(list: _drawingPixels);
       }
       hasHistoryData = true;
-    }
-  }
-
-  @override
-  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
-  {
-    if (drawParams.primaryDown || _waitingForRasterization)
-    {
-      return _drawingPixels;
-    }
-    else
-    {
-      return super.getCursorContent(drawParams: drawParams);
     }
   }
 

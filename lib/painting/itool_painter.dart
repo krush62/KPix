@@ -152,6 +152,8 @@ abstract class IToolPainter
   late Color whiteToolAlphaColor;
   bool hasHistoryData = false;
   ContentRasterSet? contentRaster;
+  ContentRasterSet? cursorRaster;
+  bool hasAsyncUpdate = false;
 
   IToolPainter({required this.painterOptions})
   {
@@ -171,8 +173,6 @@ abstract class IToolPainter
 
   void calculate({required DrawingParameters drawParams}){}
   void drawExtras({required DrawingParameters drawParams}){}
-  //TODO this could be rasterized, too
-  CoordinateColorMap getCursorContent({required DrawingParameters drawParams}){return HashMap();}
   void drawCursorOutline({required DrawingParameters drawParams});
   void reset() {}
   void setStatusBarData({required DrawingParameters drawParams})

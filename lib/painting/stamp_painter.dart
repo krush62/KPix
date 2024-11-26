@@ -84,6 +84,14 @@ class StampPainter extends IToolPainter
           }
         }
         _previousSize = _options.scale.value;
+
+        final CoordinateColorMap cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+        rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
+          cursorRaster = rasterSet;
+          hasAsyncUpdate = true;
+        });
+
+
       }
 
       if (drawParams.primaryDown && !_down)
@@ -99,6 +107,11 @@ class StampPainter extends IToolPainter
 
     _oldCursorPos.x = _cursorPosNorm.x;
     _oldCursorPos.y = _cursorPosNorm.y;
+
+    if (drawParams.cursorPos == null)
+    {
+      cursorRaster = null;
+    }
 
   }
 
@@ -141,19 +154,6 @@ class StampPainter extends IToolPainter
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
-  }
-
-  @override
-  CoordinateColorMap getCursorContent({required DrawingParameters drawParams})
-  {
-    if(appState.selectedColor != null && drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
-    {
-      return getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
-    }
-    else
-    {
-      return super.getCursorContent(drawParams: drawParams);
-    }
   }
 
   @override

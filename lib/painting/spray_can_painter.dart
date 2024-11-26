@@ -84,6 +84,7 @@ class SprayCanPainter extends IToolPainter
             _paintPositions.clear();
             rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
               contentRaster = rasterSet;
+              hasAsyncUpdate = true;
             });
           }
         }
@@ -127,6 +128,7 @@ class SprayCanPainter extends IToolPainter
     final int x = (_cursorPosNorm.x + (r * cos(theta))).round();
     final int y = (_cursorPosNorm.y + (r * sin(theta))).round();
     _paintPositions.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)));
+    hasAsyncUpdate = true;
   }
 
 

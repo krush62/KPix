@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:collection';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -39,7 +38,6 @@ import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/util/typedefs.dart';
 
 class KPixPainterOptions
 {
@@ -585,8 +583,8 @@ class KPixPainter extends CustomPainter
 
             if (layers[i].isSelected.value)
             {
-              final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
 
+              final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
               if (contentRasterSet != null)
               {
                 paintImage(
@@ -601,20 +599,20 @@ class KPixPainter extends CustomPainter
                     filterQuality: FilterQuality.none);
               }
 
-              final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
-              for (final CoordinateColor coordCol in selectedLayerCursorContent.entries)
+
+              final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+              if (cursorRasterSet != null)
               {
-                if (coordCol.key.x >= drawParams.drawingStart.x && coordCol.key.y >= drawParams.drawingStart.y &&
-                    coordCol.key.x < drawParams.drawingEnd.x && coordCol.key.y < drawParams.drawingEnd.y)
-                {
-                  drawParams.paint.color = coordCol.value.getIdColor().color;
-                  drawParams.canvas.drawRect(Rect.fromLTWH(
-                      _offset.value.dx + (coordCol.key.x * pxlSzDbl) - _options.pixelExtension,
-                      _offset.value.dy + (coordCol.key.y * pxlSzDbl) - _options.pixelExtension,
-                      pxlSzDbl + (2.0 * _options.pixelExtension),
-                      pxlSzDbl + (2.0 * _options.pixelExtension)),
-                      drawParams.paint);
-                }
+                paintImage(
+                    canvas: drawParams.canvas,
+                    rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
+                        (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
+                        (cursorRasterSet.size.y * drawParams.pixelSize).toDouble()),
+                    image: cursorRasterSet.image,
+                    scale: 1.0 / pxlSzDbl,
+                    fit: BoxFit.none,
+                    alignment: Alignment.topLeft,
+                    filterQuality: FilterQuality.none);
               }
             }
           }

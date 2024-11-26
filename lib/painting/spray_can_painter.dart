@@ -39,7 +39,7 @@ class SprayCanPainter extends IToolPainter
   final CoordinateColorMap _drawingPixels = HashMap();
   Set<CoordinateSetI> _contentPoints = {};
   final Set<CoordinateSetI> _paintPositions = {};
-  bool _waitingForRasterization = false;
+  bool _waitingForDump = false;
   bool _isDown = false;
   late Timer timer;
   bool timerInitialized = false;
@@ -64,7 +64,7 @@ class SprayCanPainter extends IToolPainter
 
       }
 
-      if (!_waitingForRasterization && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+      if (!_waitingForDump && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
       {
         if (drawParams.primaryDown)
         {
@@ -82,21 +82,24 @@ class SprayCanPainter extends IToolPainter
           {
             _drawingPixels.addAll(getPixelsToDraw(coords: _paintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
             _paintPositions.clear();
+            rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+              contentRaster = rasterSet;
+            });
           }
         }
         else if (!drawParams.primaryDown && _isDown)
         {
           timer.cancel();
           _dump(currentLayer: drawParams.currentDrawingLayer!);
-          _waitingForRasterization = true;
+          _waitingForDump = true;
           _paintPositions.clear();
           _isDown = false;
         }
       }
-      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForRasterization)
+      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForDump)
       {
         _drawingPixels.clear();
-        _waitingForRasterization = false;
+        _waitingForDump = false;
       }
     }
   }
@@ -159,18 +162,7 @@ class SprayCanPainter extends IToolPainter
     drawParams.canvas.drawPath(path, drawParams.paint);
   }
 
-  @override
-  CoordinateColorMap getToolContent({required DrawingParameters drawParams})
-  {
-    if (drawParams.primaryDown || _waitingForRasterization)
-    {
-      return _drawingPixels;
-    }
-    else
-    {
-      return super.getToolContent(drawParams: drawParams);
-    }
-  }
+
 
   @override
   void setStatusBarData({required DrawingParameters drawParams})
@@ -185,7 +177,7 @@ class SprayCanPainter extends IToolPainter
     _drawingPixels.clear();
     _contentPoints.clear();
     _paintPositions.clear();
-    _waitingForRasterization = false;
+    _waitingForDump = false;
     _isDown = false;
     if (timerInitialized)
     {

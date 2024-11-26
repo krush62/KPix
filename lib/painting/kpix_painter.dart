@@ -585,45 +585,35 @@ class KPixPainter extends CustomPainter
 
             if (layers[i].isSelected.value)
             {
-              final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
-              final CoordinateColorMap toolContent = toolPainter != null ? toolPainter!.getToolContent(drawParams: drawParams) : HashMap();
-              for (int x = drawParams.drawingStart.x; x < drawParams.drawingEnd.x; x++)
+              final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
+
+              if (contentRasterSet != null)
               {
-                for (int y = drawParams.drawingStart.y; y < drawParams.drawingEnd.y; y++)
+                paintImage(
+                    canvas: drawParams.canvas,
+                    rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
+                        (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
+                        (contentRasterSet.size.y * drawParams.pixelSize).toDouble()),
+                    image: contentRasterSet.image,
+                    scale: 1.0 / pxlSzDbl,
+                    fit: BoxFit.none,
+                    alignment: Alignment.topLeft,
+                    filterQuality: FilterQuality.none);
+              }
+
+              final CoordinateColorMap selectedLayerCursorContent = toolPainter != null ? toolPainter!.getCursorContent(drawParams: drawParams) : HashMap();
+              for (final CoordinateColor coordCol in selectedLayerCursorContent.entries)
+              {
+                if (coordCol.key.x >= drawParams.drawingStart.x && coordCol.key.y >= drawParams.drawingStart.y &&
+                    coordCol.key.x < drawParams.drawingEnd.x && coordCol.key.y < drawParams.drawingEnd.y)
                 {
-                  Color? drawColor;
-                  //DRAW CURSOR CONTENT PIXEL
-                  final selLayerCoord = CoordinateSetI(x: x, y: y);
-                  if (selectedLayerCursorContent.keys.contains(selLayerCoord))
-                  {
-                    drawColor = selectedLayerCursorContent[selLayerCoord]!.getIdColor().color;
-                  }
-
-                  //DRAW TOOL CONTENT
-                  if (drawColor == null && toolContent.keys.contains(selLayerCoord))
-                  {
-                    drawColor = toolContent[selLayerCoord]!.getIdColor().color;
-                  }
-
-                  //DRAW SELECTION PIXEL
-                  /*if (drawColor == null)
-                  {
-                    ColorReference? selColor = _appState.selectionState.selection.getColorReference(coord: CoordinateSetI(x: x, y: y));
-                    if (selColor != null)
-                    {
-                      drawColor = selColor.getIdColor().color;
-                    }
-                  }*/
-                  if (drawColor != null)
-                  {
-                    drawParams.paint.color = drawColor;
-                    drawParams.canvas.drawRect(Rect.fromLTWH(
-                        _offset.value.dx + (x * pxlSzDbl) - _options.pixelExtension,
-                        _offset.value.dy + (y * pxlSzDbl) - _options.pixelExtension,
-                        pxlSzDbl + (2.0 * _options.pixelExtension),
-                        pxlSzDbl + (2.0 * _options.pixelExtension)),
-                        drawParams.paint);
-                  }
+                  drawParams.paint.color = coordCol.value.getIdColor().color;
+                  drawParams.canvas.drawRect(Rect.fromLTWH(
+                      _offset.value.dx + (coordCol.key.x * pxlSzDbl) - _options.pixelExtension,
+                      _offset.value.dy + (coordCol.key.y * pxlSzDbl) - _options.pixelExtension,
+                      pxlSzDbl + (2.0 * _options.pixelExtension),
+                      pxlSzDbl + (2.0 * _options.pixelExtension)),
+                      drawParams.paint);
                 }
               }
             }

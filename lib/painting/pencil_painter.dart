@@ -38,10 +38,11 @@ class PencilPainter extends IToolPainter
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   int _previousToolSize = -1;
   Set<CoordinateSetI> _contentPoints = {};
-  bool _waitingForRasterization = false;
+  bool _waitingForDump = false;
   final CoordinateColorMap _drawingPixels = HashMap();
   CoordinateSetI? _lastDrawingPosition;
   bool _isLineDrawing = false;
+
 
   PencilPainter({required super.painterOptions});
 
@@ -67,7 +68,7 @@ class PencilPainter extends IToolPainter
           _previousToolSize = _options.size.value;
         }
       }
-      if (!_waitingForRasterization)
+      if (!_waitingForDump)
       {
         if (drawParams.primaryDown)
         {
@@ -112,10 +113,13 @@ class PencilPainter extends IToolPainter
 
             _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
             _paintPositions.removeRange(0, _paintPositions.length - 3);
+            rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+              contentRaster = rasterSet;
+            });
           }
         }
         else //final dumping
-            {
+        {
           if (_paintPositions.isNotEmpty)
           {
             final Set<CoordinateSetI> posSet = _paintPositions.toSet();
@@ -126,7 +130,7 @@ class PencilPainter extends IToolPainter
             }
             _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
             _dump(currentLayer: drawParams.currentDrawingLayer!);
-            _waitingForRasterization = true;
+            _waitingForDump = true;
             _paintPositions.clear();
           }
           else if (_hotkeyManager.shiftIsPressed && _isLineDrawing)
@@ -136,17 +140,17 @@ class PencilPainter extends IToolPainter
             getLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, shape: _options.shape.value);
             _drawingPixels.addAll(getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
             _dump(currentLayer: drawParams.currentDrawingLayer!);
-            _waitingForRasterization = true;
+            _waitingForDump = true;
             _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
           }
           _isLineDrawing = false;
 
         }
       }
-      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForRasterization)
+      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForDump)
       {
         _drawingPixels.clear();
-        _waitingForRasterization = false;
+        _waitingForDump = false;
       }
     }
   }
@@ -166,6 +170,7 @@ class PencilPainter extends IToolPainter
     }
     hasHistoryData = true;
   }
+
 
   @override
   void drawCursorOutline({required DrawingParameters drawParams})
@@ -224,19 +229,6 @@ class PencilPainter extends IToolPainter
   }
 
   @override
-  CoordinateColorMap getToolContent({required DrawingParameters drawParams})
-  {
-    if (drawParams.primaryDown || _waitingForRasterization)
-    {
-      return _drawingPixels;
-    }
-    else
-    {
-      return super.getToolContent(drawParams: drawParams);
-    }
-  }
-
-  @override
   void setStatusBarData({required DrawingParameters drawParams})
   {
       super.setStatusBarData(drawParams: drawParams);
@@ -249,7 +241,7 @@ class PencilPainter extends IToolPainter
     _paintPositions.clear();
     _previousToolSize = -1;
     _contentPoints.clear();
-    _waitingForRasterization = false;
+    _waitingForDump = false;
     _drawingPixels.clear();
     _lastDrawingPosition = null;
     _isLineDrawing = false;

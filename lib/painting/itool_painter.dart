@@ -14,8 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
@@ -124,6 +127,20 @@ class StatusBarData
   CoordinateSetI? angle;
 }
 
+class ContentRasterSet
+{
+  final ui.Image image;
+  final CoordinateSetI offset;
+  final CoordinateSetI size;
+
+  const ContentRasterSet({
+    required this.image,
+    required this.offset,
+    required this.size
+  });
+}
+
+
 abstract class IToolPainter
 {
   final AppState appState = GetIt.I.get<AppState>();
@@ -134,6 +151,7 @@ abstract class IToolPainter
   late Color blackToolAlphaColor;
   late Color whiteToolAlphaColor;
   bool hasHistoryData = false;
+  ContentRasterSet? contentRaster;
 
   IToolPainter({required this.painterOptions})
   {
@@ -153,8 +171,8 @@ abstract class IToolPainter
 
   void calculate({required DrawingParameters drawParams}){}
   void drawExtras({required DrawingParameters drawParams}){}
+  //TODO this could be rasterized, too
   CoordinateColorMap getCursorContent({required DrawingParameters drawParams}){return HashMap();}
-  CoordinateColorMap getToolContent({required DrawingParameters drawParams}){return HashMap();}
   void drawCursorOutline({required DrawingParameters drawParams});
   void reset() {}
   void setStatusBarData({required DrawingParameters drawParams})
@@ -201,6 +219,46 @@ abstract class IToolPainter
       }
     }
     return coords;
+  }
+
+  Future<ContentRasterSet?> rasterizeDrawingPixels({required final CoordinateColorMap drawingPixels}) async
+  {
+    if (drawingPixels.isNotEmpty)
+    {
+      final int minX = drawingPixels.keys.map((c) => c.x).reduce((a, b) => a < b ? a : b);
+      final int minY = drawingPixels.keys.map((c) => c.y).reduce((a, b) => a < b ? a : b);
+      final int maxX = drawingPixels.keys.map((c) => c.x).reduce((a, b) => a > b ? a : b);
+      final int maxY = drawingPixels.keys.map((c) => c.y).reduce((a, b) => a > b ? a : b);
+      //print("min: $minX|$minY max: $maxX|$maxY");
+      final CoordinateSetI offset = CoordinateSetI(x: minX, y: minY);
+      final CoordinateSetI size = CoordinateSetI(x: maxX - minX + 1, y: maxY - minY + 1);
+      final ByteData byteDataImg = ByteData(size.x * size.y * 4);
+      for (final CoordinateColor entry in drawingPixels.entries)
+      {
+        final Color dColor = entry.value.getIdColor().color;
+        final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
+        if (index < byteDataImg.lengthInBytes)
+        {
+          byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+        }
+      }
+
+      final Completer<ui.Image> completerImg = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+          byteDataImg.buffer.asUint8List(),
+          size.x,
+          size.y,
+          ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+      {
+        completerImg.complete(convertedImage);
+      }
+      );
+      return ContentRasterSet(image: await completerImg.future, offset: offset, size: size);
+    }
+    else
+    {
+      return null;
+    }
   }
 
   Set<CoordinateSetI> getLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape})

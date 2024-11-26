@@ -471,6 +471,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void _openPerformed()
   {
     GetIt.I.get<AppState>().hasProjectNotifier.value = true;
+    GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
     _newProjectDialog.hide();
   }
 

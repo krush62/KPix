@@ -117,6 +117,7 @@ class PencilPainter extends IToolPainter
             _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
             _paintPositions.removeRange(0, _paintPositions.length - 3);
             rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+
               contentRaster = rasterSet;
               hasAsyncUpdate = true;
             });
@@ -198,6 +199,7 @@ class PencilPainter extends IToolPainter
         currentLayer.setDataAll(list: _drawingPixels);
       }
     }
+    contentRaster = null;
     hasHistoryData = true;
   }
 

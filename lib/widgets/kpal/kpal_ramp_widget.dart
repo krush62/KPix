@@ -71,7 +71,7 @@ class _KPalRampState extends State<KPalRamp>
   final ValueNotifier<ui.Image?> _previewImage = ValueNotifier(null);
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
-  late Timer renderTimer;
+  late Timer _renderTimer;
   final String _valueToolTipMessage = "Press to reset";
 
   late List<DrawingLayerState> _drawingLayers;
@@ -83,7 +83,7 @@ class _KPalRampState extends State<KPalRamp>
     _createColorCards();
     _drawingLayers = _copyLayers(originalLayers: _appState.layers);
     _hasRenderChanges = true;
-    renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
+    _renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
     for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
     {
       shiftNotifier.addListener(() {
@@ -99,7 +99,6 @@ class _KPalRampState extends State<KPalRamp>
     final List<DrawingLayerState> drawingLayers = [];
     for (final LayerState visibleLayer in visibleDrawingLayers)
     {
-      //final DrawingLayerState drawingLayer = DrawingLayerState.deepClone(other: visibleLayer as DrawingLayerState, rampData: widget.rampData, originalRampData: widget.originalRampData);
       final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState);
       drawingLayers.add(drawingLayer);
     }
@@ -109,7 +108,7 @@ class _KPalRampState extends State<KPalRamp>
   @override
   void deactivate() {
     super.deactivate();
-    renderTimer.cancel();
+    _renderTimer.cancel();
   }
 
   void _setPreviewImage({required final ui.Image img})

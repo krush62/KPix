@@ -333,19 +333,28 @@ class Helper
     return closestColor;
   }
 
-  static bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
+  static bool isPointOnLineSegment({required final CoordinateSetI p, required final CoordinateSetI a, required final CoordinateSetI b})
   {
+    return (p.x <= max(a.x, b.x) && p.x >= min(a.x, b.x) &&
+        p.y <= max(a.y, b.y) && p.y >= min(a.y, b.y) &&
+        (b.x - a.x) * (p.y - a.y) == (p.x - a.x) * (b.y - a.y));
+  }
+
+  static bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon}) {
     final int n = polygon.length;
     bool inside = false;
 
-    for (int i = 0, j = n - 1; i < n; j = i++)
-    {
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      // Check if the point is on the current edge
+      if (isPointOnLineSegment(p: point, a: polygon[i], b: polygon[j])) {
+        return true;
+      }
+
       if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) &&
           (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)) {
         inside = !inside;
       }
     }
-
     return inside;
   }
 

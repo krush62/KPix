@@ -500,9 +500,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           final CoordinateSetI min = Helper.getMin(coordList: selectionPainter.polygonPoints);
           final CoordinateSetI max = Helper.getMax(coordList: selectionPainter.polygonPoints);
           Set<CoordinateSetI> selection = {};
-          for (int x = min.x; x < max.x; x++)
+          for (int x = min.x; x <= max.x; x++)
           {
-            for (int y = min.y; y < max.y; y++)
+            for (int y = min.y; y <= max.y; y++)
             {
               final CoordinateSetI checkPoint = CoordinateSetI(x: x, y: y);
               if (Helper.isPointInPolygon(point: checkPoint, polygon: selectionPainter.polygonPoints))

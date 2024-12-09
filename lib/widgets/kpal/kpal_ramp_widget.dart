@@ -16,56 +16,7 @@
 
 part of 'kpal_widget.dart';
 
-class GradientSliderTrackShape extends SliderTrackShape {
-  @override
-  Rect getPreferredRect({
-    required RenderBox parentBox,
-    Offset offset = Offset.zero,
-    required SliderThemeData sliderTheme,
-    bool isEnabled = false,
-    bool isDiscrete = false,
-  }) {
 
-    final double horizontalPadding = 24.0;
-    final double trackHeight = sliderTheme.trackHeight ?? 4.0;
-    final double trackLeft = offset.dx + horizontalPadding;
-    final double trackTop = offset.dy + (parentBox.size.height - trackHeight) / 2;
-    final double trackWidth = parentBox.size.width - (2 * horizontalPadding);
-    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
-  }
-
-  @override
-  void paint(
-      PaintingContext context,
-      ui.Offset offset,
-      {
-        required RenderBox parentBox,
-        required SliderThemeData sliderTheme,
-        required Animation<double> enableAnimation,
-        required ui.Offset thumbCenter,
-        ui.Offset? secondaryOffset,
-        bool isEnabled = false,
-        bool isDiscrete = false,
-        required ui.TextDirection textDirection}) {
-    final Rect trackRect = getPreferredRect(
-      parentBox: parentBox,
-      offset: offset,
-      sliderTheme: sliderTheme,
-    );
-
-    final Radius cornerRadius = Radius.circular(trackRect.height / 2);
-    final RRect roundedRect = RRect.fromRectAndRadius(trackRect, cornerRadius);
-
-    final Paint paint = Paint()
-      ..shader = LinearGradient(
-        colors: List.generate(361, (hue) => HSVColor.fromAHSV(1, hue.toDouble(), 1, 1).toColor()),
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-      ).createShader(trackRect);
-
-    context.canvas.drawRRect(roundedRect, paint);
-  }
-}
 
 class KPalRampWidgetOptions
 {
@@ -119,7 +70,8 @@ class _KPalRampState extends State<KPalRamp>
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<ui.Image?> _previewImage = ValueNotifier(null);
   bool _hasRenderChanges = false;
-  late Timer renderTimer;
+  bool _hasShiftChanges = false;
+  late Timer _renderTimer;
   final String _valueToolTipMessage = "Press to reset";
 
   late List<DrawingLayerState> _drawingLayers;
@@ -131,8 +83,15 @@ class _KPalRampState extends State<KPalRamp>
     _createColorCards();
     _drawingLayers = _copyLayers(originalLayers: _appState.layers);
     _hasRenderChanges = true;
-    renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
+    _renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
+    for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
+    {
+      shiftNotifier.addListener(() {
+        _hasShiftChanges = true;
+      },);
+    }
   }
+
 
   List<DrawingLayerState> _copyLayers({required final List<LayerState> originalLayers})
   {
@@ -140,7 +99,6 @@ class _KPalRampState extends State<KPalRamp>
     final List<DrawingLayerState> drawingLayers = [];
     for (final LayerState visibleLayer in visibleDrawingLayers)
     {
-      //final DrawingLayerState drawingLayer = DrawingLayerState.deepClone(other: visibleLayer as DrawingLayerState, rampData: widget.rampData, originalRampData: widget.originalRampData);
       final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState);
       drawingLayers.add(drawingLayer);
     }
@@ -150,7 +108,7 @@ class _KPalRampState extends State<KPalRamp>
   @override
   void deactivate() {
     super.deactivate();
-    renderTimer.cancel();
+    _renderTimer.cancel();
   }
 
   void _setPreviewImage({required final ui.Image img})
@@ -160,6 +118,11 @@ class _KPalRampState extends State<KPalRamp>
 
   void _renderCheck({required final Timer t})
   {
+    if (_hasShiftChanges)
+    {
+      _settingsChanged();
+      _hasShiftChanges = false;
+    }
     final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.thumbnail.value == null || l.isRasterizing))).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
@@ -381,7 +344,7 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _options.rowControlFlex,
                                 child: SliderTheme(
                                   data: SliderTheme.of(context).copyWith(
-                                    trackShape: GradientSliderTrackShape(), // Custom track shape
+                                    trackShape: const GradientSliderTrackShape(), // Custom track shape
                                   ),
                                   child: Slider(
                                     value: widget.rampData.settings.baseHue.toDouble(),

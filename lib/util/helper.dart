@@ -436,6 +436,26 @@ class Helper
     return points;
   }
 
+  static List<CoordinateSetI> getCoordinateNeighbors({required final CoordinateSetI pixel, required bool withDiagonals})
+  {
+    final List<CoordinateSetI> neighbors =  [
+      CoordinateSetI(x: pixel.x + 1, y: pixel.y),
+      CoordinateSetI(x: pixel.x - 1, y: pixel.y),
+      CoordinateSetI(x: pixel.x, y: pixel.y + 1),
+      CoordinateSetI(x: pixel.x, y: pixel.y - 1),
+    ];
+
+    if (withDiagonals)
+    {
+      neighbors.add(CoordinateSetI(x: pixel.x + 1, y: pixel.y + 1));
+      neighbors.add(CoordinateSetI(x: pixel.x - 1, y: pixel.y - 1));
+      neighbors.add(CoordinateSetI(x: pixel.x + 1, y: pixel.y - 1));
+      neighbors.add(CoordinateSetI(x: pixel.x - 1, y: pixel.y + 1));
+    }
+
+    return neighbors;
+  }
+
   static int argbToRgba({required final int argb}) {
     int a = (argb & 0xFF000000) >> 24; // Extract alpha component
     int r = (argb & 0x00FF0000) >> 16; // Extract red component

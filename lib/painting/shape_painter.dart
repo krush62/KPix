@@ -244,52 +244,12 @@ class ShapePainter extends IToolPainter
           }
         }
       }
-
-      if (options.strokeOnly.value)
-      {
-        Set<CoordinateSetI> boundaryPoints = {};
-        for (final CoordinateSetI coord in content)
-        {
-          if (!content.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)) ||
-              !content.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)) ||
-              !content.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)) ||
-              !content.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)))
-          {
-            boundaryPoints.add(coord);
-          }
-        }
-        Set<CoordinateSetI> strokeContent = {};
-        for (final CoordinateSetI coordContent in content)
-        {
-          int minDistance = 1000000000;
-          for (final CoordinateSetI coordBoundary in boundaryPoints)
-          {
-            final int dSquaredDist = ((coordBoundary.x - coordContent.x) * (coordBoundary.x - coordContent.x)) + ((coordBoundary.y - coordContent.y) * (coordBoundary.y - coordContent.y));
-            if (dSquaredDist < minDistance)
-            {
-              minDistance = dSquaredDist;
-            }
-          }
-          if (minDistance < (options.strokeWidth.value * options.strokeWidth.value))
-          {
-            strokeContent.add(coordContent);
-          }
-        }
-        content = strokeContent;
-      }
-
     }
     //ELLIPSE
     else if (options.shape.value == ShapeShape.ellipse)
     {
       final double invRadiusXSquared = 1.0 / (radiusX * radiusX);
       final double invRadiusYSquared = 1.0 / (radiusY * radiusY);
-      final double innerRadiusX = radiusX - options.strokeWidth.value;
-      final double innerRadiusY = radiusY - options.strokeWidth.value;
-
-
-      final double invInnerRadiusXSquared = 1.0 / (innerRadiusX * innerRadiusX);
-      final double invInnerRadiusYSquared = 1.0 / (innerRadiusY * innerRadiusY);
 
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
@@ -302,19 +262,7 @@ class ShapePainter extends IToolPainter
 
           if (normalizedX + normalizedY <= 1.005)
           {
-            if (!options.strokeOnly.value)
-            {
-              content.add(CoordinateSetI(x: x, y: y));
-            }
-            else
-            {
-              final double normalizedInnerX = dx * dx * invInnerRadiusXSquared;
-              final double normalizedInnerY = dy * dy * invInnerRadiusYSquared;
-              if (normalizedInnerX + normalizedInnerY >= 0.995)
-              {
-                content.add(CoordinateSetI(x: x, y: y));
-              }
-            }
+            content.add(CoordinateSetI(x: x, y: y));
           }
         }
       }
@@ -332,73 +280,80 @@ class ShapePainter extends IToolPainter
           final CoordinateSetI point = CoordinateSetI(x: x, y: y);
           if (Helper.isPointInPolygon(point: point, polygon: points))
           {
-            if (!options.strokeOnly.value || (Helper.getPointToEdgeDistance(point: point, polygon: points) <= options.strokeWidth.value))
-            {
-              content.add(point);
-            }
+            content.add(point);
           }
         }
       }
     }
 
-    //clean up algorithm
-    if ((options.shape.value == ShapeShape.ellipse || options.shape.value == ShapeShape.diamond || options.shape.value == ShapeShape.ngon || options.shape.value == ShapeShape.triangle) &&
-        options.strokeOnly.value && options.strokeWidth.value == 1 && content.length > 2 && (selectionEnd.x - selectionStart.x).abs() > 2 && (selectionEnd.y - selectionStart.y).abs() > 2)
+    if (options.strokeOnly.value)
     {
-      final Set<CoordinateSetI> edgyPixels = {};
-      for (final CoordinateSetI curCoord in content)
-      {
-        final bool hasTop = content.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
-        final bool hasBottom = content.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
-        final bool hasLeft = content.contains(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
-        final bool hasRight = content.contains(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
-        if ((hasTop && hasLeft) || (hasTop && hasRight) || (hasBottom && hasLeft) || (hasBottom && hasRight))
-        {
-          edgyPixels.add(curCoord);
-        }
-      }
-
-      final Set<CoordinateSetI> removePixels = {};
-      for (final CoordinateSetI curCoord in edgyPixels)
-      {
-
-        final bool hasTop = edgyPixels.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y - 1));
-        final bool hasBottom = edgyPixels.contains(CoordinateSetI(x: curCoord.x, y: curCoord.y + 1));
-        final bool hasLeft = edgyPixels.contains(CoordinateSetI(x: curCoord.x - 1, y: curCoord.y));
-        final bool hasRight = edgyPixels.contains(CoordinateSetI(x: curCoord.x + 1, y: curCoord.y));
-
-        if ((!hasTop && !hasBottom && !hasLeft && !hasRight) ||
-            ((hasTop && curCoord.y <= centerY.round()) || (hasBottom && curCoord.y > centerY.round()) || (hasLeft && curCoord.x <= centerX.round()) || (hasRight && curCoord.x > centerX.round())))
-        {
-          removePixels.add(curCoord);
-        }
-      }
-      for (final CoordinateSetI rPix in removePixels)
-      {
-        content.remove(rPix);
-      }
+      content = _calculateInnerStrokeForWidth(content, options.strokeWidth.value);
     }
     return content;
   }
 
-  static List<CoordinateSetI> _getPolygonPoints({required ShapeOptions options, required CoordinateSetI selectionStart, required CoordinateSetI selectionEnd})
+
+
+
+
+  static Set<CoordinateSetI> _calculateInnerStrokeForWidth(Set<CoordinateSetI> filledShape, int strokeWidth) {
+    final Set<CoordinateSetI> innerStroke = {};
+    final Set<CoordinateSetI> currentShape = Set.from(filledShape);
+
+    for (int i = 0; i < strokeWidth; i++)
+    {
+      final Set<CoordinateSetI> boundaryCoords = {};
+
+      // Find the current boundary
+      for (CoordinateSetI coord in currentShape)
+      {
+        final List<CoordinateSetI> neighbors = Helper.getCoordinateNeighbors(pixel: coord, withDiagonals: false);
+        for (final CoordinateSetI neighbor in neighbors)
+        {
+          if (!currentShape.contains(neighbor))
+          {
+            boundaryCoords.add(coord);
+            break;
+          }
+        }
+      }
+
+      innerStroke.addAll(boundaryCoords);
+
+      currentShape.removeAll(boundaryCoords);
+
+      if (currentShape.isEmpty)
+      {
+        break;
+      }
+    }
+
+    return innerStroke;
+  }
+
+  static List<CoordinateSetI> _getPolygonPoints({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
   {
     List<CoordinateSetI> points = [];
     if (options.shape.value == ShapeShape.triangle)
     {
       points = [
-        CoordinateSetI(x: selectionStart.x + (selectionEnd.x - selectionStart.x) ~/ 2,y: selectionStart.y - 1),
+        CoordinateSetI(x: selectionStart.x + (selectionEnd.x - selectionStart.x) ~/ 2, y: selectionStart.y - 1),
         CoordinateSetI(x: selectionEnd.x + 1, y: selectionEnd.y + 1),
         CoordinateSetI(x: selectionStart.x - 1, y: selectionEnd.y + 1),
       ];
     }
     else if (options.shape.value == ShapeShape.diamond)
     {
+      final int centerX = selectionStart.x + ((selectionEnd.x - selectionStart.x) / 2).round();
+      final int centerY = selectionStart.y + ((selectionEnd.y - selectionStart.y) / 2).round();
+
+      // Define diamond points before clamping
       points = [
-        CoordinateSetI(x: selectionStart.x + ((selectionEnd.x - selectionStart.x) / 2).round(),y: selectionStart.y - 1),
-        CoordinateSetI(x: selectionEnd.x + 1, y: selectionStart.y + ((selectionEnd.y - selectionStart.y) / 2).round()),
-        CoordinateSetI(x: selectionStart.x + ((selectionEnd.x - selectionStart.x) / 2).round(),y: selectionEnd.y + 1),
-        CoordinateSetI(x: selectionStart.x, y: selectionStart.y + ((selectionEnd.y - selectionStart.y) / 2).round()),
+        CoordinateSetI(x: centerX, y: max(selectionStart.y, selectionStart.y - 1)),
+        CoordinateSetI(x: min(selectionEnd.x, selectionEnd.x + 1), y: centerY),
+        CoordinateSetI(x: centerX, y: min(selectionEnd.y, selectionEnd.y + 1)),
+        CoordinateSetI(x: max(selectionStart.x, selectionStart.x - 1), y: centerY),
       ];
     }
     else if (options.shape.value == ShapeShape.star || options.shape.value == ShapeShape.ngon)
@@ -430,6 +385,12 @@ class ShapePainter extends IToolPainter
           points.add(CoordinateSetI(x: x, y: y));
         }
       }
+    }
+
+    // Clamp points to bounds
+    for (final CoordinateSetI point in points) {
+      point.x = max(selectionStart.x, min(point.x, selectionEnd.x));
+      point.y = max(selectionStart.y, min(point.y, selectionEnd.y));
     }
 
     return points;

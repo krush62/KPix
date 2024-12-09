@@ -65,18 +65,10 @@ class DrawingLayerState extends LayerState
     final CoordinateColorMap data = HashMap();
     for (final CoordinateColor ref in other._data.entries)
     {
-      ColorReference colRef = ref.value;
-
-      if (colRef.ramp == originalRampData)
-      {
-        colRef = rampData.references[colRef.colorIndex];
-      }
-      data[ref.key] = colRef;
+      data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
     }
     return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
   }
-
-
 
   factory DrawingLayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
   {

@@ -80,7 +80,7 @@ class DrawingLayerState extends LayerState
 
   factory DrawingLayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
   {
-    CoordinateColorMap data2 = HashMap();
+    final CoordinateColorMap data2 = HashMap();
 
     if (content != null)
     {

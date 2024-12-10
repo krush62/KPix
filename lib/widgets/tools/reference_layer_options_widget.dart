@@ -26,6 +26,7 @@ import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class ReferenceLayerSettings
@@ -253,7 +254,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               widget.referenceState.opacityNotifier,
                           builder: (final BuildContext context,
                               final int opacity, final Widget? child) {
-                            return Slider(
+                            return KPixSlider(
                               value: opacity.toDouble(),
                               min: _refSettings.opacityMin.toDouble(),
                               max: _refSettings.opacityMax.toDouble(),
@@ -261,7 +262,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               onChanged: refImg == null ? null : (final double newVal) {
                                 widget.referenceState.opacityNotifier.value = newVal.round();
                               },
-                              label: opacity.round().toString(),
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
                         ),
@@ -293,7 +294,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                 builder: (final BuildContext context,
                                     final double aspectRatio,
                                     final Widget? child) {
-                                  return Slider(
+                                  return KPixSlider(
                                     value: aspectRatio.toDouble(),
                                     min: _refSettings.aspectRatioMin
                                         .toDouble(),
@@ -302,11 +303,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                     onChanged: refImg == null ? null : (final double newVal) {
                                       widget.referenceState.aspectRatioNotifier.value = newVal;
                                     },
-                                    label: aspectRatio.toStringAsFixed(2),
+                                    decimals: 2,
+                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                                   );
                                 },
                               ),
                             ),
+                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
                             Tooltip(
                               waitDuration: AppState.toolTipDuration,
                               message: "Reset Aspect Ratio",
@@ -340,7 +343,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           valueListenable: widget.referenceState.zoomNotifier,
                           builder: (final BuildContext context,
                               final int zoom, final Widget? child) {
-                            return Slider(
+                            return KPixSlider(
                               value: zoom.toDouble(),
                               min: _refSettings.zoomMin.toDouble(),
                               max: _refSettings.zoomMax.toDouble(),
@@ -349,6 +352,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                 widget.referenceState.zoomNotifier.value = newVal.round();
                               },
                               label: "${(zoom / 10.0).toStringAsFixed(1)}%",
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
                         ),

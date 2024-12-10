@@ -16,6 +16,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //UNDO STEPS
 const int undoStepsMin = 10;
@@ -73,11 +74,11 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                 valueListenable: widget.prefs.undoSteps,
                 builder: (final BuildContext context, final int undoSteps, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: undoSteps.toDouble(),
                     min: widget.prefs.undoStepsMin.toDouble(),
                     max: widget.prefs.undoStepsMax.toDouble(),
-                    label: undoSteps.toString(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                     onChanged: (final double newVal) {widget.prefs.undoSteps.value = newVal.toInt();},
                   );
                 },

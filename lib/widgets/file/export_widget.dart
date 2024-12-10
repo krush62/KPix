@@ -22,6 +22,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 
@@ -320,13 +321,14 @@ class _ExportWidgetState extends State<ExportWidget>
                                     return ValueListenableBuilder<int>(
                                       valueListenable: _scalingIndex,
                                       builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
-                                        return Slider(
+                                        return KPixSlider(
                                           value: fileExportTypeMap[type]!.scalable ? scalingIndexVal.toDouble() : 0,
                                           min: 0,
                                           max: exportScalingValues.length.toDouble() - 1,
                                           divisions: exportScalingValues.length,
-                                          label: exportScalingValues[scalingIndexVal].toString(),
+                                          label: "${exportScalingValues[scalingIndexVal]}:1",
                                           onChanged: fileExportTypeMap[type]!.scalable ? (final double newVal){_scalingIndex.value = newVal.round();} : null,
+                                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                                         );
                                       },
                                     );

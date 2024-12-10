@@ -19,6 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 enum GridType
@@ -164,7 +165,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     child: ValueListenableBuilder<int>(
                       valueListenable: widget.gridState.opacityNotifier,
                       builder: (final BuildContext context, final int opacity, final Widget? child) {
-                        return Slider(
+                        return KPixSlider(
                           value: opacity.toDouble(),
                           min: _gridSettings.opacityMin.toDouble(),
                           max: _gridSettings.opacityMax.toDouble(),
@@ -172,7 +173,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           onChanged: (final double newVal) {
                             widget.gridState.opacityNotifier.value = newVal.round();
                           },
-                          label: opacity.round().toString(),
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
                     ),
@@ -198,7 +199,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     child: ValueListenableBuilder<int>(
                       valueListenable: widget.gridState.brightnessNotifier,
                       builder: (final BuildContext context, final int brightness, final Widget? child) {
-                        return Slider(
+                        return KPixSlider(
                           value: brightness.toDouble(),
                           min: _gridSettings.brightnessMin.toDouble(),
                           max: _gridSettings.brightnessMax.toDouble(),
@@ -206,7 +207,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           onChanged: (final double newVal) {
                             widget.gridState.brightnessNotifier.value = newVal.round();
                           },
-                          label: brightness.round().toString(),
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
                     ),
@@ -232,7 +233,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     child: ValueListenableBuilder<int>(
                       valueListenable: widget.gridState.intervalXNotifier,
                       builder: (final BuildContext context, final int intervalX, final Widget? child) {
-                        return Slider(
+                        return KPixSlider(
                           value: intervalX.toDouble(),
                           min: _gridSettings.intervalXMin.toDouble(),
                           max: _gridSettings.intervalXMax.toDouble(),
@@ -240,7 +241,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           onChanged: (final double newVal) {
                             widget.gridState.intervalXNotifier.value = newVal.round();
                           },
-                          label: intervalX.round().toString(),
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
                     ),
@@ -266,7 +267,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     child: ValueListenableBuilder<int>(
                       valueListenable: widget.gridState.intervalYNotifier,
                       builder: (final BuildContext context, final int intervalY, final Widget? child) {
-                        return Slider(
+                        return KPixSlider(
                           value: intervalY.toDouble(),
                           min: _gridSettings.intervalYMin.toDouble(),
                           max: _gridSettings.intervalYMax.toDouble(),
@@ -274,7 +275,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           onChanged: (final double newVal) {
                             widget.gridState.intervalYNotifier.value = newVal.round();
                           },
-                          label: intervalY.round().toString(),
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
                     ),

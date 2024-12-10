@@ -16,6 +16,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 class TouchPreferenceContent
 {
@@ -87,12 +88,13 @@ class _TouchPreferencesState extends State<TouchPreferences>
                 valueListenable: widget.prefs.singleTouchDelay,
                 builder: (final BuildContext context, final int singleTouchDelay, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: singleTouchDelay.toDouble(),
                     min: widget.prefs.singleTouchDelayMin.toDouble(),
                     max: widget.prefs.singleTouchDelayMax.toDouble(),
                     label: "${singleTouchDelay}ms",
                     onChanged: (final double newVal) {widget.prefs.singleTouchDelay.value = newVal.toInt();},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -111,12 +113,13 @@ class _TouchPreferencesState extends State<TouchPreferences>
                 valueListenable: widget.prefs.zoomStepDistance,
                 builder: (final BuildContext context, final double zoomDistance, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: zoomDistance,
                     min: widget.prefs.zoomStepDistanceMin,
                     max: widget.prefs.zoomStepDistanceMax,
                     label: "${zoomDistance.round()}px",
                     onChanged: (final double newVal) {widget.prefs.zoomStepDistance.value = newVal;},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),

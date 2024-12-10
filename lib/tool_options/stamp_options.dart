@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 
@@ -124,13 +125,13 @@ class StampOptions extends IToolOptions
                   valueListenable: stampOptions.scale,
                   builder: (final BuildContext context, final int scale, final Widget? child)
                   {
-                    return Slider(
+                    return KPixSlider(
                       value: scale.toDouble(),
                       min: stampOptions.scaleMin.toDouble(),
                       max: stampOptions.scaleMax.toDouble(),
                       divisions: stampOptions.scaleMax - stampOptions.scaleMin,
                       onChanged: (double newVal) {stampOptions.scale.value = newVal.round();},
-                      label: scale.round().toString(),
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),

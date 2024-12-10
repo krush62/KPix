@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class AngleData
@@ -119,13 +120,13 @@ class LineOptions extends IToolOptions
               child: ValueListenableBuilder<int>(
                 valueListenable: lineOptions.width,
                 builder: (final BuildContext context, final int width, final Widget? child){
-                    return Slider(
+                    return KPixSlider(
                     value: width.toDouble(),
                     min: lineOptions.widthMin.toDouble(),
                     max: lineOptions.widthMax.toDouble(),
                     divisions: lineOptions.widthMax - lineOptions.widthMin,
                     onChanged: (final double newVal) {lineOptions.width.value = newVal.round();},
-                    label: width.round().toString(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!
                   );
                 },
               ),

@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class EraserOptions extends IToolOptions
@@ -71,13 +72,13 @@ class EraserOptions extends IToolOptions
                 valueListenable: eraserOptions.size,
                 builder: (final BuildContext context, final int size, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: size.toDouble(),
                     min: eraserOptions.sizeMin.toDouble(),
                     max: eraserOptions.sizeMax.toDouble(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                     divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
                     onChanged: (final double newVal) {eraserOptions.size.value = newVal.round();},
-                    label: size.round().toString(),
                   );
                 },
               ),

@@ -16,6 +16,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 class StylusPreferenceContent
 {
@@ -133,12 +134,13 @@ class _StylusPreferencesState extends State<StylusPreferences>
                 valueListenable: widget.prefs.stylusPollInterval,
                 builder: (final BuildContext context, final int pollInterval, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: pollInterval.toDouble(),
                     min: widget.prefs.stylusPollIntervalMin.toDouble(),
                     max: widget.prefs.stylusPollIntervalMax.toDouble(),
                     label: "${pollInterval}ms",
                     onChanged: (final double newVal) {widget.prefs.stylusPollInterval.value = newVal.toInt();},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -157,12 +159,13 @@ class _StylusPreferencesState extends State<StylusPreferences>
                 valueListenable: widget.prefs.stylusLongPressDelay,
                 builder: (final BuildContext context, final int longPressDelay, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: longPressDelay.toDouble(),
                     min: widget.prefs.stylusLongPressDelayMin.toDouble(),
                     max: widget.prefs.stylusLongPressDelayMax.toDouble(),
                     label: "${longPressDelay}ms",
                     onChanged: (final double newVal) {widget.prefs.stylusLongPressDelay.value = newVal.toInt();},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -181,12 +184,13 @@ class _StylusPreferencesState extends State<StylusPreferences>
                 valueListenable: widget.prefs.stylusLongPressCancelDistance,
                 builder: (final BuildContext context, final double longPressDistance, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: longPressDistance,
                     min: widget.prefs.stylusLongPressCancelDistanceMin,
                     max: widget.prefs.stylusLongPressCancelDistanceMax,
                     label: "${longPressDistance.round()}px",
                     onChanged: (final double newVal) {widget.prefs.stylusLongPressCancelDistance.value = newVal;},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -205,12 +209,13 @@ class _StylusPreferencesState extends State<StylusPreferences>
                 valueListenable: widget.prefs.stylusZoomStepDistance,
                 builder: (final BuildContext context, final double zoomStepDistance, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: zoomStepDistance,
                     min: widget.prefs.stylusZoomStepDistanceMin,
                     max: widget.prefs.stylusZoomStepDistanceMax,
                     label: "${zoomStepDistance.round()}px",
                     onChanged: (final double newVal) {widget.prefs.stylusZoomStepDistance.value = newVal;},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -229,12 +234,13 @@ class _StylusPreferencesState extends State<StylusPreferences>
                 valueListenable: widget.prefs.stylusSizeStepDistance,
                 builder: (final BuildContext context, final double sizeStepDistance, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: sizeStepDistance,
                     min: widget.prefs.stylusSizeStepDistanceMin,
                     max: widget.prefs.stylusSizeStepDistanceMax,
                     label: "${sizeStepDistance.round()}px",
                     onChanged: (final double newVal) {widget.prefs.stylusSizeStepDistance.value = newVal;},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -253,12 +259,13 @@ class _StylusPreferencesState extends State<StylusPreferences>
                 valueListenable: widget.prefs.stylusPickMaxDuration,
                 builder: (final BuildContext context, final int pickDuration, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: pickDuration.toDouble(),
                     min: widget.prefs.stylusPickMaxDurationMin.toDouble(),
                     max: widget.prefs.stylusPickMaxDurationMax.toDouble(),
                     label: "${pickDuration}ms",
                     onChanged: (final double newVal) {widget.prefs.stylusPickMaxDuration.value = newVal.toInt();},
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),

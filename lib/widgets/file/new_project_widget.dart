@@ -24,6 +24,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class NewProjectWidget extends StatefulWidget
@@ -170,14 +171,19 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                 child: ValueListenableBuilder<int>(
                                   valueListenable: _width,
                                   builder: (final BuildContext context, final int width, final Widget? child) {
-                                    return Slider(
+                                    return KPixSlider(
                                       value: width.toDouble(),
+                                      trackHeight: 32,
                                       min: _sizeOptions.sizeMin.toDouble(),
                                       max: _sizeOptions.sizeMax.toDouble(),
                                       onChanged: (final double newVal) {_width.value = newVal.toInt();},
+                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
                                 )
+                              ),
+                              SizedBox(
+                                width: _options.padding * 2,
                               ),
                               Expanded(
                                 flex: 1,
@@ -211,14 +217,19 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                 child: ValueListenableBuilder<int>(
                                   valueListenable: _height,
                                   builder: (final BuildContext context, final int height, final Widget? child) {
-                                    return Slider(
+                                    return KPixSlider(
                                       value: height.toDouble(),
+                                      trackHeight: 32,
                                       min: _sizeOptions.sizeMin.toDouble(),
                                       max: _sizeOptions.sizeMax.toDouble(),
                                       onChanged: (final double newVal) {_height.value = newVal.toInt();},
+                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
                                 )
+                              ),
+                              SizedBox(
+                                width: _options.padding * 2,
                               ),
                               Expanded(
                                 flex: 1,

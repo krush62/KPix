@@ -17,6 +17,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //THEME
 const Map<int, ThemeMode> themeTypeIndexMap =
@@ -180,13 +181,14 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   valueListenable: widget.prefs.rasterSizeIndex,
                   builder: (final BuildContext context, final int rasterSizeIndex, final Widget? child)
                   {
-                    return Slider(
+                    return KPixSlider(
                       value: rasterSizeIndex.toDouble(),
                       min: 0,
                       max: rasterSizes.length.toDouble() - 1,
                       divisions: rasterSizes.length,
                       label: rasterSizes[rasterSizeIndex].toString(),
                       onChanged: (final double newVal) {widget.prefs.rasterSizeIndex.value = newVal.toInt();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),
@@ -205,13 +207,13 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   valueListenable: widget.prefs.rasterContrast,
                   builder: (final BuildContext context, final int rasterContrast, final Widget? child)
                   {
-                    return Slider(
+                    return KPixSlider(
                       value: rasterContrast.toDouble(),
                       min: rasterContrastMin.toDouble(),
                       max: rasterContrastMax.toDouble(),
                       divisions: rasterContrastDivisions,
-                      label: rasterContrast.toString(),
                       onChanged: (final double newVal) {widget.prefs.rasterContrast.value = newVal.toInt();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),
@@ -280,13 +282,13 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   valueListenable: widget.prefs.toolOpacity,
                   builder: (final BuildContext context, final int toolOutlineOpacity, final Widget? child)
                   {
-                    return Slider(
+                    return KPixSlider(
                       value: toolOutlineOpacity.toDouble(),
                       min: opacityMin.toDouble(),
                       max: opacityMax.toDouble(),
                       divisions: opacityMax - opacityMin,
-                      label: toolOutlineOpacity.toString(),
                       onChanged: (final double newVal) {widget.prefs.toolOpacity.value = newVal.toInt();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),
@@ -305,13 +307,13 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   valueListenable: widget.prefs.selectionOpacity,
                   builder: (final BuildContext context, final int selectionOpacity, final Widget? child)
                   {
-                    return Slider(
+                    return KPixSlider(
                       value: selectionOpacity.toDouble(),
                       min: opacityMin.toDouble(),
                       max: opacityMax.toDouble(),
                       divisions: opacityMax - opacityMin,
-                      label: selectionOpacity.toString(),
                       onChanged: (final double newVal) {widget.prefs.selectionOpacity.value = newVal.toInt();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),
@@ -330,13 +332,13 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   valueListenable: widget.prefs.canvasBorderOpacity,
                   builder: (final BuildContext context, final int canvasBorderOpacity, final Widget? child)
                   {
-                    return Slider(
+                    return KPixSlider(
                       value: canvasBorderOpacity.toDouble(),
                       min: opacityMin.toDouble(),
                       max: opacityMax.toDouble(),
                       divisions: opacityMax - opacityMin,
-                      label: canvasBorderOpacity.toString(),
                       onChanged: (final double newVal) {widget.prefs.canvasBorderOpacity.value = newVal.toInt();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),

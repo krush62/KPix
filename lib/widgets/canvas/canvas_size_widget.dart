@@ -25,6 +25,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 
@@ -281,15 +282,17 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _size,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return Slider(
+                                    return KPixSlider(
                                       onChanged: (final double newVal) {_sizeXSliderChanged(newVal: newVal);},
                                       value: value.x.toDouble(),
                                       min: _sizeOptions.sizeMin.toDouble(),
-                                      max: _sizeOptions.sizeMax.toDouble()
+                                      max: _sizeOptions.sizeMax.toDouble(),
+                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
                                 )
                               ),
+                              SizedBox(width: _options.padding),
                               Expanded(
                                 flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
@@ -319,15 +322,17 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _size,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return Slider(
+                                    return KPixSlider(
                                       onChanged: (final double newVal) {_sizeYSliderChanged(newVal: newVal);},
                                       value: value.y.toDouble(),
                                       min: _sizeOptions.sizeMin.toDouble(),
-                                      max: _sizeOptions.sizeMax.toDouble()
+                                      max: _sizeOptions.sizeMax.toDouble(),
+                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
                                 )
                               ),
+                              SizedBox(width: _options.padding),
                               Expanded(
                                 flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
@@ -360,15 +365,17 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _offset,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return Slider(
+                                    return KPixSlider(
                                       min: _minOffset.value.x.toDouble(),
                                       max: _maxOffset.value.x.toDouble(),
                                       onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
                                       value: value.x.toDouble(),
+                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
                                 )
                               ),
+                              SizedBox(width: _options.padding),
                               Expanded(
                                 flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
@@ -398,15 +405,17 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _offset,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return Slider(
+                                    return KPixSlider(
                                       min: _minOffset.value.y.toDouble(),
                                       max: _maxOffset.value.y.toDouble(),
                                       onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
                                       value: value.y.toDouble(),
+                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
                                 )
                               ),
+                              SizedBox(width: _options.padding),
                               Expanded(
                                 flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(

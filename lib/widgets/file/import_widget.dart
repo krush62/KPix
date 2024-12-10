@@ -24,6 +24,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -174,25 +175,16 @@ class _ImportWidgetState extends State<ImportWidget>
                     child: ValueListenableBuilder<int>(
                       valueListenable: _maxRampsNotifier,
                       builder: (final BuildContext context, final int maxRampValue, final Widget? child) {
-                        return Slider(
+                        return KPixSlider(
                           value: maxRampValue.toDouble(),
                           min: _constraints.rampCountMin.toDouble(),
                           max: _constraints.maxClusters.toDouble(),
                           divisions: _constraints.maxClusters - _constraints.rampCountMin,
-                          label: maxRampValue.toString(),
                           onChanged: (final double newValue) {
                             _maxRampsNotifier.value = newValue.round();
                           },
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
-                      },
-                    )
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: _maxRampsNotifier,
-                      builder: (final BuildContext context, final int maxRampValue, final Widget? child) {
-                        return Text("$maxRampValue", textAlign: TextAlign.center);
                       },
                     )
                   ),
@@ -212,28 +204,20 @@ class _ImportWidgetState extends State<ImportWidget>
                     child: ValueListenableBuilder<int>(
                       valueListenable: _maxColorsPerRampNotifier,
                       builder: (final BuildContext context, final int maxColorsValue, final Widget? child) {
-                        return Slider(
+                        return KPixSlider(
                           value: maxColorsValue.toDouble(),
                           min: _constraints.colorCountMin.toDouble(),
                           max: _constraints.colorCountMax.toDouble(),
                           divisions: _constraints.colorCountMax - _constraints.colorCountMin,
-                          label: maxColorsValue.toString(),
                           onChanged: (final double newValue) {
                             _maxColorsPerRampNotifier.value = newValue.round();
                           },
+                          textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
                     )
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: _maxColorsPerRampNotifier,
-                      builder: (final BuildContext context, final int maxColorsValue, final Widget? child) {
-                        return Text("$maxColorsValue", textAlign: TextAlign.center);
-                      },
-                    )
-                  ),
+
                 ]
               ),
               Row(

@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class TextOptions extends IToolOptions
@@ -122,13 +123,13 @@ class TextOptions extends IToolOptions
                 valueListenable: textOptions.size,
                 builder: (final BuildContext context, final int size, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: size.toDouble(),
                     min: textOptions.sizeMin.toDouble(),
                     max: textOptions.sizeMax.toDouble(),
                     divisions: textOptions.sizeMax - textOptions.sizeMin,
                     onChanged: (double newVal) {textOptions.size.value = newVal.round();},
-                    label: size.round().toString(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),

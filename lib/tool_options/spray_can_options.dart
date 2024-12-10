@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class SprayCanOptions extends IToolOptions
@@ -82,13 +83,13 @@ class SprayCanOptions extends IToolOptions
                 valueListenable: sprayCanOptions.radius,
                 builder: (final BuildContext context, final int radius, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: radius.toDouble(),
                     min: sprayCanOptions.radiusMin.toDouble(),
                     max: sprayCanOptions.radiusMax.toDouble(),
                     divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
                     onChanged: (final double newVal) {sprayCanOptions.radius.value = newVal.round();},
-                    label: radius.round().toString(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -115,13 +116,13 @@ class SprayCanOptions extends IToolOptions
                 valueListenable: sprayCanOptions.blobSize,
                 builder: (final BuildContext context, final int blobSize, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: blobSize.toDouble(),
                     min: sprayCanOptions.blobSizeMin.toDouble(),
                     max: sprayCanOptions.blobSizeMax.toDouble(),
                     divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
                     onChanged: (double newVal) {sprayCanOptions.blobSize.value = newVal.round();},
-                    label: blobSize.round().toString(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -148,13 +149,13 @@ class SprayCanOptions extends IToolOptions
                 valueListenable: sprayCanOptions.intensity,
                 builder: (final BuildContext context, final int intensity, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: intensity.toDouble(),
                     min: sprayCanOptions.intensityMin.toDouble(),
                     max: sprayCanOptions.intensityMax.toDouble(),
                     divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
                     onChanged: (double newVal) {sprayCanOptions.intensity.value = newVal.round();},
-                    label: intensity.round().toString(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 }
               ),

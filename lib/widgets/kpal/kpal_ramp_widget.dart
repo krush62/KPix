@@ -72,7 +72,6 @@ class _KPalRampState extends State<KPalRamp>
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
   late Timer _renderTimer;
-  final String _valueToolTipMessage = "Press to reset";
 
   late List<DrawingLayerState> _drawingLayers;
 
@@ -298,28 +297,14 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
+                                child: KPixSlider(
                                   value: widget.rampData.settings.colorCount.toDouble(),
                                   min: widget.rampData.settings.constraints.colorCountMin.toDouble(),
                                   max: widget.rampData.settings.constraints.colorCountMax.toDouble(),
                                   divisions: (widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin),
                                   onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.colorCount.toString(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _colorCountSliderChanged(newVal: widget.rampData.settings.constraints.colorCountDefault.toDouble());
-                                    },
-                                    child: Text(widget.rampData.settings.colorCount.toString(), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -342,34 +327,16 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: SliderTheme(
-                                  data: SliderTheme.of(context).copyWith(
-                                    trackShape: const GradientSliderTrackShape(), // Custom track shape
-                                  ),
-                                  child: Slider(
-                                    value: widget.rampData.settings.baseHue.toDouble(),
-                                    min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
-                                    max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
-                                    divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
-                                    onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
-                                    label: widget.rampData.settings.baseHue.toString(),
+                                child: KPixSlider(
+                                  value: widget.rampData.settings.baseHue.toDouble(),
+                                  min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
+                                  max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
+                                  divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
+                                  onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
+                                  isRainbow: true,
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
 
-                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _baseHueSliderChanged(newVal: widget.rampData.settings.constraints.baseHueDefault.toDouble());
-                                    },
-                                    child: Text(widget.rampData.settings.baseHue.toString(), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -387,28 +354,14 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
+                                child: KPixSlider(
                                   value: widget.rampData.settings.hueShift.toDouble(),
                                   min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
                                   max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
                                   divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
                                   onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.hueShift.toString(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _hueShiftSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftDefault.toDouble());
-                                    },
-                                      child: Text(widget.rampData.settings.hueShift.toString(), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -426,28 +379,15 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
+                                child: KPixSlider(
                                   value: widget.rampData.settings.hueShiftExp.toDouble(),
                                   min: widget.rampData.settings.constraints.hueShiftExpMin.toDouble(),
                                   max: widget.rampData.settings.constraints.hueShiftExpMax.toDouble(),
                                   divisions: (widget.rampData.settings.constraints.hueShiftExpMax * 100.0 - widget.rampData.settings.constraints.hueShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _hueShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftExpDefault.toDouble());
-                                    },
-                                      child: Text(widget.rampData.settings.hueShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -470,28 +410,14 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
+                                child: KPixSlider(
                                   value: widget.rampData.settings.baseSat.toDouble(),
                                   min: widget.rampData.settings.constraints.baseSatMin.toDouble(),
                                   max: widget.rampData.settings.constraints.baseSatMax.toDouble(),
                                   divisions: widget.rampData.settings.constraints.baseSatMax - widget.rampData.settings.constraints.baseSatMin,
                                   onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.baseSat.toString(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _baseSatSliderChanged(newVal: widget.rampData.settings.constraints.baseSatDefault.toDouble());
-                                    },
-                                    child: Text(widget.rampData.settings.baseSat.toString(), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -509,28 +435,14 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
+                                child: KPixSlider(
                                   value: widget.rampData.settings.satShift.toDouble(),
                                   min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
                                   max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
                                   divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
                                   onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
-                                  label: widget.rampData.settings.satShift.toString(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _satShiftSliderChanged(newVal: widget.rampData.settings.constraints.satShiftDefault.toDouble());
-                                    },
-                                    child: Text(widget.rampData.settings.satShift.toString(), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -548,28 +460,15 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: Slider(
+                                child: KPixSlider(
                                   value: widget.rampData.settings.satShiftExp.toDouble(),
                                   min: widget.rampData.settings.constraints.satShiftExpMin.toDouble(),
                                   max: widget.rampData.settings.constraints.satShiftExpMax.toDouble(),
                                   divisions: (widget.rampData.settings.constraints.satShiftExpMax * 100.0 - widget.rampData.settings.constraints.satShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _satShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.satShiftExpDefault.toDouble());
-                                    },
-                                    child: Text(widget.rampData.settings.satShiftExp.toStringAsFixed(2), textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),
@@ -656,28 +555,14 @@ class _KPalRampState extends State<KPalRamp>
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
-                                child: RangeSlider(
+                                child: KPixRangeSlider(
                                   values: RangeValues(widget.rampData.settings.valueRangeMin.toDouble(), widget.rampData.settings.valueRangeMax.toDouble()),
                                   min: widget.rampData.settings.constraints.valueRangeMin.toDouble(),
                                   max: widget.rampData.settings.constraints.valueRangeMax.toDouble(),
                                   divisions: widget.rampData.settings.constraints.valueRangeMax - widget.rampData.settings.constraints.valueRangeMin,
                                   onChanged: (final RangeValues newVals) {_valueRangeSliderChanged(newVals: newVals);},
-                                  labels: RangeLabels(widget.rampData.settings.valueRangeMin.toString(), widget.rampData.settings.valueRangeMax.toString()),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
-                              ),
-                              Expanded(
-                                flex: _options.rowValueFlex,
-                                child: Tooltip(
-                                  waitDuration: AppState.toolTipDuration,
-                                  message: _valueToolTipMessage,
-                                  child: GestureDetector(
-                                    onTap: ()
-                                    {
-                                      _valueRangeSliderChanged(newVals: RangeValues(widget.rampData.settings.constraints.valueRangeMinDefault.toDouble(), widget.rampData.settings.constraints.valueRangeMaxDefault.toDouble()));
-                                    },
-                                      child: Text("${widget.rampData.settings.valueRangeMin.toString()}-${widget.rampData.settings.valueRangeMax.toString()}", textAlign: TextAlign.end)
-                                  ),
-                                )
                               ),
                             ],
                           ),

@@ -21,6 +21,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 enum ShapeShape
@@ -292,13 +293,13 @@ class ShapeOptions extends IToolOptions
                           valueListenable: shapeOptions.strokeWidth,
                           builder: (final BuildContext context, final int width, final Widget? child)
                           {
-                            return Slider(
+                            return KPixSlider(
                               value: width.toDouble(),
                               min: shapeOptions.strokeWidthMin.toDouble(),
                               max: shapeOptions.strokeWidthMax.toDouble(),
                               divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
                               onChanged: strokeOnly ? (double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
-                              label: width.round().toString(),
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
                         ),
@@ -338,13 +339,13 @@ class ShapeOptions extends IToolOptions
                           valueListenable: shapeOptions.cornerRadius,
                           builder: (final BuildContext context, final int cornerRadius, final Widget? child)
                           {
-                            return Slider(
+                            return KPixSlider(
                               value: cornerRadius.toDouble(),
                               min: shapeOptions.cornerRadiusMin.toDouble(),
                               max: shapeOptions.cornerRadiusMax.toDouble(),
                               divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
                               onChanged: (final double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
-                              label: cornerRadius.round().toString(),
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           }
                         ),
@@ -376,13 +377,13 @@ class ShapeOptions extends IToolOptions
                           valueListenable: shapeOptions.ellipseAngle,
                           builder: (final BuildContext context, final int angle, final Widget? child)
                           {
-                            return Slider(
+                            return KPixSlider(
                               value: angle.toDouble(),
                               min: shapeOptions.ellipseAngleMin.toDouble(),
                               max: shapeOptions.ellipseAngleMax.toDouble(),
                               divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
                               onChanged: (final double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
-                              label: angle.round().toString(),
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           }
                         ),
@@ -412,13 +413,13 @@ class ShapeOptions extends IToolOptions
                           valueListenable: shapeOptions.cornerCount,
                           builder: (final BuildContext context, final int corners, final Widget? child)
                           {
-                            return Slider(
+                            return KPixSlider(
                               value: corners.toDouble(),
                               min: shapeOptions.cornerCountMin.toDouble(),
                               max: shapeOptions.cornerCountMax.toDouble(),
                               divisions: (shapeOptions.cornerCountMax - shapeOptions.cornerCountMin),
                               onChanged: (final double newVal) {shapeOptions.cornerCount.value = newVal.round();},
-                              label: corners.round().toString(),
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           }
                         ),

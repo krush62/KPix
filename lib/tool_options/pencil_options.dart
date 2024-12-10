@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 enum PencilShape
@@ -94,13 +95,13 @@ class PencilOptions extends IToolOptions
                 valueListenable: pencilOptions.size,
                 builder: (final BuildContext context, final int size, final Widget? child)
                 {
-                  return Slider(
+                  return KPixSlider(
                     value: size.toDouble(),
                     min: pencilOptions.sizeMin.toDouble(),
                     max: pencilOptions.sizeMax.toDouble(),
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                     divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
                     onChanged: (final double newVal) {pencilOptions.size.value = newVal.round();},
-                    label: size.round().toString(),
                   );
                 },
               ),

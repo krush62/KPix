@@ -82,7 +82,7 @@ The kpix file format consists of the following three consecutive sections:
     // data for type ``03`` (grid layer)  
   * opacity ``ubyte (1)`` // 0...100
   * brightness ``ubyte (1)`` // 0...100
-  * grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+  * grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric, ``03`` = hexagonal, ``04`` = triangular, , ``05`` = brick
   * interval_x ``ubyte (1)`` // 2...64
   * interval_x ``ubyte (1)`` // 2...64
   

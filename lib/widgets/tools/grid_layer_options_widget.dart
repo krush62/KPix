@@ -18,20 +18,29 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 enum GridType
 {
   rectangular,
   diagonal,
-  isometric
+  isometric,
+  hexagonal,
+  triangular,
+  brick
+
 }
 
 const Map<int, GridType> gridValueTypeMap =
 {
   0: GridType.rectangular,
   1: GridType.diagonal,
-  2: GridType.isometric
+  2: GridType.isometric,
+  3: GridType.hexagonal,
+  4: GridType.triangular,
+  5: GridType.brick
+
 };
 
 class GridLayerSettings
@@ -95,53 +104,46 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Type",
-                          style: Theme.of(context).textTheme.labelLarge,
-                        )
-                    ),
-                  ),
-                  Expanded(
-                    flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<GridType>(
-                      valueListenable: widget.gridState.gridTypeNotifier,
-                      builder: (final BuildContext context, final GridType gridType, final Widget? child) {
-                        return SegmentedButton(
-                          segments: [
-                            ButtonSegment(
-                              value: GridType.rectangular,
-                              label: Text("RECT", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.rectangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))
-                            ),
-                            ButtonSegment(
-                              value: GridType.diagonal,
-                                label: Text("DIAG", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.diagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))
-                            ),
-                            ButtonSegment(
-                              value: GridType.isometric,
-                                label: Text("ISO", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.isometric ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))
-                            )
-                          ],
-                          selected: <GridType>{gridType},
-                          emptySelectionAllowed: false,
-                          multiSelectionEnabled: false,
-                          showSelectedIcon: false,
-                          onSelectionChanged: (final Set<GridType> types)
-                          {
-                            widget.gridState.gridTypeNotifier.value = types.first;
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
+              ValueListenableBuilder<GridType>(
+                valueListenable: widget.gridState.gridTypeNotifier,
+                builder: (final BuildContext context, final GridType gridType, final Widget? child) {
+                  return SegmentedButton(
+                    segments: [
+                      ButtonSegment(
+                        value: GridType.rectangular,
+                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Rectangular Grid", child: Text("REC", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.rectangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                      ),
+                      ButtonSegment(
+                        value: GridType.diagonal,
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Diagonal Grid", child: Text("DIA", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.diagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                      ),
+                      ButtonSegment(
+                        value: GridType.isometric,
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Isometric Grid", child: Text("ISO", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.isometric ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                      ),
+                      /*ButtonSegment(
+                          value: GridType.hexagonal,
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Hexagonal Grid", child: Text("HEX", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.hexagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                      ),*/
+                      ButtonSegment(
+                          value: GridType.triangular,
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Triangular Grid", child: Text("TRI", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.triangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                      ),
+                      ButtonSegment(
+                          value: GridType.brick,
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Brick Grid", child: Text("BRK", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.brick ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                      )
+                    ],
+                    selected: <GridType>{gridType},
+                    emptySelectionAllowed: false,
+                    multiSelectionEnabled: false,
+                    showSelectedIcon: false,
+                    onSelectionChanged: (final Set<GridType> types)
+                    {
+                      widget.gridState.gridTypeNotifier.value = types.first;
+                    },
+                  );
+                },
               ),
               Row(
                 mainAxisSize: MainAxisSize.max,

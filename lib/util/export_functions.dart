@@ -52,7 +52,10 @@ class ExportFunctions
   {
     GridType.rectangular: 0,
     GridType.diagonal: 1,
-    GridType.isometric: 2
+    GridType.isometric: 2,
+    GridType.hexagonal: 3,
+    GridType.triangular: 4,
+    GridType.brick: 5
   };
 
 

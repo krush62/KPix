@@ -201,10 +201,10 @@ class AppState
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.pencil);}, action: HotkeyAction.selectToolPencil);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.fill);}, action: HotkeyAction.selectToolFill);
-    hotkeyManager.addListener(func: () {setSelectionToolSelection(shape: SelectShape.rectangle);}, action: HotkeyAction.selectToolSelectRectangle);
-    hotkeyManager.addListener(func: () {setSelectionToolSelection(shape: SelectShape.ellipse);}, action: HotkeyAction.selectToolSelectCircle);
+    hotkeyManager.addListener(func: () {_setSelectionToolSelection(shape: SelectShape.rectangle);}, action: HotkeyAction.selectToolSelectRectangle);
+    hotkeyManager.addListener(func: () {_setSelectionToolSelection(shape: SelectShape.ellipse);}, action: HotkeyAction.selectToolSelectCircle);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.shape);}, action: HotkeyAction.selectToolShape);
-    hotkeyManager.addListener(func: () {setSelectionToolSelection(shape: SelectShape.wand);}, action: HotkeyAction.selectToolSelectWand);
+    hotkeyManager.addListener(func: () {_setSelectionToolSelection(shape: SelectShape.wand);}, action: HotkeyAction.selectToolSelectWand);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.erase);}, action: HotkeyAction.selectToolEraser);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.font);}, action: HotkeyAction.selectToolText);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.spraycan);}, action: HotkeyAction.selectToolSprayCan);
@@ -239,12 +239,12 @@ class AppState
 
   void init({required CoordinateSetI dimensions})
   {
-    setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
+    _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
     final List<LayerState> layerList = [];
     selectionState.deselect(addToHistoryStack: false, notify: false);
     _layers.value = layerList;
     addNewDrawingLayer(select: true, addToHistoryStack: false);
-    setDefaultPalette();
+    _setDefaultPalette();
     GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
     projectName.value = null;
@@ -257,7 +257,7 @@ class AppState
     return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
-  void setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
+  void _setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
   {
     _canvasSize.x = width;
     _canvasSize.y = height;
@@ -341,7 +341,7 @@ class AppState
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
       _deleteRampFromLayers(ramp: ramp);
-      reRaster();
+      _reRaster();
       repaintNotifier.repaint();
       if (addToHistoryStack)
       {
@@ -365,7 +365,7 @@ class AppState
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _remapLayers(newData: ramp, map: indexMap);
     }
-    reRaster();
+    _reRaster();
     repaintNotifier.repaint();
     if (addToHistoryStack)
     {
@@ -373,7 +373,7 @@ class AppState
     }
   }
 
-  void setDefaultPalette()
+  void _setDefaultPalette()
   {
     _colorRamps.value = KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints);
     _selectedColor.value = _colorRamps.value[0].references[0];
@@ -433,7 +433,7 @@ class AppState
     _layers.value = layerList;
     if (select)
     {
-      layerSelected(newLayer: newLayer);
+      selectLayer(newLayer: newLayer);
     }
     if (addToHistoryStack)
     {
@@ -474,7 +474,7 @@ class AppState
     _layers.value = layerList;
     if (select)
     {
-      layerSelected(newLayer: newLayer);
+      selectLayer(newLayer: newLayer);
     }
     if (addToHistoryStack)
     {
@@ -508,7 +508,7 @@ class AppState
     _layers.value = layerList;
     if (select)
     {
-      layerSelected(newLayer: newLayer);
+      selectLayer(newLayer: newLayer);
     }
     if (addToHistoryStack)
     {
@@ -547,7 +547,7 @@ class AppState
         hasProjectNotifier.value = true;
         GetIt.I.get<HistoryManager>().clear();
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
-        setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
+        _setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
 
       });
@@ -888,7 +888,7 @@ class AppState
     int index = _getLayerPosition(state: currentLayer!);
     if (index > 0)
     {
-      layerSelected(newLayer: layers[index - 1]);
+      selectLayer(newLayer: layers[index - 1]);
     }
   }
 
@@ -897,12 +897,12 @@ class AppState
     int index = _getLayerPosition(state: currentLayer!);
     if (index < layers.length - 1)
     {
-      layerSelected(newLayer: layers[index + 1]);
+      selectLayer(newLayer: layers[index + 1]);
     }
   }
 
 
-  void layerSelected({required final LayerState newLayer, final bool addToHistoryStack = false})
+  void selectLayer({required final LayerState newLayer, final bool addToHistoryStack = false})
   {
     LayerState oldLayer = newLayer;
     for (final LayerState layer in _layers.value)
@@ -947,11 +947,11 @@ class AppState
 
       if (foundIndex > 0)
       {
-        layerSelected(newLayer: layerList[foundIndex - 1], addToHistoryStack: false);
+        selectLayer(newLayer: layerList[foundIndex - 1], addToHistoryStack: false);
       }
       else
       {
-        layerSelected(newLayer: layerList[0], addToHistoryStack: false);
+        selectLayer(newLayer: layerList[0], addToHistoryStack: false);
       }
 
       _layers.value = layerList;
@@ -1033,7 +1033,7 @@ class AppState
         }
         if (lowLayerWasSelected)
         {
-          layerSelected(newLayer: drawingMergeLayer, addToHistoryStack: false);
+          selectLayer(newLayer: drawingMergeLayer, addToHistoryStack: false);
         }
         _layers.value = layerList;
         if (addToHistoryStack)
@@ -1122,7 +1122,7 @@ class AppState
     }
   }
 
-  void reRaster()
+  void _reRaster()
   {
     for (final LayerState layer in _layers.value)
     {
@@ -1173,7 +1173,7 @@ class AppState
     }
   }
 
-  void setSelectionToolSelection({required SelectShape shape})
+  void _setSelectionToolSelection({required SelectShape shape})
   {
     setToolSelection(tool: ToolType.select);
     //should always be the case
@@ -1215,7 +1215,7 @@ class AppState
     }
     if (transformation == CanvasTransformation.rotate)
     {
-      setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
+      _setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasRotate);
     }
     else if (transformation == CanvasTransformation.flipH)
@@ -1283,7 +1283,7 @@ class AppState
       currentCropLayer.isSelected.value = true;
       selectionState.selection.changeLayer(oldLayer: null, newLayer: currentCropLayer);
     }
-    setCanvasDimensions(width: newSize.x, height: newSize.y);
+    _setCanvasDimensions(width: newSize.x, height: newSize.y);
   }
 
 
@@ -1333,7 +1333,7 @@ class AppState
     {
       final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
       final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
-      setCanvasDimensions(width: drawingLayer.size.x, height: drawingLayer.size.y, addToHistoryStack: false);
+      _setCanvasDimensions(width: drawingLayer.size.x, height: drawingLayer.size.y, addToHistoryStack: false);
       drawingLayer.isSelected.value = true;
       final List<LayerState> layerList = [];
       layerList.add(drawingLayer);
@@ -1342,7 +1342,7 @@ class AppState
         layerList.add(referenceLayer);
       }
       _layers.value = layerList;
-      layerSelected(newLayer: drawingLayer);
+      selectLayer(newLayer: drawingLayer);
       _colorRamps.value = importResult.data!.rampDataList;
       _selectedColor.value = _colorRamps.value[0].references[0];
       GetIt.I.get<HistoryManager>().clear();

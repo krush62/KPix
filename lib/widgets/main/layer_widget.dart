@@ -271,7 +271,7 @@ class _LayerWidgetState extends State<LayerWidget>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        _appState.layerSelected(newLayer: widget.layerState);
+                        _appState.selectLayer(newLayer: widget.layerState);
                       },
                       child: Stack(
                         fit: StackFit.expand,

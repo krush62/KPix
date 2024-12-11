@@ -28,9 +28,9 @@ class ShaderOptions
   final bool onlyCurrentRampEnabledDefault;
   final bool isEnabledDefault;
 
-  ValueNotifier<ShaderDirection> shaderDirection = ValueNotifier(ShaderDirection.left);
-  ValueNotifier<bool> onlyCurrentRampEnabled = ValueNotifier(false);
-  ValueNotifier<bool> isEnabled = ValueNotifier(true);
+  ValueNotifier<ShaderDirection> shaderDirection = ValueNotifier<ShaderDirection>(ShaderDirection.left);
+  ValueNotifier<bool> onlyCurrentRampEnabled = ValueNotifier<bool>(false);
+  ValueNotifier<bool> isEnabled = ValueNotifier<bool>(true);
 
   ShaderOptions({required this.shaderDirectionDefault, required this.onlyCurrentRampEnabledDefault, required this.isEnabledDefault})
   {

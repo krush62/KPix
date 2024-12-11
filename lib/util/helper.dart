@@ -19,8 +19,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -30,11 +33,8 @@ import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:path/path.dart' as p;
-
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
@@ -61,7 +61,7 @@ class Tool
 
   static bool isDrawTool({required final ToolType type})
   {
-    return (
+    return
       type == ToolType.pencil ||
       type == ToolType.shape ||
       type == ToolType.fill ||
@@ -69,12 +69,12 @@ class Tool
       type == ToolType.spraycan ||
       type == ToolType.line ||
       type == ToolType.stamp
-    );
+    ;
   }
 }
 
 const Map<ToolType, Tool> toolList =
-{
+<ToolType, Tool>{
   ToolType.pencil: Tool(icon: FontAwesomeIcons.pen, title: "Pencil"),
   ToolType.shape: Tool(icon: FontAwesomeIcons.shapes, title: "Shapes"),
   ToolType.fill: Tool(icon: FontAwesomeIcons.fillDrip, title: "Fill"),
@@ -94,7 +94,9 @@ class LabColor
   static const double abMax = 128.0;
   static const double lMax = 100.0;
 
-  final double L, A, B;
+  final double L;
+  final double A;
+  final double B;
 
   LabColor({
     required this.L,
@@ -111,7 +113,7 @@ class CoordinateSetD
   CoordinateSetD({required this.x, required this.y});
 
   @override
-  bool operator ==(Object other) =>
+  bool operator ==(final Object other) =>
       identical(this, other) ||
           other is CoordinateSetD &&
               runtimeType == other.runtimeType &&
@@ -140,7 +142,7 @@ class CoordinateSetI
   }
 
   @override
-  bool operator ==(Object other) =>
+  bool operator ==(final Object other) =>
       identical(this, other) ||
           other is CoordinateSetI &&
               runtimeType == other.runtimeType &&
@@ -182,9 +184,9 @@ class CoordinateSetI
 }
 
 class StackCol<T> {
-  final _list = <T>[];
+  final List<T> _list = <T>[];
 
-  void push(T value) => _list.add(value);
+  void push(final T value) => _list.add(value);
 
   T pop() => _list.removeLast();
 
@@ -199,23 +201,21 @@ class StackCol<T> {
 
 
 
-class Helper
-{
 
-  static String colorToHexString({required final Color c, final bool withHashTag = true})
+  String colorToHexString({required final Color c, final bool withHashTag = true})
   {
-    String str = withHashTag ? "#" : "";
+    final String str = withHashTag ? "#" : "";
     return '$str${c.red.toRadixString(16).padLeft(2, '0')}${c.green.toRadixString(16).padLeft(2, '0')}${c.blue.toRadixString(16).padLeft(2, '0')}';
   }
 
-  static String colorToRGBString({required final Color c})
+  String colorToRGBString({required final Color c})
   {
-    return '${c.red.toString()} | '
-        '${c.green.toString()} | '
-        '${c.blue.toString()}';
+    return '${c.red} | '
+        '${c.green} | '
+        '${c.blue}';
   }
 
-  static bool isDesktop({final bool includingWeb = false})
+  bool isDesktop({final bool includingWeb = false})
   {
     if (kIsWeb && !includingWeb)
     {
@@ -223,24 +223,24 @@ class Helper
     }
     else
     {
-      return ((kIsWeb && includingWeb) || Platform.isMacOS ||
-          Platform.isLinux || Platform.isWindows);
+      return (kIsWeb && includingWeb) || Platform.isMacOS ||
+          Platform.isLinux || Platform.isWindows;
     }
   }
 
-  static bool isPerfectSquare({required final int number})
+  bool isPerfectSquare({required final int number})
   {
-    double squareRoot = sqrt(number);
+    final double squareRoot = sqrt(number);
     return squareRoot % 1 == 0;
   }
 
-  static int gcd({required final int a, required final int b})
+  int gcd({required final int a, required final int b})
   {
     if (b == 0) return a;
     return gcd(a: b, b: a % b);
   }
 
-  static double calculateAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
+  double calculateAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
   {
     final int dx = endPos.x - startPos.x;
     final int dy = endPos.y - startPos.y;
@@ -251,9 +251,14 @@ class Helper
 
 
 
-  static LabColor rgb2lab({required final int red, required final int green, required final int blue})
+  LabColor rgb2lab({required final int red, required final int green, required final int blue})
   {
-    double r = red.toDouble() / 255.0, g = green.toDouble() / 255.0, b = blue.toDouble() / 255.0, x, y, z;
+    double r = red.toDouble() / 255.0;
+    double g = green.toDouble() / 255.0;
+    double b = blue.toDouble() / 255.0;
+    double x;
+    double y;
+    double z;
     r = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4).toDouble() : r / 12.92;
     g = (g > 0.04045) ? pow((g + 0.055) / 1.055, 2.4).toDouble() : g / 12.92;
     b = (b > 0.04045) ? pow((b + 0.055) / 1.055, 2.4).toDouble() : b / 12.92;
@@ -266,13 +271,13 @@ class Helper
     return LabColor(L: (116.0 * y) - 16.0, A: 500.0 * (x - y), B: 200.0 * (y - z));
   }
 
-  static double getDeltaE(
+  double getDeltaE(
       {required final int redA,
         required final int greenA,
         required final int blueA,
         required final int redB,
         required final int greenB,
-        required final int blueB})
+        required final int blueB,})
   {
     final LabColor labA = rgb2lab(red: redA, green: greenA, blue: blueA);
     final LabColor labB = rgb2lab(red: redB, green: greenB, blue: blueB);
@@ -293,9 +298,9 @@ class Helper
     return i < 0.0 ? 0.0 : sqrt(i);
   }
 
-  static HashMap<ColorReference, ColorReference> getRampMap({required final List<KPalRampData> rampList1, required final List<KPalRampData> rampList2})
+  HashMap<ColorReference, ColorReference> getRampMap({required final List<KPalRampData> rampList1, required final List<KPalRampData> rampList2})
   {
-    final HashMap<ColorReference, ColorReference> rampMap = HashMap();
+    final HashMap<ColorReference, ColorReference> rampMap = HashMap<ColorReference, ColorReference>();
     for (final KPalRampData kPalRampData in rampList1)
     {
       for (final ColorReference colRef in kPalRampData.references)
@@ -306,7 +311,7 @@ class Helper
     return rampMap;
   }
 
-  static ColorReference getClosestColor({required final ColorReference inputColor, required final List<KPalRampData> rampList})
+  ColorReference getClosestColor({required final ColorReference inputColor, required final List<KPalRampData> rampList})
   {
     assert(rampList.isNotEmpty);
 
@@ -333,14 +338,14 @@ class Helper
     return closestColor;
   }
 
-  static bool isPointOnLineSegment({required final CoordinateSetI p, required final CoordinateSetI a, required final CoordinateSetI b})
+  bool isPointOnLineSegment({required final CoordinateSetI p, required final CoordinateSetI a, required final CoordinateSetI b})
   {
-    return (p.x <= max(a.x, b.x) && p.x >= min(a.x, b.x) &&
+    return p.x <= max(a.x, b.x) && p.x >= min(a.x, b.x) &&
         p.y <= max(a.y, b.y) && p.y >= min(a.y, b.y) &&
-        (b.x - a.x) * (p.y - a.y) == (p.x - a.x) * (b.y - a.y));
+        (b.x - a.x) * (p.y - a.y) == (p.x - a.x) * (b.y - a.y);
   }
 
-  static bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon}) {
+  bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon}) {
     final int n = polygon.length;
     bool inside = false;
 
@@ -359,7 +364,7 @@ class Helper
   }
 
 
-  static double getPointToEdgeDistance({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
+  double getPointToEdgeDistance({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
   {
     double minDistance = double.infinity;
 
@@ -378,7 +383,7 @@ class Helper
 
       final int dotProduct = vx * dx + vy * dy;
 
-      final double t = max(0, min(1, (dotProduct / edgeLengthSquared)));
+      final double t = max(0, min(1, dotProduct / edgeLengthSquared));
 
       final double closestX = p1.x + t * dx;
       final double closestY = p1.y + t * dy;
@@ -393,24 +398,24 @@ class Helper
 
 
 
-  static CoordinateSetI getMin({required final List<CoordinateSetI> coordList})
+  CoordinateSetI getMin({required final List<CoordinateSetI> coordList})
   {
-    final int minX = coordList.reduce((a, b) => a.x < b.x ? a : b).x;
-    final int minY = coordList.reduce((a, b) => a.y < b.y ? a : b).y;
+    final int minX = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.x < b.x ? a : b).x;
+    final int minY = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.y < b.y ? a : b).y;
     return CoordinateSetI(x: minX, y: minY);
   }
 
-  static CoordinateSetI getMax({required final List<CoordinateSetI> coordList})
+  CoordinateSetI getMax({required final List<CoordinateSetI> coordList})
   {
-    final int maxX = coordList.reduce((a, b) => a.x > b.x ? a : b).x;
-    final int maxY = coordList.reduce((a, b) => a.y > b.y ? a : b).y;
+    final int maxX = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.x > b.x ? a : b).x;
+    final int maxY = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.y > b.y ? a : b).y;
     return CoordinateSetI(x: maxX, y: maxY);
   }
 
 
-  static List<CoordinateSetI> bresenham({required final CoordinateSetI start, required final CoordinateSetI end})
+  List<CoordinateSetI> bresenham({required final CoordinateSetI start, required final CoordinateSetI end})
   {
-    final List<CoordinateSetI> points = [];
+    final List<CoordinateSetI> points = <CoordinateSetI>[];
     final CoordinateSetI d = CoordinateSetI(x: (end.x - start.x).abs(), y: (end.y - start.y).abs());
     final CoordinateSetI s = CoordinateSetI(x: start.x < end.x ? 1 : -1, y: start.y < end.y ? 1 : -1);
 
@@ -436,9 +441,9 @@ class Helper
     return points;
   }
 
-  static List<CoordinateSetI> getCoordinateNeighbors({required final CoordinateSetI pixel, required bool withDiagonals})
+  List<CoordinateSetI> getCoordinateNeighbors({required final CoordinateSetI pixel, required final bool withDiagonals})
   {
-    final List<CoordinateSetI> neighbors =  [
+    final List<CoordinateSetI> neighbors =  <CoordinateSetI>[
       CoordinateSetI(x: pixel.x + 1, y: pixel.y),
       CoordinateSetI(x: pixel.x - 1, y: pixel.y),
       CoordinateSetI(x: pixel.x, y: pixel.y + 1),
@@ -456,40 +461,40 @@ class Helper
     return neighbors;
   }
 
-  static int argbToRgba({required final int argb}) {
-    int a = (argb & 0xFF000000) >> 24; // Extract alpha component
-    int r = (argb & 0x00FF0000) >> 16; // Extract red component
-    int g = (argb & 0x0000FF00) >> 8;  // Extract green component
-    int b = (argb & 0x000000FF);       // Extract blue component
+  int argbToRgba({required final int argb}) {
+    final int a = (argb & 0xFF000000) >> 24; // Extract alpha component
+    final int r = (argb & 0x00FF0000) >> 16; // Extract red component
+    final int g = (argb & 0x0000FF00) >> 8;  // Extract green component
+    final int b = argb & 0x000000FF;       // Extract blue component
 
     // Combine components into RGBA format
-    int rgba = (r << 24) | (g << 16) | (b << 8) | a;
+    final int rgba = (r << 24) | (g << 16) | (b << 8) | a;
     return rgba;
   }
 
-  static const double twoPi = 2 * pi;
+  const double twoPi = 2 * pi;
 
-  static double normAngle({required final double angle})
+  double normAngle({required final double angle})
   {
     return angle - (twoPi * (angle / twoPi).floor());
   }
 
-  static double deg2rad({required final double angle})
+  double deg2rad({required final double angle})
   {
     return angle * (pi / 180.0);
   }
 
-  static double rad2deg({required final double angle})
+  double rad2deg({required final double angle})
   {
     return angle * (180.0 / pi);
   }
   
-  static double getDistance({required final CoordinateSetI a, required final CoordinateSetI b})
+  double getDistance({required final CoordinateSetI a, required final CoordinateSetI b})
   {
     return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
   }
 
-  static Future<ui.Image> getImageFromCustomPainter({required final CustomPainter cPainter, required final CoordinateSetI size}) async
+  Future<ui.Image> getImageFromCustomPainter({required final CustomPainter cPainter, required final CoordinateSetI size}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     cPainter.paint(Canvas(recorder), Size(size.x.toDouble(), size.y.toDouble()));
@@ -497,12 +502,12 @@ class Helper
     return picture.toImage(size.x, size.y);
   }
 
-  static Future<ui.Image> getImageFromLayers({
+  Future<ui.Image> getImageFromLayers({
     required final CoordinateSetI canvasSize,
     required final List<LayerState> layers,
     required final CoordinateSetI size,
     required final int selectedLayerIndex,
-    required final SelectionList selectionList}) async
+    required final SelectionList selectionList,}) async
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
@@ -517,11 +522,11 @@ class Helper
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
                   canvasSize.x.toDouble(),
-                  canvasSize.y.toDouble()),
+                  canvasSize.y.toDouble(),),
               image: drawingLayer.thumbnail.value!,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none);
+              filterQuality: FilterQuality.none,);
           if (selectionList.hasValues() && i == selectedLayerIndex)
           {
             final Paint paint = Paint();
@@ -534,8 +539,8 @@ class Helper
                     entry.key.x.toDouble(),
                     entry.key.y.toDouble(),
                     1,
-                    1),
-                    paint);
+                    1,),
+                    paint,);
               }
             }
           }
@@ -545,13 +550,13 @@ class Helper
     return recorder.endRecording().toImage(size.x, size.y);
   }
 
-  static Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
+  Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
   {
     if (loadFileSet.historyState != null)
     {
       final HistoryState state = loadFileSet.historyState!;
 
-      final List<KPalRampData> ramps = [];
+      final List<KPalRampData> ramps = <KPalRampData>[];
       for (final HistoryRampData hRampData in state.rampList)
       {
         final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
@@ -565,7 +570,7 @@ class Helper
         if (state.layerList[i].visibilityState == LayerVisibilityState.visible && state.layerList[i].runtimeType == HistoryDrawingLayer)
         {
           final HistoryDrawingLayer historyDrawingLayer = state.layerList[i] as HistoryDrawingLayer;
-          final CoordinateColorMap content = HashMap();
+          final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
           for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
           {
             KPalRampData? ramp;
@@ -586,7 +591,7 @@ class Helper
           drawingLayer.doManualRaster = true;
           while (drawingLayer.isRasterizing)
           {
-            await Future.delayed(Duration(milliseconds: 20));
+            await Future<void>.delayed(const Duration(milliseconds: 20));
           }
           if (drawingLayer.thumbnail.value != null)
           {
@@ -594,11 +599,11 @@ class Helper
                 canvas: canvas,
                 rect: ui.Rect.fromLTWH(0, 0,
                     state.canvasSize.x.toDouble(),
-                    state.canvasSize.y.toDouble()),
+                    state.canvasSize.y.toDouble(),),
                 image: drawingLayer.thumbnail.value!,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none);
+                filterQuality: FilterQuality.none,);
           }
         }
       }
@@ -610,7 +615,7 @@ class Helper
     }
   }
 
-  static String extractFilenameFromPath({required String? path, bool keepExtension = true})
+  String extractFilenameFromPath({required final String? path, final bool keepExtension = true})
   {
     if (path != null && path.isNotEmpty)
     {
@@ -622,12 +627,12 @@ class Helper
     }
   }
 
-  static String getBaseDir({required final String fullPath})
+  String getBaseDir({required final String fullPath})
   {
     return p.dirname(fullPath);
   }
 
-  static List<int> intToBytes({required final int value, required final int length, bool reverse = false})
+  List<int> intToBytes({required final int value, required final int length, final bool reverse = false})
   {
     final ByteData bytes = ByteData(length);
     if (length == 1)
@@ -649,18 +654,18 @@ class Helper
     return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
   }
 
-  static List<int> float32ToBytes({required final double value, bool reverse = false})
+  List<int> float32ToBytes({required final double value, final bool reverse = false})
   {
-    final bytes = ByteData(4)..setFloat32(0, value, Endian.little);
+    final ByteData bytes = ByteData(4)..setFloat32(0, value, Endian.little);
     return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
   }
 
-  static List<int> stringToBytes({required final String value})
+  List<int> stringToBytes({required final String value})
   {
     return utf8.encode(value);
   }
 
-  static String escapeXml({required final String input})
+  String escapeXml({required final String input})
   {
     return input.replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
@@ -669,7 +674,7 @@ class Helper
         .replaceAll("'", '&apos;');
   }
 
-  static Future<String?> replaceFileExtension({required String filePath, required String newExtension, required bool inputFileMustExist}) async
+  Future<String?> replaceFileExtension({required final String filePath, required final String newExtension, required final bool inputFileMustExist}) async
   {
     if ((!await File(filePath).exists()) && inputFileMustExist)
     {
@@ -684,20 +689,20 @@ class Helper
     return filePath.replaceAll(RegExp(r'\.[^\.]+$'), '.$newExtension');
   }
 
-  static String formatDateTime({required final DateTime dateTime})
+  String formatDateTime({required final DateTime dateTime})
   {
-    String year = dateTime.year.toString();
-    String month = dateTime.month.toString().padLeft(2, '0'); // Pad with zero if needed
-    String day = dateTime.day.toString().padLeft(2, '0');
-    String hour = dateTime.hour.toString().padLeft(2, '0');
-    String minute = dateTime.minute.toString().padLeft(2, '0');
+    final String year = dateTime.year.toString();
+    final String month = dateTime.month.toString().padLeft(2, '0'); // Pad with zero if needed
+    final String day = dateTime.day.toString().padLeft(2, '0');
+    final String hour = dateTime.hour.toString().padLeft(2, '0');
+    final String minute = dateTime.minute.toString().padLeft(2, '0');
 
     return '$year-$month-$day $hour:$minute';
   }
 
-  static HashMap<int, int> remapIndices({required final int oldLength, required final int newLength})
+  HashMap<int, int> remapIndices({required final int oldLength, required final int newLength})
   {
-    final HashMap<int, int> indexMap = HashMap();
+    final HashMap<int, int> indexMap = HashMap<int, int>();
     final int centerOld = oldLength ~/ 2;
     final int centerNew = newLength ~/ 2;
     for (int i = 0; i < oldLength; i++)
@@ -710,7 +715,7 @@ class Helper
     return indexMap;
   }
 
-  static int? getRampIndex({required String uuid, required final List<HistoryRampData> ramps})
+  int? getRampIndex({required final String uuid, required final List<HistoryRampData> ramps})
   {
     int? rampIndex;
     for (int i = 0; i < ramps.length; i++)
@@ -724,9 +729,9 @@ class Helper
     return rampIndex;
   }
 
-  static void exitApplication({final int exitCode = 0})
+  void exitApplication({final int exitCode = 0})
   {
-    FileHandler.clearRecoverDir().then((value)
+    clearRecoverDir().then((final void value)
     {
       if (Platform.isAndroid)
       {
@@ -739,15 +744,15 @@ class Helper
     },);
   }
 
-  static Version? convertStringToVersion({required final String version})
+  Version? convertStringToVersion({required final String version})
   {
-    final versionRegex = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?$');
-    final match = versionRegex.firstMatch(version);
+    final RegExp versionRegex = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?$');
+    final RegExpMatch? match = versionRegex.firstMatch(version);
     if (match != null)
     {
-      final List<int> numbers = match.groups([1, 2, 3, 4])
+      final List<int> numbers = match.groups(<int>[1, 2, 3, 4])
           .whereType<String>() // Filter out null values
-          .map((str) => int.parse(str)) // Parse remaining strings to integers
+          .map((final String str) => int.parse(str)) // Parse remaining strings to integers
           .toList();
       return Version(numbers[0], numbers[1], numbers[2]);
     }
@@ -757,13 +762,10 @@ class Helper
     }
   }
 
-  static Future<void> launchURL({required final String url}) async
+  Future<void> launchURL({required final String url}) async
   {
     if (!await launchUrl(Uri.parse(url)))
     {
       throw Exception("Could not launch");
     }
   }
-
-}
-

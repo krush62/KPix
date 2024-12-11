@@ -17,10 +17,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 class ColorEntryWidgetOptions {
   final double unselectedMargin;
@@ -49,23 +49,23 @@ class ColorEntryWidget extends StatefulWidget
   final ValueNotifier<IdColor> colorData;
   final IdColorSelectedFn? colorSelectedFn;
 
-  const ColorEntryWidget._({
-    required this.colorData,
-    required this.colorSelectedFn,
-  });
-
   factory ColorEntryWidget({
-    required IdColor color,
-    required IdColorSelectedFn? colorSelectedFn,
+    required final IdColor color,
+    required final IdColorSelectedFn? colorSelectedFn,
 })
   {
 
-    ValueNotifier<IdColor> colorData = ValueNotifier(color);
+    final ValueNotifier<IdColor> colorData = ValueNotifier<IdColor>(color);
     return ColorEntryWidget._(
       colorData: colorData,
       colorSelectedFn: colorSelectedFn,
     );
   }
+
+  const ColorEntryWidget._({
+    required this.colorData,
+    required this.colorSelectedFn,
+  });
 
   @override
   State<ColorEntryWidget> createState() => _ColorEntryWidgetState();
@@ -88,14 +88,14 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ValueListenableBuilder<IdColor>(
       valueListenable: widget.colorData,
-      builder: (BuildContext context, IdColor value, child) {
+      builder: (final BuildContext context, final IdColor value, final Widget? child) {
 
         return ValueListenableBuilder<ColorReference?>(
           valueListenable: _appState.selectedColorNotifier,
-          builder: (BuildContext context2, ColorReference? selectedColor, child2)
+          builder: (final BuildContext context2, final ColorReference? selectedColor, final Widget? child2)
           {
             return Expanded(
               child: Listener(
@@ -105,30 +105,30 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
                     minHeight: _options.minSize,
                     minWidth: _options.minSize,
                     maxHeight: _options.maxSize,
-                    maxWidth: _options.maxSize
+                    maxWidth: _options.maxSize,
                   ),
                   margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
                       ? _options.selectedMargin
-                      : _options.unselectedMargin),
+                      : _options.unselectedMargin,),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
                         ? Theme.of(context).primaryColorLight
                         : Colors.transparent,
-                      width: (_options.unselectedMargin -_options.selectedMargin)),
+                      width: _options.unselectedMargin -_options.selectedMargin,),
                     color: value.color,
                     borderRadius: BorderRadius.all(
                       Radius.circular(
-                          _options.roundRadius
-                      )
-                    )
+                          _options.roundRadius,
+                      ),
+                    ),
                   ),
                 ),
-              )
+              ),
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 }

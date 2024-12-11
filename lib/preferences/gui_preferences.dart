@@ -21,20 +21,20 @@ import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //THEME
 const Map<int, ThemeMode> themeTypeIndexMap =
-{
+<int, ThemeMode>{
   0:ThemeMode.system,
   1:ThemeMode.light,
-  2:ThemeMode.dark
+  2:ThemeMode.dark,
 };
 const Map<ThemeMode, String> themeTypeStringMap =
-{
+<ThemeMode, String>{
   ThemeMode.system:"System",
   ThemeMode.light:"Light",
-  ThemeMode.dark:"Dark"
+  ThemeMode.dark:"Dark",
 };
 
 //RASTER SIZE
-const List<int> rasterSizes = [2, 4, 8, 12, 16, 24, 36, 48, 64];
+const List<int> rasterSizes = <int>[2, 4, 8, 12, 16, 24, 36, 48, 64];
 
 //RASTER CONTRAST
 const int rasterContrastMin = 0;
@@ -54,20 +54,20 @@ enum ColorNameScheme
   ralComplete
 }
 const Map<int, ColorNameScheme> colorNameSchemeIndexMap =
-{
+<int, ColorNameScheme>{
   0:ColorNameScheme.general,
   1:ColorNameScheme.pms,
   2:ColorNameScheme.ralClassic,
   3:ColorNameScheme.ralDsp,
-  4:ColorNameScheme.ralComplete
+  4:ColorNameScheme.ralComplete,
 };
 const Map<ColorNameScheme, String> colorNameSchemeStringMap =
-{
+<ColorNameScheme, String>{
   ColorNameScheme.general:"General",
   ColorNameScheme.pms:"PMS",
   ColorNameScheme.ralClassic:"RAL Classic",
   ColorNameScheme.ralDsp:"RAL DSP",
-  ColorNameScheme.ralComplete:"RAL Complete"
+  ColorNameScheme.ralComplete:"RAL Complete",
 };
 
 
@@ -82,9 +82,7 @@ class GuiPreferenceContent
   final ValueNotifier<int> canvasBorderOpacity;
   final ValueNotifier<ColorNameScheme> colorNameScheme;
 
-  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
-
-  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required int canvasBorderOpacityValue, required int selectionOpacityValue, required int toolOpacityValue})
+  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final int toolOpacityValue})
   {
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
@@ -95,15 +93,17 @@ class GuiPreferenceContent
     final int canvasBorderOpacity = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
 
     return GuiPreferenceContent._(
-      themeType: ValueNotifier(themeType),
-      rasterSizeIndex: ValueNotifier(rasterSizeIndex),
-      rasterContrast: ValueNotifier(rasterContrastNormalized),
-      colorNameScheme:ValueNotifier(colorNameScheme),
-      canvasBorderOpacity: ValueNotifier(canvasBorderOpacity),
-      selectionOpacity: ValueNotifier(selectionOpacity),
-      toolOpacity: ValueNotifier(toolOpacity)
+      themeType: ValueNotifier<ThemeMode>(themeType),
+      rasterSizeIndex: ValueNotifier<int>(rasterSizeIndex),
+      rasterContrast: ValueNotifier<int>(rasterContrastNormalized),
+      colorNameScheme:ValueNotifier<ColorNameScheme>(colorNameScheme),
+      canvasBorderOpacity: ValueNotifier<int>(canvasBorderOpacity),
+      selectionOpacity: ValueNotifier<int>(selectionOpacity),
+      toolOpacity: ValueNotifier<int>(toolOpacity),
     );
   }
+
+  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
 }
 
 
@@ -111,7 +111,7 @@ class GuiPreferences extends StatefulWidget
 {
   final GuiPreferenceContent prefs;
   const GuiPreferences({super.key, required this.prefs});
-  final double itemPadding = 12;
+  double get itemPadding => 12.0;
 
   @override
   State<GuiPreferences> createState() => _GuiPreferencesState();
@@ -120,21 +120,18 @@ class GuiPreferences extends StatefulWidget
 class _GuiPreferencesState extends State<GuiPreferences>
 {
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           Text("Theme Preferences", style: Theme.of(context).textTheme.titleLarge),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Theme", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Theme", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<ThemeMode>(
@@ -142,24 +139,22 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   builder: (final BuildContext context, final ThemeMode theme, final Widget? child)
                   {
                     return SegmentedButton<ThemeMode>(
-                      selected: {theme},
-                      emptySelectionAllowed: false,
-                      multiSelectionEnabled: false,
+                      selected: <ThemeMode>{theme},
                       showSelectedIcon: false,
                       onSelectionChanged: (final Set<ThemeMode> themeList) {widget.prefs.themeType.value = themeList.first;},
-                      segments: [
-                        ButtonSegment(
+                      segments: <ButtonSegment<ThemeMode>>[
+                        ButtonSegment<ThemeMode>(
                           value: ThemeMode.system,
-                          label: Text(themeTypeStringMap[ThemeMode.system]!)
+                          label: Text(themeTypeStringMap[ThemeMode.system]!),
                         ),
-                        ButtonSegment(
+                        ButtonSegment<ThemeMode>(
                             value: ThemeMode.light,
-                            label: Text(themeTypeStringMap[ThemeMode.light]!)
+                            label: Text(themeTypeStringMap[ThemeMode.light]!),
                         ),
-                        ButtonSegment(
+                        ButtonSegment<ThemeMode>(
                             value: ThemeMode.dark,
-                            label: Text(themeTypeStringMap[ThemeMode.dark]!)
-                        )
+                            label: Text(themeTypeStringMap[ThemeMode.dark]!),
+                        ),
                       ],
                     );
                   },
@@ -171,10 +166,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
           Text("Raster Preferences", style: Theme.of(context).textTheme.titleLarge),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Raster Size", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Raster Size", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<int>(
@@ -183,7 +176,6 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   {
                     return KPixSlider(
                       value: rasterSizeIndex.toDouble(),
-                      min: 0,
                       max: rasterSizes.length.toDouble() - 1,
                       divisions: rasterSizes.length,
                       label: rasterSizes[rasterSizeIndex].toString(),
@@ -197,10 +189,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Raster Contrast", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Raster Contrast", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<int>(
@@ -224,10 +214,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
           Text("Palette Preferences", style: Theme.of(context).textTheme.titleLarge),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Color Naming", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Color Naming", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<ColorNameScheme>(
@@ -235,31 +223,29 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   builder: (final BuildContext context, final ColorNameScheme scheme, final Widget? child)
                   {
                     return SegmentedButton<ColorNameScheme>(
-                      selected: {scheme},
-                      emptySelectionAllowed: false,
-                      multiSelectionEnabled: false,
+                      selected: <ColorNameScheme>{scheme},
                       showSelectedIcon: false,
                       onSelectionChanged: (final Set<ColorNameScheme> schemeList) {widget.prefs.colorNameScheme.value = schemeList.first;},
-                      segments: [
-                        ButtonSegment(
+                      segments: <ButtonSegment<ColorNameScheme>>[
+                        ButtonSegment<ColorNameScheme>(
                             value: ColorNameScheme.general,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.general]!)
+                            label: Text(colorNameSchemeStringMap[ColorNameScheme.general]!),
                         ),
-                        ButtonSegment(
+                        ButtonSegment<ColorNameScheme>(
                             value: ColorNameScheme.pms,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.pms]!)
+                            label: Text(colorNameSchemeStringMap[ColorNameScheme.pms]!),
                         ),
-                        ButtonSegment(
+                        ButtonSegment<ColorNameScheme>(
                             value: ColorNameScheme.ralClassic,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralClassic]!)
+                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralClassic]!),
                         ),
-                        ButtonSegment(
+                        ButtonSegment<ColorNameScheme>(
                             value: ColorNameScheme.ralDsp,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralDsp]!)
+                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralDsp]!),
                         ),
-                        ButtonSegment(
+                        ButtonSegment<ColorNameScheme>(
                             value: ColorNameScheme.ralComplete,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralComplete]!)
+                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralComplete]!),
                         ),
                       ],
                     );
@@ -272,10 +258,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
           Text("Border Preferences", style: Theme.of(context).textTheme.titleLarge),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Tool Outline Opacity", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Tool Outline Opacity", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<int>(
@@ -297,10 +281,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Selection Outline Opacity", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Selection Outline Opacity", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<int>(
@@ -322,10 +304,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(flex: 1, child: Text("Canvas Border Opacity", style: Theme.of(context).textTheme.titleSmall)),
+            children: <Widget>[
+              Expanded(child: Text("Canvas Border Opacity", style: Theme.of(context).textTheme.titleSmall)),
               Expanded(
                 flex: 2,
                 child: ValueListenableBuilder<int>(
@@ -345,7 +325,7 @@ class _GuiPreferencesState extends State<GuiPreferences>
               ),
             ],
           ),
-        ]
+        ],
       ),
     );
   }

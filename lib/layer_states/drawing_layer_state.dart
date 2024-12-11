@@ -30,49 +30,18 @@ import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 class DrawingLayerState extends LayerState
 {
-  final ValueNotifier<LayerLockState> lockState = ValueNotifier(LayerLockState.unlocked);
+  final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
   final CoordinateSetI size;
 
   final CoordinateColorMap _data;
   bool isRasterizing = false;
   bool doManualRaster = false;
-  final Map<CoordinateSetI, ColorReference?> rasterQueue = {};
+  final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
   ui.Image? previousRaster;
 
-  DrawingLayerState._({required CoordinateColorMap data, required this.size, LayerLockState lState = LayerLockState.unlocked, LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
+  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content})
   {
-    isRasterizing = true;
-    _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: false));
-    lockState.value = lState;
-    visibilityState.value = vState;
-    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
-
-  }
-
-  factory DrawingLayerState.from({required DrawingLayerState other})
-  {
-    final CoordinateColorMap data = HashMap();
-    for (final CoordinateColor ref in other._data.entries)
-    {
-      data[ref.key] = ref.value;
-    }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
-  }
-
-  factory DrawingLayerState.deepClone({required DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
-  {
-    final CoordinateColorMap data = HashMap();
-    for (final CoordinateColor ref in other._data.entries)
-    {
-      data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
-    }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
-  }
-
-  factory DrawingLayerState({required CoordinateSetI size, final CoordinateColorMapNullable? content})
-  {
-    final CoordinateColorMap data2 = HashMap();
+    final CoordinateColorMap data2 = HashMap<CoordinateSetI, ColorReference>();
 
     if (content != null)
     {
@@ -87,7 +56,38 @@ class DrawingLayerState extends LayerState
     return DrawingLayerState._(data: data2, size: size);
   }
 
-  void updateTimerCallback({required final Timer timer}) async
+  DrawingLayerState._({required final CoordinateColorMap data, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
+  {
+    isRasterizing = true;
+    _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: false));
+    lockState.value = lState;
+    visibilityState.value = vState;
+    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
+
+  }
+
+  factory DrawingLayerState.from({required final DrawingLayerState other})
+  {
+    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    for (final CoordinateColor ref in other._data.entries)
+    {
+      data[ref.key] = ref.value;
+    }
+    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
+  }
+
+  factory DrawingLayerState.deepClone({required final DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
+  {
+    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    for (final CoordinateColor ref in other._data.entries)
+    {
+      data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
+    }
+    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
+  }
+
+  Future<void> updateTimerCallback({required final Timer timer}) async
   {
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
@@ -99,7 +99,7 @@ class DrawingLayerState extends LayerState
   void deleteRamp({required final KPalRampData ramp})
   {
     isRasterizing = true;
-    final Set<CoordinateSetI> deleteData = {};
+    final Set<CoordinateSetI> deleteData = <CoordinateSetI>{};
     for (final CoordinateColor entry in _data.entries)
     {
       if (entry.value.ramp == ramp)
@@ -155,7 +155,7 @@ class DrawingLayerState extends LayerState
   Future<ui.Image> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
-    bool hasSelection = (appState.currentLayer == this && appState.selectionState.selection.hasValues());
+    final bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
 
     for (final CoordinateColorNullable entry in rasterQueue.entries)
     {
@@ -179,7 +179,7 @@ class DrawingLayerState extends LayerState
         final int index = (entry.key.y * size.x + entry.key.x) * 4;
         if (index < byteDataImg.lengthInBytes)
         {
-          byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+          byteDataImg.setUint32(index, argbToRgba(argb: dColor.value));
         }
       }
     }
@@ -195,7 +195,7 @@ class DrawingLayerState extends LayerState
           final int index = (coord.y * size.x + coord.x) * 4;
           if (index > 0 && index < byteDataImg.lengthInBytes)
           {
-            byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+            byteDataImg.setUint32(index, argbToRgba(argb: dColor.value));
           }
         }
       }
@@ -207,7 +207,7 @@ class DrawingLayerState extends LayerState
         byteDataImg.buffer.asUint8List(),
         size.x,
         size.y,
-        ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+        ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
     {
       completerImg.complete(convertedImage);
     }
@@ -251,7 +251,7 @@ class DrawingLayerState extends LayerState
 
   DrawingLayerState getTransformedLayer({required final CanvasTransformation transformation})
   {
-    final CoordinateColorMap rotatedContent = HashMap();
+    final CoordinateColorMap rotatedContent = HashMap<CoordinateSetI, ColorReference>();
     final CoordinateSetI newSize = CoordinateSetI.from(other: size);
     if (transformation == CanvasTransformation.rotate)
     {
@@ -263,16 +263,16 @@ class DrawingLayerState extends LayerState
       final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.key);
       if (transformation == CanvasTransformation.rotate)
       {
-        rotCoord.x = ((size.y - 1) - entry.key.y).toInt();
+        rotCoord.x = (size.y - 1) - entry.key.y;
         rotCoord.y = entry.key.x;
       }
       else if (transformation == CanvasTransformation.flipH)
       {
-        rotCoord.x = ((size.x - 1) - entry.key.x).toInt();
+        rotCoord.x = (size.x - 1) - entry.key.x;
       }
       else if (transformation == CanvasTransformation.flipV)
       {
-        rotCoord.y = ((size.y - 1) - entry.key.y).toInt();
+        rotCoord.y = (size.y - 1) - entry.key.y;
       }
 
       rotatedContent[rotCoord] = entry.value;
@@ -284,16 +284,16 @@ class DrawingLayerState extends LayerState
         final CoordinateSetI rotCoord = CoordinateSetI.from(other: entry.key);
         if (transformation == CanvasTransformation.rotate)
         {
-          rotCoord.x = ((size.y - 1) - entry.key.y).toInt();
+          rotCoord.x = (size.y - 1) - entry.key.y;
           rotCoord.y = entry.key.x;
         }
         else if (transformation == CanvasTransformation.flipH)
         {
-          rotCoord.x = ((size.x - 1) - entry.key.x).toInt();
+          rotCoord.x = (size.x - 1) - entry.key.x;
         }
         else if (transformation == CanvasTransformation.flipV)
         {
-          rotCoord.y = ((size.y - 1) - entry.key.y).toInt();
+          rotCoord.y = (size.y - 1) - entry.key.y;
         }
         if (entry.value != null)
         {
@@ -310,7 +310,7 @@ class DrawingLayerState extends LayerState
 
   DrawingLayerState getResizedLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
-    final CoordinateColorMap croppedContent = HashMap();
+    final CoordinateColorMap croppedContent = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateColor entry in _data.entries)
     {
       final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);

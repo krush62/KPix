@@ -38,7 +38,7 @@ class CanvasSizeOptions
   CanvasSizeOptions({
     required this.sizeMin,
     required this.sizeMax,
-    required this.previewSize
+    required this.previewSize,
   });
 }
 
@@ -59,26 +59,22 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<CoordinateSetI> _size = ValueNotifier(CoordinateSetI(x: 0, y: 0));
-  final ValueNotifier<CoordinateSetI> _offset = ValueNotifier(CoordinateSetI(x: 0, y: 0));
-  final ValueNotifier<CoordinateSetI> _minOffset = ValueNotifier(CoordinateSetI(x: 0, y: 0));
-  final ValueNotifier<CoordinateSetI> _maxOffset = ValueNotifier(CoordinateSetI(x: 0, y: 0));
+  final ValueNotifier<CoordinateSetI> _size = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
+  final ValueNotifier<CoordinateSetI> _offset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
+  final ValueNotifier<CoordinateSetI> _minOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
+  final ValueNotifier<CoordinateSetI> _maxOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
   double _scalingFactor = 1.0;
-  final ValueNotifier<ui.Image?> _image = ValueNotifier(null);
+  final ValueNotifier<ui.Image?> _image = ValueNotifier<ui.Image?>(null);
 
   @override
   void initState()
   {
     super.initState();
     _setSize(newSize: _appState.canvasSize);
-    Helper.getImageFromLayers(canvasSize: _appState.canvasSize, layers: _appState.layers, size: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img){_setImage(img: img);});
+    getImageFromLayers(canvasSize: _appState.canvasSize, layers: _appState.layers, size: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img){_image.value = img;});
 
   }
 
-  void _setImage({required final ui.Image img})
-  {
-    _image.value = img;
-  }
 
   void _sizeXSliderChanged({required final double newVal})
   {
@@ -253,29 +249,26 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
           padding: EdgeInsets.all(_options.padding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: <Widget>[
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
+                  children: <Widget>[
                     Expanded(
                       flex: 4,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
+                        children: <Widget>[
                           Text("Canvas Size", style: Theme.of(context).textTheme.titleLarge),
                           Row(
-                            children: [
+                            children: <Widget>[
                               const Expanded(
-                                flex: 1,
-                                child: Text("Width")
+                                child: Text("Width"),
                               ),
                               Expanded(
                                 flex: 7,
@@ -290,11 +283,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
-                                )
+                                ),
                               ),
                               SizedBox(width: _options.padding),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _size,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
@@ -304,18 +296,17 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
-                                      onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);}
+                                      onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);},
                                     );
                                   },
-                                )
+                                ),
                               ),
                             ],
                           ),
                           Row(
-                            children: [
+                            children: <Widget>[
                               const Expanded(
-                                flex: 1,
-                                child: Text("Height")
+                                child: Text("Height"),
                               ),
                               Expanded(
                                 flex: 7,
@@ -330,11 +321,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
-                                )
+                                ),
                               ),
                               SizedBox(width: _options.padding),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _size,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
@@ -344,21 +334,20 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
-                                      onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);}
+                                      onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);},
                                     );
                                   },
-                                )
+                                ),
                               ),
                             ],
                           ),
                           SizedBox(height: _options.padding,),
                           Text("Offset", style: Theme.of(context).textTheme.titleLarge),
                           Row(
-                            children: [
+                            children: <Widget>[
                               const Expanded(
-                                flex: 1,
                                 child:
-                                Text("X")
+                                Text("X"),
                               ),
                               Expanded(
                                 flex: 7,
@@ -373,11 +362,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
-                                )
+                                ),
                               ),
                               SizedBox(width: _options.padding),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _offset,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
@@ -387,18 +375,17 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
-                                      onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);}
+                                      onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);},
                                     );
                                   },
-                                )
+                                ),
                               ),
                             ],
                           ),
                           Row(
-                            children: [
+                            children: <Widget>[
                               const Expanded(
-                                flex: 1,
-                                child: Text("Y")
+                                child: Text("Y"),
                               ),
                               Expanded(
                                 flex: 7,
@@ -413,11 +400,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
-                                )
+                                ),
                               ),
                               SizedBox(width: _options.padding),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<CoordinateSetI>(
                                   valueListenable: _offset,
                                   builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
@@ -427,10 +413,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
                                       textAlign: TextAlign.end,
                                       controller: controller,
-                                      onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);}
+                                      onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);},
                                     );
                                   },
-                                )
+                                ),
                               ),
                             ],
                           ),
@@ -444,9 +430,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                       flex: 2,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
+                        children: <Widget>[
                           ValueListenableBuilder<CoordinateSetI>(
                             valueListenable: _size,
                             builder: (final BuildContext context1, final CoordinateSetI size, final Widget? child1) {
@@ -457,7 +441,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                   final CoordinateSetD scaledNewSize = CoordinateSetD(x: _size.value.x * _scalingFactor, y: _size.value.y * _scalingFactor);
 
                                   return Stack(
-                                    children: [
+                                    children: <Widget>[
                                       SizedBox(
                                         width: _sizeOptions.previewSize.toDouble(),
                                         height: _sizeOptions.previewSize.toDouble(),
@@ -473,11 +457,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                             return RawImage(
                                               fit: BoxFit.fill,
                                               filterQuality: ui.FilterQuality.none,
-                                              isAntiAlias: false,
                                               image: img,
                                             );
                                           },
-                                        )
+                                        ),
                                       ),
                                       Positioned(
                                         left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
@@ -489,7 +472,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                           decoration: BoxDecoration(
                                             border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
                                           ),
-                                        )
+                                        ),
                                       ),
                                       Positioned(
                                         left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
@@ -498,9 +481,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                         height: scaledNewSize.y,
                                         child: DecoratedBox(
                                           decoration: BoxDecoration(
-                                              border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3)
+                                              border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3),
                                           ),
-                                        )
+                                        ),
                                       ),
                                       Positioned(
                                         left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
@@ -509,10 +492,10 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                         height: scaledNewSize.y,
                                         child: DecoratedBox(
                                           decoration: BoxDecoration(
-                                              border: Border.all(color:  Theme.of(context).primaryColorLight, width: 1)
+                                              border: Border.all(color:  Theme.of(context).primaryColorLight),
                                           ),
-                                        )
-                                      )
+                                        ),
+                                      ),
                                     ],
                                   );
                                 },
@@ -521,11 +504,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           ),
                           Row(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
+                            children: <Widget>[
                               Expanded(
-                                flex: 1,
                                 child: Padding(
                                   padding: EdgeInsets.all(_options.padding),
                                   child: IconButton.outlined(
@@ -535,10 +516,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     ),
                                     onPressed: _centerH,
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
-                                flex: 1,
                                 child: Padding(
                                   padding: EdgeInsets.all(_options.padding),
                                   child: IconButton.outlined(
@@ -548,13 +528,13 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                     ),
                                     onPressed: _centerV,
                                   ),
-                                )
+                                ),
                               ),
-                            ]
-                          )
+                            ],
+                          ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -562,11 +542,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
               SizedBox(height: _options.padding,),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
                       child: IconButton.outlined(
@@ -578,10 +556,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           widget.dismiss();
                         },
                       ),
-                    )
+                    ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
                       child: IconButton.outlined(
@@ -593,14 +570,14 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           widget.accept(size: _size.value, offset: _offset.value);
                         },
                       ),
-                    )
+                    ),
                   ),
-                ]
-              )
+                ],
+              ),
             ],
           ),
-        )
-      )
+        ),
+      ),
     );
   }
 

@@ -18,9 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/util/helper.dart';
 
 class ColorPickPainter extends IToolPainter
 {
@@ -32,18 +32,16 @@ class ColorPickPainter extends IToolPainter
 
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null)
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),);
       _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),);
       _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x + 0.5) * drawParams.pixelSize);
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
 
@@ -60,7 +58,7 @@ class ColorPickPainter extends IToolPainter
     }
   }
 
-  static ColorReference? getColorFromImageAtPosition({required AppState appState, required CoordinateSetI normPos})
+  static ColorReference? getColorFromImageAtPosition({required final AppState appState, required final CoordinateSetI normPos})
   {
     ColorReference? colRef;
     for (final LayerState layer in appState.layers)
@@ -85,7 +83,7 @@ class ColorPickPainter extends IToolPainter
 
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
 
     final Path outlinePath = Path();
@@ -118,7 +116,7 @@ class ColorPickPainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;

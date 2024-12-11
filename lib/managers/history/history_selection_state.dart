@@ -30,15 +30,15 @@ class HistorySelectionState
 
   HistorySelectionState({required this.content, required this.currentLayer});
 
-  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, required HistoryLayer? historyLayer})
+  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, required final HistoryLayer? historyLayer})
   {
     final CoordinateColorMapNullable otherCnt = sState.selection.selectedPixels;
-    HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap();
+    final HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap<CoordinateSetI, HistoryColorReference?>();
     for (final CoordinateColorNullable entry in otherCnt.entries)
     {
       if (entry.value != null)
       {
-        final int? rampIndex = Helper.getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
+        final int? rampIndex = getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
         if (rampIndex != null)
         {
           cnt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);

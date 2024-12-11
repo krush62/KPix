@@ -21,8 +21,8 @@ class HistoryRampData
 {
   final String uuid;
   final KPalRampSettings settings;
-  final List<HistoryShiftSet> shiftSets = [];
-  HistoryRampData({required KPalRampSettings otherSettings, required List<ShiftSet> notifierShifts, required this.uuid}) : settings = KPalRampSettings.from(other: otherSettings)
+  final List<HistoryShiftSet> shiftSets = <HistoryShiftSet>[];
+  HistoryRampData({required final KPalRampSettings otherSettings, required final List<ShiftSet> notifierShifts, required this.uuid}) : settings = KPalRampSettings.from(other: otherSettings)
   {
     for (int i = 0; i < settings.colorCount; i++)
     {

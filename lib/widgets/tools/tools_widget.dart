@@ -18,9 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/helper.dart';
 
 
 class ToolsWidgetOptions
@@ -35,7 +35,7 @@ class ToolsWidgetOptions
 class ToolsWidget extends StatefulWidget
 {
   const ToolsWidget({
-    super.key
+    super.key,
   });
 
   @override
@@ -55,29 +55,27 @@ class _ToolsWidgetState extends State<ToolsWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Padding(
       padding: EdgeInsets.all(_toolsWidgetOptions.padding),
       child: ValueListenableBuilder<ToolType>(
         valueListenable: _appState.selectedToolNotifier,
-        builder: (BuildContext context, ToolType tool, child) {
+        builder: (final BuildContext context, final ToolType tool, final Widget? child) {
           return Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+            children: <Widget>[
               SegmentedButton<ToolType>(
                 style: const ButtonStyle(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 selected: <ToolType>{tool},
                 emptySelectionAllowed: true,
-                multiSelectionEnabled: false,
                 showSelectedIcon: false,
                 onSelectionChanged: (final Set<ToolType> tools) {_appState.setToolSelection(tool: tools.first);},
-                segments: [
-                  ButtonSegment(
+                segments: <ButtonSegment<ToolType>>[
+                  ButtonSegment<ToolType>(
                     value: ToolType.pencil,
                     label: Tooltip(
                       message: toolList[ToolType.pencil]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil),
@@ -86,9 +84,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.pencil]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.erase,
                     label: Tooltip(
                       message: toolList[ToolType.erase]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser),
@@ -97,9 +95,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.erase]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.select,
                     label: Tooltip(
                       message: toolList[ToolType.select]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand),
@@ -108,9 +106,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.select]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.fill,
                     label: Tooltip(
                       message: toolList[ToolType.fill]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill),
@@ -119,9 +117,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.fill]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.pick,
                     label: Tooltip(
                       message: toolList[ToolType.pick]?.title,
@@ -130,7 +128,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.pick]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
                 ],
               ),
@@ -140,11 +138,10 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 ),
                 selected: <ToolType>{tool},
                 emptySelectionAllowed: true,
-                multiSelectionEnabled: false,
                 showSelectedIcon: false,
                 onSelectionChanged: (final Set<ToolType> tools) {_appState.setToolSelection(tool: tools.first);},
-                segments: [
-                  ButtonSegment(
+                segments: <ButtonSegment<ToolType>>[
+                  ButtonSegment<ToolType>(
                     value: ToolType.line,
                     label: Tooltip(
                       message: toolList[ToolType.line]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine),
@@ -153,9 +150,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.line]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.shape,
                     label: Tooltip(
                       message: toolList[ToolType.shape]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape),
@@ -164,9 +161,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.shape]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.font,
                     label: Tooltip(
                       message: toolList[ToolType.font]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText),
@@ -175,9 +172,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.font]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.spraycan,
                     label: Tooltip(
                       message: toolList[ToolType.spraycan]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan),
@@ -186,9 +183,9 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.spraycan]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
-                  ButtonSegment(
+                  ButtonSegment<ToolType>(
                     value: ToolType.stamp,
                     label: Tooltip(
                       message: toolList[ToolType.stamp]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp),
@@ -197,13 +194,13 @@ class _ToolsWidgetState extends State<ToolsWidget>
                         toolList[ToolType.stamp]!.icon,
                         size: _toolsWidgetOptions.iconSize,
                       ),
-                    )
+                    ),
                   ),
                 ],
               ),
             ],
           );
-        }
+        },
       ),
     );
   }

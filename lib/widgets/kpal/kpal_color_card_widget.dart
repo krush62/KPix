@@ -52,7 +52,7 @@ class KPalColorCardWidgetOptions
     required this.colorNameFlex,
     required this.colorNumbersFlex,
     required this.editAnimationDuration,
-    required this.touchTimeout
+    required this.touchTimeout,
   });
 }
 
@@ -68,8 +68,8 @@ class KPalColorCardWidget extends StatefulWidget
     super.key,
     required this.showName,
     required this.shiftSet,
-    required ValueNotifier<IdColor> colorNotifier,
-    bool isLast = false,
+    required final ValueNotifier<IdColor> colorNotifier,
+    final bool isLast = false,
   }) : _isLast = isLast, _colorNotifier = colorNotifier;
 
   @override
@@ -81,7 +81,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
   final KPalColorCardWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions.colorCardWidgetOptions;
   final KPalSliderConstraints _constraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
   final ColorNames _colorNames = GetIt.I.get<PreferenceManager>().colorNames;
-  final ValueNotifier<bool> _shouldShowSliders = ValueNotifier(false);
+  final ValueNotifier<bool> _shouldShowSliders = ValueNotifier<bool>(false);
   late KPalVerticalSliderWidget _hueSlider;
   late KPalVerticalSliderWidget _satSlider;
   late KPalVerticalSliderWidget _valSlider;
@@ -128,14 +128,14 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
          top: _options.outsidePadding,
          bottom: _options.outsidePadding,
        ),
-       child: Container(
+       child: DecoratedBox(
          decoration: BoxDecoration(
            color: Theme.of(context).primaryColor,
            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
            border: Border.all(
              width: _options.borderWidth,
              color: Theme.of(context).primaryColorLight,
-           )
+           ),
          ),
 
          child: ValueListenableBuilder<IdColor>(
@@ -143,15 +143,15 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
            builder: (final BuildContext context, final IdColor currentColor, final Widget? child)
            {
              return Column(
-               children: [
+               children: <Widget>[
                  Expanded(
                    flex: _options.colorNameFlex,
                    child: Center(
                      child: Text(
                        textAlign: TextAlign.center,
-                       widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : ""
+                       widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : "",
                      ),
-                   )
+                   ),
                  ),
                  Divider(
                    color: Theme.of(context).primaryColorLight,
@@ -172,9 +172,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                      child: GestureDetector(
                        onTap: _showSliders,
                        child: Stack(
-                         children: [
+                         children: <Widget>[
                            Container(
-                             color: currentColor.color
+                             color: currentColor.color,
                            ),
                            ValueListenableBuilder<bool>(
                              valueListenable: _shouldShowSliders,
@@ -183,15 +183,14 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                  duration: Duration(milliseconds: _options.editAnimationDuration),
                                  curve: Curves.easeInOut,
                                  opacity: shouldShow ? 1 : 0,
-                                 alwaysIncludeSemantics: false,
                                  child: IgnorePointer(
                                    ignoring: !shouldShow,
                                    child: Row(
                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                     children: [
+                                     children: <Widget>[
                                        _hueSlider,
                                        _satSlider,
-                                       _valSlider
+                                       _valSlider,
                                      ],
                                    ),
                                  ),
@@ -236,11 +235,11 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                  },
                                );
                              },
-                           )
-                         ]
+                           ),
+                         ],
                        ),
                      ),
-                   )
+                   ),
                  ),
                  Divider(
                    color: Theme.of(context).primaryColorLight,
@@ -251,21 +250,19 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                    flex: _options.colorNumbersFlex,
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                     crossAxisAlignment: CrossAxisAlignment.center,
-                     mainAxisSize: MainAxisSize.max,
-                     children: [
+                     children: <Widget>[
                        Text("${currentColor.hsvColor.hue.round()}°"),
                        Text("${(currentColor.hsvColor.saturation * 100).round()}%"),
                        Text("${(currentColor.hsvColor.value * 100).round()}%"),
-                     ]
-                   )
-                 )
+                     ],
+                   ),
+                 ),
                ],
              );
            },
-         )
+         ),
        ),
-     )
+     ),
    );
   }
 }

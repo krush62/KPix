@@ -18,7 +18,10 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:file_picker/file_picker.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,22 +38,20 @@ import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
+import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:file_saver/file_saver.dart';
-import 'package:path/path.dart' as p;
-import 'dart:ui' as ui;
 
 class LoadFileSet
 {
@@ -84,26 +85,26 @@ class LoadPaletteSet
 
 
 const Map<SatCurve, int> kpixKpalSatCurveMap =
-{
+<SatCurve, int>{
   SatCurve.noFlat:1,
   SatCurve.darkFlat:0,
   SatCurve.brightFlat:3,
-  SatCurve.linear:2
+  SatCurve.linear:2,
 };
 
 const Map<int, SatCurve> _kpalKpixSatCurveMap =
-{
+<int, SatCurve>{
   1:SatCurve.noFlat,
   0:SatCurve.darkFlat,
   3:SatCurve.brightFlat,
-  2: SatCurve.linear
+  2: SatCurve.linear,
 };
 
 const Map<int, Type> historyLayerValueMap =
-{
+<int, Type>{
   1: HistoryDrawingLayer,
   2: HistoryReferenceLayer,
-  3: HistoryGridLayer
+  3: HistoryGridLayer,
 };
 
 enum FileNameStatus
@@ -115,38 +116,37 @@ enum FileNameStatus
 }
 
 const Map<FileNameStatus, String> fileNameStatusTextMap =
-{
+<FileNameStatus, String>{
   FileNameStatus.available:"Available",
   FileNameStatus.forbidden:"Invalid File Name",
   FileNameStatus.noRights:"Insufficient Permissions",
-  FileNameStatus.overwrite:"Overwriting Existing File"
+  FileNameStatus.overwrite:"Overwriting Existing File",
 };
 
 const Map<FileNameStatus, IconData> fileNameStatusIconMap =
-{
+<FileNameStatus, IconData>{
   FileNameStatus.available:FontAwesomeIcons.check,
   FileNameStatus.forbidden:FontAwesomeIcons.xmark,
   FileNameStatus.noRights:FontAwesomeIcons.ban,
-  FileNameStatus.overwrite:FontAwesomeIcons.exclamation
+  FileNameStatus.overwrite:FontAwesomeIcons.exclamation,
 };
 
-class FileHandler
-{
-  static const int fileVersion = 1;
-  static const String magicNumber = "4B504958";
-  static const String fileExtensionKpix = "kpix";
-  static const String fileExtensionKpal = "kpal";
-  static const String palettesSubDirName = "palettes";
-  static const String projectsSubDirName = "projects";
-  static const String recoverSubDirName = "recover";
-  static const String thumbnailExtension = "png";
-  static const List<String> imageExtensions = ["png", "jpg", "jpeg", "gif"];
-  static const String recoverFileName = "___recover___";
+
+  const int fileVersion = 1;
+  const String magicNumber = "4B504958";
+  const String fileExtensionKpix = "kpix";
+  const String fileExtensionKpal = "kpal";
+  const String palettesSubDirName = "palettes";
+  const String projectsSubDirName = "projects";
+  const String recoverSubDirName = "recover";
+  const String thumbnailExtension = "png";
+  const List<String> imageExtensions = <String>["png", "jpg", "jpeg", "gif"];
+  const String recoverFileName = "___recover___";
 
 
-  static Future<String> saveKPixFile({required final String path, required final AppState appState}) async
+  Future<String> saveKPixFile({required final String path, required final AppState appState}) async
   {
-    final ByteData byteData = await ExportFunctions.createKPixData(appState: appState);
+    final ByteData byteData = await createKPixData(appState: appState);
     if (!kIsWeb)
     {
       await File(path).writeAsBytes(byteData.buffer.asUint8List());
@@ -154,18 +154,17 @@ class FileHandler
     }
     else
     {
-      String newPath = await FileSaver.instance.saveFile(
+      final String newPath = await FileSaver.instance.saveFile(
         name: path,
         bytes: byteData.buffer.asUint8List(),
         ext: fileExtensionKpix,
-        mimeType: MimeType.other,
       );
       return newPath;
     }
   }
 
 
-  static Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings}) async
+  Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings}) async
   {
     try
     {
@@ -181,7 +180,7 @@ class FileHandler
 
       final int rampCount = byteData.getUint8(offset++);
       if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
-      List<HistoryRampData> rampList = [];
+      final List<HistoryRampData> rampList = <HistoryRampData>[];
       for (int i = 0; i < rampCount; i++)
       {
         final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
@@ -208,7 +207,7 @@ class FileHandler
         kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
         kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
         if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadFileSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
-        final List<ShiftSet> shifts = [];
+        final List<ShiftSet> shifts = <ShiftSet>[];
         for (int j = 0; j < kPalRampSettings.colorCount; j++)
         {
           final int hueShift = byteData.getInt8(offset++);
@@ -217,7 +216,7 @@ class FileHandler
           if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue) return LoadFileSet(status: "Invalid Hue Shift in Ramp $i, color $j: $hueShift");
           if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat) return LoadFileSet(status: "Invalid Sat Shift in Ramp $i, color $j: $satShift");
           if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) return LoadFileSet(status: "Invalid Val Shift in Ramp $i, color $j: $valShift");
-          final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier(hueShift), satShiftNotifier: ValueNotifier(satShift), valShiftNotifier: ValueNotifier(valShift));
+          final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier<int>(hueShift), satShiftNotifier: ValueNotifier<int>(satShift), valShiftNotifier: ValueNotifier<int>(valShift));
           shifts.add(shiftSet);
         }
         rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1(), notifierShifts: shifts));
@@ -230,7 +229,7 @@ class FileHandler
       final CoordinateSetI canvasSize = CoordinateSetI(x: width, y: height);
       final int layerCount = byteData.getUint8(offset++);
       if (layerCount < 1) return LoadFileSet(status: "No layer found");
-      final List<HistoryLayer> layerList = [];
+      final List<HistoryLayer> layerList = <HistoryLayer>[];
       for (int i = 0; i < layerCount; i++)
       {
         final int layerType = byteData.getUint8(offset++);
@@ -247,7 +246,7 @@ class FileHandler
           if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
           final int dataCount = byteData.getUint32(offset);
           offset+=4;
-          final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap();
+          final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap<CoordinateSetI, HistoryColorReference>();
           for (int j = 0; j < dataCount; j++)
           {
             final int x = byteData.getUint16(offset);
@@ -265,12 +264,12 @@ class FileHandler
           //path (string)
           final int pathLength = byteData.getInt16(offset);
           offset += 2;
-          List<int> pathBytes = [];
+          final List<int> pathBytes = <int>[];
           for (int i = 0; i < pathLength; i++)
           {
             pathBytes.add(byteData.getUint8(offset++));
           }
-          String pathString = utf8.decode(pathBytes);
+          final String pathString = utf8.decode(pathBytes);
           //opacity ``ubyte (1)`` // 0...100
           final int opacity = byteData.getUint8(offset++);
           if (opacity < referenceLayerSettings.opacityMin || opacity > referenceLayerSettings.opacityMax) return LoadFileSet(status: "Opacity for reference layer is out of range: $opacity");
@@ -317,7 +316,7 @@ class FileHandler
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
-      final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, type: HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
+      final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
       return LoadFileSet(status: "loading okay", historyState: historyState, path: path);
     }
@@ -327,24 +326,21 @@ class FileHandler
     }
   }
 
-  static Future<String?> getPathForKPixFile() async
+  Future<String?> getPathForKPixFile() async
   {
     FilePickerResult? result;
-    if (Helper.isDesktop(includingWeb: true))
+    if (isDesktop(includingWeb: true))
     {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
           type: FileType.custom,
-          allowedExtensions: [fileExtensionKpix],
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          allowedExtensions: <String>[fileExtensionKpix],
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     else //mobile
     {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
-          type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     if (result != null && result.files.isNotEmpty)
@@ -362,24 +358,21 @@ class FileHandler
     }
   }
 
-  static Future<String?> getPathForKPalFile() async
+  Future<String?> getPathForKPalFile() async
   {
     FilePickerResult? result;
-    if (Helper.isDesktop(includingWeb: true))
+    if (isDesktop(includingWeb: true))
     {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
           type: FileType.custom,
-          allowedExtensions: [fileExtensionKpal],
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          allowedExtensions: <String>[fileExtensionKpal],
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     else //mobile
         {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
-          type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     if (result != null && result.files.isNotEmpty)
@@ -397,33 +390,29 @@ class FileHandler
     }
   }
 
-  static Future<(String?, Uint8List?)> getPathAndDataForImage() async
+  Future<(String?, Uint8List?)> getPathAndDataForImage() async
   {
     FilePickerResult? result;
-    if (Helper.isDesktop(includingWeb: false))
+    if (isDesktop())
     {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
           type: FileType.image,
           allowedExtensions: imageExtensions,
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     else if (kIsWeb)
     {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
           type: FileType.custom,
           allowedExtensions: imageExtensions,
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     else //mobile
     {
       result = await FilePicker.platform.pickFiles(
-          allowMultiple: false,
-          type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       );
     }
     if (result != null && result.files.isNotEmpty)
@@ -441,28 +430,25 @@ class FileHandler
     }
   }
 
-  static void loadFilePressed({final Function()? finishCallback})
+  void loadFilePressed({final Function()? finishCallback})
   {
-    if (Helper.isDesktop(includingWeb: true))
+    if (isDesktop(includingWeb: true))
     {
       FilePicker.platform.pickFiles(
-          allowMultiple: false,
           type: FileType.custom,
-          allowedExtensions: [fileExtensionKpix],
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          allowedExtensions: <String>[fileExtensionKpix],
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
     }
     else //mobile
     {
       FilePicker.platform.pickFiles(
-          allowMultiple: false,
-          type: FileType.any,
-          initialDirectory: GetIt.I.get<AppState>().exportDir
+          initialDirectory: GetIt.I.get<AppState>().exportDir,
       ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
     }
   }
 
-  static void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback})
+  void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback})
   {
     if (result != null && result.files.isNotEmpty)
     {
@@ -477,12 +463,12 @@ class FileHandler
         path: path,
         sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
         referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-        gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
+        gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
       ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
 
-  static void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback})
+  void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback})
   {
     GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
     if (finishCallback != null)
@@ -491,7 +477,7 @@ class FileHandler
     }
   }
 
-  static Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false}) async
+  Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false}) async
   {
     final AppState appState = GetIt.I.get<AppState>();
     if (!kIsWeb)
@@ -505,15 +491,15 @@ class FileHandler
     }
   }
 
-  static Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback}) async
+  Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback}) async
   {
     final AppState appState = GetIt.I.get<AppState>();
     if (!kIsWeb)
     {
-      final String? pngPath = await Helper.replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
+      final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
       if (pngPath != null)
       {
-        final ui.Image img = await Helper.getImageFromLayers(canvasSize: appState.canvasSize, layers: appState.layers, size: appState.canvasSize, selectionList: appState.selectionState.selection, selectedLayerIndex: appState.getSelectedLayerIndex());
+        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layers: appState.layers, size: appState.canvasSize, selectionList: appState.selectionState.selection, selectedLayerIndex: appState.getSelectedLayerIndex());
         final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
         await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
       }
@@ -526,9 +512,9 @@ class FileHandler
     }
   }
 
-  static Future<bool> copyImportFile({required final String inputPath, required final ui.Image image, required final String targetPath}) async
+  Future<bool> copyImportFile({required final String inputPath, required final ui.Image image, required final String targetPath}) async
   {
-    final String? pngPath = await Helper.replaceFileExtension(filePath: targetPath, newExtension: FileHandler.thumbnailExtension, inputFileMustExist: false);
+    final String? pngPath = await replaceFileExtension(filePath: targetPath, newExtension: thumbnailExtension, inputFileMustExist: false);
     final File projectFile = File(inputPath);
     if (pngPath != null && await projectFile.exists())
     {
@@ -554,10 +540,10 @@ class FileHandler
     return true;
   }
 
-  static Future<bool> deleteProject({required final String fullProjectPath}) async
+  Future<bool> deleteProject({required final String fullProjectPath}) async
   {
     final bool success = await deleteFile(path: fullProjectPath);
-    final String? pngPath = await Helper.replaceFileExtension(filePath: fullProjectPath, newExtension: thumbnailExtension, inputFileMustExist: false);
+    final String? pngPath = await replaceFileExtension(filePath: fullProjectPath, newExtension: thumbnailExtension, inputFileMustExist: false);
     if (pngPath != null)
     {
       await deleteFile(path: pngPath);
@@ -565,7 +551,7 @@ class FileHandler
     return success;
   }
 
-  static Future<bool> deleteFile({required final String path}) async
+  Future<bool> deleteFile({required final String path}) async
   {
     final File file = File(path);
     if (await file.exists())
@@ -579,16 +565,16 @@ class FileHandler
     return true;
   }
 
-  static Future<bool> saveCurrentPalette({required String fileName, required String directory, required String extension}) async
+  Future<bool> saveCurrentPalette({required final String fileName, required final String directory, required final String extension}) async
   {
     final String finalPath = p.join(directory, fileName);
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
-    Uint8List data = await ExportFunctions.createPaletteKPalData(rampList: rampList);
+    final Uint8List data = await createPaletteKPalData(rampList: rampList);
     return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension);
   }
 
 
-  static void exportPalettePressed({required PaletteExportData saveData, required PaletteExportType paletteType})
+  void exportPalettePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
     final String finalPath = p.join(saveData.directory, saveData.fileName);
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
@@ -597,36 +583,36 @@ class FileHandler
     switch (paletteType)
     {
       case PaletteExportType.kpal:
-        ExportFunctions.createPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        createPaletteKPalData(rampList: rampList).then((final Uint8List data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.png:
-        ExportFunctions.getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPalettePngData(ramps: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.aseprite:
-        ExportFunctions.getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPaletteAsepriteData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.gimp:
-        ExportFunctions.getPaletteGimpData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPaletteGimpData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.paintNet:
-        ExportFunctions.getPalettePaintNetData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPalettePaintNetData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.adobe:
-        ExportFunctions.getPaletteAdobeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPaletteAdobeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.jasc:
-        ExportFunctions.getPaletteJascData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPaletteJascData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.corel:
-        ExportFunctions.getPaletteCorelData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPaletteCorelData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
       case PaletteExportType.openOffice:
-        ExportFunctions.getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
-        break;
+        getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
     }
   }
 
-  static Future<bool> _savePaletteDataToFile({required final Uint8List? data, required String path, required final String extension}) async
+  Future<bool> _savePaletteDataToFile({required final Uint8List? data, required final String path, required final String extension}) async
   {
     final String pathWithExtension = "$path.$extension";
     if (data != null)
@@ -642,7 +628,6 @@ class FileHandler
           name: path,
           bytes: data,
           ext: extension,
-          mimeType: MimeType.other,
         );
         GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $newPath/$pathWithExtension");
       }
@@ -655,7 +640,7 @@ class FileHandler
     }
   }
 
-  static Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints, required final KPalSliderConstraints sliderConstraints}) async
+  Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints, required final KPalSliderConstraints sliderConstraints}) async
   {
     fileData ??= await File(path).readAsBytes();
     final ByteData byteData = fileData.buffer.asByteData();
@@ -663,11 +648,11 @@ class FileHandler
 
     //skip options
     final int optionCount = byteData.getUint8(offset++);
-    offset += (optionCount * 2);
+    offset += optionCount * 2;
 
     final int rampCount = byteData.getUint8(offset++);
     if (rampCount <= 0) return LoadPaletteSet(status: "no ramp found");
-    final List<KPalRampData> rampList = [];
+    final List<KPalRampData> rampList = <KPalRampData>[];
     for (int i = 0; i < rampCount; i++)
     {
       final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
@@ -695,7 +680,7 @@ class FileHandler
       kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
       if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
 
-      final List<HistoryShiftSet> shifts = [];
+      final List<HistoryShiftSet> shifts = <HistoryShiftSet>[];
       for (int j = 0; j < kPalRampSettings.colorCount; j++)
       {
         final int hueShift = byteData.getInt8(offset++);
@@ -724,14 +709,14 @@ class FileHandler
 
   }
 
-  static Future<String?> getDirectory({required String startDir}) async
+  Future<String?> getDirectory({required final String startDir}) async
   {
     return await FilePicker.platform.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir);
   }
 
-  static Future<String?> exportFile({required final ExportData exportData, required final FileExportType exportType}) async
+  Future<String?> exportFile({required final ExportData exportData, required final FileExportType exportType}) async
   {
-    final String path = !kIsWeb ? p.join(exportData.directory, ("${exportData.fileName}.${exportData.extension}")) : exportData.fileName;
+    final String path = !kIsWeb ? p.join(exportData.directory, "${exportData.fileName}.${exportData.extension}") : exportData.fileName;
     final AppState appState = GetIt.I.get<AppState>();
 
     Uint8List? data;
@@ -739,20 +724,20 @@ class FileHandler
     switch (exportType)
     {
       case FileExportType.png:
-        data = await ExportFunctions.exportPNG(exportData: exportData, appState: appState);
-        break;
+        data = await exportPNG(exportData: exportData, appState: appState);
+        //break;
       case FileExportType.aseprite:
-        data = await ExportFunctions.getAsepriteData(exportData: exportData, appState: appState);
-        break;
+        data = await getAsepriteData(exportData: exportData, appState: appState);
+        //break;
       //case ExportType.photoshop:
       // TODO: Handle this case.
       //  break;
       case FileExportType.gimp:
-        data = await ExportFunctions.getGimpData(exportData: exportData, appState: appState);
-        break;
+        data = await getGimpData(exportData: exportData, appState: appState);
+        //break;
       case FileExportType.kpix:
-        data = (await ExportFunctions.createKPixData(appState: appState)).buffer.asUint8List();
-        break;
+        data = (await createKPixData(appState: appState)).buffer.asUint8List();
+        //break;
     }
 
     String? returnPath;
@@ -765,11 +750,10 @@ class FileHandler
       }
       else
       {
-        String newPath = await FileSaver.instance.saveFile(
+        final String newPath = await FileSaver.instance.saveFile(
           name: path,
           bytes: data,
           ext: exportData.extension,
-          mimeType: MimeType.other,
         );
         returnPath = "$newPath/$path.${exportData.extension}";
       }
@@ -778,7 +762,7 @@ class FileHandler
     return returnPath;
   }
 
-  static FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true})
+  FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true})
   {
     if (fileName.isEmpty)
     {
@@ -792,9 +776,9 @@ class FileHandler
 
     if (Platform.isWindows)
     {
-      final List<String> reservedFilenames = [
+      final List<String> reservedFilenames = <String>[
         'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
       ];
       if (fileName.endsWith(' ') || fileName.endsWith('.') || reservedFilenames.contains(fileName.toUpperCase()))
       {
@@ -807,7 +791,7 @@ class FileHandler
       return FileNameStatus.forbidden;
     }
 
-    final List<String> invalidCharacters = ['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'];
+    final List<String> invalidCharacters = <String>['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'];
     for (final String char in invalidCharacters)
     {
       if (fileName.contains(char))
@@ -831,9 +815,9 @@ class FileHandler
 
   }
 
-  static bool hasWriteAccess({required final String directory}) {
+  bool hasWriteAccess({required final String directory}) {
     try {
-      final tempFile = File('$directory${Platform.pathSeparator}${DateTime.now().millisecondsSinceEpoch}.tmp');
+      final File tempFile = File('$directory${Platform.pathSeparator}${DateTime.now().millisecondsSinceEpoch}.tmp');
       tempFile.createSync();
       tempFile.deleteSync();
       return true;
@@ -844,11 +828,11 @@ class FileHandler
     }
   }
 
-  static Future<String> findExportDir() async
+  Future<String> findExportDir() async
   {
     if (!kIsWeb)
     {
-      if (Helper.isDesktop() || Platform.isIOS)
+      if (isDesktop() || Platform.isIOS)
       {
         final Directory? downloadDir = await getDownloadsDirectory();
         if (downloadDir != null)
@@ -881,7 +865,7 @@ class FileHandler
     return "";
   }
 
-  static Future<String> findInternalDir() async
+  Future<String> findInternalDir() async
   {
     if (kIsWeb)
     {
@@ -892,32 +876,32 @@ class FileHandler
       return internalDir.path;
   }
 
-  static Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
+  Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
   {
-    final List<PaletteManagerEntryData> paletteData = [];
-    final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-    final List<String> imageAssetsList = assetManifest.listAssets().where((final String string) => (string.startsWith("palettes/") && string.endsWith(".${FileHandler.fileExtensionKpal}"))).toList();
+    final List<PaletteManagerEntryData> paletteData = <PaletteManagerEntryData>[];
+    final AssetManifest assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final List<String> imageAssetsList = assetManifest.listAssets().where((final String string) => string.startsWith("palettes/") && string.endsWith(".$fileExtensionKpal")).toList();
     for (final String filePath in imageAssetsList)
     {
       final ByteData bytes = await rootBundle.load(filePath);
       final Uint8List byteData = bytes.buffer.asUint8List();
-      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: byteData, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
+      final LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: byteData, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
       if (palSet.rampData != null)
       {
-        paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: true, rampDataList: palSet.rampData!, path: filePath));
+        paletteData.add(PaletteManagerEntryData(name: extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: true, rampDataList: palSet.rampData!, path: filePath));
       }
     }
     return paletteData;
   }
 
-  static Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
+  Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
   {
-    final List<PaletteManagerEntryData> paletteData = [];
+    final List<PaletteManagerEntryData> paletteData = <PaletteManagerEntryData>[];
     final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName));
-    final List<String> filesWithExtension = [];
+    final List<String> filesWithExtension = <String>[];
     if (await dir.exists())
     {
-      dir.listSync(recursive: false, followLinks: false).forEach((entity)
+      dir.listSync(followLinks: false).forEach((final FileSystemEntity entity)
       {
         if (entity is File && entity.path.endsWith(".$fileExtensionKpal"))
         {
@@ -927,27 +911,27 @@ class FileHandler
     }
     for (final String filePath in filesWithExtension)
     {
-      LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
+      final LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
       if (palSet.rampData != null)
       {
-         paletteData.add(PaletteManagerEntryData(name: Helper.extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!, path: filePath));
+         paletteData.add(PaletteManagerEntryData(name: extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!, path: filePath));
       }
     }
     return paletteData;
   }
 
-  static Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async
+  Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async
   {
-    final List<ProjectManagerEntryData> projectData = [];
+    final List<ProjectManagerEntryData> projectData = <ProjectManagerEntryData>[];
     final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName));
 
     if (await dir.exists())
     {
-      await for (FileSystemEntity entity in dir.list(recursive: false, followLinks: false))
+      await for (final FileSystemEntity entity in dir.list(followLinks: false))
       {
         if (entity is File && entity.path.endsWith(".$fileExtensionKpix"))
         {
-          final String? pngPath = await Helper.replaceFileExtension(filePath: entity.absolute.path, newExtension: thumbnailExtension, inputFileMustExist: true);
+          final String? pngPath = await replaceFileExtension(filePath: entity.absolute.path, newExtension: thumbnailExtension, inputFileMustExist: true);
           ui.Image? thumbnail;
           if (pngPath != null)
           {
@@ -960,14 +944,14 @@ class FileHandler
               thumbnail = frame.image;
             }
           }
-          projectData.add(ProjectManagerEntryData(name: Helper.extractFilenameFromPath(path: entity.absolute.path, keepExtension: false), path: entity.absolute.path, thumbnail: thumbnail, dateTime: await entity.lastModified()));
+          projectData.add(ProjectManagerEntryData(name: extractFilenameFromPath(path: entity.absolute.path, keepExtension: false), path: entity.absolute.path, thumbnail: thumbnail, dateTime: await entity.lastModified()));
         }
       }
     }
     return projectData;
   }
 
-  static void setUint64({required final ByteData bytes, required final int offset, required final int value, final Endian endian = Endian.big})
+  void setUint64({required final ByteData bytes, required final int offset, required final int value, final Endian endian = Endian.big})
   {
     if (kIsWeb)
     {
@@ -981,8 +965,8 @@ class FileHandler
       }
       else
       {
-        bytes.setUint32(offset, high, Endian.big);
-        bytes.setUint32(offset + 4, low, Endian.big);
+        bytes.setUint32(offset, high);
+        bytes.setUint32(offset + 4, low);
       }
     }
     else
@@ -991,13 +975,13 @@ class FileHandler
     }
   }
 
-  static Future<void> createInternalDirectories() async
+  Future<void> createInternalDirectories() async
   {
     final List<Directory> internalDirectories =
-    [
+    <Directory>[
       Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName)),
       Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName)),
-      Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName))
+      Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName)),
     ];
 
     for (final Directory dir in internalDirectories)
@@ -1010,7 +994,7 @@ class FileHandler
     }
   }
 
-  static Future<void> clearRecoverDir() async
+  Future<void> clearRecoverDir() async
   {
     final Directory recoverDir = Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName));
     final List<FileSystemEntity> files = await recoverDir.list().toList();
@@ -1020,7 +1004,7 @@ class FileHandler
     }
   }
 
-  static Future<String?> getRecoveryFile() async
+  Future<String?> getRecoveryFile() async
   {
     final Directory recoverDir = Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName));
     final List<FileSystemEntity> files = await recoverDir.list().toList();
@@ -1034,29 +1018,29 @@ class FileHandler
     }
   }
 
-  static Future<bool> importProject({required final String? path, final bool showMessages = true}) async
+  Future<bool> importProject({required final String? path, final bool showMessages = true}) async
   {
     bool success = false;
     if (path != null && path.isNotEmpty)
     {
-      if (path.endsWith(FileHandler.fileExtensionKpix))
+      if (path.endsWith(fileExtensionKpix))
       {
-        final LoadFileSet loadFileSet = await FileHandler.loadKPixFile(
+        final LoadFileSet loadFileSet = await loadKPixFile(
             fileData: null,
             constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
             path: path,
             sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
             referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-            gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
+            gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
         );
         final AppState appState = GetIt.I.get<AppState>();
         if (loadFileSet.historyState != null && loadFileSet.path != null)
         {
-          final String fileName = Helper.extractFilenameFromPath(path: loadFileSet.path!);
-          final String projectPath = p.join(appState.internalDir, FileHandler.projectsSubDirName, fileName);
+          final String fileName = extractFilenameFromPath(path: loadFileSet.path);
+          final String projectPath = p.join(appState.internalDir, projectsSubDirName, fileName);
           if (!File(projectPath).existsSync())
           {
-            final ui.Image? img = await Helper.getImageFromLoadFileSet(loadFileSet: loadFileSet, size: loadFileSet.historyState!.canvasSize);
+            final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet, size: loadFileSet.historyState!.canvasSize);
             if (img != null)
             {
               success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath);
@@ -1083,8 +1067,3 @@ class FileHandler
     }
     return success;
   }
-
-
-
-}
-

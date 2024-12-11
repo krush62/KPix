@@ -31,7 +31,7 @@ enum SelectShape
 }
 
 const List<SelectShape> selectShapeList =
-[
+<SelectShape>[
   SelectShape.rectangle,
   SelectShape.ellipse,
   SelectShape.polygon,
@@ -39,11 +39,11 @@ const List<SelectShape> selectShapeList =
 ];
 
 const Map<int, SelectShape> _selectShapeIndexMap =
-{
+<int, SelectShape>{
   0: SelectShape.rectangle,
   1: SelectShape.ellipse,
   2: SelectShape.polygon,
-  3: SelectShape.wand
+  3: SelectShape.wand,
 };
 
 class SelectOptions extends IToolOptions
@@ -54,19 +54,19 @@ class SelectOptions extends IToolOptions
   final bool wandContinuousDefault;
   final bool wandWholeRampDefault;
 
-  final ValueNotifier<SelectShape> shape = ValueNotifier(SelectShape.rectangle);
-  final ValueNotifier<SelectionMode> mode = ValueNotifier(SelectionMode.replace);
-  final ValueNotifier<SelectionMode> unModifiedMode = ValueNotifier(SelectionMode.replace);
-  final ValueNotifier<bool> keepAspectRatio = ValueNotifier(false);
-  final ValueNotifier<bool> wandContinuous = ValueNotifier(true);
-  final ValueNotifier<bool> wandWholeRamp = ValueNotifier(false);
+  final ValueNotifier<SelectShape> shape = ValueNotifier<SelectShape>(SelectShape.rectangle);
+  final ValueNotifier<SelectionMode> mode = ValueNotifier<SelectionMode>(SelectionMode.replace);
+  final ValueNotifier<SelectionMode> unModifiedMode = ValueNotifier<SelectionMode>(SelectionMode.replace);
+  final ValueNotifier<bool> keepAspectRatio = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> wandContinuous = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> wandWholeRamp = ValueNotifier<bool>(false);
 
   SelectOptions({
     required this.shapeDefault,
     required this.keepAspectRatioDefault,
     required this.modeDefault,
     required this.wandContinuousDefault,
-    required this.wandWholeRampDefault
+    required this.wandWholeRampDefault,
   })
   {
     keepAspectRatio.value = keepAspectRatioDefault;
@@ -87,23 +87,20 @@ class SelectOptions extends IToolOptions
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Padding(
           padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
           child: Row(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+            children: <Widget>[
               Expanded(
-                flex: 1,
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "Mode",
                       style: Theme.of(context).textTheme.labelLarge,
-                    )
+                    ),
                 ),
               ),
               Expanded(
@@ -136,27 +133,25 @@ class SelectOptions extends IToolOptions
                                 selectOptions.mode.value = newMode;
 
                                 return SegmentedButton<SelectionMode>(
-                                  segments: [
-                                    ButtonSegment(value: SelectionMode.replace, label: FaIcon(
+                                  segments: <ButtonSegment<SelectionMode>>[
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.replace, label: FaIcon(
                                       FontAwesomeIcons.rotate,
                                       size: toolSettingsWidgetOptions.smallIconSize,
-                                    )),
-                                    ButtonSegment(value: SelectionMode.add, label: FaIcon(
+                                    ),),
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.add, label: FaIcon(
                                       FontAwesomeIcons.plus,
                                       size: toolSettingsWidgetOptions.smallIconSize,
-                                    )),
-                                    ButtonSegment(value: SelectionMode.subtract, label: FaIcon(
+                                    ),),
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.subtract, label: FaIcon(
                                       FontAwesomeIcons.minus,
                                       size: toolSettingsWidgetOptions.smallIconSize,
-                                    )),
-                                    ButtonSegment(value: SelectionMode.intersect, label: FaIcon(
+                                    ),),
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.intersect, label: FaIcon(
                                       FontAwesomeIcons.plusMinus,
                                       size: toolSettingsWidgetOptions.smallIconSize,
-                                    ))
+                                    ),),
                                   ],
                                   selected: <SelectionMode>{selectOptions.mode.value},
-                                  emptySelectionAllowed: false,
-                                  multiSelectionEnabled: false,
                                   showSelectedIcon: false,
                                   onSelectionChanged: (final Set<SelectionMode> modes)
                                   {
@@ -182,61 +177,57 @@ class SelectOptions extends IToolOptions
         Padding(
           padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
           child: Row(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+            children: <Widget>[
               Expanded(
-                flex: 1,
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "Shape",
                       style: Theme.of(context).textTheme.labelLarge,
-                    )
+                    ),
                 ),
               ),
               Expanded(
                 flex: toolSettingsWidgetOptions.columnWidthRatio,
                 child: ValueListenableBuilder<SelectShape>(
                   valueListenable: selectOptions.shape,
-                  builder: (BuildContext context, SelectShape shape, child){
+                  builder: (final BuildContext context, final SelectShape shape, final Widget? child){
                     return SegmentedButton<SelectShape>
                       (
-                      segments: [
-                        ButtonSegment(
+                      segments: <ButtonSegment<SelectShape>>[
+                        ButtonSegment<SelectShape>(
                             value: SelectShape.rectangle,
                             tooltip: "Rectangle",
                             label: FaIcon(
                               FontAwesomeIcons.square,
                               size: toolSettingsWidgetOptions.smallIconSize,
-                            )),
-                        ButtonSegment(
+                            ),),
+                        ButtonSegment<SelectShape>(
                             value: SelectShape.ellipse,
                             tooltip: "Ellipse",
                             label: FaIcon(
                               FontAwesomeIcons.circle,
                               size: toolSettingsWidgetOptions.smallIconSize,
-                            )),
-                        ButtonSegment(
+                            ),),
+                        ButtonSegment<SelectShape>(
                             value: SelectShape.polygon,
                             tooltip: "Polygon",
                             label: FaIcon(
                               FontAwesomeIcons.drawPolygon,
                               size: toolSettingsWidgetOptions.smallIconSize,
-                            )),
-                        ButtonSegment(
+                            ),),
+                        ButtonSegment<SelectShape>(
                             value: SelectShape.wand,
                             tooltip: "Wand",
                             label: FaIcon(
                               FontAwesomeIcons.wandMagicSparkles,
                               size: toolSettingsWidgetOptions.smallIconSize,
-                            ))
+                            ),),
                       ],
                       selected: <SelectShape>{shape},
-                      emptySelectionAllowed: false,
-                      multiSelectionEnabled: false,
                       showSelectedIcon: false,
-                      onSelectionChanged: (Set<SelectShape> shapes) {selectOptions.shape.value = shapes.first;},
+                      onSelectionChanged: (final Set<SelectShape> shapes) {selectOptions.shape.value = shapes.first;},
                     );
                   },
                 ),
@@ -248,19 +239,16 @@ class SelectOptions extends IToolOptions
           valueListenable: selectOptions.shape,
           builder: (final BuildContext context, final SelectShape shape, final Widget? child){
             return Visibility(
-              visible: (shape != SelectShape.polygon),
+              visible: shape != SelectShape.polygon,
               child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           (shape == SelectShape.wand) ? "Continuous" : "Keep 1:1",
                           style: Theme.of(context).textTheme.labelLarge,
-                        )
+                        ),
                     ),
                   ),
                   Expanded(
@@ -268,21 +256,21 @@ class SelectOptions extends IToolOptions
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Stack(
-                          children: [
+                          children: <Widget>[
                             Visibility(
-                                visible: (shape == SelectShape.rectangle || shape == SelectShape.ellipse),
+                                visible: shape == SelectShape.rectangle || shape == SelectShape.ellipse,
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: selectOptions.keepAspectRatio,
                                   builder: (final BuildContext context, final bool keep, final Widget? child){
                                     return Switch(
-                                        onChanged:  (bool newVal) {selectOptions.keepAspectRatio.value = newVal;},
-                                        value: keep
+                                        onChanged:  (final bool newVal) {selectOptions.keepAspectRatio.value = newVal;},
+                                        value: keep,
                                     );
                                   },
-                                )
+                                ),
                             ),
                             Visibility(
-                                visible: (shape == SelectShape.wand),
+                                visible: shape == SelectShape.wand,
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: selectOptions.wandContinuous,
                                   builder: (final BuildContext context, final bool continuous, final Widget? child){
@@ -291,11 +279,11 @@ class SelectOptions extends IToolOptions
                                       onChanged: (final bool newVal) {selectOptions.wandContinuous.value = newVal;},
                                     );
                                   },
-                                )
-                            )
+                                ),
+                            ),
                           ],
                         ),
-                      )
+                      ),
                   ),
                 ],
               ),
@@ -306,19 +294,16 @@ class SelectOptions extends IToolOptions
           valueListenable: selectOptions.shape,
           builder: (final BuildContext context, final SelectShape shape, final Widget? child){
             return Visibility(
-              visible: (shape == SelectShape.wand),
+              visible: shape == SelectShape.wand,
               child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           "Whole Ramp",
                           style: Theme.of(context).textTheme.labelLarge,
-                        )
+                        ),
                     ),
                   ),
                   Expanded(
@@ -331,11 +316,11 @@ class SelectOptions extends IToolOptions
                           {
                             return Switch(
                               value: wholeRamp,
-                              onChanged: (bool newVal) {selectOptions.wandWholeRamp.value = newVal;},
+                              onChanged: (final bool newVal) {selectOptions.wandWholeRamp.value = newVal;},
                             );
                           },
                         ),
-                      )
+                      ),
                   ),
                 ],
               ),

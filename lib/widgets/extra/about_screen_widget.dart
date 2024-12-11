@@ -47,8 +47,8 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   void initState()
   {
     super.initState();
-    _licenseScreen = OverlayEntries.getLicensesDialog(onDismiss: _dismissDialogs);
-    _creditsScreen = OverlayEntries.getCreditsDialog(onDismiss: _dismissDialogs);
+    _licenseScreen = getLicensesDialog(onDismiss: _dismissDialogs);
+    _creditsScreen = getCreditsDialog(onDismiss: _dismissDialogs);
   }
 
   void _licensesPressed()
@@ -68,7 +68,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       elevation: _options.elevation,
@@ -92,28 +92,25 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
         child: Padding(
           padding: EdgeInsets.all(_options.padding),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: <Widget>[
               Expanded(
-                flex: 1,
-                child: Image.asset("imgs/kpix_icon.png")
+                child: Image.asset("imgs/kpix_icon.png"),
               ),
               Expanded(
                 flex: 3,
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding),
                   child: Column(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    children: <Widget>[
                       Row(
-                        children: [
+                        children: <Widget>[
                           Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
                           Expanded(child: SizedBox(width: _options.padding)),
-                          ValueListenableBuilder(
+                          ValueListenableBuilder<bool>(
                             valueListenable: GetIt.I.get<AppState>().hasUpdateNotifier,
                             builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
                             {
@@ -124,26 +121,26 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                                   textAlign: TextAlign.right,
                                   text: TextSpan(
                                     text: "New version available (${updateInfo.version}).\n",
-                                    style: Theme.of(context).textTheme.bodySmall!.apply(color: KPixTheme.notificationGreen),
-                                    children: [
+                                    style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen),
+                                    children: <InlineSpan>[
                                       TextSpan(
                                           text: "Download from GitHub.",
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () {
                                               if (GetIt.I.get<AppState>().updatePackage != null)
                                               {
-                                                Helper.launchURL(url: updateInfo.url);
+                                                launchURL(url: updateInfo.url);
                                               }
                                             },
-                                          style: Theme.of(context).textTheme.bodySmall!.apply(color: KPixTheme.notificationGreen, decoration: TextDecoration.underline, decorationColor: KPixTheme.notificationGreen)
-                                      )
-                                    ]
+                                          style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen, decoration: TextDecoration.underline, decorationColor: notificationGreen),
+                                      ),
+                                    ],
                                   ),
                                 );
                               }
                               else
                               {
-                                return SizedBox.shrink();
+                                return const SizedBox.shrink();
                               }
                             },
                           ),
@@ -154,10 +151,9 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                       Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
                       SizedBox(height: _options.padding,),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
-                        children: [
+                        children: <Widget>[
                           Expanded(
                             child: Tooltip(
                               message: "Credits",
@@ -183,7 +179,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                                 ),
                                 onPressed: _licensesPressed,
                               ),
-                            )
+                            ),
                           ),
                           SizedBox(width: _options.padding),
                           Expanded(
@@ -200,15 +196,15 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                             ),
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
-                )
-              )
+                ),
+              ),
             ],
           ),
-        )
-      )
+        ),
+      ),
     );
   }
 }

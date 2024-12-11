@@ -28,14 +28,14 @@ class EraserOptions extends IToolOptions
   final int sizeDefault;
   final int shapeDefault;
 
-  final ValueNotifier<int> size = ValueNotifier(1);
-  final ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
+  final ValueNotifier<int> size = ValueNotifier<int>(1);
+  final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(PencilShape.round);
 
   EraserOptions({
     required this.sizeMin,
     required this.sizeMax,
     required this.sizeDefault,
-    required this.shapeDefault})
+    required this.shapeDefault,})
   {
     size.value = sizeDefault;
     shape.value = pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
@@ -49,21 +49,18 @@ class EraserOptions extends IToolOptions
   {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Size",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -86,17 +83,15 @@ class EraserOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Shape",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -105,7 +100,7 @@ class EraserOptions extends IToolOptions
                 valueListenable: eraserOptions.shape,
                 builder: (final BuildContext context, final PencilShape shape, final Widget? child)
                 {
-                  return DropdownButton(
+                  return DropdownButton<PencilShape>(
                     value: shape,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
@@ -119,7 +114,7 @@ class EraserOptions extends IToolOptions
                     }).toList(),
                   );
                 },
-              )
+              ),
             ),
           ],
         ),

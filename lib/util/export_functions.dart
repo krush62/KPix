@@ -15,10 +15,10 @@
  */
 
 import 'dart:async';
+import 'dart:convert' show utf8;
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'dart:convert' show utf8;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -30,36 +30,35 @@ import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
-class ExportFunctions
-{
-  static Map<Type, int> historyLayerValueMap =
-  {
+
+  Map<Type, int> historyLayerValueMap =
+  <Type, int>{
     HistoryDrawingLayer: 1,
     HistoryReferenceLayer: 2,
-    HistoryGridLayer: 3
+    HistoryGridLayer: 3,
   };
 
-  static Map<GridType, int> gridTypeValueMap =
-  {
+  Map<GridType, int> gridTypeValueMap =
+  <GridType, int>{
     GridType.rectangular: 0,
     GridType.diagonal: 1,
     GridType.isometric: 2,
     GridType.hexagonal: 3,
     GridType.triangular: 4,
-    GridType.brick: 5
+    GridType.brick: 5,
   };
 
 
-  static Future<Uint8List?> exportPNG({required ExportData exportData, required final AppState appState}) async
+  Future<Uint8List?> exportPNG({required final ExportData exportData, required final AppState appState}) async
   {
     final ByteData byteData = await _getImageData(
         ramps: appState.colorRamps,
@@ -67,26 +66,26 @@ class ExportFunctions
         selectionState: appState.selectionState,
         imageSize: appState.canvasSize,
         scaling: exportData.scaling,
-        selectedLayer: appState.currentLayer);
+        selectedLayer: appState.currentLayer,);
 
     final Completer<ui.Image> c = Completer<ui.Image>();
     ui.decodeImageFromPixels(
         byteData.buffer.asUint8List(),
         appState.canvasSize.x * exportData.scaling,
         appState.canvasSize.y * exportData.scaling,
-        ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+        ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
     {
       c.complete(convertedImage);
     }
     );
     final ui. Image img = await c.future;
 
-    ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
 
     return pngBytes!.buffer.asUint8List();
   }
 
-  static Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final LayerState? selectedLayer}) async
+  Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required final SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final LayerState? selectedLayer}) async
   {
     final ByteData byteData = ByteData((imageSize.x * scaling) * (imageSize.y * scaling) * 4);
     for (int x = 0; x < imageSize.x; x++)
@@ -113,7 +112,7 @@ class ExportFunctions
                 for (int j = 0; j < scaling; j++)
                 {
                   byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
-                      Helper.argbToRgba(argb: col.getIdColor().color.value));
+                      argbToRgba(argb: col.getIdColor().color.value),);
                 }
               }
               break;
@@ -125,7 +124,7 @@ class ExportFunctions
     return byteData;
   }
 
-  static Future<Uint8List?> getPalettePngData({required List<KPalRampData> ramps}) async
+  Future<Uint8List?> getPalettePngData({required final List<KPalRampData> ramps}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: ramps);
     final ByteData byteData = await _getPaletteImageData(colorList: colorList);
@@ -135,31 +134,31 @@ class ExportFunctions
         byteData.buffer.asUint8List(),
         colorList.length,
         1,
-        ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+        ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
     {
       c.complete(convertedImage);
     }
     );
     final ui. Image img = await c.future;
 
-    ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
 
     return pngBytes!.buffer.asUint8List();
   }
 
-  static Future<ByteData> _getPaletteImageData({required final List<ui.Color> colorList}) async
+  Future<ByteData> _getPaletteImageData({required final List<ui.Color> colorList}) async
   {
     final ByteData byteData = ByteData(colorList.length * 4);
     for (int i = 0; i < colorList.length; i++)
     {
-      byteData.setUint32(i * 4, Helper.argbToRgba(argb: colorList[i].value));
+      byteData.setUint32(i * 4, argbToRgba(argb: colorList[i].value));
     }
     return byteData;
   }
 
-  static List<ui.Color> _getColorList({required final List<KPalRampData> ramps})
+  List<ui.Color> _getColorList({required final List<KPalRampData> ramps})
   {
-    final List<ui.Color> colorList = [];
+    final List<ui.Color> colorList = <ui.Color>[];
     for (final KPalRampData ramp in ramps)
     {
       for (final ColorReference colRef in ramp.references)
@@ -170,14 +169,14 @@ class ExportFunctions
     return colorList;
   }
 
-  static Future<Uint8List?> getPaletteAsepriteData({required final List<KPalRampData> rampList}) async
+  Future<Uint8List?> getPaletteAsepriteData({required final List<KPalRampData> rampList}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
     colorList.insert(0, Colors.black);
     assert(colorList.length < 256);
-    final List<List<int>> layerEncBytes = [];
-    final List<Uint8List> layerNames = [];
-    final List<int> imgBytes = [];
+    final List<List<int>> layerEncBytes = <List<int>>[];
+    final List<Uint8List> layerNames = <Uint8List>[];
+    final List<int> imgBytes = <int>[];
     for (int i = 0; i < colorList.length; i++)
     {
       imgBytes.add(i);
@@ -189,7 +188,7 @@ class ExportFunctions
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: CoordinateSetI(x: colorList.length, y: 1));
   }
 
-  static Future<Uint8List> getPaletteGimpData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  Future<Uint8List> getPaletteGimpData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
     final StringBuffer stringBuffer = StringBuffer();
@@ -206,55 +205,55 @@ class ExportFunctions
 
   }
 
-  static Future<Uint8List> getPalettePaintNetData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  Future<Uint8List> getPalettePaintNetData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
     final StringBuffer stringBuffer = StringBuffer();
     stringBuffer.writeln('; KPix_${DateTime.now().toString().replaceAll(RegExp(r'[:\- ]'), '_')}');
     for (int i = 0; i < colorList.length; i++)
     {
-       stringBuffer.writeln("${Helper.colorToHexString(c: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].red, g: colorList[i].green, b: colorList[i].blue)}");
+       stringBuffer.writeln("${colorToHexString(c: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].red, g: colorList[i].green, b: colorList[i].blue)}");
     }
     final String str = stringBuffer.toString();
     return Uint8List.fromList(utf8.encode(str));
   }
 
-  static Future<Uint8List> getPaletteAdobeData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  Future<Uint8List> getPaletteAdobeData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
     final BytesBuilder buffer = BytesBuilder();
-    buffer.add(Helper.intToBytes(value: 0x46455341, length: 4));
-    buffer.add(Helper.intToBytes(value: 0x00000100, length: 4));
-    buffer.add(Helper.intToBytes(value: colorList.length, length: 4, reverse: true));
+    buffer.add(intToBytes(value: 0x46455341, length: 4));
+    buffer.add(intToBytes(value: 0x00000100, length: 4));
+    buffer.add(intToBytes(value: colorList.length, length: 4, reverse: true));
     for (final ui.Color color in colorList)
     {
       final String colorName = colorNames.getColorName(r: color.red, g: color.green, b: color.blue);
-      buffer.add(Helper.intToBytes(value: 0x0100, length: 2));
-      buffer.add(Helper.intToBytes(value: (22 + (colorName.length * 2)), length: 4, reverse: true));
-      buffer.add(Helper.intToBytes(value: (colorName.length + 1), length: 2, reverse: true));
+      buffer.add(intToBytes(value: 0x0100, length: 2));
+      buffer.add(intToBytes(value: 22 + (colorName.length * 2), length: 4, reverse: true));
+      buffer.add(intToBytes(value: colorName.length + 1, length: 2, reverse: true));
       for (final int codeUnit in colorName.codeUnits)
       {
         if (codeUnit != '-'.codeUnitAt(0))
         {
-          buffer.add(Helper.intToBytes(value: codeUnit, length: 2, reverse: true));
+          buffer.add(intToBytes(value: codeUnit, length: 2, reverse: true));
         }
       }
-      buffer.add(Helper.intToBytes(value: 0, length: 2, reverse: true));
+      buffer.add(intToBytes(value: 0, length: 2, reverse: true));
 
-      buffer.add(Helper.stringToBytes(value: "RGB ")); // Color model
+      buffer.add(stringToBytes(value: "RGB ")); // Color model
 
       // Color values
-      buffer.add(Helper.float32ToBytes(value: (color.red.toDouble() / 255.0), reverse: true));
-      buffer.add(Helper.float32ToBytes(value: (color.green.toDouble() / 255.0), reverse: true));
-      buffer.add(Helper.float32ToBytes(value: (color.blue.toDouble() / 255.0), reverse: true));
+      buffer.add(float32ToBytes(value: color.red.toDouble() / 255.0, reverse: true));
+      buffer.add(float32ToBytes(value: color.green.toDouble() / 255.0, reverse: true));
+      buffer.add(float32ToBytes(value: color.blue.toDouble() / 255.0, reverse: true));
 
       // Color type
-      buffer.add(Helper.intToBytes(value: 0, length: 2, reverse: true));
+      buffer.add(intToBytes(value: 0, length: 2, reverse: true));
     }
     return buffer.toBytes();
   }
 
-  static Future<Uint8List> getPaletteJascData({required final List<KPalRampData> rampList}) async
+  Future<Uint8List> getPaletteJascData({required final List<KPalRampData> rampList}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
     final StringBuffer stringBuffer = StringBuffer();
@@ -269,18 +268,18 @@ class ExportFunctions
     return Uint8List.fromList(utf8.encode(str));
   }
 
-  static Future<Uint8List> getPaletteCorelData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  Future<Uint8List> getPaletteCorelData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
     final StringBuffer stringBuffer = StringBuffer();
-    stringBuffer.writeln("<? version = \"1.0\" ?>");
-    stringBuffer.writeln("<palette name=\"\" guid=\"\">");
+    stringBuffer.writeln('<? version = "1.0" ?>');
+    stringBuffer.writeln('<palette name="" guid="">');
     stringBuffer.writeln("\t<colors>");
     stringBuffer.writeln("\t\t<page>");
 
     for (final ui.Color color in colorList)
     {
-      stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${(color.red / 255.0).toStringAsFixed(6)},${(color.green / 255.0).toStringAsFixed(6)},${(color.blue / 255.0).toStringAsFixed(6)}"name="${Helper.escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue))}" />''');
+      stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${(color.red / 255.0).toStringAsFixed(6)},${(color.green / 255.0).toStringAsFixed(6)},${(color.blue / 255.0).toStringAsFixed(6)}"name="${escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue))}" />''');
     }
 
     stringBuffer.writeln("\t\t</page>");
@@ -291,10 +290,10 @@ class ExportFunctions
     return Uint8List.fromList(utf8.encode(str));
   }
 
-  static Future<Uint8List> getPaletteOpenOfficeData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
+  Future<Uint8List> getPaletteOpenOfficeData({required final List<KPalRampData> rampList, required final ColorNames colorNames}) async
   {
     final List<ui.Color> colorList = _getColorList(ramps: rampList);
-    final stringBuffer = StringBuffer();
+    final StringBuffer stringBuffer = StringBuffer();
     stringBuffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
     stringBuffer.writeln(
         '<office:color-table xmlns:office="http://openoffice.org/2000/office" '
@@ -317,8 +316,8 @@ class ExportFunctions
 
     for (final ui.Color color in colorList)
     {
-      final String colorHex = Helper.colorToHexString(c: color).toLowerCase();
-      final String colorName = Helper.escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue));
+      final String colorHex = colorToHexString(c: color).toLowerCase();
+      final String colorName = escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue));
       stringBuffer.writeln('\t<draw:color draw:name="$colorName" draw:color="$colorHex"/>');
     }
 
@@ -329,7 +328,7 @@ class ExportFunctions
 
 
 
-  static Future<Uint8List> _createAsepriteData({required final List<ui.Color> colorList, required final List<Uint8List> layerNames, required final List<List<int>> layerEncBytes, required final CoordinateSetI canvasSize, final List<DrawingLayerState>? layerList}) async
+  Future<Uint8List> _createAsepriteData({required final List<ui.Color> colorList, required final List<Uint8List> layerNames, required final List<List<int>> layerEncBytes, required final CoordinateSetI canvasSize, final List<DrawingLayerState>? layerList}) async
   {
     const int headerSize = 128;
     const int frameHeaderSize = 16;
@@ -347,12 +346,12 @@ class ExportFunctions
 
     for (int i = 0; i < layerNames.length; i++)
     {
-      fileSize += (24 + layerNames[i].length);
+      fileSize += 24 + layerNames[i].length;
     }
 
     for (int i = 0; i < layerEncBytes.length; i++)
     {
-      fileSize += (26 + layerEncBytes[i].length);
+      fileSize += 26 + layerEncBytes[i].length;
     }
 
     final ByteData outBytes = ByteData(fileSize);
@@ -591,17 +590,17 @@ class ExportFunctions
     return outBytes.buffer.asUint8List();
   }
 
-  static Future<ByteData> createKPixData({required final AppState appState}) async
+  Future<ByteData> createKPixData({required final AppState appState}) async
   {
     final HistoryState saveData = HistoryState.fromAppState(appState: appState, identifier: HistoryStateTypeIdentifier.saveData);
     final ByteData byteData = ByteData(_calculateKPixFileSize(saveData: saveData));
 
     int offset = 0;
     //header
-    byteData.setUint32(offset, int.parse(FileHandler.magicNumber, radix: 16));
+    byteData.setUint32(offset, int.parse(magicNumber, radix: 16));
     offset+=4;
     //file version
-    byteData.setUint8(offset++, FileHandler.fileVersion);
+    byteData.setUint8(offset++, fileVersion);
 
     //rampCount
     byteData.setUint8(offset++, saveData.rampList.length);
@@ -789,7 +788,7 @@ class ExportFunctions
     return byteData;
   }
 
-  static Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampList}) async
+  Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampList}) async
   {
     final ByteData byteData = ByteData(_calculateKPalFileSize(rampList: rampList));
     int offset = 0;
@@ -848,10 +847,10 @@ class ExportFunctions
     return byteData.buffer.asUint8List();
   }
 
-  static Future<Uint8List?> getAsepriteData({required final ExportData exportData, required final AppState appState}) async
+  Future<Uint8List?> getAsepriteData({required final ExportData exportData, required final AppState appState}) async
   {
-    final List<ui.Color> colorList = [];
-    final Map<ColorReference, int> colorMap = {};
+    final List<ui.Color> colorList = <ui.Color>[];
+    final Map<ColorReference, int> colorMap = <ColorReference, int>{};
     colorList.add(Colors.black);
     int index = 1;
     for (final KPalRampData kPalRampData in appState.colorRamps)
@@ -865,16 +864,16 @@ class ExportFunctions
     }
     assert(colorList.length < 256);
 
-    final List<List<int>> layerEncBytes = [];
-    final List<Uint8List> layerNames = [];
-    final List<DrawingLayerState> drawingLayers = [];
+    final List<List<int>> layerEncBytes = <List<int>>[];
+    final List<Uint8List> layerNames = <Uint8List>[];
+    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
 
     for (int l = 0; l < appState.layers.length; l++)
     {
       if (appState.layers[l].runtimeType == DrawingLayerState)
       {
         final DrawingLayerState layerState = appState.layers[l] as DrawingLayerState;
-        final List<int> imgBytes = [];
+        final List<int> imgBytes = <int>[];
         for (int y = 0; y < layerState.size.y; y++)
         {
           for (int x = 0; x < layerState.size.x; x++)
@@ -907,10 +906,10 @@ class ExportFunctions
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
   }
 
-  static Future<Uint8List?> getGimpData({required final ExportData exportData, required final AppState appState}) async
+  Future<Uint8List?> getGimpData({required final ExportData exportData, required final AppState appState}) async
   {
-    final List<Color> colorList = [];
-    final Map<ColorReference, int> colorMap = {};
+    final List<Color> colorList = <ui.Color>[];
+    final Map<ColorReference, int> colorMap = <ColorReference, int>{};
     int index = 0;
     for (final KPalRampData kPalRampData in appState.colorRamps)
     {
@@ -970,10 +969,10 @@ class ExportFunctions
         4 + //height
         8; //pointer end
 
-    final List<List<List<int>>> layerEncBytes = [];
-    final List<Uint8List> layerNames = [];
+    final List<List<List<int>>> layerEncBytes = <List<List<int>>>[];
+    final List<Uint8List> layerNames = <Uint8List>[];
     const int tileSize = 64;
-    final List<DrawingLayerState> drawingLayers = [];
+    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
     for (int l = 0; l < appState.layers.length; l++)
     {
       if (appState.layers[l].runtimeType == DrawingLayerState)
@@ -981,12 +980,12 @@ class ExportFunctions
         final DrawingLayerState layerState = appState.layers[l] as DrawingLayerState;
         int x = 0;
         int y = 0;
-        final List<List<int>> tileList = [];
+        final List<List<int>> tileList = <List<int>>[];
         do //TILING
         {
-          final List<int> imgBytes = [];
-          int endX = min(x + tileSize, layerState.size.x);
-          int endY = min(y + tileSize, layerState.size.y);
+          final List<int> imgBytes = <int>[];
+          final int endX = min(x + tileSize, layerState.size.x);
+          final int endY = min(y + tileSize, layerState.size.y);
           for (int b = y; b < endY; b++)
           {
             for (int a = x; a < endX; a++)
@@ -1052,15 +1051,15 @@ class ExportFunctions
       }
       fileSize += tiles.length * 8;
       //level 2
-      fileSize += (basicLevelSize - 4);
+      fileSize += basicLevelSize - 4;
       //level3
-      fileSize += (basicLevelSize - 4);
+      fileSize += basicLevelSize - 4;
     }
 
 
     //WRITING
 
-    final List<int> layerOffsetsInsertPositions = [];
+    final List<int> layerOffsetsInsertPositions = <int>[];
 
     int tattooIndex = 2;
     final ByteData outBytes = ByteData(fileSize);
@@ -1156,20 +1155,20 @@ class ExportFunctions
     for (int i = 0; i < drawingLayers.length; i++)
     {
       layerOffsetsInsertPositions.add(offset);
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
     }
 
-    FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0); //end layer pointers
+    setUint64(bytes: outBytes, offset: offset, value: 0); //end layer pointers
     offset+=8;
-    FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0); //start/end channel pointers
+    setUint64(bytes: outBytes, offset: offset, value: 0); //start/end channel pointers
     offset+=8;
 
 
     //LAYERS
     for (int i = 0; i < appState.layers.length; i++)
     {
-      FileHandler.setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
+      setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
       final DrawingLayerState currentLayer = drawingLayers[i];
       outBytes.setUint32(offset, currentLayer.size.x);
@@ -1343,15 +1342,15 @@ class ExportFunctions
 
       //HIERARCHY OFFSET
       final int hierarchyOffsetInsertPosition = offset;
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //LAYER MASK
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //HIERARCHY
-      FileHandler.setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
+      setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y);
@@ -1359,38 +1358,38 @@ class ExportFunctions
       outBytes.setUint32(offset, 2);
       offset+=4;
       final int pointerInsertToLevel1 = offset;
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
       final int pointerInsertToLevel2 = offset;
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
       final int pointerInsertToLevel3 = offset;
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //LEVEL1
-      FileHandler.setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
+      setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y);
       offset+=4;
-      final List<int> tileOffsetsLv1 = [];
+      final List<int> tileOffsetsLv1 = <int>[];
       final List<List<int>> currentTiles = layerEncBytes[i];
       for (int j = 0; j < currentTiles.length; j++)
       {
         tileOffsetsLv1.add(offset);
-        FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+        setUint64(bytes: outBytes, offset: offset, value: 0);
         offset+=8;
       }
-      FileHandler.setUint64(bytes: outBytes, offset: offset, value: 0);
+      setUint64(bytes: outBytes, offset: offset, value: 0);
       offset+=8;
 
       //TILE DATA FOR LEVEL1
       for (int j = 0; j < currentTiles.length; j++)
       {
-        FileHandler.setUint64(bytes: outBytes, offset: tileOffsetsLv1[j], value: offset);
+        setUint64(bytes: outBytes, offset: tileOffsetsLv1[j], value: offset);
         final List<int> currentTile = currentTiles[j];
         for (int k = 0; k < currentTile.length; k++)
         {
@@ -1400,7 +1399,7 @@ class ExportFunctions
       }
 
       //LEVEL2
-      FileHandler.setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
+      setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x ~/ 2);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y ~/ 2);
@@ -1408,7 +1407,7 @@ class ExportFunctions
       outBytes.setUint32(offset, 0);
       offset+=4;
       //LEVEL3
-      FileHandler.setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
+      setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
       outBytes.setUint32(offset, currentLayer.size.x ~/ 4);
       offset+=4;
       outBytes.setUint32(offset, currentLayer.size.y ~/ 4);
@@ -1420,7 +1419,7 @@ class ExportFunctions
     return outBytes.buffer.asUint8List();
   }
 
-  static int _calculateKPixFileSize({required final HistoryState saveData})
+  int _calculateKPixFileSize({required final HistoryState saveData})
   {
     int size = 0;
 
@@ -1553,7 +1552,7 @@ class ExportFunctions
     return size;
   }
 
-  static int _calculateKPalFileSize({required final List<KPalRampData> rampList})
+  int _calculateKPalFileSize({required final List<KPalRampData> rampList})
   {
     int size = 0;
 
@@ -1602,9 +1601,5 @@ class ExportFunctions
     }
 
     //link count
-    size += 1;
-
-    return size;
+    return size += 1;
   }
-
-}

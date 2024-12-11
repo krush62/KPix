@@ -34,8 +34,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
@@ -68,7 +68,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   {
     super.initState();
     _createWidgetList(_appState.layers);
-    addLayerMenu = OverlayEntries.getAddLayerMenu(
+    addLayerMenu = getAddLayerMenu(
       onDismiss: _closeLayerMenu,
       layerLink: _layerLink,
       onNewDrawingLayer: _newDrawingLayerPressed,
@@ -102,7 +102,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _createWidgetList(final List<LayerState> layers)
   {
-    _widgetList = [];
+    _widgetList = <Widget>[];
     for (int i = 0; i < layers.length; i++)
     {
       _widgetList.add(DragTarget<LayerState>(
@@ -110,17 +110,17 @@ class _RightBarWidgetState extends State<RightBarWidget>
           return AnimatedContainer(
             height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
             color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
-            duration: Duration(milliseconds: _layerWidgetOptions.dragTargetShowDuration)
+            duration: Duration(milliseconds: _layerWidgetOptions.dragTargetShowDuration),
           );
         },
-        onAcceptWithDetails: (details) {
+        onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
           _appState.changeLayerOrder(state: details.data, newPosition: i);
         },
-      ));
+      ),);
 
       _widgetList.add(LayerWidget(
         layerState: layers[i],
-      ));
+      ),);
     }
     _widgetList.add(DragTarget<LayerState>(
       builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
@@ -130,10 +130,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
           color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
         );
       },
-      onAcceptWithDetails: (details) {
+      onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
         _appState.changeLayerOrder(state: details.data, newPosition: layers.length);
       },
-    ));
+    ),);
   }
 
 
@@ -143,25 +143,22 @@ class _RightBarWidgetState extends State<RightBarWidget>
       color: Theme.of(context).primaryColor,
 
       child: Column(
-        children: [
+        children: <Widget>[
           const MainButtonWidget(
           ),
           Expanded(
-            child: Container(
+            child: DecoratedBox(
               decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius))
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
               ),
               child: ValueListenableBuilder<bool>(
                 valueListenable: _appState.hasProjectNotifier,
                 builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                   return hasProject ? SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
                     child: Column(
-                      mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
+                      children: <Widget>[
                         Padding(
                           padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
                           child: CompositedTransformTarget(
@@ -177,7 +174,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                     minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
                                     maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
                                     iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
-                                    padding: EdgeInsets.zero
+                                    padding: EdgeInsets.zero,
                                 ),
                               ),
                             ),
@@ -189,18 +186,18 @@ class _RightBarWidgetState extends State<RightBarWidget>
                           {
                             _createWidgetList(states);
                             return Column(children: _widgetList);
-                          }
+                          },
                         ),
                       ],
                     ),
                   ) : const SizedBox.shrink();
                 },
               ),
-            )
+            ),
           ),
-          const CanvasOperationsWidget()
+          const CanvasOperationsWidget(),
         ],
-      )
+      ),
     );
   }
 

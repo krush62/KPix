@@ -100,11 +100,11 @@ class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners(
 
 class HotkeyManager
 {
-  final Map<SingleActivator, HotkeyAction> _shortCutMap = {};
-  final Map<HotkeyAction, HotkeyNotifier> _notifierMap = {};
-  final Map<HotkeyAction, VoidCallback> _actionMap = {};
-  final ValueNotifier<Map<SingleActivator, VoidCallback>> _callbackMap = ValueNotifier({});
-  Map<SingleActivator, VoidCallback> _callbackMapBackup = {};
+  final Map<SingleActivator, HotkeyAction> _shortCutMap = <SingleActivator, HotkeyAction>{};
+  final Map<HotkeyAction, HotkeyNotifier> _notifierMap = <HotkeyAction, HotkeyNotifier>{};
+  final Map<HotkeyAction, VoidCallback> _actionMap = <HotkeyAction, VoidCallback>{};
+  final ValueNotifier<Map<SingleActivator, VoidCallback>> _callbackMap = ValueNotifier<Map<SingleActivator, VoidCallback>>(<SingleActivator, VoidCallback>{});
+  Map<SingleActivator, VoidCallback> _callbackMapBackup = <SingleActivator, VoidCallback>{};
 
   final FocusNode textOptionsTextFocus = FocusNode();
   final FocusNode canvasSizeWidthTextFocus = FocusNode();
@@ -117,9 +117,9 @@ class HotkeyManager
   final FocusNode saveAsFileNameTextFocus = FocusNode();
   final FocusNode savePaletteNameTextFocus = FocusNode();
 
-  List<FocusNode> _focusNodes = [];
+  List<FocusNode> _focusNodes = <FocusNode>[];
 
-  final ValueNotifier<bool> _shiftIsPressed = ValueNotifier(false);
+  final ValueNotifier<bool> _shiftIsPressed = ValueNotifier<bool>(false);
   bool get shiftIsPressed
   {
     return _shiftIsPressed.value;
@@ -128,7 +128,7 @@ class HotkeyManager
   {
     return _shiftIsPressed;
   }
-  final ValueNotifier<bool> _controlIsPressed = ValueNotifier(false);
+  final ValueNotifier<bool> _controlIsPressed = ValueNotifier<bool>(false);
   bool get controlIsPressed
   {
     return _controlIsPressed.value;
@@ -137,7 +137,7 @@ class HotkeyManager
   {
     return _controlIsPressed;
   }
-  final ValueNotifier<bool> _altIsPressed = ValueNotifier(false);
+  final ValueNotifier<bool> _altIsPressed = ValueNotifier<bool>(false);
   bool get altIsPressed
   {
     return _altIsPressed.value;
@@ -176,22 +176,22 @@ class HotkeyManager
     {
       if (evt.logicalKey == LogicalKeyboardKey.shiftLeft || evt.logicalKey == LogicalKeyboardKey.shiftRight || evt.logicalKey == LogicalKeyboardKey.shift)
       {
-        _shiftIsPressed.value = (evt is KeyDownEvent);
+        _shiftIsPressed.value = evt is KeyDownEvent;
       }
       else if (evt.logicalKey == LogicalKeyboardKey.controlLeft || evt.logicalKey == LogicalKeyboardKey.controlRight || evt.logicalKey == LogicalKeyboardKey.control)
       {
-        _controlIsPressed.value = (evt is KeyDownEvent);
+        _controlIsPressed.value = evt is KeyDownEvent;
       }
       else if (evt.logicalKey == LogicalKeyboardKey.altLeft || evt.logicalKey == LogicalKeyboardKey.altRight || evt.logicalKey == LogicalKeyboardKey.alt)
       {
-        _altIsPressed.value = (evt is KeyDownEvent);
+        _altIsPressed.value = evt is KeyDownEvent;
       }
     }
 
   }
 
 
-  void addListener({required VoidCallback func, required HotkeyAction action})
+  void addListener({required final VoidCallback func, required final HotkeyAction action})
   {
     _notifierMap[action]?.addListener(func);
   }
@@ -200,9 +200,9 @@ class HotkeyManager
   String getShortcutString({required final HotkeyAction action, final bool precededNewLine = true, final bool showSquareBrackets = true})
   {
     String result = "";
-    if (Helper.isDesktop())
+    if (isDesktop())
     {
-      final Iterable<SingleActivator> activators = _shortCutMap.keys.where((x) => _shortCutMap[x] == action);
+      final Iterable<SingleActivator> activators = _shortCutMap.keys.where((final SingleActivator x) => _shortCutMap[x] == action);
       if (activators.isNotEmpty)
       {
         for (int i = 0; i < activators.length; i++)
@@ -248,10 +248,10 @@ class HotkeyManager
 
   void triggerShortcut({required final HotkeyAction action})
   {
-    Iterable<SingleActivator> foundActivators = _shortCutMap.keys.where((e) => _shortCutMap[e] == action);
+    final Iterable<SingleActivator> foundActivators = _shortCutMap.keys.where((final SingleActivator e) => _shortCutMap[e] == action);
     for (final SingleActivator act in foundActivators)
     {
-      VoidCallback? f = _callbackMap.value[act];
+      final VoidCallback? f = _callbackMap.value[act];
       if (f != null)
       {
         f();
@@ -354,7 +354,7 @@ class HotkeyManager
 
   void _createCallbackMap()
   {
-    Map<SingleActivator, VoidCallback> cbMap = {};
+    final Map<SingleActivator, VoidCallback> cbMap = <SingleActivator, VoidCallback>{};
     for (final MapEntry<SingleActivator, HotkeyAction> shortCutEntry in _shortCutMap.entries)
     {
       if (_actionMap[shortCutEntry.value] != null)
@@ -367,7 +367,7 @@ class HotkeyManager
 
   void _createFocusNodeListeners()
   {
-    _focusNodes = [
+    _focusNodes = <FocusNode>[
       textOptionsTextFocus,
       canvasSizeWidthTextFocus,
       canvasSizeHeightTextFocus,
@@ -377,7 +377,7 @@ class HotkeyManager
       newProjectHeightTextFocus,
       exportFileNameTextFocus,
       saveAsFileNameTextFocus,
-      savePaletteNameTextFocus
+      savePaletteNameTextFocus,
     ];
 
     for (final FocusNode fn in _focusNodes)
@@ -401,7 +401,7 @@ class HotkeyManager
   void _deactivateCallbacks()
   {
     _callbackMapBackup = _callbackMap.value;
-    _callbackMap.value = {};
+    _callbackMap.value = <SingleActivator, VoidCallback>{};
   }
 
   void _activateCallbacks()

@@ -45,7 +45,7 @@ class KPalRampWidgetOptions
     required this.rowLabelFlex,
     required this.rowValueFlex,
     required this.colorNameShowThreshold,
-    required this.renderIntervalMs
+    required this.renderIntervalMs,
   });
 }
 
@@ -56,7 +56,7 @@ class KPalRamp extends StatefulWidget
   const KPalRamp({
     super.key,
     required this.rampData,
-    required this.originalRampData
+    required this.originalRampData,
   });
 
   @override
@@ -65,10 +65,10 @@ class KPalRamp extends StatefulWidget
 
 class _KPalRampState extends State<KPalRamp>
 {
-  final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier([]);
+  final ValueNotifier<List<KPalColorCardWidget>> _colorCards = ValueNotifier<List<KPalColorCardWidget>>(<KPalColorCardWidget>[]);
   final KPalRampWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions;
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<ui.Image?> _previewImage = ValueNotifier(null);
+  final ValueNotifier<ui.Image?> _previewImage = ValueNotifier<ui.Image?>(null);
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
   late Timer _renderTimer;
@@ -95,8 +95,8 @@ class _KPalRampState extends State<KPalRamp>
 
   List<DrawingLayerState> _copyLayers({required final List<LayerState> originalLayers})
   {
-    final Iterable<LayerState> visibleDrawingLayers = originalLayers.where((l) => l.visibilityState.value == LayerVisibilityState.visible && l.runtimeType == DrawingLayerState);
-    final List<DrawingLayerState> drawingLayers = [];
+    final Iterable<LayerState> visibleDrawingLayers = originalLayers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && l.runtimeType == DrawingLayerState);
+    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
     for (final LayerState visibleLayer in visibleDrawingLayers)
     {
       final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState);
@@ -111,11 +111,6 @@ class _KPalRampState extends State<KPalRamp>
     _renderTimer.cancel();
   }
 
-  void _setPreviewImage({required final ui.Image img})
-  {
-    _previewImage.value = img;
-  }
-
   void _renderCheck({required final Timer t})
   {
     if (_hasShiftChanges)
@@ -123,11 +118,11 @@ class _KPalRampState extends State<KPalRamp>
       _settingsChanged();
       _hasShiftChanges = false;
     }
-    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((l) => (l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.thumbnail.value == null || l.isRasterizing))).isNotEmpty;
+    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.thumbnail.value == null || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      Helper.getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
-        _setPreviewImage(img: img);
+      getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
+        _previewImage.value = img;
       });
       _hasRenderChanges = false;
     }
@@ -135,7 +130,7 @@ class _KPalRampState extends State<KPalRamp>
 
   void _createColorCards()
   {
-    List<KPalColorCardWidget> newList = [];
+    final List<KPalColorCardWidget> newList = <KPalColorCardWidget>[];
     for (int i = 0; i < widget.rampData.shiftedColors.length; i++)
     {
       final ValueNotifier<IdColor> notifier = widget.rampData.shiftedColors[i];
@@ -144,7 +139,7 @@ class _KPalRampState extends State<KPalRamp>
           colorNotifier: notifier,
           shiftSet: shiftSet,
           isLast: notifier == widget.rampData.shiftedColors.last,
-          showName: widget.rampData.shiftedColors.length < _options.colorNameShowThreshold);
+          showName: widget.rampData.shiftedColors.length < _options.colorNameShowThreshold,);
 
       newList.add(card);
     }
@@ -158,7 +153,7 @@ class _KPalRampState extends State<KPalRamp>
       if (colorCountChanged)
       {
         _drawingLayers = _copyLayers(originalLayers: _appState.layers);
-        final HashMap<int, int> indexMap = Helper.remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
+        final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final DrawingLayerState drawingLayer in _drawingLayers)
         {
           drawingLayer.remapSingleRamp(newData: widget.rampData, map: indexMap);
@@ -245,53 +240,44 @@ class _KPalRampState extends State<KPalRamp>
         borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           Expanded(
-            flex: 1,
             child: ValueListenableBuilder<List<KPalColorCardWidget>>(
               valueListenable: _colorCards,
               builder: (final BuildContext context, final List<KPalColorCardWidget> cards, final Widget? child) {
-                return Container(
+                return DecoratedBox(
                   decoration: BoxDecoration(
                       color: Theme.of(context).primaryColorDark,
                       borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    children: <Widget>[
                       ...cards,
                     ],
-                  )
+                  ),
                 );
               },
-            )
+            ),
           ),
           Expanded(
-            flex: 1,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+              children: <Widget>[
                 Expanded(
-                  flex: 1,
                   child: Padding(
                     padding: EdgeInsets.all(_options.padding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                      children: <Widget>[
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -302,9 +288,9 @@ class _KPalRampState extends State<KPalRamp>
                                     {
                                       _colorCountSliderChanged(newVal: widget.rampData.settings.constraints.colorCountDefault.toDouble());
                                     },
-                                    child: const Text("Color Count")
+                                    child: const Text("Color Count"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -312,7 +298,7 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.colorCount.toDouble(),
                                   min: widget.rampData.settings.constraints.colorCountMin.toDouble(),
                                   max: widget.rampData.settings.constraints.colorCountMax.toDouble(),
-                                  divisions: (widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin),
+                                  divisions: widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin,
                                   onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -326,12 +312,9 @@ class _KPalRampState extends State<KPalRamp>
                           height: _options.dividerThickness,
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -342,9 +325,9 @@ class _KPalRampState extends State<KPalRamp>
                                     {
                                       _baseHueSliderChanged(newVal: widget.rampData.settings.constraints.baseHueDefault.toDouble());
                                     },
-                                    child: const Text("Base Hue")
+                                    child: const Text("Base Hue"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -363,12 +346,9 @@ class _KPalRampState extends State<KPalRamp>
                           ),
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -379,9 +359,9 @@ class _KPalRampState extends State<KPalRamp>
                                     {
                                       _hueShiftSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftDefault.toDouble());
                                     },
-                                    child: const Text("Hue Shift")
+                                    child: const Text("Hue Shift"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -398,12 +378,9 @@ class _KPalRampState extends State<KPalRamp>
                           ),
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -412,18 +389,18 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _hueShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftExpDefault.toDouble());
+                                      _hueShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftExpDefault);
                                     },
-                                    child: const Text("↳ Exponent")
+                                    child: const Text("↳ Exponent"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
                                 child: KPixSlider(
-                                  value: widget.rampData.settings.hueShiftExp.toDouble(),
-                                  min: widget.rampData.settings.constraints.hueShiftExpMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.hueShiftExpMax.toDouble(),
+                                  value: widget.rampData.settings.hueShiftExp,
+                                  min: widget.rampData.settings.constraints.hueShiftExpMin,
+                                  max: widget.rampData.settings.constraints.hueShiftExpMax,
                                   divisions: (widget.rampData.settings.constraints.hueShiftExpMax * 100.0 - widget.rampData.settings.constraints.hueShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
@@ -439,12 +416,9 @@ class _KPalRampState extends State<KPalRamp>
                           height: _options.dividerThickness,
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -455,9 +429,9 @@ class _KPalRampState extends State<KPalRamp>
                                     {
                                       _baseSatSliderChanged(newVal: widget.rampData.settings.constraints.baseSatDefault.toDouble());
                                     },
-                                    child: const Text("Base Sat")
+                                    child: const Text("Base Sat"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -474,12 +448,9 @@ class _KPalRampState extends State<KPalRamp>
                           ),
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -490,9 +461,9 @@ class _KPalRampState extends State<KPalRamp>
                                     {
                                       _satShiftSliderChanged(newVal: widget.rampData.settings.constraints.satShiftDefault.toDouble());
                                     },
-                                    child: const Text("Sat Shift")
+                                    child: const Text("Sat Shift"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -509,12 +480,9 @@ class _KPalRampState extends State<KPalRamp>
                           ),
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -523,18 +491,18 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                       onTap: ()
                                       {
-                                        _satShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.satShiftExpDefault.toDouble());
+                                        _satShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.satShiftExpDefault);
                                       },
-                                      child: const Text("↳ Exponent")
+                                      child: const Text("↳ Exponent"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
                                 child: KPixSlider(
-                                  value: widget.rampData.settings.satShiftExp.toDouble(),
-                                  min: widget.rampData.settings.constraints.satShiftExpMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.satShiftExpMax.toDouble(),
+                                  value: widget.rampData.settings.satShiftExp,
+                                  min: widget.rampData.settings.constraints.satShiftExpMin,
+                                  max: widget.rampData.settings.constraints.satShiftExpMax,
                                   divisions: (widget.rampData.settings.constraints.satShiftExpMax * 100.0 - widget.rampData.settings.constraints.satShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
@@ -545,23 +513,19 @@ class _KPalRampState extends State<KPalRamp>
                           ),
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
-                                child: const Text("Sat Curve")
+                                child: const Text("Sat Curve"),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
+                                  children: <Widget>[
                                     IconButton(
                                       color: widget.rampData.settings.satCurve == SatCurve.noFlat ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight,
                                       style: IconButton.styleFrom(
@@ -597,14 +561,14 @@ class _KPalRampState extends State<KPalRamp>
                                       isSelected: widget.rampData.settings.satCurve == SatCurve.linear,
                                       onPressed: () {_satCurveModeChanged(newCurve: SatCurve.linear);},
                                       icon: FaIcon(KPixIcons.linear, color: widget.rampData.settings.satCurve == SatCurve.linear ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark),
-                                    )
+                                    ),
                                   ],
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowValueFlex,
-                                child: SizedBox.shrink(),
-                              )
+                                child: const SizedBox.shrink(),
+                              ),
                             ],
                           ),
                         ),
@@ -614,12 +578,9 @@ class _KPalRampState extends State<KPalRamp>
                           height: _options.dividerThickness,
                         ),
                         Expanded(
-                          flex: 1,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                            children: <Widget>[
                               Expanded(
                                 flex: _options.rowLabelFlex,
                                 child: Tooltip(
@@ -630,9 +591,9 @@ class _KPalRampState extends State<KPalRamp>
                                       {
                                         _valueRangeSliderChanged(newVals: RangeValues(widget.rampData.settings.constraints.valueRangeMinDefault.toDouble(), widget.rampData.settings.constraints.valueRangeMaxDefault.toDouble()));
                                       },
-                                      child: const Text("Value Range")
+                                      child: const Text("Value Range"),
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -650,10 +611,9 @@ class _KPalRampState extends State<KPalRamp>
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Padding(
                     padding: EdgeInsets.all(_options.padding),
                     child: ValueListenableBuilder<ui.Image?>(
@@ -663,7 +623,6 @@ class _KPalRampState extends State<KPalRamp>
                           borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
                           child: RawImage(
                             fit: BoxFit.contain,
-                            isAntiAlias: false,
                             filterQuality: ui.FilterQuality.none,
                             color: Theme.of(context).primaryColorDark,
                             colorBlendMode: ui.BlendMode.dstATop,
@@ -671,7 +630,7 @@ class _KPalRampState extends State<KPalRamp>
                           ),
                         );
                       },
-                    )
+                    ),
                   ),
                 ),
               ],

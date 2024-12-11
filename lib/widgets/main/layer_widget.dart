@@ -15,6 +15,7 @@
  */
 
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -23,14 +24,14 @@ import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 const Map<Type, String> overlayStringMap =
-{
+<Type, String>{
   ReferenceLayerState: "REF",
-  GridLayerState: "GRID"
+  GridLayerState: "GRID",
 };
 
 class LayerWidget extends StatefulWidget
@@ -51,23 +52,23 @@ class _LayerWidgetState extends State<LayerWidget>
   final LayerWidgetOptions _options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
-  static const Map<LayerVisibilityState, IconData> _visibilityIconMap = {
+  static const Map<LayerVisibilityState, IconData> _visibilityIconMap = <LayerVisibilityState, IconData>{
     LayerVisibilityState.visible: FontAwesomeIcons.eye,
     LayerVisibilityState.hidden: FontAwesomeIcons.eyeSlash,
   };
 
-  static const Map<LayerVisibilityState, String> _visibilityTooltipMap = {
+  static const Map<LayerVisibilityState, String> _visibilityTooltipMap = <LayerVisibilityState, String>{
     LayerVisibilityState.visible: "Visible",
     LayerVisibilityState.hidden: "Hidden",
   };
 
-  static const Map<LayerLockState, IconData> _lockIconMap = {
+  static const Map<LayerLockState, IconData> _lockIconMap = <LayerLockState, IconData>{
     LayerLockState.unlocked: FontAwesomeIcons.lockOpen,
     LayerLockState.transparency: FontAwesomeIcons.unlockKeyhole,
     LayerLockState.locked: FontAwesomeIcons.lock,
   };
 
-  static const Map<LayerLockState, String> _lockStringMap = {
+  static const Map<LayerLockState, String> _lockStringMap = <LayerLockState, String>{
     LayerLockState.unlocked: "Unlocked",
     LayerLockState.transparency: "Transparency locked",
     LayerLockState.locked: "Locked",
@@ -80,14 +81,14 @@ class _LayerWidgetState extends State<LayerWidget>
   @override
   void initState() {
     super.initState();
-    settingsMenuDrawing = OverlayEntries.getDrawingLayerMenu(
+    settingsMenuDrawing = getDrawingLayerMenu(
       onDismiss: _closeSettingsMenus,
       layerLink: settingsLink,
       onDelete: _deletePressed,
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
     );
-    settingsMenuReduced = OverlayEntries.getReducedLayerMenu(
+    settingsMenuReduced = getReducedLayerMenu(
       onDismiss: _closeSettingsMenus,
       layerLink: settingsLink,
       onDelete: _deletePressed,
@@ -175,21 +176,19 @@ class _LayerWidgetState extends State<LayerWidget>
                 border: Border.all(
                   color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
                   width: _options.borderWidth,
-                )
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                children: [
+                children: <Widget>[
                   Padding(
                     padding: EdgeInsets.only(
-                        right: _options.innerPadding),
+                        right: _options.innerPadding,),
                     child: Column(
-                      mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
+                      children: <Widget>[
                         Expanded(
                           child: ValueListenableBuilder<LayerVisibilityState>(
                             valueListenable: widget.layerState.visibilityState,
@@ -208,17 +207,17 @@ class _LayerWidgetState extends State<LayerWidget>
                                   style: ButtonStyle(
                                     tapTargetSize: MaterialTapTargetSize
                                         .shrinkWrap,
-                                    backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : null,
-                                    iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll(Theme.of(context).primaryColor) : null,
+                                    backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColorLight) : null,
+                                    iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColor) : null,
                                   ),
                                   onPressed: _visibilityButtonPressed,
                                   icon: FaIcon(
                                     _visibilityIconMap[visibility],
                                     size: _options.iconSize,
-                                  )
+                                  ),
                                 ),
                               );
-                            }
+                            },
                           ),
                         ),
                         SizedBox(height: _options.innerPadding),
@@ -245,26 +244,26 @@ class _LayerWidgetState extends State<LayerWidget>
                                             style: ButtonStyle(
                                               tapTargetSize: MaterialTapTargetSize
                                                   .shrinkWrap,
-                                              backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll(Theme.of(context).primaryColorLight),
-                                              iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll(Theme.of(context).primaryColor),
+                                              backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColorLight),
+                                              iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColor),
                                             ),
                                             onPressed: _lockButtonPressed,
                                             icon: FaIcon(
                                               _lockIconMap[lock],
                                               size: _options.iconSize,
-                                            )
+                                            ),
                                         ),
                                       );
-                                    }
+                                    },
                                 ),
                               );
                             }
                             else //REFERENCE LAYER
                             {
-                               return SizedBox.shrink();
+                               return const SizedBox.shrink();
                             }
                           },
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -275,7 +274,7 @@ class _LayerWidgetState extends State<LayerWidget>
                       },
                       child: Stack(
                         fit: StackFit.expand,
-                        children: [
+                        children: <Widget>[
                           ValueListenableBuilder<ui.Image?>(
                             valueListenable: widget.layerState.thumbnail,
                             builder: (final BuildContext context, final ui.Image? img, final Widget? child)
@@ -297,14 +296,14 @@ class _LayerWidgetState extends State<LayerWidget>
                                 ],
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
-                    )
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.only(
-                        left: _options.innerPadding),
+                        left: _options.innerPadding,),
                     child: CompositedTransformTarget(
                       link: settingsLink,
                       child: Tooltip(
@@ -324,16 +323,16 @@ class _LayerWidgetState extends State<LayerWidget>
                           icon: FaIcon(
                             FontAwesomeIcons.bars,
                             size: _options.iconSize,
-                          )
+                          ),
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
-              )
+              ),
             );
-          }
-          )
+          },
+          ),
         ),
       ),
     );

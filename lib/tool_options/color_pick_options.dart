@@ -29,4 +29,3 @@ class ColorPickOptions extends IToolOptions
     return Container();
   }
 }
-

@@ -35,8 +35,8 @@ class GithubLatestReleaseData
 {
   final String htmlUrl;
   final String tagName;
-  static final String htmlUrlId = "html_url";
-  static final String tagNameId = "tag_name";
+  static const String htmlUrlId = "html_url";
+  static const String tagNameId = "tag_name";
 
 
   const GithubLatestReleaseData({
@@ -44,13 +44,13 @@ class GithubLatestReleaseData
     required this.tagName,
   });
 
-  factory GithubLatestReleaseData.fromJson(Map<String, dynamic> json)
+  factory GithubLatestReleaseData.fromJson(final Map<String, dynamic> json)
   {
     if (json.containsKey(htmlUrlId) && json.containsKey(tagNameId))
     {
       return GithubLatestReleaseData(
-          htmlUrl: json[htmlUrlId],
-          tagName: json[tagNameId]
+          htmlUrl: json[htmlUrlId].toString(),
+          tagName: json[tagNameId].toString(),
       );
     }
     else
@@ -61,19 +61,18 @@ class GithubLatestReleaseData
 
 }
 
-class UpdateHelper
-{
-  static final String _apiLink = "https://api.github.com/repos/krush62/kpix/releases/latest";
 
-  static Future<UpdateInfoPackage?> getLatestVersionInfo() async
+  const String _apiLink = "https://api.github.com/repos/krush62/kpix/releases/latest";
+
+  Future<UpdateInfoPackage?> getLatestVersionInfo() async
   {
     try
     {
-      http.Response response = await http.get(Uri.parse(_apiLink));
+      final http.Response response = await http.get(Uri.parse(_apiLink));
       if (response.statusCode == 200)
       {
         final GithubLatestReleaseData githubData = GithubLatestReleaseData.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-        final Version? version = Helper.convertStringToVersion(version: githubData.tagName);
+        final Version? version = convertStringToVersion(version: githubData.tagName);
         if (version != null)
         {
           return UpdateInfoPackage(version: version, url: githubData.htmlUrl);
@@ -83,4 +82,3 @@ class UpdateHelper
     catch(_){}
     return null;
   }
-}

@@ -15,16 +15,17 @@
  */
 
 import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/painting/itool_painter.dart';
+import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class StampPainter extends IToolPainter
@@ -36,22 +37,22 @@ class StampPainter extends IToolPainter
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
   bool _down = false;
-  final HashMap<CoordinateSetI, int> _stampData = HashMap();
+  final HashMap<CoordinateSetI, int> _stampData = HashMap<CoordinateSetI, int>();
   int _previousSize = -1;
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null)
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * drawParams.pixelSize);
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
@@ -134,9 +135,9 @@ class StampPainter extends IToolPainter
   }
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    Path path = Path();
+    final Path path = Path();
     path.moveTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
     path.lineTo(_cursorStartPos.x + (-5 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
     path.lineTo(_cursorStartPos.x + (-5 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize));
@@ -160,7 +161,7 @@ class StampPainter extends IToolPainter
       final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -172,7 +173,7 @@ class StampPainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;

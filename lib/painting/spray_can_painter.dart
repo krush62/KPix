@@ -22,12 +22,12 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class SprayCanPainter extends IToolPainter
@@ -36,16 +36,16 @@ class SprayCanPainter extends IToolPainter
 
   final SprayCanOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.sprayCanOptions;
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-  final CoordinateColorMap _drawingPixels = HashMap();
-  Set<CoordinateSetI> _contentPoints = {};
-  final Set<CoordinateSetI> _paintPositions = {};
+  final CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
+  Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
+  final Set<CoordinateSetI> _paintPositions = <CoordinateSetI>{};
   bool _waitingForDump = false;
   bool _isDown = false;
   late Timer timer;
   bool timerInitialized = false;
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.currentDrawingLayer != null)
     {
@@ -53,12 +53,12 @@ class SprayCanPainter extends IToolPainter
       {
         _cursorPosNorm.x = getClosestPixel(
             value: drawParams.cursorPos!.x - drawParams.offset.dx,
-            pixelSize: drawParams.pixelSize.toDouble())
-            .round();
+            pixelSize: drawParams.pixelSize.toDouble(),)
+            ;
         _cursorPosNorm.y = getClosestPixel(
             value: drawParams.cursorPos!.y - drawParams.offset.dy,
-            pixelSize: drawParams.pixelSize.toDouble())
-            .round();
+            pixelSize: drawParams.pixelSize.toDouble(),)
+            ;
 
         _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: _cursorPosNorm);
 
@@ -134,11 +134,11 @@ class SprayCanPainter extends IToolPainter
 
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
     //Surrounding
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
-    Path path = Path();
+    final Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)
     {
       if (i == 0)
@@ -168,7 +168,7 @@ class SprayCanPainter extends IToolPainter
 
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;

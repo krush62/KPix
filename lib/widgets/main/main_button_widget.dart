@@ -24,8 +24,8 @@ import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -42,7 +42,7 @@ class MainButtonWidgetOptions
   MainButtonWidgetOptions({
     required this.padding ,
     required this.menuIconSize,
-    required this.dividerSize
+    required this.dividerSize,
   });
 }
 
@@ -81,63 +81,63 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void initState()
   {
     super.initState();
-    _loadMenu = OverlayEntries.getLoadMenu(
+    _loadMenu = getLoadMenu(
       onDismiss: _closeAllMenus,
       layerLink: _loadMenuLayerLink,
       onNewFile: _newFile,
       onLoadFile: _loadFile,
-      onImportFile: _importFile
+      onImportFile: _importFile,
     );
-    _saveMenu = OverlayEntries.getSaveMenu(
+    _saveMenu = getSaveMenu(
       onDismiss: _closeAllMenus,
       layerLink: _saveMenuLayerLink,
       onSaveFile: _saveFile,
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
     );
-    _saveLoadWarningDialog = OverlayEntries.getThreeButtonDialog(
+    _saveLoadWarningDialog = getThreeButtonDialog(
       onYes: _saveLoadWarningYes,
       onNo: _saveLoadWarningNo,
       onCancel: _closeAllMenus,
       outsideCancelable: false,
-      message: "There are unsaved changes, do you want to save first?"
+      message: "There are unsaved changes, do you want to save first?",
     );
-    _saveImportWarningDialog = OverlayEntries.getThreeButtonDialog(
+    _saveImportWarningDialog = getThreeButtonDialog(
         onYes: _saveImportWarningYes,
         onNo: _saveImportWarningNo,
         onCancel: _closeAllMenus,
         outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?"
+        message: "There are unsaved changes, do you want to save first?",
     );
-    _projectManagerDialog = OverlayEntries.getProjectManagerDialog(
+    _projectManagerDialog = getProjectManagerDialog(
       onDismiss: _closeAllMenus,
       onSave: _saveFile,
-      onLoad: _fileLoaded
+      onLoad: _fileLoaded,
     );
-    _exportDialog = OverlayEntries.getExportDialog(
+    _exportDialog = getExportDialog(
       onDismiss: _closeAllMenus,
       onAcceptFile: _exportFilePressed,
-      onAcceptPalette: _paletteSavePressed);
-    _aboutDialog = OverlayEntries.getAboutDialog(
+      onAcceptPalette: _paletteSavePressed,);
+    _aboutDialog = getAboutDialog(
       onDismiss: _closeAllMenus,
-      canvasSize: _appState.canvasSize);
-    _preferencesDialog = OverlayEntries.getPreferencesDialog(
+      canvasSize: _appState.canvasSize,);
+    _preferencesDialog = getPreferencesDialog(
       onDismiss: _reloadPreferences,
-      onAccept: _savePreferencesPressed
+      onAccept: _savePreferencesPressed,
     );
-    _saveAsDialog = OverlayEntries.getSaveAsDialog(
+    _saveAsDialog = getSaveAsDialog(
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
           _closeAllMenus();
-          FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
+          saveFilePressed(fileName: fileName, finishCallback: callback);
         },
     );
-    _importDialog = OverlayEntries.getImportDialog(
+    _importDialog = getImportDialog(
       onDismiss: _closeAllMenus,
-      onAcceptImage: _importImage
+      onAcceptImage: _importImage,
     );
 
-    _importLoadingDialog = OverlayEntries.getLoadingDialog(message: "Importing Image...");
+    _importLoadingDialog = getLoadingDialog(message: "Importing Image...");
 
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
@@ -155,7 +155,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportFilePressed({required final ExportData exportData, required final FileExportType exportType})
   {
-    FileHandler.exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
+    exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
 
   void _exportFinished({required final String? fileName})
@@ -201,7 +201,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _loadMenu.show(context: context);
   }
 
-  void _loadFile({Function()? callback})
+  void _loadFile({final Function()? callback})
   {
     if (kIsWeb)
     {
@@ -211,7 +211,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       }
       else
       {
-        FileHandler.loadFilePressed(finishCallback: callback);
+        loadFilePressed(finishCallback: callback);
         _closeAllMenus();
       }
     }
@@ -260,7 +260,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveBeforeLoadFinished()
   {
-    FileHandler.loadFilePressed();
+    loadFilePressed();
     _closeAllMenus();
   }
 
@@ -278,7 +278,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _saveMenu.show(context: context);
   }
 
-  void _saveFile({Function()? callback})
+  void _saveFile({final Function()? callback})
   {
     if (_appState.projectName.value == null)
     {
@@ -286,20 +286,20 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      FileHandler.saveFilePressed(fileName: _appState.projectName.value!, finishCallback: callback);
+      saveFilePressed(fileName: _appState.projectName.value!, finishCallback: callback);
       _closeAllMenus();
     }
   }
 
-  void _saveAsFile({Function()? callback})
+  void _saveAsFile({final Function()? callback})
   {
-    _saveAsDialog = OverlayEntries.getSaveAsDialog(
+    _saveAsDialog = getSaveAsDialog(
         onDismiss: _closeAllMenus,
         onAccept: ({required final Function()? callback, required final String fileName}) {
           _closeAllMenus();
-          FileHandler.saveFilePressed(fileName: fileName, finishCallback: callback);
+          saveFilePressed(fileName: fileName, finishCallback: callback);
         },
-        callback: callback
+        callback: callback,
     );
     _saveAsDialog.show(context: context);
   }
@@ -310,9 +310,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   }
 
 
-  void _paletteSavePressed({required PaletteExportData saveData, required PaletteExportType paletteType})
+  void _paletteSavePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
-    FileHandler.exportPalettePressed(saveData: saveData, paletteType: paletteType);
+    exportPalettePressed(saveData: saveData, paletteType: paletteType);
     _closeAllMenus();
   }
 
@@ -338,18 +338,18 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _savePreferencesPressed()
   {
-    GetIt.I.get<PreferenceManager>().saveUserPrefs().then((void _){_closeAllMenus();});
+    GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){_closeAllMenus();});
   }
 
   void _reloadPreferences()
   {
-    GetIt.I.get<PreferenceManager>().loadPreferences().then((void _){_closeAllMenus();});
+    GetIt.I.get<PreferenceManager>().loadPreferences().then((final void _){_closeAllMenus();});
   }
 
   void _importImage({required final ImportData importData})
   {
     _importLoadingDialog.show(context: context);
-    ImageImporter.import(importData: importData).then((final ImportResult result)
+    import(importData: importData).then((final ImportResult result)
     {
       _appState.importFile(importResult: result);
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
@@ -365,16 +365,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         color: Theme.of(context).primaryColor,
       ),
       child:  Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.max,
-        children: [
+        children: <Widget>[
           Row(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+            children: <Widget>[
               Expanded(
-                flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(right: _options.padding / 2.0),
                   child: CompositedTransformTarget(
@@ -392,10 +388,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       ),
                     ),
                   ),
-                )
+                ),
               ),
               Expanded(
-                flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
                   child: CompositedTransformTarget(
@@ -413,10 +408,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       ),
                     ),
                   ),
-                )
+                ),
               ),
               Expanded(
-                flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding / 2.0),
                   child: Tooltip(
@@ -431,10 +425,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       onPressed: _settingsPressed,
                     ),
                   ),
-                )
+                ),
               ),
               Expanded(
-                flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding / 2.0),
                   child: Tooltip(
@@ -443,7 +436,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     child: Stack(
                       alignment: Alignment.topCenter,
                       fit: StackFit.passthrough,
-                      children: [
+                      children: <Widget>[
                         IconButton.outlined(
                           color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
@@ -460,19 +453,19 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                             {
                               return Align(
                                 alignment: Alignment.topRight,
-                                child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: KPixTheme.notificationGreen))
+                                child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen)),
                               );
                             }
                             else
                             {
-                              return SizedBox.shrink();
+                              return const SizedBox.shrink();
                             }
                           },
-                        )
-                      ]
+                        ),
+                      ],
                     ),
                   ),
-                )
+                ),
               ),
             ],
           ),
@@ -485,16 +478,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
             ),
           ),
           Row(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+            children: <Widget>[
               Expanded(
-                flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(right: _options.padding / 2.0),
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasUndo,
-                    builder: (final BuildContext context, final bool hasUndo, child) {
+                    builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
                       return Tooltip(
                         message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo)}",
                         waitDuration: AppState.toolTipDuration,
@@ -509,15 +500,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       );
                     },
                   ),
-                )
+                ),
               ),
               Expanded(
-                flex: 1,
                 child: Padding(
                   padding: EdgeInsets.only(left: _options.padding / 2.0),
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasRedo,
-                    builder: (final BuildContext context, final bool hasRedo, child) {
+                    builder: (final BuildContext context, final bool hasRedo, final Widget? child) {
                       return Tooltip(
                         message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo)}",
                         waitDuration: AppState.toolTipDuration,
@@ -532,12 +522,12 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       );
                     },
                   ),
-                )
+                ),
               ),
             ],
-          )
+          ),
         ],
-      )
+      ),
     );
   }
 }

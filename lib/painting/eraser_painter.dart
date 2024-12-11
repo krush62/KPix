@@ -19,13 +19,13 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class EraserPainter extends IToolPainter
@@ -39,33 +39,33 @@ class EraserPainter extends IToolPainter
   EraserPainter({required super.painterOptions});
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
 
 
       //if (_cursorPosNorm != _previousCursorPosNorm)
       {
         if (drawParams.primaryDown && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
         {
-          List<CoordinateSetI> pixelsToDelete = [_cursorPosNorm];
+          final List<CoordinateSetI> pixelsToDelete = <CoordinateSetI>[_cursorPosNorm];
           if (!_cursorPosNorm.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
           {
-            pixelsToDelete.addAll(Helper.bresenham(start: _previousCursorPosNorm, end: _cursorPosNorm).sublist(1));
+            pixelsToDelete.addAll(bresenham(start: _previousCursorPosNorm, end: _cursorPosNorm).sublist(1));
           }
-          final CoordinateColorMapNullable refs = HashMap();
+          final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
           for (final CoordinateSetI delCoord in pixelsToDelete)
           {
-            Set<CoordinateSetI> content = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: delCoord);
+            final Set<CoordinateSetI> content = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: delCoord);
             final SelectionState selection = GetIt.I.get<AppState>().selectionState;
             for (final CoordinateSetI coord in content)
             {
@@ -110,14 +110,14 @@ class EraserPainter extends IToolPainter
   }
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
     assert(drawParams.cursorPos != null);
 
     final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: contentPoints);
 
-    Path path = Path();
+    final Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)
     {
       if (i == 0)
@@ -145,7 +145,7 @@ class EraserPainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
@@ -159,4 +159,3 @@ class EraserPainter extends IToolPainter
   }
 
 }
-

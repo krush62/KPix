@@ -33,12 +33,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/palette/color_entry_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/palette/color_entry_widget.dart';
 
 class ColorRampRowWidget extends StatefulWidget {
   final KPalRampData? rampData;
@@ -51,6 +51,26 @@ class ColorRampRowWidget extends StatefulWidget {
   @override
   State<ColorRampRowWidget> createState() => _ColorRampRowWidgetState();
 
+  factory ColorRampRowWidget({
+    final KPalRampData? rampData,
+    final ColorReferenceSelectedFn? colorSelectedFn,
+    final Function()? addNewRampFn,
+    final ColorRampFn? deleteRowFn,
+    final ColorRampUpdateFn? colorsUpdatedFn,
+    final Key? key,
+  }){
+    final List<Widget> widgetList = <Widget>[];
+    return ColorRampRowWidget._(
+      addNewRampFn: addNewRampFn,
+      widgetList: widgetList,
+      colorSelectedFn: colorSelectedFn,
+      rampData: rampData,
+      colorsUpdatedFn: colorsUpdatedFn,
+      deleteRowFn: deleteRowFn,
+      key: key,
+    );
+  }
+
   const ColorRampRowWidget._({
     super.key,
     this.rampData,
@@ -60,26 +80,6 @@ class ColorRampRowWidget extends StatefulWidget {
     this.colorsUpdatedFn,
     required this.widgetList,
   });
-
-  factory ColorRampRowWidget({
-    KPalRampData? rampData,
-    ColorReferenceSelectedFn? colorSelectedFn,
-    Function()? addNewRampFn,
-    ColorRampFn? deleteRowFn,
-    ColorRampUpdateFn? colorsUpdatedFn,
-    Key? key,
-  }){
-    List<Widget> widgetList = [];
-    return ColorRampRowWidget._(
-      addNewRampFn: addNewRampFn,
-      widgetList: widgetList,
-      colorSelectedFn: colorSelectedFn,
-      rampData: rampData,
-      colorsUpdatedFn: colorsUpdatedFn,
-      deleteRowFn: deleteRowFn,
-      key: key
-    );
-  }
 
   void colorSelected({required final IdColor newColor})
   {
@@ -101,18 +101,18 @@ class ColorRampRowWidget extends StatefulWidget {
     }
   }
 
-  void _createWidgetList({required ColorRampFn createKPal})
+  void _createWidgetList({required final ColorRampFn createKPal})
   {
     widgetList.clear();
     if (rampData != null)
     {
-      for (ValueNotifier<IdColor> color in rampData!.shiftedColors)
+      for (final ValueNotifier<IdColor> color in rampData!.shiftedColors)
       {
         widgetList.add(
           ColorEntryWidget(
             color: color.value,
             colorSelectedFn: colorSelected,
-          )
+          ),
         );
       }
       widgetList.add(
@@ -131,7 +131,7 @@ class ColorRampRowWidget extends StatefulWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           ),
-        )
+        ),
       );
     } else {
       widgetList.add(
@@ -145,10 +145,10 @@ class ColorRampRowWidget extends StatefulWidget {
                 FontAwesomeIcons.plus,
                 size: GetIt.I.get<PreferenceManager>().colorEntryOptions.addIconSize,
               ),
-              onPressed: () {addNewRampFn!.call();}
+              onPressed: () {addNewRampFn!.call();},
             ),
-          )
-        )
+          ),
+        ),
       );
     }
   }
@@ -167,7 +167,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
 
   void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    kPal = OverlayEntries.getKPal(
+    kPal = getKPal(
       onAccept: _colorRampUpdate,
       onDelete: _colorRampDelete,
       colorRamp: ramp,
@@ -191,9 +191,6 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
   Widget build(final BuildContext context) {
     widget._createWidgetList(createKPal: _createKPal);
     return Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: widget.widgetList);
+        children: widget.widgetList,);
   }
 }

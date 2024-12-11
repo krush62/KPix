@@ -35,18 +35,18 @@ enum ShapeShape
 }
 
 const List<ShapeShape> shapeShapeList =
-[
+<ShapeShape>[
   ShapeShape.triangle,
   ShapeShape.rectangle,
   ShapeShape.diamond,
   ShapeShape.ellipse,
   ShapeShape.ngon,
-  ShapeShape.star
+  ShapeShape.star,
 
 ];
 
 const Map<int, ShapeShape> _shapeShapeIndexMap =
-{
+<int, ShapeShape>{
   0: ShapeShape.triangle,
   1: ShapeShape.rectangle,
   2: ShapeShape.diamond,
@@ -76,14 +76,14 @@ class ShapeOptions extends IToolOptions
   final int cornerCountDefault;
 
 
-  final ValueNotifier<ShapeShape> shape = ValueNotifier(ShapeShape.rectangle);
-  final ValueNotifier<bool> keepRatio = ValueNotifier(false);
-  final ValueNotifier<bool> unmodifiedKeepRatio = ValueNotifier(false);
-  final ValueNotifier<bool> strokeOnly = ValueNotifier(false);
-  final ValueNotifier<int> strokeWidth = ValueNotifier(1);
-  final ValueNotifier<int> cornerRadius = ValueNotifier(0);
-  final ValueNotifier<int> cornerCount= ValueNotifier(5);
-  final ValueNotifier<int> ellipseAngle = ValueNotifier(0);
+  final ValueNotifier<ShapeShape> shape = ValueNotifier<ShapeShape>(ShapeShape.rectangle);
+  final ValueNotifier<bool> keepRatio = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> unmodifiedKeepRatio = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> strokeOnly = ValueNotifier<bool>(false);
+  final ValueNotifier<int> strokeWidth = ValueNotifier<int>(1);
+  final ValueNotifier<int> cornerRadius = ValueNotifier<int>(0);
+  final ValueNotifier<int> cornerCount= ValueNotifier<int>(5);
+  final ValueNotifier<int> ellipseAngle = ValueNotifier<int>(0);
 
   ShapeOptions({
     required this.shapeDefault,
@@ -114,34 +114,33 @@ class ShapeOptions extends IToolOptions
   }
 
   static Column getWidget(
-  {   required BuildContext context,
-      required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-      required ShapeOptions shapeOptions})
+  {   required final BuildContext context,
+      required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+      required final ShapeOptions shapeOptions,})
   {
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         ValueListenableBuilder<ShapeShape>(
           valueListenable: shapeOptions.shape,
           builder: (final BuildContext context, final ShapeShape shape, final Widget? child)
           {
             return SegmentedButton<ShapeShape>(
-              segments: [
-                ButtonSegment(
+              segments: <ButtonSegment<ShapeShape>>[
+                ButtonSegment<ShapeShape>(
                   value: ShapeShape.triangle,
                   label: Tooltip(
                     message: "Triangle",
                     waitDuration: AppState.toolTipDuration,
                     child: Icon(
                       Icons.change_history,
-                      size: toolSettingsWidgetOptions.smallIconSize
+                      size: toolSettingsWidgetOptions.smallIconSize,
                     ),
-                  )
+                  ),
                 ),
-                ButtonSegment(
+                ButtonSegment<ShapeShape>(
                   value: ShapeShape.rectangle,
                   label: Tooltip(
                     message: "Rectangle",
@@ -150,9 +149,9 @@ class ShapeOptions extends IToolOptions
                       Icons.check_box_outline_blank,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
-                  )
+                  ),
                 ),
-                ButtonSegment(
+                ButtonSegment<ShapeShape>(
                   value: ShapeShape.diamond,
                   label: Tooltip(
                     message: "Mid-Angle Rectangle",
@@ -164,9 +163,9 @@ class ShapeOptions extends IToolOptions
                         size: toolSettingsWidgetOptions.smallIconSize,
                       ),
                     ),
-                  )
+                  ),
                 ),
-                ButtonSegment(
+                ButtonSegment<ShapeShape>(
                   value: ShapeShape.ellipse,
                   label: Tooltip(
                     message: "Ellipse",
@@ -175,9 +174,9 @@ class ShapeOptions extends IToolOptions
                       Icons.circle_outlined,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
-                  )
+                  ),
                 ),
-                ButtonSegment(
+                ButtonSegment<ShapeShape>(
                   value: ShapeShape.ngon,
                   label: Tooltip(
                     message: "Regular Polygon",
@@ -186,9 +185,9 @@ class ShapeOptions extends IToolOptions
                       Icons.hexagon_outlined,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
-                  )
+                  ),
                 ),
-                ButtonSegment(
+                ButtonSegment<ShapeShape>(
                   value: ShapeShape.star,
                   label: Tooltip(
                     message: "Star",
@@ -197,29 +196,24 @@ class ShapeOptions extends IToolOptions
                       Icons.star_outline,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
-                  )
+                  ),
                 ),
               ],
               selected: <ShapeShape>{shape},
-              emptySelectionAllowed: false,
-              multiSelectionEnabled: false,
               showSelectedIcon: false,
               onSelectionChanged: (final Set<ShapeShape> shapes) {shapeOptions.shape.value = shapes.first;},
             );
           },
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Keep 1:1",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -252,22 +246,19 @@ class ShapeOptions extends IToolOptions
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Stroke Only",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -276,13 +267,12 @@ class ShapeOptions extends IToolOptions
                 valueListenable: shapeOptions.strokeOnly,
                 builder: (final BuildContext context, final bool strokeOnly, final Widget? child){
                   return Row(
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Switch(
-                            onChanged: (bool newVal) {shapeOptions.strokeOnly.value = newVal;},
+                            onChanged: (final bool newVal) {shapeOptions.strokeOnly.value = newVal;},
                             value: strokeOnly,
                           ),
                         ),
@@ -298,7 +288,7 @@ class ShapeOptions extends IToolOptions
                               min: shapeOptions.strokeWidthMin.toDouble(),
                               max: shapeOptions.strokeWidthMax.toDouble(),
                               divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
-                              onChanged: strokeOnly ? (double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
+                              onChanged: strokeOnly ? (final double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
@@ -307,7 +297,7 @@ class ShapeOptions extends IToolOptions
                     ],
                   );
                 },
-              )
+              ),
             ),
           ],
         ),
@@ -315,22 +305,20 @@ class ShapeOptions extends IToolOptions
           valueListenable: shapeOptions.shape,
           builder: (final BuildContext context, final ShapeShape shape, final Widget? child){
             return Stack(
-              children: [
+              children: <Widget>[
                 Visibility(
                   //TODO this might be an option for triangle and diamond as well
-                  visible: (shape == ShapeShape.rectangle),
+                  visible: shape == ShapeShape.rectangle,
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Corner Radius",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
@@ -347,7 +335,7 @@ class ShapeOptions extends IToolOptions
                               onChanged: (final double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
-                          }
+                          },
                         ),
                       ),
                     ],
@@ -358,17 +346,15 @@ class ShapeOptions extends IToolOptions
                   /*visible: (shape == ShapeShape.ellipse),*/
                   visible: false,
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Angle",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
@@ -385,26 +371,24 @@ class ShapeOptions extends IToolOptions
                               onChanged: (final double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
-                          }
+                          },
                         ),
                       ),
                     ],
                   ),
                 ),
                 Visibility(
-                  visible: (shape == ShapeShape.ngon || shape == ShapeShape.star),
+                  visible: shape == ShapeShape.ngon || shape == ShapeShape.star,
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Corner Count",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
@@ -417,11 +401,11 @@ class ShapeOptions extends IToolOptions
                               value: corners.toDouble(),
                               min: shapeOptions.cornerCountMin.toDouble(),
                               max: shapeOptions.cornerCountMax.toDouble(),
-                              divisions: (shapeOptions.cornerCountMax - shapeOptions.cornerCountMin),
+                              divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
                               onChanged: (final double newVal) {shapeOptions.cornerCount.value = newVal.round();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
-                          }
+                          },
                         ),
                       ),
                     ],
@@ -429,7 +413,7 @@ class ShapeOptions extends IToolOptions
                 ),
               ],
             );
-          }
+          },
         ),
       ],
     );

@@ -32,9 +32,9 @@ class SprayCanOptions extends IToolOptions
   final int intensityMax;
   final int intensityDefault;
 
-  final ValueNotifier<int> radius = ValueNotifier(3);
-  final ValueNotifier<int> blobSize = ValueNotifier(1);
-  final ValueNotifier<int> intensity = ValueNotifier(8);
+  final ValueNotifier<int> radius = ValueNotifier<int>(3);
+  final ValueNotifier<int> blobSize = ValueNotifier<int>(1);
+  final ValueNotifier<int> intensity = ValueNotifier<int>(8);
 
   SprayCanOptions({
   required this.radiusMin,
@@ -45,7 +45,7 @@ class SprayCanOptions extends IToolOptions
   required this.blobSizeDefault,
   required this.intensityMin,
   required this.intensityMax,
-  required this.intensityDefault
+  required this.intensityDefault,
   })
   {
     radius.value = radiusDefault;
@@ -60,21 +60,18 @@ class SprayCanOptions extends IToolOptions
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Radius",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -97,17 +94,15 @@ class SprayCanOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Blob Size",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -121,7 +116,7 @@ class SprayCanOptions extends IToolOptions
                     min: sprayCanOptions.blobSizeMin.toDouble(),
                     max: sprayCanOptions.blobSizeMax.toDouble(),
                     divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
-                    onChanged: (double newVal) {sprayCanOptions.blobSize.value = newVal.round();},
+                    onChanged: (final double newVal) {sprayCanOptions.blobSize.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
@@ -130,17 +125,15 @@ class SprayCanOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Intensity",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -154,10 +147,10 @@ class SprayCanOptions extends IToolOptions
                     min: sprayCanOptions.intensityMin.toDouble(),
                     max: sprayCanOptions.intensityMax.toDouble(),
                     divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
-                    onChanged: (double newVal) {sprayCanOptions.intensity.value = newVal.round();},
+                    onChanged: (final double newVal) {sprayCanOptions.intensity.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
-                }
+                },
               ),
             ),
           ],
@@ -167,7 +160,7 @@ class SprayCanOptions extends IToolOptions
   }
 
   @override
-  void changeSize({required int steps, required int originalValue})
+  void changeSize({required final int steps, required final int originalValue})
   {
     radius.value = (originalValue + steps).clamp(radiusMin, radiusMax);
   }

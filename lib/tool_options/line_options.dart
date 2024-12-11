@@ -30,7 +30,7 @@ class AngleData
   final double angle;
 
   @override
-  bool operator ==(Object other) =>
+  bool operator ==(final Object other) =>
       identical(this, other) ||
           other is AngleData &&
               runtimeType == other.runtimeType &&
@@ -55,11 +55,11 @@ class LineOptions extends IToolOptions
   final int widthDefault;
   final bool integerAspectRatioDefault;
   final int bezierCalculationPoints;
-  final Set<AngleData> angles = {};
+  final Set<AngleData> angles = <AngleData>{};
 
-  final ValueNotifier<int> width = ValueNotifier(1);
-  final ValueNotifier<bool> integerAspectRatio = ValueNotifier(false);
-  final ValueNotifier<bool> unmodifiedIntegerAspectRatio = ValueNotifier(false);
+  final ValueNotifier<int> width = ValueNotifier<int>(1);
+  final ValueNotifier<bool> integerAspectRatio = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> unmodifiedIntegerAspectRatio = ValueNotifier<bool>(false);
 
   LineOptions({
     required this.widthMin,
@@ -98,21 +98,18 @@ class LineOptions extends IToolOptions
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Width",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -126,7 +123,7 @@ class LineOptions extends IToolOptions
                     max: lineOptions.widthMax.toDouble(),
                     divisions: lineOptions.widthMax - lineOptions.widthMin,
                     onChanged: (final double newVal) {lineOptions.width.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!
+                    textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
               ),
@@ -134,17 +131,14 @@ class LineOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Integer Aspect Ratio",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -171,13 +165,13 @@ class LineOptions extends IToolOptions
                             }
                             lineOptions.integerAspectRatio.value = newVal;
                           },
-                          value: lineOptions.integerAspectRatio.value
+                          value: lineOptions.integerAspectRatio.value,
                         );
                       },
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),

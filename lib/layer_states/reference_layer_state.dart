@@ -34,12 +34,12 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<ReferenceImage?> imageNotifier;
 
   ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final double offsetX, required final double offsetY}) :
-        opacityNotifier = ValueNotifier(opacity),
-        aspectRatioNotifier = ValueNotifier(aspectRatio),
-        zoomNotifier = ValueNotifier(zoom),
-        offsetXNotifier = ValueNotifier(offsetX),
-        offsetYNotifier = ValueNotifier(offsetY),
-        imageNotifier = ValueNotifier(image)
+        opacityNotifier = ValueNotifier<int>(opacity),
+        aspectRatioNotifier = ValueNotifier<double>(aspectRatio),
+        zoomNotifier = ValueNotifier<int>(zoom),
+        offsetXNotifier = ValueNotifier<double>(offsetX),
+        offsetYNotifier = ValueNotifier<double>(offsetY),
+        imageNotifier = ValueNotifier<ReferenceImage?>(image)
   {
     if (image != null)
     {
@@ -48,7 +48,7 @@ class ReferenceLayerState extends LayerState
     }
   }
 
-  factory ReferenceLayerState.from({required ReferenceLayerState other})
+  factory ReferenceLayerState.from({required final ReferenceLayerState other})
   {
     return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacity, zoom: other.zoomNotifier.value, image: other.image, offsetX: other.offsetX, offsetY: other.offsetY);
   }
@@ -67,7 +67,7 @@ class ReferenceLayerState extends LayerState
 
   void setZoomSliderFromZoomFactor({required final double factor})
   {
-    setZoomSliderValue(newVal: (pow(factor, 1.0 / _refSettings.zoomCurveExponent.toDouble()) * _refSettings.zoomDefault).round());
+    setZoomSliderValue(newVal: (pow(factor, 1.0 / _refSettings.zoomCurveExponent) * _refSettings.zoomDefault).round());
   }
 
   void setZoomSliderValue({required final int newVal})
@@ -108,7 +108,7 @@ class ReferenceLayerState extends LayerState
 
   double get zoomFactor
   {
-    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), _refSettings.zoomCurveExponent.toDouble()).toDouble();
+    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), _refSettings.zoomCurveExponent).toDouble();
   }
 
 

@@ -18,12 +18,12 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class LinePainter extends IToolPainter
@@ -31,8 +31,8 @@ class LinePainter extends IToolPainter
   LinePainter({required super.painterOptions});
   final LineOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  Set<CoordinateSetI> _contentPoints = {};
-  Set<CoordinateSetI> _linePoints = {};
+  Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
+  Set<CoordinateSetI> _linePoints = <CoordinateSetI>{};
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   int _previousSize = -1;
@@ -46,18 +46,18 @@ class LinePainter extends IToolPainter
 
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null)
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       if (_cursorPosNorm != _previousCursorPosNorm || _options.width.value != _previousSize)
       {
         _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: _cursorPosNorm);
@@ -74,7 +74,7 @@ class LinePainter extends IToolPainter
               _linePoints = getIntegerRatioLinePoints(startPos: _lineStartPos, endPos: _cursorPosNorm, size: _options.width.value, angles: _options.angles, shape: PencilShape.round);
               if (_hotkeyManager.shiftIsPressed)
               {
-                final Set<CoordinateSetI> otherDirPoints = {};
+                final Set<CoordinateSetI> otherDirPoints = <CoordinateSetI>{};
                 for (final CoordinateSetI coord in _linePoints)
                 {
                   otherDirPoints.add(CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - coord.x), y: _lineStartPos.y + (_lineStartPos.y - coord.y)));
@@ -98,7 +98,7 @@ class LinePainter extends IToolPainter
             }
             else
             {
-              Set<CoordinateSetI> widePoints = {};
+              final Set<CoordinateSetI> widePoints = <CoordinateSetI>{};
               for (final CoordinateSetI coord in curvePoints)
               {
                 widePoints.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: coord));
@@ -172,11 +172,11 @@ class LinePainter extends IToolPainter
   }
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
     //Surrounding
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
-    Path path = Path();
+    final Path path = Path();
     for (int i = 0; i < pathPoints.length; i++)
     {
       if (i == 0)
@@ -204,7 +204,7 @@ class LinePainter extends IToolPainter
   }
 
   @override
-  void drawExtras({required DrawingParameters drawParams})
+  void drawExtras({required final DrawingParameters drawParams})
   {
     /*if (_lineStarted && drawParams.cursorPos != null)
     {
@@ -240,9 +240,9 @@ class LinePainter extends IToolPainter
       {required final CoordinateSetI p0,
       required final CoordinateSetI p1,
       required final CoordinateSetI p2,
-      required final int numPoints})
+      required final int numPoints,})
   {
-    final Set<CoordinateSetI> points = {};
+    final Set<CoordinateSetI> points = <CoordinateSetI>{};
 
     for (int i = 0; i <= numPoints; i++)
     {
@@ -255,7 +255,7 @@ class LinePainter extends IToolPainter
     }
 
     //cleaning
-    final Set<CoordinateSetI> removePoints = {};
+    final Set<CoordinateSetI> removePoints = <CoordinateSetI>{};
     for (final CoordinateSetI coord in points)
     {
       final bool hasRight = points.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)) && !removePoints.contains(CoordinateSetI(x: coord.x + 1, y: coord.y));
@@ -277,7 +277,7 @@ class LinePainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     if (drawParams.cursorPos != null)

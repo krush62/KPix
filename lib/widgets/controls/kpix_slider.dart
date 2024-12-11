@@ -56,12 +56,12 @@ class KPixSlider extends StatelessWidget
     required this.textStyle,
     this.topBottomPadding = 8.0,
     this.label,
-    this.isRainbow = false
+    this.isRainbow = false,
 
   });
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     final Color fgColor = activeTrackColor ?? Theme.of(context).primaryColorLight;
     final Color bgColor = inActiveTrackColor ?? Theme.of(context).primaryColor;
@@ -79,11 +79,11 @@ class KPixSlider extends StatelessWidget
           inactiveTrackColor: bgColor,
           overlayShape: SliderComponentShape.noOverlay,
           tickMarkShape: SliderTickMarkShape.noTickMark,
-          disabledActiveTrackColor: disColor
+          disabledActiveTrackColor: disColor,
         ),
         child: Stack(
           alignment: Alignment.center,
-          children: [
+          children: <Widget>[
             Slider(
               value: value,
               min: min,
@@ -91,13 +91,12 @@ class KPixSlider extends StatelessWidget
               onChanged: onChanged,
               divisions: divisions,
             ),
-            !isRainbow ? Positioned.fill(
+            if (!isRainbow) Positioned.fill(
               child: Center(
                 child: IgnorePointer(
-                  ignoring: true,
                   child: Stack(
                     alignment: Alignment.center,
-                    children: [
+                    children: <Widget>[
                       Text(
                         label ?? value.toStringAsFixed(decimals),
                         style: TextStyle(
@@ -122,7 +121,7 @@ class KPixSlider extends StatelessWidget
                   ),
                 ),
               ),
-            ) : SizedBox.shrink(),
+            ) else const SizedBox.shrink(),
           ],
         ),
       ),
@@ -138,17 +137,17 @@ class _KPixSliderThumbShape extends RoundSliderThumbShape
   });
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size.zero;
+  Size getPreferredSize(final bool isEnabled, final bool isDiscrete) => Size.zero;
 
   @override
-  void paint(PaintingContext context, Offset center, {required Animation<double> activationAnimation, required Animation<double> enableAnimation, required bool isDiscrete, required TextPainter labelPainter, required RenderBox parentBox, required SliderThemeData sliderTheme, required TextDirection textDirection, required double value, required double textScaleFactor, required Size sizeWithOverflow}) {
+  void paint(final PaintingContext context, final Offset center, {required final Animation<double> activationAnimation, required final Animation<double> enableAnimation, required final bool isDiscrete, required final TextPainter labelPainter, required final RenderBox parentBox, required final SliderThemeData sliderTheme, required final TextDirection textDirection, required final double value, required final double textScaleFactor, required final Size sizeWithOverflow}) {
 
-    Paint activePaint = Paint()
+    final Paint activePaint = Paint()
       ..color = sliderTheme.activeTrackColor!
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0;
 
-    Paint inactivePaint = Paint()
+    final Paint inactivePaint = Paint()
       ..color = sliderTheme.inactiveTrackColor!
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
@@ -165,22 +164,22 @@ class _InvisibleSliderThumbShape extends SliderComponentShape {
   const _InvisibleSliderThumbShape();
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size.zero;
+  Size getPreferredSize(final bool isEnabled, final bool isDiscrete) => Size.zero;
 
   @override
   void paint(
-      PaintingContext context,
-      Offset center, {
-        required Animation<double> activationAnimation,
-        required Animation<double> enableAnimation,
-        required bool isDiscrete,
-        required TextPainter labelPainter,
-        required RenderBox parentBox,
-        required SliderThemeData sliderTheme,
-        required TextDirection textDirection,
-        required double value,
-        required double textScaleFactor,
-        required Size sizeWithOverflow,
+      final PaintingContext context,
+      final Offset center, {
+        required final Animation<double> activationAnimation,
+        required final Animation<double> enableAnimation,
+        required final bool isDiscrete,
+        required final TextPainter labelPainter,
+        required final RenderBox parentBox,
+        required final SliderThemeData sliderTheme,
+        required final TextDirection textDirection,
+        required final double value,
+        required final double textScaleFactor,
+        required final Size sizeWithOverflow,
       }) {
     // No thumb painting
   }
@@ -196,23 +195,23 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
     this.borderRadius = 4.0,
     this.strokeWidth = 2.0,
     this.strokeColor = Colors.black,
-    this.isRainbow = false
+    this.isRainbow = false,
   });
 
 
   @override
   void paint(
-      PaintingContext context,
-      Offset offset, {
-        double additionalActiveTrackHeight = 0,
-        required Animation<double> enableAnimation,
-        bool isDiscrete = false,
-        bool isEnabled = true,
-        required RenderBox parentBox,
-        Offset? secondaryOffset,
-        required SliderThemeData sliderTheme,
-        required TextDirection textDirection,
-        required Offset thumbCenter,
+      final PaintingContext context,
+      final Offset offset, {
+        final double additionalActiveTrackHeight = 0,
+        required final Animation<double> enableAnimation,
+        final bool isDiscrete = false,
+        final bool isEnabled = true,
+        required final RenderBox parentBox,
+        final Offset? secondaryOffset,
+        required final SliderThemeData sliderTheme,
+        required final TextDirection textDirection,
+        required final Offset thumbCenter,
       }) {
     final Rect trackRect = getPreferredRect(
       parentBox: parentBox,
@@ -234,9 +233,7 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
       {
         activePaint = Paint()
           ..shader = LinearGradient(
-            colors: List.generate(360, (hue) => HSVColor.fromAHSV(1, hue.toDouble(), 0.5, 0.7).toColor()),
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+            colors: List<Color>.generate(360, (final int hue) => HSVColor.fromAHSV(1, hue.toDouble(), 0.5, 0.7).toColor()),
           ).createShader(trackRect);
       }
 

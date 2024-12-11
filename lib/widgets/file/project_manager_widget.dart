@@ -57,9 +57,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 {
   final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ProjectManagerOptions _options = GetIt.I.get<PreferenceManager>().projectManagerOptions;
-  final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier([]);
-  final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier(null);
-  final ValueNotifier<ProjectViewOrder> _projectViewOrder = ValueNotifier(ProjectViewOrder.lastModifiedDesc);
+  final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier<List<ProjectManagerEntryWidget>>(<ProjectManagerEntryWidget>[]);
+  final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier<ProjectManagerEntryWidget?>(null);
+  final ValueNotifier<ProjectViewOrder> _projectViewOrder = ValueNotifier<ProjectViewOrder>(ProjectViewOrder.lastModifiedDesc);
 
   late KPixOverlay _saveBeforeLoadWarningDialog;
   late KPixOverlay _deleteWarningDialog;
@@ -68,18 +68,18 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   void initState()
   {
     super.initState();
-    _saveBeforeLoadWarningDialog = OverlayEntries.getThreeButtonDialog(
+    _saveBeforeLoadWarningDialog = getThreeButtonDialog(
         onYes: _saveBeforeLoadWarningYes,
         onNo: _saveBeforeLoadWarningNo,
         onCancel: _closeSaveBeforeLoadWarning,
         outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?"
+        message: "There are unsaved changes, do you want to save first?",
     );
-    _deleteWarningDialog = OverlayEntries.getTwoButtonDialog(
+    _deleteWarningDialog = getTwoButtonDialog(
       message: "Do you really want to delete this project?",
       onNo: _deleteWarningNo,
       onYes: _deleteWarningYes,
-      outsideCancelable: false
+      outsideCancelable: false,
     );
 
     _createWidgetList().then((final List<ProjectManagerEntryWidget> pList) {
@@ -99,14 +99,14 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _saveBeforeLoadWarningNo()
   {
-    FileHandler.loadKPixFile(
+    loadKPixFile(
       fileData: null,
       constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
       path: _selectedWidget.value!.entryData.path,
       sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
       referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-      gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings
-    ).then((final LoadFileSet loadFileSet){FileHandler.fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
+      gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
+    ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
     _closeSaveBeforeLoadWarning();
     widget.dismiss();
     widget.fileLoad();
@@ -138,7 +138,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   {
     if (_selectedWidget.value != null)
     {
-      FileHandler.deleteProject(fullProjectPath: _selectedWidget.value!.entryData.path).then((final bool success) {
+      deleteProject(fullProjectPath: _selectedWidget.value!.entryData.path).then((final bool success) {
         _fileDeleted(success: success);
       });
     }
@@ -150,7 +150,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     _deleteWarningDialog.hide();
   }
 
-  void _fileDeleted({required bool success})
+  void _fileDeleted({required final bool success})
   {
     if (success)
     {
@@ -163,10 +163,10 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   Future<List<ProjectManagerEntryWidget>> _createWidgetList() async
   {
-    final List<ProjectManagerEntryWidget> fList = [];
+    final List<ProjectManagerEntryWidget> fList = <ProjectManagerEntryWidget>[];
     if (!kIsWeb)
     {
-      final List<ProjectManagerEntryData> internalFiles = await FileHandler.loadProjectsFromInternal();
+      final List<ProjectManagerEntryData> internalFiles = await loadProjectsFromInternal();
       for (final ProjectManagerEntryData fileData in internalFiles)
       {
         fList.add(ProjectManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
@@ -181,26 +181,26 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   {
     if (order== ProjectViewOrder.lastModifiedAsc)
     {
-      fList.sort((a, b) => a.entryData.dateTime.compareTo(b.entryData.dateTime));
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.dateTime.compareTo(b.entryData.dateTime));
     }
     else if (order == ProjectViewOrder.lastModifiedDesc)
     {
-      fList.sort((a, b) => b.entryData.dateTime.compareTo(a.entryData.dateTime));
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.dateTime.compareTo(a.entryData.dateTime));
     }
     else if (order == ProjectViewOrder.nameAsc)
     {
-      fList.sort((a, b) => a.entryData.name.compareTo(b.entryData.name));
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.name.compareTo(b.entryData.name));
     }
     else if (order == ProjectViewOrder.nameDesc)
     {
-      fList.sort((a, b) => b.entryData.name.compareTo(a.entryData.name));
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.name.compareTo(a.entryData.name));
     }
   }
 
   void changeOrder({required final ProjectViewOrder newOrder})
   {
     final List<ProjectManagerEntryWidget> fList = _fileEntries.value;
-    _fileEntries.value = [];
+    _fileEntries.value = <ProjectManagerEntryWidget>[];
     _sortWidgetEntries(fList: fList, order: newOrder);
     _fileEntries.value = fList;
     _projectViewOrder.value = newOrder;
@@ -208,9 +208,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _importProjectPressed()
   {
-    FileHandler.getPathForKPixFile().then((final String? loadPath)
+    getPathForKPixFile().then((final String? loadPath)
     {
-      FileHandler.importProject(path: loadPath).then(
+      importProject(path: loadPath).then(
         (final bool success)
         {
           _importFileCompleted(success: success);
@@ -220,7 +220,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     });
   }
 
-  void _importFileCompleted({required bool success})
+  void _importFileCompleted({required final bool success})
   {
     final AppState appState = GetIt.I.get<AppState>();
     if (success)
@@ -233,7 +233,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Material(
       elevation: _alertOptions.elevation,
       shadowColor: Theme.of(context).primaryColorDark,
@@ -254,58 +254,56 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
           borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
         ),
         child: Column(
-          children: [
+          children: <Widget>[
             SizedBox(height: _alertOptions.padding),
             Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
             ValueListenableBuilder<ProjectViewOrder>(
               valueListenable: _projectViewOrder,
               builder: (final BuildContext context, final ProjectViewOrder viewOrder, final Widget? child) {
                 return SegmentedButton<ProjectViewOrder>(
-                  segments: [
-                    ButtonSegment(
+                  segments: const <ButtonSegment<ProjectViewOrder>>[
+                    ButtonSegment<ProjectViewOrder>(
                       value: ProjectViewOrder.nameAsc,
                       label: Tooltip(
                         message: "Order by file name (ascending)",
                         waitDuration: AppState.toolTipDuration,
                         child: FaIcon(
-                            FontAwesomeIcons.arrowDownAZ
+                            FontAwesomeIcons.arrowDownAZ,
                         ),
-                      )
+                      ),
                     ),
-                    ButtonSegment(
+                    ButtonSegment<ProjectViewOrder>(
                       value: ProjectViewOrder.nameDesc,
                       label: Tooltip(
                         message: "Order by file name (descending)",
                         waitDuration: AppState.toolTipDuration,
                         child: FaIcon(
-                            FontAwesomeIcons.arrowDownZA
+                            FontAwesomeIcons.arrowDownZA,
                         ),
-                      )
+                      ),
                     ),
-                    ButtonSegment(
+                    ButtonSegment<ProjectViewOrder>(
                       value: ProjectViewOrder.lastModifiedAsc,
                       label: Tooltip(
                         message: "Order by last modification (ascending)",
                         waitDuration: AppState.toolTipDuration,
                         child: FaIcon(
-                            FontAwesomeIcons.arrowDown19
+                            FontAwesomeIcons.arrowDown19,
                         ),
-                      )
+                      ),
                     ),
-                    ButtonSegment(
+                    ButtonSegment<ProjectViewOrder>(
                       value: ProjectViewOrder.lastModifiedDesc,
                       label: Tooltip(
                         message: "Order by last modification (descending)",
                         waitDuration: AppState.toolTipDuration,
                         child: FaIcon(
-                            FontAwesomeIcons.arrowDown91
+                            FontAwesomeIcons.arrowDown91,
                         ),
-                      )
+                      ),
                     ),
                   ],
                   selected: <ProjectViewOrder>{viewOrder},
-                  emptySelectionAllowed: false,
-                  multiSelectionEnabled: false,
                   showSelectedIcon: false,
                   onSelectionChanged: (final Set<ProjectViewOrder> newOrders){changeOrder(newOrder: newOrders.first);},
                 );
@@ -313,10 +311,10 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             ),
             SizedBox(height: _alertOptions.padding),
             Expanded(
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius))
+                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
                 ),
                 child: ValueListenableBuilder<List<ProjectManagerEntryWidget>>(
                   valueListenable: _fileEntries,
@@ -327,7 +325,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                       childAspectRatio: _options.entryAspectRatio,
                       mainAxisSpacing: _alertOptions.padding,
                       crossAxisSpacing: _alertOptions.padding,
-                      children: pList.toList()
+                      children: pList.toList(),
                     );
                   },
                 ),
@@ -335,11 +333,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+              children: <Widget>[
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     message: "Close",
                     waitDuration: AppState.toolTipDuration,
@@ -353,10 +349,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         onPressed: _dismissPressed,
                       ),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     message: "Import Project",
                     waitDuration: AppState.toolTipDuration,
@@ -370,10 +365,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         onPressed: kIsWeb ? null : _importProjectPressed,
                       ),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     message: "Delete Selected Project",
                     waitDuration: AppState.toolTipDuration,
@@ -392,10 +386,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         },
                       ),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     message: "Load Selected Project",
                     waitDuration: AppState.toolTipDuration,
@@ -414,13 +407,13 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         },
                       ),
                     ),
-                  )
+                  ),
                 ),
-              ]
+              ],
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 }

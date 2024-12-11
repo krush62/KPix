@@ -19,41 +19,42 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/preferences/gui_preferences.dart';
-import 'package:kpix/tool_options/line_options.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/preferences/gui_preferences.dart';
+import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class BorderCoordinateSetI
 {
   final CoordinateSetI coord;
   final List<List<CoordinateSetI>> borders;
-  BorderCoordinateSetI._({required this.coord, required this.borders});
 
-  factory BorderCoordinateSetI({required bool left, required bool right, required bool top, required bool bottom, required CoordinateSetI coord})
+
+  factory BorderCoordinateSetI({required final bool left, required final bool right, required final bool top, required final bool bottom, required final CoordinateSetI coord})
   {
-    List<List<CoordinateSetI>> borders = [];
+    List<List<CoordinateSetI>> borders = <List<CoordinateSetI>>[];
     if (left && right && !top && !bottom)
     {
-      borders = [[coord, CoordinateSetI(x: coord.x, y: coord.y + 1)],[CoordinateSetI(x: coord.x + 1, y: coord.y), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
+      borders = <List<CoordinateSetI>>[<CoordinateSetI>[coord, CoordinateSetI(x: coord.x, y: coord.y + 1)],<CoordinateSetI>[CoordinateSetI(x: coord.x + 1, y: coord.y), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
     }
     else if (!left && !right && top && bottom)
     {
-      borders = [[coord, CoordinateSetI(x: coord.x + 1, y: coord.y)],[CoordinateSetI(x: coord.x, y: coord.y + 1), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
+      borders = <List<CoordinateSetI>>[<CoordinateSetI>[coord, CoordinateSetI(x: coord.x + 1, y: coord.y)],<CoordinateSetI>[CoordinateSetI(x: coord.x, y: coord.y + 1), CoordinateSetI(x: coord.x + 1, y: coord.y + 1)]];
     }
     else
     {
-      List<CoordinateSetI> path = [];
+      final List<CoordinateSetI> path = <CoordinateSetI>[];
       final CoordinateSetI tl = coord;
       final CoordinateSetI tr = CoordinateSetI(x: coord.x + 1, y: coord.y);
       final CoordinateSetI br = CoordinateSetI(x: coord.x + 1, y: coord.y + 1);
@@ -61,60 +62,62 @@ class BorderCoordinateSetI
 
       if (top && !right && !bottom && !left) //top
       {
-        path.addAll([tl, tr]);
+        path.addAll(<CoordinateSetI>[tl, tr]);
       }
       else if (!top && right && !bottom && !left) //right
       {
-        path.addAll([tr, br]);
+        path.addAll(<CoordinateSetI>[tr, br]);
       }
       else if (!top && !right && bottom && !left) //bottom
       {
-        path.addAll([br, bl]);
+        path.addAll(<CoordinateSetI>[br, bl]);
       }
       else if (!top && !right && !bottom && left) //left
       {
-        path.addAll([bl, tl]);
+        path.addAll(<CoordinateSetI>[bl, tl]);
       }
       else if (top && right && !bottom && !left) //tr
       {
-        path.addAll([tl, tr, br]);
+        path.addAll(<CoordinateSetI>[tl, tr, br]);
       }
       else if (!top && right && bottom && !left) //br
       {
-        path.addAll([tr, br, bl]);
+        path.addAll(<CoordinateSetI>[tr, br, bl]);
       }
       else if (!top && !right && bottom && left) //bl
       {
-        path.addAll([br, bl, tl]);
+        path.addAll(<CoordinateSetI>[br, bl, tl]);
       }
       else if (top && !right && !bottom && left) //tl
       {
-        path.addAll([bl, tl, tr]);
+        path.addAll(<CoordinateSetI>[bl, tl, tr]);
       }
       else if (!top && right && bottom && left) // - top
       {
-        path.addAll([tr, br, bl, tl]);
+        path.addAll(<CoordinateSetI>[tr, br, bl, tl]);
       }
       else if (top && !right && bottom && left) // - right
       {
-        path.addAll([br, bl, tl, tr]);
+        path.addAll(<CoordinateSetI>[br, bl, tl, tr]);
       }
       else if (top && right && !bottom && left) // - bottom
       {
-        path.addAll([bl, tl, tr, br]);
+        path.addAll(<CoordinateSetI>[bl, tl, tr, br]);
       }
       else if (top && right && bottom && !left) // - left
       {
-        path.addAll([tl, tr, br, bl]);
+        path.addAll(<CoordinateSetI>[tl, tr, br, bl]);
       }
       if (path.isNotEmpty)
       {
-        borders = [path];
+        borders = <List<CoordinateSetI>>[path];
       }
 
     }
     return BorderCoordinateSetI._(coord: coord, borders: borders);
   }
+
+  BorderCoordinateSetI._({required this.coord, required this.borders});
 
 }
 
@@ -136,7 +139,7 @@ class ContentRasterSet
   const ContentRasterSet({
     required this.image,
     required this.offset,
-    required this.size
+    required this.size,
   });
 }
 
@@ -171,11 +174,11 @@ abstract class IToolPainter
   }
 
 
-  void calculate({required DrawingParameters drawParams}){}
-  void drawExtras({required DrawingParameters drawParams}){}
-  void drawCursorOutline({required DrawingParameters drawParams});
+  void calculate({required final DrawingParameters drawParams}){}
+  void drawExtras({required final DrawingParameters drawParams}){}
+  void drawCursorOutline({required final DrawingParameters drawParams});
   void reset() {}
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     statusBarData.cursorPos = null;
     statusBarData.dimension = null;
@@ -190,7 +193,7 @@ abstract class IToolPainter
   {
     final CoordinateSetI startPos = CoordinateSetI(x: position.x - ((size - 1) ~/ 2), y: position.y - ((size - 1) ~/ 2));
     final CoordinateSetI endPos = CoordinateSetI(x: position.x + (size ~/ 2), y: position.y + (size ~/ 2));
-    final Set<CoordinateSetI> coords = {};
+    final Set<CoordinateSetI> coords = <CoordinateSetI>{};
     if (shape == PencilShape.square)
     {
       for (int x = startPos.x; x <= endPos.x; x++)
@@ -209,8 +212,8 @@ abstract class IToolPainter
 
       for (int x = startPos.x; x <= endPos.x; x++) {
         for (int y = startPos.y; y <= endPos.y; y++) {
-          double dx = (x + 0.5) - centerX;
-          double dy = (y + 0.5) - centerY;
+          final double dx = (x + 0.5) - centerX;
+          final double dy = (y + 0.5) - centerY;
           if ((dx * dx) / (radiusX * radiusX) +
               (dy * dy) / (radiusY * radiusY) <= 1) {
             coords.add(CoordinateSetI(x: x, y: y));
@@ -225,8 +228,8 @@ abstract class IToolPainter
   {
     if (drawingPixels.isNotEmpty)
     {
-      final CoordinateSetI min = Helper.getMin(coordList: drawingPixels.keys.toList());
-      final CoordinateSetI max = Helper.getMax(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
       //print("min: $minX|$minY max: $maxX|$maxY");
       final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
       final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
@@ -237,7 +240,7 @@ abstract class IToolPainter
         final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
         if (index < byteDataImg.lengthInBytes)
         {
-          byteDataImg.setUint32(index, Helper.argbToRgba(argb: dColor.value));
+          byteDataImg.setUint32(index, argbToRgba(argb: dColor.value));
         }
       }
 
@@ -246,7 +249,7 @@ abstract class IToolPainter
           byteDataImg.buffer.asUint8List(),
           size.x,
           size.y,
-          ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+          ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
       {
         completerImg.complete(convertedImage);
       }
@@ -261,15 +264,15 @@ abstract class IToolPainter
 
   Set<CoordinateSetI> getLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape})
   {
-    Set<CoordinateSetI> linePoints = {};
-    final Set<CoordinateSetI> bresenhamPoints = Helper.bresenham(start: startPos, end: endPos).toSet();
+    Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
+    final Set<CoordinateSetI> bresenhamPoints = bresenham(start: startPos, end: endPos).toSet();
     if (size == 1)
     {
       linePoints = bresenhamPoints;
     }
     else
     {
-      final Set<CoordinateSetI> lPoints = {};
+      final Set<CoordinateSetI> lPoints = <CoordinateSetI>{};
       for (final CoordinateSetI coord in bresenhamPoints)
       {
         lPoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
@@ -282,33 +285,33 @@ abstract class IToolPainter
   Set<CoordinateSetI> getIntegerRatioLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape, required final Set<AngleData> angles})
   {
 
-    Set<CoordinateSetI> linePoints = {};
+    Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
     assert(angles.isNotEmpty);
     final double currentAngle = atan2(endPos.x - startPos.x, endPos.y - startPos.y);
     AngleData? closestAngle;
     double closestDist = 0.0;
     for (final AngleData aData in angles)
     {
-      final double currentDist = (Helper.normAngle(angle: aData.angle) - Helper.normAngle(angle: currentAngle)).abs();
+      final double currentDist = (normAngle(angle: aData.angle) - normAngle(angle: currentAngle)).abs();
       if (closestAngle == null || currentDist < closestDist)
       {
         closestAngle = aData;
-        closestDist = (Helper.normAngle(angle: currentAngle) - Helper.normAngle(angle: closestAngle.angle)).abs();
+        closestDist = (normAngle(angle: currentAngle) - normAngle(angle: closestAngle.angle)).abs();
       }
     }
 
     if (closestAngle != null) //should never happen
     {
       double shortestDist = double.maxFinite;
-      CoordinateSetI currentPos = CoordinateSetI.from(other: startPos);
-      final Set<CoordinateSetI> lPoints = {};
+      final CoordinateSetI currentPos = CoordinateSetI.from(other: startPos);
+      final Set<CoordinateSetI> lPoints = <CoordinateSetI>{};
       lPoints.add(startPos);
       bool firstRun = true;
       do
       {
-        int startReducer = firstRun ? -1 : 0;
+        final int startReducer = firstRun ? -1 : 0;
         firstRun = false;
-        final Set<CoordinateSetI> currPoints = {};
+        final Set<CoordinateSetI> currPoints = <CoordinateSetI>{};
         if (closestAngle.x.abs() > closestAngle.y.abs())
         {
           for (int i = 0; i < closestAngle.x.abs() + startReducer; i++)
@@ -356,7 +359,7 @@ abstract class IToolPainter
           }
         }
 
-        final dist = Helper.getDistance(a: endPos, b: currentPos);
+        final double dist = getDistance(a: endPos, b: currentPos);
         if (dist < shortestDist)
         {
           shortestDist = dist;
@@ -375,7 +378,7 @@ abstract class IToolPainter
       }
       else
       {
-        final Set<CoordinateSetI> widePoints = {};
+        final Set<CoordinateSetI> widePoints = <CoordinateSetI>{};
         for (final CoordinateSetI coord in lPoints)
         {
           widePoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
@@ -390,7 +393,7 @@ abstract class IToolPainter
 
   static List<CoordinateSetI> getBoundaryPath({required final Set<CoordinateSetI> coords})
   {
-    final List<CoordinateSetI> path = [];
+    final List<CoordinateSetI> path = <CoordinateSetI>[];
     if (coords.length == 1)
     {
       path.add(coords.last);
@@ -400,15 +403,15 @@ abstract class IToolPainter
     }
     else
     {
-      final List<BorderCoordinateSetI> boundaryPoints = [];
+      final List<BorderCoordinateSetI> boundaryPoints = <BorderCoordinateSetI>[];
       for (final CoordinateSetI coord in coords)
       {
-        BorderCoordinateSetI bcoord = BorderCoordinateSetI(
+        final BorderCoordinateSetI bcoord = BorderCoordinateSetI(
             coord: coord,
             left: !coords.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)),
             right: !coords.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)),
             top: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)),
-            bottom: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y + 1))
+            bottom: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)),
         );
 
         if (bcoord.borders.isNotEmpty)
@@ -474,7 +477,7 @@ abstract class IToolPainter
 
   CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
-    final CoordinateColorMap pixelMap = HashMap();
+    final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateSetI coord in coords)
     {
       if (coord.x >= 0 && coord.y >= 0 &&
@@ -529,7 +532,7 @@ abstract class IToolPainter
 
   CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
-    final CoordinateColorMap pixelMap = HashMap();
+    final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
     {
       final CoordinateSetI coord = stampEntry.key;
@@ -580,7 +583,7 @@ abstract class IToolPainter
     return pixelMap;
   }
 
-  int getClosestPixel({required double value, required double pixelSize})
+  int getClosestPixel({required final double value, required final double pixelSize})
   {
     final double remainder = value % pixelSize;
     final double lowerMultiple = value - remainder;

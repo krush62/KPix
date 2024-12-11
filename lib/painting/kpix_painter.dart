@@ -22,8 +22,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
-import 'package:kpix/preferences/gui_preferences.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
@@ -37,7 +36,8 @@ import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/preferences/gui_preferences.dart';
+import 'package:kpix/util/helper.dart';
 
 class KPixPainterOptions
 {
@@ -88,12 +88,12 @@ class DrawingParameters
     required this.primaryDown,
     required this.secondaryDown,
     required this.primaryPressStart,
-    required LayerState currentLayer
+    required final LayerState currentLayer,
 }) :
     scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
     drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
     drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
-                                y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor()),
+                                y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor(),),
     currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
     currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null;
 
@@ -117,7 +117,7 @@ class KPixPainter extends CustomPainter
   late Color _whiteSelectionAlphaColor;
   late Color _blackBorderAlphaColor;
   late Map<ToolType, IToolPainter> toolPainterMap;
-  late Size latestSize = const Size(0,0);
+  late Size latestSize = Size.zero;
   late int _latestRasterSize = 8;
   late int _latestContrast = 50;
   IToolPainter? toolPainter;
@@ -127,21 +127,21 @@ class KPixPainter extends CustomPainter
   bool _referenceImgMovementStarted = false;
   final CoordinateSetD _referenceImgNormStartPos = CoordinateSetD(x: 0, y: 0);
   final CoordinateSetD _referenceImgcursorPosNorm = CoordinateSetD(x: 0, y: 0);
-  Offset _referenceImglastStartPos = const Offset(0, 0);
+  Offset _referenceImglastStartPos = Offset.zero;
   final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD(x: 0, y: 0);
 
 
   KPixPainter({
-    required AppState appState,
-    required ValueNotifier<Offset> offset,
-    required ValueNotifier<CoordinateSetD?> coords,
-    required ValueNotifier<bool> primaryDown,
-    required ValueNotifier<bool> secondaryDown,
-    required ValueNotifier<Offset> primaryPressStart,
-    required ValueNotifier<bool> isDragging,
-    required ValueNotifier<bool> stylusLongMoveStarted,
-    required ValueNotifier<bool> stylusLongMoveVertical,
-    required ValueNotifier<bool> stylusLongMoveHorizontal})
+    required final AppState appState,
+    required final ValueNotifier<Offset> offset,
+    required final ValueNotifier<CoordinateSetD?> coords,
+    required final ValueNotifier<bool> primaryDown,
+    required final ValueNotifier<bool> secondaryDown,
+    required final ValueNotifier<Offset> primaryPressStart,
+    required final ValueNotifier<bool> isDragging,
+    required final ValueNotifier<bool> stylusLongMoveStarted,
+    required final ValueNotifier<bool> stylusLongMoveVertical,
+    required final ValueNotifier<bool> stylusLongMoveHorizontal,})
       : _appState = appState,
         _offset = offset,
         _coords = coords,
@@ -164,7 +164,7 @@ class KPixPainter extends CustomPainter
     },);
     _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
 
-    toolPainterMap = {
+    toolPainterMap = <ToolType, IToolPainter>{
       ToolType.select: SelectionPainter(painterOptions: _options),
       ToolType.erase: EraserPainter(painterOptions: _options),
       ToolType.pencil: PencilPainter(painterOptions: _options),
@@ -174,7 +174,7 @@ class KPixPainter extends CustomPainter
       ToolType.font: FontPainter(painterOptions: _options),
       ToolType.spraycan: SprayCanPainter(painterOptions: _options),
       ToolType.line: LinePainter(painterOptions: _options),
-      ToolType.stamp: StampPainter(painterOptions: _options)
+      ToolType.stamp: StampPainter(painterOptions: _options),
     };
 
   }
@@ -193,11 +193,11 @@ class KPixPainter extends CustomPainter
   }
 
   @override
-  void paint(Canvas canvas, Size size)
+  void paint(final Canvas canvas, final Size size)
   {
     if (_appState.getSelectedLayer() != null)
     {
-      final currentToolPainter = toolPainterMap[_appState.selectedTool];
+      final IToolPainter? currentToolPainter = toolPainterMap[_appState.selectedTool];
       if (currentToolPainter != toolPainter)
       {
         if (toolPainter != null)
@@ -214,7 +214,7 @@ class KPixPainter extends CustomPainter
         _createCheckerboard();
       }
 
-      DrawingParameters drawParams = DrawingParameters(
+      final DrawingParameters drawParams = DrawingParameters(
         offset: _offset.value,
         canvas: canvas,
         paint: Paint(),
@@ -267,7 +267,7 @@ class KPixPainter extends CustomPainter
         drawParams.offset.dx - width,
         drawParams.offset.dy - width,
         drawParams.canvasSize.x * pxlSzDbl + (width * 2),
-        drawParams.canvasSize.y * pxlSzDbl + (width * 2));
+        drawParams.canvasSize.y * pxlSzDbl + (width * 2),);
 
     final Paint p = Paint();
     p.color = _blackBorderAlphaColor;
@@ -288,7 +288,7 @@ class KPixPainter extends CustomPainter
           drawParams.offset.dx + (refLayer.offsetX * pxlSzDbl),
           drawParams.offset.dy + (refLayer.offsetY * pxlSzDbl),
           image.width * refLayer.zoomFactor * refLayer.aspectRatioFactorX * pxlSzDbl,
-          image.height * refLayer.zoomFactor * refLayer.aspectRatioFactorY * pxlSzDbl
+          image.height * refLayer.zoomFactor * refLayer.aspectRatioFactorY * pxlSzDbl,
       );
 
       final Paint p = Paint();
@@ -352,7 +352,7 @@ class KPixPainter extends CustomPainter
                       _options.selectionSolidStrokeWidth / 2,
                   _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) -
-                      _options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2,),
               Offset(
                   _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) -
@@ -360,21 +360,21 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      _options.selectionSolidStrokeWidth / 2),
-              drawParams.paint);
+                      _options.selectionSolidStrokeWidth / 2,),
+              drawParams.paint,);
           drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx +
                       (line.startLoc.x * pxlSzDbl) +
                       _options.selectionSolidStrokeWidth / 2,
-                  _offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+                  _offset.value.dy + (line.startLoc.y * pxlSzDbl),),
               Offset(
                   _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
                       _options.selectionSolidStrokeWidth / 2,
-                  _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
-              drawParams.paint);
+                  _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl,),
+              drawParams.paint,);
         } else if (line.selectDir == SelectionDirection.right) {
           drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
@@ -385,7 +385,7 @@ class KPixPainter extends CustomPainter
                       _options.selectionSolidStrokeWidth / 2,
                   _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) -
-                      _options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2,),
               Offset(
                   _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
@@ -394,8 +394,8 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      _options.selectionSolidStrokeWidth / 2),
-              drawParams.paint);
+                      _options.selectionSolidStrokeWidth / 2,),
+              drawParams.paint,);
           drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
@@ -403,14 +403,14 @@ class KPixPainter extends CustomPainter
                       (line.startLoc.x * pxlSzDbl) +
                       pxlSzDbl -
                       _options.selectionSolidStrokeWidth / 2,
-                  _offset.value.dy + (line.startLoc.y * pxlSzDbl)),
+                  _offset.value.dy + (line.startLoc.y * pxlSzDbl),),
               Offset(
                   _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
                       pxlSzDbl -
                       _options.selectionSolidStrokeWidth / 2,
-                  _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl),
-              drawParams.paint);
+                  _offset.value.dy + (line.endLoc.y * pxlSzDbl) + pxlSzDbl,),
+              drawParams.paint,);
         } else if (line.selectDir == SelectionDirection.top) {
           drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
@@ -420,7 +420,7 @@ class KPixPainter extends CustomPainter
                       _options.selectionSolidStrokeWidth / 2,
                   _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) -
-                      _options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2,),
               Offset(
                   _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
@@ -428,21 +428,21 @@ class KPixPainter extends CustomPainter
                       _options.selectionSolidStrokeWidth / 2,
                   _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) -
-                      _options.selectionSolidStrokeWidth / 2),
-              drawParams.paint);
+                      _options.selectionSolidStrokeWidth / 2,),
+              drawParams.paint,);
           drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
                   _offset.value.dx + (line.startLoc.x * pxlSzDbl),
                   _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) +
-                      _options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2,),
               Offset(
                   _offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
                   _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
-                      _options.selectionSolidStrokeWidth / 2),
-              drawParams.paint);
+                      _options.selectionSolidStrokeWidth / 2,),
+              drawParams.paint,);
         } else if (line.selectDir == SelectionDirection.bottom) {
           drawParams.paint.color = _blackSelectionAlphaColor;
           drawParams.canvas.drawLine(
@@ -453,7 +453,7 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      _options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2,),
               Offset(
                   _offset.value.dx +
                       (line.endLoc.x * pxlSzDbl) +
@@ -462,8 +462,8 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl +
-                      _options.selectionSolidStrokeWidth / 2),
-              drawParams.paint);
+                      _options.selectionSolidStrokeWidth / 2,),
+              drawParams.paint,);
           drawParams.paint.color = _whiteSelectionAlphaColor;
           drawParams.canvas.drawLine(
               Offset(
@@ -471,14 +471,14 @@ class KPixPainter extends CustomPainter
                   _offset.value.dy +
                       (line.startLoc.y * pxlSzDbl) +
                       pxlSzDbl -
-                      _options.selectionSolidStrokeWidth / 2),
+                      _options.selectionSolidStrokeWidth / 2,),
               Offset(
                   _offset.value.dx + (line.endLoc.x * pxlSzDbl) + pxlSzDbl,
                   _offset.value.dy +
                       (line.endLoc.y * pxlSzDbl) +
                       pxlSzDbl -
-                      _options.selectionSolidStrokeWidth / 2),
-              drawParams.paint);
+                      _options.selectionSolidStrokeWidth / 2,),
+              drawParams.paint,);
         }
       }
     }
@@ -504,12 +504,12 @@ class KPixPainter extends CustomPainter
       {
         if (_stylusLongMoveHorizontal.value)
         {
-          Path path1 = Path();
+          final Path path1 = Path();
           path1.moveTo(_coords.value!.x + (-1 * _options.cursorSize), _coords.value!.y + (-1 * _options.cursorSize));
           path1.lineTo(_coords.value!.x + (-2 * _options.cursorSize), _coords.value!.y);
           path1.lineTo(_coords.value!.x + (-1 * _options.cursorSize), _coords.value!.y + (1 * _options.cursorSize));
 
-          Path path2 = Path();
+          final Path path2 = Path();
           path1.moveTo(_coords.value!.x + (1 * _options.cursorSize), _coords.value!.y + (-1 * _options.cursorSize));
           path1.lineTo(_coords.value!.x + (2 * _options.cursorSize), _coords.value!.y);
           path1.lineTo(_coords.value!.x + (1 * _options.cursorSize), _coords.value!.y + (1 * _options.cursorSize));
@@ -527,7 +527,7 @@ class KPixPainter extends CustomPainter
         }
         else if (_stylusLongMoveVertical.value)
         {
-          Path path = Path();
+          final Path path = Path();
           path.moveTo(_coords.value!.x + (-2 * _options.cursorSize), _coords.value!.y + (2 * _options.cursorSize));
           path.lineTo(_coords.value!.x, _coords.value!.y);
           path.lineTo(_coords.value!.x + (2 * _options.cursorSize), _coords.value!.y);
@@ -567,12 +567,12 @@ class KPixPainter extends CustomPainter
                 canvas: drawParams.canvas,
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
                     drawParams.scaledCanvasSize.x.toDouble(),
-                    drawParams.scaledCanvasSize.y.toDouble()),
+                    drawParams.scaledCanvasSize.y.toDouble(),),
                 image: drawingLayer.thumbnail.value!,
                 scale: 1.0 / pxlSzDbl,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none);
+                filterQuality: FilterQuality.none,);
           }
 
           if (layers[i].isSelected.value)
@@ -585,12 +585,12 @@ class KPixPainter extends CustomPainter
                   canvas: drawParams.canvas,
                   rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
                       (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                      (contentRasterSet.size.y * drawParams.pixelSize).toDouble()),
+                      (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
                   image: contentRasterSet.image,
                   scale: 1.0 / pxlSzDbl,
                   fit: BoxFit.none,
                   alignment: Alignment.topLeft,
-                  filterQuality: FilterQuality.none);
+                  filterQuality: FilterQuality.none,);
             }
 
 
@@ -601,12 +601,12 @@ class KPixPainter extends CustomPainter
                   canvas: drawParams.canvas,
                   rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
                       (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                      (cursorRasterSet.size.y * drawParams.pixelSize).toDouble()),
+                      (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
                   image: cursorRasterSet.image,
                   scale: 1.0 / pxlSzDbl,
                   fit: BoxFit.none,
                   alignment: Alignment.topLeft,
-                  filterQuality: FilterQuality.none);
+                  filterQuality: FilterQuality.none,);
             }
           }
         }
@@ -621,7 +621,7 @@ class KPixPainter extends CustomPainter
               -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
               -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
               drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-              drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY
+              drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
             );
 
             final ui.Rect targetRect = ui.Rect.fromLTWH(
@@ -645,12 +645,12 @@ class KPixPainter extends CustomPainter
                 canvas: drawParams.canvas,
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
                     drawParams.scaledCanvasSize.x.toDouble(),
-                    drawParams.scaledCanvasSize.y.toDouble()),
+                    drawParams.scaledCanvasSize.y.toDouble(),),
                 image: gridLayer.raster!,
                 scale: 1.0 / pxlSzDbl,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none);
+                filterQuality: FilterQuality.none,);
           }
         }
       }
@@ -715,7 +715,7 @@ class KPixPainter extends CustomPainter
         scale: 1.0 / pxlSzDbl,
         fit: BoxFit.none,
         alignment: Alignment.topLeft,
-        filterQuality: FilterQuality.none);
+        filterQuality: FilterQuality.none,);
   }
 
 
@@ -733,6 +733,5 @@ class KPixPainter extends CustomPainter
 
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(final CustomPainter oldDelegate) => false;
 }
-

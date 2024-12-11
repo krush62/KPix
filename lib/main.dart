@@ -17,32 +17,33 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
+import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
-import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/widgets/canvas/canvas_widget.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get_it/get_it.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:version/version.dart';
 
@@ -94,8 +95,8 @@ void main(final List<String> args) {
                   child: MaterialApp(
                     debugShowCheckedModeBanner: false,
                     home: const KPixApp(),
-                    theme: KPixTheme.monochromeTheme,
-                    darkTheme: KPixTheme.monochromeThemeDark,
+                    theme: monochromeTheme,
+                    darkTheme: monochromeThemeDark,
                     themeMode: themeSettings.themeMode,
                   ),
                 );
@@ -104,12 +105,12 @@ void main(final List<String> args) {
           ),
         );
       },
-    )
+    ),
   );
 
-  if (Helper.isDesktop()) {
+  if (isDesktop()) {
     doWhenWindowReady(() {
-      const initialSize = Size(1600, 900);
+      const Size initialSize = Size(1600, 900);
       appWindow.minSize = initialSize;
       appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
@@ -136,7 +137,7 @@ class KPixApp extends StatefulWidget
 
 class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 {
-  final ValueNotifier<bool> initialized = ValueNotifier(false);
+  final ValueNotifier<bool> initialized = ValueNotifier<bool>(false);
   late KPixOverlay _closeWarningDialog;
   late KPixOverlay _newProjectDialog;
   late KPixOverlay _saveNewWarningDialog;
@@ -154,7 +155,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     _lastAppLifeCycleState = AppLifecycleState.resumed;
     if (!kIsWeb)
     {
-      _recoverTimer = Timer.periodic(Duration(minutes: 2), (final Timer _) {_recoverCheck();});
+      //TODO this should be some kind of setting/parameter
+      _recoverTimer = Timer.periodic(const Duration(minutes: 2), (final Timer _) {_recoverCheck();});
     }
   }
 
@@ -175,22 +177,22 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       if ((ignoreState || _lastAppLifeCycleState == AppLifecycleState.resumed) && GetIt.I.get<HistoryManager>().getCurrentState() != _lastHistoryState)
       {
         _lastHistoryState = GetIt.I.get<HistoryManager>().getCurrentState();
-        FileHandler.clearRecoverDir().then((final void value)
+        clearRecoverDir().then((final void value)
         {
-          final String fileName = appState.projectName.value ?? FileHandler.recoverFileName;
-          final String finalPath = p.join(appState.internalDir, FileHandler.recoverSubDirName, "$fileName.${FileHandler.fileExtensionKpix}");
-          FileHandler.saveKPixFile(appState: appState, path: finalPath);
+          final String fileName = appState.projectName.value ?? recoverFileName;
+          final String finalPath = p.join(appState.internalDir, recoverSubDirName, "$fileName.$fileExtensionKpix");
+          saveKPixFile(appState: appState, path: finalPath);
         },);
       }
     }
     else
     {
-      FileHandler.clearRecoverDir();
+      clearRecoverDir();
     }
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state)
+  void didChangeAppLifecycleState(final AppLifecycleState state)
   {
     switch (state)
     {
@@ -206,7 +208,6 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         {
           _recoverCheck(ignoreState: true);
         }
-        break;
       case AppLifecycleState.hidden:
         //All views of an application are hidden, either because the application is about to be paused (on iOS and Android), or because it has been minimized or placed on a desktop that is no longer visible (on non-web desktop), or is running in a window or tab that is no longer visible (on the web).
         break;
@@ -219,12 +220,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   Future<void> _initPrefs() async
   {
-    final sPrefs = await SharedPreferences.getInstance();
+    final SharedPreferences sPrefs = await SharedPreferences.getInstance();
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
     final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
-    final String exportDirString = await FileHandler.findExportDir();
-    final String internalDirString = await FileHandler.findInternalDir();
+    final String exportDirString = await findExportDir();
+    final String internalDirString = await findInternalDir();
     final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString);
 
     GetIt.I.registerSingleton<AppState>(appState);
@@ -240,24 +241,25 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
 
     //CREATE DIALOG OVERLAYS
-    _closeWarningDialog = OverlayEntries.getThreeButtonDialog(
+    _closeWarningDialog = getThreeButtonDialog(
         onYes: _closeWarningYes,
         onNo: _closeWarningNo,
         onCancel: _closeAllMenus,
         outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?");
+        message: "There are unsaved changes, do you want to save first?",
+    );
 
-    _saveNewWarningDialog = OverlayEntries.getThreeButtonDialog(
+    _saveNewWarningDialog = getThreeButtonDialog(
         onYes: _saveNewWarningYes,
         onNo: _saveNewWarningNo,
         onCancel: _saveNewWarningCancel,
         outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?"
+        message: "There are unsaved changes, do you want to save first?",
     );
-    _newProjectDialog = OverlayEntries.getNewProjectDialog(
-        onDismiss: () {Helper.exitApplication();},
+    _newProjectDialog = getNewProjectDialog(
+        onDismiss: () {exitApplication();},
         onAccept: _newFilePressed,
-        onOpen: _openPressed
+        onOpen: _openPressed,
     );
 
 
@@ -272,11 +274,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
     if (!kIsWeb)
     {
-      await FileHandler.createInternalDirectories();
+      await createInternalDirectories();
       await _handleInitialFile();
-      if (Helper.isDesktop())
+      if (isDesktop())
       {
-        UpdateHelper.getLatestVersionInfo().then((final UpdateInfoPackage? value) {
+        getLatestVersionInfo().then((final UpdateInfoPackage? value) {
           updateDataReceived(updateInfo: value);
         });
       }
@@ -289,7 +291,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     bool hasUpdate = false;
     if (updateInfo != null)
     {
-      final Version? currentVersion = Helper.convertStringToVersion(version: GetIt.I.get<PackageInfo>().version);
+      final Version? currentVersion = convertStringToVersion(version: GetIt.I.get<PackageInfo>().version);
       if (currentVersion != null)
       {
         if (updateInfo.version > currentVersion)
@@ -310,11 +312,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
 
     bool fromRecovery = false;
-    String? initialFilePath = await FileHandler.getRecoveryFile();
+    String? initialFilePath = await getRecoveryFile();
 
     if (initialFilePath == null)
     {
-      if (cmdLineArgs.isNotEmpty && Helper.isDesktop())
+      if (cmdLineArgs.isNotEmpty && isDesktop())
       {
         initialFilePath = cmdLineArgs[0];
       }
@@ -324,9 +326,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         initialFilePath = await channel.invokeMethod('getSharedFile');
       }
 
-      await FileHandler.importProject(path: initialFilePath, showMessages: true);
-      final String fileName = Helper.extractFilenameFromPath(path: initialFilePath);
-      final String expectedFileName = initialFilePath = p.join(appState.internalDir, FileHandler.projectsSubDirName, fileName);
+      await importProject(path: initialFilePath);
+      final String fileName = extractFilenameFromPath(path: initialFilePath);
+      final String expectedFileName = initialFilePath = p.join(appState.internalDir, projectsSubDirName, fileName);
       final File expectedFile = File(expectedFileName);
 
       if (await expectedFile.exists())
@@ -345,13 +347,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
     if (initialFilePath != null && initialFilePath.isNotEmpty)
     {
-      final LoadFileSet lfs = await FileHandler.loadKPixFile(
+      final LoadFileSet lfs = await loadKPixFile(
           fileData: null,
           constraints: preferenceManager.kPalConstraints,
           path: initialFilePath,
           sliderConstraints: preferenceManager.kPalSliderConstraints,
           referenceLayerSettings: preferenceManager.referenceLayerSettings,
-          gridLayerSettings: preferenceManager.gridLayerSettings);
+          gridLayerSettings: preferenceManager.gridLayerSettings,
+      );
       if (lfs.path != null && lfs.historyState != null)
       {
         appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
@@ -386,7 +389,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
     else
     {
-      Helper.exitApplication();
+      exitApplication();
     }
   }
 
@@ -394,19 +397,19 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     if (KPixApp.saveCallbackFunc != null)
     {
-      KPixApp.saveCallbackFunc!(callback: _saveBeforeClosedFinished);
+      KPixApp.saveCallbackFunc?.call(callback: _saveBeforeClosedFinished);
     }
   }
 
 
   void _closeWarningNo()
   {
-    Helper.exitApplication();
+    exitApplication();
   }
 
   void _saveBeforeClosedFinished()
   {
-    Helper.exitApplication();
+    exitApplication();
   }
 
   void _closeAllMenus()
@@ -431,7 +434,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     if (KPixApp.saveCallbackFunc != null)
     {
-      KPixApp.saveCallbackFunc!(callback: _saveBeforeNewFinished);
+      KPixApp.saveCallbackFunc?.call(callback: _saveBeforeNewFinished);
     }
 
   }
@@ -454,7 +457,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   }
 
 
-  void _newFilePressed({required CoordinateSetI size})
+  void _newFilePressed({required final CoordinateSetI size})
   {
     GetIt.I.get<AppState>().init(dimensions: size);
     _newProjectDialog.hide();
@@ -464,7 +467,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     if (KPixApp.openCallbackFunc != null)
     {
-      KPixApp.openCallbackFunc!(callback: _openPerformed);
+      KPixApp.openCallbackFunc?.call(callback: _openPerformed);
     }
   }
 
@@ -486,7 +489,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         if (init)
         {
           return MainWidget(
-            closePressed: _closePressed
+            closePressed: _closePressed,
           );
         }
         else
@@ -494,16 +497,16 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           return  Padding(
             padding: const EdgeInsets.all(32.0),
             child: Stack(
-              children: [
+              children: <Widget>[
                 Center(child: Image.asset("imgs/kpix_icon.png"),),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Text(
                     "Loading...",
-                    style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight)
-                  )
-                )
-              ]
+                    style: Theme.of(context).textTheme.displayLarge?.apply(color: Theme.of(context).primaryColorLight),
+                  ),
+                ),
+              ],
             ),
           );
         }
@@ -518,31 +521,32 @@ class MainWidget extends StatelessWidget
   final Function()? closePressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final WindowButtonColors windowButtonColors = WindowButtonColors(
       iconNormal: Theme.of(context).primaryColorLight,
       mouseOver: Theme.of(context).highlightColor,
       mouseDown: Theme.of(context).splashColor,
       iconMouseOver: Theme.of(context).primaryColor,
-      iconMouseDown: Theme.of(context).primaryColorDark);
+      iconMouseDown: Theme.of(context).primaryColorDark,
+    );
     return Column(
-      children: [
+      children: <Widget>[
         //TOP BAR
         ColoredBox(
           color: Theme.of(context).primaryColor,
-          child: (Helper.isDesktop()) ?
+          child: (isDesktop()) ?
             Row(
-              children: [
+              children: <Widget>[
                 Expanded(
                   child: Stack(
                     alignment: Alignment.centerLeft,
-                    children: [
+                    children: <Widget>[
                       WindowTitleBarBox(child: MoveWindow()),
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: ValueListenableBuilder<bool>(
                           valueListenable: GetIt.I.get<AppState>().hasChanges,
-                            builder: (final BuildContext context, final bool __, Widget? ___) {
+                            builder: (final BuildContext context, final bool __, final Widget? ___) {
                               return ValueListenableBuilder<String?>(
                                 valueListenable: GetIt.I.get<AppState>().projectName,
                                 builder: (final BuildContext _, final String? ____, final Widget? _____) {
@@ -555,18 +559,18 @@ class MainWidget extends StatelessWidget
                               );
                             },
                           ),
-                        )
-                      ]
-                    )
+                        ),
+                      ],
+                    ),
                   ),
                   Row(
-                    children: [
+                    children: <Widget>[
                       MinimizeWindowButton(colors: windowButtonColors),
                       MaximizeWindowButton(colors: windowButtonColors),
                       CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
                     ],
-                  )
-                ]
+                  ),
+                ],
               )
               : const SizedBox.shrink(),
           ),
@@ -583,47 +587,46 @@ class MainWidget extends StatelessWidget
                   gap: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveGap,
                   animationDuration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewAnimationLength),
                   thickness: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveThickness,
-                  size: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveSize
-                )
+                  size: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveSize,
+                ),
               ),
               child: MultiSplitView(
-                initialAreas: [
+                initialAreas: <Area>[
                   Area(
                     builder: (final BuildContext context, final Area area) {
                       return const MainToolbarWidget();
                     },
-                    flex: Helper.isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax,
+                    flex: isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax,
                     min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
-                    max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax
+                    max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax,
                   ),
-                  Area(builder: (context, area) {
-                    return ValueListenableBuilder(
+                  Area(builder: (final BuildContext context, final Area area) {
+                    return ValueListenableBuilder<bool>(
                       valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
                       builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                         return hasProject ? Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
+                          children: <Widget>[
                             const CanvasWidget(),
-                            StatusBarWidget()
+                            StatusBarWidget(),
                           ],
                         ) : Container(color: Theme.of(context).primaryColorDark);
                       },
                     );
                   },
-                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault
+                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault,
                 ),
                 Area(
                   builder: (final BuildContext context, final Area area){
                     return const RightBarWidget();
                   },
-                  flex: Helper.isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
+                  flex: isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
                   min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
                   max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
-                )
+                ),
               ],
             ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -639,14 +642,15 @@ class MainLayoutOptions
   final double splitViewFlexLeftMax;
   final double splitViewFlexRightMin;
   final double splitViewFlexRightMax;
-  final double splitViewFlexLeftDefault;
+  //final double splitViewFlexLeftDefault;
   final double splitViewFlexCenterDefault;
-  final double splitViewFlexRightDefault;
+  //final double splitViewFlexRightDefault;
   final int splitViewGrooveCountMin;
   final int splitViewGrooveCountMax;
   final int splitViewAnimationLength;
 
 
+  // ignore: unreachable_from_main
   MainLayoutOptions({
     required this.splitViewDividerWidth,
     required this.splitViewGrooveGap,
@@ -659,7 +663,8 @@ class MainLayoutOptions
     required this.splitViewGrooveCountMin,
     required this.splitViewGrooveCountMax,
     required this.splitViewAnimationLength,
-    required this.splitViewFlexLeftDefault,
+    //required this.splitViewFlexLeftDefault,
     required this.splitViewFlexCenterDefault,
-    required this.splitViewFlexRightDefault});
+    //required this.splitViewFlexRightDefault,
+  });
 }

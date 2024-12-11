@@ -19,8 +19,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 
 class StatusBarWidgetOptions
 {
@@ -52,25 +52,13 @@ class StatusBarWidget extends StatefulWidget
   @override
   State<StatusBarWidget> createState() => _StatusBarWidgetState();
 
-  const StatusBarWidget._({
-    super.key,
-    required this.options,
-    required this.dimensionString,
-    required this.cursorPositionString,
-    required this.zoomFactorString,
-    required this.toolAngleString,
-    required this.toolAspectRatioString,
-    required this.toolDiagonalString,
-    required this.toolDimensionString,
-    required this.iconSize});
-
   factory StatusBarWidget({
-    Key? key,
+    final Key? key,
   })
   {
-    StatusBarWidgetOptions options = GetIt.I.get<PreferenceManager>().statusBarWidgetOptions;
-    AppState appState = GetIt.I.get<AppState>();
-    double fIconSize = options.height - 2 * options.padding;
+    final StatusBarWidgetOptions options = GetIt.I.get<PreferenceManager>().statusBarWidgetOptions;
+    final AppState appState = GetIt.I.get<AppState>();
+    final double fIconSize = options.height - 2 * options.padding;
     return StatusBarWidget._(
         key: key,
         options: options,
@@ -83,6 +71,18 @@ class StatusBarWidget extends StatefulWidget
         toolDimensionString: appState.statusBarState.statusBarToolDimensionString,
         iconSize: fIconSize,);
   }
+
+  const StatusBarWidget._({
+    super.key,
+    required this.options,
+    required this.dimensionString,
+    required this.cursorPositionString,
+    required this.zoomFactorString,
+    required this.toolAngleString,
+    required this.toolAspectRatioString,
+    required this.toolDiagonalString,
+    required this.toolDimensionString,
+    required this.iconSize,});
 }
 
 class _StatusBarWidgetState extends State<StatusBarWidget>
@@ -95,10 +95,10 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
   @override
   Widget build(final BuildContext context) {
     return Column(
-      children: [
+      children: <Widget>[
         Container(
           height: widget.options.padding,
-          color: Theme.of(context).primaryColor
+          color: Theme.of(context).primaryColor,
         ),
         ColoredBox(
           color: Theme.of(context).primaryColorDark,
@@ -107,90 +107,81 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
             child: LimitedBox(
               maxHeight: widget.options.height,
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: _StatusBarWidgetEntry(
                       listenable: widget.dimensionString,
                       icon: FontAwesomeIcons.arrowsUpDownLeftRight,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
-                    )
+                    ),
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                    flex: 1,
                     child: _StatusBarWidgetEntry(
                       listenable: widget.cursorPositionString,
                       icon: FontAwesomeIcons.locationCrosshairs,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
-                    )
+                    ),
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                    flex: 1,
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolDimensionString,
                       icon: FontAwesomeIcons.rulerCombined,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
-                    )
+                    ),
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                    flex: 1,
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolDiagonalString,
                       icon: FontAwesomeIcons.slash,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
-                    )
+                    ),
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                    flex: 1,
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolAspectRatioString,
                       icon: FontAwesomeIcons.percent,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
-                    )
+                    ),
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                    flex: 1,
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolAngleString,
                       icon: FontAwesomeIcons.lessThan,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
-                    )
+                    ),
                   ),
                   VerticalDivider(
                     width: widget.options.dividerWidth,
                     thickness: widget.options.dividerWidth,
                   ),
                   Expanded(
-                    flex: 1,
                     child: GestureDetector(
                       onTap: _zoomPressed,
                       child: _StatusBarWidgetEntry(
@@ -199,7 +190,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                         iconSize: widget.iconSize,
                         padding: widget.options.padding,
                       ),
-                    )
+                    ),
                   ),
                 ],
               ),
@@ -238,10 +229,8 @@ class _StatusBarWidgetEntryState extends State<_StatusBarWidgetEntry>
         valueListenable: widget.listenable,
         builder: (final BuildContext context, final String? value, final Widget? child){
             return Row(
-              mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+              children: <Widget>[
                 Padding(
                   padding: EdgeInsets.only(right: widget.padding, top: widget.padding),
                   child: Visibility(
@@ -256,18 +245,17 @@ class _StatusBarWidgetEntryState extends State<_StatusBarWidgetEntry>
                 Padding(
                   padding: EdgeInsets.only(left: widget.padding),
                   child: Align(
-                    alignment: Alignment.center,
                     child: Text(
                       value ?? "",
                       maxLines: 1,
                       style: Theme.of(context).textTheme.labelLarge?.apply(color: Theme.of(context).primaryColor),
                     ),
                   ),
-                )
-              ]
+                ),
+              ],
             );
-          }
-        )
+          },
+        ),
     );
   }
 }

@@ -42,16 +42,16 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
   final AppState _appState = GetIt.I.get<AppState>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier(FileNameStatus.forbidden);
-  final ValueNotifier<String> _fileName = ValueNotifier("");
+  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.forbidden);
+  final ValueNotifier<String> _fileName = ValueNotifier<String>("");
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, FileHandler.palettesSubDirName), extension: FileHandler.fileExtensionKpal);
+    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, palettesSubDirName), extension: fileExtensionKpal);
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
         elevation: _options.elevation,
@@ -77,18 +77,15 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+                children: <Widget>[
                   Text("SAVE PALETTE", style: Theme.of(context).textTheme.titleLarge),
                   SizedBox(height: _options.padding),
                   Row(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                          flex: 1,
-                          child: Text("File Name", style: Theme.of(context).textTheme.titleMedium)
+                          child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
                       ),
                       Expanded(
                           flex: 3,
@@ -108,14 +105,12 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                 },
                               );
                             },
-                          )
+                          ),
                       ),
                       const Expanded(
-                        flex: 1,
-                        child: Text(".${FileHandler.fileExtensionKpal}"),
+                        child: Text(".$fileExtensionKpal"),
                       ),
                       Expanded(
-                        flex: 1,
                         child: ValueListenableBuilder<FileNameStatus>(
                           valueListenable: _fileNameStatus,
                           builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
@@ -128,17 +123,15 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                               ),
                             );
                           },
-                        )
-                      )
-                    ]
+                        ),
+                      ),
+                    ],
                   ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Padding(
                           padding: EdgeInsets.all(_options.padding),
                           child: IconButton.outlined(
@@ -150,10 +143,9 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                               widget.dismiss();
                             },
                           ),
-                        )
+                        ),
                       ),
                       Expanded(
-                        flex: 1,
                         child: Padding(
                           padding: EdgeInsets.all(_options.padding),
                           child: ValueListenableBuilder<FileNameStatus>(
@@ -166,19 +158,19 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                                 ),
                                 onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                                     () {
-                                  widget.accept(saveData: PaletteExportData(extension: FileHandler.fileExtensionKpal, directory: p.join(_appState.internalDir, FileHandler.palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
+                                  widget.accept(saveData: PaletteExportData(extension: fileExtensionKpal, directory: p.join(_appState.internalDir, palettesSubDirName), fileName: _fileName.value, name: "KPAL"), paletteType: PaletteExportType.kpal);
                                 } : null,
                               );
                             },
                           ),
-                        )
+                        ),
                       ),
-                    ]
+                    ],
                   ),
                 ],
               ),
-            )
-        )
+            ),
+        ),
     );
   }
 }

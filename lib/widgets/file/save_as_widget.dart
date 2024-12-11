@@ -40,9 +40,9 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<String> _fileName = ValueNotifier("");
+  final ValueNotifier<String> _fileName = ValueNotifier<String>("");
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier(FileNameStatus.available);
+  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
 
 
   @override
@@ -56,11 +56,11 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, FileHandler.projectsSubDirName), extension: FileHandler.fileExtensionKpix, allowRecoverFile: false);
+    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, projectsSubDirName), extension: fileExtensionKpix, allowRecoverFile: false);
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       elevation: _options.elevation,
@@ -86,24 +86,21 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+            children: <Widget>[
               Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
               SizedBox(height: _options.padding),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
-                    child: Text("File Name", style: Theme.of(context).textTheme.titleMedium)
+                    child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
                   ),
                   Expanded(
                     flex: 3,
                     child: ValueListenableBuilder<String?>(
                       valueListenable: _fileName,
-                      builder: (final BuildContext context, final String? filePath, Widget? child) {
+                      builder: (final BuildContext context, final String? filePath, final Widget? child) {
                         final TextEditingController controller = TextEditingController(text: filePath);
                         controller.selection = TextSelection.collapsed(offset: controller.text.length);
                         return TextField(
@@ -116,14 +113,12 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                           },
                         );
                       },
-                    )
+                    ),
                   ),
                   const Expanded(
-                    flex: 1,
-                    child: Text(".${FileHandler.fileExtensionKpix}"),
+                    child: Text(".$fileExtensionKpix"),
                   ),
                   Expanded(
-                    flex: 1,
                     child: ValueListenableBuilder<FileNameStatus>(
                       valueListenable: _fileNameStatus,
                       builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
@@ -136,17 +131,15 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                           ),
                         );
                       },
-                    )
-                  )
-                ]
+                    ),
+                  ),
+                ],
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
+                children: <Widget>[
                   Expanded(
-                      flex: 1,
                       child: Padding(
                         padding: EdgeInsets.all(_options.padding),
                         child: IconButton.outlined(
@@ -158,10 +151,9 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                             widget.dismiss();
                           },
                         ),
-                      )
+                      ),
                     ),
                     Expanded(
-                      flex: 1,
                       child: Padding(
                         padding: EdgeInsets.all(_options.padding),
                         child: ValueListenableBuilder<FileNameStatus>(
@@ -179,14 +171,14 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                             );
                           },
                         ),
-                      )
+                      ),
                     ),
-                  ]
+                  ],
                 ),
               ],
             ),
-          )
-      )
+          ),
+      ),
     );
   }
 }

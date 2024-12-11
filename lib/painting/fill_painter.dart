@@ -20,12 +20,12 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class FillPainter extends IToolPainter
@@ -38,12 +38,12 @@ class FillPainter extends IToolPainter
   bool _shouldDraw = false;
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble());
+      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
     }
     if (drawParams.primaryDown && !_isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
     {
@@ -58,13 +58,13 @@ class FillPainter extends IToolPainter
 
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
     assert(drawParams.cursorPos != null);
 
     final CoordinateSetD cursorPos = CoordinateSetD(
         x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
-        y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
+        y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize,);
     final Path outlinePath = Path();
     outlinePath.moveTo(cursorPos.x, cursorPos.y);
     outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));
@@ -96,7 +96,7 @@ class FillPainter extends IToolPainter
   }
 
   @override
-  void drawExtras({required DrawingParameters drawParams}) {
+  void drawExtras({required final DrawingParameters drawParams}) {
     if (_shouldDraw && drawParams.currentDrawingLayer != null)
     {
       if (drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.unlocked || (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.transparency && drawParams.currentDrawingLayer!.getDataEntry(coord: _cursorPosNorm) != null)))
@@ -122,15 +122,15 @@ class FillPainter extends IToolPainter
     required final bool doShade,
     required final ShaderDirection shadeDirection,
     required final bool shadeCurrentRampOnly,
-    required final bool fillWholeRamp})
+    required final bool fillWholeRamp,})
   {
     final int numRows = appState.canvasSize.y;
     final int numCols = appState.canvasSize.x;
-    final List<List<bool>> visited = List.generate(numCols, (_) => List.filled(numRows, false));
+    final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
     final ColorReference? startValue = (appState.currentLayer == layer && appState.selectionState.selection.contains(coord: start)) ? appState.selectionState.selection.getColorReference(coord: start) : layer.getDataEntry(coord: start);
     final StackCol<CoordinateSetI> pointStack = StackCol<CoordinateSetI>();
-    final CoordinateColorMap layerPixels = HashMap();
-    final CoordinateColorMap selectionPixels = HashMap();
+    final CoordinateColorMap layerPixels = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap selectionPixels = HashMap<CoordinateSetI, ColorReference>();
 
     pointStack.push(CoordinateSetI(x: start.x, y: start.y));
 
@@ -223,14 +223,14 @@ class FillPainter extends IToolPainter
     required final bool doShade,
     required final ShaderDirection shadeDirection,
     required final bool shadeCurrentRampOnly,
-    required final bool fillWholeRamp})
+    required final bool fillWholeRamp,})
   {
 
     //on layer
     if (appState.selectionState.selection.isEmpty)
     {
       final ColorReference? startValue = layer.getDataEntry(coord: start);
-      final CoordinateColorMapNullable refs = HashMap();
+      final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
       for (int x = 0; x < appState.canvasSize.x; x++)
       {
         for (int y = 0; y < appState.canvasSize.y; y++)
@@ -295,7 +295,7 @@ class FillPainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;

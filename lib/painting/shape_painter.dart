@@ -16,17 +16,18 @@
 
 import 'dart:collection';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/preferences/behavior_preferences.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/tool_options/shape_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class ShapePainter extends IToolPainter
@@ -36,20 +37,20 @@ class ShapePainter extends IToolPainter
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final CoordinateSetI _selectionStart = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _selectionEnd = CoordinateSetI(x: 0, y: 0);
-  Offset _lastStartPos = const Offset(0,0);
+  Offset _lastStartPos = Offset.zero;
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormEndPos = CoordinateSetI(x: 0, y: 0);
   bool _isStarted = false;
   bool _waitingForRasterization = false;
-  CoordinateColorMap _drawingPixels = HashMap();
+  CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
 
   ShapePainter({required super.painterOptions});
 
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.currentDrawingLayer != null)
     {
@@ -62,8 +63,8 @@ class ShapePainter extends IToolPainter
       }
       if (drawParams.cursorPos != null)
       {
-        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble());
+        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
       }
 
       if (_normStartPos != _lastNormStartPos)
@@ -107,12 +108,12 @@ class ShapePainter extends IToolPainter
               if (width > height)
               {
                 _selectionStart.x += diff ~/ 2;
-                _selectionEnd.x -= ((diff ~/ 2) + (diff % 2));
+                _selectionEnd.x -= (diff ~/ 2) + (diff % 2);
               }
               else
               {
                 _selectionStart.y += diff ~/ 2;
-                _selectionEnd.y -= ((diff ~/ 2) + (diff % 2));
+                _selectionEnd.y -= (diff ~/ 2) + (diff % 2);
               }
             }
             else
@@ -161,7 +162,7 @@ class ShapePainter extends IToolPainter
     }
   }
 
-  void _dump({required final DrawingLayerState layer, required CoordinateSetI canvasSize})
+  void _dump({required final DrawingLayerState layer, required final CoordinateSetI canvasSize})
   {
     if (_drawingPixels.isNotEmpty)
     {
@@ -183,7 +184,7 @@ class ShapePainter extends IToolPainter
 
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
     assert(drawParams.cursorPos != null);
 
@@ -193,12 +194,12 @@ class ShapePainter extends IToolPainter
       final CoordinateSetD cursorStartPos = CoordinateSetD(
           x: drawParams.offset.dx + _selectionStart.x * drawParams.pixelSize,
           y: drawParams.offset.dy +
-              _selectionStart.y * drawParams.pixelSize);
+              _selectionStart.y * drawParams.pixelSize,);
       final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
               (_selectionEnd.x + 1) * drawParams.pixelSize,
           y: drawParams.offset.dy +
-              (_selectionEnd.y + 1) * drawParams.pixelSize);
+              (_selectionEnd.y + 1) * drawParams.pixelSize,);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -212,7 +213,7 @@ class ShapePainter extends IToolPainter
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -223,9 +224,9 @@ class ShapePainter extends IToolPainter
     }
   }
 
-  static Set<CoordinateSetI> _calculateSelectionContent({required ShapeOptions options, required CoordinateSetI selectionStart, required CoordinateSetI selectionEnd})
+  static Set<CoordinateSetI> _calculateSelectionContent({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
   {
-    Set<CoordinateSetI> content = {};
+    Set<CoordinateSetI> content = <CoordinateSetI>{};
     final double centerX = (selectionStart.x + selectionEnd.x + 1) / 2.0;
     final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
     final double radiusX = (selectionEnd.x - selectionStart.x + 1) / 2.0;
@@ -271,14 +272,14 @@ class ShapePainter extends IToolPainter
     else
     {
       final List<CoordinateSetI> points = _getPolygonPoints(options: options, selectionStart: selectionStart, selectionEnd: selectionEnd);
-      final CoordinateSetI min = Helper.getMin(coordList: points);
-      final CoordinateSetI max = Helper.getMax(coordList: points);
+      final CoordinateSetI min = getMin(coordList: points);
+      final CoordinateSetI max = getMax(coordList: points);
       for (int x = min.x; x <= max.x; x++)
       {
         for (int y = min.y; y <= max.y; y++)
         {
           final CoordinateSetI point = CoordinateSetI(x: x, y: y);
-          if (Helper.isPointInPolygon(point: point, polygon: points))
+          if (isPointInPolygon(point: point, polygon: points))
           {
             content.add(point);
           }
@@ -297,18 +298,18 @@ class ShapePainter extends IToolPainter
 
 
 
-  static Set<CoordinateSetI> _calculateInnerStrokeForWidth(Set<CoordinateSetI> filledShape, int strokeWidth) {
-    final Set<CoordinateSetI> innerStroke = {};
-    final Set<CoordinateSetI> currentShape = Set.from(filledShape);
+  static Set<CoordinateSetI> _calculateInnerStrokeForWidth(final Set<CoordinateSetI> filledShape, final int strokeWidth) {
+    final Set<CoordinateSetI> innerStroke = <CoordinateSetI>{};
+    final Set<CoordinateSetI> currentShape = Set<CoordinateSetI>.from(filledShape);
 
     for (int i = 0; i < strokeWidth; i++)
     {
-      final Set<CoordinateSetI> boundaryCoords = {};
+      final Set<CoordinateSetI> boundaryCoords = <CoordinateSetI>{};
 
       // Find the current boundary
-      for (CoordinateSetI coord in currentShape)
+      for (final CoordinateSetI coord in currentShape)
       {
-        final List<CoordinateSetI> neighbors = Helper.getCoordinateNeighbors(pixel: coord, withDiagonals: false);
+        final List<CoordinateSetI> neighbors = getCoordinateNeighbors(pixel: coord, withDiagonals: false);
         for (final CoordinateSetI neighbor in neighbors)
         {
           if (!currentShape.contains(neighbor))
@@ -334,10 +335,10 @@ class ShapePainter extends IToolPainter
 
   static List<CoordinateSetI> _getPolygonPoints({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
   {
-    List<CoordinateSetI> points = [];
+    List<CoordinateSetI> points = <CoordinateSetI>[];
     if (options.shape.value == ShapeShape.triangle)
     {
-      points = [
+      points = <CoordinateSetI>[
         CoordinateSetI(x: selectionStart.x + (selectionEnd.x - selectionStart.x) ~/ 2, y: selectionStart.y - 1),
         CoordinateSetI(x: selectionEnd.x + 1, y: selectionEnd.y + 1),
         CoordinateSetI(x: selectionStart.x - 1, y: selectionEnd.y + 1),
@@ -349,7 +350,7 @@ class ShapePainter extends IToolPainter
       final int centerY = selectionStart.y + ((selectionEnd.y - selectionStart.y) / 2).round();
 
       // Define diamond points before clamping
-      points = [
+      points = <CoordinateSetI>[
         CoordinateSetI(x: centerX, y: max(selectionStart.y, selectionStart.y - 1)),
         CoordinateSetI(x: min(selectionEnd.x, selectionEnd.x + 1), y: centerY),
         CoordinateSetI(x: centerX, y: min(selectionEnd.y, selectionEnd.y + 1)),
@@ -372,7 +373,7 @@ class ShapePainter extends IToolPainter
 
       for (int i = 0; i < 2 * options.cornerCount.value; i++)
       {
-        final bool isOuter = (i % 2 == 0);
+        final bool isOuter = i.isEven;
         final double radiusX = isOuter ? radiusOuterX : radiusInnerX;
         final double radiusY = isOuter ? radiusOuterY : radiusInnerY;
         final double angle = startAngle + i * angleStep;
@@ -400,7 +401,7 @@ class ShapePainter extends IToolPainter
       {required final CoordinateSetI testPoint,
         required final CoordinateSetI topLeft,
         required final CoordinateSetI bottomRight,
-        required final int radius})
+        required final int radius,})
   {
     if ((testPoint.x >= topLeft.x + radius && testPoint.x <= bottomRight.x - radius && testPoint.y >= topLeft.y && testPoint.y <= bottomRight.y) ||
         (testPoint.y >= topLeft.y + radius && testPoint.y <= bottomRight.y - radius && testPoint.x >= topLeft.x && testPoint.x <= bottomRight.x))
@@ -427,7 +428,7 @@ class ShapePainter extends IToolPainter
   static bool _isPointInCircle(
       {required final CoordinateSetI pt,
       required final CoordinateSetI center,
-      required final int radius})
+      required final int radius,})
   {
     final int dx = pt.x - center.x;
     final int dy = pt.y - center.y;
@@ -435,7 +436,7 @@ class ShapePainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     if (drawParams.cursorPos != null)
@@ -443,8 +444,8 @@ class ShapePainter extends IToolPainter
       statusBarData.cursorPos = _cursorPosNorm;
       if (drawParams.primaryDown)
       {
-        int width = (_selectionStart.x - _selectionEnd.x).abs() + 1;
-        int height = (_selectionStart.y - _selectionEnd.y).abs() + 1;
+        final int width = (_selectionStart.x - _selectionEnd.x).abs() + 1;
+        final int height = (_selectionStart.y - _selectionEnd.y).abs() + 1;
         statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
       }
     }

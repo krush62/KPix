@@ -14,9 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui' as ui;
 
 enum PixelFontType
 {
@@ -55,7 +56,7 @@ enum PixelFontType
 }
 
 const Map<int, PixelFontType> pixelFontIndexMap =
-{
+<int, PixelFontType>{
   0: PixelFontType.fontAlkhemikal,
   1: PixelFontType.fontCartridge,
   2: PixelFontType.fontComicoro,
@@ -87,7 +88,7 @@ const Map<int, PixelFontType> pixelFontIndexMap =
   28: PixelFontType.fontRootBeer,
   29: PixelFontType.fontScriptorium,
   30: PixelFontType.fontSquarewave,
-  31: PixelFontType.fontSquarewaveBold
+  31: PixelFontType.fontSquarewaveBold,
 };
 
 
@@ -96,22 +97,24 @@ class Glyph
   final int width;
   final List<List<bool>> dataMatrix;
 
-  Glyph._({
-    required this.width,
-    required this.dataMatrix,
-  });
-
   factory Glyph({
-    required int width,
-    required int height,
+    required final int width,
+    required final int height,
   }) {
-    List<List<bool>> dataMatrix =
-    List.generate(width, (i) => List.filled(height, false, growable: false), growable: false);
+    final List<List<bool>> dataMatrix =
+    List<List<bool>>.generate(width, (final int i) => List<bool>.filled(height, false), growable: false);
     return Glyph._(
       width: width,
       dataMatrix: dataMatrix,
     );
   }
+
+  Glyph._({
+    required this.width,
+    required this.dataMatrix,
+  });
+
+
 }
 
 
@@ -135,7 +138,7 @@ const String pngExtension = ".PNG";
 
 class FontManager
 {
-  static final Map<PixelFontType, String> _pixelFontNameMap = {
+  static final Map<PixelFontType, String> _pixelFontNameMap = <PixelFontType, String>{
     PixelFontType.fontAlkhemikal: "Alkhemikal",
     PixelFontType.fontCartridge: "Cartridge",
     PixelFontType.fontComicoro: "Comicoro",
@@ -167,10 +170,10 @@ class FontManager
     PixelFontType.fontRootBeer: "Root Beer",
     PixelFontType.fontScriptorium: "Scriptorium",
     PixelFontType.fontSquarewave: "Squarewave",
-    PixelFontType.fontSquarewaveBold: "Squarewave Bold"
+    PixelFontType.fontSquarewaveBold: "Squarewave Bold",
   };
 
-  static final Map<PixelFontType, String> _pixelFontFileMap = {
+  static final Map<PixelFontType, String> _pixelFontFileMap = <PixelFontType, String>{
     PixelFontType.fontAlkhemikal: "Alkhemikal",
     PixelFontType.fontCartridge: "Cartridge",
     PixelFontType.fontComicoro: "Comicoro",
@@ -202,7 +205,7 @@ class FontManager
     PixelFontType.fontRootBeer: "RootBeer",
     PixelFontType.fontScriptorium: "Scriptorium",
     PixelFontType.fontSquarewave: "Squarewave",
-    PixelFontType.fontSquarewaveBold: "Squarewave-Bold"
+    PixelFontType.fontSquarewaveBold: "Squarewave-Bold",
   };
 
   static String getFontName({required final PixelFontType type})
@@ -221,7 +224,7 @@ class FontManager
 
   static Future<Map<PixelFontType, KFont>> readFonts() async
   {
-    final Map<PixelFontType, KFont> fontMap = {};
+    final Map<PixelFontType, KFont> fontMap = <PixelFontType, KFont>{};
     for (final MapEntry<PixelFontType, String> mapEntry in _pixelFontFileMap.entries)
     {
      fontMap[mapEntry.key] = await _readFontFromFile(sflName: "$fontPath/${mapEntry.value}$sflExtension", pngName: "$fontPath/${mapEntry.value}$pngExtension", fontName: _pixelFontNameMap[mapEntry.key]!);
@@ -242,7 +245,7 @@ class FontManager
     final int imgHeight = decImg.height;
     final int imgWidth = decImg.width;
     final ByteData? imgData = await decImg.toByteData();
-    final Map<int, Glyph> glyphMap = {};
+    final Map<int, Glyph> glyphMap = <int, Glyph>{};
 
     if (imgData != null)
     {
@@ -258,21 +261,21 @@ class FontManager
           {
             if (width > 0)
             {
-              final glyph = Glyph(width: width, height: imgHeight);
+              final Glyph glyph = Glyph(width: width, height: imgHeight);
               for (int a = x; a < x + width; a++)
               {
                 for (int b = 0; b < imgHeight; b++)
                 {
                   final int addr = (b * imgWidth * 4) + (a * 4) + 3;
-                  final val = imgData.getUint8(addr);
-                  glyph.dataMatrix[a-x][b] = (val > 0);
+                  final int val = imgData.getUint8(addr);
+                  glyph.dataMatrix[a-x][b] = val > 0;
                 }
               }
               glyphMap[id] = glyph;
             }
             else if (id == 32)
             {
-              final glyph = Glyph(width: 1, height: imgHeight);
+              final Glyph glyph = Glyph(width: 1, height: imgHeight);
               for (int b = 0; b < imgHeight; b++)
               {
                 glyph.dataMatrix[0][b] = false;
@@ -289,5 +292,4 @@ class FontManager
     }
     return KFont(name: fontName, height: imgHeight, glyphMap: glyphMap);
   }
-
 }

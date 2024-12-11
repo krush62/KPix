@@ -17,8 +17,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -56,22 +56,22 @@ class _ImportWidgetState extends State<ImportWidget>
   final KPalConstraints _constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
   late ValueNotifier<int> _maxRampsNotifier;
   late ValueNotifier<int> _maxColorsPerRampNotifier;
-  final ValueNotifier<String?> _fileNameNotifier = ValueNotifier(null);
-  final ValueNotifier<bool> _includeReferenceNotifier = ValueNotifier(false);
+  final ValueNotifier<String?> _fileNameNotifier = ValueNotifier<String?>(null);
+  final ValueNotifier<bool> _includeReferenceNotifier = ValueNotifier<bool>(false);
   Uint8List? _imageData;
 
   @override
   void initState()
   {
     super.initState();
-    _maxRampsNotifier = ValueNotifier(_constraints.rampCountDefault);
-    _maxColorsPerRampNotifier = ValueNotifier(_constraints.colorCountDefault);
+    _maxRampsNotifier = ValueNotifier<int>(_constraints.rampCountDefault);
+    _maxColorsPerRampNotifier = ValueNotifier<int>(_constraints.colorCountDefault);
   }
 
 
   void _chooseImagePressed()
   {
-    FileHandler.getPathAndDataForImage().then((final (String?, Uint8List?) loadData) {
+    getPathAndDataForImage().then((final (String?, Uint8List?) loadData) {
       _fileNameNotifier.value = loadData.$1;
       _imageData = loadData.$2;
     });
@@ -87,7 +87,7 @@ class _ImportWidgetState extends State<ImportWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       elevation: _options.elevation,
@@ -113,18 +113,16 @@ class _ImportWidgetState extends State<ImportWidget>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+            children: <Widget>[
               Text("IMPORT IMAGE", style: Theme.of(context).textTheme.titleLarge),
               SizedBox(height: _options.padding),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
+                children: <Widget>[
+                  const Expanded(
                     flex: 2,
-                    child: Text("File")
+                    child: Text("File"),
                   ),
                   Expanded(
                     flex: 6,
@@ -132,14 +130,13 @@ class _ImportWidgetState extends State<ImportWidget>
                       valueListenable: _fileNameNotifier,
                       builder: (final BuildContext context, final String? path, final Widget? child) {
                         return Text(
-                          path == null ? "<NO FILE SELECTED>" : Helper.extractFilenameFromPath(path: path),
+                          path == null ? "<NO FILE SELECTED>" : extractFilenameFromPath(path: path),
                           textAlign: TextAlign.center,
                         );
                       },
-                    )
+                    ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: Tooltip(
                       message: "Choose Image",
                       waitDuration: AppState.toolTipDuration,
@@ -149,26 +146,25 @@ class _ImportWidgetState extends State<ImportWidget>
                         onPressed: _chooseImagePressed,
                         icon: FaIcon(
                           FontAwesomeIcons.folderOpen,
-                          size: _options.iconSize / 2
+                          size: _options.iconSize / 2,
                         ),
                         color: Theme.of(context).primaryColorLight,
                         style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor
+                            backgroundColor: Theme.of(context).primaryColor,
                         ),
                       ),
-                    )
-                  )
-                ]
+                    ),
+                  ),
+                ],
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
+                children: <Widget>[
+                  const Expanded(
                     flex: 2,
-                    child: Text("Max Color Ramps")
+                    child: Text("Max Color Ramps"),
                   ),
                   Expanded(
                     flex: 6,
@@ -186,18 +182,17 @@ class _ImportWidgetState extends State<ImportWidget>
                           textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
-                    )
+                    ),
                   ),
-                ]
+                ],
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
+                children: <Widget>[
+                  const Expanded(
                     flex: 2,
-                    child: Text("Max Colors per Ramp")
+                    child: Text("Max Colors per Ramp"),
                   ),
                   Expanded(
                     flex: 6,
@@ -215,22 +210,20 @@ class _ImportWidgetState extends State<ImportWidget>
                           textStyle: Theme.of(context).textTheme.bodyLarge!,
                         );
                       },
-                    )
+                    ),
                   ),
 
-                ]
+                ],
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
+                children: <Widget>[
+                  const Expanded(
                     flex: 8,
-                    child: Text("Include Image as Reference Layer")
+                    child: Text("Include Image as Reference Layer"),
                   ),
                   Expanded(
-                    flex: 1,
                     child: ValueListenableBuilder<bool>(
                       valueListenable: _includeReferenceNotifier,
                       builder: (final BuildContext context, final bool includeReference, final Widget? child) {
@@ -241,18 +234,16 @@ class _ImportWidgetState extends State<ImportWidget>
                           },
                         );
                       },
-                    )
-                  )
-                ]
+                    ),
+                  ),
+                ],
               ),
 
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
                       child: Tooltip(
@@ -268,10 +259,9 @@ class _ImportWidgetState extends State<ImportWidget>
                           },
                         ),
                       ),
-                    )
+                    ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
                       child: Tooltip(
@@ -292,14 +282,14 @@ class _ImportWidgetState extends State<ImportWidget>
                           },
                         ),
                       ),
-                    )
+                    ),
                   ),
-                ]
+                ],
               ),
             ],
-          )
-        )
-      )
+          ),
+        ),
+      ),
     );
   }
 }

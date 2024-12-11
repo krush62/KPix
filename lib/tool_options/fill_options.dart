@@ -20,8 +20,8 @@ import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class FillOptions extends IToolOptions
 {
-  final ValueNotifier<bool> fillAdjacent = ValueNotifier(true);
-  final ValueNotifier<bool> fillWholeRamp = ValueNotifier(false);
+  final ValueNotifier<bool> fillAdjacent = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> fillWholeRamp = ValueNotifier<bool>(false);
 
   final bool fillAdjacentDefault;
   final bool fillWholeRampDefault;
@@ -40,21 +40,17 @@ class FillOptions extends IToolOptions
   {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Fill Adjacent",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -67,26 +63,23 @@ class FillOptions extends IToolOptions
                   {
                     return Switch(
                       onChanged: (final bool newVal) {fillOptions.fillAdjacent.value = newVal;},
-                      value: fill
+                      value: fill,
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Fill whole ramp",
                     style: Theme.of(context).textTheme.labelLarge,
-                  )
+                  ),
               ),
             ),
             Expanded(
@@ -99,11 +92,11 @@ class FillOptions extends IToolOptions
                   {
                     return Switch(
                       onChanged: (final bool newVal) {fillOptions.fillWholeRamp.value = newVal;},
-                      value: fill
+                      value: fill,
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),
@@ -112,4 +105,3 @@ class FillOptions extends IToolOptions
   }
 
 }
-

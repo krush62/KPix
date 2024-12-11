@@ -25,7 +25,7 @@ import 'package:kpix/widgets/overlay_entries.dart';
 class LicensesWidget extends StatelessWidget
 {
   final Function() onDismiss;
-  final List<Package> _licenses = allDependencies;
+  List<Package> get _licenses => allDependencies;
   const LicensesWidget({super.key, required this.onDismiss});
 
 
@@ -53,7 +53,7 @@ class LicensesWidget extends StatelessWidget
         borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
       ),
       child: Column(
-        children: [
+        children: <Widget>[
           Expanded(
             child: ListView.separated(
               itemCount: _licenses.length,
@@ -69,11 +69,11 @@ class LicensesWidget extends StatelessWidget
                   trailing: Text(_licenses[index].version, style: Theme.of(context).textTheme.headlineMedium),
                 );
               },
-              separatorBuilder: (BuildContext context, int index) => const Divider(),
+              separatorBuilder: (final BuildContext context, final int index) => const Divider(),
             ),
           ),
           Row(
-            children: [
+            children: <Widget>[
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(options.padding),
@@ -91,10 +91,10 @@ class LicensesWidget extends StatelessWidget
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
-    )
+    ),
   );
   }
 }

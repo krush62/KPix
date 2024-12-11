@@ -25,36 +25,36 @@ enum CursorType
 }
 
 const Map<int, CursorType> cursorTypeIndexMap =
-{
+<int, CursorType>{
   0:CursorType.none,
   1:CursorType.crossHair,
-  2:CursorType.arrow
+  2:CursorType.arrow,
 };
 
 const Map<CursorType, String> cursorTypeStringMap =
-{
+<CursorType, String>{
   CursorType.none: "None",
   CursorType.crossHair: "CrossHair",
-  CursorType.arrow: "Arrow"
+  CursorType.arrow: "Arrow",
 };
 
 const Map<CursorType, SystemMouseCursor> cursorTypeCursorMap =
-{
+<CursorType, SystemMouseCursor>{
   CursorType.none: SystemMouseCursors.none,
   CursorType.crossHair: SystemMouseCursors.precise,
-  CursorType.arrow: SystemMouseCursors.basic
+  CursorType.arrow: SystemMouseCursors.basic,
 };
 
 class DesktopPreferenceContent
 {
   final ValueNotifier<CursorType> cursorType;
-
-  DesktopPreferenceContent._({required this.cursorType});
-  factory DesktopPreferenceContent({required int cursorTypeValue})
+  factory DesktopPreferenceContent({required final int cursorTypeValue})
   {
     final CursorType cursorType = cursorTypeIndexMap[cursorTypeValue]?? CursorType.crossHair;
-    return DesktopPreferenceContent._(cursorType: ValueNotifier(cursorType));
+    return DesktopPreferenceContent._(cursorType: ValueNotifier<CursorType>(cursorType));
   }
+
+  DesktopPreferenceContent._({required this.cursorType});
 }
 
 class DesktopPreferences extends StatefulWidget
@@ -69,19 +69,16 @@ class DesktopPreferences extends StatefulWidget
 class _DesktopPreferencesState extends State<DesktopPreferences>
 {
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Mouse Cursor", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Mouse Cursor", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<CursorType>(
@@ -89,32 +86,30 @@ class _DesktopPreferencesState extends State<DesktopPreferences>
                 builder: (final BuildContext context, final CursorType cursor, final Widget? child)
                 {
                   return SegmentedButton<CursorType>(
-                    selected: {cursor},
-                    emptySelectionAllowed: false,
-                    multiSelectionEnabled: false,
+                    selected: <CursorType>{cursor},
                     showSelectedIcon: false,
                     onSelectionChanged: (final Set<CursorType> cursorList) {widget.prefs.cursorType.value = cursorList.first;},
-                    segments: [
-                      ButtonSegment(
+                    segments: <ButtonSegment<CursorType>>[
+                      ButtonSegment<CursorType>(
                         value: CursorType.none,
-                        label: Text(cursorTypeStringMap[CursorType.none]!)
+                        label: Text(cursorTypeStringMap[CursorType.none]!),
                       ),
-                      ButtonSegment(
+                      ButtonSegment<CursorType>(
                         value: CursorType.crossHair,
-                        label: Text(cursorTypeStringMap[CursorType.crossHair]!)
+                        label: Text(cursorTypeStringMap[CursorType.crossHair]!),
                       ),
-                      ButtonSegment(
+                      ButtonSegment<CursorType>(
                         value: CursorType.arrow,
-                        label: Text(cursorTypeStringMap[CursorType.arrow]!)
-                      )
+                        label: Text(cursorTypeStringMap[CursorType.arrow]!),
+                      ),
                     ],
                   );
                 },
               ),
             ),
-          ]
-        )
-      ]
+          ],
+        ),
+      ],
     );
   }
 }

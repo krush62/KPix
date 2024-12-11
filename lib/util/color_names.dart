@@ -31,16 +31,16 @@ enum ColorNameScheme
 const String noColorName = "<UNKNOWN>";
 
 const Map<int, ColorNameScheme> _colorNameSchemeMap =
-{
+<int, ColorNameScheme>{
   0: ColorNameScheme.general,
   1: ColorNameScheme.pms,
   2: ColorNameScheme.ralClassic,
   3: ColorNameScheme.ralComplete,
-  4: ColorNameScheme.ralDsp
+  4: ColorNameScheme.ralDsp,
 };
 
 const Map<ColorNameScheme, String> _colorNameFileNames =
-{
+<ColorNameScheme, String>{
   ColorNameScheme.general: "general.csv",
   ColorNameScheme.pms: "pms.csv",
   ColorNameScheme.ralClassic : "ral_classic.csv",
@@ -58,7 +58,7 @@ class ColorNamesOptions{
 
   ColorNamesOptions({
     required this.defaultNameScheme,
-    required this.defaultColorNamePath
+    required this.defaultColorNamePath,
   })
   {
     nameScheme = _colorNameSchemeMap[defaultNameScheme] ?? ColorNameScheme.general;
@@ -79,20 +79,20 @@ class NamedColor
     required this.name,
     required this.r,
     required this.g,
-    required this.b
+    required this.b,
   });
 }
 
 class ColorNames
 {
   final ColorNamesOptions options;
-  List<NamedColor> colorList = [];
+  List<NamedColor> colorList = <NamedColor>[];
   bool colorsLoaded = false;
 
   void _processColorData({required final String data})
   {
-    LineSplitter ls = const LineSplitter();
-    List<String> lines = ls.convert(data);
+    const LineSplitter ls = LineSplitter();
+    final List<String> lines = ls.convert(data);
     for(final String line in lines)
     {
       _processLine(line: line);
@@ -103,7 +103,7 @@ class ColorNames
 
   ColorNames({required this.options})
   {
-    rootBundle.loadString("${options.colorNamePath}/${options.colorFilename}").then((value) {
+    rootBundle.loadString("${options.colorNamePath}/${options.colorFilename}").then((final String value) {
       _processColorData(data: value);
     });
   }
@@ -134,7 +134,7 @@ class ColorNames
           break;
         }
         else {
-          double delta = Helper.getDeltaE(redA: r, greenA: g, blueA: b, redB: c.r, greenB: c.g, blueB: c.b);
+          final double delta = getDeltaE(redA: r, greenA: g, blueA: b, redB: c.r, greenB: c.g, blueB: c.b);
           if (delta < bestDelta) {
             bestDelta = delta;
             bestName = c.name;

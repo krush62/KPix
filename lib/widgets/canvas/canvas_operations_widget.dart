@@ -38,10 +38,10 @@ enum CanvasTransformation
 }
 
 const Map<CanvasTransformation, String> transformationDescriptions =
-{
+<CanvasTransformation, String>{
   CanvasTransformation.rotate: "Rotate Canvas",
   CanvasTransformation.flipH: "Flip Canvas Horizontally",
-  CanvasTransformation.flipV: "Flip Canvas Vertically"
+  CanvasTransformation.flipV: "Flip Canvas Vertically",
 };
 
 
@@ -64,7 +64,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
   void initState()
   {
     super.initState();
-    _canvasSizeOverlay = OverlayEntries.getCanvasSizeDialog(onDismiss: _hideOverlays, onAccept: _sizeChangeAccepted);
+    _canvasSizeOverlay = getCanvasSizeDialog(onDismiss: _hideOverlays, onAccept: _sizeChangeAccepted);
   }
 
   void _hideOverlays()
@@ -90,7 +90,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       color: Theme.of(context).primaryColor,
@@ -98,9 +98,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
         padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding, left: _options.padding / 2, right: _options.padding / 2),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+          children: <Widget>[
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(left: _options.padding / 2, right: _options.padding / 2),
@@ -113,8 +111,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
                       icon: FaIcon(
                         FontAwesomeIcons.rotate,
-                        size: _options.iconHeight
-                      )
+                        size: _options.iconHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -132,8 +130,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
                       icon: FaIcon(
                         FontAwesomeIcons.arrowsLeftRight,
-                        size: _options.iconHeight
-                      )
+                        size: _options.iconHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -150,8 +148,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
                       icon: FaIcon(
                         FontAwesomeIcons.arrowsUpDown,
-                        size: _options.iconHeight
-                      )
+                        size: _options.iconHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -164,7 +162,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   aspectRatio: 1,
                   child: ListenableBuilder(
                     listenable: _appState.selectionState,
-                    builder: (context, child) {
+                    builder: (final BuildContext context, final Widget? child) {
                       return Tooltip(
                         message: "Crop To Selection",
                         waitDuration: AppState.toolTipDuration,
@@ -172,8 +170,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                           onPressed: _appState.selectionState.selection.isEmpty ? null : _crop,
                           icon: FaIcon(
                             FontAwesomeIcons.cropSimple,
-                            size: _options.iconHeight
-                          )
+                            size: _options.iconHeight,
+                          ),
                         ),
                       );
                     },
@@ -193,8 +191,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       onPressed: _setSize,
                       icon: FaIcon(
                         FontAwesomeIcons.rulerCombined,
-                        size: _options.iconHeight
-                      )
+                        size: _options.iconHeight,
+                      ),
                     ),
                   ),
                 ),

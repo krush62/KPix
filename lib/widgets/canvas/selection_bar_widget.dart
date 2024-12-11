@@ -18,9 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 
 class SelectionBarWidgetOptions
@@ -66,9 +66,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
           color: Theme.of(context).primaryColor,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+            children: <Widget>[
               Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Tooltip(
@@ -78,8 +76,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selectAll,
                     icon: FaIcon(
                         FontAwesomeIcons.objectGroup,
-                        size: _options.iconHeight
-                    )
+                        size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -92,8 +90,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                       onPressed: _selectionState.selection.isEmpty ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
                       icon: FaIcon(
                         FontAwesomeIcons.objectUngroup,
-                        size: _options.iconHeight
-                      )
+                        size: _options.iconHeight,
+                      ),
                   ),
                 ),
               ),
@@ -106,8 +104,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                       onPressed: _selectionState.selection.isEmpty ? null : _selectionState.inverse,
                       icon: FaIcon(
                         FontAwesomeIcons.circleHalfStroke,
-                        size: _options.iconHeight
-                      )
+                        size: _options.iconHeight,
+                      ),
                   ),
                 ),
               ),
@@ -120,8 +118,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copy,
                     icon: FaIcon(
                       FontAwesomeIcons.copy,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -134,8 +132,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copyMerged,
                     icon: FaIcon(
                       FontAwesomeIcons.clone,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -148,8 +146,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.cut,
                     icon: FaIcon(
                       FontAwesomeIcons.scissors,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -162,8 +160,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.clipboard == null ? null : _selectionState.paste,
                     icon: FaIcon(
                       FontAwesomeIcons.paste,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -176,8 +174,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.clipboard == null ? null : _pasteNewPressed,
                     icon: FaIcon(
                       FontAwesomeIcons.layerGroup,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -190,8 +188,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipH,
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsLeftRight,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -204,8 +202,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipV,
                     icon: FaIcon(
                       FontAwesomeIcons.arrowsUpDown,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -218,8 +216,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.rotate,
                     icon: FaIcon(
                       FontAwesomeIcons.rotateRight,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
@@ -232,15 +230,15 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
                     icon: FaIcon(
                       FontAwesomeIcons.ban,
-                      size: _options.iconHeight
-                    )
+                      size: _options.iconHeight,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         );
-      }
+      },
     );
   }
 }

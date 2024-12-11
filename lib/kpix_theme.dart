@@ -34,124 +34,120 @@ class ColorSet
   });
 }
 
-class KPixTheme
-{
-  static Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
 
-  static ColorSet lightColors = ColorSet(normal: Colors.grey[400]!, light: Colors.grey[700]!, dark: Colors.grey[350]!);
-  static ThemeData monochromeTheme = ThemeData(
+  const Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
+  ColorSet _lightColors = ColorSet(normal: Colors.grey[400]!, light: Colors.grey[700]!, dark: Colors.grey[350]!);
+  ThemeData monochromeTheme = ThemeData(
 
-    primaryColor: lightColors.normal,
-    primaryColorLight: lightColors.light,
-    primaryColorDark: lightColors.dark,
+    primaryColor: _lightColors.normal,
+    primaryColorLight: _lightColors.light,
+    primaryColorDark: _lightColors.dark,
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.grey,
-      brightness: Brightness.light,
-
     ),
     textTheme: GoogleFonts.oxaniumTextTheme( TextTheme(
 
-      displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: lightColors.light),
-      displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: lightColors.light),
-      displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: lightColors.light),
+      displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
+      displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
+      displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
 
-      headlineLarge: TextStyle(fontSize: 32, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: lightColors.light),
-      headlineMedium: TextStyle(fontSize: 28, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: lightColors.light),
-      headlineSmall: TextStyle(fontSize: 24, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: lightColors.light),
+      headlineLarge: TextStyle(fontSize: 32, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
+      headlineMedium: TextStyle(fontSize: 28, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
+      headlineSmall: TextStyle(fontSize: 24, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
 
-      titleLarge: TextStyle(fontSize: 22, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w600, color: lightColors.light),
-      titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600, color: lightColors.light),
-      titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: lightColors.light),
+      titleLarge: TextStyle(fontSize: 22, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w600, color: _lightColors.light),
+      titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600, color: _lightColors.light),
+      titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light),
 
-      labelLarge: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: lightColors.light),
-      labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: lightColors.light),
-      labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: lightColors.light),
+      labelLarge: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light),
+      labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light),
+      labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light),
 
-      bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: lightColors.light),
-      bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: lightColors.light),
-      bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: lightColors.light),
-    )),
+      bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: _lightColors.light),
+      bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: _lightColors.light),
+      bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: _lightColors.light),
+    ),),
 
     sliderTheme: SliderThemeData(
-      activeTrackColor: lightColors.light,
-      inactiveTrackColor: lightColors.dark,
-      thumbColor: lightColors.light,
-      valueIndicatorColor: lightColors.light,
-      valueIndicatorStrokeColor: lightColors.normal,
-      overlayColor: lightColors.dark.withAlpha(lightColors.alphaB),
+      activeTrackColor: _lightColors.light,
+      inactiveTrackColor: _lightColors.dark,
+      thumbColor: _lightColors.light,
+      valueIndicatorColor: _lightColors.light,
+      valueIndicatorStrokeColor: _lightColors.normal,
+      overlayColor: _lightColors.dark.withAlpha(_lightColors.alphaB),
       valueIndicatorTextStyle: TextStyle(
-          color: lightColors.dark
+          color: _lightColors.dark,
       ),
       showValueIndicator: ShowValueIndicator.always,
 
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? lightColors.normal : lightColors.light) : lightColors.normal),
-      trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? lightColors.dark :lightColors.normal) : lightColors.dark),
-      trackOutlineColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) ? lightColors.normal : lightColors.light),
-      overlayColor: WidgetStateProperty.all(lightColors.normal.withAlpha(lightColors.alphaB))
+      thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light) : _lightColors.normal),
+      trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _lightColors.dark :_lightColors.normal) : _lightColors.dark),
+      trackOutlineColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light),
+      overlayColor: WidgetStateProperty.all(_lightColors.normal.withAlpha(_lightColors.alphaB)),
 
     ),
     inputDecorationTheme: InputDecorationTheme(
         enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-                color: lightColors.light
-            )
+                color: _lightColors.light,
+            ),
         ),
         focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-                color: lightColors.light
-            )
-        )
+                color: _lightColors.light,
+            ),
+        ),
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.hovered) ? darkColors.light : darkColors.normal),
-          backgroundColor: WidgetStateProperty.all(lightColors.normal),
-          overlayColor: WidgetStateProperty.all(lightColors.light),
-          surfaceTintColor: WidgetStateProperty.all(lightColors.normal),
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? darkColors.light : darkColors.normal),
+          backgroundColor: WidgetStateProperty.all(_lightColors.normal),
+          overlayColor: WidgetStateProperty.all(_lightColors.light),
+          surfaceTintColor: WidgetStateProperty.all(_lightColors.normal),
           side: WidgetStateProperty.all(
               BorderSide(
-                  color: lightColors.light
-              )
-          )
-      )
+                  color: _lightColors.light,
+              ),
+          ),
+      ),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        elevation: WidgetStateProperty.all(lightColors.elevation),
-        shadowColor: WidgetStateProperty.all(lightColors.dark),
-        foregroundColor: WidgetStateProperty.all(lightColors.light),
-        backgroundColor: WidgetStateProperty.all(lightColors.dark),
-        overlayColor: WidgetStateProperty.all(lightColors.dark),
-        surfaceTintColor: WidgetStateProperty.all(lightColors.light),
+        elevation: WidgetStateProperty.all(_lightColors.elevation),
+        shadowColor: WidgetStateProperty.all(_lightColors.dark),
+        foregroundColor: WidgetStateProperty.all(_lightColors.light),
+        backgroundColor: WidgetStateProperty.all(_lightColors.dark),
+        overlayColor: WidgetStateProperty.all(_lightColors.dark),
+        surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
         side: WidgetStateProperty.all(
           BorderSide(
-            color: lightColors.light
-          )
-        )
-      )
+            color: _lightColors.light,
+          ),
+        ),
+      ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? lightColors.normal : lightColors.light),
-          backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? lightColors.light : lightColors.normal),
-        )
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
+          backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.light : _lightColors.normal),
+        ),
     ),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: lightColors.light
-    )
+      cursorColor: _lightColors.light,
+    ),
 
   );
 
 
 
 
-  static ColorSet darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
-  static ThemeData monochromeThemeDark = ThemeData(
+  ColorSet darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
+  ThemeData monochromeThemeDark = ThemeData(
 
     primaryColor: darkColors.normal,
     primaryColorLight: darkColors.light,
@@ -160,7 +156,7 @@ class KPixTheme
 
     colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.grey,
-        brightness: Brightness.dark
+        brightness: Brightness.dark,
     ),
 
     //fontFamily: "PixelFonts",
@@ -185,7 +181,7 @@ class KPixTheme
       bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: darkColors.light),
       bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: darkColors.light),
       bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: darkColors.light),
-    )),
+    ),),
 
     sliderTheme: SliderThemeData(
       activeTrackColor: darkColors.light,
@@ -195,42 +191,42 @@ class KPixTheme
       valueIndicatorStrokeColor: darkColors.normal,
       overlayColor: darkColors.light.withAlpha(darkColors.alphaB),
       valueIndicatorTextStyle: TextStyle(
-        color: darkColors.normal
+        color: darkColors.normal,
       ),
       showValueIndicator: ShowValueIndicator.always,
 
     ),
 
     switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light) : darkColors.normal),
-        trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.dark : darkColors.normal) : darkColors.dark),
-        trackOutlineColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light),
-        overlayColor: WidgetStateProperty.all(darkColors.light.withAlpha(darkColors.alphaB))
+        thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light) : darkColors.normal),
+        trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.dark : darkColors.normal) : darkColors.dark),
+        trackOutlineColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light),
+        overlayColor: WidgetStateProperty.all(darkColors.light.withAlpha(darkColors.alphaB)),
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-              color: darkColors.light
-          )
+              color: darkColors.light,
+          ),
       ),
       focusedBorder: UnderlineInputBorder(
         borderSide: BorderSide(
-          color: darkColors.light
-        )
-      )
+          color: darkColors.light,
+        ),
+      ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.hovered) ? darkColors.normal : darkColors.light),
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? darkColors.normal : darkColors.light),
           backgroundColor: WidgetStateProperty.all(darkColors.normal),
           overlayColor: WidgetStateProperty.all(darkColors.light),
           surfaceTintColor: WidgetStateProperty.all(darkColors.light),
           side: WidgetStateProperty.all(BorderSide(
-              color: darkColors.light
-          ))
-      )
-
+              color: darkColors.light,
+          ),
+        ),
+      ),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -242,19 +238,18 @@ class KPixTheme
         overlayColor: WidgetStateProperty.all(darkColors.normal),
         surfaceTintColor: WidgetStateProperty.all(darkColors.light),
           side: WidgetStateProperty.all(BorderSide(
-              color: darkColors.light
-          ))
-      )
+              color: darkColors.light,
+          ),
+        ),
+      ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? darkColors.normal : darkColors.light),
-          backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? darkColors.light : darkColors.normal),
-        )
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? darkColors.normal : darkColors.light),
+          backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? darkColors.light : darkColors.normal),
+        ),
     ),
       textSelectionTheme: TextSelectionThemeData(
-          cursorColor: darkColors.light
-      )
+          cursorColor: darkColors.light,
+      ),
   );
-
-}

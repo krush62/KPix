@@ -19,12 +19,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/helper.dart';
 
 class SelectionPainter extends IToolPainter
 {
@@ -33,11 +33,11 @@ class SelectionPainter extends IToolPainter
   bool hasNewSelection = false;
   final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
   bool movementStarted = false;
-  List<CoordinateSetI> polygonPoints = [];
+  List<CoordinateSetI> polygonPoints = <CoordinateSetI>[];
   bool polygonDown = false;
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-  Offset _lastStartPos = const Offset(0,0);
+  Offset _lastStartPos = Offset.zero;
   bool _isStartOnCanvas = false;
   bool _shouldMove = false;
 
@@ -45,7 +45,7 @@ class SelectionPainter extends IToolPainter
 
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.currentDrawingLayer != null)
     {
@@ -57,8 +57,8 @@ class SelectionPainter extends IToolPainter
       }
       if (drawParams.cursorPos != null)
       {
-        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble()).round();
-        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble()).round();
+        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble());
+        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
       }
 
       _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null;
@@ -71,7 +71,7 @@ class SelectionPainter extends IToolPainter
           movementStarted = true;
           appState.selectionState.setOffset(offset: CoordinateSetI(
               x: _cursorPosNorm.x - _normStartPos.x,
-              y: _cursorPosNorm.y - _normStartPos.y));
+              y: _cursorPosNorm.y - _normStartPos.y,),);
         }
         else
         {
@@ -137,7 +137,7 @@ class SelectionPainter extends IToolPainter
           bool isInsideCircle = false;
           if (polygonPoints.isNotEmpty)
           {
-            if (Helper.getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+            if (getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
             {
               isInsideCircle = true;
             }
@@ -169,7 +169,7 @@ class SelectionPainter extends IToolPainter
   }
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
     assert(drawParams.cursorPos != null);
 
@@ -179,12 +179,12 @@ class SelectionPainter extends IToolPainter
       final CoordinateSetD cursorStartPos = CoordinateSetD(
           x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
           y: drawParams.offset.dy +
-              selectionStart.y * drawParams.pixelSize);
+              selectionStart.y * drawParams.pixelSize,);
       final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
               (selectionEnd.x + 1) * drawParams.pixelSize,
           y: drawParams.offset.dy +
-              (selectionEnd.y + 1) * drawParams.pixelSize);
+              (selectionEnd.y + 1) * drawParams.pixelSize,);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -212,7 +212,7 @@ class SelectionPainter extends IToolPainter
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -225,7 +225,7 @@ class SelectionPainter extends IToolPainter
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
-          y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
+          y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize,);
 
       final Path rhombusPath = Path();
       rhombusPath.moveTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
@@ -246,7 +246,7 @@ class SelectionPainter extends IToolPainter
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
-          y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
+          y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize,);
       final Path outlinePath = Path();
       outlinePath.moveTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
       outlinePath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
@@ -277,21 +277,21 @@ class SelectionPainter extends IToolPainter
   }
 
   @override
-  void drawExtras({required DrawingParameters drawParams}) {
+  void drawExtras({required final DrawingParameters drawParams}) {
     if (options.shape.value == SelectShape.polygon && polygonPoints.isNotEmpty)
     {
       final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
       CoordinateSetD(
           x: drawParams.offset.dx + getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
-              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize + (drawParams.pixelSize / 2),
+              pixelSize: drawParams.pixelSize.toDouble(),) * drawParams.pixelSize + (drawParams.pixelSize / 2),
           y: drawParams.offset.dy + getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
-              pixelSize: drawParams.pixelSize.toDouble()) * drawParams.pixelSize + (drawParams.pixelSize / 2))
+              pixelSize: drawParams.pixelSize.toDouble(),) * drawParams.pixelSize + (drawParams.pixelSize / 2),)
           : null;
 
 
-      Path path = Path();
+      final Path path = Path();
       for (int i = 0; i < polygonPoints.length; i++)
       {
         if (i == 0)
@@ -323,7 +323,7 @@ class SelectionPainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     if (drawParams.cursorPos != null)
@@ -331,8 +331,8 @@ class SelectionPainter extends IToolPainter
       statusBarData.cursorPos = _cursorPosNorm;
       if ((options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse) && drawParams.primaryDown)
       {
-        int width = (selectionStart.x - selectionEnd.x).abs() + 1;
-        int height = (selectionStart.y - selectionEnd.y).abs() + 1;
+        final int width = (selectionStart.x - selectionEnd.x).abs() + 1;
+        final int height = (selectionStart.y - selectionEnd.y).abs() + 1;
         statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
       }
     }

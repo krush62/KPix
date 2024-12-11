@@ -41,12 +41,13 @@ class GridLayerState extends LayerState
     required final GridType gridType,
     required final int brightness,
     required final int intervalX,
-    required final int intervalY}) :
-      opacityNotifier = ValueNotifier(opacity),
-      gridTypeNotifier = ValueNotifier(gridType),
-      brightnessNotifier = ValueNotifier(brightness),
-      intervalXNotifier = ValueNotifier(intervalX),
-      intervalYNotifier = ValueNotifier(intervalY)
+    required final int intervalY,
+  }) :
+      opacityNotifier = ValueNotifier<int>(opacity),
+      gridTypeNotifier = ValueNotifier<GridType>(gridType),
+      brightnessNotifier = ValueNotifier<int>(brightness),
+      intervalXNotifier = ValueNotifier<int>(intervalX),
+      intervalYNotifier = ValueNotifier<int>(intervalY)
   {
     opacityNotifier.addListener(_valueChanged);
     gridTypeNotifier.addListener(_valueChanged);
@@ -57,14 +58,14 @@ class GridLayerState extends LayerState
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
   }
 
-  factory GridLayerState.from({required GridLayerState other})
+  factory GridLayerState.from({required final GridLayerState other})
   {
     return GridLayerState(
       opacity: other.opacity,
       brightness: other.brightness,
       gridType: other.gridType,
       intervalX: other.intervalX,
-      intervalY: other.intervalY
+      intervalY: other.intervalY,
     );
   }
 
@@ -166,10 +167,10 @@ class GridLayerState extends LayerState
         }
         else if (gridType == GridType.hexagonal)
         {
-          final height = intervalY - 1;
-          final int tripleInterval = (intervalX * 3);
-          final bool flip = (y ~/ height) % 2 == 0;
-          if (y % (height) == 0)
+          final int height = intervalY - 1;
+          final int tripleInterval = intervalX * 3;
+          final bool flip = (y ~/ height).isEven;
+          if (y % height == 0)
           {
             if (flip)
             {
@@ -188,16 +189,16 @@ class GridLayerState extends LayerState
           }
 
           final int leftUpper = (x ~/ tripleInterval + 1) * tripleInterval;
-          final int rightUpper = ((x ~/ tripleInterval) * tripleInterval + intervalX);
+          final int rightUpper = (x ~/ tripleInterval) * tripleInterval + intervalX;
 
           final bool isLeft = (leftUpper - x).abs() < (rightUpper - x).abs();
-          final int tx1 = (isLeft) ? leftUpper : rightUpper;
-          final int tx2 = (isLeft) ? tx1 - (intervalX ~/2) : tx1 + (intervalX ~/2);
-          int ty1 = (y ~/ height) * height;
-          int ty2 = ty1 + height;
-          CoordinateSetI t1 = CoordinateSetI(x: flip ? tx1 : tx2, y: flip ? ty1 - 1 : ty1);
-          CoordinateSetI t2 = CoordinateSetI(x: flip ? tx2 : tx1, y: flip ? ty2 : ty2 + 1);
-          List<CoordinateSetI> line1 = Helper.bresenham(start: t1, end: t2);
+          final int tx1 = isLeft ? leftUpper : rightUpper;
+          final int tx2 = isLeft ? tx1 - (intervalX ~/2) : tx1 + (intervalX ~/2);
+          final int ty1 = (y ~/ height) * height;
+          final int ty2 = ty1 + height;
+          final CoordinateSetI t1 = CoordinateSetI(x: flip ? tx1 : tx2, y: flip ? ty1 - 1 : ty1);
+          final CoordinateSetI t2 = CoordinateSetI(x: flip ? tx2 : tx1, y: flip ? ty2 : ty2 + 1);
+          final List<CoordinateSetI> line1 = bresenham(start: t1, end: t2);
           final CoordinateSetI current = CoordinateSetI(x: x, y: y);
           if (line1.contains(current))
           {
@@ -207,13 +208,13 @@ class GridLayerState extends LayerState
         }
         else if (gridType == GridType.triangular)
         {
-          if (y % (intervalY) == 0)
+          if (y % intervalY == 0)
           {
             shouldDraw = true;
           }
           else
           {
-            final bool flip = (y ~/ intervalY) % 2 == 0;
+            final bool flip = (y ~/ intervalY).isEven;
             final int tipX = (x ~/ intervalX) * intervalX + (intervalX ~/ 2);
             final int tipY = flip ? (y ~/ intervalY) * intervalY : (y ~/ intervalY + 1) * intervalY + 1;
             final int bottomY = flip ? tipY + intervalY: tipY - intervalY;
@@ -222,8 +223,8 @@ class GridLayerState extends LayerState
             final CoordinateSetI tip = CoordinateSetI(x: tipX, y: tipY);
             final CoordinateSetI bl = CoordinateSetI(x: bottomXL, y: bottomY);
             final CoordinateSetI br = CoordinateSetI(x: bottomXR, y: bottomY);
-            final List<CoordinateSetI> lineToLeft = Helper.bresenham(start: tip, end: bl);
-            final List<CoordinateSetI> lineToRight = Helper.bresenham(start: tip, end: br);
+            final List<CoordinateSetI> lineToLeft = bresenham(start: tip, end: bl);
+            final List<CoordinateSetI> lineToRight = bresenham(start: tip, end: br);
             final CoordinateSetI current = CoordinateSetI(x: x, y: y);
             if (lineToLeft.contains(current) || lineToRight.contains(current))
             {
@@ -233,16 +234,16 @@ class GridLayerState extends LayerState
         }
         else if (gridType == GridType.brick)
         {
-          if (y % (intervalY) == 0)
+          if (y % intervalY == 0)
           {
             shouldDraw = true;
           }
           else
           {
             int tipX = (x ~/ intervalX) * intervalX;
-            if ((y ~/ intervalY) % 2 == 0)
+            if ((y ~/ intervalY).isEven)
             {
-              tipX += (intervalX ~/2);
+              tipX += intervalX ~/2;
             }
             if (x == tipX)
             {
@@ -255,7 +256,7 @@ class GridLayerState extends LayerState
         {
           if (x >= 0 && x < appState.canvasSize.x && y >= 0 && y < appState.canvasSize.y)
           {
-            int pixelIndex = (y * appState.canvasSize.x + x) * 4;
+            final int pixelIndex = (y * appState.canvasSize.x + x) * 4;
             byteDataImg.setUint8(pixelIndex + 0, colorBrightnessPremultiplied);
             byteDataImg.setUint8(pixelIndex + 1, colorBrightnessPremultiplied);
             byteDataImg.setUint8(pixelIndex + 2, colorBrightnessPremultiplied);
@@ -270,7 +271,7 @@ class GridLayerState extends LayerState
       byteDataImg.buffer.asUint8List(),
       appState.canvasSize.x,
       appState.canvasSize.y,
-      ui.PixelFormat.rgba8888, (ui.Image convertedImage)
+      ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
       {
         completerImg.complete(convertedImage);
       }

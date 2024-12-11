@@ -17,16 +17,17 @@
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/main.dart';
+import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/stamp_manager.dart';
+import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/preferences/desktop_preferences.dart';
+import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
-import 'package:kpix/util/color_names.dart';
-import 'package:kpix/managers/font_manager.dart';
-import 'package:kpix/main.dart';
-import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -38,29 +39,28 @@ import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_widget.dart';
+import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
+import 'package:kpix/widgets/main/main_toolbar_widget.dart';
+import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
-import 'package:kpix/widgets/canvas/canvas_widget.dart';
-import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
-import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
-import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
-import 'package:kpix/widgets/tools/shader_widget.dart';
-import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/kpal/kpal_widget.dart';
 
 enum PreferenceDouble
 {
@@ -69,11 +69,11 @@ enum PreferenceDouble
   Layout_SplitView_GrooveThickness(defaultValue: 4.0),
   Layout_SplitView_GrooveSize(defaultValue: 2.0),
   Layout_SplitView_FlexLeftMin(defaultValue: 3.0),
-  Layout_SplitView_FlexLeftDefault(defaultValue: 4.0),
+  //Layout_SplitView_FlexLeftDefault(defaultValue: 4.0),
   Layout_SplitView_FlexLeftMax(defaultValue: 4.0),
   Layout_SplitView_FlexCenterDefault(defaultValue: 12.0),
   Layout_SplitView_FlexRightMin(defaultValue: 2.0),
-  Layout_SplitView_FlexRightDefault(defaultValue: 3.0),
+  //Layout_SplitView_FlexRightDefault(defaultValue: 3.0),
   Layout_SplitView_FlexRightMax(defaultValue: 3.0),
 
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
@@ -418,7 +418,7 @@ enum PreferenceInt
 
 
   const PreferenceInt({
-    required this.defaultValue
+    required this.defaultValue,
   });
   final int defaultValue;
 }
@@ -447,7 +447,7 @@ enum PreferenceBool
   SelectLayerAfterInsert(defaultValue: true),
   ;
   const PreferenceBool({
-    required this.defaultValue
+    required this.defaultValue,
   });
   final bool defaultValue;
 }
@@ -460,7 +460,7 @@ enum PreferenceString
 
   ;
   const PreferenceString({
-    required this.defaultValue
+    required this.defaultValue,
   });
   final String defaultValue;
 }
@@ -561,10 +561,10 @@ class _StringPair
 class PreferenceManager
 {
   final SharedPreferences _prefs;
-  final Map<PreferenceDouble, _DoublePair> _doubleMap = {};
-  final Map<PreferenceInt, _IntPair> _intMap = {};
-  final Map<PreferenceBool, _BoolPair> _boolMap = {};
-  final Map<PreferenceString, _StringPair> _stringMap = {};
+  final Map<PreferenceDouble, _DoublePair> _doubleMap = <PreferenceDouble, _DoublePair>{};
+  final Map<PreferenceInt, _IntPair> _intMap = <PreferenceInt, _IntPair>{};
+  final Map<PreferenceBool, _BoolPair> _boolMap = <PreferenceBool, _BoolPair>{};
+  final Map<PreferenceString, _StringPair> _stringMap = <PreferenceString, _StringPair>{};
   late MainLayoutOptions mainLayoutOptions;
   late CanvasOptions canvasWidgetOptions;
   late ToolsWidgetOptions toolsWidgetOptions;
@@ -625,43 +625,43 @@ class PreferenceManager
 
   void _init()
   {
-    for (PreferenceDouble dblEnum in PreferenceDouble.values)
+    for (final PreferenceDouble dblEnum in PreferenceDouble.values)
     {
       _doubleMap[dblEnum] = _DoublePair(val: _prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
     }
 
-    for (PreferenceInt intEnum in PreferenceInt.values)
+    for (final PreferenceInt intEnum in PreferenceInt.values)
     {
       _intMap[intEnum] = _IntPair(val: _prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
     }
 
-    for (PreferenceBool boolEnum in PreferenceBool.values)
+    for (final PreferenceBool boolEnum in PreferenceBool.values)
     {
       _boolMap[boolEnum] = _BoolPair(val: _prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
     }
 
-    for (PreferenceString stringEnum in PreferenceString.values)
+    for (final PreferenceString stringEnum in PreferenceString.values)
     {
       _stringMap[stringEnum] = _StringPair(val: _prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
     }
   }
 
-  double _getValueD(PreferenceDouble prefName)
+  double _getValueD(final PreferenceDouble prefName)
   {
     return _doubleMap[prefName]?.value ?? 0.0;
   }
 
-  int _getValueI(PreferenceInt prefName)
+  int _getValueI(final PreferenceInt prefName)
   {
     return _intMap[prefName]?.value ?? 0;
   }
 
-  bool _getValueB(PreferenceBool prefName)
+  bool _getValueB(final PreferenceBool prefName)
   {
     return _boolMap[prefName]?.value ?? false;
   }
 
-  String _getValueS(PreferenceString prefName)
+  String _getValueS(final PreferenceString prefName)
   {
     return _stringMap[prefName]?.value ?? "";
   }
@@ -713,22 +713,23 @@ class PreferenceManager
         splitViewGrooveCountMin: _getValueI(PreferenceInt.Layout_SplitView_GrooveCountMin),
         splitViewGrooveCountMax: _getValueI(PreferenceInt.Layout_SplitView_GrooveCountMax),
         splitViewAnimationLength: _getValueI(PreferenceInt.Layout_SplitView_AnimationLength),
-        splitViewFlexLeftDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
+        //splitViewFlexLeftDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
         splitViewFlexCenterDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexCenterDefault),
-        splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault));
+        //splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault),
+        );
     canvasWidgetOptions = CanvasOptions(
         historyCheckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
         minVisibilityFactor: _getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor),
-        idleTimerRate: _getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate));
+        idleTimerRate: _getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate),);
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_Tools_Padding),
         colCount: _getValueI(PreferenceInt.Layout_Tools_ColCount),
         buttonSize: _getValueD(PreferenceDouble.Layout_Tools_ButtonSize),
-        iconSize: _getValueD(PreferenceDouble.Layout_Tools_IconSize));
+        iconSize: _getValueD(PreferenceDouble.Layout_Tools_IconSize),);
     paletteWidgetOptions = PaletteWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_Palette_Padding),
         managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize),
-        borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius));
+        borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius),);
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
@@ -742,15 +743,15 @@ class PreferenceManager
         columnWidthRatio: _getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
         padding: _getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
         smallButtonSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallButtonSize),
-        smallIconSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallIconSize));
+        smallIconSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallIconSize),);
     mainToolbarWidgetOptions = MainToolbarWidgetOptions(
         paletteFlex: _getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: _getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
         dividerHeight: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
         dividerPadding: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),
-        toolHeight: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight));
+        toolHeight: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight),);
     shaderWidgetOptions = ShaderWidgetOptions(
-        outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding));
+        outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding),);
     statusBarWidgetOptions = StatusBarWidgetOptions(
       height: _getValueD(PreferenceDouble.Layout_StatusBar_Height),
       padding: _getValueD(PreferenceDouble.Layout_StatusBar_Padding),
@@ -758,7 +759,7 @@ class PreferenceManager
     shaderOptions = ShaderOptions(
         shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),
-        isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled));
+        isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled),);
     overlayEntryOptions = OverlayEntrySubMenuOptions(
         offsetX: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetX),
         offsetXLeft: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetXLeft),
@@ -766,7 +767,7 @@ class PreferenceManager
         buttonSpacing: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
         width: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
         buttonHeight: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonHeight),
-        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity));
+        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),);
     alertDialogOptions = OverlayEntryAlertDialogOptions(
         smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
         minWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinWidth),
@@ -777,11 +778,11 @@ class PreferenceManager
         borderWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderWidth),
         borderRadius: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderRadius),
         iconSize: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_IconSize),
-        elevation: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation));
+        elevation: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation),);
     mainButtonWidgetOptions = MainButtonWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_MainButton_Padding),
         menuIconSize: _getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),
-        dividerSize: _getValueD(PreferenceDouble.Layout_MainButton_DividerSize));
+        dividerSize: _getValueD(PreferenceDouble.Layout_MainButton_DividerSize),);
     layerWidgetOptions = LayerWidgetOptions(
         outerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_OuterPadding),
         innerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_InnerPadding),
@@ -797,34 +798,34 @@ class PreferenceManager
         dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
         dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
         thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
-        addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize));
+        addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
-        opacityDuration: _getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration));
+        opacityDuration: _getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration),);
     canvasOperationsWidgetOptions = CanvasOperationsWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_IconHeight),
-        padding: _getValueD(PreferenceDouble.Layout_CanvasOperations_Padding));
+        padding: _getValueD(PreferenceDouble.Layout_CanvasOperations_Padding),);
     canvasSizeOptions = CanvasSizeOptions(
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
-        previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize));
+        previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize),);
     paletteManagerEntryOptions = PaletteManagerEntryOptions(
         borderRadius: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderRadius),
         borderWidth: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderWidth),
-        layoutFlex: _getValueI(PreferenceInt.Layout_PaletteManagerEntry_LayoutFlex));
+        layoutFlex: _getValueI(PreferenceInt.Layout_PaletteManagerEntry_LayoutFlex),);
     paletteManagerOptions = PaletteManagerOptions(
       colCount: _getValueI(PreferenceInt.Layout_PaletteManager_ColCount),
-      entryAspectRatio: _getValueD(PreferenceDouble.Layout_PaletteManager_EntryAspectRatio));
+      entryAspectRatio: _getValueD(PreferenceDouble.Layout_PaletteManager_EntryAspectRatio),);
     projectManagerEntryOptions = ProjectManagerEntryOptions(
         borderRadius: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderRadius),
         borderWidth: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderWidth),
-        layoutFlex: _getValueI(PreferenceInt.Layout_ProjectManagerEntry_LayoutFlex));
+        layoutFlex: _getValueI(PreferenceInt.Layout_ProjectManagerEntry_LayoutFlex),);
     projectManagerOptions = ProjectManagerOptions(
         colCount: _getValueI(PreferenceInt.Layout_ProjectManager_ColCount),
         entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
         maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
-        maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight));
+        maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight),);
 
     referenceLayerSettings = ReferenceLayerSettings(
       opacityDefault: _getValueI(PreferenceInt.ReferenceLayer_OpacityDefault),
@@ -836,7 +837,7 @@ class PreferenceManager
       aspectRatioDefault: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioDefault),
       aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
       aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
-      zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent)
+      zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent),
     );
 
     gridLayerSettings = GridLayerSettings(
@@ -852,19 +853,19 @@ class PreferenceManager
       intervalYDefault: _getValueI(PreferenceInt.GridLayer_IntervalYDefault),
       intervalYMin: _getValueI(PreferenceInt.GridLayer_IntervalYMin),
       intervalYMax: _getValueI(PreferenceInt.GridLayer_IntervalYMax),
-      gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault)
+      gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault),
     );
   }
 
   void _loadToolOptions()
   {
-    PencilOptions pencilOptions = PencilOptions(
+    final PencilOptions pencilOptions = PencilOptions(
         sizeMin: _getValueI(PreferenceInt.Tool_Pencil_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Tool_Pencil_SizeMax),
         sizeDefault: _getValueI(PreferenceInt.Tool_Pencil_Size),
         shapeDefault: _getValueI(PreferenceInt.Tool_Pencil_Shape),
-        pixelPerfectDefault: _getValueB(PreferenceBool.Tool_Pencil_PixelPerfect));
-    ShapeOptions shapeOptions = ShapeOptions(
+        pixelPerfectDefault: _getValueB(PreferenceBool.Tool_Pencil_PixelPerfect),);
+    final ShapeOptions shapeOptions = ShapeOptions(
         shapeDefault: _getValueI(PreferenceInt.Tool_Shape_Shape),
         keepRatioDefault: _getValueB(PreferenceBool.Tool_Shape_KeepAspectRatio),
         strokeOnlyDefault: _getValueB(PreferenceBool.Tool_Shape_StrokeOnly),
@@ -881,30 +882,30 @@ class PreferenceManager
         ellipseAngleMax: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleMax),
         ellipseAngleDefault: _getValueI(PreferenceInt.Tool_Shape_EllipseAngle),
         ellipseAngleSteps: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleSteps),);
-    FillOptions fillOptions = FillOptions(
+    final FillOptions fillOptions = FillOptions(
         fillAdjacentDefault: _getValueB(PreferenceBool.Tool_Fill_FillAdjacent),
-        fillWholeRampDefault: _getValueB(PreferenceBool.Tool_Fill_FillWholeRamp));
-    SelectOptions selectOptions = SelectOptions(
+        fillWholeRampDefault: _getValueB(PreferenceBool.Tool_Fill_FillWholeRamp),);
+    final SelectOptions selectOptions = SelectOptions(
         shapeDefault: _getValueI(PreferenceInt.Tool_Select_Shape),
         keepAspectRatioDefault: _getValueB(PreferenceBool.Tool_Select_KeepAspectRatio),
         modeDefault: _getValueI(PreferenceInt.Tool_Select_Mode),
         wandContinuousDefault: _getValueB(PreferenceBool.Tool_Wand_Continuous),
-        wandWholeRampDefault: _getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp));
-    ColorPickOptions colorPickOptions = ColorPickOptions();
-    EraserOptions eraserOptions = EraserOptions(
+        wandWholeRampDefault: _getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp),);
+    final ColorPickOptions colorPickOptions = ColorPickOptions();
+    final EraserOptions eraserOptions = EraserOptions(
         sizeMin: _getValueI(PreferenceInt.Tool_Eraser_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Tool_Eraser_SizeMax),
         sizeDefault: _getValueI(PreferenceInt.Tool_Eraser_Size),
-        shapeDefault: _getValueI(PreferenceInt.Tool_Eraser_Shape));
-    TextOptions textOptions = TextOptions(
+        shapeDefault: _getValueI(PreferenceInt.Tool_Eraser_Shape),);
+    final TextOptions textOptions = TextOptions(
         fontManager: _fontManager,
         fontDefault: _getValueI(PreferenceInt.Tool_Text_Font),
         sizeMin: _getValueI(PreferenceInt.Tool_Text_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Tool_Text_SizeMax),
         sizeDefault: _getValueI(PreferenceInt.Tool_Text_Size),
         textDefault: _getValueS(PreferenceString.Tool_Text_TextDefault),
-        maxLength: _getValueI(PreferenceInt.Tool_Text_MaxLength));
-    SprayCanOptions sprayCanOptions = SprayCanOptions(
+        maxLength: _getValueI(PreferenceInt.Tool_Text_MaxLength),);
+    final SprayCanOptions sprayCanOptions = SprayCanOptions(
         radiusMin: _getValueI(PreferenceInt.Tool_SprayCan_RadiusMin),
         radiusMax: _getValueI(PreferenceInt.Tool_SprayCan_RadiusMax),
         radiusDefault: _getValueI(PreferenceInt.Tool_SprayCan_Radius),
@@ -913,21 +914,21 @@ class PreferenceManager
         blobSizeDefault: _getValueI(PreferenceInt.Tool_SprayCan_BlobSize),
         intensityMin: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMin),
         intensityMax: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMax),
-        intensityDefault: _getValueI(PreferenceInt.Tool_SprayCan_Intensity));
-    LineOptions lineOptions = LineOptions(
+        intensityDefault: _getValueI(PreferenceInt.Tool_SprayCan_Intensity),);
+    final LineOptions lineOptions = LineOptions(
         widthMin: _getValueI(PreferenceInt.Tool_Line_WidthMin),
         widthMax: _getValueI(PreferenceInt.Tool_Line_WidthMax),
         widthDefault: _getValueI(PreferenceInt.Tool_Line_Width),
         bezierCalculationPoints: _getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
-        integerAspectRatioDefault: _getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio));
-    StampOptions stampOptions = StampOptions(
+        integerAspectRatioDefault: _getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio),);
+    final StampOptions stampOptions = StampOptions(
         stampManager: _stampManager,
         scaleMin: _getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
         scaleMax: _getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
         scaleDefault: _getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
         stampDefault: _getValueI(PreferenceInt.Tool_Stamp_StampDefault),
         flipHDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
-        flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH));
+        flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),);
     toolOptions = ToolOptions(
         pencilOptions: pencilOptions,
         shapeOptions: shapeOptions,
@@ -973,7 +974,7 @@ class PreferenceManager
         rampCountMin: _getValueI(PreferenceInt.KPal_Constraints_RampCountMin),
         rampCountMax: _getValueI(PreferenceInt.KPal_Constraints_RampCountMax),
         rampCountDefault: _getValueI(PreferenceInt.KPal_Constraints_RampCountDefault),
-        maxClusters: _getValueI(PreferenceInt.KPal_Constraints_MaxClusters));
+        maxClusters: _getValueI(PreferenceInt.KPal_Constraints_MaxClusters),);
 
     kPalSliderConstraints = KPalSliderConstraints(
         minHue: _getValueI(PreferenceInt.KPalSliderConstraints_MinHue),
@@ -987,7 +988,7 @@ class PreferenceManager
         defaultVal: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultVal),
     );
 
-    KPalColorCardWidgetOptions colorCardWidgetOptions = KPalColorCardWidgetOptions(
+    final KPalColorCardWidgetOptions colorCardWidgetOptions = KPalColorCardWidgetOptions(
         borderRadius: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderRadius),
         borderWidth: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderWidth),
         outsidePadding: _getValueD(PreferenceDouble.KPalColorCard_Layout_OutsidePadding),
@@ -995,9 +996,9 @@ class PreferenceManager
         colorNameFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNameFlex),
         colorNumbersFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNumbersFlex),
         editAnimationDuration: _getValueI(PreferenceInt.KPalColorCard_Layout_EditAnimationDuration),
-        touchTimeout: _getValueI(PreferenceInt.KPalColorCard_Layout_TouchTimeout));
+        touchTimeout: _getValueI(PreferenceInt.KPalColorCard_Layout_TouchTimeout),);
 
-    KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
+    final KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
         padding: _getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
         centerFlex: _getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
         rightFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
@@ -1009,7 +1010,7 @@ class PreferenceManager
         rowValueFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
         colorNameShowThreshold: _getValueI(PreferenceInt.KPalRamp_Layout_ColorShowThreshold),
         colorCardWidgetOptions: colorCardWidgetOptions,
-        renderIntervalMs: _getValueI(PreferenceInt.KPalRamp_Layout_RenderIntervalMs));
+        renderIntervalMs: _getValueI(PreferenceInt.KPalRamp_Layout_RenderIntervalMs),);
 
     kPalWidgetOptions = KPalWidgetOptions(
         borderWidth: _getValueD(PreferenceDouble.KPal_Layout_BorderWidth),
@@ -1018,14 +1019,14 @@ class PreferenceManager
         borderRadius: _getValueD(PreferenceDouble.KPal_Layout_BorderRadius),
         iconSize: _getValueD(PreferenceDouble.KPal_Layout_IconSize),
         insidePadding: _getValueD(PreferenceDouble.KPal_Layout_InsidePadding),
-        rampOptions: rampWidgetOptions);
+        rampOptions: rampWidgetOptions,);
   }
 
   void _loadColorNames()
   {
-    ColorNamesOptions options = ColorNamesOptions(
+    final ColorNamesOptions options = ColorNamesOptions(
         defaultNameScheme: _getValueI(PreferenceInt.ColorNames_Scheme),
-        defaultColorNamePath: _getValueS(PreferenceString.ColorNames_ColorNamePath));
+        defaultColorNamePath: _getValueS(PreferenceString.ColorNames_ColorNamePath),);
 
     colorNames = ColorNames(options: options);
 
@@ -1053,7 +1054,7 @@ class PreferenceManager
       themeTypeValue: _getValueI(PreferenceInt.ThemeType),
       canvasBorderOpacityValue: _getValueI(PreferenceInt.Opacity_CanvasBorder),
       selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
-      toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool)
+      toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
     );
 
     behaviorPreferenceContent = BehaviorPreferenceContent(
@@ -1095,7 +1096,7 @@ class PreferenceManager
     );
 
     desktopPreferenceContent = DesktopPreferenceContent(
-      cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType)
+      cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType),
     );
   }
 
@@ -1104,14 +1105,14 @@ class PreferenceManager
     //GUI PREFERENCES
     if (guiPreferenceContent.colorNameScheme.value != colorNameSchemeIndexMap[_intMap[PreferenceInt.ColorNames_Scheme]!.value])
     {
-      _intMap[PreferenceInt.ColorNames_Scheme]!.value = colorNameSchemeIndexMap.keys.firstWhere((x) => colorNameSchemeIndexMap[x] == guiPreferenceContent.colorNameScheme.value, orElse:() => PreferenceInt.ColorNames_Scheme.defaultValue);
+      _intMap[PreferenceInt.ColorNames_Scheme]!.value = colorNameSchemeIndexMap.keys.firstWhere((final int x) => colorNameSchemeIndexMap[x] == guiPreferenceContent.colorNameScheme.value, orElse:() => PreferenceInt.ColorNames_Scheme.defaultValue);
       _loadColorNames();
     }
     _intMap[PreferenceInt.Painter_CheckerBoardContrast]!.value = guiPreferenceContent.rasterContrast.value;
     _intMap[PreferenceInt.Painter_CheckerBoardSize]!.value = rasterSizes[guiPreferenceContent.rasterSizeIndex.value];
     if (guiPreferenceContent.themeType.value != themeTypeIndexMap[_intMap[PreferenceInt.ThemeType]!.value])
     {
-      _intMap[PreferenceInt.ThemeType]!.value = themeTypeIndexMap.keys.firstWhere((x) => themeTypeIndexMap[x] == guiPreferenceContent.themeType.value, orElse:() => PreferenceInt.ThemeType.defaultValue);
+      _intMap[PreferenceInt.ThemeType]!.value = themeTypeIndexMap.keys.firstWhere((final int x) => themeTypeIndexMap[x] == guiPreferenceContent.themeType.value, orElse:() => PreferenceInt.ThemeType.defaultValue);
       themeSettings.themeMode =  guiPreferenceContent.themeType.value;
     }
     _intMap[PreferenceInt.Opacity_Tool]!.value = guiPreferenceContent.toolOpacity.value;
@@ -1141,7 +1142,7 @@ class PreferenceManager
     //DESKTOP PREFERENCES
     if (desktopPreferenceContent.cursorType.value != cursorTypeIndexMap[_intMap[PreferenceInt.DesktopOptions_CursorType]!.value])
     {
-      _intMap[PreferenceInt.DesktopOptions_CursorType]!.value = cursorTypeIndexMap.keys.firstWhere((x) => cursorTypeIndexMap[x] == desktopPreferenceContent.cursorType.value, orElse:() => PreferenceInt.DesktopOptions_CursorType.defaultValue);
+      _intMap[PreferenceInt.DesktopOptions_CursorType]!.value = cursorTypeIndexMap.keys.firstWhere((final int x) => cursorTypeIndexMap[x] == desktopPreferenceContent.cursorType.value, orElse:() => PreferenceInt.DesktopOptions_CursorType.defaultValue);
     }
 
     await _savePreferences();
@@ -1149,4 +1150,3 @@ class PreferenceManager
 
   }
 }
-

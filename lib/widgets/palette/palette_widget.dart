@@ -31,11 +31,11 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 
@@ -48,7 +48,7 @@ class PaletteWidgetOptions
   PaletteWidgetOptions({
     required this.padding,
     required this.managerButtonSize,
-    required this.borderRadius
+    required this.borderRadius,
   });
 
 }
@@ -67,14 +67,14 @@ class PaletteWidget extends StatefulWidget
 
 class _PaletteWidgetState extends State<PaletteWidget>
 {
-  final ValueNotifier<List<ColorRampRowWidget>> _colorRampWidgetList = ValueNotifier([]);
+  final ValueNotifier<List<ColorRampRowWidget>> _colorRampWidgetList = ValueNotifier<List<ColorRampRowWidget>>(<ColorRampRowWidget>[]);
   late KPixOverlay _paletteManager;
   @override
   void initState()
   {
     super.initState();
-    _paletteManager = OverlayEntries.getPaletteManagerDialog(
-        onDismiss: _paletteManagerClosed);
+    _paletteManager = getPaletteManagerDialog(
+        onDismiss: _paletteManagerClosed,);
   }
 
   void _paletteManagerPressed()
@@ -97,8 +97,8 @@ class _PaletteWidgetState extends State<PaletteWidget>
         valueListenable: appState.colorRampNotifier,
         builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child){
 
-          final List<ColorRampRowWidget> widgetList = [];
-          for (KPalRampData rampData in rampDataSet)
+          final List<ColorRampRowWidget> widgetList = <ColorRampRowWidget>[];
+          for (final KPalRampData rampData in rampDataSet)
           {
             widgetList.add(
                 ColorRampRowWidget(
@@ -106,12 +106,12 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   colorSelectedFn: appState.colorSelected,
                   colorsUpdatedFn: appState.updateRamp,
                   deleteRowFn: appState.deleteRamp,
-                )
+                ),
             );
           }
           widgetList.add(ColorRampRowWidget(
             addNewRampFn: appState.addNewRamp,
-          ));
+          ),);
           _colorRampWidgetList.value = widgetList;
           return ValueListenableBuilder<List<ColorRampRowWidget>>(
             valueListenable: _colorRampWidgetList,
@@ -121,13 +121,12 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 height: double.infinity,
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(paletteWidgetOptions.borderRadius), bottomRight: Radius.circular(paletteWidgetOptions.borderRadius))
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(paletteWidgetOptions.borderRadius), bottomRight: Radius.circular(paletteWidgetOptions.borderRadius)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
+                  children: <Widget>[
                     Tooltip(
                       message: "Palette Manager",
                       waitDuration: AppState.toolTipDuration,
@@ -141,33 +140,30 @@ class _PaletteWidgetState extends State<PaletteWidget>
                             minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
                             maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
                             iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
-                            padding: EdgeInsets.zero
+                            padding: EdgeInsets.zero,
                           ),
                         ),
                       ),
                     ),
                     Expanded(
                       child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
                         child: Padding(
                           padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
                           child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              ...widgetRows
+                            children: <Widget>[
+                              ...widgetRows,
                             ],
-                          )
+                          ),
                         ),
                       ),
                     ),
                   ],
-                )
+                ),
               );
-            }
+            },
           );
-        }
-      )
+        },
+      ),
     );
   }
 }

@@ -26,7 +26,7 @@ class CreditEntry
 {
   String _content = "";
   TextStyle style;
-  CreditEntry({required final String content, required this.style, final removeTrailingBackslash = true})
+  CreditEntry({required final String content, required this.style, final bool removeTrailingBackslash = true})
   {
     if (content.endsWith("\\\r") && removeTrailingBackslash)
     {
@@ -50,7 +50,7 @@ class CreditsWidget extends StatefulWidget
 class _CreditsWidgetState extends State<CreditsWidget>
 {
   final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<List<CreditEntry>> _creditEntries = ValueNotifier([]);
+  final ValueNotifier<List<CreditEntry>> _creditEntries = ValueNotifier<List<CreditEntry>>(<CreditEntry>[]);
 
   @override
   void initState()
@@ -58,14 +58,9 @@ class _CreditsWidgetState extends State<CreditsWidget>
     super.initState();
   }
 
-  void _setCreditEntries({required final List<CreditEntry> entries})
-  {
-    _creditEntries.value = entries;
-  }
-
   Future<List<CreditEntry>> _createCreditEntries({required final TextStyle headerLarge, required final TextStyle headerMedium, required final TextStyle headerSmall, required final TextStyle textNormal}) async
   {
-    final List<CreditEntry> entries = [];
+    final List<CreditEntry> entries = <CreditEntry>[];
     final String credContent = await rootBundle.loadString("docs/credits.md");
     final List<String> lines = credContent.split('\n');
     for (final String line in lines)
@@ -101,8 +96,8 @@ class _CreditsWidgetState extends State<CreditsWidget>
         headerLarge: Theme.of(context).textTheme.headlineLarge!,
         headerMedium: Theme.of(context).textTheme.headlineMedium!,
         headerSmall: Theme.of(context).textTheme.headlineSmall!,
-        textNormal: Theme.of(context).textTheme.bodyMedium!
-      ).then((final List<CreditEntry> entries){_setCreditEntries(entries: entries);});
+        textNormal: Theme.of(context).textTheme.bodyMedium!,
+      ).then((final List<CreditEntry> entries){_creditEntries.value = entries;});
     }
     return Material(      
       elevation: options.elevation,
@@ -125,7 +120,7 @@ class _CreditsWidgetState extends State<CreditsWidget>
           borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
         ),
         child: Column(
-          children: [
+          children: <Widget>[
             Expanded(
               child: ValueListenableBuilder<List<CreditEntry>>(
                 valueListenable: _creditEntries,
@@ -141,7 +136,7 @@ class _CreditsWidgetState extends State<CreditsWidget>
               ),
             ),
             Row(
-              children: [
+              children: <Widget>[
                 Expanded(
                   child: Tooltip(
                     message: "Close",
@@ -156,10 +151,10 @@ class _CreditsWidgetState extends State<CreditsWidget>
                   ),
                 ),
               ],
-            )
+            ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 }

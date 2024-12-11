@@ -29,7 +29,7 @@ class ProjectManagerEntryOptions
   ProjectManagerEntryOptions({
     required this.borderWidth,
     required this.borderRadius,
-    required this.layoutFlex
+    required this.layoutFlex,
   });
 }
 
@@ -64,7 +64,7 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return ValueListenableBuilder<ProjectManagerEntryWidget?>(
       valueListenable: widget.selectedWidget,
@@ -72,7 +72,7 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
         final bool isSelected = (selectedWidget == widget);
         return GestureDetector(
           onTap: _onTap,
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
               border: Border.all(
@@ -82,31 +82,29 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
               borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             ),
             child: Column(
-              children: [
+              children: <Widget>[
                 Expanded(
-                  flex: 1,
                   child: Center(
                     child: Text(
                       widget.entryData.name,
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
                   flex: _options.layoutFlex,
-                  child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, isAntiAlias: false, filterQuality: ui.FilterQuality.none,),
+                  child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Center(
                     child: Text(
-                      Helper.formatDateTime(dateTime: widget.entryData.dateTime),
+                      formatDateTime(dateTime: widget.entryData.dateTime),
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
-                  )
+                  ),
                 ),
               ],
-            )
+            ),
           ),
         );
       },

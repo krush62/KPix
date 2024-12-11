@@ -28,33 +28,33 @@ class TouchPreferenceContent
   final int singleTouchDelayMin;
   final int singleTouchDelayMax;
 
-  TouchPreferenceContent._({
-    required this.singleTouchDelay,
-    required this.singleTouchDelayMin,
-    required this.singleTouchDelayMax,
-    required this.zoomStepDistance,
-    required this.zoomStepDistanceMin,
-    required this.zoomStepDistanceMax
-  });
-
   factory TouchPreferenceContent({
     required final int singleTouchDelay,
     required final int singleTouchDelayMin,
     required final int singleTouchDelayMax,
     required final double zoomStepDistance,
     required final double zoomStepDistanceMin,
-    required final double zoomStepDistanceMax
+    required final double zoomStepDistanceMax,
   })
   {
     return TouchPreferenceContent._(
-      singleTouchDelay: ValueNotifier(singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax)),
+      singleTouchDelay: ValueNotifier<int>(singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax)),
       singleTouchDelayMin: singleTouchDelayMin,
       singleTouchDelayMax: singleTouchDelayMax,
-      zoomStepDistance: ValueNotifier(zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax)),
+      zoomStepDistance: ValueNotifier<double>(zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax)),
       zoomStepDistanceMin: zoomStepDistanceMin,
-      zoomStepDistanceMax: zoomStepDistanceMax
+      zoomStepDistanceMax: zoomStepDistanceMax,
     );
   }
+
+  TouchPreferenceContent._({
+    required this.singleTouchDelay,
+    required this.singleTouchDelayMin,
+    required this.singleTouchDelayMax,
+    required this.zoomStepDistance,
+    required this.zoomStepDistanceMin,
+    required this.zoomStepDistanceMax,
+  });
 }
 
 class TouchPreferences extends StatefulWidget
@@ -69,19 +69,16 @@ class TouchPreferences extends StatefulWidget
 class _TouchPreferencesState extends State<TouchPreferences>
 {
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Touch Delay", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Touch Delay", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<int>(
@@ -103,10 +100,8 @@ class _TouchPreferencesState extends State<TouchPreferences>
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<double>(
@@ -126,7 +121,7 @@ class _TouchPreferencesState extends State<TouchPreferences>
             ),
           ],
         ),
-      ]
+      ],
     );
   }
 }

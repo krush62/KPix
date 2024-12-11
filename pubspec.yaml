@@ -28,31 +28,30 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  archive: ^3.6.1
+  bitsdojo_window: ^0.1.6
+  file_picker: ^8.1.4
+  file_saver: ^0.2.14
   flutter:
     sdk: flutter
-  uuid: ^4.5.1
-  bitsdojo_window: ^0.1.6
-  font_awesome_flutter: ^10.8.0
-  multi_split_view: ^3.6.0
   flutter_launcher_icons: ^0.14.1
-  google_fonts: ^6.2.1
-  shared_preferences: ^2.3.3
+  font_awesome_flutter: ^10.8.0
   get_it: ^8.0.2
-  toastification: ^2.3.0
-  file_picker: ^8.1.4
-  path_provider: ^2.1.5
-  file_saver: ^0.2.14
-  archive: ^3.6.1
-  package_info_plus: ^8.1.1
-  media_scanner: ^2.1.0
-  path: ^1.9.1
-  url_launcher: ^6.3.1
+  google_fonts: ^6.2.1
   http: ^1.2.2
+  media_scanner: ^2.1.0
+  multi_split_view: ^3.6.0
+  package_info_plus: ^8.1.1
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.3
+  toastification: ^2.3.0
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
   version: ^3.0.2
 
 
 dev_dependencies:
-  flutter_oss_licenses: ^3.0.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -60,6 +59,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_oss_licenses: ^3.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

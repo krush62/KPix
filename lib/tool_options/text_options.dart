@@ -33,9 +33,9 @@ class TextOptions extends IToolOptions
   final int maxLength;
   final FontManager fontManager;
 
-  final ValueNotifier<int> size = ValueNotifier(1);
-  final ValueNotifier<PixelFontType?> font = ValueNotifier(null);
-  final ValueNotifier<String> text = ValueNotifier("Text");
+  final ValueNotifier<int> size = ValueNotifier<int>(1);
+  final ValueNotifier<PixelFontType?> font = ValueNotifier<PixelFontType?>(null);
+  final ValueNotifier<String> text = ValueNotifier<String>("Text");
 
 
   TextOptions({
@@ -45,38 +45,35 @@ class TextOptions extends IToolOptions
     required this.sizeDefault,
     required this.textDefault,
     required this.maxLength,
-    required this.fontManager
+    required this.fontManager,
   })
   {
     size.value = sizeDefault;
-    font.value = pixelFontIndexMap[fontDefault]!;
+    font.value = pixelFontIndexMap[fontDefault];
     text.value = textDefault;
   }
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required TextOptions textOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final TextOptions textOptions,
   })
   {
-    HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Font",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -85,13 +82,13 @@ class TextOptions extends IToolOptions
                 valueListenable: textOptions.font,
                 builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
                 {
-                  return DropdownButton(
+                  return DropdownButton<PixelFontType>(
                     value: font,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
                     onChanged: (final PixelFontType? type) {textOptions.font.value = type;},
-                    items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((PixelFontType typeValue) {
+                    items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((final PixelFontType typeValue) {
                       return DropdownMenuItem<PixelFontType>(
                         value: typeValue,
                         child: Text(FontManager.getFontName(type: typeValue), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),),
@@ -99,22 +96,20 @@ class TextOptions extends IToolOptions
                     }).toList(),
                   );
                 },
-              )
+              ),
             ),
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Scale",
                     style: Theme.of(context).textTheme.labelLarge,
-                  )
+                  ),
               ),
             ),
             Expanded(
@@ -128,7 +123,7 @@ class TextOptions extends IToolOptions
                     min: textOptions.sizeMin.toDouble(),
                     max: textOptions.sizeMax.toDouble(),
                     divisions: textOptions.sizeMax - textOptions.sizeMin,
-                    onChanged: (double newVal) {textOptions.size.value = newVal.round();},
+                    onChanged: (final double newVal) {textOptions.size.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
@@ -138,17 +133,15 @@ class TextOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Text",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -166,7 +159,7 @@ class TextOptions extends IToolOptions
                     maxLength: textOptions.maxLength,
                   );
                 },
-              )
+              ),
             ),
           ],
         ),

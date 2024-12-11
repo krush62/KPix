@@ -16,9 +16,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/color_pick_options.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
@@ -30,6 +29,7 @@ import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/helper.dart';
 
 
 class ToolSettingsWidgetOptions
@@ -43,7 +43,7 @@ class ToolSettingsWidgetOptions
     required this.columnWidthRatio,
     required this.padding,
     required this.smallButtonSize,
-    required this.smallIconSize});
+    required this.smallIconSize,});
 }
 
 
@@ -68,7 +68,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   {
     return ValueListenableBuilder<ToolType>(
       valueListenable: appState.selectedToolNotifier,
-      builder: (BuildContext context, ToolType type, child){
+      builder: (final BuildContext context, final ToolType type, final Widget? child){
         Widget toolWidget;
         switch(type)
         {
@@ -77,61 +77,61 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 shapeOptions: toolOptions.shapeOptions,);
-            break;
+            //break;
           case ToolType.pencil:
             toolWidget = PencilOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 pencilOptions: toolOptions.pencilOptions,);
-            break;
+            //break;
           case ToolType.fill:
             toolWidget = FillOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 fillOptions: toolOptions.fillOptions,);
-            break;
+            //break;
           case ToolType.select:
             toolWidget = SelectOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 selectOptions: toolOptions.selectOptions,);
-            break;
+            //break;
           case ToolType.pick:
             toolWidget = ColorPickOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                colorPickOptions: toolOptions.colorPickOptions);
-            break;
+                colorPickOptions: toolOptions.colorPickOptions,);
+            //break;
           case ToolType.erase:
             toolWidget = EraserOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                eraserOptions: toolOptions.eraserOptions);
-            break;
+                eraserOptions: toolOptions.eraserOptions,);
+            //break;
           case ToolType.font:
             toolWidget = TextOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 textOptions: toolOptions.textOptions,);
-            break;
+            //break;
           case ToolType.spraycan:
             toolWidget = SprayCanOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 sprayCanOptions: toolOptions.sprayCanOptions,);
-            break;
+            //break;
           case ToolType.line:
             toolWidget = LineOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 lineOptions: toolOptions.lineOptions,);
-            break;
+            //break;
           case ToolType.stamp:
             toolWidget = StampOptions.getWidget(
                 context: context,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                stampOptions: toolOptions.stampOptions);
-            break;
+                stampOptions: toolOptions.stampOptions,);
+            //break;
 
           default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));
         }
@@ -141,12 +141,11 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
           child: Padding(
             padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
             child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
               child: toolWidget,
             ),
-          )
+          ),
         );
-      }
+      },
     );
 
 

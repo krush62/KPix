@@ -30,12 +30,12 @@ class ReferenceImage
 
 class ReferenceImageManager
 {
-  final List<ReferenceImage> _images = [];
+  final List<ReferenceImage> _images = <ReferenceImage>[];
 
-  Future<ReferenceImage> addLoadedImage({required ui.Image img, required String path}) async
+  Future<ReferenceImage> addLoadedImage({required final ui.Image img, required final String path}) async
   {
     final String absolutePath = kIsWeb ? path : File(path).absolute.path;
-    final List<ReferenceImage> duplicateImages = _images.where((i) => i.path == absolutePath).toList();
+    final List<ReferenceImage> duplicateImages = _images.where((final ReferenceImage i) => i.path == absolutePath).toList();
     if (duplicateImages.isNotEmpty)
     {
       return duplicateImages[0];
@@ -53,7 +53,7 @@ class ReferenceImageManager
     try
     {
       final String absolutePath = kIsWeb ? path : File(path).absolute.path;
-      final List<ReferenceImage> duplicateImages = _images.where((i) => i.path == absolutePath).toList();
+      final List<ReferenceImage> duplicateImages = _images.where((final ReferenceImage i) => i.path == absolutePath).toList();
       if (duplicateImages.isNotEmpty)
       {
          return duplicateImages[0];
@@ -87,7 +87,7 @@ class ReferenceImageManager
   Future<void> removeImageByPath({required final String path}) async
   {
     final String absolutePath = File(path).absolute.path;
-    final Iterable<ReferenceImage> foundImages = _images.where((i) => i.path == absolutePath);
+    final Iterable<ReferenceImage> foundImages = _images.where((final ReferenceImage i) => i.path == absolutePath);
     for (final ReferenceImage refImage in foundImages)
     {
       _images.remove(refImage);

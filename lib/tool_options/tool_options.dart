@@ -18,27 +18,27 @@ enum SelectionMode
   intersect
 }
 
-const List<SelectionMode> selectionModeList = [
+const List<SelectionMode> selectionModeList = <SelectionMode>[
   SelectionMode.replace,
   SelectionMode.add,
   SelectionMode.subtract,
-  SelectionMode.intersect
+  SelectionMode.intersect,
 ];
 
 const Map<int, SelectionMode> selectionModeIndexMap =
-{
+<int, SelectionMode>{
   0: SelectionMode.replace,
   1: SelectionMode.add,
   2: SelectionMode.subtract,
-  3: SelectionMode.intersect
+  3: SelectionMode.intersect,
 };
 
 const Map<SelectionMode, String> selectionModeStringMap =
-{
+<SelectionMode, String>{
   SelectionMode.replace : "Replace",
   SelectionMode.add : "Add",
   SelectionMode.subtract : "Subtract",
-  SelectionMode.intersect : "Intersect"
+  SelectionMode.intersect : "Intersect",
 };
 
 abstract class IToolOptions{
@@ -51,19 +51,19 @@ class ToolOptions
   final Map<ToolType, IToolOptions> toolOptionMap;
 
   factory ToolOptions({
-    required PencilOptions pencilOptions,
-    required ShapeOptions shapeOptions,
-    required FillOptions fillOptions,
-    required SelectOptions selectOptions,
-    required ColorPickOptions colorPickOptions,
-    required EraserOptions eraserOptions,
-    required TextOptions textOptions,
-    required SprayCanOptions sprayCanOptions,
-    required LineOptions lineOptions,
-    required StampOptions stampOptions
+    required final PencilOptions pencilOptions,
+    required final ShapeOptions shapeOptions,
+    required final FillOptions fillOptions,
+    required final SelectOptions selectOptions,
+    required final ColorPickOptions colorPickOptions,
+    required final EraserOptions eraserOptions,
+    required final TextOptions textOptions,
+    required final SprayCanOptions sprayCanOptions,
+    required final LineOptions lineOptions,
+    required final StampOptions stampOptions,
 })
   {
-    Map<ToolType, IToolOptions> toolOptionMap = {
+    final Map<ToolType, IToolOptions> toolOptionMap = <ToolType, IToolOptions>{
       ToolType.line: lineOptions,
       ToolType.spraycan: sprayCanOptions,
       ToolType.font: textOptions,
@@ -73,7 +73,7 @@ class ToolOptions
       ToolType.shape: shapeOptions,
       ToolType.fill: fillOptions,
       ToolType.pencil: pencilOptions,
-      ToolType.stamp: stampOptions
+      ToolType.stamp: stampOptions,
     };
 
     return ToolOptions._(
@@ -103,7 +103,7 @@ class ToolOptions
     required this.sprayCanOptions,
     required this.lineOptions,
     required this.stampOptions,
-    required this.toolOptionMap});
+    required this.toolOptionMap,});
 
   final PencilOptions pencilOptions;
   final ShapeOptions shapeOptions;
@@ -117,11 +117,3 @@ class ToolOptions
   final StampOptions stampOptions;
 
 }
-
-
-
-
-
-
-
-

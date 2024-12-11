@@ -39,7 +39,7 @@ class KPalSliderConstraints
     required this.maxVal,
     required this.defaultHue,
     required this.defaultSat,
-    required this.defaultVal
+    required this.defaultVal,
   });
 }
 
@@ -59,9 +59,9 @@ class KPalVerticalSliderWidget extends StatefulWidget
 
 class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Column(
-      children: [
+      children: <Widget>[
         Text(
           widget.name,
           style: Theme.of(context).textTheme.titleSmall!.copyWith(
@@ -86,7 +86,7 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
                     color: Colors.transparent,
                     elevation: 10,
                     shadowColor: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                     child: Slider(
                       value: value.toDouble(),
                       min: widget.minVal.toDouble(),
@@ -101,7 +101,7 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
             ),
           ),
         ),
-        ValueListenableBuilder(
+        ValueListenableBuilder<int>(
           valueListenable: widget.valueNotifier,
           builder: (final BuildContext context, final int value, final Widget? child) {
             final String prefix  = (value > 0) ? "+" : "";
@@ -117,8 +117,8 @@ class _KPalVerticalSliderWidgetState extends State<KPalVerticalSliderWidget> {
                 ],
               ),
             );
-          }
-        )
+          },
+        ),
       ],
     );
   }

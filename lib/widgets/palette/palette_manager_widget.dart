@@ -50,8 +50,8 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 {
   final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final PaletteManagerOptions _options = GetIt.I.get<PreferenceManager>().paletteManagerOptions;
-  final ValueNotifier<List<PaletteManagerEntryWidget>> _paletteEntries = ValueNotifier([]);
-  final ValueNotifier<PaletteManagerEntryWidget?> _selectedWidget = ValueNotifier(null);
+  final ValueNotifier<List<PaletteManagerEntryWidget>> _paletteEntries = ValueNotifier<List<PaletteManagerEntryWidget>>(<PaletteManagerEntryWidget>[]);
+  final ValueNotifier<PaletteManagerEntryWidget?> _selectedWidget = ValueNotifier<PaletteManagerEntryWidget?>(null);
 
   late KPixOverlay _paletteWarningDialog;
   late KPixOverlay _addPaletteDialog;
@@ -61,21 +61,21 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   void initState()
   {
     super.initState();
-    _paletteWarningDialog = OverlayEntries.getThreeButtonDialog(
+    _paletteWarningDialog = getThreeButtonDialog(
         onYes: _paletteWarningYes,
         onNo: _paletteWarningNo,
         onCancel: _closeWarning,
         outsideCancelable: false,
-        message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?");
-    _addPaletteDialog = OverlayEntries.getPaletteSaveDialog(
+        message: "Do you want to remap the existing colors (all pixels will be deleted otherwise)?",);
+    _addPaletteDialog = getPaletteSaveDialog(
       onAccept: _acceptAddPalette,
-      onDismiss: _dismissAddPalette
+      onDismiss: _dismissAddPalette,
     );
-    _deleteWarningDialog = OverlayEntries.getTwoButtonDialog(
+    _deleteWarningDialog = getTwoButtonDialog(
         message: "Do you really want to delete this palette?",
         onNo: _deleteWarningNo,
         onYes: _deleteWarningYes,
-        outsideCancelable: false
+        outsideCancelable: false,
     );
 
 
@@ -84,15 +84,15 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     });
   }
 
-  void _acceptAddPalette({required PaletteExportData saveData, required PaletteExportType paletteType})
+  void _acceptAddPalette({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
-    FileHandler.saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final bool success) {
+    saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final bool success) {
       _paletteSaved(success: success);
     });
     _dismissAddPalette();
   }
 
-  void _paletteSaved({required bool success})
+  void _paletteSaved({required final bool success})
   {
     if (success)
     {
@@ -128,12 +128,12 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   Future<List<PaletteManagerEntryWidget>> _createWidgetList() async
   {
-    final List<PaletteManagerEntryWidget> pList = [];
+    final List<PaletteManagerEntryWidget> pList = <PaletteManagerEntryWidget>[];
     //Default Palette
     pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints), isLocked: true, path: null, name: "Default")));
 
     //Asset Palettes
-    final List<PaletteManagerEntryData> assetPalettes = await FileHandler.loadPalettesFromAssets();
+    final List<PaletteManagerEntryData> assetPalettes = await loadPalettesFromAssets();
     for (final PaletteManagerEntryData palData in assetPalettes)
     {
       pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
@@ -142,7 +142,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     //Internal Palettes
     if (!kIsWeb)
     {
-      final List<PaletteManagerEntryData> internalPalettes = await FileHandler.loadPalettesFromInternal();
+      final List<PaletteManagerEntryData> internalPalettes = await loadPalettesFromInternal();
       for (final PaletteManagerEntryData palData in internalPalettes)
       {
         pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: palData));
@@ -171,7 +171,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   {
     if (_selectedWidget.value != null && _selectedWidget.value!.entryData.path != null)
     {
-      FileHandler.deleteFile(path: _selectedWidget.value!.entryData.path!).then((final bool success) {
+      deleteFile(path: _selectedWidget.value!.entryData.path!).then((final bool success) {
         _fileDeleted(success: success);
       });
     }
@@ -183,7 +183,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     _deleteWarningDialog.hide();
   }
 
-  void _fileDeleted({required bool success})
+  void _fileDeleted({required final bool success})
   {
     if (success)
     {
@@ -201,7 +201,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _importPalettePressed()
   {
-    FileHandler.getPathForKPalFile().then((final String? loadPath) {
+    getPathForKPalFile().then((final String? loadPath) {
       _importFileChosen(path: loadPath);
     });
   }
@@ -211,10 +211,10 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     final AppState appState = GetIt.I.get<AppState>();
     if (path != null && path.isNotEmpty)
     {
-      if (path.endsWith(FileHandler.fileExtensionKpal))
+      if (path.endsWith(fileExtensionKpal))
       {
-        final String fileName = Helper.extractFilenameFromPath(path: path);
-        final String targetPath = p.join(appState.internalDir, FileHandler.palettesSubDirName, fileName);
+        final String fileName = extractFilenameFromPath(path: path);
+        final String targetPath = p.join(appState.internalDir, palettesSubDirName, fileName);
         if (!File(targetPath).existsSync())
         {
           File(path).copy(targetPath).then((final File newFile) {
@@ -250,7 +250,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       elevation: _alertOptions.elevation,
@@ -272,14 +272,14 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
           borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
         ),
         child: Column(
-          children: [
+          children: <Widget>[
             SizedBox(height: _alertOptions.padding),
             Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
             Expanded(
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius))
+                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
                 ),
                 child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
                   valueListenable: _paletteEntries,
@@ -298,11 +298,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+              children: <Widget>[
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     waitDuration: AppState.toolTipDuration,
                     message: "Close",
@@ -316,10 +314,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                         onPressed: _dismissPressed,
                       ),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
-                    flex: 1,
                     child: Tooltip(
                       message: "Import Palette",
                       waitDuration: AppState.toolTipDuration,
@@ -333,10 +330,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                           onPressed: kIsWeb ? null : _importPalettePressed,
                         ),
                       ),
-                    )
+                    ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     message: "Save Current Palette",
                     waitDuration: AppState.toolTipDuration,
@@ -350,10 +346,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                         onPressed: kIsWeb ? null : _addCurrentPalette,
                       ),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
-                    flex: 1,
                     child: Tooltip(
                       message: "Delete Selected Palette",
                       waitDuration: AppState.toolTipDuration,
@@ -372,10 +367,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                           },
                         ),
                       ),
-                    )
+                    ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Tooltip(
                     message: "Apply Selected Palette",
                     waitDuration: AppState.toolTipDuration,
@@ -394,13 +388,13 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                         },
                       ),
                     ),
-                  )
+                  ),
                 ),
-              ]
+              ],
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 }

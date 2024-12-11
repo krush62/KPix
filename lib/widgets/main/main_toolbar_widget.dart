@@ -36,15 +36,15 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
-import 'package:kpix/widgets/tools/shader_widget.dart';
 
 class MainToolbarWidgetOptions {
   final int paletteFlex;
@@ -58,7 +58,7 @@ class MainToolbarWidgetOptions {
     required this.dividerPadding,
     required this.toolSettingsFlex,
     required this.dividerHeight,
-    required this.toolHeight});
+    required this.toolHeight,});
 }
 
 
@@ -66,23 +66,21 @@ class MainToolbarWidget extends StatelessWidget
 {
 
   const MainToolbarWidget({
-    super.key
+    super.key,
 });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Material(
       color: Theme.of(context).primaryColor,
       child: Column(
-        mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          (Helper.isDesktop()) ?
-          Divider(
+        children: <Widget>[
+          if (isDesktop()) Divider(
             color: Theme.of(context).primaryColorDark,
             thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
             height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-          ) : const SizedBox.shrink(),
+          ) else const SizedBox.shrink(),
           ShaderWidget(
             titleStyle: Theme.of(context).textTheme.titleLarge,
             labelStyle: Theme.of(context).textTheme.bodySmall,
@@ -113,36 +111,36 @@ class MainToolbarWidget extends StatelessWidget
                 else if (layer.runtimeType == DrawingLayerState)
                 {
                   contentWidget = Column(
-                    children: [
+                    children: <Widget>[
                       const ToolsWidget(),
                       ValueListenableBuilder<ToolType>(
                         valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
                         builder: (final BuildContext context, final ToolType value, final Widget? child) {
-                          return Expanded(child: const ToolSettingsWidget());
-                        }
+                          return const Expanded(child: ToolSettingsWidget());
+                        },
                       ),
                     ],
                   );
                 }
                 else
                 {
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 }
 
                 return SizedBox(
                   width: double.infinity,
-                  height: (GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight).toDouble(),
+                  height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight.toDouble(),
                   child: contentWidget,
 
                 );
               }
               else
               {
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               }
             },
-          )
-        ]
+          ),
+        ],
       ),
     );
   }

@@ -16,7 +16,7 @@
 
 
 const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
-{
+<HistoryStateTypeIdentifier, HistoryStateType>{
   HistoryStateTypeIdentifier.initial: HistoryStateType(identifier: HistoryStateTypeIdentifier.initial, description: "initial", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.generic: HistoryStateType(identifier: HistoryStateTypeIdentifier.generic, description: "generic", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.saveData: HistoryStateType(identifier: HistoryStateTypeIdentifier.saveData, description: "save data", compressionBehavior: HistoryStateCompressionBehavior.leave),

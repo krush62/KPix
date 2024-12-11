@@ -15,11 +15,11 @@
  */
 
 import 'dart:collection';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kpix/util/helper.dart';
-import 'dart:ui' as ui;
 
 enum StampType
 {
@@ -39,7 +39,7 @@ enum StampType
 }
 
 const Map<int, StampType> stampIndexMap =
-{
+<int, StampType>{
   0:StampType.stampCircle15,
   1:StampType.stampCircle27,
   2:StampType.stampDiamond7,
@@ -56,7 +56,7 @@ const Map<int, StampType> stampIndexMap =
 };
 
 const Map<StampType, String> stampNameMap =
-{
+<StampType, String>{
   StampType.stampCircle15: "Circle 15",
   StampType.stampCircle27: "Circle 27",
   StampType.stampDiamond7: "Diamond 7",
@@ -69,11 +69,11 @@ const Map<StampType, String> stampNameMap =
   StampType.stampSquare11: "Square 11",
   StampType.stampStar3: "Star 3",
   StampType.stampStar5: "Star 5",
-  StampType.stampStar7: "Star 7"
+  StampType.stampStar7: "Star 7",
 };
 
 const Map<StampType, String> _stampFileMap =
-{
+<StampType, String>{
   StampType.stampCircle15: "Circle15.png",
   StampType.stampCircle27: "Circle27.png",
   StampType.stampDiamond7: "Diamond7.png",
@@ -86,7 +86,7 @@ const Map<StampType, String> _stampFileMap =
   StampType.stampSquare11: "Square11.png",
   StampType.stampStar3: "Star3.png",
   StampType.stampStar5: "Star5.png",
-  StampType.stampStar7: "Star7.png"
+  StampType.stampStar7: "Star7.png",
 };
 
 class KStamp
@@ -106,7 +106,7 @@ class StampManager
 
   static Future<HashMap<StampType, KStamp>> readStamps() async
   {
-    final HashMap<StampType, KStamp> stampMap = HashMap();
+    final HashMap<StampType, KStamp> stampMap = HashMap<StampType, KStamp>();
     for (final MapEntry<StampType, String> mapEntry in _stampFileMap.entries)
     {
       stampMap[mapEntry.key] = await _readStampFromFile("$stampPath/${mapEntry.value}");
@@ -122,7 +122,7 @@ class StampManager
     final int imgHeight = decImg.height;
     final int imgWidth = decImg.width;
     final ByteData? imgData = await decImg.toByteData();
-    final HashMap<CoordinateSetI, int> stampMap = HashMap();
+    final HashMap<CoordinateSetI, int> stampMap = HashMap<CoordinateSetI, int>();
 
     if (imgData != null)
     {

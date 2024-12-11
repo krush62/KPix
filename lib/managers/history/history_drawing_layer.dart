@@ -35,11 +35,11 @@ class HistoryDrawingLayer extends HistoryLayer
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
     final CoordinateSetI sz = CoordinateSetI.from(other: layerState.size);
-    final HashMap<CoordinateSetI, HistoryColorReference> dt = HashMap();
+    final HashMap<CoordinateSetI, HistoryColorReference> dt = HashMap<CoordinateSetI, HistoryColorReference>();
     final CoordinateColorMap lData = layerState.getData();
     for (final CoordinateColor entry in lData.entries)
     {
-      final int? rampIndex = Helper.getRampIndex(uuid: entry.value.ramp.uuid, ramps: ramps);
+      final int? rampIndex = getRampIndex(uuid: entry.value.ramp.uuid, ramps: ramps);
       if (rampIndex != null)
       {
         dt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
@@ -49,7 +49,7 @@ class HistoryDrawingLayer extends HistoryLayer
     {
       if (entry.value != null)
       {
-        final int? rampIndex = Helper.getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
+        final int? rampIndex = getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
         if (rampIndex != null)
         {
           dt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);

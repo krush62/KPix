@@ -30,17 +30,17 @@ class BehaviorPreferenceContent
   final int undoStepsMax;
   final int undoStepsMin;
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin});
-
   factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin})
   {
       return BehaviorPreferenceContent._(
-        undoSteps: ValueNotifier(undoSteps.clamp(undoStepsMin, undoStepsMax)),
-        selectShapeAfterInsert: ValueNotifier(selectAfterInsert),
-        selectLayerAfterInsert: ValueNotifier(selectLayerAfterInsert),
+        undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
+        selectShapeAfterInsert: ValueNotifier<bool>(selectAfterInsert),
+        selectLayerAfterInsert: ValueNotifier<bool>(selectLayerAfterInsert),
         undoStepsMax: undoStepsMax,
-        undoStepsMin: undoStepsMin);
+        undoStepsMin: undoStepsMin,);
   }
+
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin});
 
 }
 
@@ -56,18 +56,15 @@ class BehaviorPreferences extends StatefulWidget
 
 class _BehaviorPreferencesState extends State<BehaviorPreferences> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Undo Steps", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Undo Steps", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<int>(
@@ -109,10 +106,8 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
         ),*/
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Select Inserted Layers", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Select Inserted Layers", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<bool>(
@@ -128,7 +123,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
             ),
           ],
         ),
-      ]
+      ],
     );
   }
 }

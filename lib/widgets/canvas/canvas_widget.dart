@@ -30,29 +30,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/preferences/desktop_preferences.dart';
-import 'package:kpix/preferences/stylus_preferences.dart';
-import 'package:kpix/preferences/touch_preferences.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/preferences/desktop_preferences.dart';
+import 'package:kpix/preferences/stylus_preferences.dart';
+import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/tool_options/select_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 
 
@@ -65,7 +65,7 @@ class CanvasOptions
   CanvasOptions({
     required this.historyCheckPollRate,
     required this.minVisibilityFactor,
-    required this.idleTimerRate});
+    required this.idleTimerRate,});
 }
 
 class TouchPointerStatus
@@ -80,7 +80,7 @@ class TouchPointerStatus
 class CanvasWidget extends StatefulWidget {
   const CanvasWidget(
       {
-        super.key
+        super.key,
       });
 
   @override
@@ -93,19 +93,19 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier(null);
-  final ValueNotifier<bool> _isDragging = ValueNotifier(false);
-  final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier(false);
-  final ValueNotifier<bool> _stylusLongMoveVertical = ValueNotifier(false);
-  final ValueNotifier<bool> _stylusLongMoveHorizontal = ValueNotifier(false);
+  final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
+  final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _stylusLongMoveStarted = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _stylusLongMoveVertical = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _stylusLongMoveHorizontal = ValueNotifier<bool>(false);
   bool _timerRunning = false;
   late Duration _timeoutLongPress;
   late Timer _timerLongPress;
-  final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier(const Offset(0,0));
+  final  ValueNotifier<Offset> _pressStartLoc = ValueNotifier<Offset>(Offset.zero);
   late Offset _secondaryStartLoc;
   bool _needSecondaryStartLoc = false;
-  final ValueNotifier<bool> _primaryIsDown = ValueNotifier(false);
-  final ValueNotifier<bool> _secondaryIsDown = ValueNotifier(false);
+  final ValueNotifier<bool> _primaryIsDown = ValueNotifier<bool> (false);
+  final ValueNotifier<bool> _secondaryIsDown = ValueNotifier<bool> (false);
   int _stylusZoomStartLevel = 100;
   int _stylusToolStartSize = 1;
 
@@ -118,11 +118,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   late Offset _dragStartLoc;
 
-  final ValueNotifier<Offset> _canvasOffset = ValueNotifier(const Offset(0.0, 0.0));
+  final ValueNotifier<Offset> _canvasOffset = ValueNotifier<Offset>(Offset.zero);
   late MouseCursor _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
-  late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier(_defaultMouseCursor);
+  late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier<MouseCursor>(_defaultMouseCursor);
   bool _mouseIsInside = false;
-  final Map<int, TouchPointerStatus> _touchPointers = {};
+  final Map<int, TouchPointerStatus> _touchPointers = <int, TouchPointerStatus>{};
   double _initialTouchZoomDistance = 0.0;
   int _touchZoomStartLevel = 1;
 
@@ -148,7 +148,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   void _setDefaultCursor()
   {
     _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
-    setMouseCursor(cursor: _defaultMouseCursor);
+    _mouseCursor.value = _defaultMouseCursor;
   }
 
   @override
@@ -162,7 +162,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     Timer.periodic(Duration(milliseconds: _options.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
     Timer.periodic(Duration(milliseconds: _options.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
-    WidgetsBinding.instance.addPostFrameCallback((_)
+    WidgetsBinding.instance.addPostFrameCallback((final _)
     {
       _setOptimalZoom();
     });
@@ -260,7 +260,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         _isDragging.value = true;
         _initialTouchZoomDistance = (_touchPointers.values.elementAt(0).currentPos - _touchPointers.values.elementAt(1).currentPos).distance;
         _touchZoomStartLevel = _appState.zoomFactor;
-        setMouseCursor(cursor: SystemMouseCursors.move);
+        _mouseCursor.value = SystemMouseCursors.move;
       }
     }
 
@@ -280,7 +280,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       _dragStartLoc = details.localPosition;
       _isDragging.value = true;
-      setMouseCursor(cursor: SystemMouseCursors.move);
+      _mouseCursor.value = SystemMouseCursors.move;
     }
 
     _updateLocation(details: details);
@@ -331,10 +331,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
+      final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
       if (colorPickPainter.selectedColor != null)
       {
-        _appState.colorSelected(color: colorPickPainter.selectedColor!);
+        _appState.colorSelected(color: colorPickPainter.selectedColor);
       }
       _appState.setToolSelection(tool: _previousTool);
     }
@@ -349,7 +349,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       if (kPixPainter.toolPainter == kPixPainter.toolPainterMap[ToolType.select])
       {
-        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
+        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select]! as SelectionPainter;
         if (selectionPainter.hasNewSelection)
         {
           selectionPainter.hasNewSelection = false;
@@ -357,7 +357,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
             _appState.selectionState.newSelectionFromShape(
                 start: selectionPainter.selectionStart,
                 end: selectionPainter.selectionEnd,
-                selectShape: selectionPainter.options.shape.value);
+                selectShape: selectionPainter.options.shape.value,);
           }
           else if (selectionPainter.options.shape.value == SelectShape.wand)
           {
@@ -365,7 +365,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                 coord: selectionPainter.selectionEnd,
                 mode: selectionPainter.options.mode.value,
                 selectFromWholeRamp: selectionPainter.options.wandWholeRamp.value,
-                continuous: selectionPainter.options.wandContinuous.value);
+                continuous: selectionPainter.options.wandContinuous.value,);
           }
           else //if polygon selection
           {
@@ -440,7 +440,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
         else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
         {
-           final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+           final ReferenceLayerState refLayer = _appState.currentLayer! as ReferenceLayerState;
            refLayer.setZoomSliderValue(newVal: -toolSizeSteps + _stylusToolStartSize);
         }
 
@@ -462,7 +462,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
       _isDragging.value = true;
-      setMouseCursor(cursor: SystemMouseCursors.move);
+      _mouseCursor.value = SystemMouseCursors.move;
       _dragStartLoc = cursorOffset;
     }
 
@@ -493,19 +493,19 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       if (kPixPainter.toolPainterMap[ToolType.select] != null && kPixPainter.toolPainterMap[ToolType.select].runtimeType == SelectionPainter)
       {
-        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select] as SelectionPainter;
+        final SelectionPainter selectionPainter = kPixPainter.toolPainterMap[ToolType.select]! as SelectionPainter;
         if (selectionPainter.hasNewSelection && selectionPainter.options.shape.value == SelectShape.polygon)
         {
           selectionPainter.hasNewSelection = false;
-          final CoordinateSetI min = Helper.getMin(coordList: selectionPainter.polygonPoints);
-          final CoordinateSetI max = Helper.getMax(coordList: selectionPainter.polygonPoints);
-          Set<CoordinateSetI> selection = {};
+          final CoordinateSetI min = getMin(coordList: selectionPainter.polygonPoints);
+          final CoordinateSetI max = getMax(coordList: selectionPainter.polygonPoints);
+          final Set<CoordinateSetI> selection = <CoordinateSetI>{};
           for (int x = min.x; x <= max.x; x++)
           {
             for (int y = min.y; y <= max.y; y++)
             {
               final CoordinateSetI checkPoint = CoordinateSetI(x: x, y: y);
-              if (Helper.isPointInPolygon(point: checkPoint, polygon: selectionPainter.polygonPoints))
+              if (isPointInPolygon(point: checkPoint, polygon: selectionPainter.polygonPoints))
               {
                 selection.add(checkPoint);
               }
@@ -521,10 +521,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     {
       if (kPixPainter.toolPainterMap[ToolType.pick] != null && kPixPainter.toolPainterMap[ToolType.pick].runtimeType == ColorPickPainter)
       {
-        final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick] as ColorPickPainter;
+        final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
         if (colorPickPainter.selectedColor != null)
         {
-          _appState.colorSelected(color: colorPickPainter.selectedColor!);
+          _appState.colorSelected(color: colorPickPainter.selectedColor);
         }
       }
     }
@@ -575,7 +575,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
             }
             else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
             {
-              final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+              final ReferenceLayerState refLayer = _appState.currentLayer! as ReferenceLayerState;
               refLayer.increaseZoom();
             }
           }
@@ -590,7 +590,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
             }
             else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
             {
-              final ReferenceLayerState refLayer = _appState.currentLayer as ReferenceLayerState;
+              final ReferenceLayerState refLayer = _appState.currentLayer! as ReferenceLayerState;
               refLayer.decreaseZoom();
             }
           }
@@ -643,7 +643,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _mouseIsInside = false;
   }
 
-  int _getClosestPixel({required double value, required double pixelSize})
+  int _getClosestPixel({required final double value, required final double pixelSize})
   {
     final double remainder = value % pixelSize;
     final double lowerMultiple = value - remainder;
@@ -671,13 +671,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         final CoordinateSetI normPos = CoordinateSetI(
             x: _getClosestPixel(
                 value: _cursorPos.value!.x - _canvasOffset.value.dx,
-                pixelSize: _appState.zoomFactor.toDouble())
-                .round(),
+                pixelSize: _appState.zoomFactor.toDouble(),)
+                ,
             y: _getClosestPixel(
                 value: _cursorPos.value!.y - _canvasOffset.value.dy,
-                pixelSize: _appState.zoomFactor.toDouble())
-                .round());
-        ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
+                pixelSize: _appState.zoomFactor.toDouble(),)
+                ,);
+        final ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
         if (colRef != null && colRef != _appState.selectedColor)
         {
           _appState.colorSelected(color: colRef);
@@ -739,15 +739,12 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     }
     else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
     {
-      _stylusToolStartSize = (_appState.currentLayer as ReferenceLayerState).zoomSliderValue.round();
+      _stylusToolStartSize = (_appState.currentLayer! as ReferenceLayerState).zoomSliderValue;
     }
 
   }
 
-  void setMouseCursor({required final MouseCursor cursor})
-  {
-    _mouseCursor.value = cursor;
-  }
+
 
   void _setOffset({required final Offset newOffset})
   {
@@ -770,7 +767,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
         {
           return Stack(
-            children: [
+            children: <Widget>[
               MouseRegion(
                 onExit: (final PointerExitEvent pee) {_onMouseExit(pee: pee);},
                 cursor: cursor,
@@ -785,8 +782,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                     height: double.infinity,
                     color: Theme.of(context).primaryColorDark,
                     child: CustomPaint(
-                      painter: kPixPainter
-                    )
+                      painter: kPixPainter,
+                    ),
                   ),
                 ),
               ),
@@ -797,7 +794,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                       valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
                       builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
                         return IgnorePointer(
-                          ignoring: (toolType != ToolType.select && hasNoSelection),
+                          ignoring: toolType != ToolType.select && hasNoSelection,
                           child: AnimatedScale(
                             duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
                             scale: (toolType == ToolType.select || !hasNoSelection) ? 1.0 : 0.0,
@@ -805,17 +802,17 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                             //opacity: toolType == ToolType.select ? 1.0 : 0.0,
                             child: const Align(
                                 alignment: Alignment.bottomCenter,
-                                child: SelectionBarWidget()
+                                child: SelectionBarWidget(),
                             ),
                           ),
                         );
-                      }
+                      },
                   );
                 },
               ),
             ],
           );
-        }
+        },
       ),
     );
   }

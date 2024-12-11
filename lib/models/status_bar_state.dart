@@ -17,18 +17,18 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/painting/itool_painter.dart';
+import 'package:kpix/util/helper.dart';
 
 class StatusBarState
 {
-  final ValueNotifier<String?> statusBarDimensionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarCursorPositionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarZoomFactorString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolDimensionString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolDiagonalString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolAspectRatioString = ValueNotifier(null);
-  final ValueNotifier<String?> statusBarToolAngleString = ValueNotifier(null);
+  final ValueNotifier<String?> statusBarDimensionString = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> statusBarCursorPositionString = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> statusBarZoomFactorString = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> statusBarToolDimensionString = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> statusBarToolDiagonalString = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> statusBarToolAspectRatioString = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> statusBarToolAngleString = ValueNotifier<String?>(null);
 
   double devicePixelRatio = 1.0;
 
@@ -44,7 +44,7 @@ class StatusBarState
 
   void setStatusBarCursorPosition({required final CoordinateSetI coords})
   {
-    statusBarCursorPositionString.value = "${coords.x.toString()},${coords.y.toString()}";
+    statusBarCursorPositionString.value = "${coords.x},${coords.y}";
   }
 
   void hideStatusBarCursorPosition()
@@ -54,7 +54,7 @@ class StatusBarState
 
   void setStatusBarZoomFactor({required final int val})
   {
-    int realVal = (val / devicePixelRatio).round();
+    final int realVal = (val / devicePixelRatio).round();
     String suffix = "";
     if (realVal % 100 != 0)
     {
@@ -91,7 +91,7 @@ class StatusBarState
 
   void setStatusBarToolAspectRatio({required final int width, required final int height})
   {
-    final int divisor = Helper.gcd(a: width, b: height);
+    final int divisor = gcd(a: width, b: height);
     final int reducedWidth = divisor != 0 ? width ~/ divisor : 0;
     final int reducedHeight = divisor != 0 ? height ~/ divisor : 0;
     statusBarToolAspectRatioString.value = '$reducedWidth:$reducedHeight';
@@ -104,7 +104,7 @@ class StatusBarState
 
   void setStatusBarToolAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
   {
-    double angle = Helper.calculateAngle(startPos: startPos, endPos: endPos);
+    final double angle = calculateAngle(startPos: startPos, endPos: endPos);
     statusBarToolAngleString.value = "${angle.toStringAsFixed(1)}°";
   }
 

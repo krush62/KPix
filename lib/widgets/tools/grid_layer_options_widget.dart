@@ -34,13 +34,13 @@ enum GridType
 }
 
 const Map<int, GridType> gridValueTypeMap =
-{
+<int, GridType>{
   0: GridType.rectangular,
   1: GridType.diagonal,
   2: GridType.isometric,
   3: GridType.hexagonal,
   4: GridType.triangular,
-  5: GridType.brick
+  5: GridType.brick,
 
 };
 
@@ -73,7 +73,7 @@ class GridLayerSettings
     required this.intervalYDefault,
     required this.intervalYMin,
     required this.intervalYMax,
-    required int gridTypeValue}) : gridTypeDefault = gridValueTypeMap[gridTypeValue] ?? GridType.rectangular;
+    required final int gridTypeValue,}) : gridTypeDefault = gridValueTypeMap[gridTypeValue] ?? GridType.rectangular;
 
 }
 
@@ -92,52 +92,48 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
   final GridLayerSettings _gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
         padding: EdgeInsets.all(_toolSettingsWidgetOptions.padding),
         child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+            children: <Widget>[
               ValueListenableBuilder<GridType>(
                 valueListenable: widget.gridState.gridTypeNotifier,
                 builder: (final BuildContext context, final GridType gridType, final Widget? child) {
-                  return SegmentedButton(
-                    segments: [
-                      ButtonSegment(
+                  return SegmentedButton<GridType>(
+                    segments: <ButtonSegment<GridType>>[
+                      ButtonSegment<GridType>(
                         value: GridType.rectangular,
-                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Rectangular Grid", child: Text("REC", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.rectangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Rectangular Grid", child: Text("REC", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.rectangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
-                      ButtonSegment(
+                      ButtonSegment<GridType>(
                         value: GridType.diagonal,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Diagonal Grid", child: Text("DIA", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.diagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Diagonal Grid", child: Text("DIA", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.diagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
-                      ButtonSegment(
+                      ButtonSegment<GridType>(
                         value: GridType.isometric,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Isometric Grid", child: Text("ISO", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.isometric ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Isometric Grid", child: Text("ISO", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.isometric ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
                       /*ButtonSegment(
                           value: GridType.hexagonal,
                           label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Hexagonal Grid", child: Text("HEX", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.hexagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
                       ),*/
-                      ButtonSegment(
+                      ButtonSegment<GridType>(
                           value: GridType.triangular,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Triangular Grid", child: Text("TRI", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.triangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Triangular Grid", child: Text("TRI", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.triangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                       ),
-                      ButtonSegment(
+                      ButtonSegment<GridType>(
                           value: GridType.brick,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Brick Grid", child: Text("BRK", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.brick ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
-                      )
+                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Brick Grid", child: Text("BRK", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.brick ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                      ),
                     ],
                     selected: <GridType>{gridType},
-                    emptySelectionAllowed: false,
-                    multiSelectionEnabled: false,
                     showSelectedIcon: false,
                     onSelectionChanged: (final Set<GridType> types)
                     {
@@ -147,17 +143,15 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                 },
               ),
               Row(
-                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           "Opacity",
                           style: Theme.of(context).textTheme.labelLarge,
-                        )
+                        ),
                     ),
                   ),
                   Expanded(
@@ -181,17 +175,15 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                 ],
               ),
               Row(
-                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Brightness",
                         style: Theme.of(context).textTheme.labelLarge,
-                      )
+                      ),
                     ),
                   ),
                   Expanded(
@@ -215,17 +207,15 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                 ],
               ),
               Row(
-                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Interval X",
                         style: Theme.of(context).textTheme.labelLarge,
-                      )
+                      ),
                     ),
                   ),
                   Expanded(
@@ -249,17 +239,15 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                 ],
               ),
               Row(
-                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Interval Y",
                         style: Theme.of(context).textTheme.labelLarge,
-                      )
+                      ),
                     ),
                   ),
                   Expanded(
@@ -283,9 +271,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                 ],
               ),
             ],
-          )
-        )
-      )
+          ),
+        ),
+      ),
     );
   }
 }

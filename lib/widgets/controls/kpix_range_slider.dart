@@ -60,7 +60,7 @@ class KPixRangeSlider extends StatelessWidget
   });
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     final Color fgColor = activeTrackColor ?? Theme.of(context).primaryColorLight;
     final Color bgColor = inActiveTrackColor ?? Theme.of(context).primaryColor;
@@ -80,7 +80,7 @@ class KPixRangeSlider extends StatelessWidget
       ),
       child: Stack(
         alignment: Alignment.center,
-        children: [
+        children: <Widget>[
           RangeSlider(
             values: values,
             onChanged: onChanged,
@@ -92,7 +92,7 @@ class KPixRangeSlider extends StatelessWidget
             child: Center(
               child: Stack(
                 alignment: Alignment.center,
-                children: [
+                children: <Widget>[
                   Text(
                     label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
                     style: TextStyle(
@@ -128,10 +128,10 @@ class _InvisibleRangeSliderTickMarkShape extends RangeSliderTickMarkShape
   const _InvisibleRangeSliderTickMarkShape();
 
   @override
-  Size getPreferredSize({required SliderThemeData sliderTheme, bool isEnabled = false})  => Size.zero;
+  Size getPreferredSize({required final SliderThemeData sliderTheme, final bool isEnabled = false})  => Size.zero;
 
   @override
-  void paint(PaintingContext context, Offset center, {required RenderBox parentBox, required SliderThemeData sliderTheme, required Animation<double> enableAnimation, required Offset startThumbCenter, required Offset endThumbCenter, bool isEnabled = false, required TextDirection textDirection}) {
+  void paint(final PaintingContext context, final Offset center, {required final RenderBox parentBox, required final SliderThemeData sliderTheme, required final Animation<double> enableAnimation, required final Offset startThumbCenter, required final Offset endThumbCenter, final bool isEnabled = false, required final TextDirection textDirection}) {
   }
 }
 
@@ -142,21 +142,21 @@ class _InvisibleRangeSliderThumbShape extends RangeSliderThumbShape
   const _InvisibleRangeSliderThumbShape();
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size.zero;
+  Size getPreferredSize(final bool isEnabled, final bool isDiscrete) => Size.zero;
 
   @override
   void paint(
-      PaintingContext context,
-      Offset center, {
-        required Animation<double> activationAnimation,
-        required Animation<double> enableAnimation,
-        bool isDiscrete = true,
-        bool isEnabled = true,
-        bool isOnTop = true,
-        TextDirection textDirection = TextDirection.ltr,
-        required SliderThemeData sliderTheme,
-        Thumb thumb = Thumb.end,
-        bool isPressed = false,
+      final PaintingContext context,
+      final Offset center, {
+        required final Animation<double> activationAnimation,
+        required final Animation<double> enableAnimation,
+        final bool isDiscrete = true,
+        final bool isEnabled = true,
+        final bool isOnTop = true,
+        final TextDirection textDirection = TextDirection.ltr,
+        required final SliderThemeData sliderTheme,
+        final Thumb thumb = Thumb.end,
+        final bool isPressed = false,
       })
   {}
 
@@ -175,7 +175,7 @@ class _KPixRangeSliderTrackShape extends RoundedRectRangeSliderTrackShape {
 
 
   @override
-  void paint(PaintingContext context, Offset offset, {required RenderBox parentBox, required SliderThemeData sliderTheme, required Animation<double> enableAnimation, required Offset startThumbCenter, required Offset endThumbCenter, bool isEnabled = false, bool isDiscrete = false, required TextDirection textDirection, double additionalActiveTrackHeight = 2}) {
+  void paint(final PaintingContext context, final Offset offset, {required final RenderBox parentBox, required final SliderThemeData sliderTheme, required final Animation<double> enableAnimation, required final Offset startThumbCenter, required final Offset endThumbCenter, final bool isEnabled = false, final bool isDiscrete = false, required final TextDirection textDirection, final double additionalActiveTrackHeight = 2}) {
     final Rect trackRect = getPreferredRect(
       parentBox: parentBox,
       sliderTheme: sliderTheme,

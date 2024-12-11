@@ -44,16 +44,16 @@ class HistoryState
 
   factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier})
   {
-    final HistoryStateType type = allStateTypeMap[identifier] ?? HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
+    final HistoryStateType type = allStateTypeMap[identifier] ?? const HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
 
-    final List<HistoryRampData> rampList = [];
+    final List<HistoryRampData> rampList = <HistoryRampData>[];
     for (final KPalRampData rampData in appState.colorRamps)
     {
       rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid, notifierShifts: rampData.shifts));
     }
-    final int? selectedColorRampIndex = Helper.getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
+    final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
     final HistoryColorReference selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
-    final List<HistoryLayer> layerList = [];
+    final List<HistoryLayer> layerList = <HistoryLayer>[];
     int selectedLayerIndex = 0;
     HistoryLayer? selectLayer;
     for (int i = 0; i < appState.layers.length; i++)

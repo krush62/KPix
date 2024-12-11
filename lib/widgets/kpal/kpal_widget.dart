@@ -38,26 +38,26 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_icons.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_names.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:uuid/uuid.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kpix/kpix_icons.dart';
 
-part 'kpal_ramp_widget.dart';
-part 'kpal_color_card_widget.dart';
-part 'kpal_vertical_slider_widget.dart';
 part '../../util/kpal_ramp_data.dart';
+part 'kpal_color_card_widget.dart';
+part 'kpal_ramp_widget.dart';
+part 'kpal_vertical_slider_widget.dart';
 
 
 class IdColor
@@ -77,11 +77,11 @@ enum SatCurve
 }
 
 const Map<int, SatCurve> satCurveMap =
-{
+<int, SatCurve>{
   0:SatCurve.noFlat,
   1:SatCurve.darkFlat,
   2:SatCurve.brightFlat,
-  3:SatCurve.linear
+  3:SatCurve.linear,
 };
 
 class KPalRampSettings
@@ -123,12 +123,12 @@ class KPalRampSettings
     required this.satShiftExp,
     required this.valueRangeMin,
     required this.valueRangeMax,
-    required this.satCurve
+    required this.satCurve,
   });
 
-  factory KPalRampSettings.from({required KPalRampSettings other})
+  factory KPalRampSettings.from({required final KPalRampSettings other})
   {
-    KPalRampSettings newSettings = KPalRampSettings(constraints: other.constraints);
+    final KPalRampSettings newSettings = KPalRampSettings(constraints: other.constraints);
     newSettings.colorCount = other.colorCount;
     newSettings.baseHue = other.baseHue;
     newSettings.baseSat = other.baseSat;
@@ -206,7 +206,7 @@ class KPalConstraints
     required this.rampCountMin,
     required this.rampCountMax,
     required this.rampCountDefault,
-    required this.maxClusters
+    required this.maxClusters,
   });
 }
 
@@ -239,9 +239,9 @@ class KPal extends StatefulWidget
 
   const KPal({
     super.key,
-    required KPalRampData colorRamp,
-    required void Function({bool addToHistoryStack, required KPalRampData originalData, required KPalRampData ramp}) accept,
-    required void Function({bool addToHistoryStack, required KPalRampData ramp}) delete,
+    required final KPalRampData colorRamp,
+    required final void Function({bool addToHistoryStack, required KPalRampData originalData, required KPalRampData ramp}) accept,
+    required final void Function({bool addToHistoryStack, required KPalRampData ramp}) delete,
   }) : _delete = delete, _accept = accept, _colorRamp = colorRamp;
 
   @override
@@ -258,7 +258,7 @@ class _KPalState extends State<KPal>
   void initState() {
     super.initState();
     _originalData = KPalRampData.from(other: widget._colorRamp);
-    _alertDialog = OverlayEntries.getTwoButtonDialog(
+    _alertDialog = getTwoButtonDialog(
         onNo: _dismissAlertDialog,
         onYes: _acceptDeletion,
         outsideCancelable: false,
@@ -294,16 +294,15 @@ class _KPalState extends State<KPal>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Padding(
       padding: EdgeInsets.all(_options.outsidePadding),
       child: Align(
-        alignment: Alignment.center,
         child: Container(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxHeight: 1000,
-            maxWidth: 1600
+            maxWidth: 1600,
 
           ),
           decoration: BoxDecoration(
@@ -317,8 +316,7 @@ class _KPalState extends State<KPal>
             color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
+              children: <Widget>[
                 Expanded(
                   child: KPalRamp(
                     rampData: widget._colorRamp,
@@ -326,12 +324,9 @@ class _KPalState extends State<KPal>
                   ),
                 ),
                 Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
+                  children: <Widget>[
                     Expanded(
-                      flex: 1,
                       child: Padding(
                         padding: EdgeInsets.all(_options.insidePadding),
                         child: IconButton.outlined(
@@ -339,12 +334,11 @@ class _KPalState extends State<KPal>
                             FontAwesomeIcons.xmark,
                             size: _options.iconSize,
                           ),
-                          onPressed: _discardChange
+                          onPressed: _discardChange,
                         ),
-                      )
+                      ),
                     ),
                     Expanded(
-                      flex: 1,
                       child: Padding(
                         padding: EdgeInsets.all(_options.insidePadding),
                         child: IconButton.outlined(
@@ -356,10 +350,9 @@ class _KPalState extends State<KPal>
                             _showDeleteDialog();
                           },
                         ),
-                      )
+                      ),
                     ),
                     Expanded(
-                      flex: 1,
                       child: Padding(
                         padding: EdgeInsets.all(_options.insidePadding),
                         child: IconButton.outlined(
@@ -369,12 +362,12 @@ class _KPalState extends State<KPal>
                           ),
                           onPressed: _acceptChange,
                         ),
-                      )
+                      ),
                     ),
-                  ]
+                  ],
                 ),
               ],
-            )
+            ),
           ),
         ),
       ),

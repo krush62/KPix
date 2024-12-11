@@ -43,8 +43,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final ValueNotifier<int> _width = ValueNotifier(64);
-  final ValueNotifier<int> _height = ValueNotifier(64);
+  final ValueNotifier<int> _width = ValueNotifier<int>(64);
+  final ValueNotifier<int> _height = ValueNotifier<int>(64);
   static const double _maxPreviewHeight = 128;
   static const double _maxPreviewWidth = 224;
 
@@ -73,7 +73,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       elevation: _options.elevation,
@@ -98,73 +98,64 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
           padding: EdgeInsets.all(_options.padding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: <Widget>[
               Text("Create New Project", style: Theme.of(context).textTheme.titleLarge),
               SizedBox(height: _options.padding / 2),
               Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
               SizedBox(height: _options.padding),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 16, height: 16);}, child: const Text("16x16"))),
+                children: <Widget>[
+                  Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 16, height: 16);}, child: const Text("16x16"))),
                   SizedBox(width: _options.padding),
-                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 32, height: 32);}, child: const Text("32x32"))),
+                  Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 32, height: 32);}, child: const Text("32x32"))),
                   SizedBox(width: _options.padding),
-                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 64, height: 64);}, child: const Text("64x64"))),
+                  Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 64, height: 64);}, child: const Text("64x64"))),
                   SizedBox(width: _options.padding),
-                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 128);}, child: const Text("128x128"))),
+                  Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 128);}, child: const Text("128x128"))),
                   SizedBox(width: _options.padding),
-                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 256);}, child: const Text("256x256"))),
+                  Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 256);}, child: const Text("256x256"))),
                   SizedBox(width: _options.padding),
-                  Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 512, height: 512);}, child: const Text("512x512"))),
-                  ]
+                  Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 512, height: 512);}, child: const Text("512x512"))),
+                  ],
               ),
               SizedBox(height: _options.padding),
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 72);}, child: const Text("128x72"))),
+                  children: <Widget>[
+                    Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 72);}, child: const Text("128x72"))),
                     SizedBox(width: _options.padding),
-                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 192, height: 108);}, child: const Text("192x108"))),
+                    Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 192, height: 108);}, child: const Text("192x108"))),
                     SizedBox(width: _options.padding),
-                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 224);}, child: const Text("256x224"))),
+                    Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 224);}, child: const Text("256x224"))),
                     SizedBox(width: _options.padding),
-                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 320, height: 180);}, child: const Text("320x180"))),
+                    Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 320, height: 180);}, child: const Text("320x180"))),
                     SizedBox(width: _options.padding),
-                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 480, height: 270);}, child: const Text("480x270"))),
+                    Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 480, height: 270);}, child: const Text("480x270"))),
                     SizedBox(width: _options.padding),
-                    Expanded(flex: 1, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 640, height: 360);}, child: const Text("640x360"))),
-                  ]
+                    Expanded(child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 640, height: 360);}, child: const Text("640x360"))),
+                  ],
               ),
               SizedBox(height: _options.padding / 2),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: SizedBox(
                       height: _maxPreviewHeight,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
+                        children: <Widget>[
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
+                            children: <Widget>[
                               Expanded(
-                                flex: 1,
-                                child: Text("Width", style: Theme.of(context).textTheme.titleSmall)
+                                child: Text("Width", style: Theme.of(context).textTheme.titleSmall),
                               ),
                               Expanded(
                                 flex: 4,
@@ -180,13 +171,12 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
-                                )
+                                ),
                               ),
                               SizedBox(
                                 width: _options.padding * 2,
                               ),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<int>(
                                   valueListenable: _width,
                                   builder: (final BuildContext context, final int width, final Widget? child) {
@@ -199,18 +189,15 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                       onChanged: (final String newVal) {_widthInputChanged(newVal: newVal);},
                                     );
                                   },
-                                )
-                              )
+                                ),
+                              ),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
+                            children: <Widget>[
                               Expanded(
-                                  flex: 1,
-                                  child: Text("Height", style: Theme.of(context).textTheme.titleSmall)
+                                  child: Text("Height", style: Theme.of(context).textTheme.titleSmall),
                               ),
                               Expanded(
                                 flex: 4,
@@ -226,13 +213,12 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                                     );
                                   },
-                                )
+                                ),
                               ),
                               SizedBox(
                                 width: _options.padding * 2,
                               ),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<int>(
                                   valueListenable: _height,
                                   builder: (final BuildContext context, final int height, final Widget? child) {
@@ -245,8 +231,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                       onChanged: (final String newVal) {_heightInputChanged(newVal: newVal);},
                                     );
                                   },
-                                )
-                              )
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -254,10 +240,9 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: Center(
                       child: Stack(
-                        children: [
+                        children: <Widget>[
                           ValueListenableBuilder<int>(
                             valueListenable: _width,
                             builder: (final BuildContext context, final int width, final Widget? child) {
@@ -278,14 +263,14 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                     width: width * scale,
                                     height: height * scale,
                                   );
-                                }
+                                },
                               );
                             },
-                          )
-                        ]
-                      )
-                    )
-                  )
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: _options.padding / 2),
@@ -293,11 +278,9 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
               SizedBox(height: _options.padding),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: IconButton.outlined(
                       icon: FaIcon(
                         FontAwesomeIcons.xmark,
@@ -306,11 +289,10 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                       onPressed: () {
                         widget.dismiss();
                       },
-                    )
+                    ),
                   ),
                   SizedBox(width: _options.padding),
                   Expanded(
-                      flex: 1,
                       child: IconButton.outlined(
                         icon: FaIcon(
                           FontAwesomeIcons.folderOpen,
@@ -319,11 +301,10 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                         onPressed: () {
                           widget.open();
                         },
-                      )
+                      ),
                   ),
                   SizedBox(width: _options.padding),
                   Expanded(
-                    flex: 1,
                     child: IconButton.outlined(
                       icon: FaIcon(
                         FontAwesomeIcons.check,
@@ -332,17 +313,14 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                       onPressed: () {
                         widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value));
                       },
-                    )
+                    ),
                   ),
-                ]
+                ],
               ),
-            ]
-          )
-        )
-      )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
-
-
-

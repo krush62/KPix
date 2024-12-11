@@ -39,26 +39,6 @@ class StylusPreferenceContent
   final int stylusPickMaxDurationMin;
   final int stylusPickMaxDurationMax;
 
-  StylusPreferenceContent._({
-    required this.stylusLongPressDelay,
-    required this.stylusLongPressCancelDistance,
-    required this.stylusZoomStepDistance,
-    required this.stylusSizeStepDistance,
-    required this.stylusPollInterval,
-    required this.stylusPickMaxDuration,
-    required this.stylusLongPressDelayMin,
-    required this.stylusLongPressDelayMax,
-    required this.stylusLongPressCancelDistanceMin,
-    required this.stylusLongPressCancelDistanceMax,
-    required this.stylusZoomStepDistanceMin,
-    required this.stylusZoomStepDistanceMax,
-    required this.stylusSizeStepDistanceMin,
-    required this.stylusSizeStepDistanceMax,
-    required this.stylusPollIntervalMin,
-    required this.stylusPollIntervalMax,
-    required this.stylusPickMaxDurationMin,
-    required this.stylusPickMaxDurationMax});
-
   factory StylusPreferenceContent({
     required final int stylusLongPressDelay,
     required final int stylusLongPressDelayMin,
@@ -81,26 +61,46 @@ class StylusPreferenceContent
   })
   {
     return StylusPreferenceContent._(
-      stylusLongPressCancelDistance: ValueNotifier(stylusLongPressCancelDistance.clamp(stylusLongPressCancelDistanceMin, stylusLongPressCancelDistanceMax)),
+      stylusLongPressCancelDistance: ValueNotifier<double>(stylusLongPressCancelDistance.clamp(stylusLongPressCancelDistanceMin, stylusLongPressCancelDistanceMax)),
       stylusLongPressCancelDistanceMin: stylusLongPressCancelDistanceMin,
       stylusLongPressCancelDistanceMax: stylusLongPressCancelDistanceMax,
-      stylusLongPressDelay: ValueNotifier(stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax)),
+      stylusLongPressDelay: ValueNotifier<int>(stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax)),
       stylusLongPressDelayMin: stylusLongPressDelayMin,
       stylusLongPressDelayMax: stylusLongPressDelayMax,
-      stylusPollInterval: ValueNotifier(stylusPollInterval.clamp(stylusPollIntervalMin, stylusPollIntervalMax)),
+      stylusPollInterval: ValueNotifier<int>(stylusPollInterval.clamp(stylusPollIntervalMin, stylusPollIntervalMax)),
       stylusPollIntervalMin: stylusLongPressDelayMin,
       stylusPollIntervalMax: stylusLongPressDelayMax,
-      stylusSizeStepDistance: ValueNotifier(stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax)),
+      stylusSizeStepDistance: ValueNotifier<double>(stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax)),
       stylusSizeStepDistanceMin: stylusSizeStepDistanceMin,
       stylusSizeStepDistanceMax: stylusSizeStepDistanceMax,
-      stylusZoomStepDistance: ValueNotifier(stylusZoomStepDistance.clamp(stylusZoomStepDistanceMin, stylusZoomStepDistanceMax)),
+      stylusZoomStepDistance: ValueNotifier<double>(stylusZoomStepDistance.clamp(stylusZoomStepDistanceMin, stylusZoomStepDistanceMax)),
       stylusZoomStepDistanceMin: stylusZoomStepDistanceMin,
       stylusZoomStepDistanceMax: stylusZoomStepDistanceMax,
-      stylusPickMaxDuration: ValueNotifier(stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax)),
+      stylusPickMaxDuration: ValueNotifier<int>(stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax)),
       stylusPickMaxDurationMin: stylusPickMaxDurationMin,
-      stylusPickMaxDurationMax: stylusLongPressDelayMax
+      stylusPickMaxDurationMax: stylusLongPressDelayMax,
     );
   }
+
+  StylusPreferenceContent._({
+    required this.stylusLongPressDelay,
+    required this.stylusLongPressCancelDistance,
+    required this.stylusZoomStepDistance,
+    required this.stylusSizeStepDistance,
+    required this.stylusPollInterval,
+    required this.stylusPickMaxDuration,
+    required this.stylusLongPressDelayMin,
+    required this.stylusLongPressDelayMax,
+    required this.stylusLongPressCancelDistanceMin,
+    required this.stylusLongPressCancelDistanceMax,
+    required this.stylusZoomStepDistanceMin,
+    required this.stylusZoomStepDistanceMax,
+    required this.stylusSizeStepDistanceMin,
+    required this.stylusSizeStepDistanceMax,
+    required this.stylusPollIntervalMin,
+    required this.stylusPollIntervalMax,
+    required this.stylusPickMaxDurationMin,
+    required this.stylusPickMaxDurationMax,});
 }
 
 class StylusPreferences extends StatefulWidget
@@ -115,19 +115,16 @@ class StylusPreferences extends StatefulWidget
 class _StylusPreferencesState extends State<StylusPreferences>
 {
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Poll Interval", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Poll Interval", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<int>(
@@ -149,10 +146,8 @@ class _StylusPreferencesState extends State<StylusPreferences>
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Long Press Delay", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Long Press Delay", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<int>(
@@ -174,10 +169,8 @@ class _StylusPreferencesState extends State<StylusPreferences>
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Long Press Cancel Distance", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Long Press Cancel Distance", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<double>(
@@ -199,10 +192,8 @@ class _StylusPreferencesState extends State<StylusPreferences>
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<double>(
@@ -224,10 +215,8 @@ class _StylusPreferencesState extends State<StylusPreferences>
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Tool Size Step Distance", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Tool Size Step Distance", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<double>(
@@ -249,10 +238,8 @@ class _StylusPreferencesState extends State<StylusPreferences>
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(flex: 1, child: Text("Color Pick Timeout", style: Theme.of(context).textTheme.titleSmall)),
+          children: <Widget>[
+            Expanded(child: Text("Color Pick Timeout", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
               child: ValueListenableBuilder<int>(
@@ -272,7 +259,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
             ),
           ],
         ),
-      ]
+      ],
     );
   }
 }

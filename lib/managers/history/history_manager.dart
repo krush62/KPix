@@ -42,14 +42,14 @@ import 'package:kpix/models/app_state.dart';
 
 class HistoryManager
 {
-  final ValueNotifier<bool> hasUndo = ValueNotifier(false);
-  final ValueNotifier<bool> hasRedo = ValueNotifier(false);
+  final ValueNotifier<bool> hasUndo = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> hasRedo = ValueNotifier<bool>(false);
   final int _minEntries = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoStepsMin;
   int _maxEntries;
   int _curPos = -1;
-  final Queue<HistoryState> _states = Queue();
+  final Queue<HistoryState> _states = Queue<HistoryState>();
 
-  HistoryManager({required int maxEntries}) : _maxEntries = maxEntries;
+  HistoryManager({required final int maxEntries}) : _maxEntries = maxEntries;
 
   void clear()
   {
@@ -64,7 +64,7 @@ class HistoryManager
     return _states.elementAt(_curPos).type.description;
   }
 
-  void changeMaxEntries({required int maxEntries})
+  void changeMaxEntries({required final int maxEntries})
   {
     if (maxEntries < _maxEntries && _states.length > maxEntries)
     {
@@ -98,12 +98,12 @@ class HistoryManager
     }
   }
 
-  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final setHasChanges = true})
+  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true})
   {
     _removeFutureEntries();
     _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier));
     _curPos++;
-    final int entriesLeft = (_maxEntries - _states.length);
+    final int entriesLeft = _maxEntries - _states.length;
 
     if (entriesLeft < 0)
     {
@@ -151,15 +151,15 @@ class HistoryManager
 
   void _updateNotifiers()
   {
-    hasUndo.value = (_curPos > 0);
-    hasRedo.value = (_curPos < _states.length - 1);
+    hasUndo.value = _curPos > 0;
+    hasRedo.value = _curPos < _states.length - 1;
   }
 
   void _compressHistory()
   {
     int index = 0;
     final int maxIndex = _states.length - 1 - _minEntries;
-    final List<HistoryState> deleteStates = [];
+    final List<HistoryState> deleteStates = <HistoryState>[];
     HistoryState? previousMergeState;
     for (final HistoryState state in _states)
     {

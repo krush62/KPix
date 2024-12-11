@@ -55,14 +55,14 @@ class PaletteExportData
   final String fileName;
   final String directory;
   const PaletteExportData({required this.name, required this.extension, this.fileName = "", this.directory = ""});
-  factory PaletteExportData.fromWithConcreteData({required PaletteExportData other, required String fileName, required String directory})
+  factory PaletteExportData.fromWithConcreteData({required final PaletteExportData other, required final String fileName, required final String directory})
   {
     return PaletteExportData(name: other.name, extension: other.extension, directory: directory, fileName: fileName);
   }
 }
 
 const Map<PaletteExportType, PaletteExportData> paletteExportTypeMap =
-{
+<PaletteExportType, PaletteExportData>{
   PaletteExportType.png:PaletteExportData(name: "PNG", extension: "png"),
   PaletteExportType.aseprite:PaletteExportData(name: "ASEPRITE", extension: "aseprite"),
   PaletteExportType.gimp:PaletteExportData(name: "GIMP", extension: "gpl"),
@@ -71,7 +71,7 @@ const Map<PaletteExportType, PaletteExportData> paletteExportTypeMap =
   PaletteExportType.jasc:PaletteExportData(name: "JASC", extension: "pal"),
   PaletteExportType.corel:PaletteExportData(name: "COREL", extension: "xml"),
   PaletteExportType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc"),
-  PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: FileHandler.fileExtensionKpal),
+  PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: fileExtensionKpal),
 };
 
 enum ExportSectionType
@@ -80,7 +80,7 @@ enum ExportSectionType
   palette
 }
 
-const List<int> exportScalingValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+const List<int> exportScalingValues = <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 class ExportData
 {
@@ -91,18 +91,18 @@ class ExportData
   final String directory;
   final bool scalable;
   const ExportData({required this.name, required this.extension, required this.scalable, this.scaling = 1, this.fileName = "", this.directory = ""});
-  factory ExportData.fromWithConcreteData({required ExportData other, required int scaling, required String fileName, required String directory})
+  factory ExportData.fromWithConcreteData({required final ExportData other, required final int scaling, required final String fileName, required final String directory})
   {
     return ExportData(name: other.name, extension: other.extension, scalable: other.scalable, scaling: scaling, directory: directory, fileName: fileName);
   }
 }
 
-const Map<FileExportType, ExportData> fileExportTypeMap = {
+const Map<FileExportType, ExportData> fileExportTypeMap = <FileExportType, ExportData>{
   FileExportType.png : ExportData(name: "PNG", extension: "png", scalable: true),
   FileExportType.aseprite : ExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
   //ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
   FileExportType.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false),
-  FileExportType.kpix : ExportData(name: "KPIX", extension: FileHandler.fileExtensionKpix, scalable: false),
+  FileExportType.kpix : ExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false),
 };
 
 
@@ -118,7 +118,7 @@ class ExportWidget extends StatefulWidget
     super.key,
     required this.dismiss,
     required this.acceptFile,
-    required this.acceptPalette
+    required this.acceptPalette,
   });
 
   @override
@@ -129,17 +129,17 @@ class _ExportWidgetState extends State<ExportWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<FileExportType> _fileExportType = ValueNotifier(FileExportType.png);
-  final ValueNotifier<PaletteExportType> _paletteExportType = ValueNotifier(PaletteExportType.kpal);
-  final ValueNotifier<int> _scalingIndex = ValueNotifier(0);
-  final ValueNotifier<String> _fileName = ValueNotifier("");
+  final ValueNotifier<FileExportType> _fileExportType = ValueNotifier<FileExportType>(FileExportType.png);
+  final ValueNotifier<PaletteExportType> _paletteExportType = ValueNotifier<PaletteExportType>(PaletteExportType.kpal);
+  final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
+  final ValueNotifier<String> _fileName = ValueNotifier<String>("");
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier(FileNameStatus.available);
-  final ValueNotifier<ExportSectionType> _selectedSection = ValueNotifier(ExportSectionType.project);
+  final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
+  final ValueNotifier<ExportSectionType> _selectedSection = ValueNotifier<ExportSectionType>(ExportSectionType.project);
 
     void _changeDirectoryPressed()
     {
-      FileHandler.getDirectory(startDir: _appState.exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
+      getDirectory(startDir: _appState.exportDir).then((final String? chosenDir) {_handleChosenDirectory(chosenDir: chosenDir);});
     }
 
     void _handleChosenDirectory({required final String? chosenDir})
@@ -163,7 +163,7 @@ class _ExportWidgetState extends State<ExportWidget>
   void _updateFileNameStatus()
   {
     final String extension = _selectedSection.value == ExportSectionType.project ? fileExportTypeMap[_fileExportType.value]!.extension : paletteExportTypeMap[_paletteExportType.value]!.extension;
-    _fileNameStatus.value = FileHandler.checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
+    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
   }
 
   @override
@@ -192,37 +192,34 @@ class _ExportWidgetState extends State<ExportWidget>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+            children: <Widget>[
               ValueListenableBuilder<ExportSectionType>(
                 valueListenable: _selectedSection,
                 builder: (final BuildContext context, final ExportSectionType section, final Widget? child) {
-                  return SegmentedButton(
-                    segments: const [
-                      ButtonSegment(
+                  return SegmentedButton<ExportSectionType>(
+                    segments: const <ButtonSegment<ExportSectionType>>[
+                      ButtonSegment<ExportSectionType>(
                         value: ExportSectionType.project,
                         label: Tooltip(
                             message: "Image",
                             waitDuration: AppState.toolTipDuration,
                             child: Icon(
-                                FontAwesomeIcons.image
-                            )
-                        )
+                                FontAwesomeIcons.image,
+                            ),
+                        ),
                       ),
-                      ButtonSegment(
+                      ButtonSegment<ExportSectionType>(
                         value: ExportSectionType.palette,
                         label: Tooltip(
                             message: "Palette",
                             waitDuration: AppState.toolTipDuration,
                             child: Icon(
-                                FontAwesomeIcons.palette
-                            )
-                        )
+                                FontAwesomeIcons.palette,
+                            ),
+                        ),
                       ),
                     ],
                     selected: <ExportSectionType>{section},
-                    emptySelectionAllowed: false,
-                    multiSelectionEnabled: false,
                     showSelectedIcon: false,
                     onSelectionChanged: (final Set<ExportSectionType> exportSections) {_selectedSection.value = exportSections.first; _updateFileNameStatus();},
                   );
@@ -249,23 +246,21 @@ class _ExportWidgetState extends State<ExportWidget>
                     title += " PALETTE";
                   }
                     return Column(
-                      children: [
+                      children: <Widget>[
                         Text(title, style: Theme.of(context).textTheme.titleLarge),
                         SizedBox(height: _options.padding),
                         Row(
                           mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
+                          children: <Widget>[
                             Expanded(
-                              flex: 1,
-                              child: Text("Format", style: Theme.of(context).textTheme.titleMedium)
+                              child: Text("Format", style: Theme.of(context).textTheme.titleMedium),
                             ),
                             Expanded(
                               flex: 6,
                               child: Stack(
                                 fit: StackFit.passthrough,
-                                children: [
+                                children: <Widget>[
                                   Visibility(
                                     visible: section == ExportSectionType.project,
                                     child: ValueListenableBuilder<FileExportType>(
@@ -273,10 +268,9 @@ class _ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context, final FileExportType exportTypeEnum, final Widget? child) {
                                         return SegmentedButton<FileExportType>(
                                           selected: <FileExportType>{exportTypeEnum},
-                                          multiSelectionEnabled: false,
                                           showSelectedIcon: false,
                                           onSelectionChanged: (final Set<FileExportType> types) {_fileExportType.value = types.first; _updateFileNameStatus();},
-                                          segments: FileExportType.values.map((x) => ButtonSegment<FileExportType>(value: x, label: Text(fileExportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                          segments: FileExportType.values.map((final FileExportType x) => ButtonSegment<FileExportType>(value: x, label: Text(fileExportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                         );
                                       },
                                     ),
@@ -288,10 +282,9 @@ class _ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context, final PaletteExportType exportType, final Widget? child) {
                                         return SegmentedButton<PaletteExportType>(
                                           selected: <PaletteExportType>{exportType},
-                                          multiSelectionEnabled: false,
                                           showSelectedIcon: false,
                                           onSelectionChanged: (final Set<PaletteExportType> types) {_paletteExportType.value = types.first; _updateFileNameStatus();},
-                                          segments: PaletteExportType.values.map((x) => ButtonSegment<PaletteExportType>(value: x, label: Text(paletteExportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                          segments: PaletteExportType.values.map((final PaletteExportType x) => ButtonSegment<PaletteExportType>(value: x, label: Text(paletteExportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
 
                                         );
                                       },
@@ -299,19 +292,17 @@ class _ExportWidgetState extends State<ExportWidget>
                                   ),
                                 ],
                               ),
-                            )
-                          ]
+                            ),
+                          ],
                         ),
                         Opacity(
                           opacity: section == ExportSectionType.project ? 1.0 : 0.0,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
+                            children: <Widget>[
                               Expanded(
-                                flex: 1,
-                                child: Text("Scaling", style: Theme.of(context).textTheme.titleMedium)
+                                child: Text("Scaling", style: Theme.of(context).textTheme.titleMedium),
                               ),
                               Expanded(
                                 flex: 4,
@@ -323,7 +314,6 @@ class _ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                                         return KPixSlider(
                                           value: fileExportTypeMap[type]!.scalable ? scalingIndexVal.toDouble() : 0,
-                                          min: 0,
                                           max: exportScalingValues.length.toDouble() - 1,
                                           divisions: exportScalingValues.length,
                                           label: "${exportScalingValues[scalingIndexVal]}:1",
@@ -333,7 +323,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                       },
                                     );
                                   },
-                                )
+                                ),
                               ),
                               Expanded(
                                 flex: 2,
@@ -345,33 +335,31 @@ class _ExportWidgetState extends State<ExportWidget>
                                       builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
                                         return Text( fileExportTypeMap[type]!.scalable ?
                                         "${_appState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_appState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_appState.canvasSize.x} x ${_appState.canvasSize.y}",
-                                            textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium
+                                            textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
                                         );
                                       },
                                     );
                                   },
-                                )
+                                ),
                               ),
-                            ]
+                            ],
                           ),
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
+                          children: <Widget>[
                             Expanded(
-                              flex: 1,
-                              child: Text("Directory", style: Theme.of(context).textTheme.titleMedium)
+                              child: Text("Directory", style: Theme.of(context).textTheme.titleMedium),
                             ),
                             Expanded(
                               flex: 4,
                               child: ValueListenableBuilder<String>(
                                 valueListenable: _appState.exportDirNotifier,
-                                builder: (final BuildContext context, final String expDir, Widget? child) {
+                                builder: (final BuildContext context, final String expDir, final Widget? child) {
                                   return Text(expDir, textAlign: TextAlign.center);
                                 },
-                              )
+                              ),
                             ),
                             Expanded(
                               flex: 2,
@@ -384,32 +372,30 @@ class _ExportWidgetState extends State<ExportWidget>
                                   onPressed: _changeDirectoryPressed,
                                   icon: FaIcon(
                                       FontAwesomeIcons.file,
-                                      size: _options.iconSize / 2
+                                      size: _options.iconSize / 2,
                                   ),
                                   color: Theme.of(context).primaryColorLight,
                                   style: IconButton.styleFrom(
                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      backgroundColor: Theme.of(context).primaryColor
+                                      backgroundColor: Theme.of(context).primaryColor,
                                   ),
                                 ),
-                              )
-                            )
-                          ]
+                              ),
+                            ),
+                          ],
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
+                          children: <Widget>[
                             Expanded(
-                                flex: 1,
-                                child: Text("File Name", style: Theme.of(context).textTheme.titleMedium)
+                                child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
                             ),
                             Expanded(
                                 flex: 3,
                                 child: ValueListenableBuilder<String?>(
                                   valueListenable: _fileName,
-                                  builder: (final BuildContext context, final String? filePath, Widget? child) {
+                                  builder: (final BuildContext context, final String? filePath, final Widget? child) {
                                     final TextEditingController controller = TextEditingController(text: filePath);
                                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                     return TextField(
@@ -422,10 +408,9 @@ class _ExportWidgetState extends State<ExportWidget>
                                       },
                                     );
                                   },
-                                )
+                                ),
                               ),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<PaletteExportType>(
                                   valueListenable: _paletteExportType,
                                   builder: (final BuildContext context, final PaletteExportType paletteExportType, final Widget? child) {
@@ -435,11 +420,10 @@ class _ExportWidgetState extends State<ExportWidget>
                                       return (section == ExportSectionType.project) ? Text(".${fileExportTypeMap[fileExportType]!.extension}") : Text(".${paletteExportTypeMap[paletteExportType]!.extension}");
                                     },
                                   );
-                                  }
+                                  },
                                 ),
                               ),
                               Expanded(
-                                flex: 1,
                                 child: ValueListenableBuilder<FileNameStatus>(
                                   valueListenable: _fileNameStatus,
                                   builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
@@ -452,9 +436,9 @@ class _ExportWidgetState extends State<ExportWidget>
                                       ),
                                     );
                                   },
-                                )
-                              )
-                           ]
+                                ),
+                              ),
+                           ],
                         ),
                       ],
                     );
@@ -462,11 +446,9 @@ class _ExportWidgetState extends State<ExportWidget>
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
+                children: <Widget>[
                   Expanded(
-                    flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
                       child: Tooltip(
@@ -482,10 +464,9 @@ class _ExportWidgetState extends State<ExportWidget>
                           },
                         ),
                       ),
-                    )
+                    ),
                   ),
                   Expanded(
-                    flex: 1,
                     child: Padding(
                       padding: EdgeInsets.all(_options.padding),
                       child: ValueListenableBuilder<ExportSectionType>(
@@ -519,14 +500,14 @@ class _ExportWidgetState extends State<ExportWidget>
                           );
                         },
                       ),
-                    )
+                    ),
                   ),
-                ]
+                ],
               ),
             ],
           ),
-        )
-      )
+        ),
+      ),
     );
   }
 

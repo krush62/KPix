@@ -26,18 +26,18 @@ enum PencilShape
   square
 }
 
-const List<PencilShape> pencilShapeList = [ PencilShape.round, PencilShape.square];
+const List<PencilShape> pencilShapeList = <PencilShape>[ PencilShape.round, PencilShape.square];
 
 const Map<int, PencilShape> pencilShapeIndexMap =
-{
+<int, PencilShape>{
   0: PencilShape.round,
-  1: PencilShape.square
+  1: PencilShape.square,
 };
 
 const Map<PencilShape, String> pencilShapeStringMap =
-{
+<PencilShape, String>{
   PencilShape.round: "Round",
-  PencilShape.square: "Square"
+  PencilShape.square: "Square",
 };
 
 class PencilOptions extends IToolOptions
@@ -48,16 +48,16 @@ class PencilOptions extends IToolOptions
   final int shapeDefault;
   final bool pixelPerfectDefault;
 
-  final ValueNotifier<int> size = ValueNotifier(1);
-  final ValueNotifier<PencilShape> shape = ValueNotifier(PencilShape.round);
-  final ValueNotifier<bool> pixelPerfect = ValueNotifier(true);
+  final ValueNotifier<int> size = ValueNotifier<int>(1);
+  final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(PencilShape.round);
+  final ValueNotifier<bool> pixelPerfect = ValueNotifier<bool>(true);
 
   PencilOptions({
     required this.sizeMin,
     required this.sizeMax,
     required this.sizeDefault,
     required this.shapeDefault,
-    required this.pixelPerfectDefault})
+    required this.pixelPerfectDefault,})
   {
     size.value = sizeDefault;
     shape.value = pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
@@ -72,21 +72,18 @@ class PencilOptions extends IToolOptions
   {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Size",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -110,17 +107,15 @@ class PencilOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Shape",
                     style: Theme.of(context).textTheme.labelLarge,
-                  )
+                  ),
               ),
             ),
             Expanded(
@@ -129,12 +124,12 @@ class PencilOptions extends IToolOptions
                 valueListenable: pencilOptions.shape,
                 builder: (final BuildContext context, final PencilShape shape, final Widget? child)
                 {
-                  return DropdownButton(
+                  return DropdownButton<PencilShape>(
                     value: shape,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
-                    onChanged: (PencilShape? pShape) {pencilOptions.shape.value = pShape!;},
+                    onChanged: (final PencilShape? pShape) {pencilOptions.shape.value = pShape!;},
                     items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((final PencilShape value) {
                       return DropdownMenuItem<PencilShape>(
                         value: value,
@@ -143,22 +138,19 @@ class PencilOptions extends IToolOptions
                     }).toList(),
                   );
                 },
-              )
+              ),
             ),
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Smooth",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded(
@@ -167,21 +159,21 @@ class PencilOptions extends IToolOptions
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<int>(
                   valueListenable: pencilOptions.size,
-                  builder: (BuildContext context, int size, child)
+                  builder: (final BuildContext context, final int size, final Widget? child)
                   {
                     return ValueListenableBuilder<bool>(
                       valueListenable: pencilOptions.pixelPerfect,
                       builder: (final BuildContext context, final bool pp, final Widget? child)
                       {
                         return Switch(
-                          onChanged: size == 1 ? (bool newVal) {pencilOptions.pixelPerfect.value = newVal;} : null,
-                          value: pp
+                          onChanged: size == 1 ? (final bool newVal) {pencilOptions.pixelPerfect.value = newVal;} : null,
+                          value: pp,
                         );
                       },
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),

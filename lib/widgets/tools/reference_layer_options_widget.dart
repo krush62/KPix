@@ -53,7 +53,7 @@ class ReferenceLayerSettings
       required this.zoomDefault,
       required this.zoomMin,
       required this.zoomMax,
-      required this.zoomCurveExponent}
+      required this.zoomCurveExponent,}
   );
 }
 
@@ -73,7 +73,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
 
   void _onLoadPressed()
   {
-    FileHandler.getPathAndDataForImage().then((final (String?, Uint8List?) loadData,) {
+    getPathAndDataForImage().then((final (String?, Uint8List?) loadData,) {
       _loadPathChosen(loadPath: loadData.$1, imageData: loadData.$2);
     });
   }
@@ -167,84 +167,75 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
         padding: EdgeInsets.all(_toolSettingsWidgetOptions.padding),
         child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
           child: ValueListenableBuilder<ReferenceImage?>(
             valueListenable: widget.referenceState.imageNotifier,
             builder: (final BuildContext context,
-                final ReferenceImage? refImg, final Widget? child) {
+                final ReferenceImage? refImg, final Widget? child,) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+                children: <Widget>[
                   Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "File",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
                         flex: _toolSettingsWidgetOptions.columnWidthRatio,
                         child: Row(
-                          mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
+                          children: <Widget>[
                             Expanded(
                               flex: 3,
                               child: Align(
-                                alignment: Alignment.center,
                                 child: Text(
-                                  refImg == null ? "<NO FILE LOADED>" : Helper.extractFilenameFromPath(path: refImg.path),
+                                  refImg == null ? "<NO FILE LOADED>" : extractFilenameFromPath(path: refImg.path),
                                   style: Theme.of(context).textTheme.labelSmall,
-                                )
+                                ),
                               ),
                             ),
                             SizedBox(
                               width: _toolSettingsWidgetOptions.padding,
                             ),
                             Expanded(
-                              flex: 1,
                               child: Tooltip(
                                 waitDuration: AppState.toolTipDuration,
                                 message: "Open Reference File",
                                 child: IconButton.outlined(
                                   onPressed: _onLoadPressed,
-                                  icon: FaIcon(FontAwesomeIcons.image)
+                                  icon: const FaIcon(FontAwesomeIcons.image),
                                 ),
-                              )
-                            )
+                              ),
+                            ),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Opacity",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
@@ -253,7 +244,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           valueListenable:
                               widget.referenceState.opacityNotifier,
                           builder: (final BuildContext context,
-                              final int opacity, final Widget? child) {
+                              final int opacity, final Widget? child,) {
                             return KPixSlider(
                               value: opacity.toDouble(),
                               min: _refSettings.opacityMin.toDouble(),
@@ -270,36 +261,34 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     ],
                   ),
                   Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Aspect Ratio",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
                         flex: _toolSettingsWidgetOptions.columnWidthRatio,
                         child: Row(
-                          children: [
+                          children: <Widget>[
                             Expanded(
                               child: ValueListenableBuilder<double>(
                                 valueListenable:
                                     widget.referenceState.aspectRatioNotifier,
                                 builder: (final BuildContext context,
                                     final double aspectRatio,
-                                    final Widget? child) {
+                                    final Widget? child,) {
                                   return KPixSlider(
-                                    value: aspectRatio.toDouble(),
+                                    value: aspectRatio,
                                     min: _refSettings.aspectRatioMin
-                                        .toDouble(),
+                                        ,
                                     max: _refSettings.aspectRatioMax
-                                        .toDouble(),
+                                        ,
                                     onChanged: refImg == null ? null : (final double newVal) {
                                       widget.referenceState.aspectRatioNotifier.value = newVal;
                                     },
@@ -315,26 +304,24 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               message: "Reset Aspect Ratio",
                               child: IconButton.outlined(
                                 onPressed: refImg == null ? null: _resetAspectRatio,
-                                icon: FaIcon(FontAwesomeIcons.arrowRotateLeft),
+                                icon: const FaIcon(FontAwesomeIcons.arrowRotateLeft),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                   Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Zoom",
                             style: Theme.of(context).textTheme.labelLarge,
-                          )
+                          ),
                         ),
                       ),
                       Expanded(
@@ -342,7 +329,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.referenceState.zoomNotifier,
                           builder: (final BuildContext context,
-                              final int zoom, final Widget? child) {
+                              final int zoom, final Widget? child,) {
                             return KPixSlider(
                               value: zoom.toDouble(),
                               min: _refSettings.zoomMin.toDouble(),
@@ -360,45 +347,41 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     ],
                   ),
                   Row(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Expanded(
-                        flex: 1,
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
                           message: "Expand horizontally and center by keeping the current aspect ratio",
                           child: IconButton.outlined(
                             onPressed: refImg == null ? null : _fitHorizontal,
                             icon:
-                              FaIcon(FontAwesomeIcons.arrowsLeftRight)
-                          ),
-                        )
-                      ),
-                      SizedBox(width: _toolSettingsWidgetOptions.padding),
-                      Expanded(
-                        flex: 1,
-                        child: Tooltip(
-                          waitDuration: AppState.toolTipDuration,
-                          message: "Expand vertically and center by keeping the current aspect ratio",
-                          child: IconButton.outlined(
-                            onPressed: refImg == null ? null : _fitVertical,
-                            icon: FaIcon(FontAwesomeIcons.arrowsUpDown)
+                              const FaIcon(FontAwesomeIcons.arrowsLeftRight),
                           ),
                         ),
                       ),
                       SizedBox(width: _toolSettingsWidgetOptions.padding),
                       Expanded(
-                        flex: 1,
+                        child: Tooltip(
+                          waitDuration: AppState.toolTipDuration,
+                          message: "Expand vertically and center by keeping the current aspect ratio",
+                          child: IconButton.outlined(
+                            onPressed: refImg == null ? null : _fitVertical,
+                            icon: const FaIcon(FontAwesomeIcons.arrowsUpDown),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: _toolSettingsWidgetOptions.padding),
+                      Expanded(
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
                           message: "Fits the image into the canvas (changes aspect ratio)",
                           child: IconButton.outlined(
                             onPressed: refImg == null ? null : _fill,
-                            icon: FaIcon(
-                                FontAwesomeIcons.arrowsUpDownLeftRight),
+                            icon: const FaIcon(
+                                FontAwesomeIcons.arrowsUpDownLeftRight,),
                           ),
-                        )
+                        ),
                       ),
                     ],
                   ),
@@ -407,7 +390,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
             },
           ),
         ),
-      )
+      ),
     );
   }
 }

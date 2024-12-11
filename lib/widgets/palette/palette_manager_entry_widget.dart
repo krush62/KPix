@@ -28,7 +28,7 @@ class PaletteManagerEntryOptions
   PaletteManagerEntryOptions({
     required this.borderWidth,
     required this.borderRadius,
-    required this.layoutFlex
+    required this.layoutFlex,
   });
 }
 
@@ -77,13 +77,13 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
   }
 
   @override
-  Widget build(BuildContext context)
+  Widget build(final BuildContext context)
   {
-    final List<Widget> colorColumn = [];
+    final List<Widget> colorColumn = <Widget>[];
     int colorCount = 0;
     for (final KPalRampData rampData in widget.entryData.rampDataList)
     {
-      final List<Widget> colorRowWidgetList = [];
+      final List<Widget> colorRowWidgetList = <Widget>[];
       for (final ValueNotifier<IdColor> idColor in rampData.shiftedColors)
       {
         colorRowWidgetList.add(Expanded(child: ColoredBox(color: idColor.value.color)));
@@ -98,7 +98,7 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
         final bool isSelected = (selectedWidget == widget);
         return GestureDetector(
           onTap: _onTap,
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
               border: Border.all(
@@ -108,33 +108,31 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
               borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             ),
             child: Column(
-              children: [
+              children: <Widget>[
                 Expanded(
-                  flex: 1,
                   child: Center(
                     child: Text(
                       widget.entryData.name,
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
-                  )
+                  ),
                 ),
                 Expanded(
                   flex: _options.layoutFlex,
                   child: Column(
-                    children: colorColumn
-                  )
+                    children: colorColumn,
+                  ),
                 ),
                 Expanded(
-                  flex: 1,
                   child: Center(
                     child: Text(
                       widget.entryData.rampDataList.length == 1 ? "$colorCount colors" : "${widget.entryData.rampDataList.length} ramps | $colorCount colors",
                       style: Theme.of(context).textTheme.bodySmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
-                  )
+                  ),
                 ),
               ],
-            )
+            ),
           ),
         );
       },

@@ -15,8 +15,7 @@
  */
 
 import 'dart:collection';
-import 'package:kpix/util/update_helper.dart';
-import 'package:toastification/toastification.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -28,26 +27,28 @@ import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/tool_options/select_options.dart';
-import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/util/image_importer.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -61,7 +62,7 @@ class RepaintNotifier extends ChangeNotifier
 
 class AppState
 {
-  final ValueNotifier<bool> _hasProject = ValueNotifier(false);
+  final ValueNotifier<bool> _hasProject = ValueNotifier<bool>(false);
   bool get hasProject
   {
     return _hasProject.value;
@@ -71,7 +72,7 @@ class AppState
     return _hasProject;
   }
 
-  final ValueNotifier<ToolType> _selectedTool = ValueNotifier(ToolType.pencil);
+  final ValueNotifier<ToolType> _selectedTool = ValueNotifier<ToolType>(ToolType.pencil);
   ToolType get selectedTool
   {
     return _selectedTool.value;
@@ -82,7 +83,7 @@ class AppState
   }
   ToolType _previousDrawTool = ToolType.pencil;
   late IToolOptions _currentToolOptions;
-  final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier([]);
+  final ValueNotifier<List<KPalRampData>> _colorRamps = ValueNotifier<List<KPalRampData>>(<KPalRampData>[]);
   List<KPalRampData> get colorRamps
   {
     return _colorRamps.value;
@@ -91,7 +92,7 @@ class AppState
   {
     return _colorRamps;
   }
-  final ValueNotifier<ColorReference?> _selectedColor = ValueNotifier(null);
+  final ValueNotifier<ColorReference?> _selectedColor = ValueNotifier<ColorReference?>(null);
   ColorReference? get selectedColor
   {
     return _selectedColor.value;
@@ -100,8 +101,8 @@ class AppState
   {
     return _selectedColor;
   }
-  final Map<ToolType, bool> _toolMap = {};
-  final ValueNotifier<List<LayerState>> _layers = ValueNotifier([]);
+  final Map<ToolType, bool> _toolMap = <ToolType, bool>{};
+  final ValueNotifier<List<LayerState>> _layers = ValueNotifier<List<LayerState>>(<LayerState>[]);
   List<LayerState> get layers
   {
     return _layers.value;
@@ -110,7 +111,7 @@ class AppState
   {
     return _layers;
   }
-  final ValueNotifier<LayerState?> _currentLayer = ValueNotifier(null);
+  final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
   LayerState? get currentLayer
   {
     return _currentLayer.value;
@@ -123,7 +124,7 @@ class AppState
   final RepaintNotifier repaintNotifier = RepaintNotifier();
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
-  final ValueNotifier<int> _zoomFactor = ValueNotifier(1);
+  final ValueNotifier<int> _zoomFactor = ValueNotifier<int>(1);
   int get zoomFactor
   {
     return _zoomFactor.value;
@@ -179,13 +180,13 @@ class AppState
 
   UpdateInfoPackage? updatePackage;
 
-  final ValueNotifier<String?> projectName = ValueNotifier(null);
-  final ValueNotifier<bool> hasChanges = ValueNotifier(false);
+  final ValueNotifier<String?> projectName = ValueNotifier<String?>(null);
+  final ValueNotifier<bool> hasChanges = ValueNotifier<bool>(false);
 
   static const Duration toolTipDuration = Duration(seconds: 1);
 
 
-  AppState({required String exportDir, required String internalDir}) : _exportDir = ValueNotifier(exportDir), _internalDir = ValueNotifier(internalDir), _hasUpdate = ValueNotifier(false)
+  AppState({required final String exportDir, required final String internalDir}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _hasUpdate = ValueNotifier<bool>(false)
   {
     for (final ToolType toolType in toolList.keys)
     {
@@ -237,10 +238,10 @@ class AppState
 
   }
 
-  void init({required CoordinateSetI dimensions})
+  void init({required final CoordinateSetI dimensions})
   {
     _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
-    final List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     selectionState.deselect(addToHistoryStack: false, notify: false);
     _layers.value = layerList;
     addNewDrawingLayer(select: true, addToHistoryStack: false);
@@ -257,7 +258,7 @@ class AppState
     return "KPix ${projectName.value ?? ""}${hasChanges.value ? "*" : ""}";
   }
 
-  void _setCanvasDimensions({required int width, required int height, final bool addToHistoryStack = true})
+  void _setCanvasDimensions({required final int width, required final int height, final bool addToHistoryStack = true})
   {
     _canvasSize.x = width;
     _canvasSize.y = height;
@@ -336,7 +337,7 @@ class AppState
     final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     if (colorRamps.length > constraints.rampCountMin)
     {
-      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
+      final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       rampDataList.remove(ramp);
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
@@ -361,7 +362,7 @@ class AppState
 
     if (ramp.shiftedColors.length != originalData.shiftedColors.length)
     {
-      final HashMap<int, int> indexMap = Helper.remapIndices(oldLength: originalData.shiftedColors.length, newLength: ramp.shiftedColors.length);
+      final HashMap<int, int> indexMap = remapIndices(oldLength: originalData.shiftedColors.length, newLength: ramp.shiftedColors.length);
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _remapLayers(newData: ramp, map: indexMap);
     }
@@ -379,19 +380,19 @@ class AppState
     _selectedColor.value = _colorRamps.value[0].references[0];
   }
 
-  void addNewRamp({bool addToHistoryStack = true})
+  void addNewRamp({final bool addToHistoryStack = true})
   {
     final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     if (colorRamps.length < constraints.rampCountMax)
     {
 
       const Uuid uuid = Uuid();
-      List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
+      final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       final KPalRampData newRamp = KPalRampData(
           uuid: uuid.v1(),
           settings: KPalRampSettings(
-              constraints: prefs.kPalConstraints
-          )
+              constraints: prefs.kPalConstraints,
+          ),
       );
       rampDataList.add(newRamp);
       _colorRamps.value = rampDataList;
@@ -410,7 +411,7 @@ class AppState
   ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
-    final List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
     if (_layers.value.isEmpty)
     {
@@ -445,13 +446,13 @@ class AppState
   GridLayerState addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
-    final List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     final GridLayerState newLayer = GridLayerState(
       brightness: gridSettings.brightnessDefault,
       gridType: gridSettings.gridTypeDefault,
       intervalX: gridSettings.intervalXDefault,
       intervalY: gridSettings.intervalYDefault,
-      opacity: gridSettings.opacityDefault
+      opacity: gridSettings.opacityDefault,
     );
     if (_layers.value.isEmpty)
     {
@@ -485,7 +486,7 @@ class AppState
 
   DrawingLayerState addNewDrawingLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
-    final List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     final DrawingLayerState newLayer = DrawingLayerState(size: _canvasSize, content: content);
     if (_layers.value.isEmpty)
     {
@@ -535,14 +536,14 @@ class AppState
     }
   }
 
-  void restoreFromFile({required final LoadFileSet loadFileSet, final setHasChanges = false})
+  void restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false})
   {
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
-      _restoreState(historyState: loadFileSet.historyState).then((value)
+      _restoreState(historyState: loadFileSet.historyState).then((final void value)
       {
-        final String projectNameExtracted = Helper.extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-        projectName.value = projectNameExtracted == FileHandler.recoverFileName ? null : projectNameExtracted;
+        final String projectNameExtracted = extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
+        projectName.value = projectNameExtracted == recoverFileName ? null : projectNameExtracted;
         hasChanges.value = setHasChanges;
         hasProjectNotifier.value = true;
         GetIt.I.get<HistoryManager>().clear();
@@ -568,7 +569,7 @@ class AppState
       }
       else
       {
-        final HashMap<ColorReference, ColorReference> rampMap = Helper.getRampMap(rampList1: _colorRamps.value, rampList2: loadPaletteSet.rampData!);
+        final HashMap<ColorReference, ColorReference> rampMap = getRampMap(rampList1: _colorRamps.value, rampList2: loadPaletteSet.rampData!);
         for (final LayerState layer in _layers.value)
         {
           if (layer.runtimeType == DrawingLayerState)
@@ -597,7 +598,7 @@ class AppState
     String displayPath = kIsWeb ? ("$path/$saveName") : path;
     if (addKPixExtension)
     {
-      displayPath += ".${FileHandler.fileExtensionKpix}";
+      displayPath += ".$fileExtensionKpix";
     }
     showMessage(text: "File saved at: $displayPath");
   }
@@ -610,17 +611,17 @@ class AppState
       final CoordinateSetI canvSize = CoordinateSetI.from(other: historyState.canvasSize);
 
       //COLORS
-      final List<KPalRampData> ramps = [];
+      final List<KPalRampData> ramps = <KPalRampData>[];
       for (final HistoryRampData hRampData in historyState.rampList)
       {
         final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
         ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
       }
-      ColorReference selCol = ramps[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
+      final ColorReference selCol = ramps[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
 
 
       //LAYERS
-      final List<LayerState> layerList = [];
+      final List<LayerState> layerList = <LayerState>[];
       LayerState? curSelLayer;
       int layerIndex = 0;
       for (final HistoryLayer historyLayer in historyState.layerList)
@@ -629,7 +630,7 @@ class AppState
         if (historyLayer.runtimeType == HistoryDrawingLayer)
         {
           final HistoryDrawingLayer historyDrawingLayer = historyLayer as HistoryDrawingLayer;
-          final CoordinateColorMap content = HashMap();
+          final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
           for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
           {
             KPalRampData? ramp;
@@ -676,7 +677,7 @@ class AppState
       }
 
       //SELECTION
-      final CoordinateColorMapNullable selectionContent = HashMap();
+      final CoordinateColorMapNullable selectionContent = HashMap<CoordinateSetI, ColorReference?>();
       for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in historyState.selectionState.content.entries)
       {
         if (entry.value != null)
@@ -727,7 +728,7 @@ class AppState
     final int sourcePosition = _getLayerPosition(state: state);
     if (sourcePosition > 0)
     {
-      changeLayerOrder(state: state, newPosition: (sourcePosition - 1));
+      changeLayerOrder(state: state, newPosition: sourcePosition - 1);
     }
   }
 
@@ -736,7 +737,7 @@ class AppState
     final int sourcePosition = _getLayerPosition(state: state);
     if (sourcePosition < (layers.length - 1))
     {
-      changeLayerOrder(state: state, newPosition: (sourcePosition + 2));
+      changeLayerOrder(state: state, newPosition: sourcePosition + 2);
     }
   }
 
@@ -805,7 +806,7 @@ class AppState
 
     if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
-      List<LayerState> stateList = List<LayerState>.from(_layers.value);
+      final List<LayerState> stateList = List<LayerState>.from(_layers.value);
       stateList.removeAt(sourcePosition);
       if (newPosition > sourcePosition) {
         stateList.insert(newPosition - 1, state);
@@ -885,7 +886,7 @@ class AppState
 
   void selectLayerAbove()
   {
-    int index = _getLayerPosition(state: currentLayer!);
+    final int index = _getLayerPosition(state: currentLayer!);
     if (index > 0)
     {
       selectLayer(newLayer: layers[index - 1]);
@@ -894,7 +895,7 @@ class AppState
 
   void selectLayerBelow()
   {
-    int index = _getLayerPosition(state: currentLayer!);
+    final int index = _getLayerPosition(state: currentLayer!);
     if (index < layers.length - 1)
     {
       selectLayer(newLayer: layers[index + 1]);
@@ -931,7 +932,7 @@ class AppState
   {
     if (_layers.value.length > 1)
     {
-      final List<LayerState> layerList = [];
+      final List<LayerState> layerList = <LayerState>[];
       int foundIndex = 0;
       for (int i = 0; i < _layers.value.length; i++)
       {
@@ -947,11 +948,11 @@ class AppState
 
       if (foundIndex > 0)
       {
-        selectLayer(newLayer: layerList[foundIndex - 1], addToHistoryStack: false);
+        selectLayer(newLayer: layerList[foundIndex - 1]);
       }
       else
       {
-        selectLayer(newLayer: layerList[0], addToHistoryStack: false);
+        selectLayer(newLayer: layerList[0]);
       }
 
       _layers.value = layerList;
@@ -999,9 +1000,9 @@ class AppState
       else
       {
         bool lowLayerWasSelected = false;
-        final List<LayerState> layerList = [];
+        final List<LayerState> layerList = List<LayerState>.empty(growable: true);
         selectionState.deselect(addToHistoryStack: false);
-        final CoordinateColorMapNullable refs = HashMap();
+        final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
         for (int i = 0; i < _layers.value.length; i++)
         {
           if (i == mergeLayerIndex && _layers.value[i+1].runtimeType == DrawingLayerState)
@@ -1033,7 +1034,7 @@ class AppState
         }
         if (lowLayerWasSelected)
         {
-          selectLayer(newLayer: drawingMergeLayer, addToHistoryStack: false);
+          selectLayer(newLayer: drawingMergeLayer);
         }
         _layers.value = layerList;
         if (addToHistoryStack)
@@ -1050,7 +1051,7 @@ class AppState
 
   void layerDuplicated({required final LayerState duplicateLayer, final bool addToHistoryStack = true})
   {
-    List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     selectionState.deselect(addToHistoryStack: false);
     for (int i = 0; i < _layers.value.length; i++)
     {
@@ -1134,7 +1135,7 @@ class AppState
     }
   }
 
-  void colorSelected({required final ColorReference? color, final addToHistory = true})
+  void colorSelected({required final ColorReference? color, final bool addToHistory = true})
   {
     if (_selectedColor.value != color)
     {
@@ -1173,13 +1174,13 @@ class AppState
     }
   }
 
-  void _setSelectionToolSelection({required SelectShape shape})
+  void _setSelectionToolSelection({required final SelectShape shape})
   {
     setToolSelection(tool: ToolType.select);
     //should always be the case
     if (_currentToolOptions is SelectOptions)
     {
-      SelectOptions selectOptions = _currentToolOptions as SelectOptions;
+      final SelectOptions selectOptions = _currentToolOptions as SelectOptions;
       selectOptions.shape.value = shape;
     }
   }
@@ -1187,14 +1188,14 @@ class AppState
   void canvasTransform({required final CanvasTransformation transformation})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    final List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     DrawingLayerState? currentTransformLayer;
     for (final LayerState layer in _layers.value)
     {
       if (layer.runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        DrawingLayerState transformLayer = drawingLayer.getTransformedLayer(transformation: transformation);
+        final DrawingLayerState transformLayer = drawingLayer.getTransformedLayer(transformation: transformation);
         layerList.add(transformLayer);
         if (layer == currentLayer)
         {
@@ -1230,7 +1231,8 @@ class AppState
 
   void cropToSelection()
   {
-    CoordinateSetI? topLeft, bottomRight;
+    CoordinateSetI? topLeft;
+    CoordinateSetI? bottomRight;
     (topLeft, bottomRight) = selectionState.selection.getBoundingBox(canvasSize: _canvasSize);
     if (topLeft != null && bottomRight != null)
     {
@@ -1244,10 +1246,10 @@ class AppState
     }
   }
 
-  void changeCanvasSize({required CoordinateSetI newSize, required CoordinateSetI offset})
+  void changeCanvasSize({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    final List<LayerState> layerList = [];
+    final List<LayerState> layerList = <LayerState>[];
     LayerState? currentCropLayer;
     for (final LayerState layer in _layers.value)
     {
@@ -1293,10 +1295,10 @@ class AppState
         alignment: Alignment.bottomCenter,
         autoCloseDuration: const Duration(seconds: 3),
         builder: (final BuildContext context, final ToastificationItem holder) {
-          final double padding = 8.0;
+          const double padding = 8.0;
           return Container(
             margin: EdgeInsets.zero,
-            padding: EdgeInsets.only(left: padding, right: padding, top: padding, bottom: padding * 2),
+            padding: const EdgeInsets.only(left: padding, right: padding, top: padding, bottom: padding * 2),
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColorDark,
               border: Border(
@@ -1312,7 +1314,7 @@ class AppState
               style: Theme.of(context).textTheme.titleMedium,),
           );
         },
-      animationBuilder: (final BuildContext context, Animation<double> animation, Alignment alignment, final Widget? child) {
+      animationBuilder: (final BuildContext context, final Animation<double> animation, final Alignment alignment, final Widget? child) {
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(0, 1),
@@ -1320,14 +1322,14 @@ class AppState
           ).animate(CurvedAnimation(
             parent: animation,
             curve: Curves.fastOutSlowIn,
-          )),
+          ),),
           child: child,
         );
       },
     );
   }
 
-  void importFile({required ImportResult importResult})
+  void importFile({required final ImportResult importResult})
   {
     if (importResult.data != null)
     {
@@ -1335,7 +1337,7 @@ class AppState
       final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
       _setCanvasDimensions(width: drawingLayer.size.x, height: drawingLayer.size.y, addToHistoryStack: false);
       drawingLayer.isSelected.value = true;
-      final List<LayerState> layerList = [];
+      final List<LayerState> layerList = <LayerState>[];
       layerList.add(drawingLayer);
       if (referenceLayer != null)
       {
@@ -1356,5 +1358,3 @@ class AppState
   }
 
 }
-
-

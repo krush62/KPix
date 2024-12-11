@@ -18,24 +18,24 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/widgets/extra/licenses_widget.dart';
-import 'package:kpix/widgets/extra/preferences_widget.dart';
-import 'package:kpix/widgets/file/import_widget.dart';
-import 'package:kpix/widgets/file/project_manager_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/extra/about_screen_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/extra/about_screen_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
+import 'package:kpix/widgets/extra/licenses_widget.dart';
+import 'package:kpix/widgets/extra/preferences_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
+import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/file/new_project_widget.dart';
+import 'package:kpix/widgets/file/project_manager_widget.dart';
+import 'package:kpix/widgets/file/save_as_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
-import 'package:kpix/widgets/file/save_as_widget.dart';
 
 
 class KPixOverlay
@@ -82,7 +82,7 @@ class OverlayEntrySubMenuOptions
     required this.buttonSpacing,
     required this.width,
     required this.buttonHeight,
-    required this.smokeOpacity
+    required this.smokeOpacity,
   });
 }
 
@@ -114,21 +114,20 @@ class OverlayEntryAlertDialogOptions
 }
 
 
-class OverlayEntries
-{
-  static KPixOverlay getLoadMenu({
-    required final Function onDismiss,
-    required Function onNewFile,
-    required Function onLoadFile,
-    required Function onImportFile,
+
+  KPixOverlay getLoadMenu({
+    required final Function() onDismiss,
+    required final Function() onNewFile,
+    required final Function() onLoadFile,
+    required final Function() onImportFile,
     required final LayerLink layerLink,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
-      builder: (context) => Stack(
-        children: [
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
           ModalBarrier(
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
@@ -148,7 +147,7 @@ class OverlayEntries
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+                  children: <Widget>[
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
@@ -157,15 +156,15 @@ class OverlayEntries
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
                           padding: EdgeInsets.all(
-                              options.buttonSpacing),
+                              options.buttonSpacing,),
                           onPressed: () {onNewFile();},
                           icon: FaIcon(
                               FontAwesomeIcons.file,
-                              size: options.buttonHeight),
+                              size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor),
+                              backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ),
@@ -177,15 +176,15 @@ class OverlayEntries
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
                           padding: EdgeInsets.all(
-                              options.buttonSpacing),
+                              options.buttonSpacing,),
                           onPressed: () {onLoadFile();},
                           icon: FaIcon(
                               FontAwesomeIcons.folderOpen,
-                              size: options.buttonHeight),
+                              size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor),
+                              backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ),
@@ -197,42 +196,42 @@ class OverlayEntries
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
                           padding: EdgeInsets.all(
-                              options.buttonSpacing),
+                              options.buttonSpacing,),
                           onPressed: () {onImportFile();},
                           icon: FaIcon(
                               FontAwesomeIcons.fileImport,
-                              size: options.buttonHeight),
+                              size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor),
+                              backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ),
                   ],
-                )
+                ),
               ),
             ),
           ),
         ],
       ),
-    ));
+    ),);
   }
 
 
-  static KPixOverlay getSaveMenu({
-    required final Function onDismiss,
-    required Function onSaveFile,
-    required Function onSaveAsFile,
-    required Function onExportFile,
+  KPixOverlay getSaveMenu({
+    required final Function() onDismiss,
+    required final Function() onSaveFile,
+    required final Function() onSaveAsFile,
+    required final Function() onExportFile,
     required final LayerLink layerLink,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
-      builder: (context) => Stack(
-        children: [
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
           ModalBarrier(
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
@@ -252,7 +251,7 @@ class OverlayEntries
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+                  children: <Widget>[
                     Padding(
                       padding: EdgeInsets.all(options.buttonSpacing / 2),
                       child: Tooltip(
@@ -264,11 +263,11 @@ class OverlayEntries
                           onPressed: () {onSaveFile();},
                           icon: FaIcon(
                             Icons.save,
-                            size: options.buttonHeight),
+                            size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
+                            backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ),
@@ -283,11 +282,11 @@ class OverlayEntries
                           onPressed: () {onSaveAsFile();},
                           icon: FaIcon(
                             Icons.save_as,
-                            size: options.buttonHeight),
+                            size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
+                            backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ),
@@ -302,43 +301,43 @@ class OverlayEntries
                           onPressed: () {onExportFile();},
                           icon: FaIcon(
                             Icons.share,
-                            size: options.buttonHeight),
+                            size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
+                            backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ),
                   ],
-                )
+                ),
               ),
             ),
           ),
         ],
       ),
-    ));
+    ),);
   }
 
 
-  static KPixOverlay getDrawingLayerMenu({
-    required final Function onDismiss,
-    required Function onDelete,
-    required Function onMergeDown,
-    required Function onDuplicate,
+  KPixOverlay getDrawingLayerMenu({
+    required final Function() onDismiss,
+    required final Function() onDelete,
+    required final Function() onMergeDown,
+    required final Function() onDuplicate,
     required final LayerLink layerLink,
   })
   {
-    OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    final LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     const int buttonCount = 3;
     final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
     final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: () {onDismiss();},
@@ -358,23 +357,22 @@ class OverlayEntries
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
+                    children: <Widget>[
                       Tooltip(
                         message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
                           constraints: const BoxConstraints(),
                           padding: EdgeInsets.all(
-                              options.buttonSpacing),
+                              options.buttonSpacing,),
                           onPressed: () {onDelete();},
                           icon: FaIcon(
                             FontAwesomeIcons.trashCan,
-                            size: options.buttonHeight),
+                            size: options.buttonHeight,),
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor),
+                            backgroundColor: Theme.of(context).primaryColor,),
                           ),
                       ),
                       Tooltip(
@@ -390,7 +388,7 @@ class OverlayEntries
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor)
+                              backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                       Tooltip(
@@ -406,37 +404,37 @@ class OverlayEntries
                           color: Theme.of(context).primaryColorLight,
                           style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor)
+                              backgroundColor: Theme.of(context).primaryColor,),
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ),
               ),
             ),
           ],
         ),
-      )
+      ),
     );
   }
 
-  static KPixOverlay getReducedLayerMenu({
-    required final Function onDismiss,
-    required Function onDelete,
-    required Function onDuplicate,
+  KPixOverlay getReducedLayerMenu({
+    required final Function() onDismiss,
+    required final Function() onDelete,
+    required final Function() onDuplicate,
     required final LayerLink layerLink,
   })
   {
-    OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+    final LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     const int buttonCount = 2;
     final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
     final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: () {onDismiss();},
@@ -456,23 +454,22 @@ class OverlayEntries
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
+                      children: <Widget>[
                         Tooltip(
                           message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
                             constraints: const BoxConstraints(),
                             padding: EdgeInsets.all(
-                                options.buttonSpacing),
+                                options.buttonSpacing,),
                             onPressed: () {onDelete();},
                             icon: FaIcon(
                                 FontAwesomeIcons.trashCan,
-                                size: options.buttonHeight),
+                                size: options.buttonHeight,),
                             color: Theme.of(context).primaryColorLight,
                             style: IconButton.styleFrom(
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).primaryColor),
+                                backgroundColor: Theme.of(context).primaryColor,),
                           ),
                         ),
                         Tooltip(
@@ -488,64 +485,62 @@ class OverlayEntries
                               color: Theme.of(context).primaryColorLight,
                               style: IconButton.styleFrom(
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  backgroundColor: Theme.of(context).primaryColor)
+                                  backgroundColor: Theme.of(context).primaryColor,),
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-        )
+        ),
     );
   }
 
 
 
-  static KPixOverlay getKPal({
+  KPixOverlay getKPal({
     required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
     required final KPalRampData colorRamp,
   })
   {
     return KPixOverlay(entry:  OverlayEntry(
-      builder: (context) => Stack(
-        children: [
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
           ModalBarrier(
             color: Theme.of(context).primaryColorDark.withAlpha(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.smokeOpacity),
-            onDismiss: null, //() {onDismiss();},
           ),
           Padding(
             padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.outsidePadding),
             child: Align(
-              alignment: Alignment.center,
               child: KPal(
                 accept: onAccept,
                 delete: onDelete,
                 colorRamp: colorRamp,
-              )
+              ),
             ),
           ),
         ],
       ),
-    ));
+    ),);
   }
 
-  static KPixOverlay getThreeButtonDialog({
+  KPixOverlay getThreeButtonDialog({
     required final Function() onYes,
     required final Function() onNo,
     required final Function() onCancel,
-    required bool outsideCancelable,
+    required final bool outsideCancelable,
     required final String message,
   })
   {
-    OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: outsideCancelable ? onCancel : null,//onCancel,
@@ -573,19 +568,16 @@ class OverlayEntries
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
+                    children: <Widget>[
                       Center(child: Padding(
                         padding: EdgeInsets.all(options.padding),
                         child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
-                      )),
+                      ),),
                       Row(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
+                        children: <Widget>[
                           Expanded(
-                            flex: 1,
                             child: Padding(
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
@@ -597,10 +589,9 @@ class OverlayEntries
                                   onYes();
                                 },
                               ),
-                            )
+                            ),
                           ),
                           Expanded(
-                            flex: 1,
                             child: Padding(
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
@@ -612,10 +603,9 @@ class OverlayEntries
                                   onNo();
                                 },
                               ),
-                            )
+                            ),
                           ),
                           Expanded(
-                            flex: 1,
                             child: Padding(
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
@@ -627,33 +617,33 @@ class OverlayEntries
                                   onCancel();
                                 },
                               ),
-                            )
+                            ),
                           ),
-                        ]
+                        ],
                       ),
                     ],
-                  )
-                )
+                  ),
+                ),
               ),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getTwoButtonDialog({
+  KPixOverlay getTwoButtonDialog({
     required final Function() onYes,
     required final Function() onNo,
-    required bool outsideCancelable,
+    required final bool outsideCancelable,
     required final String message,
   })
   {
-    OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
         entry: OverlayEntry(
-          builder: (context) => Stack(
-            children: [
+          builder: (final BuildContext context) => Stack(
+            children: <Widget>[
               ModalBarrier(
                 color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
                 onDismiss: outsideCancelable ? onNo : null,
@@ -681,19 +671,16 @@ class OverlayEntries
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
+                        children: <Widget>[
                           Center(child: Padding(
                             padding: EdgeInsets.all(options.padding),
                             child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
-                          )),
+                          ),),
                           Row(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
+                            children: <Widget>[
                               Expanded(
-                                flex: 1,
                                 child: Padding(
                                   padding: EdgeInsets.all(options.padding),
                                   child: IconButton.outlined(
@@ -705,10 +692,9 @@ class OverlayEntries
                                       onYes();
                                     },
                                   ),
-                                )
+                                ),
                               ),
                               Expanded(
-                                flex: 1,
                                 child: Padding(
                                   padding: EdgeInsets.all(options.padding),
                                   child: IconButton.outlined(
@@ -720,70 +706,68 @@ class OverlayEntries
                                       onNo();
                                     },
                                   ),
-                                )
+                                ),
                               ),
-                            ]
+                            ],
                           ),
                         ],
-                      )
-                    )
+                      ),
+                    ),
                   ),
                 ),
-              ]
-            )
-        )
+              ],
+            ),
+        ),
     );
   }
 
 
-  static KPixOverlay getExportDialog({
+  KPixOverlay getExportDialog({
     required final Function() onDismiss,
     required final ExportDataFn onAcceptFile,
-    required final PaletteDataFn onAcceptPalette
+    required final PaletteDataFn onAcceptPalette,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: ExportWidget(acceptFile: onAcceptFile, acceptPalette: onAcceptPalette, dismiss: onDismiss),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getImportDialog({
+  KPixOverlay getImportDialog({
     required final Function() onDismiss,
-    required final ImportImageFn onAcceptImage
+    required final ImportImageFn onAcceptImage,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: ImportWidget(dismiss: onDismiss, import: onAcceptImage,),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getPaletteSaveDialog({
+  KPixOverlay getPaletteSaveDialog({
     required final Function() onDismiss,
     required final PaletteDataFn onAccept,
   })
@@ -791,136 +775,130 @@ class OverlayEntries
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getSaveAsDialog({
+  KPixOverlay getSaveAsDialog({
     required final Function() onDismiss,
     required final SaveFileFn onAccept,
-    final Function()? callback
+    final Function()? callback,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: SaveAsWidget(accept: onAccept, dismiss: onDismiss, callback: callback),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getAboutDialog({
+  KPixOverlay getAboutDialog({
     required final Function() onDismiss,
-    required final CoordinateSetI canvasSize
+    required final CoordinateSetI canvasSize,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
-              child: AboutScreenWidget(onDismiss: onDismiss)
+              child: AboutScreenWidget(onDismiss: onDismiss),
             ),
-          ]
-        )
-     )
+          ],
+        ),
+     ),
     );
   }
 
-  static KPixOverlay getLicensesDialog({
+  KPixOverlay getLicensesDialog({
     required final Function() onDismiss,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: LicensesWidget(onDismiss: onDismiss),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getCreditsDialog({
+  KPixOverlay getCreditsDialog({
     required final Function() onDismiss,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: CreditsWidget(onDismiss: onDismiss),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getCanvasSizeDialog({
+  KPixOverlay getCanvasSizeDialog({
     required final Function() onDismiss,
-    required final CanvasSizeFn onAccept
+    required final CanvasSizeFn onAccept,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: CanvasSizeWidget(accept: onAccept, dismiss: onDismiss),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getPreferencesDialog({
+  KPixOverlay getPreferencesDialog({
     required final Function() onDismiss,
     required final Function() onAccept,
   })
@@ -928,98 +906,94 @@ class OverlayEntries
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
-              child: PreferencesWidget(dismiss: onDismiss, accept: onAccept)
+              child: PreferencesWidget(dismiss: onDismiss, accept: onAccept),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getNewProjectDialog({
+  KPixOverlay getNewProjectDialog({
     required final Function() onDismiss,
     required final NewFileFn onAccept,
-    required final Function() onOpen
+    required final Function() onOpen,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null,
             ),
             Center(
               child: NewProjectWidget(accept: onAccept, dismiss: onDismiss, open: onOpen),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
+  KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //onDismiss,
             ),
             Center(
-              child: PaletteManagerWidget(dismiss: onDismiss,)
+              child: PaletteManagerWidget(dismiss: onDismiss,),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
+  KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //onDismiss,
             ),
             Center(
-                child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,)
+                child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
-  static KPixOverlay getAddLayerMenu({
-    required final Function onDismiss,
-    required Function onNewDrawingLayer,
-    required Function onNewReferenceLayer,
-    required Function onNewGridLayer,
+  KPixOverlay getAddLayerMenu({
+    required final Function() onDismiss,
+    required final Function() onNewDrawingLayer,
+    required final Function() onNewReferenceLayer,
+    required final Function() onNewGridLayer,
     required final LayerLink layerLink,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
-      builder: (context) => Stack(
-        children: [
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
           ModalBarrier(
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
@@ -1039,7 +1013,7 @@ class OverlayEntries
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                    children: <Widget>[
                       Padding(
                         padding: EdgeInsets.all(options.buttonSpacing / 2),
                         child: Tooltip(
@@ -1051,11 +1025,11 @@ class OverlayEntries
                             onPressed: () {onNewDrawingLayer();},
                             icon: FaIcon(
                                 FontAwesomeIcons.paintbrush,
-                                size: options.buttonHeight),
+                                size: options.buttonHeight,),
                             color: Theme.of(context).primaryColorLight,
                             style: IconButton.styleFrom(
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).primaryColor),
+                                backgroundColor: Theme.of(context).primaryColor,),
                           ),
                         ),
                       ),
@@ -1070,11 +1044,11 @@ class OverlayEntries
                             onPressed: () {onNewReferenceLayer();},
                             icon: FaIcon(
                                 FontAwesomeIcons.image,
-                                size: options.buttonHeight),
+                                size: options.buttonHeight,),
                             color: Theme.of(context).primaryColorLight,
                             style: IconButton.styleFrom(
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).primaryColor),
+                                backgroundColor: Theme.of(context).primaryColor,),
                           ),
                         ),
                       ),
@@ -1089,34 +1063,33 @@ class OverlayEntries
                             onPressed: () {onNewGridLayer();},
                             icon: FaIcon(
                               FontAwesomeIcons.tableCells,
-                              size: options.buttonHeight),
+                              size: options.buttonHeight,),
                             color: Theme.of(context).primaryColorLight,
                             style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor),
+                              backgroundColor: Theme.of(context).primaryColor,),
                           ),
                         ),
                       ),
                     ],
-                  )
+                  ),
               ),
             ),
           ),
         ],
       ),
-    ));
+    ),);
   }
 
-  static KPixOverlay getLoadingDialog({required final String message})
+  KPixOverlay getLoadingDialog({required final String message})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
-        builder: (context) => Stack(
-          children: [
+        builder: (final BuildContext context) => Stack(
+          children: <Widget>[
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-              onDismiss: null, //() {onDismiss();},
             ),
             Center(
               child: Material(
@@ -1144,14 +1117,12 @@ class OverlayEntries
                         style: Theme.of(context).textTheme.headlineLarge,
                       ),
                     ),
-                  )
-                )
-              )
+                  ),
+                ),
+              ),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
-
-}

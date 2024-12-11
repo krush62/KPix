@@ -52,17 +52,18 @@ class LayerWidgetOptions
     required this.dragTargetShowDuration,
     required this.dragDelay,
     required this.thumbUpdateTimerMsec,
-    required this.addButtonSize});
+    required this.addButtonSize,
+  });
 }
 
 enum LayerVisibilityState
 {
   visible,
-  hidden
+  hidden,
 }
 
 const Map<int, LayerVisibilityState> layerVisibilityStateValueMap =
-{
+<int, LayerVisibilityState>{
   0: LayerVisibilityState.visible,
   1: LayerVisibilityState.hidden,
 };
@@ -71,14 +72,14 @@ enum LayerLockState
 {
   unlocked,
   transparency,
-  locked
+  locked,
 }
 
 const Map<int, LayerLockState> layerLockStateValueMap =
-{
+<int, LayerLockState>{
   0: LayerLockState.unlocked,
   1: LayerLockState.transparency,
-  2: LayerLockState.locked
+  2: LayerLockState.locked,
 };
 
 class ColorReference
@@ -92,7 +93,7 @@ class ColorReference
   }
 
   @override
-  bool operator ==(Object other) =>
+  bool operator == (final Object other) =>
       identical(this, other) ||
           other is ColorReference &&
               runtimeType == other.runtimeType &&
@@ -105,7 +106,7 @@ class ColorReference
 
 abstract class LayerState
 {
-  final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier(LayerVisibilityState.visible);
-  final ValueNotifier<bool> isSelected = ValueNotifier(false);
-  final ValueNotifier<ui.Image?> thumbnail = ValueNotifier(null);
+  final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier<LayerVisibilityState>(LayerVisibilityState.visible);
+  final ValueNotifier<bool> isSelected = ValueNotifier<bool>(false);
+  final ValueNotifier<ui.Image?> thumbnail = ValueNotifier<ui.Image?>(null);
 }

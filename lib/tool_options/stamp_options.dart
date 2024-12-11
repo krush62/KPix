@@ -32,10 +32,10 @@ class StampOptions extends IToolOptions
 
   final StampManager stampManager;
 
-  final ValueNotifier<int> scale = ValueNotifier(1);
-  final ValueNotifier<StampType> stamp = ValueNotifier(StampType.stampCircle15);
-  final ValueNotifier<bool> flipH = ValueNotifier(false);
-  final ValueNotifier<bool> flipV = ValueNotifier(false);
+  final ValueNotifier<int> scale = ValueNotifier<int>(1);
+  final ValueNotifier<StampType> stamp = ValueNotifier<StampType>(StampType.stampCircle15);
+  final ValueNotifier<bool> flipH = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> flipV = ValueNotifier<bool>(false);
 
 
   StampOptions({
@@ -55,27 +55,24 @@ class StampOptions extends IToolOptions
   }
 
   static Column getWidget({
-    required BuildContext context,
-    required ToolSettingsWidgetOptions toolSettingsWidgetOptions,
-    required StampOptions stampOptions,
+    required final BuildContext context,
+    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
+    required final StampOptions stampOptions,
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         Row(
-          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Stamp",
                     style: Theme.of(context).textTheme.labelLarge,
-                  )
+                  ),
               ),
             ),
             Expanded(
@@ -84,13 +81,13 @@ class StampOptions extends IToolOptions
                 valueListenable: stampOptions.stamp,
                 builder: (final BuildContext context, final StampType stamp, final Widget? child)
                 {
-                  return DropdownButton(
+                  return DropdownButton<StampType>(
                     value: stamp,
                     dropdownColor: Theme.of(context).primaryColorDark,
                     focusColor: Theme.of(context).primaryColor,
                     isExpanded: true,
                     onChanged: (final StampType? type) {stampOptions.stamp.value = type!;},
-                    items: stampIndexMap.values.map<DropdownMenuItem<StampType>>((StampType value) {
+                    items: stampIndexMap.values.map<DropdownMenuItem<StampType>>((final StampType value) {
                       return DropdownMenuItem<StampType>(
                         value: value,
                         child: Text(stampNameMap[value]!),
@@ -103,17 +100,14 @@ class StampOptions extends IToolOptions
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Scale",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded
@@ -130,27 +124,24 @@ class StampOptions extends IToolOptions
                       min: stampOptions.scaleMin.toDouble(),
                       max: stampOptions.scaleMax.toDouble(),
                       divisions: stampOptions.scaleMax - stampOptions.scaleMin,
-                      onChanged: (double newVal) {stampOptions.scale.value = newVal.round();},
+                      onChanged: (final double newVal) {stampOptions.scale.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
-              flex: 1,
               child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Flip Horizontal",
                     style: Theme.of(context).textTheme.labelLarge,
-                  )
+                  ),
               ),
             ),
             Expanded
@@ -163,28 +154,25 @@ class StampOptions extends IToolOptions
                   builder: (final BuildContext context, final bool flipH, final Widget? child){
                     return Switch(
                       onChanged: (final bool newVal) {stampOptions.flipH.value = newVal;},
-                      value: flipH
+                      value: flipH,
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded
             (
-              flex: 1,
               child: Align
               (
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Flip Vertical",
                   style: Theme.of(context).textTheme.labelLarge,
-                )
+                ),
               ),
             ),
             Expanded
@@ -198,11 +186,11 @@ class StampOptions extends IToolOptions
                   builder: (final BuildContext context, final bool flipV, final Widget? child){
                     return Switch(
                       onChanged: (final bool newVal) {stampOptions.flipV.value = newVal;},
-                      value: flipV
+                      value: flipV,
                     );
                   },
                 ),
-              )
+              ),
             ),
           ],
         ),

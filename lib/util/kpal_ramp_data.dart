@@ -29,23 +29,23 @@ class KPalRampData
 {
   final KPalRampSettings settings;
   final String uuid;
-  final List<HSVColor> _originalColors = [];
-  final List<ValueNotifier<IdColor>> shiftedColors = [];
-  final List<ColorReference> references = [];
-  final List<ShiftSet> shifts = [];
+  final List<HSVColor> _originalColors = <HSVColor>[];
+  final List<ValueNotifier<IdColor>> shiftedColors = <ValueNotifier<IdColor>>[];
+  final List<ColorReference> references = <ColorReference>[];
+  final List<ShiftSet> shifts = <ShiftSet>[];
 
   KPalRampData({
     required this.uuid,
     required this.settings,
-    final List<HistoryShiftSet>? historyShifts
+    final List<HistoryShiftSet>? historyShifts,
   })
   {
     for (int i = 0; i < settings.constraints.colorCountMax; i++)
     {
       final KPalSliderConstraints shiftConstraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
-      final ValueNotifier<int> hueNotifier = ValueNotifier((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultHue : historyShifts[i].hueShift);
-      final ValueNotifier<int> satNotifier = ValueNotifier((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultSat : historyShifts[i].satShift);
-      final ValueNotifier<int> valNotifier = ValueNotifier((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultVal : historyShifts[i].valShift);
+      final ValueNotifier<int> hueNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultHue : historyShifts[i].hueShift);
+      final ValueNotifier<int> satNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultSat : historyShifts[i].satShift);
+      final ValueNotifier<int> valNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultVal : historyShifts[i].valShift);
       final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: hueNotifier, satShiftNotifier: satNotifier, valShiftNotifier: valNotifier);
       shiftSet.hueShiftNotifier.addListener(_shiftChanged);
       shiftSet.satShiftNotifier.addListener(_shiftChanged);
@@ -59,7 +59,7 @@ class KPalRampData
   {
     const Uuid uuid = Uuid();
     final KPalRampSettings newSettings = KPalRampSettings.from(other: other.settings);
-    List<HistoryShiftSet> shifts = [];
+    final List<HistoryShiftSet> shifts = <HistoryShiftSet>[];
     for (final ShiftSet shiftSet in other.shifts)
     {
        shifts.add(HistoryShiftSet(hueShift: shiftSet.hueShiftNotifier.value, satShift: shiftSet.satShiftNotifier.value, valShift: shiftSet.valShiftNotifier.value));
@@ -105,7 +105,7 @@ class KPalRampData
 
   static List<KPalRampData> getDefaultPalette({required final KPalConstraints constraints})
   {
-    final List<KPalRampData> rampList = [];
+    final List<KPalRampData> rampList = <KPalRampData>[];
 
     final KPalRampSettings red = KPalRampSettings(constraints: constraints);
     red.colorCount = 7;
@@ -118,7 +118,7 @@ class KPalRampData
     red.satCurve = SatCurve.noFlat;
     red.valueRangeMin = 21;
     red.valueRangeMax = 100;
-    final List<HistoryShiftSet> redShifts = [];
+    final List<HistoryShiftSet> redShifts = <HistoryShiftSet>[];
     redShifts.add(HistoryShiftSet(hueShift: -19, satShift: -10, valShift: -1));
     redShifts.add(HistoryShiftSet(hueShift: -2, satShift: -1, valShift: -1));
     redShifts.add(HistoryShiftSet(hueShift: 0, satShift: -7, valShift: 0));
@@ -138,7 +138,7 @@ class KPalRampData
     green.satCurve = SatCurve.noFlat;
     green.valueRangeMin = 15;
     green.valueRangeMax = 95;
-    final List<HistoryShiftSet> greenShifts = [];
+    final List<HistoryShiftSet> greenShifts = <HistoryShiftSet>[];
     greenShifts.add(HistoryShiftSet(hueShift: -1, satShift: 2, valShift: 3));
     greenShifts.add(HistoryShiftSet(hueShift: 5, satShift: 5, valShift: 0));
     greenShifts.add(HistoryShiftSet(hueShift: 6, satShift: -2, valShift: -2));
@@ -158,7 +158,7 @@ class KPalRampData
     blue.satCurve = SatCurve.noFlat;
     blue.valueRangeMin = 25;
     blue.valueRangeMax = 95;
-    final List<HistoryShiftSet> blueShifts = [];
+    final List<HistoryShiftSet> blueShifts = <HistoryShiftSet>[];
     blueShifts.add(HistoryShiftSet(hueShift: -9, satShift: -7, valShift: 0));
     blueShifts.add(HistoryShiftSet(hueShift: 3, satShift: 1, valShift: 0));
     blueShifts.add(HistoryShiftSet(hueShift: -1, satShift: -2, valShift: 2));
@@ -178,7 +178,7 @@ class KPalRampData
     yellow.satCurve = SatCurve.noFlat;
     yellow.valueRangeMin = 13;
     yellow.valueRangeMax = 90;
-    final List<HistoryShiftSet> yellowShifts = [];
+    final List<HistoryShiftSet> yellowShifts = <HistoryShiftSet>[];
     yellowShifts.add(HistoryShiftSet(hueShift: 15, satShift: 1, valShift: 5));
     yellowShifts.add(HistoryShiftSet(hueShift: 7, satShift: 1, valShift: 2));
     yellowShifts.add(HistoryShiftSet(hueShift: 0, satShift: -3, valShift: -1));
@@ -198,7 +198,7 @@ class KPalRampData
     purple.satCurve = SatCurve.noFlat;
     purple.valueRangeMin = 18;
     purple.valueRangeMax = 100;
-    final List<HistoryShiftSet> purpleShifts = [];
+    final List<HistoryShiftSet> purpleShifts = <HistoryShiftSet>[];
     purpleShifts.add(HistoryShiftSet(hueShift: -14, satShift: -8, valShift: 5));
     purpleShifts.add(HistoryShiftSet(hueShift: 3, satShift: -3, valShift: 1));
     purpleShifts.add(HistoryShiftSet(hueShift: 3, satShift: -2, valShift: 2));
@@ -218,7 +218,7 @@ class KPalRampData
     brown.satCurve = SatCurve.noFlat;
     brown.valueRangeMin = 20;
     brown.valueRangeMax = 90;
-    final List<HistoryShiftSet> brownShifts = [];
+    final List<HistoryShiftSet> brownShifts = <HistoryShiftSet>[];
     brownShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 0));
     brownShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 0));
     brownShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 1));
@@ -238,7 +238,7 @@ class KPalRampData
     grey.satCurve = SatCurve.noFlat;
     grey.valueRangeMin = 15;
     grey.valueRangeMax = 90;
-    final List<HistoryShiftSet> greyShifts = [];
+    final List<HistoryShiftSet> greyShifts = <HistoryShiftSet>[];
     greyShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 2));
     greyShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 1));
     greyShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 0));
@@ -266,7 +266,7 @@ class KPalRampData
     _updateColors(colorCountChanged: false);
   }
 
-  void _updateColors({required bool colorCountChanged, bool resetListeners = true})
+  void _updateColors({required final bool colorCountChanged, final bool resetListeners = true})
   {
     if (colorCountChanged)
     {
@@ -293,16 +293,16 @@ class KPalRampData
       }
       for (int i = 0; i < settings.colorCount; i++)
       {
-        Color black = Colors.black;
+        const Color black = Colors.black;
         _originalColors.add(HSVColor.fromColor(black));
-        shiftedColors.add(ValueNotifier(IdColor(hsvColor: HSVColor.fromColor(black), uuid: uuid.v1())));
+        shiftedColors.add(ValueNotifier<IdColor>(IdColor(hsvColor: HSVColor.fromColor(black), uuid: uuid.v1())));
         references.add(ColorReference(colorIndex: i, ramp: this));
       }
     }
 
     
     final int centerIndex = settings.colorCount ~/ 2;
-    final bool isEven = settings.colorCount % 2 == 0;
+    final bool isEven = settings.colorCount.isEven;
     final double valueStepSize = ((settings.valueRangeMax - settings.valueRangeMin) / 100.0) / (settings.colorCount - 1);
 
     //setting central (center) color
@@ -310,7 +310,7 @@ class KPalRampData
         1.0,
         settings.baseHue.toDouble() % 360,
         (settings.baseSat.toDouble() / 100.0).clamp(0.0, 1.0),
-        ((settings.valueRangeMin.toDouble() + ((settings.valueRangeMax.toDouble() - settings.valueRangeMin.toDouble()) / 2.0)) / 100.0).clamp(0.0, 1.0)
+        ((settings.valueRangeMin.toDouble() + ((settings.valueRangeMax.toDouble() - settings.valueRangeMin.toDouble()) / 2.0)) / 100.0).clamp(0.0, 1.0),
     );
     if (!isEven)
     {
@@ -325,7 +325,7 @@ class KPalRampData
           1.0,
           (centerColor.hue + (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
           (centerColor.saturation + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
-          (centerColor.value + (valueStepSize * distanceToCenter)).clamp(0.0, 1.0)
+          (centerColor.value + (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
       );
       if (settings.satCurve == SatCurve.brightFlat)
       {
@@ -339,14 +339,14 @@ class KPalRampData
     }
 
     //setting darker colors
-    for (int i = (settings.colorCount ~/ 2 - 1); i >= 0; i--)
+    for (int i = settings.colorCount ~/ 2 - 1; i >= 0; i--)
     {
       final double distanceToCenter = isEven? (i - centerIndex).abs().toDouble() - 0.5 : (i - centerIndex).abs().toDouble();
       HSVColor col = HSVColor.fromAHSV(
           1.0,
           (centerColor.hue - (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
           (centerColor.saturation + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
-          (centerColor.value - (valueStepSize * distanceToCenter)).clamp(0.0, 1.0)
+          (centerColor.value - (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
       );
       if (settings.satCurve == SatCurve.darkFlat)
       {
@@ -359,7 +359,7 @@ class KPalRampData
     for (int i = 0; i < _originalColors.length; i++)
     {
       final HSVColor orig = _originalColors[i];
-      HSVColor shiftedColor = HSVColor.fromAHSV(
+      final HSVColor shiftedColor = HSVColor.fromAHSV(
           1.0,
           (orig.hue + shifts[i].hueShiftNotifier.value) % 360,
           (orig.saturation + (shifts[i].satShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),

@@ -18,11 +18,11 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/tool_options/text_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class FontPainter extends IToolPainter
@@ -35,23 +35,23 @@ class FontPainter extends IToolPainter
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
   int _previousSize = -1;
   String _currentText = "";
-  final Set<CoordinateSetI> _textContent = {};
+  final Set<CoordinateSetI> _textContent = <CoordinateSetI>{};
   bool _down = false;
 
 
   @override
-  void calculate({required DrawingParameters drawParams})
+  void calculate({required final DrawingParameters drawParams})
   {
     if (drawParams.cursorPos != null)
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       _cursorPosNorm.y = getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble())
-          .round();
+          pixelSize: drawParams.pixelSize.toDouble(),)
+          ;
       _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * drawParams.pixelSize);
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
@@ -84,7 +84,7 @@ class FontPainter extends IToolPainter
               }
             }
           }
-          offset += ((glyph.width + 1) * _options.size.value);
+          offset += (glyph.width + 1) * _options.size.value;
         }
       }
       _currentText = _options.text.value;
@@ -141,7 +141,7 @@ class FontPainter extends IToolPainter
   }
 
   @override
-  void drawCursorOutline({required DrawingParameters drawParams})
+  void drawCursorOutline({required final DrawingParameters drawParams})
   {
 
     drawParams.paint.style = PaintingStyle.stroke;
@@ -172,7 +172,7 @@ class FontPainter extends IToolPainter
       }
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize);
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -184,7 +184,7 @@ class FontPainter extends IToolPainter
   }
 
   @override
-  void setStatusBarData({required DrawingParameters drawParams})
+  void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
     statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;

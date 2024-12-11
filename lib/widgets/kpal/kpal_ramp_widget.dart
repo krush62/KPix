@@ -72,6 +72,7 @@ class _KPalRampState extends State<KPalRamp>
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
   late Timer _renderTimer;
+  final String _valueToolTipMessage = "Press to reset";
 
   late List<DrawingLayerState> _drawingLayers;
 
@@ -292,8 +293,18 @@ class _KPalRampState extends State<KPalRamp>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                  flex: _options.rowLabelFlex,
-                                  child: const Text("Color Count")
+                                flex: _options.rowLabelFlex,
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                    onTap: ()
+                                    {
+                                      _colorCountSliderChanged(newVal: widget.rampData.settings.constraints.colorCountDefault.toDouble());
+                                    },
+                                    child: const Text("Color Count")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -322,8 +333,18 @@ class _KPalRampState extends State<KPalRamp>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                  flex: _options.rowLabelFlex,
-                                  child: const Text("Base Hue")
+                                flex: _options.rowLabelFlex,
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                    onTap: ()
+                                    {
+                                      _baseHueSliderChanged(newVal: widget.rampData.settings.constraints.baseHueDefault.toDouble());
+                                    },
+                                    child: const Text("Base Hue")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -349,8 +370,18 @@ class _KPalRampState extends State<KPalRamp>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                  flex: _options.rowLabelFlex,
-                                  child: const Text("Hue Shift")
+                                flex: _options.rowLabelFlex,
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                    onTap: ()
+                                    {
+                                      _hueShiftSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftDefault.toDouble());
+                                    },
+                                    child: const Text("Hue Shift")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -375,7 +406,17 @@ class _KPalRampState extends State<KPalRamp>
                             children: [
                               Expanded(
                                 flex: _options.rowLabelFlex,
-                                child: const Text("↳ Exponent")
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                    onTap: ()
+                                    {
+                                      _hueShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftExpDefault.toDouble());
+                                    },
+                                    child: const Text("↳ Exponent")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -405,8 +446,18 @@ class _KPalRampState extends State<KPalRamp>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                  flex: _options.rowLabelFlex,
-                                  child: const Text("Base Sat")
+                                flex: _options.rowLabelFlex,
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                    onTap: ()
+                                    {
+                                      _baseSatSliderChanged(newVal: widget.rampData.settings.constraints.baseSatDefault.toDouble());
+                                    },
+                                    child: const Text("Base Sat")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -431,7 +482,17 @@ class _KPalRampState extends State<KPalRamp>
                             children: [
                               Expanded(
                                 flex: _options.rowLabelFlex,
-                                child: const Text("Sat Shift")
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                    onTap: ()
+                                    {
+                                      _satShiftSliderChanged(newVal: widget.rampData.settings.constraints.satShiftDefault.toDouble());
+                                    },
+                                    child: const Text("Sat Shift")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -456,7 +517,17 @@ class _KPalRampState extends State<KPalRamp>
                             children: [
                               Expanded(
                                 flex: _options.rowLabelFlex,
-                                child: const Text("↳ Exponent")
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                      onTap: ()
+                                      {
+                                        _satShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.satShiftExpDefault.toDouble());
+                                      },
+                                      child: const Text("↳ Exponent")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,
@@ -551,7 +622,17 @@ class _KPalRampState extends State<KPalRamp>
                             children: [
                               Expanded(
                                 flex: _options.rowLabelFlex,
-                                child: const Text("Value Range")
+                                child: Tooltip(
+                                  waitDuration: AppState.toolTipDuration,
+                                  message: _valueToolTipMessage,
+                                  child: GestureDetector(
+                                      onTap: ()
+                                      {
+                                        _valueRangeSliderChanged(newVals: RangeValues(widget.rampData.settings.constraints.valueRangeMinDefault.toDouble(), widget.rampData.settings.constraints.valueRangeMaxDefault.toDouble()));
+                                      },
+                                      child: const Text("Value Range")
+                                  ),
+                                )
                               ),
                               Expanded(
                                 flex: _options.rowControlFlex,

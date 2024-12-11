@@ -1263,6 +1263,11 @@ class AppState
       }
       else
       {
+        if (layer.runtimeType == GridLayerState)
+        {
+          final GridLayerState gridLayer = layer as GridLayerState;
+          gridLayer.manualRender();
+        }
         layerList.add(layer);
         if (layer == currentLayer)
         {

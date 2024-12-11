@@ -100,6 +100,11 @@ class GridLayerState extends LayerState
     _shouldRender = true;
   }
 
+  void manualRender()
+  {
+    _shouldRender = true;
+  }
+
   void _updateTimerCallback({required final Timer timer})
   {
     if (_shouldRender && !_isRendering)

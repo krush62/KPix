@@ -15,6 +15,7 @@
  */
 
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -84,7 +85,7 @@ class PencilPainter extends IToolPainter
             }
             else
             {
-              if (_paintPositions.isEmpty || _cursorPosNorm.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true))
+              if (_paintPositions.isEmpty || (_cursorPosNorm.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true) && _hasNewCursorPos))
               {
                 final CoordinateSetI drawPos = CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y);
                 _paintPositions.add(drawPos);
@@ -93,7 +94,7 @@ class PencilPainter extends IToolPainter
                 if (_paintPositions.length >= 3)
                 {
                   if (_options.pixelPerfect.value &&
-                      _paintPositions[_paintPositions.length - 1].isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
+                      _paintPositions.last.isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
                   {
                     _paintPositions.removeAt(_paintPositions.length - 2);
                   }
@@ -106,23 +107,46 @@ class PencilPainter extends IToolPainter
               }
             }
           }
-          if (_paintPositions.length > 3)
+
+          if (_hasNewCursorPos)
           {
-            final Set<CoordinateSetI> posSet = _paintPositions.sublist(0, _paintPositions.length - 3).toSet();
+
+
+            final Set<CoordinateSetI> posSet = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)).toSet() : _paintPositions.toSet();
             final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
             for (final CoordinateSetI pos in posSet)
             {
               paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
             }
-
             _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
-            _paintPositions.removeRange(0, _paintPositions.length - 3);
-            rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+            _paintPositions.removeRange(0, _paintPositions.length - min(3, _paintPositions.length));
 
+            CoordinateColorMap addPixels;
+            if (_paintPositions.isNotEmpty)
+            {
+              final Set<CoordinateSetI> additionalPaintPoints = <CoordinateSetI>{};
+              for (final CoordinateSetI pos in _paintPositions)
+              {
+                additionalPaintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
+              }
+              final CoordinateColorMap additionalDrawingPixels = getPixelsToDraw(coords: additionalPaintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              addPixels = HashMap<CoordinateSetI, ColorReference>();
+              addPixels.addAll(_drawingPixels);
+              addPixels.addAll(additionalDrawingPixels);
+            }
+            else
+            {
+              addPixels = _drawingPixels;
+            }
+
+            rasterizeDrawingPixels(drawingPixels: addPixels).then((final ContentRasterSet? rasterSet) {
               contentRaster = rasterSet;
               hasAsyncUpdate = true;
             });
+
           }
+
+
         }
         else //final dumping
         {

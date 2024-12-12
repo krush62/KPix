@@ -163,11 +163,11 @@ class PencilOptions extends IToolOptions
                   {
                     return ValueListenableBuilder<bool>(
                       valueListenable: pencilOptions.pixelPerfect,
-                      builder: (final BuildContext context, final bool pp, final Widget? child)
+                      builder: (final BuildContext context, final bool isPixelPerfect, final Widget? child)
                       {
                         return Switch(
-                          onChanged: size == 1 ? (final bool newVal) {pencilOptions.pixelPerfect.value = newVal;} : null,
-                          value: pp,
+                          onChanged: (final bool newVal) {pencilOptions.pixelPerfect.value = newVal;},
+                          value: isPixelPerfect,
                         );
                       },
                     );

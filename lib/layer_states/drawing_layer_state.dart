@@ -193,7 +193,7 @@ class DrawingLayerState extends LayerState
         {
           final Color dColor = colRef.getIdColor().color;
           final int index = (coord.y * size.x + coord.x) * 4;
-          if (index > 0 && index < byteDataImg.lengthInBytes)
+          if (index >= 0 && index < byteDataImg.lengthInBytes)
           {
             byteDataImg.setUint32(index, argbToRgba(argb: dColor.value));
           }

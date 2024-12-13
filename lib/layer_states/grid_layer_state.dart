@@ -341,8 +341,8 @@ class GridLayerState extends LayerState
             final int tx2 = isLeft ? tx1 - (intervalX ~/2) : tx1 + (intervalX ~/2);
             final int ty1 = (y ~/ height) * height;
             final int ty2 = ty1 + height;
-            final CoordinateSetI t1 = CoordinateSetI(x: flip ? tx1 : tx2, y: flip ? ty1 - 1 : ty1);
-            final CoordinateSetI t2 = CoordinateSetI(x: flip ? tx2 : tx1, y: flip ? ty2 : ty2 + 1);
+            final CoordinateSetI t1 = CoordinateSetI(x: flip ? tx1 : tx2, y: ty1);
+            final CoordinateSetI t2 = CoordinateSetI(x: flip ? tx2 : tx1, y: ty2);
             final List<CoordinateSetI> line1 = bresenham(start: t1, end: t2);
             final CoordinateSetI current = CoordinateSetI(x: x, y: y);
             if (line1.contains(current))

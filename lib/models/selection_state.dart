@@ -681,15 +681,7 @@ class SelectionState with ChangeNotifier
       else
       {
         deselect(notify: false, addToHistoryStack: false);
-        final CoordinateColorMap addCoords = HashMap<CoordinateSetI, ColorReference>();
-        for (final CoordinateSetI key in clipboard!.keys)
-        {
-          if (clipboard![key] != null)
-          {
-            addCoords[key] = clipboard![key]!;
-          }
-        }
-        selection.addDirectlyAll(list: addCoords);
+        selection.addDirectlyAll(list: clipboard!);
         createSelectionLines();
         if (addToHistoryStack)
         {

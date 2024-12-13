@@ -25,9 +25,13 @@ class HistoryGridLayer extends HistoryLayer
   final int brightness;
   final int intervalX;
   final int intervalY;
-  HistoryGridLayer({required super.visibilityState, required this.opacity, required this.gridType, required this.intervalX, required this.intervalY, required this.brightness});
+  final double horizonPosition;
+  final double vanishingPoint1;
+  final double vanishingPoint2;
+  final double vanishingPoint3;
+  HistoryGridLayer({required super.visibilityState, required this.opacity, required this.gridType, required this.intervalX, required this.intervalY, required this.brightness, required this.vanishingPoint1, required this.vanishingPoint2, required this.vanishingPoint3, required this.horizonPosition});
   factory HistoryGridLayer.fromGridLayer({required final GridLayerState gridState})
   {
-    return HistoryGridLayer(opacity: gridState.opacity, brightness: gridState.brightness, gridType: gridState.gridType, visibilityState: gridState.visibilityState.value, intervalX: gridState.intervalX, intervalY: gridState.intervalY);
+    return HistoryGridLayer(opacity: gridState.opacity, brightness: gridState.brightness, gridType: gridState.gridType, visibilityState: gridState.visibilityState.value, intervalX: gridState.intervalX, intervalY: gridState.intervalY, horizonPosition: gridState.horizonPosition, vanishingPoint1: gridState.vanishingPoint1, vanishingPoint2: gridState.vanishingPoint2, vanishingPoint3: gridState.vanishingPoint3);
   }
 }

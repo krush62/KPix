@@ -163,6 +163,14 @@ enum PreferenceDouble
   ReferenceLayer_AspectRatioMin(defaultValue: -5.0),
   ReferenceLayer_ZoomCurveExponent(defaultValue: 2.0),
 
+  GridLayer_VanishingPointMin(defaultValue: 0.0),
+  GridLayer_VanishingPointMax(defaultValue: 1.0),
+  GridLayer_HorizonDefault(defaultValue: 0.5),
+  GridLayer_VanishingPoint1Default(defaultValue: 0.1),
+  GridLayer_VanishingPoint2Default(defaultValue: 0.9),
+  GridLayer_VanishingPoint3Default(defaultValue: 0.9),
+
+
   KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
   KPal_Constraints_hueShiftExpDefault(defaultValue: 1.0),
@@ -207,6 +215,7 @@ enum PreferenceDouble
   TouchOptions_ZoomStepDistance(defaultValue: 25.0),
   TouchOptions_ZoomStepDistanceMin(defaultValue: 10.0),
   TouchOptions_ZoomStepDistanceMax(defaultValue: 100.0),
+
 
 
 
@@ -853,6 +862,12 @@ class PreferenceManager
       intervalYDefault: _getValueI(PreferenceInt.GridLayer_IntervalYDefault),
       intervalYMin: _getValueI(PreferenceInt.GridLayer_IntervalYMin),
       intervalYMax: _getValueI(PreferenceInt.GridLayer_IntervalYMax),
+      horizonDefault: _getValueD(PreferenceDouble.GridLayer_HorizonDefault),
+      vanishingPointMin: _getValueD(PreferenceDouble.GridLayer_VanishingPointMin),
+      vanishingPointMax: _getValueD(PreferenceDouble.GridLayer_VanishingPointMax),
+      vanishingPoint1Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint1Default),
+      vanishingPoint2Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint2Default),
+      vanishingPoint3Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint3Default),
       gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault),
     );
   }

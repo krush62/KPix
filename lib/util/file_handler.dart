@@ -298,7 +298,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           //brightness ``ubyte (1)`` // 0...100
           final int brightness = byteData.getUint8(offset++);
           if (brightness < gridLayerSettings.brightnessMin || brightness > gridLayerSettings.brightnessMax) return LoadFileSet(status: "Brightness for grid layer is out of range: $brightness");
-          //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+          //grid_type
           final int gridTypeValue = byteData.getUint8(offset++);
           final GridType? gridType = gridValueTypeMap[gridTypeValue];
           if (gridType == null)
@@ -311,8 +311,25 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           //interval_x ``ubyte (1)`` // 2...64
           final int intervalY = byteData.getUint8(offset++);
           if (intervalY < gridLayerSettings.intervalYMin || intervalY > gridLayerSettings.intervalYMax) return LoadFileSet(status: "Interval Y for grid layer is out of range: $intervalY");
+          //horizon_position ``float (1)``// 0...1 (vertical horizon position)
+          final double horizon = byteData.getFloat32(offset);
+          if (horizon < gridLayerSettings.vanishingPointMin || horizon > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Horizon for grid layer is out of range: $horizon");
+          offset += 4;
+          //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
+          final double vanishingPoint1 = byteData.getFloat32(offset);
+          if (vanishingPoint1 < gridLayerSettings.vanishingPointMin || vanishingPoint1 > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Vanishing Point 1 for grid layer is out of range: $vanishingPoint1");
+          offset += 4;
+          //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
+          final double vanishingPoint2 = byteData.getFloat32(offset);
+          if (vanishingPoint2 < gridLayerSettings.vanishingPointMin || vanishingPoint2 > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Vanishing Point 2 for grid layer is out of range: $vanishingPoint2");
+          offset += 4;
+          //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+          final double vanishingPoint3 = byteData.getFloat32(offset);
+          if (vanishingPoint3 < gridLayerSettings.vanishingPointMin || vanishingPoint3 > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Vanishing Point 3 for grid layer is out of range: $vanishingPoint3");
+          offset += 4;
 
-          layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY));
+
+          layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3));
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);

@@ -453,6 +453,10 @@ class AppState
       intervalX: gridSettings.intervalXDefault,
       intervalY: gridSettings.intervalYDefault,
       opacity: gridSettings.opacityDefault,
+      horizonPosition: gridSettings.horizonDefault,
+      vanishingPoint1: gridSettings.vanishingPoint1Default,
+      vanishingPoint2: gridSettings.vanishingPoint2Default,
+      vanishingPoint3: gridSettings.vanishingPoint3Default,
     );
     if (_layers.value.isEmpty)
     {
@@ -659,7 +663,7 @@ class AppState
         else if (historyLayer.runtimeType == HistoryGridLayer)
         {
           final HistoryGridLayer gridLayer = historyLayer as HistoryGridLayer;
-          layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY);
+          layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY, horizonPosition: gridLayer.horizonPosition, vanishingPoint1: gridLayer.vanishingPoint1, vanishingPoint2: gridLayer.vanishingPoint2, vanishingPoint3: gridLayer.vanishingPoint3 );
         }
 
         if (layerState != null)

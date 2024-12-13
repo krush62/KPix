@@ -19,6 +19,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
@@ -29,8 +30,10 @@ enum GridType
   isometric,
   hexagonal,
   triangular,
-  brick
-
+  brick,
+  onePointPerspective,
+  twoPointPerspective,
+  threePointPerspective,
 }
 
 const Map<int, GridType> gridValueTypeMap =
@@ -41,8 +44,41 @@ const Map<int, GridType> gridValueTypeMap =
   3: GridType.hexagonal,
   4: GridType.triangular,
   5: GridType.brick,
-
+  6: GridType.onePointPerspective,
+  7: GridType.twoPointPerspective,
+  8: GridType.threePointPerspective,
 };
+
+const Map<GridType, String> gridTypeNameMap =
+<GridType, String>{
+  GridType.rectangular : "Rectangular Grid",
+  GridType.diagonal : "Diagonal Grid",
+  GridType.isometric : "Isometric Grid",
+  GridType.hexagonal : "Hexagonal Grid",
+  GridType.triangular : "Triangular Grid",
+  GridType.brick : "Bricks",
+  GridType.onePointPerspective : "1-Point Perspective",
+  GridType.twoPointPerspective : "2-Point Perspective",
+  GridType.threePointPerspective : "3-Point Perspective",
+};
+
+const Map<GridType, String> gridTypeLabelMap =
+<GridType, String>{
+  GridType.rectangular : "REC",
+  GridType.diagonal : "DIA",
+  GridType.isometric : "ISO",
+  GridType.hexagonal : "HEX",
+  GridType.triangular : "TRI",
+  GridType.brick : "BRK",
+  GridType.onePointPerspective : "1-Point",
+  GridType.twoPointPerspective : "2-Point",
+  GridType.threePointPerspective : "3-Point",
+};
+
+bool isPerspectiveGridType({required final GridType gridType})
+{
+  return gridType == GridType.onePointPerspective || gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective;
+}
 
 class GridLayerSettings
 {
@@ -58,7 +94,14 @@ class GridLayerSettings
   final int intervalYDefault;
   final int intervalYMin;
   final int intervalYMax;
+  final double vanishingPointMin;
+  final double vanishingPointMax;
+  final double horizonDefault;
+  final double vanishingPoint1Default;
+  final double vanishingPoint2Default;
+  final double vanishingPoint3Default;
   final GridType gridTypeDefault;
+
 
   GridLayerSettings({
     required this.opacityDefault,
@@ -73,6 +116,12 @@ class GridLayerSettings
     required this.intervalYDefault,
     required this.intervalYMin,
     required this.intervalYMax,
+    required this.vanishingPointMin,
+    required this.vanishingPointMax,
+    required this.vanishingPoint1Default,
+    required this.vanishingPoint2Default,
+    required this.vanishingPoint3Default,
+    required this.horizonDefault,
     required final int gridTypeValue,}) : gridTypeDefault = gridValueTypeMap[gridTypeValue] ?? GridType.rectangular;
 
 }
@@ -90,6 +139,24 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
 {
   final ToolSettingsWidgetOptions _toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
   final GridLayerSettings _gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
+  late GridType lastNormalGridType;
+  late GridType lastPerspectiveGridType;
+
+  @override
+  void initState()
+  {
+    super.initState();
+    if (!isPerspectiveGridType(gridType: widget.gridState.gridType))
+    {
+      lastNormalGridType = widget.gridState.gridType;
+      lastPerspectiveGridType = GridType.onePointPerspective;
+    }
+    else
+    {
+      lastNormalGridType = GridType.rectangular;
+      lastPerspectiveGridType = widget.gridState.gridType;
+    }
+  }
 
   @override
   Widget build(final BuildContext context)
@@ -99,178 +166,303 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
       child: Padding(
         padding: EdgeInsets.all(_toolSettingsWidgetOptions.padding),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              ValueListenableBuilder<GridType>(
-                valueListenable: widget.gridState.gridTypeNotifier,
-                builder: (final BuildContext context, final GridType gridType, final Widget? child) {
-                  return SegmentedButton<GridType>(
+          child: ValueListenableBuilder<GridType>(
+            valueListenable: widget.gridState.gridTypeNotifier,
+            builder: (final BuildContext context, final GridType gridType, final Widget? child) {
+              final bool isPerspective = isPerspectiveGridType(gridType: gridType);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SegmentedButton<bool>(
+                    selected: <bool>{isPerspective},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (final Set<bool> types)
+                    {
+                      if (!types.first)
+                      {
+                        widget.gridState.gridTypeNotifier.value = lastNormalGridType;
+                      }
+                      else
+                      {
+                        widget.gridState.gridTypeNotifier.value = lastPerspectiveGridType;
+                      }
+                    },
+                    segments: <ButtonSegment<bool>>[
+                      ButtonSegment<bool>(
+                        value: false,
+                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Grid", child: Text("GRID", style: Theme.of(context).textTheme.labelSmall!.apply(color: !isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                      ),
+                      ButtonSegment<bool>(
+                        value: true,
+                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Perspective", child: Text("PERSPECTIVE", style: Theme.of(context).textTheme.labelSmall!.apply(color: isPerspective ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                      ),
+                    ],
+                  ),
+                  SegmentedButton<GridType>(
                     segments: <ButtonSegment<GridType>>[
-                      ButtonSegment<GridType>(
-                        value: GridType.rectangular,
-                        label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Rectangular Grid", child: Text("REC", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.rectangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
-                      ),
-                      ButtonSegment<GridType>(
-                        value: GridType.diagonal,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Diagonal Grid", child: Text("DIA", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.diagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
-                      ),
-                      ButtonSegment<GridType>(
-                        value: GridType.isometric,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Isometric Grid", child: Text("ISO", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.isometric ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
-                      ),
-                      /*ButtonSegment(
-                          value: GridType.hexagonal,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Hexagonal Grid", child: Text("HEX", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.hexagonal ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight)))
-                      ),*/
-                      ButtonSegment<GridType>(
-                          value: GridType.triangular,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Triangular Grid", child: Text("TRI", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.triangular ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
-                      ),
-                      ButtonSegment<GridType>(
-                          value: GridType.brick,
-                          label: Tooltip(waitDuration: AppState.toolTipDuration, message: "Brick Grid", child: Text("BRK", style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == GridType.brick ? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
-                      ),
+                      for (final GridType g in GridType.values)
+                        if (isPerspectiveGridType(gridType: g) == isPerspective)
+                          ButtonSegment<GridType>(
+                            value: g,
+                            label: Tooltip(waitDuration: AppState.toolTipDuration, message: gridTypeNameMap[g]?? g.toString(), child: Text(gridTypeLabelMap[g]?? g.toString(), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                          ),
                     ],
                     selected: <GridType>{gridType},
                     showSelectedIcon: false,
                     onSelectionChanged: (final Set<GridType> types)
                     {
+                      if (!isPerspective)
+                      {
+                        lastNormalGridType = types.first;
+                      }
+                      else
+                      {
+                        lastPerspectiveGridType = types.first;
+                      }
                       widget.gridState.gridTypeNotifier.value = types.first;
                     },
-                  );
-                },
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Opacity",
-                          style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Opacity",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
                         ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: widget.gridState.opacityNotifier,
-                      builder: (final BuildContext context, final int opacity, final Widget? child) {
-                        return KPixSlider(
-                          value: opacity.toDouble(),
-                          min: _gridSettings.opacityMin.toDouble(),
-                          max: _gridSettings.opacityMax.toDouble(),
-                          divisions: _gridSettings.opacityMax - _gridSettings.opacityMin,
-                          onChanged: (final double newVal) {
-                            widget.gridState.opacityNotifier.value = newVal.round();
-                          },
-                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Brightness",
-                        style: Theme.of(context).textTheme.labelLarge,
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: widget.gridState.brightnessNotifier,
-                      builder: (final BuildContext context, final int brightness, final Widget? child) {
-                        return KPixSlider(
-                          value: brightness.toDouble(),
-                          min: _gridSettings.brightnessMin.toDouble(),
-                          max: _gridSettings.brightnessMax.toDouble(),
-                          divisions: _gridSettings.brightnessMax - _gridSettings.brightnessMin,
-                          onChanged: (final double newVal) {
-                            widget.gridState.brightnessNotifier.value = newVal.round();
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.gridState.opacityNotifier,
+                          builder: (final BuildContext context, final int opacity, final Widget? child) {
+                            return KPixSlider(
+                              value: opacity.toDouble(),
+                              label: "$opacity%",
+                              min: _gridSettings.opacityMin.toDouble(),
+                              max: _gridSettings.opacityMax.toDouble(),
+                              divisions: _gridSettings.opacityMax - _gridSettings.opacityMin,
+                              onChanged: (final double newVal) {
+                                widget.gridState.opacityNotifier.value = newVal.round();
+                              },
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
+                            );
                           },
-                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Interval X",
-                        style: Theme.of(context).textTheme.labelLarge,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  Expanded(
-                    flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: widget.gridState.intervalXNotifier,
-                      builder: (final BuildContext context, final int intervalX, final Widget? child) {
-                        return KPixSlider(
-                          value: intervalX.toDouble(),
-                          min: _gridSettings.intervalXMin.toDouble(),
-                          max: _gridSettings.intervalXMax.toDouble(),
-                          divisions: _gridSettings.intervalXMax - _gridSettings.intervalXMin,
-                          onChanged: (final double newVal) {
-                            widget.gridState.intervalXNotifier.value = newVal.round();
-                          },
-                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Interval Y",
-                        style: Theme.of(context).textTheme.labelLarge,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Brightness",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: widget.gridState.intervalYNotifier,
-                      builder: (final BuildContext context, final int intervalY, final Widget? child) {
-                        return KPixSlider(
-                          value: intervalY.toDouble(),
-                          min: _gridSettings.intervalYMin.toDouble(),
-                          max: _gridSettings.intervalYMax.toDouble(),
-                          divisions: _gridSettings.intervalYMax - _gridSettings.intervalYMin,
-                          onChanged: (final double newVal) {
-                            widget.gridState.intervalYNotifier.value = newVal.round();
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.gridState.brightnessNotifier,
+                          builder: (final BuildContext context, final int brightness, final Widget? child) {
+                            return KPixSlider(
+                              value: brightness.toDouble(),
+                              min: _gridSettings.brightnessMin.toDouble(),
+                              max: _gridSettings.brightnessMax.toDouble(),
+                              divisions: _gridSettings.brightnessMax - _gridSettings.brightnessMin,
+                              onChanged: (final double newVal) {
+                                widget.gridState.brightnessNotifier.value = newVal.round();
+                              },
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
+                            );
                           },
-                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            !isPerspective ? "Interval X" : "Interval",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.gridState.intervalXNotifier,
+                          builder: (final BuildContext context, final int intervalX, final Widget? child) {
+                            return KPixSlider(
+                              value: intervalX.toDouble(),
+                              min: _gridSettings.intervalXMin.toDouble(),
+                              max: _gridSettings.intervalXMax.toDouble(),
+                              divisions: _gridSettings.intervalXMax - _gridSettings.intervalXMin,
+                              onChanged: (final double newVal) {
+                                widget.gridState.intervalXNotifier.value = newVal.round();
+                              },
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!isPerspective)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Interval Y",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.gridState.intervalYNotifier,
+                          builder: (final BuildContext context, final int intervalY, final Widget? child) {
+                            return KPixSlider(
+                              value: intervalY.toDouble(),
+                              min: _gridSettings.intervalYMin.toDouble(),
+                              max: _gridSettings.intervalYMax.toDouble(),
+                              divisions: _gridSettings.intervalYMax - _gridSettings.intervalYMin,
+                              onChanged: (final double newVal) {
+                                widget.gridState.intervalYNotifier.value = newVal.round();
+                              },
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (isPerspective)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Horizon",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: ValueListenableBuilder<double>(
+                          valueListenable: widget.gridState.horizonPositionNotifier,
+                          builder: (final BuildContext context, final double horizon, final Widget? child) {
+                            return KPixSlider(
+                              value: horizon,
+                              min: _gridSettings.vanishingPointMin,
+                              max: _gridSettings.vanishingPointMax,
+                              decimals: 2,
+                              onChanged: (final double newVal) {
+                                widget.gridState.horizonPositionNotifier.value = newVal;
+                              },
+                              textStyle: Theme.of(context).textTheme.bodyLarge!,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Hor Points",
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: widget.gridState.vanishingPoint1Notifier,
+                            builder: (final BuildContext context1, final double van1, final Widget? child1) {
+                              return ValueListenableBuilder<double>(
+                                valueListenable: widget.gridState.vanishingPoint2Notifier,
+                                builder: (final BuildContext context2, final double van2, final Widget? child2)
+                                {
+                                   return KPixRangeSlider(
+                                     values: RangeValues(van1, van2),
+                                     min: _gridSettings.vanishingPointMin,
+                                     max: _gridSettings.vanishingPointMax,
+                                     textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                     decimals: 2,
+                                     onChanged: (final RangeValues newVals)
+                                     {
+                                       widget.gridState.vanishingPoint1Notifier.value = newVals.start;
+                                       widget.gridState.vanishingPoint2Notifier.value = newVals.end;
+                                     },
+                                   );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (gridType == GridType.threePointPerspective)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Ver Point",
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: widget.gridState.vanishingPoint3Notifier,
+                            builder: (final BuildContext context, final double van3, final Widget? child) {
+                              return KPixSlider(
+                                value: van3,
+                                min: _gridSettings.vanishingPointMin,
+                                max: _gridSettings.vanishingPointMax,
+                                decimals: 2,
+                                onChanged: (final double newVal) {
+                                  widget.gridState.vanishingPoint3Notifier.value = newVal;
+                                },
+                                textStyle: Theme.of(context).textTheme.bodyLarge!,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

@@ -249,6 +249,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               value: opacity.toDouble(),
                               min: _refSettings.opacityMin.toDouble(),
                               max: _refSettings.opacityMax.toDouble(),
+                              label: "$opacity%",
                               divisions: _refSettings.opacityMax - _refSettings.opacityMin,
                               onChanged: refImg == null ? null : (final double newVal) {
                                 widget.referenceState.opacityNotifier.value = newVal.round();

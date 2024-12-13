@@ -55,6 +55,9 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     GridType.hexagonal: 3,
     GridType.triangular: 4,
     GridType.brick: 5,
+    GridType.onePointPerspective: 6,
+    GridType.twoPointPerspective: 7,
+    GridType.threePointPerspective: 8,
   };
 
 
@@ -782,6 +785,18 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
         byteData.setUint8(offset++, gridLayer.intervalX);
         //interval_x ``ubyte (1)`` // 2...64
         byteData.setUint8(offset++, gridLayer.intervalY);
+        //horizon_position ``float (1)``// 0...1 (vertical horizon position)
+        byteData.setFloat32(offset, gridLayer.horizonPosition);
+        offset += 4;
+        //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
+        byteData.setFloat32(offset, gridLayer.vanishingPoint1);
+        offset += 4;
+        //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
+        byteData.setFloat32(offset, gridLayer.vanishingPoint2);
+        offset += 4;
+        //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+        byteData.setFloat32(offset, gridLayer.vanishingPoint3);
+        offset += 4;
       }
     }
 
@@ -1545,6 +1560,14 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
         size += 1;
         //interval_x ``ubyte (1)`` // 2...64
         size += 1;
+        //horizon_position ``float (1)``// 0...1 (vertical horizon position)
+        size += 4;
+        //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
+        size += 4;
+        //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
+        size += 4;
+        //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+        size += 4;
       }
     }
 

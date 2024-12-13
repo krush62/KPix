@@ -32,6 +32,10 @@ class GridLayerState extends LayerState
   final ValueNotifier<int> brightnessNotifier;
   final ValueNotifier<int> intervalXNotifier;
   final ValueNotifier<int> intervalYNotifier;
+  final ValueNotifier<double> horizonPositionNotifier;
+  final ValueNotifier<double> vanishingPoint1Notifier;
+  final ValueNotifier<double> vanishingPoint2Notifier;
+  final ValueNotifier<double> vanishingPoint3Notifier;
   bool _isRendering = false;
   bool _shouldRender = true;
   ui.Image? raster;
@@ -42,18 +46,30 @@ class GridLayerState extends LayerState
     required final int brightness,
     required final int intervalX,
     required final int intervalY,
+    required final double horizonPosition,
+    required final double vanishingPoint1,
+    required final double vanishingPoint2,
+    required final double vanishingPoint3,
   }) :
       opacityNotifier = ValueNotifier<int>(opacity),
       gridTypeNotifier = ValueNotifier<GridType>(gridType),
       brightnessNotifier = ValueNotifier<int>(brightness),
       intervalXNotifier = ValueNotifier<int>(intervalX),
-      intervalYNotifier = ValueNotifier<int>(intervalY)
+      intervalYNotifier = ValueNotifier<int>(intervalY),
+      horizonPositionNotifier = ValueNotifier<double>(horizonPosition),
+      vanishingPoint1Notifier = ValueNotifier<double>(vanishingPoint1),
+      vanishingPoint2Notifier = ValueNotifier<double>(vanishingPoint2),
+      vanishingPoint3Notifier = ValueNotifier<double>(vanishingPoint3)
   {
     opacityNotifier.addListener(_valueChanged);
     gridTypeNotifier.addListener(_valueChanged);
     brightnessNotifier.addListener(_valueChanged);
     intervalXNotifier.addListener(_valueChanged);
     intervalYNotifier.addListener(_valueChanged);
+    horizonPositionNotifier.addListener(_valueChanged);
+    vanishingPoint1Notifier.addListener(_valueChanged);
+    vanishingPoint2Notifier.addListener(_valueChanged);
+    vanishingPoint3Notifier.addListener(_valueChanged);
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
   }
@@ -66,6 +82,10 @@ class GridLayerState extends LayerState
       gridType: other.gridType,
       intervalX: other.intervalX,
       intervalY: other.intervalY,
+      horizonPosition: other.horizonPosition,
+      vanishingPoint1: other.vanishingPoint1,
+      vanishingPoint2: other.vanishingPoint2,
+      vanishingPoint3: other.vanishingPoint3,
     );
   }
 
@@ -94,6 +114,26 @@ class GridLayerState extends LayerState
   int get intervalY
   {
     return intervalYNotifier.value;
+  }
+
+  double get horizonPosition
+  {
+    return horizonPositionNotifier.value;
+  }
+
+  double get vanishingPoint1
+  {
+    return vanishingPoint1Notifier.value;
+  }
+
+  double get vanishingPoint2
+  {
+    return vanishingPoint2Notifier.value;
+  }
+
+  double get vanishingPoint3
+  {
+    return vanishingPoint3Notifier.value;
   }
 
   void _valueChanged()
@@ -126,6 +166,26 @@ class GridLayerState extends LayerState
     _shouldRender = false;
   }
 
+  void addCoordListToBytes({required final Set<CoordinateSetI> coords, required final ByteData byteDataImg, required final CoordinateSetI canvasSize, required final int brightness, required final int opacity})
+  {
+    for (final CoordinateSetI coord in coords)
+    {
+      addCoordToBytes(x: coord.x, y: coord.y, byteDataImg: byteDataImg, canvasSize: canvasSize, brightness: brightness, opacity: opacity);
+    }
+  }
+
+  void addCoordToBytes({required final int x, required final int y, required final ByteData byteDataImg, required final CoordinateSetI canvasSize, required final int brightness, required final int opacity})
+  {
+    if (x >= 0 && x < canvasSize.x && y >= 0 && y < canvasSize.y)
+    {
+      final int pixelIndex = (y * canvasSize.x + x) * 4;
+      byteDataImg.setUint8(pixelIndex + 0, brightness);
+      byteDataImg.setUint8(pixelIndex + 1, brightness);
+      byteDataImg.setUint8(pixelIndex + 2, brightness);
+      byteDataImg.setUint8(pixelIndex + 3, opacity);
+    }
+  }
+
   Future<ui.Image> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
@@ -134,137 +194,226 @@ class GridLayerState extends LayerState
     final int colorBrightness = ((brightness.toDouble() / 100.0) * 255.0).round();
     final int colorBrightnessPremultiplied = (colorBrightness * colorOpacity) ~/ 255;
 
-    for (int y = 0; y < appState.canvasSize.y; y++)
-    {
-      for (int x = 0; x < appState.canvasSize.x; x++)
-      {
-        bool shouldDraw = false;
 
-        if (gridType == GridType.rectangular)
+    if (gridType == GridType.onePointPerspective || gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
+    {
+      final int horizonY = (appState.canvasSize.y.toDouble() * horizonPosition).round();
+      final List<CoordinateSetI> horizontalLine = bresenham(start: CoordinateSetI(x: 0, y: horizonY), end: CoordinateSetI(x: appState.canvasSize.x - 1, y: horizonY));
+      addCoordListToBytes(coords: horizontalLine.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+
+      if (gridType == GridType.onePointPerspective)
+      {
+        final CoordinateSetI vanishingPoint = CoordinateSetI(x: appState.canvasSize.x ~/ 2, y: horizonY);
+        for (int i = 1; i <= intervalX; i++)
         {
-          if (x % intervalX == 0 || y % intervalY == 0)
-          {
-            shouldDraw = true;
-          }
+          final double t = i / (intervalX + 1);
+          final double startY = appState.canvasSize.y * t;
+          final double startX = appState.canvasSize.x * t;
+          final List<CoordinateSetI> convergingFromLeft = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: vanishingPoint);
+          final List<CoordinateSetI> convergingFromRight = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: vanishingPoint);
+          final List<CoordinateSetI> convergingFromTop = bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: vanishingPoint);
+          final List<CoordinateSetI> convergingFromBottom = bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: vanishingPoint);
+          addCoordListToBytes(coords: convergingFromLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromTop.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromBottom.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
         }
-        else if (gridType == GridType.diagonal)
+      }
+      else if (gridType == GridType.twoPointPerspective)
+      {
+        final CoordinateSetI leftVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
+        final CoordinateSetI rightVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint2).round(), y: horizonY);
+
+        for (int i = 1; i <= intervalX; i++)
         {
-          if ((x + y) % intervalX == 0 || (x - y).abs() % intervalY == 0)
-          {
-            shouldDraw = true;
-          }
+          final double t = i / (intervalX + 1);
+          final double startY = appState.canvasSize.y * t;
+          final double startX = appState.canvasSize.x * t;
+          final List<CoordinateSetI> convergingFromLeftLeft = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: leftVanishingPoint);
+          final List<CoordinateSetI> convergingFromLeftRight = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint);
+          final List<CoordinateSetI> convergingFromRightLeft = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint);
+          final List<CoordinateSetI> convergingFromRightRight = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: rightVanishingPoint);
+          final List<CoordinateSetI> convergingFromTopLeft = bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: leftVanishingPoint);
+          final List<CoordinateSetI> convergingFromTopRight = bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: rightVanishingPoint);
+          final List<CoordinateSetI> convergingFromBottomLeft = bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: leftVanishingPoint);
+          final List<CoordinateSetI> convergingFromBottomRight = bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: rightVanishingPoint);
+          addCoordListToBytes(coords: convergingFromLeftLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromLeftRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromRightLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromRightRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromTopLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromTopRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromBottomLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromBottomRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
         }
-        else if (gridType == GridType.isometric)
+      }
+      else if (gridType == GridType.threePointPerspective)
+      {
+        final CoordinateSetI verticalVanishingPoint = CoordinateSetI(x: appState.canvasSize.x ~/ 2, y: (appState.canvasSize.x.toDouble() * vanishingPoint3).round());
+        final CoordinateSetI leftVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
+        final CoordinateSetI rightVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint2).round(), y: horizonY);
+
+        for (int i = 1; i <= intervalX; i++)
         {
-          if (((x ~/ 2) + y) % intervalX == 0)
-          {
-            shouldDraw = true;
-          }
-          if (((x ~/ 2) - y).abs() % intervalY == 0)
-          {
-            shouldDraw = true;
-          }
+          final double t = i / (intervalX + 1);
+          final double startY = appState.canvasSize.y * t;
+          final double startX = appState.canvasSize.x * t;
+          final List<CoordinateSetI> convergingFromRightLeft = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint);
+          final List<CoordinateSetI> convergingFromLeftRight = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint);
+          final List<CoordinateSetI> convergingFromLeftVertical = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: verticalVanishingPoint);
+          final List<CoordinateSetI> convergingFromRightVertical = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: verticalVanishingPoint);
+          final List<CoordinateSetI> convergingFromTopBottomVertical = bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y > horizonY ? 0 : appState.canvasSize.y - 1), end: verticalVanishingPoint);
+          final List<CoordinateSetI> convergingFromTopBottomLeft = bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: leftVanishingPoint);
+          final List<CoordinateSetI> convergingFromTopBottomRight = bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: rightVanishingPoint);
+          addCoordListToBytes(coords: convergingFromLeftVertical.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromRightVertical.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromTopBottomVertical.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromRightLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromLeftRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromTopBottomLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          addCoordListToBytes(coords: convergingFromTopBottomRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+
         }
-        else if (gridType == GridType.hexagonal)
+
+      }
+    }
+    else
+    {
+      for (int y = 0; y < appState.canvasSize.y; y++)
+      {
+        for (int x = 0; x < appState.canvasSize.x; x++)
         {
-          final int height = intervalY - 1;
-          final int tripleInterval = intervalX * 3;
-          final bool flip = (y ~/ height).isEven;
-          if (y % height == 0)
+          bool shouldDraw = false;
+
+          if (gridType == GridType.rectangular)
           {
-            if (flip)
+            if (x % intervalX == 0 || y % intervalY == 0)
             {
-              if (x % tripleInterval < intervalX)
+              shouldDraw = true;
+            }
+          }
+          else if (gridType == GridType.diagonal)
+          {
+            if ((x + y) % intervalX == 0 || (x - y).abs() % intervalY == 0)
+            {
+              shouldDraw = true;
+            }
+          }
+          else if (gridType == GridType.isometric)
+          {
+            if (((x ~/ 2) + y) % intervalX == 0)
+            {
+              shouldDraw = true;
+            }
+            if (((x ~/ 2) - y).abs() % intervalY == 0)
+            {
+              shouldDraw = true;
+            }
+          }
+          else if (gridType == GridType.hexagonal)
+          {
+            final int height = intervalY - 1;
+            final int tripleInterval = intervalX * 3;
+            final bool flip = (y ~/ height).isEven;
+            if (y % height == 0)
+            {
+              if (flip)
               {
-                shouldDraw = true;
+                if (x % tripleInterval < intervalX)
+                {
+                  shouldDraw = true;
+                }
               }
+              else
+              {
+                if ((x + (1.5 * intervalX).floor()) % tripleInterval < intervalX)
+                {
+                  shouldDraw = true;
+                }
+              }
+            }
+
+            final int leftUpper = (x ~/ tripleInterval + 1) * tripleInterval;
+            final int rightUpper = (x ~/ tripleInterval) * tripleInterval + intervalX;
+
+            final bool isLeft = (leftUpper - x).abs() < (rightUpper - x).abs();
+            final int tx1 = isLeft ? leftUpper : rightUpper;
+            final int tx2 = isLeft ? tx1 - (intervalX ~/2) : tx1 + (intervalX ~/2);
+            final int ty1 = (y ~/ height) * height;
+            final int ty2 = ty1 + height;
+            final CoordinateSetI t1 = CoordinateSetI(x: flip ? tx1 : tx2, y: flip ? ty1 - 1 : ty1);
+            final CoordinateSetI t2 = CoordinateSetI(x: flip ? tx2 : tx1, y: flip ? ty2 : ty2 + 1);
+            final List<CoordinateSetI> line1 = bresenham(start: t1, end: t2);
+            final CoordinateSetI current = CoordinateSetI(x: x, y: y);
+            if (line1.contains(current))
+            {
+              shouldDraw = true;
+            }
+
+          }
+          else if (gridType == GridType.triangular)
+          {
+            if (y % intervalY == 0)
+            {
+              shouldDraw = true;
             }
             else
             {
-              if ((x + (1.5 * intervalX).floor()) % tripleInterval < intervalX)
+              final bool flip = (y ~/ intervalY).isEven;
+              final int tipX = (x ~/ intervalX) * intervalX + (intervalX ~/ 2);
+              final int tipY = flip ? (y ~/ intervalY) * intervalY : (y ~/ intervalY + 1) * intervalY + 1;
+              final int bottomY = flip ? tipY + intervalY: tipY - intervalY;
+              final int bottomXR = tipX + (intervalX ~/ 2);
+              final int bottomXL = bottomXR - intervalX;
+              final CoordinateSetI tip = CoordinateSetI(x: tipX, y: tipY);
+              final CoordinateSetI bl = CoordinateSetI(x: bottomXL, y: bottomY);
+              final CoordinateSetI br = CoordinateSetI(x: bottomXR, y: bottomY);
+              final List<CoordinateSetI> lineToLeft = bresenham(start: tip, end: bl);
+              final List<CoordinateSetI> lineToRight = bresenham(start: tip, end: br);
+              final CoordinateSetI current = CoordinateSetI(x: x, y: y);
+              if (lineToLeft.contains(current) || lineToRight.contains(current))
+              {
+                shouldDraw = true;
+              }
+            }
+          }
+          else if (gridType == GridType.brick)
+          {
+            if (y % intervalY == 0)
+            {
+              shouldDraw = true;
+            }
+            else
+            {
+              int tipX = (x ~/ intervalX) * intervalX;
+              if ((y ~/ intervalY).isEven)
+              {
+                tipX += intervalX ~/2;
+              }
+              if (x == tipX)
               {
                 shouldDraw = true;
               }
             }
           }
 
-          final int leftUpper = (x ~/ tripleInterval + 1) * tripleInterval;
-          final int rightUpper = (x ~/ tripleInterval) * tripleInterval + intervalX;
-
-          final bool isLeft = (leftUpper - x).abs() < (rightUpper - x).abs();
-          final int tx1 = isLeft ? leftUpper : rightUpper;
-          final int tx2 = isLeft ? tx1 - (intervalX ~/2) : tx1 + (intervalX ~/2);
-          final int ty1 = (y ~/ height) * height;
-          final int ty2 = ty1 + height;
-          final CoordinateSetI t1 = CoordinateSetI(x: flip ? tx1 : tx2, y: flip ? ty1 - 1 : ty1);
-          final CoordinateSetI t2 = CoordinateSetI(x: flip ? tx2 : tx1, y: flip ? ty2 : ty2 + 1);
-          final List<CoordinateSetI> line1 = bresenham(start: t1, end: t2);
-          final CoordinateSetI current = CoordinateSetI(x: x, y: y);
-          if (line1.contains(current))
+          if (shouldDraw)
           {
-            shouldDraw = true;
-          }
-
-        }
-        else if (gridType == GridType.triangular)
-        {
-          if (y % intervalY == 0)
-          {
-            shouldDraw = true;
-          }
-          else
-          {
-            final bool flip = (y ~/ intervalY).isEven;
-            final int tipX = (x ~/ intervalX) * intervalX + (intervalX ~/ 2);
-            final int tipY = flip ? (y ~/ intervalY) * intervalY : (y ~/ intervalY + 1) * intervalY + 1;
-            final int bottomY = flip ? tipY + intervalY: tipY - intervalY;
-            final int bottomXR = tipX + (intervalX ~/ 2);
-            final int bottomXL = bottomXR - intervalX;
-            final CoordinateSetI tip = CoordinateSetI(x: tipX, y: tipY);
-            final CoordinateSetI bl = CoordinateSetI(x: bottomXL, y: bottomY);
-            final CoordinateSetI br = CoordinateSetI(x: bottomXR, y: bottomY);
-            final List<CoordinateSetI> lineToLeft = bresenham(start: tip, end: bl);
-            final List<CoordinateSetI> lineToRight = bresenham(start: tip, end: br);
-            final CoordinateSetI current = CoordinateSetI(x: x, y: y);
-            if (lineToLeft.contains(current) || lineToRight.contains(current))
+            /*if (x >= 0 && x < appState.canvasSize.x && y >= 0 && y < appState.canvasSize.y)
             {
-              shouldDraw = true;
-            }
-          }
-        }
-        else if (gridType == GridType.brick)
-        {
-          if (y % intervalY == 0)
-          {
-            shouldDraw = true;
-          }
-          else
-          {
-            int tipX = (x ~/ intervalX) * intervalX;
-            if ((y ~/ intervalY).isEven)
-            {
-              tipX += intervalX ~/2;
-            }
-            if (x == tipX)
-            {
-              shouldDraw = true;
-            }
-          }
-        }
-
-        if (shouldDraw)
-        {
-          if (x >= 0 && x < appState.canvasSize.x && y >= 0 && y < appState.canvasSize.y)
-          {
-            final int pixelIndex = (y * appState.canvasSize.x + x) * 4;
-            byteDataImg.setUint8(pixelIndex + 0, colorBrightnessPremultiplied);
-            byteDataImg.setUint8(pixelIndex + 1, colorBrightnessPremultiplied);
-            byteDataImg.setUint8(pixelIndex + 2, colorBrightnessPremultiplied);
-            byteDataImg.setUint8(pixelIndex + 3, colorOpacity);
+              final int pixelIndex = (y * appState.canvasSize.x + x) * 4;
+              byteDataImg.setUint8(pixelIndex + 0, colorBrightnessPremultiplied);
+              byteDataImg.setUint8(pixelIndex + 1, colorBrightnessPremultiplied);
+              byteDataImg.setUint8(pixelIndex + 2, colorBrightnessPremultiplied);
+              byteDataImg.setUint8(pixelIndex + 3, colorOpacity);
+            }*/
+            addCoordToBytes(x: x, y: y, byteDataImg: byteDataImg, brightness: colorBrightnessPremultiplied, opacity: colorOpacity, canvasSize: appState.canvasSize);
           }
         }
       }
     }
+
+
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(

@@ -20,7 +20,7 @@
 | Paste As New Layer       | ctrl + shift + v    |                  |                                 |                              |                           |
 | Delete                   | del                 |                  |                                 |                              |                           |
 | Flip Horizontally        | shift + h           |                  |                                 |                              |                           |
-| Filp Vertically          | shift + v           |                  |                                 |                              |                           |
+| Flip Vertically          | shift + v           |                  |                                 |                              |                           |
 | Rotate                   | ctrl + r            |                  |                                 |                              |                           |
 | Invert                   | ctrl + i            |                  |                                 |                              |                           |
 | Select All               | ctrl + a            |                  |                                 |                              |                           |
@@ -60,7 +60,9 @@
 | Switch Visibility        | shift + x           |                  |                                 |                              |                           |
 | Switch Lock              | shift + l           |                  |                                 |                              |                           |
 | New Drawing Layer        | shift + n           |                  |                                 |                              |                           |
+| New Shading Layer        | shift + s           |                  |                                 |                              |                           |
 | New Reference Layer      | shift + r           |                  |                                 |                              |                           |
+| New Grid Layer           | shift + g           |                  |                                 |                              |                           |
 | Duplicate                | shift + d           |                  |                                 |                              |                           |
 | Delete                   | shift + del         |                  |                                 |                              |                           |
 | Merge Down               | shift + m           |                  |                                 |                              |                           |

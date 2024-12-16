@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -32,6 +33,7 @@ const Map<Type, String> overlayStringMap =
 <Type, String>{
   ReferenceLayerState: "REF",
   GridLayerState: "GRID",
+  ShadingLayerState: "SHD",
 };
 
 class LayerWidget extends StatefulWidget
@@ -77,6 +79,7 @@ class _LayerWidgetState extends State<LayerWidget>
   final LayerLink settingsLink = LayerLink();
   late KPixOverlay settingsMenuDrawing;
   late KPixOverlay settingsMenuReduced;
+  late KPixOverlay settingsMenuRaster;
 
   @override
   void initState() {
@@ -93,6 +96,13 @@ class _LayerWidgetState extends State<LayerWidget>
       layerLink: settingsLink,
       onDelete: _deletePressed,
       onDuplicate: _duplicatePressed,
+    );
+    settingsMenuRaster = getRasterLayerMenu(
+      onDismiss: _closeSettingsMenus,
+      layerLink: settingsLink,
+      onDelete: _deletePressed,
+      onDuplicate: _duplicatePressed,
+      onRaster: _rasterPressed,
     );
   }
 
@@ -114,17 +124,29 @@ class _LayerWidgetState extends State<LayerWidget>
     _closeSettingsMenus();
   }
 
+  void _rasterPressed()
+  {
+    _appState.layerRastered(rasterLayer: widget.layerState);
+    _closeSettingsMenus();
+  }
+
   void _closeSettingsMenus()
   {
     settingsMenuDrawing.hide();
     settingsMenuReduced.hide();
+    settingsMenuRaster.hide();
   }
 
   void _settingsButtonPressed()
   {
-    if (widget.layerState.runtimeType == DrawingLayerState)
+    final Type layerType = widget.layerState.runtimeType;
+    if (layerType == DrawingLayerState)
     {
       settingsMenuDrawing.show(context: context);
+    }
+    else if (layerType == GridLayerState || layerType == ShadingLayerState)
+    {
+      settingsMenuRaster.show(context: context);
     }
     else
     {

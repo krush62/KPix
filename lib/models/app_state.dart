@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -215,6 +216,8 @@ class AppState
     hotkeyManager.addListener(func: () {changeLayerLockState(layerState: currentLayer!);}, action: HotkeyAction.layersSwitchLock);
     hotkeyManager.addListener(func: addNewDrawingLayer, action: HotkeyAction.layersNewDrawing);
     hotkeyManager.addListener(func: addNewReferenceLayer, action: HotkeyAction.layersNewReference);
+    hotkeyManager.addListener(func: addNewShadingLayer, action: HotkeyAction.layersNewShading);
+    hotkeyManager.addListener(func: addNewGridLayer, action: HotkeyAction.layersNewGrid);
     hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: currentLayer!);}, action: HotkeyAction.layersDuplicate);
     hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: currentLayer!);}, action: HotkeyAction.layersDelete);
     hotkeyManager.addListener(func: () {layerMerged(mergeLayer: currentLayer!);}, action: HotkeyAction.layersMerge);
@@ -439,6 +442,40 @@ class AppState
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
+    }
+    return newLayer;
+  }
+
+  ShadingLayerState addNewShadingLayer({final bool addToHistoryStack = true, final bool select = false})
+  {
+    final ShadingLayerState newLayer = ShadingLayerState();
+    final List<LayerState> layerList = <LayerState>[];
+    if (_layers.value.isEmpty)
+    {
+      newLayer.isSelected.value = true;
+      _currentLayer.value = newLayer;
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+      layerList.add(newLayer);
+    }
+    else
+    {
+      for (int i = 0; i < _layers.value.length; i++)
+      {
+        if (_layers.value[i].isSelected.value)
+        {
+          layerList.add(newLayer);
+        }
+        layerList.add(_layers.value[i]);
+      }
+    }
+    _layers.value = layerList;
+    if (select)
+    {
+      selectLayer(newLayer: newLayer);
+    }
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
     }
     return newLayer;
   }
@@ -1083,6 +1120,48 @@ class AppState
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
+    }
+  }
+
+  void layerRastered({required final LayerState rasterLayer, final bool addToHistoryStack = true})
+  {
+    if (rasterLayer.runtimeType == GridLayerState)
+    {
+      final GridLayerState gridLayer = rasterLayer as GridLayerState;
+      gridLayer.getHashMap().then((final CoordinateColorMap data) {
+        _replaceCurrentLayerWithDrawingLayer(data: data, originalLayer: rasterLayer);
+      });
+    }
+    else if (rasterLayer.runtimeType == ShadingLayerState)
+    {
+      //TODO
+    }
+  }
+
+  void _replaceCurrentLayerWithDrawingLayer({required final CoordinateColorMap data, required final LayerState originalLayer, final bool addToHistoryStack = true})
+  {
+    final List<LayerState> layerList = <LayerState>[];
+    final DrawingLayerState drawingLayer = DrawingLayerState(size: canvasSize, content: data);
+    for (final LayerState layer in _layers.value)
+    {
+       if (layer != originalLayer)
+       {
+          layerList.add(layer);
+       }
+       else
+       {
+         layerList.add(drawingLayer);
+
+       }
+    }
+    if (originalLayer.isSelected.value)
+    {
+      selectLayer(newLayer: drawingLayer);
+    }
+    _layers.value = layerList;
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
     }
   }
 

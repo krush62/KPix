@@ -74,6 +74,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
       onNewDrawingLayer: _newDrawingLayerPressed,
       onNewReferenceLayer: _newReferenceLayerPressed,
       onNewGridLayer: _newGridLayerPressed,
+      onNewShadingLayer: _newShadingLayerPressed,
     );
   }
 
@@ -97,6 +98,12 @@ class _RightBarWidgetState extends State<RightBarWidget>
   void _newGridLayerPressed()
   {
     _appState.addNewGridLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _closeLayerMenu();
+  }
+
+  void _newShadingLayerPressed()
+  {
+    _appState.addNewShadingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 

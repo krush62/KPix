@@ -499,6 +499,104 @@ class OverlayEntryAlertDialogOptions
     );
   }
 
+KPixOverlay getRasterLayerMenu({
+  required final Function() onDismiss,
+  required final Function() onDelete,
+  required final Function() onDuplicate,
+  required final Function() onRaster,
+  required final LayerLink layerLink,
+})
+{
+  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+  final LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+  final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+  const int buttonCount = 3;
+  final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
+  final double height = options.buttonHeight + 2 * options.buttonSpacing;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            onDismiss: () {onDismiss();},
+          ),
+          Positioned(
+            width: width,
+            height: height,
+            child: CompositedTransformFollower(
+              link: layerLink,
+              showWhenUnlinked: false,
+              offset: Offset(
+                -width,
+                layerWidgetOptions.height/2 - height/2 - layerWidgetOptions.innerPadding,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Tooltip(
+                      message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(
+                          options.buttonSpacing,),
+                        onPressed: () {onDelete();},
+                        icon: FaIcon(
+                          FontAwesomeIcons.trashCan,
+                          size: options.buttonHeight,),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: Theme.of(context).primaryColor,),
+                      ),
+                    ),
+                    Tooltip(
+                      message: "Duplicate Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(options.buttonSpacing),
+                        onPressed: () {onDuplicate();},
+                        icon: FaIcon(
+                          FontAwesomeIcons.clone,
+                          size: options.buttonHeight,),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: Theme.of(context).primaryColor,),
+                      ),
+                    ),
+                    Tooltip(
+                      message: "Raster Layer",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.all(options.buttonSpacing),
+                        onPressed: () {onRaster();},
+                        icon: FaIcon(
+                          FontAwesomeIcons.paintbrush,
+                          size: options.buttonHeight,),
+                        color: Theme.of(context).primaryColorLight,
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: Theme.of(context).primaryColor,),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
 
   KPixOverlay getKPal({
@@ -986,6 +1084,7 @@ class OverlayEntryAlertDialogOptions
     required final Function() onNewDrawingLayer,
     required final Function() onNewReferenceLayer,
     required final Function() onNewGridLayer,
+    required final Function() onNewShadingLayer,
     required final LayerLink layerLink,
   })
   {
@@ -1018,6 +1117,7 @@ class OverlayEntryAlertDialogOptions
                         padding: EdgeInsets.all(options.buttonSpacing / 2),
                         child: Tooltip(
                           message: "Add New Drawing Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
+                          preferBelow: false,
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
                             constraints: const BoxConstraints(),
@@ -1036,7 +1136,28 @@ class OverlayEntryAlertDialogOptions
                       Padding(
                         padding: EdgeInsets.all(options.buttonSpacing / 2),
                         child: Tooltip(
+                          message: "Add New Shading Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
+                          preferBelow: false,
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.all(options.buttonSpacing),
+                            onPressed: () {onNewShadingLayer();},
+                            icon: FaIcon(
+                              Icons.exposure,
+                              size: options.buttonHeight,),
+                            color: Theme.of(context).primaryColorLight,
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              backgroundColor: Theme.of(context).primaryColor,),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(options.buttonSpacing / 2),
+                        child: Tooltip(
                           message: "Add New Reference Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
+                          preferBelow: false,
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
                             constraints: const BoxConstraints(),
@@ -1055,7 +1176,7 @@ class OverlayEntryAlertDialogOptions
                       Padding(
                         padding: EdgeInsets.all(options.buttonSpacing / 2),
                         child: Tooltip(
-                          message: "Add New Grid Layer",
+                          message: "Add New Grid Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
                             constraints: const BoxConstraints(),

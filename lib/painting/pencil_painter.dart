@@ -110,8 +110,6 @@ class PencilPainter extends IToolPainter
 
           if (_hasNewCursorPos)
           {
-
-
             final Set<CoordinateSetI> posSet = _options.pixelPerfect.value ? _paintPositions.sublist(0, _paintPositions.length - min(3, _paintPositions.length)).toSet() : _paintPositions.toSet();
             final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
             for (final CoordinateSetI pos in posSet)

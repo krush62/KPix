@@ -1158,6 +1158,7 @@ class AppState
     {
       selectLayer(newLayer: drawingLayer);
     }
+    drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
     _layers.value = layerList;
     if (addToHistoryStack)
     {

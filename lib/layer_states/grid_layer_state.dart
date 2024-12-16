@@ -424,4 +424,3 @@ class GridLayerState extends LayerState
   }
 
 }
-

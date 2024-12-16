@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -77,6 +78,7 @@ class DrawingParameters
   final Offset primaryPressStart;
   final DrawingLayerState? currentDrawingLayer;
   final ReferenceLayerState? currentReferenceLayer;
+  final ShadingLayerState? currentShadingLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -95,8 +97,8 @@ class DrawingParameters
     drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
                                 y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor(),),
     currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
-    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null;
-
+    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
+    currentShadingLayer = currentLayer.runtimeType == ShadingLayerState ? (currentLayer as ShadingLayerState) : null;
 }
 
 class KPixPainter extends CustomPainter

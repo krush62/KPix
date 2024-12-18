@@ -560,7 +560,7 @@ class KPixPainter extends CustomPainter
         if (layers[i].runtimeType == DrawingLayerState)
         {
           final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-          final ui.Image? displayImage = (drawingLayer.thumbnail.value != null && !drawingLayer.isRasterizing) ? drawingLayer.thumbnail.value : drawingLayer.previousRaster;
+          final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
 
            if (displayImage != null)
           {
@@ -570,7 +570,7 @@ class KPixPainter extends CustomPainter
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
                     drawParams.scaledCanvasSize.x.toDouble(),
                     drawParams.scaledCanvasSize.y.toDouble(),),
-                image: drawingLayer.thumbnail.value!,
+                image: drawingLayer.rasterImage.value!,
                 scale: 1.0 / pxlSzDbl,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,

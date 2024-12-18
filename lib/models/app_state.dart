@@ -902,6 +902,19 @@ class AppState
       }
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
     }
+    else if (layerState.runtimeType == ShadingLayerState)
+    {
+      final ShadingLayerState shadingLayerState = layerState as ShadingLayerState;
+      if (shadingLayerState.lockState.value == LayerLockState.unlocked)
+      {
+        shadingLayerState.lockState.value = LayerLockState.locked;
+      }
+      else if (shadingLayerState.lockState.value == LayerLockState.locked)
+      {
+        shadingLayerState.lockState.value = LayerLockState.unlocked;
+      }
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
+    }
   }
 
 
@@ -962,6 +975,13 @@ class AppState
     }
     if (oldLayer != newLayer)
     {
+
+
+
+
+
+
+
       newLayer.isSelected.value = true;
       oldLayer.isSelected.value = false;
       _currentLayer.value = newLayer;

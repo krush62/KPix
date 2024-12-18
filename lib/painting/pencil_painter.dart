@@ -38,6 +38,7 @@ class PencilPainter extends IToolPainter
   final LineOptions _lineOptions = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final List<CoordinateSetI> _paintPositions = <CoordinateSetI>[];
+  final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   int _previousToolSize = -1;
@@ -93,6 +94,7 @@ class PencilPainter extends IToolPainter
               {
                 final CoordinateSetI drawPos = CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y);
                 _paintPositions.add(drawPos);
+                _allPaintPositions.add(drawPos);
                 _lastDrawingPosition = drawPos;
                 //PIXEL PERFECT
                 if (_paintPositions.length >= 3)
@@ -106,7 +108,9 @@ class PencilPainter extends IToolPainter
               }
               else
               {
-                _paintPositions.addAll(bresenham(start: _paintPositions[_paintPositions.length - 1], end: _cursorPosNorm).sublist(1));
+                final List<CoordinateSetI> bresenLine = bresenham(start: _paintPositions[_paintPositions.length - 1], end: _cursorPosNorm).sublist(1);
+                _paintPositions.addAll(bresenLine);
+                _allPaintPositions.addAll(bresenLine);
                 _lastDrawingPosition = CoordinateSetI.from(other: _cursorPosNorm);
               }
             }
@@ -121,7 +125,7 @@ class PencilPainter extends IToolPainter
               paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
             }
             final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
-              getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
+              getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
               getPixelsToDrawForShading(coords: paintPoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
 
             _drawingPixels.addAll(pixelsToDraw);
@@ -140,7 +144,7 @@ class PencilPainter extends IToolPainter
               }
 
               final CoordinateColorMap additionalDrawingPixels = (drawParams.currentDrawingLayer != null) ?
-                getPixelsToDraw(coords: additionalPaintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
+                getPixelsToDraw(coords: additionalPaintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
                 getPixelsToDrawForShading(coords: additionalPaintPoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
               addPixels = HashMap<CoordinateSetI, ColorReference>();
               addPixels.addAll(_drawingPixels);
@@ -162,9 +166,9 @@ class PencilPainter extends IToolPainter
         }
         else //final dumping
         {
-          if (_paintPositions.isNotEmpty)
+          if (_allPaintPositions.isNotEmpty)
           {
-            final Set<CoordinateSetI> posSet = _paintPositions.toSet();
+            final Set<CoordinateSetI> posSet = _allPaintPositions.toSet();
             final Set<CoordinateSetI> paintPoints = <CoordinateSetI>{};
             for (final CoordinateSetI pos in posSet)
             {
@@ -183,6 +187,7 @@ class PencilPainter extends IToolPainter
                _drawingPixels.clear();
             }
             _paintPositions.clear();
+            _allPaintPositions.clear();
           }
           else if (_hotkeyManager.shiftIsPressed && _isLineDrawing)
           {
@@ -215,21 +220,21 @@ class PencilPainter extends IToolPainter
       if (_hasNewCursorPos)
       {
         CoordinateColorMap cursorPixels;
-        if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty)
+        if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty)
         {
           final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
           getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
           getLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, shape: _options.shape.value);
 
           final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
-            getPixelsToDraw(coords: linePoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
+            getPixelsToDraw(coords: linePoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
             getPixelsToDrawForShading(coords: linePoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
           cursorPixels = pixelsToDraw;
         }
         else
         {
           final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
-          getPixelsToDraw(coords: _contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
+          getPixelsToDraw(coords: _contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
           getPixelsToDrawForShading(coords: _contentPoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
           cursorPixels = pixelsToDraw;
         }
@@ -328,6 +333,7 @@ class PencilPainter extends IToolPainter
   void reset()
   {
     _paintPositions.clear();
+    _allPaintPositions.clear();
     _previousToolSize = -1;
     _contentPoints.clear();
     _waitingForDump = false;

@@ -245,12 +245,12 @@ class _LayerWidgetState extends State<LayerWidget>
                         SizedBox(height: _options.innerPadding),
                         Builder(
                           builder: (final BuildContext context) {
-                            if (widget.layerState.runtimeType == DrawingLayerState)
+                            if (widget.layerState.runtimeType == DrawingLayerState || widget.layerState.runtimeType == ShadingLayerState)
                             {
-                              final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                              final ValueNotifier<LayerLockState> layerLockState = (widget.layerState.runtimeType == DrawingLayerState) ? (widget.layerState as DrawingLayerState).lockState : (widget.layerState as ShadingLayerState).lockState;
                               return Expanded(
                                 child: ValueListenableBuilder<LayerLockState>(
-                                    valueListenable: drawingLayer.lockState,
+                                    valueListenable: layerLockState,
                                     builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
                                       return Tooltip(
                                         message: _lockStringMap[lock]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchLock),

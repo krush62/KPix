@@ -555,9 +555,9 @@ abstract class IToolPainter
         if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
           final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
-          if (shadingLayer.shadingData[coord] != null)
+          if (shadingLayer.hasCoord(coord: coord))
           {
-            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.shadingData[coord]!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
+            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getValueAt(coord: coord)!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
           }
         }
       }
@@ -599,9 +599,9 @@ abstract class IToolPainter
               else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
               {
                 final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
-                if (shadingLayer.shadingData[coord] != null)
+                if (shadingLayer.hasCoord(coord: coord))
                 {
-                  final int newColorIndex = currentColor.colorIndex + shadingLayer.shadingData[coord]!.clamp(0, currentColor.ramp.shiftedColors.length - 1);
+                  final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!.clamp(0, currentColor.ramp.shiftedColors.length - 1);
                   currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
                 }
               }

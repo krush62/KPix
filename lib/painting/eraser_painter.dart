@@ -89,10 +89,9 @@ class EraserPainter extends IToolPainter
                     selection.selection.deleteDirectly(coord: coord);
                   }
                 }
-                else if (drawParams.primaryDown && drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.shadingData.containsKey(coord))
+                else if (drawParams.primaryDown && drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.hasCoord(coord: coord))
                 {
-                  drawParams.currentShadingLayer!.shadingData.remove(coord);
-                  appState.rasterDrawingLayersBelow(layer: drawParams.currentShadingLayer!);
+                  refs[coord] = null;
                 }
               }
               _hasErasedPixels = true;
@@ -101,6 +100,11 @@ class EraserPainter extends IToolPainter
           if (drawParams.currentDrawingLayer != null)
           {
             drawParams.currentDrawingLayer!.setDataAll(list: refs);
+          }
+          else //Shading Layer
+          {
+            drawParams.currentShadingLayer!.removeCoords(coords: refs.keys);
+            appState.rasterDrawingLayersBelow(layer: drawParams.currentShadingLayer!);
           }
         }
         _previousCursorPosNorm.x = _cursorPosNorm.x;

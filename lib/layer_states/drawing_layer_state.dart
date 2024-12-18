@@ -247,9 +247,9 @@ class DrawingLayerState extends LayerState
         if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
           final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
-          if (shadingLayer.shadingData[coord] != null)
+          if (shadingLayer.hasCoord(coord: coord))
           {
-            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.shadingData[coord]!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
+            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getValueAt(coord: coord)!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
           }
         }
       }

@@ -36,6 +36,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -108,7 +109,7 @@ class MainToolbarWidget extends StatelessWidget
                 {
                   contentWidget = GridLayerOptionsWidget(gridState: layer as GridLayerState);
                 }
-                else if (layer.runtimeType == DrawingLayerState)
+                else if (layer.runtimeType == DrawingLayerState || layer.runtimeType == ShadingLayerState)
                 {
                   contentWidget = Column(
                     children: <Widget>[

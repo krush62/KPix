@@ -203,39 +203,6 @@ class LinePainter extends IToolPainter
     drawParams.canvas.drawPath(path, drawParams.paint);
   }
 
-  @override
-  void drawExtras({required final DrawingParameters drawParams})
-  {
-    /*if (_lineStarted && drawParams.cursorPos != null)
-    {
-
-      Path path = Path();
-      path.moveTo(
-          drawParams.offset.dx + ((_lineStartPos.x + 0.5) * drawParams.pixelSize),
-          drawParams.offset.dy + ((_lineStartPos.y + 0.5) * drawParams.pixelSize));
-      final CoordinateSetD targetPoint = CoordinateSetD(x: drawParams.offset.dx + ((_cursorPosNorm.x + 0.5) * drawParams.pixelSize), y: drawParams.offset.dy + ((_cursorPosNorm.y + 0.5) * drawParams.pixelSize));
-
-      if (!_dragStarted)
-      {
-        path.lineTo(targetPoint.x, targetPoint.y);
-      }
-      else
-      {
-        final CoordinateSetD controlPoint = CoordinateSetD(x: drawParams.offset.dx + ((_lineEndPos1.x + 0.5) * drawParams.pixelSize), y: drawParams.offset.dy + ((_lineEndPos1.y + 0.5) * drawParams.pixelSize));
-        path.quadraticBezierTo(targetPoint.x, targetPoint.y, controlPoint.x, controlPoint.y);
-      }
-
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = Colors.black;
-      drawParams.canvas.drawPath(path, drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = Colors.white;
-      drawParams.canvas.drawPath(path, drawParams.paint);
-
-    }*/
-  }
-
   Set<CoordinateSetI> _calculateQuadraticBezierCurve(
       {required final CoordinateSetI p0,
       required final CoordinateSetI p1,

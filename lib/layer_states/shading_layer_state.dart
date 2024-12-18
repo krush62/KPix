@@ -16,6 +16,7 @@
 
 import 'dart:collection';
 
+import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/util/helper.dart';
 
@@ -23,4 +24,5 @@ class ShadingLayerState extends LayerState
 {
   static const int shadingMax = 5;
   final HashMap<CoordinateSetI, int> shadingData = HashMap<CoordinateSetI, int>();
+  final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
 }

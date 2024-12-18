@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -521,6 +522,53 @@ abstract class IToolPainter
                 pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex  - 1];
               }
             }
+          }
+        }
+      }
+    }
+    return pixelMap;
+  }
+
+  CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions})
+  {
+    final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
+    for (final CoordinateSetI coord in coords)
+    {
+      if (coord.x >= 0 && coord.y >= 0 &&
+          coord.x < canvasSize.x &&
+          coord.y < canvasSize.y)
+      {
+        final List<LayerState> layers = appState.layers;
+        final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
+        if (currentLayerPos >= 0)
+        {
+          ColorReference? currentColor;
+          for (int i = layers.length - 1; i >= currentLayerPos; i--)
+          {
+            if (layers[i].runtimeType == DrawingLayerState)
+            {
+              final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+              final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+              if (col != null)
+              {
+                currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+              }
+            }
+            else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
+            {
+              final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+              if (shadingLayer.shadingData[coord] != null)
+              {
+                final int newColorIndex = currentColor.colorIndex + shadingLayer.shadingData[coord]!.clamp(0, currentColor.ramp.shiftedColors.length - 1);
+                currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+              }
+            }
+          }
+          if (currentColor != null)
+          {
+            final int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
+            final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
+            pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
           }
         }
       }

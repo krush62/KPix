@@ -21,6 +21,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -175,7 +176,8 @@ class DrawingLayerState extends LayerState
     {
       if (entry.value != null)
       {
-        final Color dColor = entry.value!.getIdColor().color;
+        final ColorReference colRef = ColorReference(colorIndex: entry.value!.colorIndex, ramp: entry.value!.ramp);
+        final Color dColor = getColorShading(coord: entry.key, appState: appState, inputColor: colRef);
         final int index = (entry.key.y * size.x + entry.key.x) * 4;
         if (index < byteDataImg.lengthInBytes)
         {
@@ -191,7 +193,7 @@ class DrawingLayerState extends LayerState
         final ColorReference? colRef = appState.selectionState.selection.getColorReference(coord: coord);
         if (colRef != null && coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
         {
-          final Color dColor = colRef.getIdColor().color;
+          final Color dColor = getColorShading(coord: coord, appState: appState, inputColor: colRef);
           final int index = (coord.y * size.x + coord.x) * 4;
           if (index >= 0 && index < byteDataImg.lengthInBytes)
           {
@@ -200,6 +202,8 @@ class DrawingLayerState extends LayerState
         }
       }
     }
+
+
 
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
@@ -214,6 +218,33 @@ class DrawingLayerState extends LayerState
     );
 
     return await completerImg.future;
+  }
+
+  Color getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor})
+  {
+    Color retColor = inputColor.getIdColor().color;
+    int colorShift = 0;
+    final int currentIndex = appState.getLayerPosition(state: this);
+    if (currentIndex != -1)
+    {
+      for (int i = 0; i < appState.layers.length; i++)
+      {
+        if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
+        {
+          final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
+          if (shadingLayer.shadingData[coord] != null)
+          {
+            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.shadingData[coord]!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
+          }
+        }
+      }
+    }
+    if (colorShift != 0)
+    {
+      retColor = inputColor.ramp.shiftedColors[colorShift].value.color;
+    }
+
+    return retColor;
   }
 
 

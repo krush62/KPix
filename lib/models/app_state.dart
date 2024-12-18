@@ -750,7 +750,7 @@ class AppState
     }
   }
 
-  int _getLayerPosition({required final LayerState state})
+  int getLayerPosition({required final LayerState state})
   {
     int sourcePosition = -1;
     for (int i = 0; i < _layers.value.length; i++)
@@ -766,7 +766,7 @@ class AppState
 
   void moveUpLayer({required final LayerState state})
   {
-    final int sourcePosition = _getLayerPosition(state: state);
+    final int sourcePosition = getLayerPosition(state: state);
     if (sourcePosition > 0)
     {
       changeLayerOrder(state: state, newPosition: sourcePosition - 1);
@@ -775,7 +775,7 @@ class AppState
 
   void moveDownLayer({required final LayerState state})
   {
-    final int sourcePosition = _getLayerPosition(state: state);
+    final int sourcePosition = getLayerPosition(state: state);
     if (sourcePosition < (layers.length - 1))
     {
       changeLayerOrder(state: state, newPosition: sourcePosition + 2);
@@ -843,7 +843,7 @@ class AppState
 
   void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
   {
-    final int sourcePosition = _getLayerPosition(state: state);
+    final int sourcePosition = getLayerPosition(state: state);
 
     if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
@@ -875,6 +875,11 @@ class AppState
     {
       layerState.visibilityState.value = LayerVisibilityState.visible;
     }
+    if (layerState.runtimeType == ShadingLayerState)
+    {
+      rasterDrawingLayersBelow(layer: layerState);
+    }
+
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
   }
 
@@ -927,7 +932,7 @@ class AppState
 
   void selectLayerAbove()
   {
-    final int index = _getLayerPosition(state: currentLayer!);
+    final int index = getLayerPosition(state: currentLayer!);
     if (index > 0)
     {
       selectLayer(newLayer: layers[index - 1]);
@@ -936,7 +941,7 @@ class AppState
 
   void selectLayerBelow()
   {
-    final int index = _getLayerPosition(state: currentLayer!);
+    final int index = getLayerPosition(state: currentLayer!);
     if (index < layers.length - 1)
     {
       selectLayer(newLayer: layers[index + 1]);
@@ -966,7 +971,6 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
       }
     }
-
   }
 
   void layerDeleted({required final LayerState deleteLayer, final bool addToHistoryStack = true})
@@ -997,6 +1001,11 @@ class AppState
       }
 
       _layers.value = layerList;
+      if (deleteLayer.runtimeType == ShadingLayerState)
+      {
+        rasterDrawingLayersBelow(layer: deleteLayer);
+      }
+
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
@@ -1135,6 +1144,20 @@ class AppState
     else if (rasterLayer.runtimeType == ShadingLayerState)
     {
       //TODO
+    }
+  }
+
+  void rasterDrawingLayersBelow({required final LayerState layer})
+  {
+    //shade all layers below
+    final int currentLayerindex = getLayerPosition(state: layer);
+    for (int i = layers.length - 1; i > currentLayerindex; i--)
+    {
+      if (layers[i].runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+        drawingLayer.doManualRaster = true;
+      }
     }
   }
 

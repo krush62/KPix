@@ -41,7 +41,7 @@ class EraserPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null && drawParams.currentDrawingLayer != null)
+    if (drawParams.cursorPos != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
     {
       _cursorPosNorm.x = getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
@@ -55,7 +55,9 @@ class EraserPainter extends IToolPainter
 
       //if (_cursorPosNorm != _previousCursorPosNorm)
       {
-        if (drawParams.primaryDown && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+        if (drawParams.primaryDown &&
+            (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+            (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
         {
           final List<CoordinateSetI> pixelsToDelete = <CoordinateSetI>[_cursorPosNorm];
           if (!_cursorPosNorm.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
@@ -73,22 +75,33 @@ class EraserPainter extends IToolPainter
                   coord.x < drawParams.canvasSize.x &&
                   coord.y < drawParams.canvasSize.y)
               {
-                if (selection.selection.isEmpty)
+                if (drawParams.currentDrawingLayer != null)
                 {
-                  if (drawParams.currentDrawingLayer!.getDataEntry(coord: coord) != null)
+                  if (selection.selection.isEmpty)
                   {
-                    refs[coord] = null;
+                    if (drawParams.currentDrawingLayer!.getDataEntry(coord: coord) != null)
+                    {
+                      refs[coord] = null;
+                    }
+                  }
+                  else
+                  {
+                    selection.selection.deleteDirectly(coord: coord);
                   }
                 }
-                else
+                else if (drawParams.primaryDown && drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.shadingData.containsKey(coord))
                 {
-                  selection.selection.deleteDirectly(coord: coord);
+                  drawParams.currentShadingLayer!.shadingData.remove(coord);
+                  appState.rasterDrawingLayersBelow(layer: drawParams.currentShadingLayer!);
                 }
               }
               _hasErasedPixels = true;
             }
           }
-          drawParams.currentDrawingLayer!.setDataAll(list: refs);
+          if (drawParams.currentDrawingLayer != null)
+          {
+            drawParams.currentDrawingLayer!.setDataAll(list: refs);
+          }
         }
         _previousCursorPosNorm.x = _cursorPosNorm.x;
         _previousCursorPosNorm.y = _cursorPosNorm.y;

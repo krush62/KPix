@@ -40,6 +40,7 @@ class DrawingLayerState extends LayerState
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
   ui.Image? previousRaster;
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
+  List<LayerState>? layerStack;
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content})
   {
@@ -58,7 +59,7 @@ class DrawingLayerState extends LayerState
     return DrawingLayerState._(data: data2, size: size);
   }
 
-  DrawingLayerState._({required final CoordinateColorMap data, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible}) : _data = data
+  DrawingLayerState._({required final CoordinateColorMap data, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack}) : _data = data
   {
     isRasterizing = true;
     _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thumbnailImage: images.$2, startedFromManual: false));
@@ -69,14 +70,15 @@ class DrawingLayerState extends LayerState
 
   }
 
-  factory DrawingLayerState.from({required final DrawingLayerState other})
+  factory DrawingLayerState.from({required final DrawingLayerState other, final List<LayerState>? layerStack})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+
     for (final CoordinateColor ref in other._data.entries)
     {
       data[ref.key] = ref.value;
     }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
+    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack);
   }
 
   factory DrawingLayerState.deepClone({required final DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
@@ -158,7 +160,11 @@ class DrawingLayerState extends LayerState
   Future<(ui.Image, ui.Image)> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
+    bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
+    if (layerStack != null)
+    {
+      hasSelection = false;
+    }
 
     for (final CoordinateColorNullable entry in rasterQueue.entries)
     {
@@ -239,14 +245,27 @@ class DrawingLayerState extends LayerState
   {
     Color retColor = inputColor.getIdColor().color;
     int colorShift = 0;
-    final int currentIndex = appState.getLayerPosition(state: this);
+    int currentIndex = appState.getLayerPosition(state: this);
+    if (layerStack != null)
+    {
+      currentIndex = -1;
+      for (int i = 0; i < layerStack!.length; i++)
+      {
+        if (layerStack![i] == this)
+        {
+          currentIndex = i;
+          break;
+        }
+      }
+    }
+    final List<LayerState> layerList = layerStack ?? appState.layers;
     if (currentIndex != -1)
     {
-      for (int i = 0; i < appState.layers.length; i++)
+      for (int i = 0; i < layerList.length; i++)
       {
-        if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
+        if (layerList[i].runtimeType == ShadingLayerState && layerList[i].visibilityState.value == LayerVisibilityState.visible)
         {
-          final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
+          final ShadingLayerState shadingLayer = layerList[i] as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
             colorShift += shadingLayer.getValueAt(coord: coord)!;

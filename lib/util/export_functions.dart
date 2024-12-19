@@ -66,12 +66,13 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
   Future<Uint8List?> exportPNG({required final ExportData exportData, required final AppState appState}) async
   {
     final ByteData byteData = await _getImageData(
-        ramps: appState.colorRamps,
-        layers: appState.layers,
-        selectionState: appState.selectionState,
-        imageSize: appState.canvasSize,
-        scaling: exportData.scaling,
-        selectedLayer: appState.currentLayer,);
+      ramps: appState.colorRamps,
+      layers: appState.layers,
+      selectionState: appState.selectionState,
+      imageSize: appState.canvasSize,
+      scaling: exportData.scaling,
+      selectedLayerIndex: appState.getLayerPosition(state: appState.currentLayer!),);
+
 
     final Completer<ui.Image> c = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -90,44 +91,11 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     return pngBytes!.buffer.asUint8List();
   }
 
-  Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required final SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final LayerState? selectedLayer}) async
-  {
-    final ByteData byteData = ByteData((imageSize.x * scaling) * (imageSize.y * scaling) * 4);
-    for (int x = 0; x < imageSize.x; x++)
-    {
-      for (int y = 0; y < imageSize.y; y++)
-      {
-        final CoordinateSetI currentCoord = CoordinateSetI(x: x, y: y);
-        for (int l = 0; l < layers.length; l++)
-        {
-          if (layers[l].visibilityState.value == LayerVisibilityState.visible && layers[l].runtimeType == DrawingLayerState)
-          {
-            final DrawingLayerState drawingLayer = layers[l] as DrawingLayerState;
-            ColorReference? col;
-            if (selectedLayer == drawingLayer)
-            {
-              col = selectionState.selection.getColorReference(coord: currentCoord);
-            }
-            col ??= drawingLayer.getDataEntry(coord: currentCoord);
-
-            if (col != null)
-            {
-              for (int i = 0; i < scaling; i++)
-              {
-                for (int j = 0; j < scaling; j++)
-                {
-                  byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
-                      argbToRgba(argb: col.getIdColor().color.value),);
-                }
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-    return byteData;
-  }
+Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required final SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final int selectedLayerIndex}) async
+{
+  final ui.Image i = await getImageFromLayers(canvasSize: imageSize, layers: layers, selectedLayerIndex: selectedLayerIndex, selectionList: selectionState.selection, scalingFactor: scaling);
+  return (await i.toByteData())!;
+}
 
   Future<Uint8List?> getPalettePngData({required final List<KPalRampData> ramps}) async
   {

@@ -148,16 +148,17 @@ class ShapePainter extends IToolPainter
             });
           }
         }
-        if (!drawParams.primaryDown && _drawingPixels.isNotEmpty)
+        if (!drawParams.primaryDown && _drawingPixels.isNotEmpty) //DUMPING
         {
+          final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
           if (drawParams.currentDrawingLayer != null)
           {
+            _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             _dumpDrawingLayer(layer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize);
             _waitingForRasterization = true;
           }
           else
           {
-            final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
             dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: contentPoints, shaderOptions: shaderOptions);
             _drawingPixels.clear();
           }

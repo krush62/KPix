@@ -90,14 +90,18 @@ class FontPainter extends IToolPainter
       _currentText = _options.text.value;
       _previousSize = _options.size.value;
 
-      final CoordinateColorMap cursorPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+      final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
+        getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+        getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _textContent, shaderOptions: shaderOptions);
       rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
         cursorRaster = rasterSet;
         hasAsyncUpdate = true;
       });
     }
 
-    if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+    //DUMP
+    if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+        drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden)
     {
       if (drawParams.primaryDown && !_down)
       {
@@ -105,7 +109,18 @@ class FontPainter extends IToolPainter
       }
       else if (!drawParams.primaryDown && _down)
       {
-        _dump(drawParams: drawParams);
+        if (_textContent.isNotEmpty)
+        {
+          if (drawParams.currentDrawingLayer != null)
+          {
+            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            _dumpDrawing(drawParams: drawParams, drawingPixels: drawingPixels);
+          }
+          else
+          {
+            dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _textContent, shaderOptions: shaderOptions);
+          }
+        }
         _down = false;
       }
     }
@@ -119,25 +134,21 @@ class FontPainter extends IToolPainter
     }
   }
 
-  void _dump({required final DrawingParameters drawParams})
+  void _dumpDrawing({required final DrawingParameters drawParams, required final CoordinateColorMap drawingPixels})
   {
-    if (_textContent.isNotEmpty && drawParams.currentDrawingLayer != null)
+    if (!appState.selectionState.selection.isEmpty)
     {
-      final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-      if (!appState.selectionState.selection.isEmpty)
-      {
-        appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
-      }
-      /*else if (!_shaderOptions.isEnabled.value)
-      {
-        appState.selectionState.add(data: drawingPixels, notify: false);
-      }*/
-      else
-      {
-        drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
-      }
-      hasHistoryData = true;
+      appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
     }
+    /*else if (!_shaderOptions.isEnabled.value)
+    {
+      appState.selectionState.add(data: drawingPixels, notify: false);
+    }*/
+    else
+    {
+      drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
+    }
+    hasHistoryData = true;
   }
 
   @override

@@ -688,4 +688,30 @@ abstract class IToolPainter
     final double lowerMultiple = value - remainder;
     return (lowerMultiple / pixelSize).round();
   }
+
+  void dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions})
+  {
+    final List<CoordinateSetI> removeCoords = <CoordinateSetI>[];
+    final HashMap<CoordinateSetI, int> changeCoords = HashMap<CoordinateSetI, int>();
+    for (final CoordinateSetI coord in coordinates)
+    {
+      final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
+      if (targetShift == 0)
+      {
+        removeCoords.add(coord);
+      }
+      else
+      {
+        changeCoords[coord] = targetShift;
+      }
+    }
+    shadingLayer.removeCoords(coords: removeCoords);
+    shadingLayer.addCoords(coords: changeCoords);
+
+    appState.rasterDrawingLayersBelow(layer: shadingLayer);
+
+    contentRaster = null;
+    hasHistoryData = true;
+  }
 }

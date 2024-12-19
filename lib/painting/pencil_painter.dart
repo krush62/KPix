@@ -183,7 +183,7 @@ class PencilPainter extends IToolPainter
             }
             else //SHADING LAYER
             {
-               _dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: paintPoints, shaderOptions: shaderOptions);
+               dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: paintPoints, shaderOptions: shaderOptions);
                _drawingPixels.clear();
             }
             _paintPositions.clear();
@@ -202,7 +202,7 @@ class PencilPainter extends IToolPainter
             }
             else //SHADING LAYER
             {
-              _dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: linePoints, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: linePoints, shaderOptions: shaderOptions);
               _drawingPixels.clear();
             }
             _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
@@ -268,31 +268,7 @@ class PencilPainter extends IToolPainter
     hasHistoryData = true;
   }
 
-  void _dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions})
-  {
-    final List<CoordinateSetI> removeCoords = <CoordinateSetI>[];
-    final HashMap<CoordinateSetI, int> changeCoords = HashMap<CoordinateSetI, int>();
-    for (final CoordinateSetI coord in coordinates)
-    {
-      final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
-      if (targetShift == 0)
-      {
-        removeCoords.add(coord);
-      }
-      else
-      {
-        changeCoords[coord] = targetShift;
-      }
-    }
-    shadingLayer.removeCoords(coords: removeCoords);
-    shadingLayer.addCoords(coords: changeCoords);
 
-    appState.rasterDrawingLayersBelow(layer: shadingLayer);
-
-    contentRaster = null;
-    hasHistoryData = true;
-  }
 
 
   @override

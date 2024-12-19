@@ -106,7 +106,9 @@ class LinePainter extends IToolPainter
               _linePoints = widePoints;
             }
           }
-          final CoordinateColorMap cursorPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
+            getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+            getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _linePoints, shaderOptions: shaderOptions);
           rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
             cursorRaster = rasterSet;
             hasAsyncUpdate = true;
@@ -115,7 +117,8 @@ class LinePainter extends IToolPainter
       }
     }
 
-    if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+    if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+        (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
     {
       if (drawParams.primaryDown)
       {
@@ -136,7 +139,7 @@ class LinePainter extends IToolPainter
           _lineEndPos2.y = _cursorPosNorm.y;
         }
       }
-      else if (!drawParams.primaryDown && _isDown)
+      else if (!drawParams.primaryDown && _isDown) //DUMPING
       {
         //FIRST (set starting point)
         if (!_lineStarted)
@@ -147,15 +150,23 @@ class LinePainter extends IToolPainter
         }
         else
         {
-          final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-          if (!appState.selectionState.selection.isEmpty)
+          if (drawParams.currentDrawingLayer != null)
           {
-            appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
+            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            if (!appState.selectionState.selection.isEmpty)
+            {
+              appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
+            }
+            else
+            {
+              drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
+            }
           }
-          else
+          else //SHADING LAYER
           {
-            drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
+            dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _linePoints, shaderOptions: shaderOptions);
           }
+
           hasHistoryData = true;
           _lineStarted = false;
           _dragStarted = false;

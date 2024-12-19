@@ -52,7 +52,7 @@ class ShapePainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.currentDrawingLayer != null)
+    if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
     {
       bool selectionChanged = false;
       if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
@@ -80,7 +80,9 @@ class ShapePainter extends IToolPainter
         selectionChanged = true;
       }
 
-      if (!_waitingForRasterization && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+      if (!_waitingForRasterization &&
+          (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+          (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
       {
         _isStarted = drawParams.primaryDown && drawParams.cursorPos != null;
         if (_isStarted)
@@ -137,7 +139,9 @@ class ShapePainter extends IToolPainter
           if (selectionChanged)
           {
             final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
-            _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            _drawingPixels = drawParams.currentDrawingLayer != null ?
+              getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+              getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: contentPoints, shaderOptions: shaderOptions);
             rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
               cursorRaster = rasterSet;
               hasAsyncUpdate = true;
@@ -146,14 +150,24 @@ class ShapePainter extends IToolPainter
         }
         if (!drawParams.primaryDown && _drawingPixels.isNotEmpty)
         {
-          _dump(layer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize);
-          _waitingForRasterization = true;
+          if (drawParams.currentDrawingLayer != null)
+          {
+            _dumpDrawingLayer(layer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize);
+            _waitingForRasterization = true;
+          }
+          else
+          {
+            final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
+            dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: contentPoints, shaderOptions: shaderOptions);
+            _drawingPixels.clear();
+          }
         }
       }
-      else if (drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _drawingPixels.isNotEmpty && _waitingForRasterization)
+      else if (_drawingPixels.isNotEmpty && _waitingForRasterization && (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing))
       {
         _drawingPixels.clear();
         _waitingForRasterization = false;
+
       }
       if (!drawParams.primaryDown && !_waitingForRasterization)
       {
@@ -162,7 +176,7 @@ class ShapePainter extends IToolPainter
     }
   }
 
-  void _dump({required final DrawingLayerState layer, required final CoordinateSetI canvasSize})
+  void _dumpDrawingLayer({required final DrawingLayerState layer, required final CoordinateSetI canvasSize})
   {
     if (_drawingPixels.isNotEmpty)
     {

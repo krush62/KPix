@@ -33,7 +33,7 @@ class ShadingLayerState extends LayerState
   final HashMap<int, int> _thumbnailBrightnessMap = HashMap<int, int>();
   final HashMap<CoordinateSetI, int> _shadingData = HashMap<CoordinateSetI, int>();
   final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
-  bool _isRendering = false;
+  bool isRendering = false;
   bool _shouldRender = true;
 
   ShadingLayerState()
@@ -129,15 +129,15 @@ class ShadingLayerState extends LayerState
   void _rasterCreated({required final ui.Image image})
   {
     thumbnail.value = image;
-    _isRendering = false;
+    isRendering = false;
     _shouldRender = false;
   }
 
   void _updateTimerCallback({required final Timer timer})
   {
-    if (_shouldRender && !_isRendering)
+    if (_shouldRender && !isRendering)
     {
-      _isRendering = true;
+      isRendering = true;
       _createRaster().then((final ui.Image image)
       {
         _rasterCreated(image: image);

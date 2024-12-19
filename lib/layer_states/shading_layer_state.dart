@@ -80,7 +80,7 @@ class ShadingLayerState extends LayerState
   {
     for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
     {
-      _shadingData[entry.key] = entry.value;
+      _shadingData[entry.key] = entry.value.clamp(-shadingMax, shadingMax);
     }
     _shouldRender = true;
   }

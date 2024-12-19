@@ -601,14 +601,22 @@ abstract class IToolPainter
                 final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
                 if (shadingLayer.hasCoord(coord: coord))
                 {
-                  final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!.clamp(0, currentColor.ramp.shiftedColors.length - 1);
+                  final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
                   currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
                 }
               }
             }
             if (currentColor != null)
             {
-              final int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
+              int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
+              if (currentLayer.hasCoord(coord: coord))
+              {
+                final int currentVal = currentLayer.getValueAt(coord: coord)!;
+                if (currentVal + shift < -ShadingLayerState.shadingMax || currentVal + shift > ShadingLayerState.shadingMax)
+                {
+                  shift = 0;
+                }
+              }
               final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
               pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
             }

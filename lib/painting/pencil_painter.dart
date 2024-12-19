@@ -275,7 +275,7 @@ class PencilPainter extends IToolPainter
     for (final CoordinateSetI coord in coordinates)
     {
       final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift;
+      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
       if (targetShift == 0)
       {
         removeCoords.add(coord);

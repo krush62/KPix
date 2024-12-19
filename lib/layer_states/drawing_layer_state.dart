@@ -249,14 +249,16 @@ class DrawingLayerState extends LayerState
           final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
-            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getValueAt(coord: coord)!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
+            colorShift += shadingLayer.getValueAt(coord: coord)!;
           }
         }
       }
     }
     if (colorShift != 0)
     {
-      retColor = inputColor.ramp.shiftedColors[colorShift].value.color;
+      final int finalIndex = (inputColor.colorIndex + colorShift).clamp(0, inputColor.ramp.shiftedColors.length - 1);
+
+      retColor = inputColor.ramp.shiftedColors[finalIndex].value.color;
     }
 
     return retColor;

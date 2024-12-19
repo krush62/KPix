@@ -66,23 +66,29 @@ class ShadingLayerState extends LayerState
 
   void removeCoords({required final Iterable<CoordinateSetI> coords})
   {
-    for (final CoordinateSetI coord in coords)
+    if (lockState.value == LayerLockState.unlocked)
     {
-      if (_shadingData.containsKey(coord))
+      for (final CoordinateSetI coord in coords)
       {
-        _shadingData.remove(coord);
+        if (_shadingData.containsKey(coord))
+        {
+          _shadingData.remove(coord);
+        }
       }
+      _shouldRender = true;
     }
-    _shouldRender = true;
   }
 
   void addCoords({required final HashMap<CoordinateSetI, int> coords})
   {
-    for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
+    if (lockState.value == LayerLockState.unlocked)
     {
-      _shadingData[entry.key] = entry.value.clamp(-shadingMax, shadingMax);
+      for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
+      {
+        _shadingData[entry.key] = entry.value.clamp(-shadingMax, shadingMax);
+      }
+      _shouldRender = true;
     }
-    _shouldRender = true;
   }
 
   Future<ui.Image> _createRaster() async

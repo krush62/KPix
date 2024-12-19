@@ -24,6 +24,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -910,6 +911,12 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
             }
             else
             {
+              final int shade = _getShadeForCoord(layers: appState.layers, currentLayerIndex: l, coord: curCoord);
+              if (shade != 0)
+              {
+                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
+                colAtPos = colAtPos.ramp.references[targetIndex];
+              }
               imgBytes.add(colorMap[colAtPos]!);
             }
           }
@@ -922,6 +929,37 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
     }
 
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
+  }
+
+  int _getShadeForCoord({required final List<LayerState> layers, required final int currentLayerIndex, required final CoordinateSetI coord})
+  {
+    assert(currentLayerIndex < layers.length);
+    int shade = 0;
+    for (int i = currentLayerIndex - 1; i >= 0; i--)
+    {
+      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      {
+        if (layers[i].runtimeType == DrawingLayerState)
+        {
+          final DrawingLayerState drawingLayerState = layers[i] as DrawingLayerState;
+          if (drawingLayerState.getDataEntry(coord: coord) != null)
+          {
+            return 0;
+          }
+        }
+        else if (layers[i].runtimeType == ShadingLayerState)
+        {
+          final ShadingLayerState shadingLayerState = layers[i] as ShadingLayerState;
+          final int? shadingAt = shadingLayerState.getValueAt(coord: coord);
+          if (shadingAt != null)
+          {
+            shade += shadingAt;
+          }
+        }
+      }
+    }
+
+    return shade;
   }
 
   Future<Uint8List?> getGimpData({required final ExportData exportData, required final AppState appState}) async
@@ -1023,6 +1061,12 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
               }
               else
               {
+                final int shade = _getShadeForCoord(layers: appState.layers, currentLayerIndex: l, coord: curCoord);
+                if (shade != 0)
+                {
+                  final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
+                  colAtPos = colAtPos.ramp.references[targetIndex];
+                }
                 imgBytes.add(colorMap[colAtPos]!);
                 imgBytes.add(255);
               }
@@ -1184,7 +1228,7 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
 
 
     //LAYERS
-    for (int i = 0; i < appState.layers.length; i++)
+    for (int i = 0; i < drawingLayers.length; i++)
     {
       setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 

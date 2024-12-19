@@ -187,7 +187,7 @@ class DrawingLayerState extends LayerState
       {
         final ColorReference colRef = ColorReference(colorIndex: entry.value!.colorIndex, ramp: entry.value!.ramp);
         final Color originalColor = colRef.getIdColor().color;
-        final Color shadedColor = getColorShading(coord: entry.key, appState: appState, inputColor: colRef);
+        final Color shadedColor = _getColorShading(coord: entry.key, appState: appState, inputColor: colRef);
         final int index = (entry.key.y * size.x + entry.key.x) * 4;
         if (index < byteDataImg.lengthInBytes)
         {
@@ -205,7 +205,7 @@ class DrawingLayerState extends LayerState
         if (colRef != null && coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
         {
           final Color originalColor = colRef.getIdColor().color;
-          final Color shadedColor = getColorShading(coord: coord, appState: appState, inputColor: colRef);
+          final Color shadedColor = _getColorShading(coord: coord, appState: appState, inputColor: colRef);
           final int index = (coord.y * size.x + coord.x) * 4;
           if (index >= 0 && index < byteDataImg.lengthInBytes)
           {
@@ -241,7 +241,7 @@ class DrawingLayerState extends LayerState
     return (await completerImg.future, await completerThb.future);
   }
 
-  Color getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor})
+  Color _getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor})
   {
     Color retColor = inputColor.getIdColor().color;
     int colorShift = 0;

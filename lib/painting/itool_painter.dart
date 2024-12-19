@@ -629,7 +629,7 @@ abstract class IToolPainter
 
 
 
-  CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
+  CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor, final bool withShadingLayers = false})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
@@ -679,7 +679,90 @@ abstract class IToolPainter
         }
       }
     }
-    return pixelMap;
+
+    if (withShadingLayers)
+    {
+      final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
+      for (final CoordinateColor entry in pixelMap.entries)
+      {
+        shadedPixelMap[entry.key] = _getColorShading(coord: entry.key, appState: appState, inputColor: entry.value, currentLayer: currentLayer);
+      }
+      return shadedPixelMap;
+    }
+    else
+    {
+      return pixelMap;
+    }
+  }
+
+  CoordinateColorMap getStampPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final ShaderOptions shaderOptions, final bool withShadingLayers = false})
+  {
+    final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
+    for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
+    {
+      final CoordinateSetI coord = stampEntry.key;
+
+      if (coord.x >= 0 && coord.y >= 0 &&
+          coord.x < canvasSize.x &&
+          coord.y < canvasSize.y)
+      {
+        final List<LayerState> layers = appState.layers;
+        final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
+        if (currentLayerPos >= 0)
+        {
+          ColorReference? currentColor;
+          for (int i = layers.length - 1; i >= currentLayerPos; i--)
+          {
+            if (layers[i].runtimeType == DrawingLayerState)
+            {
+              final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+              final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+              if (col != null)
+              {
+                currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+              }
+            }
+            else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
+            {
+              final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+              if (shadingLayer.hasCoord(coord: coord))
+              {
+                final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
+                currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+              }
+            }
+          }
+          if (currentColor != null)
+          {
+            int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
+            shift += stampEntry.value;
+
+            final int currentVal = currentLayer.hasCoord(coord: coord) ? currentLayer.getValueAt(coord: coord)! : 0;
+            if (currentVal + shift < -ShadingLayerState.shadingMax || currentVal + shift > ShadingLayerState.shadingMax)
+            {
+              shift = 0;
+            }
+
+            final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
+            pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+          }
+        }
+      }
+    }
+
+    if (withShadingLayers)
+    {
+      final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
+      for (final CoordinateColor entry in pixelMap.entries)
+      {
+        shadedPixelMap[entry.key] = _getColorShading(coord: entry.key, appState: appState, inputColor: entry.value, currentLayer: currentLayer);
+      }
+      return shadedPixelMap;
+    }
+    else
+    {
+      return pixelMap;
+    }
   }
 
   int getClosestPixel({required final double value, required final double pixelSize})
@@ -687,6 +770,32 @@ abstract class IToolPainter
     final double remainder = value % pixelSize;
     final double lowerMultiple = value - remainder;
     return (lowerMultiple / pixelSize).round();
+  }
+
+  void dumpStampShading({required final ShadingLayerState shadingLayer, required final HashMap<CoordinateSetI, int> stampData, required final ShaderOptions shaderOptions})
+  {
+    final List<CoordinateSetI> removeCoords = <CoordinateSetI>[];
+    final HashMap<CoordinateSetI, int> changeCoords = HashMap<CoordinateSetI, int>();
+    for (final MapEntry<CoordinateSetI, int> entry in stampData.entries)
+    {
+      final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+      final int targetShift = (shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! + currentShift + entry.value : currentShift + entry.value).clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
+      if (targetShift == 0)
+      {
+        removeCoords.add(entry.key);
+      }
+      else
+      {
+        changeCoords[entry.key] = targetShift;
+      }
+    }
+    shadingLayer.removeCoords(coords: removeCoords);
+    shadingLayer.addCoords(coords: changeCoords);
+
+    appState.rasterDrawingLayersBelow(layer: shadingLayer);
+
+    contentRaster = null;
+    hasHistoryData = true;
   }
 
   void dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions})

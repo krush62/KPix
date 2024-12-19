@@ -1155,10 +1155,19 @@ class AppState
           final GridLayerState gridLayer = duplicateLayer as GridLayerState;
           layerList.add(GridLayerState.from(other: gridLayer));
         }
+        else if (duplicateLayer.runtimeType == ShadingLayerState)
+        {
+          final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
+          layerList.add(ShadingLayerState.from(other: shadingLayer));
+        }
       }
       layerList.add(_layers.value[i]);
     }
     _layers.value = layerList;
+    if (duplicateLayer.runtimeType == ShadingLayerState)
+    {
+      rasterDrawingLayersBelow(layer: _layers.value[getLayerPosition(state: duplicateLayer) - 1]);
+    }
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
@@ -1176,7 +1185,58 @@ class AppState
     }
     else if (rasterLayer.runtimeType == ShadingLayerState)
     {
-      //TODO
+      final ShadingLayerState shadingLayer = rasterLayer as ShadingLayerState;
+      _rasterShadingLayer(shadingLayer: shadingLayer).then((final void _) {
+        _shadingLayerRastered(shadingLayer: shadingLayer);
+      },);
+    }
+  }
+
+  void _shadingLayerRastered({required final ShadingLayerState shadingLayer})
+  {
+    layerDeleted(deleteLayer: shadingLayer);
+  }
+
+  Future<void> _rasterShadingLayer({required final ShadingLayerState shadingLayer}) async
+  {
+    final int layerIndex = getLayerPosition(state: shadingLayer);
+    assert(layerIndex >= 0 && layerIndex < layers.length);
+    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
+    final HashMap<DrawingLayerState, CoordinateColorMapNullable> shadeLayerMap = HashMap<DrawingLayerState, CoordinateColorMapNullable>();
+
+    //getting all relevant drawing layers
+    for (int i = layerIndex; i < layers.length; i++)
+    {
+      if (layers[i].runtimeType == DrawingLayerState && layers[i].visibilityState.value == LayerVisibilityState.visible)
+      {
+        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+        drawingLayers.add(drawingLayer);
+        shadeLayerMap[drawingLayer] = HashMap<CoordinateSetI, ColorReference?>();
+      }
+    }
+
+    //finding and sorting pixels that need to be shaded
+    for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.shadingData.entries)
+    {
+      for (final DrawingLayerState drawingLayer in drawingLayers)
+      {
+        final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key);
+        if (curCol != null)
+        {
+          final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
+          shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
+          break;
+        }
+      }
+    }
+
+    //applying shading
+    for (final MapEntry<DrawingLayerState, CoordinateColorMapNullable> entry in shadeLayerMap.entries)
+    {
+      if (entry.value.isNotEmpty)
+      {
+        entry.key.setDataAll(list: entry.value);
+      }
     }
   }
 

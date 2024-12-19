@@ -51,6 +51,16 @@ class ShadingLayerState extends LayerState
     lockState.value = lState;
   }
 
+  factory ShadingLayerState.from({required final ShadingLayerState other})
+  {
+    final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
+    for (final MapEntry<CoordinateSetI, int> entry in other.shadingData.entries)
+    {
+      data[entry.key] = entry.value;
+    }
+    return ShadingLayerState.withData(data: data, lState: other.lockState.value);
+  }
+
   void _init()
   {
     int counter = 0;

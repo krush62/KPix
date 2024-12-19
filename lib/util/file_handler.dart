@@ -28,6 +28,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -35,6 +36,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
+import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
@@ -105,6 +107,7 @@ const Map<int, Type> historyLayerValueMap =
   1: HistoryDrawingLayer,
   2: HistoryReferenceLayer,
   3: HistoryGridLayer,
+  4: HistoryShadingLayer,
 };
 
 enum FileNameStatus
@@ -330,6 +333,27 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
 
           layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3));
+        }
+        else if (historyLayerValueMap[layerType] == HistoryShadingLayer) //SHADING LAYER
+        {
+          final int lockStateVal = byteData.getUint8(offset++);
+          final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
+          if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
+          final int dataCount = byteData.getUint32(offset);
+          offset+=4;
+          final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
+          for (int j = 0; j < dataCount; j++)
+          {
+            final int x = byteData.getUint16(offset);
+            offset+=2;
+            final int y = byteData.getUint16(offset);
+            offset+=2;
+            final int shading = byteData.getInt8(offset++);
+            if (shading < -ShadingLayerState.shadingMax || shading > ShadingLayerState.shadingMax) return LoadFileSet(status: "Shading value out of range on layer $i: $shading");
+            data[CoordinateSetI(x: x, y: y)] = shading;
+          }
+
+          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data));
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);

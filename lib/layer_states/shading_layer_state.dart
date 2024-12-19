@@ -38,6 +38,21 @@ class ShadingLayerState extends LayerState
 
   ShadingLayerState()
   {
+    _init();
+  }
+
+  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState})
+  {
+    _init();
+    for (final MapEntry<CoordinateSetI, int> entry in data.entries)
+    {
+      _shadingData[entry.key] = entry.value;
+    }
+    lockState.value = lState;
+  }
+
+  void _init()
+  {
     int counter = 0;
     for (int i = -shadingMax; i <= shadingMax; i++)
     {
@@ -46,7 +61,11 @@ class ShadingLayerState extends LayerState
     }
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+  }
 
+  HashMap<CoordinateSetI, int> get shadingData
+  {
+    return _shadingData;
   }
 
   void manualRender()

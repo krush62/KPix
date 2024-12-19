@@ -31,6 +31,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -660,7 +661,7 @@ class AppState
       }
       final ColorReference selCol = ramps[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
 
-
+      LayerState? topMostShadingLayer;
       //LAYERS
       final List<LayerState> layerList = <LayerState>[];
       LayerState? curSelLayer;
@@ -702,6 +703,12 @@ class AppState
           final HistoryGridLayer gridLayer = historyLayer as HistoryGridLayer;
           layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY, horizonPosition: gridLayer.horizonPosition, vanishingPoint1: gridLayer.vanishingPoint1, vanishingPoint2: gridLayer.vanishingPoint2, vanishingPoint3: gridLayer.vanishingPoint3 );
         }
+        else if (historyLayer.runtimeType == HistoryShadingLayer)
+        {
+          final HistoryShadingLayer shadingLayer = historyLayer as HistoryShadingLayer;
+          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState);
+          topMostShadingLayer ??= layerState;
+        }
 
         if (layerState != null)
         {
@@ -731,6 +738,8 @@ class AppState
         }
       }
 
+
+
       // SET VALUES
       // ramps
       _colorRamps.value = ramps;
@@ -747,6 +756,10 @@ class AppState
       selectionState.selection.addDirectlyAll(list: selectionContent);
       selectionState.createSelectionLines();
       selectionState.notifyRepaint();
+      if (topMostShadingLayer != null)
+      {
+        rasterDrawingLayersBelow(layer: topMostShadingLayer);
+      }
     }
   }
 

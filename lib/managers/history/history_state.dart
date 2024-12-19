@@ -18,6 +18,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -25,6 +26,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
+import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -71,6 +73,10 @@ class HistoryState
       else if (layerState.runtimeType == GridLayerState)
       {
         hLayer = HistoryGridLayer.fromGridLayer(gridState: layerState as GridLayerState);
+      }
+      else if (layerState.runtimeType == ShadingLayerState)
+      {
+        hLayer = HistoryShadingLayer.fromShadingLayerState(layerState: layerState as ShadingLayerState);
       }
 
       if (hLayer != null)

@@ -28,6 +28,7 @@ import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
@@ -45,6 +46,7 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     HistoryDrawingLayer: 1,
     HistoryReferenceLayer: 2,
     HistoryGridLayer: 3,
+    HistoryShadingLayer: 4,
   };
 
   Map<GridType, int> gridTypeValueMap =
@@ -797,6 +799,39 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
         byteData.setFloat32(offset, gridLayer.vanishingPoint3);
         offset += 4;
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryShadingLayer)
+      {
+        final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
+
+        //lock type
+        int lockVal = 0;
+        for (int j = 0; j < layerLockStateValueMap.length; j++)
+        {
+          if (layerLockStateValueMap[j] == shadingLayer.lockState)
+          {
+            lockVal = j;
+            break;
+          }
+        }
+        byteData.setUint8(offset++, lockVal);
+
+        //data count
+        final int dataLength = shadingLayer.data.length;
+        byteData.setUint32(offset, dataLength);
+        offset+=4;
+
+        for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)
+        {
+          //x
+          byteData.setUint16(offset, entry.key.x);
+          offset+=2;
+          //y
+          byteData.setUint16(offset, entry.key.y);
+          offset+=2;
+          //shading
+          byteData.setInt8(offset++, entry.value);
+        }
       }
     }
 
@@ -1568,6 +1603,44 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
         size += 4;
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
         size += 4;
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryShadingLayer)
+      {
+        final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
+        //lock type
+        size += 1;
+        //data count
+        size += 4;
+        for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)
+        {
+          final HistoryColorReference? selectionReference = (i == saveData.selectedLayerIndex) ? saveData.selectionState.content[entry.key] : null;
+          if (selectionReference == null)
+          {
+            //x
+            size += 2;
+            //y
+            size += 2;
+            //shading
+            size += 1;
+          }
+        }
+        if (i == saveData.selectedLayerIndex) //draw selected pixels
+            {
+          for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
+          {
+            if (entry.value != null)
+            {
+              //x
+              size += 2;
+              //y
+              size += 2;
+              //color ramp index
+              size += 1;
+              //color index
+              size += 1;
+            }
+          }
+        }
       }
     }
 

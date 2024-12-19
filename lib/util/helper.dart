@@ -516,14 +516,14 @@ class StackCol<T> {
       if (layers[i].visibilityState.value == LayerVisibilityState.visible && layers[i].runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-        if (drawingLayer.thumbnail.value != null)
+        if (drawingLayer.rasterImage.value != null)
         {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
                   canvasSize.x.toDouble(),
                   canvasSize.y.toDouble(),),
-              image: drawingLayer.thumbnail.value!,
+              image: drawingLayer.rasterImage.value!,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
@@ -593,14 +593,14 @@ class StackCol<T> {
           {
             await Future<void>.delayed(const Duration(milliseconds: 20));
           }
-          if (drawingLayer.thumbnail.value != null)
+          if (drawingLayer.rasterImage.value != null)
           {
             paintImage(
                 canvas: canvas,
                 rect: ui.Rect.fromLTWH(0, 0,
                     state.canvasSize.x.toDouble(),
                     state.canvasSize.y.toDouble(),),
-                image: drawingLayer.thumbnail.value!,
+                image: drawingLayer.rasterImage.value!,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none,);

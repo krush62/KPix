@@ -118,10 +118,10 @@ class _KPalRampState extends State<KPalRamp>
       _settingsChanged();
       _hasShiftChanges = false;
     }
-    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.thumbnail.value == null || l.isRasterizing)).isNotEmpty;
+    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.rasterImage.value == null || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
+      getImageFromLayers(size: _appState.canvasSize, layers: _drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
         _previewImage.value = img;
       });
       _hasRenderChanges = false;

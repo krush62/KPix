@@ -60,18 +60,19 @@ The kpix file format consists of the following three consecutive sections:
 * rows ``ushort (1)`` // height of image
 * layer_count ``ubyte (1)`` // how many layers
 * Layers ``(layer_count)``
-  * type ``ubyte (1)`` // ``01``= drawing layer, ``02``= reference layer, ``03``= grid layer
-  * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden  
-    // data for type ``01``  
+  * type ``ubyte (1)`` // ``01``= drawing layer, ``02``= reference layer, ``03``= grid layer, ``04``= shading layer
+  * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden
+
+  // data for type ``01`` (drawing layer)  
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``01`` = transparency locked, ``02`` = locked
   * data_count ``uint (1)`` //how many non-transparent pixels on layer
-  * Image_Data ``(data_count)`` // for type ``01`` (drawing layer)
+  * Image_Data ``(data_count)``
     * x ``ushort (1)`` // x position
     * y ``ushort (1)`` // y position
     * color_ramp_index ``ubyte (1)`` // color ramp index
     * color_index ``ubyte (1)`` // index in color ramp\
     
-    // data for type ``02`` (reference layer)
+  // data for type ``02`` (reference layer)
   * path (string)  
   * opacity ``ubyte (1)`` // 0...100
   * offset_x ``float (1)``
@@ -79,7 +80,7 @@ The kpix file format consists of the following three consecutive sections:
   * zoom ``ushort (1)`` // 1...2000 (representing zoom factor * 1000)
   * aspect_ratio ``float (1)``// -5...5 (vertical/horizontal stretch max. 6x)
 
-    // data for type ``03`` (grid layer)  
+  // data for type ``03`` (grid layer)  
   * opacity ``ubyte (1)`` // 0...100
   * brightness ``ubyte (1)`` // 0...100
   * grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric, ``03`` = hexagonal, ``04`` = triangular, , ``05`` = brick
@@ -89,7 +90,15 @@ The kpix file format consists of the following three consecutive sections:
   * vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
   * vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
   * vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-  
+
+  // data for type ``04`` (shading layer)
+  * lock_type ``ubyte (1)`` // ``00``= unlocked, ``02`` = locked
+  * data_count ``uint (1)`` //how many shading pixels exist on the layer
+  * Image_Data ``(data_count)``
+    * x ``ushort (1)`` // x position
+    * y ``ushort (1)`` // y position
+    * shading ``byte (1)`` // how many shading steps -5...5
+    
   
   
   

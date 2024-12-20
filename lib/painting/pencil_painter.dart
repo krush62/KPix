@@ -100,7 +100,11 @@ class PencilPainter extends IToolPainter
                   if (_options.pixelPerfect.value &&
                       _paintPositions.last.isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
                   {
-                    _paintPositions.removeAt(_paintPositions.length - 2);
+                    final CoordinateSetI deletedPos = _paintPositions.removeAt(_paintPositions.length - 2);
+                    if (_allPaintPositions.elementAt(_allPaintPositions.length - 2) == deletedPos)
+                    {
+                      _allPaintPositions.remove(deletedPos);
+                    }
                   }
                 }
               }

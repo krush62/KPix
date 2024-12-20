@@ -202,10 +202,18 @@ class StackCol<T> {
 
 
 
-  String colorToHexString({required final Color c, final bool withHashTag = true})
+  String colorToHexString({required final Color c, final bool withHashTag = true, final bool toUpper = false})
   {
-    final String str = withHashTag ? "#" : "";
-    return '$str${c.red.toRadixString(16).padLeft(2, '0')}${c.green.toRadixString(16).padLeft(2, '0')}${c.blue.toRadixString(16).padLeft(2, '0')}';
+    final String prefix = withHashTag ? "#" : "";
+    final String str = '$prefix${c.red.toRadixString(16).padLeft(2, '0')}${c.green.toRadixString(16).padLeft(2, '0')}${c.blue.toRadixString(16).padLeft(2, '0')}';
+    if (toUpper)
+    {
+      return  str.toUpperCase();
+    }
+    else
+    {
+      return str;
+    }
   }
 
   String colorToRGBString({required final Color c})

@@ -143,13 +143,25 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
            builder: (final BuildContext context, final IdColor currentColor, final Widget? child)
            {
              return Column(
+               mainAxisAlignment: MainAxisAlignment.end,
                children: <Widget>[
                  Expanded(
                    flex: _options.colorNameFlex,
                    child: Center(
-                     child: Text(
-                       textAlign: TextAlign.center,
-                       widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : "",
+                     child: Column(
+                       mainAxisSize: MainAxisSize.min,
+                       children: <Widget>[
+                         Text(
+                           textAlign: TextAlign.center,
+                           widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : "",
+                           style: Theme.of(context).textTheme.titleSmall,
+                         ),
+                         Text(
+                           textAlign: TextAlign.center,
+                           widget.showName ? colorToHexString(c: currentColor.color, toUpper: true) : "",
+                           style: Theme.of(context).textTheme.bodySmall,
+                         ),
+                       ],
                      ),
                    ),
                  ),

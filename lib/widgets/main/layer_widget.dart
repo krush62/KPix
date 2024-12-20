@@ -29,13 +29,6 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
-const Map<Type, String> overlayStringMap =
-<Type, String>{
-  ReferenceLayerState: "REF",
-  GridLayerState: "GRID",
-  ShadingLayerState: "SHD",
-};
-
 class LayerWidget extends StatefulWidget
 {
   final LayerState layerState;
@@ -47,6 +40,13 @@ class LayerWidget extends StatefulWidget
   @override
   State<LayerWidget> createState() => _LayerWidgetState();
 }
+
+const Map<Type, IconData> layerIconMap =
+<Type, IconData>{
+  ReferenceLayerState: FontAwesomeIcons.image,
+  GridLayerState: FontAwesomeIcons.tableCells,
+  ShadingLayerState: Icons.exposure,
+};
 
 class _LayerWidgetState extends State<LayerWidget>
 {
@@ -305,18 +305,17 @@ class _LayerWidgetState extends State<LayerWidget>
                             },
                           ),
                           Center(
-                            child: Text(
-                              overlayStringMap[widget.layerState.runtimeType] ?? "",
-                              style: Theme.of(context).textTheme.headlineLarge!.copyWith(
-                                color: Theme.of(context).primaryColorLight,
-                                shadows: <Shadow>[
-                                  Shadow(
-                                    offset: const Offset(0.0, 1.0),
-                                    blurRadius: 2.0,
-                                    color: Theme.of(context).primaryColorDark,
-                                  ),
-                                ],
-                              ),
+                            child: FaIcon(
+                              layerIconMap[widget.layerState.runtimeType],
+                              size: _options.height / 2,
+                              color: Theme.of(context).primaryColorLight,
+                              shadows:  <Shadow>[
+                                Shadow(
+                                  offset: const Offset(0.0, 1.0),
+                                  blurRadius: 2.0,
+                                  color: Theme.of(context).primaryColorDark,
+                                ),
+                              ],
                             ),
                           ),
                         ],

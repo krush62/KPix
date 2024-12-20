@@ -283,6 +283,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         });
       }
     }
+    else
+    {
+      _hasProjectChanged();
+    }
     initialized.value = true;
   }
 

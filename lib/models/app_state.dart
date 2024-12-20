@@ -875,7 +875,7 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
       }
       repaintNotifier.repaint();
-      rasterDrawingLayersBelow(layer: state);
+      rasterDrawingLayersBelow(layer: layers[0]);
     }
   }
 

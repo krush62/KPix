@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -79,6 +80,7 @@ class DrawingParameters
   final DrawingLayerState? currentDrawingLayer;
   final ReferenceLayerState? currentReferenceLayer;
   final ShadingLayerState? currentShadingLayer;
+  final GridLayerState? currentGridLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -98,7 +100,8 @@ class DrawingParameters
                                 y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor(),),
     currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
     currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
-    currentShadingLayer = currentLayer.runtimeType == ShadingLayerState ? (currentLayer as ShadingLayerState) : null;
+    currentShadingLayer = currentLayer.runtimeType == ShadingLayerState ? (currentLayer as ShadingLayerState) : null,
+    currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
 }
 
 class KPixPainter extends CustomPainter
@@ -490,11 +493,43 @@ class KPixPainter extends CustomPainter
   {
     if (_coords.value != null)
     {
-      if (!_isDragging.value /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
+      if (!_isDragging.value && !drawParams.secondaryDown /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null || drawParams.currentGridLayer != null))
       {
-        toolPainter!.drawCursorOutline(drawParams: drawParams);
+        final bool isForbidden =
+              //locked or hidden drawing layers
+              (isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter && drawParams.currentDrawingLayer != null && (drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.hidden || drawParams.currentDrawingLayer!.lockState.value == LayerLockState.locked)) ||
+              //locked or hidden shading layers
+              (isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter && drawParams.currentShadingLayer != null && (drawParams.currentShadingLayer!.visibilityState.value == LayerVisibilityState.hidden || drawParams.currentShadingLayer!.lockState.value == LayerLockState.locked)) ||
+              //grid layers
+              drawParams.currentGridLayer != null;
+        if (isForbidden)
+        {
+          final double circleWidth = _options.cursorSize * 2;
+          final double lineX = cos(pi / 4.0) * circleWidth;
+          final double lineY = sin(pi / 4.0) * circleWidth;
+
+          drawParams.paint.color = Colors.black;
+          drawParams.paint.style = PaintingStyle.stroke;
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthLarge;
+          drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), circleWidth, drawParams.paint);
+
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthLarge;
+          drawParams.canvas.drawLine(ui.Offset(_coords.value!.x - lineX, _coords.value!.y - lineY), ui.Offset(_coords.value!.x + lineX, _coords.value!.y + lineY), drawParams.paint);
+
+          drawParams.paint.color = Colors.white;
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthSmall;
+          drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), circleWidth, drawParams.paint);
+
+          drawParams.paint.strokeWidth = _options.selectionStrokeWidthSmall;
+          drawParams.canvas.drawLine(ui.Offset(_coords.value!.x - lineX, _coords.value!.y - lineY), ui.Offset(_coords.value!.x + lineX, _coords.value!.y + lineY), drawParams.paint);
+
+        }
+        else
+        {
+          toolPainter!.drawCursorOutline(drawParams: drawParams);
+        }
       }
-      else if (!_stylusLongMoveStarted.value)
+      else if (!_stylusLongMoveStarted.value) //DEFAULT CURSOR
       {
         drawParams.paint.color = Colors.black;
         drawParams.canvas.drawCircle(Offset(_coords.value!.x, _coords.value!.y), _options.cursorSize + _options.cursorBorderWidth, drawParams.paint);

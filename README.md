@@ -31,10 +31,11 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - generative color ramps based on parameters
 - hsv based color representation
 - shading capabilities for all tools
-- multiple reference layers per project (scaling, moving, stretching, changing opacity)
-- customizable grid layers (rectangular, diagonal, isometric)
+- reference layers
+- grid/perspective aid layers
+- shading layers
 - image importing including automatic palette creation
-- multi-platform support 
+- multi-platform support (Windows, Linux, Android, Web)
 - stylus and touch support
 - automatic light/dark theme
 
@@ -62,6 +63,13 @@ A palette consists of multiple independent color ramps. Each ramp can have an ar
 
 Palettes can be saved using the kpal format which is also used by [KPal](https://github.com/krush62/KPal). The file format documentation can be found [here](docs/kpal_file_format.md).
 
+### Special Layers
+#### Reference Layers
+Add reference images to your project and put them anywhere in your layer stack. These layers support opacity, scaling, moving and stretching.
+#### Shading Layers
+Non-destructive shading for your image. Test different shading variants without changing the content.
+#### Grid/Perspective Layers
+Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangular, isometric, brick) or perspective aid (1-point, 2-point, 3-point).
 
 ### File Format Support
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
@@ -85,7 +93,9 @@ Palettes can be exported for usage in other applications.
 - soc (Star/Open/Libre Office)
 
 #### Import Formats
-Due to its unique way of having parameterized color ramps, an import of other formats would always need some kind of remapping of the used colors into individual color ramps. This is a planned feature. 
+Due to its unique way of having parameterized color ramps, an import of other formats always needs the creation of parameterized color ramps from the image's colors.
+Any import is an approximation and will never exactly match the colors given in the original image.\ 
+The following raster image formats are supported: bmp, jpg, gif (first frame) and png.
 
 ## 🎮Controls
 This application supports input by mouse/keyboard, touch screen and stylus.

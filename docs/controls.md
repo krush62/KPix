@@ -44,8 +44,8 @@
 | Stamp                    | p                   |                  |                                 |                              |                           |
 |                          |                     |                  |                                 |                              |                           |
 | <h3>Tool Settings</h3>   |                     |                  |                                 |                              |                           |
-| use tool                 |                     |                  | primary down                    | primary down                 | single down               |
-| color pick               |                     |                  | secondary down                  | quick secondary down/up      |                           |
+| Use tool                 |                     |                  | primary down                    | primary down                 | single down               |
+| Color pick               |                     |                  | secondary down/up[^2]           | quick secondary down/up[^2]  |                           |
 | Selection Add            | shift (hold)        |                  |                                 |                              |                           |
 | Selection Subtract       | alt + shift (hold)  |                  |                                 |                              |                           |
 | Selection Intersect      | ctrl + shift (hold) |                  |                                 |                              |                           |
@@ -74,7 +74,7 @@
 | <h3>Shading</h3>         |                     |                  |                                 |                              |                           |
 | Toggle Shading           | space               |                  |                                 |                              |                           |
 | Toggle Current Ramp Only | x                   |                  |                                 |                              |                           |
-| Toggle Shading Direction | d                   |                  |                                 |                              |                           |
+| Toggle Shading Direction | d                   |                  | secondary down/up[^3]           | quick secondary down/up[^3]  |                           |
 |                          |                     |                  |                                 |                              |                           |
 | <h3>Palette</h3>         |                     |                  |                                 |                              |                           |
 | Change Color             |                     |                  | alt + mouse wheel               |                              |                           |
@@ -95,4 +95,6 @@
 | Set Zoom Level 8000%     | Numpad 9            |                  |                                 |                              |                           |
 
 
-[^1]: This action is **only** possible with the specified shortcut (hotkey).
+[^1]: This action is **only** possible with the specified shortcut (hotkey).\
+[^2]: If shading is **not** enabled.\
+[^3]: If shading **is** enabled.

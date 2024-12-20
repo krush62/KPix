@@ -49,6 +49,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
+import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/desktop_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
@@ -93,6 +94,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
+  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);
@@ -274,8 +276,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      _previousTool = _appState.selectedTool;
-      _appState.setToolSelection(tool: ToolType.pick);
+      if (!_shaderOptions.isEnabled.value)
+      {
+        _previousTool = _appState.selectedTool;
+        _appState.setToolSelection(tool: ToolType.pick);
+      }
     }
 
     else if (details.buttons == kTertiaryButton && details.kind == PointerDeviceKind.mouse)
@@ -333,12 +338,27 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
-      if (colorPickPainter.selectedColor != null)
+      if (_shaderOptions.isEnabled.value)
       {
-        _appState.colorSelected(color: colorPickPainter.selectedColor);
+        final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
+        if (currentDirection == ShaderDirection.left)
+        {
+          _shaderOptions.shaderDirection.value = ShaderDirection.right;
+        }
+        else
+        {
+          _shaderOptions.shaderDirection.value = ShaderDirection.left;
+        }
       }
-      _appState.setToolSelection(tool: _previousTool);
+      else
+      {
+        final ColorPickPainter colorPickPainter = kPixPainter.toolPainterMap[ToolType.pick]! as ColorPickPainter;
+        if (colorPickPainter.selectedColor != null)
+        {
+          _appState.colorSelected(color: colorPickPainter.selectedColor);
+        }
+        _appState.setToolSelection(tool: _previousTool);
+      }
     }
     else if (_isDragging.value && details.kind == PointerDeviceKind.mouse)
     {
@@ -670,19 +690,34 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
       if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
       {
-        final CoordinateSetI normPos = CoordinateSetI(
-            x: _getClosestPixel(
-                value: _cursorPos.value!.x - _canvasOffset.value.dx,
-                pixelSize: _appState.zoomFactor.toDouble(),)
-                ,
-            y: _getClosestPixel(
-                value: _cursorPos.value!.y - _canvasOffset.value.dy,
-                pixelSize: _appState.zoomFactor.toDouble(),)
-                ,);
-        final ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
-        if (colRef != null && colRef != _appState.selectedColor)
+        if (_shaderOptions.isEnabled.value)
         {
-          _appState.colorSelected(color: colRef);
+          final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
+          if (currentDirection == ShaderDirection.left)
+          {
+            _shaderOptions.shaderDirection.value = ShaderDirection.right;
+          }
+          else
+          {
+            _shaderOptions.shaderDirection.value = ShaderDirection.left;
+          }
+        }
+        else
+        {
+          final CoordinateSetI normPos = CoordinateSetI(
+            x: _getClosestPixel(
+              value: _cursorPos.value!.x - _canvasOffset.value.dx,
+              pixelSize: _appState.zoomFactor.toDouble(),)
+            ,
+            y: _getClosestPixel(
+              value: _cursorPos.value!.y - _canvasOffset.value.dy,
+              pixelSize: _appState.zoomFactor.toDouble(),)
+            ,);
+          final ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
+          if (colRef != null && colRef != _appState.selectedColor)
+          {
+            _appState.colorSelected(color: colRef);
+          }
         }
       }
 

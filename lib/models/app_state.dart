@@ -23,6 +23,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -30,6 +31,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -215,6 +217,8 @@ class AppState
     hotkeyManager.addListener(func: () {changeLayerLockState(layerState: currentLayer!);}, action: HotkeyAction.layersSwitchLock);
     hotkeyManager.addListener(func: addNewDrawingLayer, action: HotkeyAction.layersNewDrawing);
     hotkeyManager.addListener(func: addNewReferenceLayer, action: HotkeyAction.layersNewReference);
+    hotkeyManager.addListener(func: addNewShadingLayer, action: HotkeyAction.layersNewShading);
+    hotkeyManager.addListener(func: addNewGridLayer, action: HotkeyAction.layersNewGrid);
     hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: currentLayer!);}, action: HotkeyAction.layersDuplicate);
     hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: currentLayer!);}, action: HotkeyAction.layersDelete);
     hotkeyManager.addListener(func: () {layerMerged(mergeLayer: currentLayer!);}, action: HotkeyAction.layersMerge);
@@ -443,6 +447,40 @@ class AppState
     return newLayer;
   }
 
+  ShadingLayerState addNewShadingLayer({final bool addToHistoryStack = true, final bool select = false})
+  {
+    final ShadingLayerState newLayer = ShadingLayerState();
+    final List<LayerState> layerList = <LayerState>[];
+    if (_layers.value.isEmpty)
+    {
+      newLayer.isSelected.value = true;
+      _currentLayer.value = newLayer;
+      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+      layerList.add(newLayer);
+    }
+    else
+    {
+      for (int i = 0; i < _layers.value.length; i++)
+      {
+        if (_layers.value[i].isSelected.value)
+        {
+          layerList.add(newLayer);
+        }
+        layerList.add(_layers.value[i]);
+      }
+    }
+    _layers.value = layerList;
+    if (select)
+    {
+      selectLayer(newLayer: newLayer);
+    }
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
+    }
+    return newLayer;
+  }
+
   GridLayerState addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
@@ -623,7 +661,7 @@ class AppState
       }
       final ColorReference selCol = ramps[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
 
-
+      LayerState? topMostShadingLayer;
       //LAYERS
       final List<LayerState> layerList = <LayerState>[];
       LayerState? curSelLayer;
@@ -665,6 +703,12 @@ class AppState
           final HistoryGridLayer gridLayer = historyLayer as HistoryGridLayer;
           layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY, horizonPosition: gridLayer.horizonPosition, vanishingPoint1: gridLayer.vanishingPoint1, vanishingPoint2: gridLayer.vanishingPoint2, vanishingPoint3: gridLayer.vanishingPoint3 );
         }
+        else if (historyLayer.runtimeType == HistoryShadingLayer)
+        {
+          final HistoryShadingLayer shadingLayer = historyLayer as HistoryShadingLayer;
+          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState);
+          topMostShadingLayer ??= layerState;
+        }
 
         if (layerState != null)
         {
@@ -694,6 +738,8 @@ class AppState
         }
       }
 
+
+
       // SET VALUES
       // ramps
       _colorRamps.value = ramps;
@@ -710,10 +756,14 @@ class AppState
       selectionState.selection.addDirectlyAll(list: selectionContent);
       selectionState.createSelectionLines();
       selectionState.notifyRepaint();
+      if (topMostShadingLayer != null)
+      {
+        rasterDrawingLayersBelow(layer: topMostShadingLayer);
+      }
     }
   }
 
-  int _getLayerPosition({required final LayerState state})
+  int getLayerPosition({required final LayerState state})
   {
     int sourcePosition = -1;
     for (int i = 0; i < _layers.value.length; i++)
@@ -729,7 +779,7 @@ class AppState
 
   void moveUpLayer({required final LayerState state})
   {
-    final int sourcePosition = _getLayerPosition(state: state);
+    final int sourcePosition = getLayerPosition(state: state);
     if (sourcePosition > 0)
     {
       changeLayerOrder(state: state, newPosition: sourcePosition - 1);
@@ -738,7 +788,7 @@ class AppState
 
   void moveDownLayer({required final LayerState state})
   {
-    final int sourcePosition = _getLayerPosition(state: state);
+    final int sourcePosition = getLayerPosition(state: state);
     if (sourcePosition < (layers.length - 1))
     {
       changeLayerOrder(state: state, newPosition: sourcePosition + 2);
@@ -806,7 +856,7 @@ class AppState
 
   void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
   {
-    final int sourcePosition = _getLayerPosition(state: state);
+    final int sourcePosition = getLayerPosition(state: state);
 
     if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
@@ -825,6 +875,7 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
       }
       repaintNotifier.repaint();
+      rasterDrawingLayersBelow(layer: state);
     }
   }
 
@@ -838,6 +889,11 @@ class AppState
     {
       layerState.visibilityState.value = LayerVisibilityState.visible;
     }
+    if (layerState.runtimeType == ShadingLayerState)
+    {
+      rasterDrawingLayersBelow(layer: layerState);
+    }
+
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
   }
 
@@ -857,6 +913,19 @@ class AppState
       else if (drawingLayerState.lockState.value == LayerLockState.locked)
       {
         drawingLayerState.lockState.value = LayerLockState.unlocked;
+      }
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
+    }
+    else if (layerState.runtimeType == ShadingLayerState)
+    {
+      final ShadingLayerState shadingLayerState = layerState as ShadingLayerState;
+      if (shadingLayerState.lockState.value == LayerLockState.unlocked)
+      {
+        shadingLayerState.lockState.value = LayerLockState.locked;
+      }
+      else if (shadingLayerState.lockState.value == LayerLockState.locked)
+      {
+        shadingLayerState.lockState.value = LayerLockState.unlocked;
       }
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
     }
@@ -890,7 +959,7 @@ class AppState
 
   void selectLayerAbove()
   {
-    final int index = _getLayerPosition(state: currentLayer!);
+    final int index = getLayerPosition(state: currentLayer!);
     if (index > 0)
     {
       selectLayer(newLayer: layers[index - 1]);
@@ -899,7 +968,7 @@ class AppState
 
   void selectLayerBelow()
   {
-    final int index = _getLayerPosition(state: currentLayer!);
+    final int index = getLayerPosition(state: currentLayer!);
     if (index < layers.length - 1)
     {
       selectLayer(newLayer: layers[index + 1]);
@@ -920,6 +989,13 @@ class AppState
     }
     if (oldLayer != newLayer)
     {
+
+
+
+
+
+
+
       newLayer.isSelected.value = true;
       oldLayer.isSelected.value = false;
       _currentLayer.value = newLayer;
@@ -929,7 +1005,6 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
       }
     }
-
   }
 
   void layerDeleted({required final LayerState deleteLayer, final bool addToHistoryStack = true})
@@ -960,6 +1035,11 @@ class AppState
       }
 
       _layers.value = layerList;
+      if (deleteLayer.runtimeType == ShadingLayerState)
+      {
+        rasterDrawingLayersBelow(layer: deleteLayer);
+      }
+
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
@@ -1076,13 +1156,130 @@ class AppState
           final GridLayerState gridLayer = duplicateLayer as GridLayerState;
           layerList.add(GridLayerState.from(other: gridLayer));
         }
+        else if (duplicateLayer.runtimeType == ShadingLayerState)
+        {
+          final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
+          layerList.add(ShadingLayerState.from(other: shadingLayer));
+        }
       }
       layerList.add(_layers.value[i]);
     }
     _layers.value = layerList;
+    if (duplicateLayer.runtimeType == ShadingLayerState)
+    {
+      rasterDrawingLayersBelow(layer: _layers.value[getLayerPosition(state: duplicateLayer) - 1]);
+    }
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
+    }
+  }
+
+  void layerRastered({required final LayerState rasterLayer, final bool addToHistoryStack = true})
+  {
+    if (rasterLayer.runtimeType == GridLayerState)
+    {
+      final GridLayerState gridLayer = rasterLayer as GridLayerState;
+      gridLayer.getHashMap().then((final CoordinateColorMap data) {
+        _replaceCurrentLayerWithDrawingLayer(data: data, originalLayer: rasterLayer);
+      });
+    }
+    else if (rasterLayer.runtimeType == ShadingLayerState)
+    {
+      final ShadingLayerState shadingLayer = rasterLayer as ShadingLayerState;
+      _rasterShadingLayer(shadingLayer: shadingLayer).then((final void _) {
+        _shadingLayerRastered(shadingLayer: shadingLayer);
+      },);
+    }
+  }
+
+  void _shadingLayerRastered({required final ShadingLayerState shadingLayer})
+  {
+    layerDeleted(deleteLayer: shadingLayer);
+  }
+
+  Future<void> _rasterShadingLayer({required final ShadingLayerState shadingLayer}) async
+  {
+    final int layerIndex = getLayerPosition(state: shadingLayer);
+    assert(layerIndex >= 0 && layerIndex < layers.length);
+    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
+    final HashMap<DrawingLayerState, CoordinateColorMapNullable> shadeLayerMap = HashMap<DrawingLayerState, CoordinateColorMapNullable>();
+
+    //getting all relevant drawing layers
+    for (int i = layerIndex; i < layers.length; i++)
+    {
+      if (layers[i].runtimeType == DrawingLayerState && layers[i].visibilityState.value == LayerVisibilityState.visible)
+      {
+        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+        drawingLayers.add(drawingLayer);
+        shadeLayerMap[drawingLayer] = HashMap<CoordinateSetI, ColorReference?>();
+      }
+    }
+
+    //finding and sorting pixels that need to be shaded
+    for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.shadingData.entries)
+    {
+      for (final DrawingLayerState drawingLayer in drawingLayers)
+      {
+        final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key);
+        if (curCol != null)
+        {
+          final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
+          shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
+          break;
+        }
+      }
+    }
+
+    //applying shading
+    for (final MapEntry<DrawingLayerState, CoordinateColorMapNullable> entry in shadeLayerMap.entries)
+    {
+      if (entry.value.isNotEmpty)
+      {
+        entry.key.setDataAll(list: entry.value);
+      }
+    }
+  }
+
+  void rasterDrawingLayersBelow({required final LayerState layer})
+  {
+    //shade all layers below
+    final int currentLayerindex = getLayerPosition(state: layer);
+    for (int i = layers.length - 1; i > currentLayerindex; i--)
+    {
+      if (layers[i].runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+        drawingLayer.doManualRaster = true;
+      }
+    }
+  }
+
+  void _replaceCurrentLayerWithDrawingLayer({required final CoordinateColorMap data, required final LayerState originalLayer, final bool addToHistoryStack = true})
+  {
+    final List<LayerState> layerList = <LayerState>[];
+    final DrawingLayerState drawingLayer = DrawingLayerState(size: canvasSize, content: data);
+    for (final LayerState layer in _layers.value)
+    {
+       if (layer != originalLayer)
+       {
+          layerList.add(layer);
+       }
+       else
+       {
+         layerList.add(drawingLayer);
+
+       }
+    }
+    if (originalLayer.isSelected.value)
+    {
+      selectLayer(newLayer: drawingLayer);
+    }
+    drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
+    _layers.value = layerList;
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
     }
   }
 

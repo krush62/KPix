@@ -24,10 +24,12 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
+import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
@@ -45,6 +47,7 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     HistoryDrawingLayer: 1,
     HistoryReferenceLayer: 2,
     HistoryGridLayer: 3,
+    HistoryShadingLayer: 4,
   };
 
   Map<GridType, int> gridTypeValueMap =
@@ -64,12 +67,13 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
   Future<Uint8List?> exportPNG({required final ExportData exportData, required final AppState appState}) async
   {
     final ByteData byteData = await _getImageData(
-        ramps: appState.colorRamps,
-        layers: appState.layers,
-        selectionState: appState.selectionState,
-        imageSize: appState.canvasSize,
-        scaling: exportData.scaling,
-        selectedLayer: appState.currentLayer,);
+      ramps: appState.colorRamps,
+      layers: appState.layers,
+      selectionState: appState.selectionState,
+      imageSize: appState.canvasSize,
+      scaling: exportData.scaling,
+      selectedLayerIndex: appState.getLayerPosition(state: appState.currentLayer!),);
+
 
     final Completer<ui.Image> c = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -88,44 +92,11 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     return pngBytes!.buffer.asUint8List();
   }
 
-  Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required final SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final LayerState? selectedLayer}) async
-  {
-    final ByteData byteData = ByteData((imageSize.x * scaling) * (imageSize.y * scaling) * 4);
-    for (int x = 0; x < imageSize.x; x++)
-    {
-      for (int y = 0; y < imageSize.y; y++)
-      {
-        final CoordinateSetI currentCoord = CoordinateSetI(x: x, y: y);
-        for (int l = 0; l < layers.length; l++)
-        {
-          if (layers[l].visibilityState.value == LayerVisibilityState.visible && layers[l].runtimeType == DrawingLayerState)
-          {
-            final DrawingLayerState drawingLayer = layers[l] as DrawingLayerState;
-            ColorReference? col;
-            if (selectedLayer == drawingLayer)
-            {
-              col = selectionState.selection.getColorReference(coord: currentCoord);
-            }
-            col ??= drawingLayer.getDataEntry(coord: currentCoord);
-
-            if (col != null)
-            {
-              for (int i = 0; i < scaling; i++)
-              {
-                for (int j = 0; j < scaling; j++)
-                {
-                  byteData.setUint32((((y * scaling) + j) * (imageSize.x * scaling) + ((x * scaling) + i)) * 4,
-                      argbToRgba(argb: col.getIdColor().color.value),);
-                }
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-    return byteData;
-  }
+Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required final SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final int selectedLayerIndex}) async
+{
+  final ui.Image i = await getImageFromLayers(canvasSize: imageSize, layers: layers, selectedLayerIndex: selectedLayerIndex, selectionList: selectionState.selection, scalingFactor: scaling);
+  return (await i.toByteData())!;
+}
 
   Future<Uint8List?> getPalettePngData({required final List<KPalRampData> ramps}) async
   {
@@ -798,6 +769,39 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
         byteData.setFloat32(offset, gridLayer.vanishingPoint3);
         offset += 4;
       }
+      else if (saveData.layerList[i].runtimeType == HistoryShadingLayer)
+      {
+        final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
+
+        //lock type
+        int lockVal = 0;
+        for (int j = 0; j < layerLockStateValueMap.length; j++)
+        {
+          if (layerLockStateValueMap[j] == shadingLayer.lockState)
+          {
+            lockVal = j;
+            break;
+          }
+        }
+        byteData.setUint8(offset++, lockVal);
+
+        //data count
+        final int dataLength = shadingLayer.data.length;
+        byteData.setUint32(offset, dataLength);
+        offset+=4;
+
+        for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)
+        {
+          //x
+          byteData.setUint16(offset, entry.key.x);
+          offset+=2;
+          //y
+          byteData.setUint16(offset, entry.key.y);
+          offset+=2;
+          //shading
+          byteData.setInt8(offset++, entry.value);
+        }
+      }
     }
 
     return byteData;
@@ -907,6 +911,12 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
             }
             else
             {
+              final int shade = _getShadeForCoord(layers: appState.layers, currentLayerIndex: l, coord: curCoord);
+              if (shade != 0)
+              {
+                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
+                colAtPos = colAtPos.ramp.references[targetIndex];
+              }
               imgBytes.add(colorMap[colAtPos]!);
             }
           }
@@ -919,6 +929,37 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     }
 
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
+  }
+
+  int _getShadeForCoord({required final List<LayerState> layers, required final int currentLayerIndex, required final CoordinateSetI coord})
+  {
+    assert(currentLayerIndex < layers.length);
+    int shade = 0;
+    for (int i = currentLayerIndex - 1; i >= 0; i--)
+    {
+      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      {
+        if (layers[i].runtimeType == DrawingLayerState)
+        {
+          final DrawingLayerState drawingLayerState = layers[i] as DrawingLayerState;
+          if (drawingLayerState.getDataEntry(coord: coord) != null)
+          {
+            return 0;
+          }
+        }
+        else if (layers[i].runtimeType == ShadingLayerState)
+        {
+          final ShadingLayerState shadingLayerState = layers[i] as ShadingLayerState;
+          final int? shadingAt = shadingLayerState.getValueAt(coord: coord);
+          if (shadingAt != null)
+          {
+            shade += shadingAt;
+          }
+        }
+      }
+    }
+
+    return shade;
   }
 
   Future<Uint8List?> getGimpData({required final ExportData exportData, required final AppState appState}) async
@@ -1020,6 +1061,12 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
               }
               else
               {
+                final int shade = _getShadeForCoord(layers: appState.layers, currentLayerIndex: l, coord: curCoord);
+                if (shade != 0)
+                {
+                  final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
+                  colAtPos = colAtPos.ramp.references[targetIndex];
+                }
                 imgBytes.add(colorMap[colAtPos]!);
                 imgBytes.add(255);
               }
@@ -1181,7 +1228,7 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
 
     //LAYERS
-    for (int i = 0; i < appState.layers.length; i++)
+    for (int i = 0; i < drawingLayers.length; i++)
     {
       setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
@@ -1568,6 +1615,44 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
         size += 4;
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
         size += 4;
+      }
+      else if (saveData.layerList[i].runtimeType == HistoryShadingLayer)
+      {
+        final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
+        //lock type
+        size += 1;
+        //data count
+        size += 4;
+        for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)
+        {
+          final HistoryColorReference? selectionReference = (i == saveData.selectedLayerIndex) ? saveData.selectionState.content[entry.key] : null;
+          if (selectionReference == null)
+          {
+            //x
+            size += 2;
+            //y
+            size += 2;
+            //shading
+            size += 1;
+          }
+        }
+        if (i == saveData.selectedLayerIndex) //draw selected pixels
+            {
+          for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
+          {
+            if (entry.value != null)
+            {
+              //x
+              size += 2;
+              //y
+              size += 2;
+              //color ramp index
+              size += 1;
+              //color index
+              size += 1;
+            }
+          }
+        }
       }
     }
 

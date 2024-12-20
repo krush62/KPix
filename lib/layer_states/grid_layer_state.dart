@@ -15,6 +15,7 @@
  */
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
 class GridLayerState extends LayerState
@@ -186,6 +188,19 @@ class GridLayerState extends LayerState
     }
   }
 
+  Future<CoordinateColorMap> getHashMap() async
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final Set<CoordinateSetI> rasterCoords = await getRasterData();
+    final CoordinateColorMap theMap = HashMap<CoordinateSetI, ColorReference>();
+    final ColorReference color = appState.selectedColor!;
+    for (final CoordinateSetI coord in rasterCoords)
+    {
+       theMap[coord] = color;
+    }
+    return theMap;
+  }
+
   Future<ui.Image> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
@@ -195,11 +210,32 @@ class GridLayerState extends LayerState
     final int colorBrightnessPremultiplied = (colorBrightness * colorOpacity) ~/ 255;
 
 
+    final Set<CoordinateSetI> rasterCoords = await getRasterData();
+    addCoordListToBytes(coords: rasterCoords, byteDataImg: byteDataImg, canvasSize: appState.canvasSize, brightness: colorBrightnessPremultiplied, opacity: colorOpacity);
+
+
+    final Completer<ui.Image> completerImg = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      byteDataImg.buffer.asUint8List(),
+      appState.canvasSize.x,
+      appState.canvasSize.y,
+      ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
+      {
+        completerImg.complete(convertedImage);
+      }
+    );
+    return completerImg.future;
+  }
+
+  Future<Set<CoordinateSetI>> getRasterData() async
+  {
+    final Set<CoordinateSetI> rasterCoords = <CoordinateSetI>{};
+    final AppState appState = GetIt.I.get<AppState>();
+
     if (gridType == GridType.onePointPerspective || gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
     {
       final int horizonY = (appState.canvasSize.y.toDouble() * horizonPosition).round();
-      final List<CoordinateSetI> horizontalLine = bresenham(start: CoordinateSetI(x: 0, y: horizonY), end: CoordinateSetI(x: appState.canvasSize.x - 1, y: horizonY));
-      addCoordListToBytes(coords: horizontalLine.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+      rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: horizonY), end: CoordinateSetI(x: appState.canvasSize.x - 1, y: horizonY)));
 
       if (gridType == GridType.onePointPerspective)
       {
@@ -209,14 +245,10 @@ class GridLayerState extends LayerState
           final double t = i / (intervalX + 1);
           final double startY = appState.canvasSize.y * t;
           final double startX = appState.canvasSize.x * t;
-          final List<CoordinateSetI> convergingFromLeft = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: vanishingPoint);
-          final List<CoordinateSetI> convergingFromRight = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: vanishingPoint);
-          final List<CoordinateSetI> convergingFromTop = bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: vanishingPoint);
-          final List<CoordinateSetI> convergingFromBottom = bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: vanishingPoint);
-          addCoordListToBytes(coords: convergingFromLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromTop.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromBottom.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: vanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: vanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: vanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: vanishingPoint));
         }
       }
       else if (gridType == GridType.twoPointPerspective)
@@ -229,22 +261,14 @@ class GridLayerState extends LayerState
           final double t = i / (intervalX + 1);
           final double startY = appState.canvasSize.y * t;
           final double startX = appState.canvasSize.x * t;
-          final List<CoordinateSetI> convergingFromLeftLeft = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: leftVanishingPoint);
-          final List<CoordinateSetI> convergingFromLeftRight = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint);
-          final List<CoordinateSetI> convergingFromRightLeft = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint);
-          final List<CoordinateSetI> convergingFromRightRight = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: rightVanishingPoint);
-          final List<CoordinateSetI> convergingFromTopLeft = bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: leftVanishingPoint);
-          final List<CoordinateSetI> convergingFromTopRight = bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: rightVanishingPoint);
-          final List<CoordinateSetI> convergingFromBottomLeft = bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: leftVanishingPoint);
-          final List<CoordinateSetI> convergingFromBottomRight = bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: rightVanishingPoint);
-          addCoordListToBytes(coords: convergingFromLeftLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromLeftRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromRightLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromRightRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromTopLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromTopRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromBottomLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromBottomRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: leftVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: rightVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: leftVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: rightVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: leftVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: rightVanishingPoint));
         }
       }
       else if (gridType == GridType.threePointPerspective)
@@ -258,21 +282,13 @@ class GridLayerState extends LayerState
           final double t = i / (intervalX + 1);
           final double startY = appState.canvasSize.y * t;
           final double startX = appState.canvasSize.x * t;
-          final List<CoordinateSetI> convergingFromRightLeft = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint);
-          final List<CoordinateSetI> convergingFromLeftRight = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint);
-          final List<CoordinateSetI> convergingFromLeftVertical = bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: verticalVanishingPoint);
-          final List<CoordinateSetI> convergingFromRightVertical = bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: verticalVanishingPoint);
-          final List<CoordinateSetI> convergingFromTopBottomVertical = bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y > horizonY ? 0 : appState.canvasSize.y - 1), end: verticalVanishingPoint);
-          final List<CoordinateSetI> convergingFromTopBottomLeft = bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: leftVanishingPoint);
-          final List<CoordinateSetI> convergingFromTopBottomRight = bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: rightVanishingPoint);
-          addCoordListToBytes(coords: convergingFromLeftVertical.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromRightVertical.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromTopBottomVertical.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromRightLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromLeftRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromTopBottomLeft.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-          addCoordListToBytes(coords: convergingFromTopBottomRight.toSet(), canvasSize: appState.canvasSize, opacity: colorOpacity, brightness: colorBrightnessPremultiplied, byteDataImg: byteDataImg);
-
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: verticalVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: verticalVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y > horizonY ? 0 : appState.canvasSize.y - 1), end: verticalVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: leftVanishingPoint));
+          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: rightVanishingPoint));
         }
 
       }
@@ -399,32 +415,12 @@ class GridLayerState extends LayerState
 
           if (shouldDraw)
           {
-            /*if (x >= 0 && x < appState.canvasSize.x && y >= 0 && y < appState.canvasSize.y)
-            {
-              final int pixelIndex = (y * appState.canvasSize.x + x) * 4;
-              byteDataImg.setUint8(pixelIndex + 0, colorBrightnessPremultiplied);
-              byteDataImg.setUint8(pixelIndex + 1, colorBrightnessPremultiplied);
-              byteDataImg.setUint8(pixelIndex + 2, colorBrightnessPremultiplied);
-              byteDataImg.setUint8(pixelIndex + 3, colorOpacity);
-            }*/
-            addCoordToBytes(x: x, y: y, byteDataImg: byteDataImg, brightness: colorBrightnessPremultiplied, opacity: colorOpacity, canvasSize: appState.canvasSize);
+            rasterCoords.add(CoordinateSetI(x: x, y: y));
           }
         }
       }
     }
-
-
-
-    final Completer<ui.Image> completerImg = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-      byteDataImg.buffer.asUint8List(),
-      appState.canvasSize.x,
-      appState.canvasSize.y,
-      ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
-      {
-        completerImg.complete(convertedImage);
-      }
-    );
-    return completerImg.future;
+    return rasterCoords;
   }
+
 }

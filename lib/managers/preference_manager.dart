@@ -374,7 +374,7 @@ enum PreferenceInt
   KPalRamp_Layout_RowControlFlex(defaultValue: 25),
   KPalRamp_Layout_RowValueFlex(defaultValue: 3),
   KPalRamp_Layout_ColorShowThreshold(defaultValue: 10),
-  KPalRamp_Layout_RenderIntervalMs(defaultValue: 250),
+  KPalRamp_Layout_RenderIntervalMs(defaultValue: 100),
 
   KPalColorCard_Layout_ColorNameFlex(defaultValue: 2),
   KPalColorCard_Layout_ColorFlex(defaultValue: 9),

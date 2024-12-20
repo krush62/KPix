@@ -74,7 +74,7 @@ class _KPalRampState extends State<KPalRamp>
   late Timer _renderTimer;
   final String _valueToolTipMessage = "Press to reset";
 
-  late List<DrawingLayerState> _drawingLayers;
+  late List<LayerState> _drawingLayers;
 
   @override
   void initState()
@@ -90,17 +90,26 @@ class _KPalRampState extends State<KPalRamp>
         _hasShiftChanges = true;
       },);
     }
+    _settingsChanged();
   }
 
 
-  List<DrawingLayerState> _copyLayers({required final List<LayerState> originalLayers})
+  List<LayerState> _copyLayers({required final List<LayerState> originalLayers})
   {
-    final Iterable<LayerState> visibleDrawingLayers = originalLayers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && l.runtimeType == DrawingLayerState);
-    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
-    for (final LayerState visibleLayer in visibleDrawingLayers)
+    final Iterable<LayerState> visibleLayers = originalLayers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.runtimeType == DrawingLayerState || l.runtimeType == ShadingLayerState));
+    final List<LayerState> drawingLayers = <LayerState>[];
+    for (final LayerState visibleLayer in visibleLayers)
     {
-      final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState);
-      drawingLayers.add(drawingLayer);
+      if (visibleLayer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState, layerStack: drawingLayers);
+        drawingLayers.add(drawingLayer);
+      }
+      else
+      {
+        drawingLayers.add(visibleLayer);
+      }
+
     }
     return drawingLayers;
   }
@@ -118,10 +127,10 @@ class _KPalRampState extends State<KPalRamp>
       _settingsChanged();
       _hasShiftChanges = false;
     }
-    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.thumbnail.value == null || l.isRasterizing)).isNotEmpty;
+    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.rasterImage.value == null || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      getImageFromLayers(size: _appState.canvasSize, layers:_drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
+      getImageFromLayers(layers: _drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
         _previewImage.value = img;
       });
       _hasRenderChanges = false;
@@ -154,15 +163,22 @@ class _KPalRampState extends State<KPalRamp>
       {
         _drawingLayers = _copyLayers(originalLayers: _appState.layers);
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
-        for (final DrawingLayerState drawingLayer in _drawingLayers)
+        for (final LayerState drawingLayer in _drawingLayers)
         {
-          drawingLayer.remapSingleRamp(newData: widget.rampData, map: indexMap);
+          if (drawingLayer.runtimeType == DrawingLayerState)
+          {
+            (drawingLayer as DrawingLayerState).remapSingleRamp(newData: widget.rampData, map: indexMap);
+          }
         }
         _createColorCards();
       }
-      for (final DrawingLayerState drawingLayer in _drawingLayers)
+      for (final LayerState drawingLayer in _drawingLayers)
       {
-        drawingLayer.doManualRaster = true;
+        if (drawingLayer.runtimeType == DrawingLayerState)
+        {
+          (drawingLayer as DrawingLayerState).doManualRaster = true;
+        }
+
       }
       _hasRenderChanges = true;
     });

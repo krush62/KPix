@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -77,6 +78,7 @@ class DrawingParameters
   final Offset primaryPressStart;
   final DrawingLayerState? currentDrawingLayer;
   final ReferenceLayerState? currentReferenceLayer;
+  final ShadingLayerState? currentShadingLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -95,8 +97,8 @@ class DrawingParameters
     drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
                                 y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor(),),
     currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
-    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null;
-
+    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
+    currentShadingLayer = currentLayer.runtimeType == ShadingLayerState ? (currentLayer as ShadingLayerState) : null;
 }
 
 class KPixPainter extends CustomPainter
@@ -235,7 +237,7 @@ class KPixPainter extends CustomPainter
 
       _drawCheckerboard(drawParams: drawParams);
       _drawCanvasBorder(drawParams: drawParams);
-      if (drawParams.currentDrawingLayer != null)
+      if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
       {
         toolPainter?.calculate(drawParams: drawParams);
       }
@@ -248,7 +250,7 @@ class KPixPainter extends CustomPainter
       {
         _drawSelection(drawParams: drawParams);
       }
-      if (drawParams.currentDrawingLayer != null)
+      if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
       {
         toolPainter?.drawExtras(drawParams: drawParams);
       }
@@ -488,7 +490,7 @@ class KPixPainter extends CustomPainter
   {
     if (_coords.value != null)
     {
-      if (!_isDragging.value /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && drawParams.currentDrawingLayer != null)
+      if (!_isDragging.value /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
       {
         toolPainter!.drawCursorOutline(drawParams: drawParams);
       }
@@ -558,7 +560,7 @@ class KPixPainter extends CustomPainter
         if (layers[i].runtimeType == DrawingLayerState)
         {
           final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-          final ui.Image? displayImage = (drawingLayer.thumbnail.value != null && !drawingLayer.isRasterizing) ? drawingLayer.thumbnail.value : drawingLayer.previousRaster;
+          final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
 
            if (displayImage != null)
           {
@@ -568,46 +570,11 @@ class KPixPainter extends CustomPainter
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
                     drawParams.scaledCanvasSize.x.toDouble(),
                     drawParams.scaledCanvasSize.y.toDouble(),),
-                image: drawingLayer.thumbnail.value!,
+                image: drawingLayer.rasterImage.value!,
                 scale: 1.0 / pxlSzDbl,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none,);
-          }
-
-          if (layers[i].isSelected.value)
-          {
-
-            final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
-            if (contentRasterSet != null)
-            {
-              paintImage(
-                  canvas: drawParams.canvas,
-                  rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
-                      (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                      (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-                  image: contentRasterSet.image,
-                  scale: 1.0 / pxlSzDbl,
-                  fit: BoxFit.none,
-                  alignment: Alignment.topLeft,
-                  filterQuality: FilterQuality.none,);
-            }
-
-
-            final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
-            if (cursorRasterSet != null)
-            {
-              paintImage(
-                  canvas: drawParams.canvas,
-                  rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
-                      (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                      (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-                  image: cursorRasterSet.image,
-                  scale: 1.0 / pxlSzDbl,
-                  fit: BoxFit.none,
-                  alignment: Alignment.topLeft,
-                  filterQuality: FilterQuality.none,);
-            }
           }
         }
         else if (layers[i].runtimeType == ReferenceLayerState)
@@ -651,6 +618,41 @@ class KPixPainter extends CustomPainter
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none,);
+          }
+        }
+
+        //DRAW CURSOR AND RASTER CONTENT
+        if (layers[i].isSelected.value && (layers[i].runtimeType == DrawingLayerState || layers[i].runtimeType == ShadingLayerState))
+        {
+          final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
+          if (contentRasterSet != null)
+          {
+            paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
+                (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
+                (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+              image: contentRasterSet.image,
+              scale: 1.0 / pxlSzDbl,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none,);
+          }
+
+
+          final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+          if (cursorRasterSet != null)
+          {
+            paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
+                (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
+                (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+              image: cursorRasterSet.image,
+              scale: 1.0 / pxlSzDbl,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none,);
           }
         }
       }

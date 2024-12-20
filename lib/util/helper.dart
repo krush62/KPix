@@ -505,7 +505,7 @@ class StackCol<T> {
   Future<ui.Image> getImageFromLayers({
     required final CoordinateSetI canvasSize,
     required final List<LayerState> layers,
-    required final CoordinateSetI size,
+    final int scalingFactor = 1,
     required final int selectedLayerIndex,
     required final SelectionList selectionList,}) async
   {
@@ -516,15 +516,16 @@ class StackCol<T> {
       if (layers[i].visibilityState.value == LayerVisibilityState.visible && layers[i].runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-        if (drawingLayer.thumbnail.value != null)
+        if (drawingLayer.rasterImage.value != null)
         {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
-                  canvasSize.x.toDouble(),
-                  canvasSize.y.toDouble(),),
-              image: drawingLayer.thumbnail.value!,
+                  canvasSize.x.toDouble() * scalingFactor,
+                  canvasSize.y.toDouble() * scalingFactor,),
+              image: drawingLayer.rasterImage.value!,
               fit: BoxFit.none,
+              scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
           if (selectionList.hasValues() && i == selectedLayerIndex)
@@ -536,10 +537,10 @@ class StackCol<T> {
               {
                 paint.color = entry.value!.getIdColor().color;
                 canvas.drawRect(Rect.fromLTWH(
-                    entry.key.x.toDouble(),
-                    entry.key.y.toDouble(),
-                    1,
-                    1,),
+                    entry.key.x.toDouble() * scalingFactor,
+                    entry.key.y.toDouble() * scalingFactor,
+                    scalingFactor.toDouble(),
+                    scalingFactor.toDouble(),),
                     paint,);
               }
             }
@@ -547,7 +548,7 @@ class StackCol<T> {
         }
       }
     }
-    return recorder.endRecording().toImage(size.x, size.y);
+    return recorder.endRecording().toImage(canvasSize.x * scalingFactor, canvasSize.y * scalingFactor);
   }
 
   Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
@@ -593,14 +594,14 @@ class StackCol<T> {
           {
             await Future<void>.delayed(const Duration(milliseconds: 20));
           }
-          if (drawingLayer.thumbnail.value != null)
+          if (drawingLayer.rasterImage.value != null)
           {
             paintImage(
                 canvas: canvas,
                 rect: ui.Rect.fromLTWH(0, 0,
                     state.canvasSize.x.toDouble(),
                     state.canvasSize.y.toDouble(),),
-                image: drawingLayer.thumbnail.value!,
+                image: drawingLayer.rasterImage.value!,
                 fit: BoxFit.none,
                 alignment: Alignment.topLeft,
                 filterQuality: FilterQuality.none,);

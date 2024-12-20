@@ -16,6 +16,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -62,104 +64,119 @@ class _ShaderWidgetState extends State<ShaderWidget>
   {
     return Padding (
       padding: EdgeInsets.all(_shaderWidgetOptions.outSidePadding),
-      child: ValueListenableBuilder<bool>(
-        valueListenable: _shaderOptions.isEnabled,
-        builder: (final BuildContext context, final bool isEnabled, final Widget? child){
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              Row(
+      child: ValueListenableBuilder<LayerState?>(
+        valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
+        builder: (final BuildContext context, final LayerState? currentLayer, final Widget? child) {
+          return ValueListenableBuilder<bool>(
+            valueListenable: _shaderOptions.isEnabled,
+            builder: (final BuildContext context, final bool isEnabledVal, final Widget? child){
+              final bool isShadingLayer = currentLayer != null && currentLayer.runtimeType == ShadingLayerState;
+              final bool shouldBeEnabled;
+              if (isShadingLayer)
+              {
+                shouldBeEnabled = true;
+              }
+              else
+              {
+                shouldBeEnabled = isEnabledVal;
+              }
+              return Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Expanded(
-                    flex: 3,
-                    child: GestureDetector(
-                      onTap: () {_shaderOptions.isEnabled.value = !isEnabled;},
-                      child: Text("Shading",
-                        textAlign: TextAlign.start, style: isEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark),),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
-                      child: Text("Enabled",
-                        textAlign: TextAlign.end, style: widget.labelStyle,),
-                    ),
-                  ),
-                  Expanded(
-                    child: Tooltip(
-                      waitDuration: AppState.toolTipDuration,
-                      message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, precededNewLine: false),
-                      child: Switch(
-                        onChanged: (final bool newState) {
-                          _shaderOptions.isEnabled.value = newState;
-                        },
-                        value: isEnabled,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 3,
+                        child: GestureDetector(
+                          onTap: (!isShadingLayer) ? () {_shaderOptions.isEnabled.value = !shouldBeEnabled;} : null,
+                          child: Text("Shading",
+                            textAlign: TextAlign.start, style: shouldBeEnabled ? widget.titleStyle?.apply(color: Theme.of(context).primaryColorLight) : widget.titleStyle?.apply(color: Theme.of(context).primaryColorDark),),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
-                      child: Text("Current Ramp Only",
-                          textAlign: TextAlign.start, style: widget.labelStyle,),
-                    ),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _shaderOptions.onlyCurrentRampEnabled,
-                      builder: (final BuildContext context, final bool onlyCurrentRampEnabled, final Widget? child)
-                      {
-                        return Tooltip(
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
+                          child: Text("Enabled",
+                            textAlign: TextAlign.end, style: widget.labelStyle,),
+                        ),
+                      ),
+                      Expanded(
+                        child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
-                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, precededNewLine: false),
+                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingToggle, precededNewLine: false),
                           child: Switch(
-                            onChanged: isEnabled
-                              ? (final bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
-                              : null,
-                            value: onlyCurrentRampEnabled,
+                            onChanged: (!isShadingLayer) ? (final bool newState) {
+                              _shaderOptions.isEnabled.value = newState;
+                            } : null,
+                            value: shouldBeEnabled,
                           ),
-                        );
-                      },
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
+                          child: Text("Current Ramp Only",
+                            textAlign: TextAlign.start, style: widget.labelStyle,),
+                        ),
+                      ),
+                      Expanded(
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _shaderOptions.onlyCurrentRampEnabled,
+                          builder: (final BuildContext context, final bool onlyCurrentRampEnabled, final Widget? child)
+                          {
+                            return Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingCurrentRampOnly, precededNewLine: false),
+                              child: Switch(
+                                onChanged: shouldBeEnabled && !isShadingLayer
+                                    ? (final bool newState) { _shaderOptions.onlyCurrentRampEnabled.value = newState;}
+                                    : null,
+                                value: !isShadingLayer && onlyCurrentRampEnabled,
+                              ),
+                            );
+                          },
 
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
-                      child: Text("Direction",
-                          textAlign: TextAlign.end, style: widget.labelStyle,),
-                    ),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder<ShaderDirection>(
-                      valueListenable: _shaderOptions.shaderDirection,
-                      builder: (final BuildContext context, final ShaderDirection direction, final Widget? child)
-                      {
-                        return Tooltip(
-                          waitDuration: AppState.toolTipDuration,
-                          message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, precededNewLine: false),
-                          child: Switch(
-                            onChanged: isEnabled
-                              ? (final bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
-                              : null,
-                            value: direction == ShaderDirection.right,
-                          ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
+                          child: Text("Direction",
+                            textAlign: TextAlign.end, style: widget.labelStyle,),
+                        ),
+                      ),
+                      Expanded(
+                        child: ValueListenableBuilder<ShaderDirection>(
+                          valueListenable: _shaderOptions.shaderDirection,
+                          builder: (final BuildContext context, final ShaderDirection direction, final Widget? child)
+                          {
+                            return Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message:_hotkeyManager.getShortcutString(action: HotkeyAction.shadingDirection, precededNewLine: false),
+                              child: Switch(
+                                onChanged: shouldBeEnabled
+                                    ? (final bool newState) {_shaderOptions.shaderDirection.value = newState ? ShaderDirection.right : ShaderDirection.left;}
+                                    : null,
+                                value: direction == ShaderDirection.right,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           );
         },
       ),

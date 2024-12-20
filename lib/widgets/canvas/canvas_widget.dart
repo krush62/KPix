@@ -40,6 +40,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -234,6 +235,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         identifier = HistoryStateTypeIdentifier.toolFill;
       }
+
       GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier);
       kPixPainter.toolPainter!.hasHistoryData = false;
     }
@@ -569,7 +571,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         {
           if (_appState.currentLayer != null)
           {
-            if (_appState.currentLayer.runtimeType == DrawingLayerState)
+            if (_appState.currentLayer.runtimeType == DrawingLayerState || _appState.currentLayer.runtimeType == ShadingLayerState)
             {
               _appState.setToolSize(1, _appState.getCurrentToolSize());
             }
@@ -584,7 +586,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         {
           if (_appState.currentLayer != null)
           {
-            if (_appState.currentLayer.runtimeType == DrawingLayerState)
+            if (_appState.currentLayer.runtimeType == DrawingLayerState || _appState.currentLayer.runtimeType == ShadingLayerState)
             {
               _appState.setToolSize(-1, _appState.getCurrentToolSize());
             }

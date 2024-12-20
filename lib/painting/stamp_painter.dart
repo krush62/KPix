@@ -57,7 +57,9 @@ class StampPainter extends IToolPainter
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
 
-    if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden)
+    if (
+      (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+      (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
     {
       if (_oldCursorPos != _cursorPosNorm || _previousSize != _options.scale.value)
       {
@@ -86,7 +88,10 @@ class StampPainter extends IToolPainter
         }
         _previousSize = _options.scale.value;
 
-        final CoordinateColorMap cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+        final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
+          getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!, withShadingLayers: true) :
+          getStampPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, stampData: _stampData, shaderOptions: shaderOptions);
+
         rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
           cursorRaster = rasterSet;
           hasAsyncUpdate = true;
@@ -101,7 +106,15 @@ class StampPainter extends IToolPainter
       }
       else if (!drawParams.primaryDown && _down)
       {
-        _dump(canvasSize: drawParams.canvasSize, drawingLayer: drawParams.currentDrawingLayer!);
+        if (drawParams.currentDrawingLayer != null)
+        {
+          _dump(canvasSize: drawParams.canvasSize, drawingLayer: drawParams.currentDrawingLayer!);
+        }
+        else //SHADING LAYER
+        {
+          dumpStampShading(shadingLayer: drawParams.currentShadingLayer!, stampData: _stampData, shaderOptions: shaderOptions);
+        }
+
         _down = false;
       }
     }

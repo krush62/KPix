@@ -587,22 +587,25 @@ abstract class IToolPainter
             ColorReference? currentColor;
             for (int i = layers.length - 1; i >= 0; i--)
             {
-              if (layers[i].runtimeType == DrawingLayerState)
+              if (layers[i].visibilityState.value == LayerVisibilityState.visible)
               {
-                final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-                final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
-                if (col != null)
+                if (layers[i].runtimeType == DrawingLayerState)
                 {
-                  currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+                  final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+                  if (col != null)
+                  {
+                    currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+                  }
                 }
-              }
-              else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
-              {
-                final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
-                if (shadingLayer.hasCoord(coord: coord))
+                else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
                 {
-                  final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
-                  currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                  final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+                  if (shadingLayer.hasCoord(coord: coord))
+                  {
+                    final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
+                    currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                  }
                 }
               }
             }

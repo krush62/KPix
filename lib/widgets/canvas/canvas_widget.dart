@@ -456,7 +456,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
       if (_stylusLongMoveHorizontal.value && _appState.currentLayer != null)
       {
-        if (_appState.currentLayer.runtimeType == DrawingLayerState)
+        if (_appState.currentLayer.runtimeType == DrawingLayerState || _appState.currentLayer.runtimeType == ShadingLayerState)
         {
           _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
         }

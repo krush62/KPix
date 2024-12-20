@@ -45,16 +45,16 @@
 |                          |                     |                  |                                 |                              |                           |
 | <h3>Tool Settings</h3>   |                     |                  |                                 |                              |                           |
 | Use tool                 |                     |                  | primary down                    | primary down                 | single down               |
-| Color pick               |                     |                  | secondary down/up[^2]           | quick secondary down/up[^2]  |                           |
+| Color pick               |                     |                  | secondary down/up[^1]           | quick secondary down/up[^1]  |                           |
 | Selection Add            | shift (hold)        |                  |                                 |                              |                           |
 | Selection Subtract       | alt + shift (hold)  |                  |                                 |                              |                           |
 | Selection Intersect      | ctrl + shift (hold) |                  |                                 |                              |                           |
 | Increase Tool Size       |                     |                  | ctrl + mouse wheel up           | hold secondary + hover right |                           |
 | Decrease Tool Size       |                     |                  | ctrl + mouse wheel down         | hold secondary + hover left  |                           |
-| Draw From Center[^1]     | ctrl (hold)         |                  |                                 |                              |                           |
+| Draw From Center[^2]     | ctrl (hold)         |                  |                                 |                              |                           |
 | Angle Snap               | ctrl (hold)         |                  |                                 |                              |                           |
 | Keep 1:1 Aspect Ratio    | shift (hold)        |                  |                                 |                              |                           |
-| Line To[^1]              | shift (hold)        |                  |                                 |                              |                           |
+| Line To[^2]              | shift (hold)        |                  |                                 |                              |                           |
 |                          |                     |                  |                                 |                              |                           |
 | <h3>Layers</h3>          |                     |                  |                                 |                              |                           |
 | Switch Visibility        | shift + x           |                  |                                 |                              |                           |
@@ -95,6 +95,8 @@
 | Set Zoom Level 8000%     | Numpad 9            |                  |                                 |                              |                           |
 
 
-[^1]: This action is **only** possible with the specified shortcut (hotkey).\
-[^2]: If shading is **not** enabled.\
+[^1]: If shading is **not** enabled.
+
+[^2]: This action is **only** possible with the specified shortcut (hotkey).
+
 [^3]: If shading **is** enabled.

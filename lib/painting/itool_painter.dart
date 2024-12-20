@@ -550,7 +550,7 @@ abstract class IToolPainter
     final int currentIndex = appState.getLayerPosition(state: currentLayer);
     if (currentIndex != -1)
     {
-      for (int i = 0; i < appState.layers.length; i++)
+      for (int i = currentIndex; i >= 0; i--)
       {
         if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
@@ -585,7 +585,7 @@ abstract class IToolPainter
           if (currentLayerPos >= 0)
           {
             ColorReference? currentColor;
-            for (int i = layers.length - 1; i >= currentLayerPos; i--)
+            for (int i = layers.length - 1; i >= 0; i--)
             {
               if (layers[i].runtimeType == DrawingLayerState)
               {

@@ -261,7 +261,7 @@ class DrawingLayerState extends LayerState
     final List<LayerState> layerList = layerStack ?? appState.layers;
     if (currentIndex != -1)
     {
-      for (int i = 0; i < layerList.length; i++)
+      for (int i = currentIndex; i >= 0; i--)
       {
         if (layerList[i].runtimeType == ShadingLayerState && layerList[i].visibilityState.value == LayerVisibilityState.visible)
         {

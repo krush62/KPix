@@ -145,6 +145,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
   const String thumbnailExtension = "png";
   const List<String> imageExtensions = <String>["png", "jpg", "jpeg", "gif"];
   const String recoverFileName = "___recover___";
+  const double _floatDelta = 0.01;
 
 
   Future<String> saveKPixFile({required final String path, required final AppState appState}) async
@@ -287,8 +288,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           offset += 2;
           if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax) return LoadFileSet(status: "Zoom for reference layer is out of range: $zoom");
           //aspect_ratio ``float (1)``
-          final double aspectRatio = byteData.getFloat32(offset);
-          if (aspectRatio < referenceLayerSettings.aspectRatioMin || aspectRatio > referenceLayerSettings.aspectRatioMax) return LoadFileSet(status: "Aspect ratio for reference layer is out of range: $aspectRatio");
+          double aspectRatio = byteData.getFloat32(offset);
+          if (aspectRatio < (referenceLayerSettings.aspectRatioMin - _floatDelta) || aspectRatio > (referenceLayerSettings.aspectRatioMax + _floatDelta)) return LoadFileSet(status: "Aspect ratio for reference layer is out of range: $aspectRatio");
+          aspectRatio = aspectRatio.clamp(referenceLayerSettings.aspectRatioMin, referenceLayerSettings.aspectRatioMax);
           offset+=4;
 
           layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio));
@@ -315,20 +317,24 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           final int intervalY = byteData.getUint8(offset++);
           if (intervalY < gridLayerSettings.intervalYMin || intervalY > gridLayerSettings.intervalYMax) return LoadFileSet(status: "Interval Y for grid layer is out of range: $intervalY");
           //horizon_position ``float (1)``// 0...1 (vertical horizon position)
-          final double horizon = byteData.getFloat32(offset);
-          if (horizon < gridLayerSettings.vanishingPointMin || horizon > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Horizon for grid layer is out of range: $horizon");
+          double horizon = byteData.getFloat32(offset);
+          if (horizon < (gridLayerSettings.vanishingPointMin - _floatDelta) || horizon > (gridLayerSettings.vanishingPointMax + _floatDelta)) return LoadFileSet(status: "Horizon for grid layer is out of range: $horizon");
+          horizon = horizon.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
           offset += 4;
           //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-          final double vanishingPoint1 = byteData.getFloat32(offset);
-          if (vanishingPoint1 < gridLayerSettings.vanishingPointMin || vanishingPoint1 > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Vanishing Point 1 for grid layer is out of range: $vanishingPoint1");
+          double vanishingPoint1 = byteData.getFloat32(offset);
+          if (vanishingPoint1 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint1 > (gridLayerSettings.vanishingPointMax + _floatDelta)) return LoadFileSet(status: "Vanishing Point 1 for grid layer is out of range: $vanishingPoint1");
+          vanishingPoint1 = vanishingPoint1.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
           offset += 4;
           //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-          final double vanishingPoint2 = byteData.getFloat32(offset);
-          if (vanishingPoint2 < gridLayerSettings.vanishingPointMin || vanishingPoint2 > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Vanishing Point 2 for grid layer is out of range: $vanishingPoint2");
+          double vanishingPoint2 = byteData.getFloat32(offset);
+          if (vanishingPoint2 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint2 > (gridLayerSettings.vanishingPointMax + _floatDelta)) return LoadFileSet(status: "Vanishing Point 2 for grid layer is out of range: $vanishingPoint2");
+          vanishingPoint2 = vanishingPoint2.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
           offset += 4;
           //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-          final double vanishingPoint3 = byteData.getFloat32(offset);
-          if (vanishingPoint3 < gridLayerSettings.vanishingPointMin || vanishingPoint3 > gridLayerSettings.vanishingPointMax) return LoadFileSet(status: "Vanishing Point 3 for grid layer is out of range: $vanishingPoint3");
+          double vanishingPoint3 = byteData.getFloat32(offset);
+          if (vanishingPoint3 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint3 > (gridLayerSettings.vanishingPointMax + _floatDelta)) return LoadFileSet(status: "Vanishing Point 3 for grid layer is out of range: $vanishingPoint3");
+          vanishingPoint3 = vanishingPoint3.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
           offset += 4;
 
 
@@ -711,12 +717,14 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax) return LoadPaletteSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
       kPalRampSettings.hueShiftExp = byteData.getFloat32(offset, Endian.little);
       offset += 4;
-      if (kPalRampSettings.hueShiftExp < constraints.hueShiftExpMin || kPalRampSettings.hueShiftExp > constraints.hueShiftExpMax) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
+      if (kPalRampSettings.hueShiftExp < (constraints.hueShiftExpMin - _floatDelta) || kPalRampSettings.hueShiftExp > (constraints.hueShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
+      kPalRampSettings.hueShiftExp = kPalRampSettings.hueShiftExp.clamp(constraints.hueShiftExpMin, constraints.hueShiftExpMax);
       kPalRampSettings.satShift = byteData.getInt8(offset++);
       if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax) return LoadPaletteSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
       kPalRampSettings.satShiftExp = byteData.getFloat32(offset, Endian.little);
       offset += 4;
-      if (kPalRampSettings.satShiftExp < constraints.satShiftExpMin || kPalRampSettings.satShiftExp > constraints.satShiftExpMax) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
+      if (kPalRampSettings.satShiftExp < (constraints.satShiftExpMin - _floatDelta) || kPalRampSettings.satShiftExp > (constraints.satShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
+      kPalRampSettings.satShiftExp = kPalRampSettings.satShiftExp.clamp(constraints.satShiftExpMin, constraints.satShiftExpMax);
       kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
       kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
       if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");

@@ -90,7 +90,7 @@ class _KPixSplitterState extends State<KPixSplitter> {
                   children: <Widget>[
                     SizedBox(
                       width: ratioLeft * maxWidth,
-                      child: ClipRect(child: widget.left),
+                      child: widget.left,
                     ),
                     MouseRegion(
                       cursor: SystemMouseCursors.resizeColumn,
@@ -126,7 +126,7 @@ class _KPixSplitterState extends State<KPixSplitter> {
                     ),
                     SizedBox(
                       width: ratioRight * maxWidth,
-                      child: ClipRect(child: widget.right),
+                      child: widget.right,
                     ),
                   ],
                 ),

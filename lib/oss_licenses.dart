@@ -50,7 +50,6 @@ const List<Package> allDependencies = <Package>[
   _material_color_utilities,
   _media_scanner,
   _meta,
-  _multi_split_view,
   _package_info_plus,
   _package_info_plus_platform_interface,
   _path,
@@ -109,7 +108,6 @@ const List<Package> dependencies = <Package>[
   _google_fonts,
   _http,
   _media_scanner,
-  _multi_split_view,
   _package_info_plus,
   _path,
   _path_provider,
@@ -2655,40 +2653,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     isMarkdown: false,
     isSdk: false,
     dependencies: <PackageRef>[],
-  );
-
-/// multi_split_view 3.6.0
-const Package _multi_split_view = Package(
-    name: 'multi_split_view',
-    description: 'Provides horizontal or vertical multiple split view for Flutter.',
-    repository: 'https://github.com/caduandrade/multi_split_view',
-    authors: <String>[],
-    version: '3.6.0',
-    license: '''
-MIT License
-
-Copyright (c) 2021 Carlos Eduardo Leite de Andrade
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.''',
-    isMarkdown: false,
-    isSdk: false,
-    dependencies: <PackageRef>[PackageRef('flutter'), PackageRef('meta')],
   );
 
 /// package_info_plus 8.1.1

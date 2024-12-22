@@ -65,16 +65,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum PreferenceDouble
 {
   Layout_SplitView_DividerWidth(defaultValue: 8.0),
-  Layout_SplitView_GrooveGap(defaultValue: 8.0),
-  Layout_SplitView_GrooveThickness(defaultValue: 4.0),
-  Layout_SplitView_GrooveSize(defaultValue: 2.0),
-  Layout_SplitView_FlexLeftMin(defaultValue: 3.0),
-  //Layout_SplitView_FlexLeftDefault(defaultValue: 4.0),
-  Layout_SplitView_FlexLeftMax(defaultValue: 4.0),
-  Layout_SplitView_FlexCenterDefault(defaultValue: 12.0),
-  Layout_SplitView_FlexRightMin(defaultValue: 2.0),
-  //Layout_SplitView_FlexRightDefault(defaultValue: 3.0),
-  Layout_SplitView_FlexRightMax(defaultValue: 3.0),
+  Layout_SplitView_FlexLeftMin(defaultValue: 0.15),
+  Layout_SplitView_FlexLeftDefault(defaultValue: 0.2),
+  Layout_SplitView_FlexLeftMax(defaultValue: 0.25),
+  Layout_SplitView_FlexRightMin(defaultValue: 0.1),
+  Layout_SplitView_FlexRightDefault(defaultValue: 0.15),
+  Layout_SplitView_FlexRightMax(defaultValue: 0.2),
 
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
@@ -712,19 +708,12 @@ class PreferenceManager
   {
     mainLayoutOptions = MainLayoutOptions(
         splitViewDividerWidth: _getValueD(PreferenceDouble.Layout_SplitView_DividerWidth),
-        splitViewGrooveGap: _getValueD(PreferenceDouble.Layout_SplitView_GrooveGap),
-        splitViewGrooveThickness: _getValueD(PreferenceDouble.Layout_SplitView_GrooveThickness),
-        splitViewGrooveSize: _getValueD(PreferenceDouble.Layout_SplitView_GrooveSize),
         splitViewFlexLeftMin: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMin),
         splitViewFlexLeftMax: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMax),
         splitViewFlexRightMin: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightMin),
         splitViewFlexRightMax: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightMax),
-        splitViewGrooveCountMin: _getValueI(PreferenceInt.Layout_SplitView_GrooveCountMin),
-        splitViewGrooveCountMax: _getValueI(PreferenceInt.Layout_SplitView_GrooveCountMax),
-        splitViewAnimationLength: _getValueI(PreferenceInt.Layout_SplitView_AnimationLength),
-        //splitViewFlexLeftDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
-        splitViewFlexCenterDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexCenterDefault),
-        //splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault),
+        splitViewFlexLeftDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
+        splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault),
         );
     canvasWidgetOptions = CanvasOptions(
         historyCheckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),

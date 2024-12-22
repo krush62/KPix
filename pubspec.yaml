@@ -40,7 +40,6 @@ dependencies:
   google_fonts: ^6.2.1
   http: ^1.2.2
   media_scanner: ^2.1.0
-  multi_split_view: ^3.6.0
   package_info_plus: ^8.1.1
   path: ^1.9.1
   path_provider: ^2.1.5

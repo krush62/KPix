@@ -36,11 +36,11 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
+import 'package:kpix/widgets/controls/kpix_splitter.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
-import 'package:multi_split_view/multi_split_view.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -579,57 +579,28 @@ class MainWidget extends StatelessWidget
               : const SizedBox.shrink(),
           ),
           Expanded(
-            child: MultiSplitViewTheme(
-              data: MultiSplitViewThemeData(
-                dividerThickness: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth,
-                dividerPainter: DividerPainters.grooved2(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  color: Theme.of(context).primaryColorDark,
-                  highlightedColor: Theme.of(context).primaryColorLight,
-                  count: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveCountMin,
-                  highlightedCount: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveCountMax,
-                  gap: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveGap,
-                  animationDuration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewAnimationLength),
-                  thickness: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveThickness,
-                  size: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewGrooveSize,
-                ),
+            child: KPixSplitter(
+              left: const MainToolbarWidget(),
+              center: ValueListenableBuilder<bool>(
+                valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+                builder: (final BuildContext context, final bool hasProject, final Widget? child) {
+                  return hasProject ? Column(
+                    children: <Widget>[
+                      const CanvasWidget(),
+                      StatusBarWidget(),
+                    ],
+                  ) : Container(color: Theme.of(context).primaryColorDark);
+                },
               ),
-              child: MultiSplitView(
-                initialAreas: <Area>[
-                  Area(
-                    builder: (final BuildContext context, final Area area) {
-                      return const MainToolbarWidget();
-                    },
-                    flex: isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax,
-                    min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin,
-                    max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax,
-                  ),
-                  Area(builder: (final BuildContext context, final Area area) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
-                      builder: (final BuildContext context, final bool hasProject, final Widget? child) {
-                        return hasProject ? Column(
-                          children: <Widget>[
-                            const CanvasWidget(),
-                            StatusBarWidget(),
-                          ],
-                        ) : Container(color: Theme.of(context).primaryColorDark);
-                      },
-                    );
-                  },
-                  flex: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexCenterDefault,
-                ),
-                Area(
-                  builder: (final BuildContext context, final Area area){
-                    return const RightBarWidget();
-                  },
-                  flex: isDesktop() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin : GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
-                  min: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin,
-                  max: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax,
-                ),
-              ],
+              right: const RightBarWidget(),
+              dividerWidth: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth, //8.0
+              ratioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault, //0.2
+              minRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin, //0.15
+              maxRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax, //0.25
+              ratioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault, //0.15
+              minRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin, //0.1
+              maxRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax, //0.2
             ),
-          ),
         ),
       ],
     );
@@ -639,36 +610,22 @@ class MainWidget extends StatelessWidget
 class MainLayoutOptions
 {
   final double splitViewDividerWidth;
-  final double splitViewGrooveGap;
-  final double splitViewGrooveThickness;
-  final double splitViewGrooveSize;
   final double splitViewFlexLeftMin;
   final double splitViewFlexLeftMax;
   final double splitViewFlexRightMin;
   final double splitViewFlexRightMax;
-  //final double splitViewFlexLeftDefault;
-  final double splitViewFlexCenterDefault;
-  //final double splitViewFlexRightDefault;
-  final int splitViewGrooveCountMin;
-  final int splitViewGrooveCountMax;
-  final int splitViewAnimationLength;
+  final double splitViewFlexLeftDefault;
+  final double splitViewFlexRightDefault;
 
 
   // ignore: unreachable_from_main
   MainLayoutOptions({
     required this.splitViewDividerWidth,
-    required this.splitViewGrooveGap,
-    required this.splitViewGrooveThickness,
-    required this.splitViewGrooveSize,
     required this.splitViewFlexLeftMin,
     required this.splitViewFlexLeftMax,
     required this.splitViewFlexRightMin,
     required this.splitViewFlexRightMax,
-    required this.splitViewGrooveCountMin,
-    required this.splitViewGrooveCountMax,
-    required this.splitViewAnimationLength,
-    //required this.splitViewFlexLeftDefault,
-    required this.splitViewFlexCenterDefault,
-    //required this.splitViewFlexRightDefault,
+    required this.splitViewFlexLeftDefault,
+    required this.splitViewFlexRightDefault,
   });
 }

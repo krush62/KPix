@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
@@ -48,8 +49,6 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
-import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 
@@ -104,23 +103,37 @@ class AppState
     return _selectedColor;
   }
   final Map<ToolType, bool> _toolMap = <ToolType, bool>{};
-  final ValueNotifier<List<LayerState>> _layers = ValueNotifier<List<LayerState>>(<LayerState>[]);
-  List<LayerState> get layers
-  {
-    return _layers.value;
-  }
-  ValueNotifier<List<LayerState>> get layerListNotifier
-  {
-    return _layers;
-  }
-  final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
+
+  final LayerCollection _layerCollection = LayerCollection();
+
   LayerState? get currentLayer
   {
-    return _currentLayer.value;
+    return _layerCollection.currentLayer;
   }
+
   ValueNotifier<LayerState?> get currentLayerNotifier
   {
-    return _currentLayer;
+    return _layerCollection.currentLayerNotifier;
+  }
+
+  Iterable<LayerState> get visibleLayers
+  {
+    return _layerCollection.getVisibleLayers();
+  }
+
+  ChangeNotifier get layerListChangeNotifier
+  {
+    return _layerCollection;
+  }
+
+  List<LayerState> get layers
+  {
+    return _layerCollection.getAllLayers();
+  }
+
+  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
+  {
+    return _layerCollection.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos));
   }
 
   final RepaintNotifier repaintNotifier = RepaintNotifier();
@@ -213,17 +226,17 @@ class AppState
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.spraycan);}, action: HotkeyAction.selectToolSprayCan);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.line);}, action: HotkeyAction.selectToolLine);
     hotkeyManager.addListener(func: () {setToolSelection(tool: ToolType.stamp);}, action: HotkeyAction.selectToolStamp);
-    hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: currentLayer!);}, action: HotkeyAction.layersSwitchVisibility);
-    hotkeyManager.addListener(func: () {changeLayerLockState(layerState: currentLayer!);}, action: HotkeyAction.layersSwitchLock);
+    hotkeyManager.addListener(func: () {changeLayerVisibility(layerState: _layerCollection.currentLayer!);}, action: HotkeyAction.layersSwitchVisibility);
+    hotkeyManager.addListener(func: () {changeLayerLockState(layerState: _layerCollection.currentLayer!);}, action: HotkeyAction.layersSwitchLock);
     hotkeyManager.addListener(func: addNewDrawingLayer, action: HotkeyAction.layersNewDrawing);
     hotkeyManager.addListener(func: addNewReferenceLayer, action: HotkeyAction.layersNewReference);
     hotkeyManager.addListener(func: addNewShadingLayer, action: HotkeyAction.layersNewShading);
     hotkeyManager.addListener(func: addNewGridLayer, action: HotkeyAction.layersNewGrid);
-    hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: currentLayer!);}, action: HotkeyAction.layersDuplicate);
-    hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: currentLayer!);}, action: HotkeyAction.layersDelete);
-    hotkeyManager.addListener(func: () {layerMerged(mergeLayer: currentLayer!);}, action: HotkeyAction.layersMerge);
-    hotkeyManager.addListener(func: () {moveUpLayer(state: currentLayer!);}, action: HotkeyAction.layersMoveUp);
-    hotkeyManager.addListener(func: () {moveDownLayer(state: currentLayer!);}, action: HotkeyAction.layersMoveDown);
+    hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: _layerCollection.currentLayer!);}, action: HotkeyAction.layersDuplicate);
+    hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: _layerCollection.currentLayer!);}, action: HotkeyAction.layersDelete);
+    hotkeyManager.addListener(func: () {layerMerged(mergeLayer: _layerCollection.currentLayer!);}, action: HotkeyAction.layersMerge);
+    hotkeyManager.addListener(func: () {moveUpLayer(state: _layerCollection.currentLayer!);}, action: HotkeyAction.layersMoveUp);
+    hotkeyManager.addListener(func: () {moveDownLayer(state: _layerCollection.currentLayer!);}, action: HotkeyAction.layersMoveDown);
     hotkeyManager.addListener(func: selectLayerAbove, action: HotkeyAction.layersSelectAbove);
     hotkeyManager.addListener(func: selectLayerBelow, action: HotkeyAction.layersSelectBelow);
     hotkeyManager.addListener(func: increaseZoomLevel, action: HotkeyAction.panZoomZoomIn);
@@ -245,9 +258,8 @@ class AppState
   void init({required final CoordinateSetI dimensions})
   {
     _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
-    final List<LayerState> layerList = <LayerState>[];
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    _layers.value = layerList;
+    _layerCollection.clear();
     addNewDrawingLayer(select: true, addToHistoryStack: false);
     _setDefaultPalette();
     GetIt.I.get<HistoryManager>().clear();
@@ -345,8 +357,8 @@ class AppState
       rampDataList.remove(ramp);
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
-      _deleteRampFromLayers(ramp: ramp);
-      _reRaster();
+      _layerCollection.deleteRampFromLayers(ramp: ramp);
+      _layerCollection.reRasterDrawingLayers();
       repaintNotifier.repaint();
       if (addToHistoryStack)
       {
@@ -368,9 +380,9 @@ class AppState
     {
       final HashMap<int, int> indexMap = remapIndices(oldLength: originalData.shiftedColors.length, newLength: ramp.shiftedColors.length);
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
-      _remapLayers(newData: ramp, map: indexMap);
+      _layerCollection.remapLayers(newData: ramp, map: indexMap);
     }
-    _reRaster();
+    _layerCollection.reRasterDrawingLayers();
     repaintNotifier.repaint();
     if (addToHistoryStack)
     {
@@ -414,32 +426,7 @@ class AppState
 
   ReferenceLayerState addNewReferenceLayer({final bool addToHistoryStack = true, final bool select = false})
   {
-    final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
-    final List<LayerState> layerList = <LayerState>[];
-    final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
-    if (_layers.value.isEmpty)
-    {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
-      layerList.add(newLayer);
-    }
-    else
-    {
-      for (int i = 0; i < _layers.value.length; i++)
-      {
-        if (_layers.value[i].isSelected.value)
-        {
-          layerList.add(newLayer);
-        }
-        layerList.add(_layers.value[i]);
-      }
-    }
-    _layers.value = layerList;
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
+    final ReferenceLayerState newLayer = _layerCollection.addNewReferenceLayer(select: select);
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
@@ -449,76 +436,17 @@ class AppState
 
   ShadingLayerState addNewShadingLayer({final bool addToHistoryStack = true, final bool select = false})
   {
-    final ShadingLayerState newLayer = ShadingLayerState();
-    final List<LayerState> layerList = <LayerState>[];
-    if (_layers.value.isEmpty)
-    {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
-      layerList.add(newLayer);
-    }
-    else
-    {
-      for (int i = 0; i < _layers.value.length; i++)
-      {
-        if (_layers.value[i].isSelected.value)
-        {
-          layerList.add(newLayer);
-        }
-        layerList.add(_layers.value[i]);
-      }
-    }
-    _layers.value = layerList;
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
+    final ShadingLayerState newLayer = _layerCollection.addNewShadingLayer(select: select);
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewShading);
     }
     return newLayer;
   }
 
   GridLayerState addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
   {
-    final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
-    final List<LayerState> layerList = <LayerState>[];
-    final GridLayerState newLayer = GridLayerState(
-      brightness: gridSettings.brightnessDefault,
-      gridType: gridSettings.gridTypeDefault,
-      intervalX: gridSettings.intervalXDefault,
-      intervalY: gridSettings.intervalYDefault,
-      opacity: gridSettings.opacityDefault,
-      horizonPosition: gridSettings.horizonDefault,
-      vanishingPoint1: gridSettings.vanishingPoint1Default,
-      vanishingPoint2: gridSettings.vanishingPoint2Default,
-      vanishingPoint3: gridSettings.vanishingPoint3Default,
-    );
-    if (_layers.value.isEmpty)
-    {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
-      layerList.add(newLayer);
-    }
-    else
-    {
-      for (int i = 0; i < _layers.value.length; i++)
-      {
-        if (_layers.value[i].isSelected.value)
-        {
-          layerList.add(newLayer);
-        }
-        layerList.add(_layers.value[i]);
-      }
-    }
-    _layers.value = layerList;
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
+    final GridLayerState newLayer = _layerCollection.addNewGridLayer(select: select);
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
@@ -528,30 +456,11 @@ class AppState
 
   DrawingLayerState addNewDrawingLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
-    final List<LayerState> layerList = <LayerState>[];
-    final DrawingLayerState newLayer = DrawingLayerState(size: _canvasSize, content: content);
-    if (_layers.value.isEmpty)
+    final bool setSelectionStateLayer = _layerCollection.isEmpty;
+    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize);
+    if (setSelectionStateLayer)
     {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
       selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
-      layerList.add(newLayer);
-    }
-    else
-    {
-      for (int i = 0; i < _layers.value.length; i++)
-      {
-        if (_layers.value[i].isSelected.value)
-        {
-          layerList.add(newLayer);
-        }
-        layerList.add(_layers.value[i]);
-      }
-    }
-    _layers.value = layerList;
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
     }
     if (addToHistoryStack)
     {
@@ -605,23 +514,7 @@ class AppState
   {
     if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
     {
-      if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
-      {
-        _deleteAllRampsFromLayers();
-      }
-      else
-      {
-        final HashMap<ColorReference, ColorReference> rampMap = getRampMap(rampList1: _colorRamps.value, rampList2: loadPaletteSet.rampData!);
-        for (final LayerState layer in _layers.value)
-        {
-          if (layer.runtimeType == DrawingLayerState)
-          {
-            final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-            drawingLayer.remapAllColors(rampMap: rampMap);
-            drawingLayer.doManualRaster = true;
-          }
-        }
-      }
+      _layerCollection.replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior, colorRamps: _colorRamps.value);
       _selectedColor.value = loadPaletteSet.rampData![0].references[0];
       _colorRamps.value = loadPaletteSet.rampData!;
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
@@ -749,8 +642,7 @@ class AppState
       _canvasSize.x = canvSize.x;
       _canvasSize.y = canvSize.y;
       // layers
-      _layers.value = layerList;
-      _currentLayer.value = curSelLayer?? getSelectedLayer();
+      _layerCollection.replaceLayers(layers: layerList, selectedLayer: curSelLayer?? getSelectedLayer());
       // selection state (incl layer)
       selectionState.selection.delete(keepSelection: false);
       selectionState.selection.addDirectlyAll(list: selectionContent);
@@ -765,16 +657,7 @@ class AppState
 
   int getLayerPosition({required final LayerState state})
   {
-    int sourcePosition = -1;
-    for (int i = 0; i < _layers.value.length; i++)
-    {
-      if (_layers.value[i] == state)
-      {
-        sourcePosition = i;
-        break;
-      }
-    }
-    return sourcePosition;
+    return _layerCollection.getLayerPosition(state: state);
   }
 
   void moveUpLayer({required final LayerState state})
@@ -789,7 +672,7 @@ class AppState
   void moveDownLayer({required final LayerState state})
   {
     final int sourcePosition = getLayerPosition(state: state);
-    if (sourcePosition < (layers.length - 1))
+    if (sourcePosition < (_layerCollection.length - 1))
     {
       changeLayerOrder(state: state, newPosition: sourcePosition + 2);
     }
@@ -856,27 +739,14 @@ class AppState
 
   void changeLayerOrder({required final LayerState state, required final int newPosition, final bool addToHistoryStack = true})
   {
-    final int sourcePosition = getLayerPosition(state: state);
-
-    if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
+    _layerCollection.changeLayerOrder(state: state, newPosition: newPosition);
+    if (addToHistoryStack)
     {
-      final List<LayerState> stateList = List<LayerState>.from(_layers.value);
-      stateList.removeAt(sourcePosition);
-      if (newPosition > sourcePosition) {
-        stateList.insert(newPosition - 1, state);
-      }
-      else
-        {
-          stateList.insert(newPosition, state);
-        }
-      _layers.value = stateList;
-      if (addToHistoryStack)
-      {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
-      }
-      repaintNotifier.repaint();
-      rasterDrawingLayersBelow(layer: layers[0]);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
     }
+    repaintNotifier.repaint();
+    rasterDrawingLayersBelow(layer: _layerCollection.first);
+
   }
 
   void changeLayerVisibility({required final LayerState layerState})
@@ -934,107 +804,43 @@ class AppState
 
   LayerState? getSelectedLayer()
   {
-    LayerState? selectedLayer;
-    for (final LayerState state in _layers.value)
-    {
-      if (state.isSelected.value)
-      {
-        selectedLayer = state;
-      }
-    }
-    return selectedLayer;
+    return _layerCollection.getSelectedLayer();
   }
 
   int getSelectedLayerIndex()
   {
-    if (currentLayer != null)
-    {
-      return _layers.value.indexOf(currentLayer!);
-    }
-    else
-    {
-      return -1;
-    }
+    return _layerCollection.getSelectedLayerIndex();
   }
 
   void selectLayerAbove()
   {
-    final int index = getLayerPosition(state: currentLayer!);
-    if (index > 0)
-    {
-      selectLayer(newLayer: layers[index - 1]);
-    }
+    _layerCollection.selectLayerAbove();
   }
 
   void selectLayerBelow()
   {
-    final int index = getLayerPosition(state: currentLayer!);
-    if (index < layers.length - 1)
-    {
-      selectLayer(newLayer: layers[index + 1]);
-    }
+    _layerCollection.selectLayerBelow();
   }
 
 
   void selectLayer({required final LayerState newLayer, final bool addToHistoryStack = false})
   {
-    LayerState oldLayer = newLayer;
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.isSelected.value)
-      {
-        oldLayer = layer;
-        break;
-      }
-    }
+    final LayerState oldLayer = _layerCollection.selectLayer(newLayer: newLayer);
     if (oldLayer != newLayer)
     {
-
-
-
-
-
-
-
-      newLayer.isSelected.value = true;
-      oldLayer.isSelected.value = false;
-      _currentLayer.value = newLayer;
       selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
-      if (addToHistoryStack)
-      {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
-      }
     }
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
+    }
+
   }
 
   void layerDeleted({required final LayerState deleteLayer, final bool addToHistoryStack = true})
   {
-    if (_layers.value.length > 1)
+    if (_layerCollection.deleteLayer(deleteLayer: deleteLayer))
     {
-      final List<LayerState> layerList = <LayerState>[];
-      int foundIndex = 0;
-      for (int i = 0; i < _layers.value.length; i++)
-      {
-        if (_layers.value[i] != deleteLayer)
-        {
-          layerList.add(_layers.value[i]);
-        }
-        else
-        {
-          foundIndex = i;
-        }
-      }
-
-      if (foundIndex > 0)
-      {
-        selectLayer(newLayer: layerList[foundIndex - 1]);
-      }
-      else
-      {
-        selectLayer(newLayer: layerList[0]);
-      }
-
-      _layers.value = layerList;
       if (deleteLayer.runtimeType == ShadingLayerState)
       {
         rasterDrawingLayersBelow(layer: deleteLayer);
@@ -1047,127 +853,36 @@ class AppState
     }
     else
     {
-      showMessage(text: "Cannot delete the only layer!");
+      showMessage(text: "Cannot delete the layer!");
     }
   }
 
   void layerMerged({required final LayerState mergeLayer, final bool addToHistoryStack = true})
   {
-    if (mergeLayer.runtimeType == DrawingLayerState)
+    final String? message = _layerCollection.layerIsMergeable(mergeLayer: mergeLayer);
+    if (message == null)
     {
-      final DrawingLayerState drawingMergeLayer = mergeLayer as DrawingLayerState;
-      final int mergeLayerIndex = _layers.value.indexOf(mergeLayer);
-      if (mergeLayerIndex == _layers.value.length - 1)
+      selectionState.deselect(addToHistoryStack: false);
+      _layerCollection.mergeLayer(mergeLayer: mergeLayer, canvasSize: _canvasSize);
+      if (addToHistoryStack)
       {
-        showMessage(text: "No layer below!");
-      }
-      else if (drawingMergeLayer.visibilityState.value == LayerVisibilityState.hidden)
-      {
-        showMessage(text: "Cannot merge from an invisible layer!");
-      }
-      else if (_layers.value[mergeLayerIndex + 1].visibilityState.value == LayerVisibilityState.hidden)
-      {
-        showMessage(text: "Cannot merge with an invisible layer!");
-      }
-      else if (drawingMergeLayer.lockState.value == LayerLockState.locked)
-      {
-        showMessage(text: "Cannot merge from a locked layer!");
-      }
-      else if (_layers.value[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers.value[mergeLayerIndex + 1] as DrawingLayerState).lockState.value == LayerLockState.locked)
-      {
-        showMessage(text: "Cannot merge with a locked layer!");
-      }
-      else if (_layers.value[mergeLayerIndex + 1].runtimeType != DrawingLayerState)
-      {
-        showMessage(text: "Can only merge with drawing layers!");
-      }
-      else
-      {
-        bool lowLayerWasSelected = false;
-        final List<LayerState> layerList = List<LayerState>.empty(growable: true);
-        selectionState.deselect(addToHistoryStack: false);
-        final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
-        for (int i = 0; i < _layers.value.length; i++)
-        {
-          if (i == mergeLayerIndex && _layers.value[i+1].runtimeType == DrawingLayerState)
-          {
-            final DrawingLayerState drawingLayer = _layers.value[i+1] as DrawingLayerState;
-            for (int x = 0; x < _canvasSize.x; x++)
-            {
-              for (int y = 0; y < _canvasSize.y; y++)
-              {
-                final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-
-                //if transparent pixel -> use value from layer below
-                if (drawingMergeLayer.getDataEntry(coord: curCoord) == null && drawingLayer.getDataEntry(coord: curCoord) != null)
-                {
-                  refs[curCoord] = drawingLayer.getDataEntry(coord: curCoord);
-                }
-              }
-            }
-            layerList.add(drawingMergeLayer);
-            lowLayerWasSelected = drawingLayer.isSelected.value;
-            i++;
-            drawingMergeLayer.setDataAll(list: refs);
-          }
-          else
-          {
-            layerList.add(_layers.value[i]);
-          }
-
-        }
-        if (lowLayerWasSelected)
-        {
-          selectLayer(newLayer: drawingMergeLayer);
-        }
-        _layers.value = layerList;
-        if (addToHistoryStack)
-        {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge);
-        }
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge);
       }
     }
     else
     {
-      showMessage(text: "Can only merge Drawing Layers!");
+      showMessage(text: message);
     }
+
   }
 
   void layerDuplicated({required final LayerState duplicateLayer, final bool addToHistoryStack = true})
   {
-    final List<LayerState> layerList = <LayerState>[];
     selectionState.deselect(addToHistoryStack: false);
-    for (int i = 0; i < _layers.value.length; i++)
-    {
-      if (_layers.value[i] == duplicateLayer)
-      {
-        if (duplicateLayer.runtimeType == DrawingLayerState)
-        {
-          final DrawingLayerState drawingLayer = duplicateLayer as DrawingLayerState;
-          layerList.add(DrawingLayerState.from(other: drawingLayer));
-        }
-        else if (duplicateLayer.runtimeType == ReferenceLayerState)
-        {
-          final ReferenceLayerState referenceLayer = duplicateLayer as ReferenceLayerState;
-          layerList.add(ReferenceLayerState.from(other: referenceLayer));
-        }
-        else if (duplicateLayer.runtimeType == GridLayerState)
-        {
-          final GridLayerState gridLayer = duplicateLayer as GridLayerState;
-          layerList.add(GridLayerState.from(other: gridLayer));
-        }
-        else if (duplicateLayer.runtimeType == ShadingLayerState)
-        {
-          final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
-          layerList.add(ShadingLayerState.from(other: shadingLayer));
-        }
-      }
-      layerList.add(_layers.value[i]);
-    }
-    _layers.value = layerList;
+    _layerCollection.duplicateLayer(duplicateLayer: duplicateLayer);
     if (duplicateLayer.runtimeType == ShadingLayerState)
     {
-      rasterDrawingLayersBelow(layer: _layers.value[getLayerPosition(state: duplicateLayer) - 1]);
+      rasterDrawingLayersBelow(layer: duplicateLayer); //this should probably be one layer above
     }
     if (addToHistoryStack)
     {
@@ -1177,164 +892,19 @@ class AppState
 
   void layerRastered({required final LayerState rasterLayer, final bool addToHistoryStack = true})
   {
-    if (rasterLayer.runtimeType == GridLayerState)
+    _layerCollection.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize);
+    if (addToHistoryStack)
     {
-      final GridLayerState gridLayer = rasterLayer as GridLayerState;
-      gridLayer.getHashMap().then((final CoordinateColorMap data) {
-        _replaceCurrentLayerWithDrawingLayer(data: data, originalLayer: rasterLayer);
-      });
-    }
-    else if (rasterLayer.runtimeType == ShadingLayerState)
-    {
-      final ShadingLayerState shadingLayer = rasterLayer as ShadingLayerState;
-      _rasterShadingLayer(shadingLayer: shadingLayer).then((final void _) {
-        _shadingLayerRastered(shadingLayer: shadingLayer);
-      },);
-    }
-  }
-
-  void _shadingLayerRastered({required final ShadingLayerState shadingLayer})
-  {
-    layerDeleted(deleteLayer: shadingLayer);
-  }
-
-  Future<void> _rasterShadingLayer({required final ShadingLayerState shadingLayer}) async
-  {
-    final int layerIndex = getLayerPosition(state: shadingLayer);
-    assert(layerIndex >= 0 && layerIndex < layers.length);
-    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
-    final HashMap<DrawingLayerState, CoordinateColorMapNullable> shadeLayerMap = HashMap<DrawingLayerState, CoordinateColorMapNullable>();
-
-    //getting all relevant drawing layers
-    for (int i = layerIndex; i < layers.length; i++)
-    {
-      if (layers[i].runtimeType == DrawingLayerState && layers[i].visibilityState.value == LayerVisibilityState.visible)
-      {
-        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-        drawingLayers.add(drawingLayer);
-        shadeLayerMap[drawingLayer] = HashMap<CoordinateSetI, ColorReference?>();
-      }
-    }
-
-    //finding and sorting pixels that need to be shaded
-    for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.shadingData.entries)
-    {
-      for (final DrawingLayerState drawingLayer in drawingLayers)
-      {
-        final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key);
-        if (curCol != null)
-        {
-          final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
-          shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
-          break;
-        }
-      }
-    }
-
-    //applying shading
-    for (final MapEntry<DrawingLayerState, CoordinateColorMapNullable> entry in shadeLayerMap.entries)
-    {
-      if (entry.value.isNotEmpty)
-      {
-        entry.key.setDataAll(list: entry.value);
-      }
+      //TODO This needs its own TypeIdentifier
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
     }
   }
 
   void rasterDrawingLayersBelow({required final LayerState layer})
   {
-    //shade all layers below
-    final int currentLayerindex = getLayerPosition(state: layer);
-    for (int i = layers.length - 1; i > currentLayerindex; i--)
-    {
-      if (layers[i].runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
-    }
+    _layerCollection.rasterDrawingLayersBelow(layer: layer);
   }
 
-  void _replaceCurrentLayerWithDrawingLayer({required final CoordinateColorMap data, required final LayerState originalLayer, final bool addToHistoryStack = true})
-  {
-    final List<LayerState> layerList = <LayerState>[];
-    final DrawingLayerState drawingLayer = DrawingLayerState(size: canvasSize, content: data);
-    for (final LayerState layer in _layers.value)
-    {
-       if (layer != originalLayer)
-       {
-          layerList.add(layer);
-       }
-       else
-       {
-         layerList.add(drawingLayer);
-
-       }
-    }
-    if (originalLayer.isSelected.value)
-    {
-      selectLayer(newLayer: drawingLayer);
-    }
-    drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
-    _layers.value = layerList;
-    if (addToHistoryStack)
-    {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
-    }
-  }
-
-  void _deleteRampFromLayers({required final KPalRampData ramp})
-  {
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.deleteRamp(ramp: ramp);
-      }
-
-    }
-  }
-
-  void _deleteAllRampsFromLayers()
-  {
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        for (final KPalRampData kPalRampData in _colorRamps.value)
-        {
-          drawingLayer.deleteRamp(ramp: kPalRampData);
-        }
-        drawingLayer.doManualRaster = true;
-      }
-    }
-  }
-
-  void _remapLayers({required final KPalRampData newData, required final HashMap<int, int> map})
-  {
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.remapSingleRamp(newData: newData, map: map);
-      }
-    }
-  }
-
-  void _reRaster()
-  {
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
-    }
-  }
 
   void colorSelected({required final ColorReference? color, final bool addToHistory = true})
   {
@@ -1389,30 +959,9 @@ class AppState
   void canvasTransform({required final CanvasTransformation transformation})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    final List<LayerState> layerList = <LayerState>[];
-    DrawingLayerState? currentTransformLayer;
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        final DrawingLayerState transformLayer = drawingLayer.getTransformedLayer(transformation: transformation);
-        layerList.add(transformLayer);
-        if (layer == currentLayer)
-        {
-          currentTransformLayer = transformLayer;
-        }
-      }
-      else
-      {
-        layerList.add(layer);
-      }
-    }
-    _layers.value = layerList;
-    _currentLayer.value = currentTransformLayer;
+    final DrawingLayerState? currentTransformLayer = _layerCollection.transformLayers(transformation: transformation);
     if (currentTransformLayer != null)
     {
-      currentTransformLayer.isSelected.value = true;
       selectionState.selection.changeLayer(oldLayer: null, newLayer: currentTransformLayer);
     }
     if (transformation == CanvasTransformation.rotate)
@@ -1450,40 +999,9 @@ class AppState
   void changeCanvasSize({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    final List<LayerState> layerList = <LayerState>[];
-    LayerState? currentCropLayer;
-    for (final LayerState layer in _layers.value)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        final DrawingLayerState cropLayer = drawingLayer.getResizedLayer(newSize: newSize, offset: offset);
-        layerList.add(cropLayer);
-        if (layer == currentLayer)
-        {
-          currentCropLayer = cropLayer;
-        }
-      }
-      else
-      {
-        if (layer.runtimeType == GridLayerState)
-        {
-          final GridLayerState gridLayer = layer as GridLayerState;
-          gridLayer.manualRender();
-        }
-        layerList.add(layer);
-        if (layer == currentLayer)
-        {
-          currentCropLayer = layer;
-        }
-      }
-
-    }
-    _layers.value = layerList;
-    _currentLayer.value = currentCropLayer;
+    final LayerState? currentCropLayer = _layerCollection.changeLayerSizes(newSize: newSize, offset: offset);
     if (currentCropLayer != null)
     {
-      currentCropLayer.isSelected.value = true;
       selectionState.selection.changeLayer(oldLayer: null, newLayer: currentCropLayer);
     }
     _setCanvasDimensions(width: newSize.x, height: newSize.y);
@@ -1544,8 +1062,7 @@ class AppState
       {
         layerList.add(referenceLayer);
       }
-      _layers.value = layerList;
-      selectLayer(newLayer: drawingLayer);
+      _layerCollection.replaceLayers(layers: layerList, selectedLayer: drawingLayer);
       _colorRamps.value = importResult.data!.rampDataList;
       _selectedColor.value = _colorRamps.value[0].references[0];
       GetIt.I.get<HistoryManager>().clear();

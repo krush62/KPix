@@ -149,61 +149,84 @@ class _RightBarWidgetState extends State<RightBarWidget>
     return Material(
       color: Theme.of(context).primaryColor,
 
-      child: Column(
+      child: Stack(
         children: <Widget>[
-          const MainButtonWidget(
-          ),
-          Expanded(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
+          Column(
+            children: <Widget>[
+              const MainButtonWidget(
               ),
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _appState.hasProjectNotifier,
-                builder: (final BuildContext context, final bool hasProject, final Widget? child) {
-                  return hasProject ? SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                          child: CompositedTransformTarget(
-                            link: _layerLink,
-                            child: Tooltip(
-                              message: "Add New Layer...",
-                              waitDuration: AppState.toolTipDuration,
-                              child: IconButton.outlined(
-                                onPressed: () {addLayerMenu.show(context: context);},
-                                icon: const FaIcon(FontAwesomeIcons.plus),
-                                style: IconButton.styleFrom(
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
-                                    maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
-                                    iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
-                                    padding: EdgeInsets.zero,
+              Expanded(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorDark,
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
+                  ),
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _appState.hasProjectNotifier,
+                    builder: (final BuildContext context, final bool hasProject, final Widget? child) {
+                      return hasProject ? SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
+                              child: CompositedTransformTarget(
+                                link: _layerLink,
+                                child: Tooltip(
+                                  message: "Add New Layer...",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: IconButton.outlined(
+                                    onPressed: () {addLayerMenu.show(context: context);},
+                                    icon: const FaIcon(FontAwesomeIcons.plus),
+                                    style: IconButton.styleFrom(
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                      maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                      iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                            ListenableBuilder(
+                              listenable: _appState.layerListChangeNotifier,
+                              builder: (final BuildContext context, final Widget? child)
+                              {
+                                _createWidgetList(_appState.layers);
+                                return Column(children: _widgetList);
+                              },
+                            ),
+                          ],
                         ),
-                        ValueListenableBuilder<List<LayerState>>(
-                          valueListenable: _appState.layerListNotifier,
-                          builder: (final BuildContext context, final List<LayerState> states, final Widget? child)
-                          {
-                            _createWidgetList(states);
-                            return Column(children: _widgetList);
-                          },
-                        ),
-                      ],
-                    ),
-                  ) : const SizedBox.shrink();
-                },
+                      ) : const SizedBox.shrink();
+                    },
+                  ),
+                ),
               ),
-            ),
+              const CanvasOperationsWidget(),
+            ],
           ),
-          const CanvasOperationsWidget(),
+          ValueListenableBuilder<bool>(
+            valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+            builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
+              return IgnorePointer(
+                ignoring: !showLayerOptions,
+                child: AnimatedSlide(
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  offset: showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                      child: Container(color: Colors.red),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
+
+
       ),
     );
   }

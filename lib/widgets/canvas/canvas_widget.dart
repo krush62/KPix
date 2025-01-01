@@ -713,7 +713,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
               value: _cursorPos.value!.y - _canvasOffset.value.dy,
               pixelSize: _appState.zoomFactor.toDouble(),)
             ,);
-          final ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
+          final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
           if (colRef != null && colRef != _appState.selectedColor)
           {
             _appState.colorSelected(color: colRef);

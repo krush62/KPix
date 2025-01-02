@@ -552,9 +552,9 @@ abstract class IToolPainter
     {
       for (int i = currentIndex; i >= 0; i--)
       {
-        if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
+        if (appState.getLayerAt(index: i).runtimeType == ShadingLayerState && appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
         {
-          final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
+          final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
             colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getValueAt(coord: coord)!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
@@ -580,27 +580,26 @@ abstract class IToolPainter
             coord.x < canvasSize.x &&
             coord.y < canvasSize.y)
         {
-          final List<LayerState> layers = appState.layers;
           final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
           if (currentLayerPos >= 0)
           {
             ColorReference? currentColor;
-            for (int i = layers.length - 1; i >= 0; i--)
+            for (int i = appState.layerCount - 1; i >= 0; i--)
             {
-              if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+              if (appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
               {
-                if (layers[i].runtimeType == DrawingLayerState)
+                if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
                 {
-                  final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+                  final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
                   final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
                   if (col != null)
                   {
                     currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
                   }
                 }
-                else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
+                else if (currentColor != null && appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
                 {
-                  final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+                  final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
                   if (shadingLayer.hasCoord(coord: coord))
                   {
                     final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
@@ -709,25 +708,24 @@ abstract class IToolPainter
           coord.x < canvasSize.x &&
           coord.y < canvasSize.y)
       {
-        final List<LayerState> layers = appState.layers;
         final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
         if (currentLayerPos >= 0)
         {
           ColorReference? currentColor;
-          for (int i = layers.length - 1; i >= currentLayerPos; i--)
+          for (int i = appState.layerCount - 1; i >= currentLayerPos; i--)
           {
-            if (layers[i].runtimeType == DrawingLayerState)
+            if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
             {
-              final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
+              final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
               final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
               if (col != null)
               {
                 currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
               }
             }
-            else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
+            else if (currentColor != null && appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
             {
-              final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+              final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
               if (shadingLayer.hasCoord(coord: coord))
               {
                 final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;

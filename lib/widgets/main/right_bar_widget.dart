@@ -67,7 +67,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   void initState()
   {
     super.initState();
-    _createWidgetList(_appState.layers);
+    _createWidgetList();
     addLayerMenu = getAddLayerMenu(
       onDismiss: _closeLayerMenu,
       layerLink: _layerLink,
@@ -107,10 +107,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _closeLayerMenu();
   }
 
-  void _createWidgetList(final List<LayerState> layers)
+  void _createWidgetList()
   {
     _widgetList = <Widget>[];
-    for (int i = 0; i < layers.length; i++)
+    for (int i = 0; i < _appState.layerCount; i++)
     {
       _widgetList.add(DragTarget<LayerState>(
         builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
@@ -126,7 +126,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
       ),);
 
       _widgetList.add(LayerWidget(
-        layerState: layers[i],
+        layerState: _appState.getLayerAt(index: i),
       ),);
     }
     _widgetList.add(DragTarget<LayerState>(
@@ -138,7 +138,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
         );
       },
       onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
-        _appState.changeLayerOrder(state: details.data, newPosition: layers.length);
+        _appState.changeLayerOrder(state: details.data, newPosition: _appState.layerCount);
       },
     ),);
   }
@@ -193,7 +193,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               listenable: _appState.layerListChangeNotifier,
                               builder: (final BuildContext context, final Widget? child)
                               {
-                                _createWidgetList(_appState.layers);
+                                _createWidgetList();
                                 return Column(children: _widgetList);
                               },
                             ),

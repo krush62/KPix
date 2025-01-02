@@ -258,14 +258,15 @@ class DrawingLayerState extends LayerState
         }
       }
     }
-    final List<LayerState> layerList = layerStack ?? appState.layers;
+    //final List<LayerState> layerList = layerStack ?? appState.layers;
     if (currentIndex != -1)
     {
       for (int i = currentIndex; i >= 0; i--)
       {
-        if (layerList[i].runtimeType == ShadingLayerState && layerList[i].visibilityState.value == LayerVisibilityState.visible)
+        final LayerState layer = layerStack != null ? layerStack![i] : appState.getLayerAt(index: i);
+        if (layer.runtimeType == ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          final ShadingLayerState shadingLayer = layerList[i] as ShadingLayerState;
+          final ShadingLayerState shadingLayer = layer as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
             colorShift += shadingLayer.getValueAt(coord: coord)!;

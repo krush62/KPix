@@ -121,14 +121,24 @@ class AppState
     return _layerCollection.getVisibleLayers();
   }
 
+  Iterable<LayerState> get visibleDrawingAndShadingLayers
+  {
+    return _layerCollection.getVisibleDrawingAndShadingLayers();
+  }
+
   ChangeNotifier get layerListChangeNotifier
   {
     return _layerCollection;
   }
 
-  List<LayerState> get layers
+  LayerState getLayerAt({required final int index})
   {
-    return _layerCollection.getAllLayers();
+    return _layerCollection.getLayer(index: index);
+  }
+
+  int get layerCount
+  {
+    return _layerCollection.length;
   }
 
   ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
@@ -401,7 +411,6 @@ class AppState
     final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     if (colorRamps.length < constraints.rampCountMax)
     {
-
       const Uuid uuid = Uuid();
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       final KPalRampData newRamp = KPalRampData(
@@ -457,7 +466,7 @@ class AppState
   DrawingLayerState addNewDrawingLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
     final bool setSelectionStateLayer = _layerCollection.isEmpty;
-    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize);
+    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize, select: select);
     if (setSelectionStateLayer)
     {
       selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);

@@ -33,7 +33,6 @@ import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
@@ -67,12 +66,9 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
   Future<Uint8List?> exportPNG({required final ExportData exportData, required final AppState appState}) async
   {
     final ByteData byteData = await _getImageData(
-      ramps: appState.colorRamps,
-      layers: appState.layers,
-      selectionState: appState.selectionState,
-      imageSize: appState.canvasSize,
       scaling: exportData.scaling,
-      selectedLayerIndex: appState.getLayerPosition(state: appState.currentLayer!),);
+      appState: appState,
+      );
 
 
     final Completer<ui.Image> c = Completer<ui.Image>();
@@ -92,9 +88,9 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     return pngBytes!.buffer.asUint8List();
   }
 
-Future<ByteData> _getImageData({required final List<KPalRampData> ramps, required final List<LayerState> layers, required final SelectionState selectionState, required final CoordinateSetI imageSize, required final int scaling, required final int selectedLayerIndex}) async
+Future<ByteData> _getImageData({required final AppState appState, required final int scaling}) async
 {
-  final ui.Image i = await getImageFromLayers(canvasSize: imageSize, layers: layers, selectedLayerIndex: selectedLayerIndex, selectionList: selectionState.selection, scalingFactor: scaling);
+  final ui.Image i = await getImageFromLayers(appState: appState, scalingFactor: scaling);
   return (await i.toByteData())!;
 }
 
@@ -887,11 +883,11 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
     final List<Uint8List> layerNames = <Uint8List>[];
     final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
 
-    for (int l = 0; l < appState.layers.length; l++)
+    for (int l = 0; l < appState.layerCount; l++)
     {
-      if (appState.layers[l].runtimeType == DrawingLayerState)
+      if (appState.getLayerAt(index: l).runtimeType == DrawingLayerState)
       {
-        final DrawingLayerState layerState = appState.layers[l] as DrawingLayerState;
+        final DrawingLayerState layerState = appState.getLayerAt(index: l) as DrawingLayerState;
         final List<int> imgBytes = <int>[];
         for (int y = 0; y < layerState.size.y; y++)
         {
@@ -899,7 +895,7 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
           {
             final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
             ColorReference? colAtPos;
-            if (appState.getSelectedLayer() == appState.layers[l])
+            if (appState.getSelectedLayer() == appState.getLayerAt(index: l))
             {
               colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
             }
@@ -911,7 +907,7 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
             }
             else
             {
-              final int shade = _getShadeForCoord(layers: appState.layers, currentLayerIndex: l, coord: curCoord);
+              final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
               if (shade != 0)
               {
                 final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
@@ -931,25 +927,25 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
     return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
   }
 
-  int _getShadeForCoord({required final List<LayerState> layers, required final int currentLayerIndex, required final CoordinateSetI coord})
+  int _getShadeForCoord({required final AppState appState, required final int currentLayerIndex, required final CoordinateSetI coord})
   {
-    assert(currentLayerIndex < layers.length);
+    assert(currentLayerIndex < appState.layerCount);
     int shade = 0;
     for (int i = currentLayerIndex - 1; i >= 0; i--)
     {
-      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      if (appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
       {
-        if (layers[i].runtimeType == DrawingLayerState)
+        if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
         {
-          final DrawingLayerState drawingLayerState = layers[i] as DrawingLayerState;
+          final DrawingLayerState drawingLayerState = appState.getLayerAt(index: i) as DrawingLayerState;
           if (drawingLayerState.getDataEntry(coord: coord) != null)
           {
             return 0;
           }
         }
-        else if (layers[i].runtimeType == ShadingLayerState)
+        else if (appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
         {
-          final ShadingLayerState shadingLayerState = layers[i] as ShadingLayerState;
+          final ShadingLayerState shadingLayerState = appState.getLayerAt(index: i) as ShadingLayerState;
           final int? shadingAt = shadingLayerState.getValueAt(coord: coord);
           if (shadingAt != null)
           {
@@ -985,7 +981,7 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
         12 + //tattoo
         12 + //unit
         8 + //prop end
-        8 + (appState.layers.length * 8) + //layer addresses
+        8 + (appState.layerCount * 8) + //layer addresses
         8; //channel addresses
 
     //LAYER (without name and active layer prop)
@@ -1029,11 +1025,11 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
     final List<Uint8List> layerNames = <Uint8List>[];
     const int tileSize = 64;
     final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
-    for (int l = 0; l < appState.layers.length; l++)
+    for (int l = 0; l < appState.layerCount; l++)
     {
-      if (appState.layers[l].runtimeType == DrawingLayerState)
+      if (appState.getLayerAt(index: l).runtimeType == DrawingLayerState)
       {
-        final DrawingLayerState layerState = appState.layers[l] as DrawingLayerState;
+        final DrawingLayerState layerState = appState.getLayerAt(index: l) as DrawingLayerState;
         int x = 0;
         int y = 0;
         final List<List<int>> tileList = <List<int>>[];
@@ -1048,7 +1044,7 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
             {
               final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
               ColorReference? colAtPos;
-              if (appState.getSelectedLayer() == appState.layers[l])
+              if (appState.getSelectedLayer() == appState.getLayerAt(index: l))
               {
                 colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
               }
@@ -1061,7 +1057,7 @@ Future<ByteData> _getImageData({required final List<KPalRampData> ramps, require
               }
               else
               {
-                final int shade = _getShadeForCoord(layers: appState.layers, currentLayerIndex: l, coord: curCoord);
+                final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
                 if (shade != 0)
                 {
                   final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);

@@ -58,9 +58,9 @@ class HistoryState
     final List<HistoryLayer> layerList = <HistoryLayer>[];
     int selectedLayerIndex = 0;
     HistoryLayer? selectLayer;
-    for (int i = 0; i < appState.layers.length; i++)
+    for (int i = 0; i < appState.layerCount; i++)
     {
-      final LayerState layerState = appState.layers[i];
+      final LayerState layerState = appState.getLayerAt(index: i);
       HistoryLayer? hLayer;
       if (layerState.runtimeType == DrawingLayerState)
       {

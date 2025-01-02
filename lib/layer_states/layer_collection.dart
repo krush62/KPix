@@ -67,6 +67,11 @@ class LayerCollection with ChangeNotifier
     return _layers.first;
   }
 
+  LayerState getLayer({required final int index})
+  {
+    return _layers[index];
+  }
+
   void clear({final bool notify = true})
   {
     _layers.clear();
@@ -188,7 +193,8 @@ class LayerCollection with ChangeNotifier
     }
     else
     {
-      _layers.insert(getSelectedLayerIndex(), newLayer);
+      final int currentLayerIndex = getSelectedLayerIndex();
+      _layers.insert(currentLayerIndex, newLayer);
     }
     if (select)
     {
@@ -202,10 +208,13 @@ class LayerCollection with ChangeNotifier
   LayerState selectLayer({required final LayerState newLayer})
   {
     final LayerState? oldLayer = getSelectedLayer();
-    if (oldLayer != newLayer)
+    if (_currentLayer.value != newLayer || !newLayer.isSelected.value)
     {
       newLayer.isSelected.value = true;
-      oldLayer?.isSelected.value = false;
+      if (oldLayer != newLayer)
+      {
+        oldLayer?.isSelected.value = false;
+      }
       _currentLayer.value = newLayer;
     }
     notifyListeners();
@@ -540,7 +549,6 @@ class LayerCollection with ChangeNotifier
         drawingLayer.doManualRaster = true;
       }
     }
-    notifyListeners();
   }
 
   void reRasterDrawingLayers()
@@ -553,7 +561,6 @@ class LayerCollection with ChangeNotifier
         drawingLayer.doManualRaster = true;
       }
     }
-    notifyListeners();
   }
 
   void remapLayers({required final KPalRampData newData, required final HashMap<int, int> map})
@@ -643,6 +650,11 @@ class LayerCollection with ChangeNotifier
   Iterable<LayerState> getVisibleLayers()
   {
      return _layers.where((final LayerState x) => x.visibilityState.value == LayerVisibilityState.visible);
+  }
+
+  Iterable<LayerState> getVisibleDrawingAndShadingLayers()
+  {
+    return _layers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.runtimeType == DrawingLayerState || l.runtimeType == ShadingLayerState));
   }
 
   List<LayerState> getAllLayers()

@@ -588,112 +588,110 @@ class KPixPainter extends CustomPainter
 
   void _drawLayers({required final DrawingParameters drawParams})
   {
-    final List<LayerState> layers = _appState.layers;
+    final List<LayerState> visibleLayers = _appState.visibleLayers.toList();
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
 
-    for (int i = layers.length - 1; i >= 0; i--)
+    for (int i = visibleLayers.length - 1; i >= 0; i--)
     {
-      if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+      if (visibleLayers[i].runtimeType == DrawingLayerState)
       {
-        if (layers[i].runtimeType == DrawingLayerState)
+        final DrawingLayerState drawingLayer = visibleLayers[i] as DrawingLayerState;
+        final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
+
+         if (displayImage != null)
         {
-          final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-          final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
-
-           if (displayImage != null)
-          {
-            //TODO can we optimize this by not drawing the full raster image???
-            paintImage(
-                canvas: drawParams.canvas,
-                rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                    drawParams.scaledCanvasSize.x.toDouble(),
-                    drawParams.scaledCanvasSize.y.toDouble(),),
-                image: drawingLayer.rasterImage.value!,
-                scale: 1.0 / pxlSzDbl,
-                fit: BoxFit.none,
-                alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none,);
-          }
-        }
-        else if (layers[i].runtimeType == ReferenceLayerState)
-        {
-          final ReferenceLayerState refLayer = layers[i] as ReferenceLayerState;
-          if (refLayer.image != null)
-          {
-            final ui.Image image = refLayer.image!.image;
-
-            final ui.Rect srcRect = ui.Rect.fromLTWH(
-              -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-              -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-              drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-              drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-            );
-
-            final ui.Rect targetRect = ui.Rect.fromLTWH(
-              drawParams.offset.dx,
-              drawParams.offset.dy,
-              drawParams.scaledCanvasSize.x.toDouble(),
-              drawParams.scaledCanvasSize.y.toDouble(),
-            );
-
-            final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
-            drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
-          }
-        }
-        else if (layers[i].runtimeType == GridLayerState)
-        {
-          final GridLayerState gridLayer = layers[i] as GridLayerState;
-          if (gridLayer.raster != null)
-          {
-            //TODO can we optimize this by not drawing the full raster image???
-            paintImage(
-                canvas: drawParams.canvas,
-                rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                    drawParams.scaledCanvasSize.x.toDouble(),
-                    drawParams.scaledCanvasSize.y.toDouble(),),
-                image: gridLayer.raster!,
-                scale: 1.0 / pxlSzDbl,
-                fit: BoxFit.none,
-                alignment: Alignment.topLeft,
-                filterQuality: FilterQuality.none,);
-          }
-        }
-
-        //DRAW CURSOR AND RASTER CONTENT
-        if (layers[i].isSelected.value && (layers[i].runtimeType == DrawingLayerState || layers[i].runtimeType == ShadingLayerState))
-        {
-          final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
-          if (contentRasterSet != null)
-          {
-            paintImage(
+          //TODO can we optimize this by not drawing the full raster image???
+          paintImage(
               canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
-                (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-              image: contentRasterSet.image,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                  drawParams.scaledCanvasSize.x.toDouble(),
+                  drawParams.scaledCanvasSize.y.toDouble(),),
+              image: drawingLayer.rasterImage.value!,
               scale: 1.0 / pxlSzDbl,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          }
-
-
-          final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
-          if (cursorRasterSet != null)
-          {
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
-                (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-              image: cursorRasterSet.image,
-              scale: 1.0 / pxlSzDbl,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
-          }
         }
       }
+      else if (visibleLayers[i].runtimeType == ReferenceLayerState)
+      {
+        final ReferenceLayerState refLayer = visibleLayers[i] as ReferenceLayerState;
+        if (refLayer.image != null)
+        {
+          final ui.Image image = refLayer.image!.image;
+
+          final ui.Rect srcRect = ui.Rect.fromLTWH(
+            -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+            -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+            drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+            drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+          );
+
+          final ui.Rect targetRect = ui.Rect.fromLTWH(
+            drawParams.offset.dx,
+            drawParams.offset.dy,
+            drawParams.scaledCanvasSize.x.toDouble(),
+            drawParams.scaledCanvasSize.y.toDouble(),
+          );
+
+          final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
+          drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
+        }
+      }
+      else if (visibleLayers[i].runtimeType == GridLayerState)
+      {
+        final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
+        if (gridLayer.raster != null)
+        {
+          //TODO can we optimize this by not drawing the full raster image???
+          paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+                  drawParams.scaledCanvasSize.x.toDouble(),
+                  drawParams.scaledCanvasSize.y.toDouble(),),
+              image: gridLayer.raster!,
+              scale: 1.0 / pxlSzDbl,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none,);
+        }
+      }
+
+      //DRAW CURSOR AND RASTER CONTENT
+      if (visibleLayers[i].isSelected.value && (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState))
+      {
+        final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
+        if (contentRasterSet != null)
+        {
+          paintImage(
+            canvas: drawParams.canvas,
+            rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
+              (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
+              (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+            image: contentRasterSet.image,
+            scale: 1.0 / pxlSzDbl,
+            fit: BoxFit.none,
+            alignment: Alignment.topLeft,
+            filterQuality: FilterQuality.none,);
+        }
+
+
+        final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+        if (cursorRasterSet != null)
+        {
+          paintImage(
+            canvas: drawParams.canvas,
+            rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
+              (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
+              (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+            image: cursorRasterSet.image,
+            scale: 1.0 / pxlSzDbl,
+            fit: BoxFit.none,
+            alignment: Alignment.topLeft,
+            filterQuality: FilterQuality.none,);
+        }
+      }
+
     }
 
   }

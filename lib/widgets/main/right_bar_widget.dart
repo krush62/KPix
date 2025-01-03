@@ -33,11 +33,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
+import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -208,17 +211,42 @@ class _RightBarWidgetState extends State<RightBarWidget>
             ],
           ),
           ValueListenableBuilder<bool>(
-            valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
+            valueListenable: _appState.layerSettingsVisibleNotifier,
             builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
               return IgnorePointer(
                 ignoring: !showLayerOptions,
                 child: AnimatedSlide(
-                  duration: Duration(milliseconds: 500),
+                  duration: Duration(milliseconds: 250),
                   curve: Curves.easeInOut,
-                  offset: showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
+                  offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
                   child: Align(
                     alignment: Alignment.centerRight,
-                      child: Container(color: Colors.red),
+                      child: ColoredBox(
+                          color: Theme.of(context).primaryColorDark,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                              ),
+                              DrawingLayerSettingsWidget(settings: DrawingLayerSettings(startingColor: _appState.colorRamps[0].references[0]),),
+                              Tooltip(
+                                waitDuration: AppState.toolTipDuration,
+                                message: "Close",
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: IconButton.outlined(
+                                    onPressed: () {
+                                      _appState.layerSettingsVisible = false;
+                                    },
+                                    icon: const FaIcon(FontAwesomeIcons.arrowRightLong,),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ),
                   ),
                 ),
               );

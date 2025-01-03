@@ -141,6 +141,21 @@ class AppState
     return _layerCollection.length;
   }
 
+  ValueNotifier<bool> get layerSettingsVisibleNotifier
+  {
+    return _layerCollection.settingsVisible;
+  }
+
+  bool get layerSettingsVisible
+  {
+    return _layerCollection.settingsVisible.value;
+  }
+
+  set layerSettingsVisible(final bool newVisibility)
+  {
+    _layerCollection.settingsVisible.value = newVisibility;
+  }
+
   ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
   {
     return _layerCollection.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos));

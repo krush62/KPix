@@ -38,6 +38,7 @@ class LayerCollection with ChangeNotifier
 {
   final List<LayerState> _layers = <LayerState>[];
   final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
+  final ValueNotifier<bool> settingsVisible = ValueNotifier<bool>(false);
   LayerState? get currentLayer
   {
     return _currentLayer.value;

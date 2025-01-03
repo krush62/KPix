@@ -165,8 +165,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _settingsButtonPressed()
   {
-    //TODO
-    print("SETTINGS");
+    _appState.layerSettingsVisible = true;
   }
 
 

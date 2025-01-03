@@ -229,6 +229,10 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
         ..color = isEnabled ? sliderTheme.activeTrackColor! : sliderTheme.disabledActiveTrackColor!
         ..style = PaintingStyle.fill;
 
+      final Paint inActivePaint = Paint()
+      ..color = isEnabled ? sliderTheme.inactiveTrackColor! : Colors.transparent
+      ..style = PaintingStyle.fill;
+
       if (isRainbow)
       {
         activePaint = Paint()
@@ -244,7 +248,13 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
         trackRect.bottom,
       );
 
-
+      if (!isRainbow)
+      {
+        context.canvas.drawRRect(
+          RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
+          inActivePaint,
+        );
+      }
 
       context.canvas.drawRRect(
         RRect.fromRectAndRadius(isRainbow ? trackRect : activeTrack, Radius.circular(borderRadius)),

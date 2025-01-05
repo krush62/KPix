@@ -218,7 +218,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                   return IgnorePointer(
                     ignoring: !showLayerOptions,
                     child: AnimatedSlide(
-                      duration: Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 250),
                       curve: Curves.easeInOut,
                       offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
                       child: Align(

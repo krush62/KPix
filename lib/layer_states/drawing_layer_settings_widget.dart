@@ -191,7 +191,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                         ),
                                       ),
                                     );
-                                  }
+                                  },
                                 ),
                               ),
                             ),
@@ -365,7 +365,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                           ),
                                         ),
                                       );
-                                    }
+                                    },
                                   ),
                                 ),
                               ),

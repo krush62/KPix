@@ -382,6 +382,7 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _options.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.hueShift.toDouble(),
+                                  showPlusSignForPositive: true,
                                   min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
                                   max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
                                   divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
@@ -486,6 +487,7 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.satShift.toDouble(),
                                   min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
                                   max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
+                                  showPlusSignForPositive: true,
                                   divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
                                   onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,

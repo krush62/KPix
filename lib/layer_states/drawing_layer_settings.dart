@@ -105,9 +105,9 @@ class DrawingLayerSettings
   final ValueNotifier<OuterStrokeStyle> outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(OuterStrokeStyle.off);
   final ValueNotifier<InnerStrokeStyle> innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(InnerStrokeStyle.off);
   final ValueNotifier<DropShadowStyle> dropShadowStyle = ValueNotifier<DropShadowStyle>(DropShadowStyle.off);
-  final HashMap<Alignment, ValueNotifier<bool>> outerSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
-  final HashMap<Alignment, ValueNotifier<bool>> innerSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
-  final HashMap<Alignment, ValueNotifier<bool>> dropShadowSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
+  final ValueNotifier<HashMap<Alignment, bool>> outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>());
+  final ValueNotifier<HashMap<Alignment, bool>> innerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>());
+  final ValueNotifier<HashMap<Alignment, bool>> dropShadowSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>());
   final ValueNotifier<ColorReference> outerColorReference;
   final ValueNotifier<ColorReference> innerColorReference;
   final ValueNotifier<ColorReference> dropShadowColorReference;
@@ -133,9 +133,9 @@ class DrawingLayerSettings
   {
    for (final Alignment alignment in allAlignments)
    {
-     outerSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
-     innerSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
-     dropShadowSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
+     outerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
+     innerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
+     dropShadowSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
    }
   }
 }

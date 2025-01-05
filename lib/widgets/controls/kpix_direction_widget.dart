@@ -20,106 +20,80 @@ import 'package:flutter/material.dart';
 
 final Set<Alignment> allAlignments = <Alignment>{Alignment.topLeft, Alignment.topCenter, Alignment.topRight, Alignment.centerRight, Alignment.bottomRight, Alignment.bottomCenter, Alignment.bottomLeft, Alignment.centerLeft};
 
-class KPixDirectionWidget extends StatefulWidget
+class KPixDirectionWidget extends StatelessWidget
 {
   final bool isExclusive;
   final double padding;
-  final Function(Set<Alignment> directions)? onChange;
-  final HashMap<Alignment, ValueNotifier<bool>> selectionMap;
-  const KPixDirectionWidget({super.key, required this.isExclusive, this.padding = 1.0, this.onChange, required this.selectionMap});
-
-  @override
-  State<KPixDirectionWidget> createState() => _KPixDirectionWidgetState();
-}
-
-class _KPixDirectionWidgetState extends State<KPixDirectionWidget>
-{
-
-
-  final HashMap<Alignment, Widget> _buttonMap = HashMap<Alignment, Widget>();
-
-
-  void _notify()
-  {
-    if (widget.onChange != null)
-    {
-      final Set<Alignment> activeAlignments = <Alignment>{};
-      for (final MapEntry<Alignment, ValueNotifier<bool>> entry in widget.selectionMap.entries)
-      {
-        if (entry.value.value)
-        {
-          activeAlignments.add(entry.key);
-        }
-      }
-      widget.onChange!(activeAlignments);
-    }
-  }
+  final Function(HashMap<Alignment, bool> directionMap) onChange;
+  final HashMap<Alignment, bool> selectionMap;
+  const KPixDirectionWidget({super.key, required this.isExclusive, this.padding = 1.0, required this.onChange, required this.selectionMap});
 
   void _buttonPressed({required final Alignment alignment})
   {
-    if (widget.isExclusive)
+    final HashMap<Alignment, bool> notificationMap = HashMap<Alignment, bool>();
+    for (final Alignment alignment in allAlignments)
     {
-      if (!widget.selectionMap[alignment]!.value)
+      notificationMap[alignment] = selectionMap[alignment] ?? false;
+    }
+
+    if (isExclusive)
+    {
+      if (!(notificationMap[alignment] ?? false))
       {
-        for (final Alignment loopAlignment in widget.selectionMap.keys)
+        for (final Alignment loopAlignment in notificationMap.keys)
         {
-          widget.selectionMap[loopAlignment]!.value = loopAlignment == alignment;
+          notificationMap[loopAlignment] = loopAlignment == alignment;
         }
-        _notify();
+        onChange(notificationMap);
       }
     }
     else
     {
-      final int activeDirectionCount = widget.selectionMap.values.where((final ValueNotifier<bool> element) => element.value == true).length;
-      if (activeDirectionCount > 1 || !widget.selectionMap[alignment]!.value)
+      final int activeDirectionCount = notificationMap.values.where((final bool element) => element == true).length;
+      if (activeDirectionCount > 1 || !(notificationMap[alignment] ?? false))
       {
-        widget.selectionMap[alignment]!.value = !widget.selectionMap[alignment]!.value;
-        _notify();
+        notificationMap[alignment] = !(notificationMap[alignment] ?? false);
+        onChange(notificationMap);
       }
     }
   }
 
-  @override
-  void initState()
+  HashMap<Alignment, Widget> _getButtonMap({required final BuildContext context})
   {
-    super.initState();
+    final HashMap<Alignment, Widget> buttonMap = HashMap<Alignment, Widget>();
     for (final Alignment alignment in allAlignments)
     {
-      _buttonMap[alignment] = Padding(
-        padding:  EdgeInsets.all(widget.padding),
+      final bool isSelected = selectionMap[alignment] ?? false;
+      buttonMap[alignment] = Padding(
+        padding:  EdgeInsets.all(padding),
         child: AspectRatio(
           aspectRatio: 1,
-          child: ValueListenableBuilder<bool>(
-            valueListenable: widget.selectionMap[alignment]!,
-            builder: (final BuildContext context, final bool isSelected, final Widget? child)
-            {
-              return FilledButton(
-                style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(
-                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
-                ) : null,
-                onPressed: () {_buttonPressed(alignment: alignment);},
-                child: const SizedBox.shrink(),
-              );
-            },
+          child: FilledButton(
+            style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(
+              backgroundColor: WidgetStateProperty.all(Colors.transparent),
+            ) : null,
+            onPressed: () {_buttonPressed(alignment: alignment);},
+            child: const SizedBox.shrink(),
           ),
         ),
       );
     }
+    return buttonMap;
   }
-
 
   @override
   Widget build(final BuildContext context)
   {
+    final HashMap<Alignment, Widget> buttonMap = _getButtonMap(context: context);
     return Row(
       children: <Widget>[
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _buttonMap[Alignment.topLeft]!,
-              _buttonMap[Alignment.centerLeft]!,
-              _buttonMap[Alignment.bottomLeft]!,
+              buttonMap[Alignment.topLeft]!,
+              buttonMap[Alignment.centerLeft]!,
+              buttonMap[Alignment.bottomLeft]!,
             ],
           ),
         ),
@@ -127,12 +101,12 @@ class _KPixDirectionWidgetState extends State<KPixDirectionWidget>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _buttonMap[Alignment.topCenter]!,
+              buttonMap[Alignment.topCenter]!,
               const AspectRatio(
                 aspectRatio: 1,
                 child: SizedBox.shrink(),
               ),
-              _buttonMap[Alignment.bottomCenter]!,
+              buttonMap[Alignment.bottomCenter]!,
             ],
           ),
         ),
@@ -140,9 +114,9 @@ class _KPixDirectionWidgetState extends State<KPixDirectionWidget>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _buttonMap[Alignment.topRight]!,
-              _buttonMap[Alignment.centerRight]!,
-              _buttonMap[Alignment.bottomRight]!,
+              buttonMap[Alignment.topRight]!,
+              buttonMap[Alignment.centerRight]!,
+              buttonMap[Alignment.bottomRight]!,
             ],
           ),
         ),

@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
@@ -149,9 +151,17 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     if (outerStrokeStyle != OuterStrokeStyle.off)
                       Expanded(
                         flex: 2,
-                        child: KPixDirectionWidget(
-                          selectionMap: widget.settings.outerSelectionMap,
-                          isExclusive: false,
+                        child: ValueListenableBuilder<HashMap<Alignment, bool>>(
+                          valueListenable: widget.settings.outerSelectionMap,
+                          builder: (final BuildContext context, final HashMap<Alignment, bool> outerMap, final Widget? child) {
+                            return KPixDirectionWidget(
+                              selectionMap: outerMap,
+                              onChange: (final HashMap<Alignment, bool> directionMap) {
+                                widget.settings.outerSelectionMap.value = directionMap;
+                              },
+                              isExclusive: false,
+                            );
+                          },
                         ),
                       ),
                     SizedBox(width: generalPadding),
@@ -315,9 +325,17 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       if (innerStrokeStyle != InnerStrokeStyle.off)
                         Expanded(
                           flex: 2,
-                          child: KPixDirectionWidget(
-                            selectionMap: widget.settings.innerSelectionMap,
-                            isExclusive: innerStrokeStyle == InnerStrokeStyle.bevel,
+                          child: ValueListenableBuilder<HashMap<Alignment, bool>>(
+                            valueListenable: widget.settings.innerSelectionMap,
+                            builder: (final BuildContext context, final HashMap<Alignment, bool> innerMap, final Widget? child) {
+                              return KPixDirectionWidget(
+                                selectionMap: innerMap,
+                                onChange: (final HashMap<Alignment, bool> directionMap) {
+                                  widget.settings.innerSelectionMap.value = directionMap;
+                                },
+                                isExclusive: innerStrokeStyle == InnerStrokeStyle.bevel,
+                              );
+                            },
                           ),
                         ),
                       SizedBox(width: generalPadding),
@@ -550,9 +568,17 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                             children: <Widget>[
                               Expanded(
                                 flex: 2,
-                                child: KPixDirectionWidget(
-                                  selectionMap: widget.settings.dropShadowSelectionMap,
-                                  isExclusive: true,
+                                child: ValueListenableBuilder<HashMap<Alignment, bool>>(
+                                  valueListenable: widget.settings.dropShadowSelectionMap,
+                                  builder: (final BuildContext context, final HashMap<Alignment, bool> dropShadowMap, final Widget? child) {
+                                    return KPixDirectionWidget(
+                                      selectionMap: dropShadowMap,
+                                      onChange: (final HashMap<Alignment, bool> directionMap) {
+                                        widget.settings.dropShadowSelectionMap.value = directionMap;
+                                      },
+                                      isExclusive: true,
+                                    );
+                                  },
                                 ),
                               ),
                               SizedBox(width: generalPadding),

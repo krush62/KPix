@@ -107,14 +107,17 @@ class DrawingLayerSettings
   final ValueNotifier<DropShadowStyle> dropShadowStyle = ValueNotifier<DropShadowStyle>(DropShadowStyle.off);
   final HashMap<Alignment, ValueNotifier<bool>> outerSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
   final HashMap<Alignment, ValueNotifier<bool>> innerSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
+  final HashMap<Alignment, ValueNotifier<bool>> dropShadowSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
   final ValueNotifier<ColorReference> outerColorReference;
   final ValueNotifier<ColorReference> innerColorReference;
+  final ValueNotifier<ColorReference> dropShadowColorReference;
   final ValueNotifier<CoordinateSetI> dropShadowOffset;
   final ValueNotifier<int> outerDarkenBrighten;
   final ValueNotifier<int> outerGlowDepth;
   final ValueNotifier<int> innerDarkenBrighten;
   final ValueNotifier<int> innerGlowDepth;
   final ValueNotifier<int> bevelDistance;
+  final ValueNotifier<int> dropShadowDarkenBrighten;
 
   DrawingLayerSettings({required final ColorReference startingColor, required this.constraints}) :
     outerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
@@ -124,12 +127,15 @@ class DrawingLayerSettings
     bevelDistance = ValueNotifier<int>(constraints.bevelDistanceDefault),
     outerColorReference = ValueNotifier<ColorReference>(startingColor),
     innerColorReference = ValueNotifier<ColorReference>(startingColor),
-    dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: constraints.dropShadowOffsetDefault, y: constraints.dropShadowOffsetDefault))
+    dropShadowColorReference = ValueNotifier<ColorReference>(startingColor),
+    dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: constraints.dropShadowOffsetDefault, y: constraints.dropShadowOffsetDefault),),
+    dropShadowDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault)
   {
    for (final Alignment alignment in allAlignments)
    {
      outerSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
      innerSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
+     dropShadowSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
    }
   }
 }

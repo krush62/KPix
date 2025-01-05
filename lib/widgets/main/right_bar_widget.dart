@@ -227,7 +227,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                           color: Theme.of(context).primaryColor,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
+                            children: <Widget>[
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),

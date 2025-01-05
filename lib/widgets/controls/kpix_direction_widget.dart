@@ -94,7 +94,9 @@ class _KPixDirectionWidgetState extends State<KPixDirectionWidget>
             builder: (final BuildContext context, final bool isSelected, final Widget? child)
             {
               return FilledButton(
-                style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(backgroundColor: WidgetStateProperty.all(Theme.of(context).primaryColorDark), tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero)) : null,
+                style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(
+                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                ) : null,
                 onPressed: () {_buttonPressed(alignment: alignment);},
                 child: const SizedBox.shrink(),
               );

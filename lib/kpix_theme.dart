@@ -121,10 +121,13 @@ class ColorSet
         backgroundColor: WidgetStateProperty.all(_lightColors.light),
         overlayColor: WidgetStateProperty.all(_lightColors.light),
         surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
         shape: WidgetStateProperty.all(
-          const RoundedRectangleBorder(
+          RoundedRectangleBorder(
+            side: BorderSide(color: _lightColors.light),
             borderRadius:
-            BorderRadius.all(Radius.circular(4)),
+            const BorderRadius.all(Radius.circular(4)),
           ),
         ),
       ),
@@ -251,10 +254,13 @@ class ColorSet
         backgroundColor: WidgetStateProperty.all(darkColors.light),
         overlayColor: WidgetStateProperty.all(darkColors.light),
         surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
         shape: WidgetStateProperty.all(
-          const RoundedRectangleBorder(
+          RoundedRectangleBorder(
+            side: BorderSide(color: darkColors.light, width: 2),
             borderRadius:
-            BorderRadius.all(Radius.circular(4)),
+            const BorderRadius.all(Radius.circular(4)),
           ),
         ),
       ),

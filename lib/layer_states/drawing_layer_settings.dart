@@ -26,16 +26,34 @@ enum OuterStrokeStyle
   off,
   solid,
   relative,
+  glow,
   shade
 }
+
+const Map<int, OuterStrokeStyle> outerStrokeStyleValueMap = <int, OuterStrokeStyle>{
+  0:OuterStrokeStyle.off,
+  1:OuterStrokeStyle.solid,
+  2:OuterStrokeStyle.relative,
+  3:OuterStrokeStyle.glow,
+  4:OuterStrokeStyle.shade,
+};
 
 enum InnerStrokeStyle
 {
   off,
   solid,
   glow,
+  bevel,
   shade
 }
+
+const Map<int, InnerStrokeStyle> innerStrokeStyleValueMap = <int, InnerStrokeStyle>{
+  0:InnerStrokeStyle.off,
+  1:InnerStrokeStyle.solid,
+  3:InnerStrokeStyle.glow,
+  2:InnerStrokeStyle.bevel,
+  4:InnerStrokeStyle.shade,
+};
 
 enum DropShadowStyle
 {
@@ -44,26 +62,74 @@ enum DropShadowStyle
   shade
 }
 
+const Map<int, DropShadowStyle> dropShadowStyleValueMap = <int, DropShadowStyle>{
+  0:DropShadowStyle.off,
+  1:DropShadowStyle.solid,
+  2:DropShadowStyle.shade,
+};
+
+class DrawingLayerSettingsConstraints
+{
+  final int darkenBrightenMin;
+  final int darkenBrightenDefault;
+  final int darkenBrightenMax;
+  final int glowDepthMin;
+  final int glowDepthDefault;
+  final int glowDepthMax;
+  final int bevelDistanceMin;
+  final int bevelDistanceDefault;
+  final int bevelDistanceMax;
+  final int dropShadowOffsetMin;
+  final int dropShadowOffsetDefault;
+  final int dropShadowOffsetMax;
+
+  DrawingLayerSettingsConstraints({
+    required this.darkenBrightenMin,
+    required this.darkenBrightenDefault,
+    required this.darkenBrightenMax,
+    required this.glowDepthMin,
+    required this.glowDepthDefault,
+    required this.glowDepthMax,
+    required this.bevelDistanceMin,
+    required this.bevelDistanceDefault,
+    required this.bevelDistanceMax,
+    required this.dropShadowOffsetMin,
+    required this.dropShadowOffsetDefault,
+    required this.dropShadowOffsetMax,});
+}
+
 
 class DrawingLayerSettings
 {
+  final DrawingLayerSettingsConstraints constraints;
   final ValueNotifier<OuterStrokeStyle> outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(OuterStrokeStyle.off);
   final ValueNotifier<InnerStrokeStyle> innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(InnerStrokeStyle.off);
   final ValueNotifier<DropShadowStyle> dropShadowStyle = ValueNotifier<DropShadowStyle>(DropShadowStyle.off);
   final HashMap<Alignment, ValueNotifier<bool>> outerSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
   final HashMap<Alignment, ValueNotifier<bool>> innerSelectionMap = HashMap<Alignment, ValueNotifier<bool>>();
-  late ValueNotifier<ColorReference> outerColorReference;
-  late ValueNotifier<ColorReference> innerColorReference;
-  final ValueNotifier<CoordinateSetI> dropShadowCoordinates = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
+  final ValueNotifier<ColorReference> outerColorReference;
+  final ValueNotifier<ColorReference> innerColorReference;
+  final ValueNotifier<CoordinateSetI> dropShadowOffset;
+  final ValueNotifier<int> outerDarkenBrighten;
+  final ValueNotifier<int> outerGlowDepth;
+  final ValueNotifier<int> innerDarkenBrighten;
+  final ValueNotifier<int> innerGlowDepth;
+  final ValueNotifier<int> bevelDistance;
 
-  DrawingLayerSettings({required final ColorReference startingColor})
+  DrawingLayerSettings({required final ColorReference startingColor, required this.constraints}) :
+    outerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
+    outerGlowDepth = ValueNotifier<int>(constraints.glowDepthDefault),
+    innerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
+    innerGlowDepth = ValueNotifier<int>(constraints.glowDepthDefault),
+    bevelDistance = ValueNotifier<int>(constraints.bevelDistanceDefault),
+    outerColorReference = ValueNotifier<ColorReference>(startingColor),
+    innerColorReference = ValueNotifier<ColorReference>(startingColor),
+    dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: constraints.dropShadowOffsetDefault, y: constraints.dropShadowOffsetDefault))
   {
-    outerColorReference = ValueNotifier<ColorReference>(startingColor);
-    innerColorReference = ValueNotifier<ColorReference>(startingColor);
-     for (final Alignment alignment in allAlignments)
-     {
-       outerSelectionMap[alignment] = ValueNotifier<bool>(false);
-       innerSelectionMap[alignment] = ValueNotifier<bool>(false);
-     }
+   for (final Alignment alignment in allAlignments)
+   {
+     outerSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
+     innerSelectionMap[alignment] = ValueNotifier<bool>(alignment == Alignment.bottomRight);
+   }
   }
 }

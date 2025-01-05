@@ -40,7 +40,6 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -211,18 +210,21 @@ class _RightBarWidgetState extends State<RightBarWidget>
             ],
           ),
           ValueListenableBuilder<bool>(
-            valueListenable: _appState.layerSettingsVisibleNotifier,
-            builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
-              return IgnorePointer(
-                ignoring: !showLayerOptions,
-                child: AnimatedSlide(
-                  duration: Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                  offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                      child: ColoredBox(
-                          color: Theme.of(context).primaryColorDark,
+            valueListenable: _appState.hasProjectNotifier,
+            builder: (final BuildContext context, final bool hasProject, final Widget? child) {
+              return hasProject ? ValueListenableBuilder<bool>(
+                valueListenable: _appState.layerSettingsVisibleNotifier,
+                builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
+                  return IgnorePointer(
+                    ignoring: !showLayerOptions,
+                    child: AnimatedSlide(
+                      duration: Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ColoredBox(
+                          color: Theme.of(context).primaryColor,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -230,7 +232,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                               ),
-                              DrawingLayerSettingsWidget(settings: DrawingLayerSettings(startingColor: _appState.colorRamps[0].references[0]),),
+                              DrawingLayerSettingsWidget(settings: DrawingLayerSettings(startingColor: _appState.colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints),),
                               Tooltip(
                                 waitDuration: AppState.toolTipDuration,
                                 message: "Close",
@@ -246,15 +248,15 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               ),
                             ],
                           ),
+                        ),
                       ),
-                  ),
-                ),
-              );
+                    ),
+                  );
+                },
+              ) : const SizedBox.shrink();
             },
           ),
         ],
-
-
       ),
     );
   }

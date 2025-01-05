@@ -16,6 +16,7 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
@@ -388,6 +389,20 @@ enum PreferenceInt
   KPalSliderConstraints_DefaultSat(defaultValue: 0),
   KPalSliderConstraints_DefaultVal(defaultValue: 0),
 
+
+  DrawingLayerConstraints_MinDarkenBrighten(defaultValue: -5),
+  DrawingLayerConstraints_DefaultDarkenBrighten(defaultValue: -1),
+  DrawingLayerConstraints_MaxDarkenBrighten(defaultValue: 5),
+  DrawingLayerConstraints_MinGlowDepth(defaultValue: 1),
+  DrawingLayerConstraints_DefaultGlowDepth(defaultValue: 2),
+  DrawingLayerConstraints_MaxGlowDepth(defaultValue: 8),
+  DrawingLayerConstraints_MinBevelDistance(defaultValue: 1),
+  DrawingLayerConstraints_DefaultBevelDistance(defaultValue: 2),
+  DrawingLayerConstraints_MaxBevelDistance(defaultValue: 8),
+  DrawingLayerConstraints_MinDropShadowDistance(defaultValue: 0),
+  DrawingLayerConstraints_DefaultDropShadowDistance(defaultValue: 1),
+  DrawingLayerConstraints_MaxDropShadowDistance(defaultValue: 16),
+
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
 
@@ -583,6 +598,7 @@ class PreferenceManager
   late OverlayEntryAlertDialogOptions alertDialogOptions;
   late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
+  late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late SelectionBarWidgetOptions selectionBarWidgetOptions;
   late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
   late CanvasSizeOptions canvasSizeOptions;
@@ -613,6 +629,7 @@ class PreferenceManager
   late StylusPreferenceContent stylusPreferenceContent;
   late TouchPreferenceContent touchPreferenceContent;
   late DesktopPreferenceContent desktopPreferenceContent;
+
 
 
 
@@ -797,6 +814,20 @@ class PreferenceManager
         dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
         thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
         addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize),);
+    drawingLayerSettingsConstraints = DrawingLayerSettingsConstraints(
+        darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
+        darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),
+        darkenBrightenMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDarkenBrighten),
+        glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
+        glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
+        glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
+        bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
+        bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
+        bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),
+        dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
+        dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
+        dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),
+    );
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),

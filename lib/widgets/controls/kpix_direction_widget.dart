@@ -24,9 +24,9 @@ class KPixDirectionWidget extends StatefulWidget
 {
   final bool isExclusive;
   final double padding;
-  final Function(Set<Alignment> directions) onChange;
+  final Function(Set<Alignment> directions)? onChange;
   final HashMap<Alignment, ValueNotifier<bool>> selectionMap;
-  const KPixDirectionWidget({super.key, required this.isExclusive, this.padding = 1.0, required this.onChange, required this.selectionMap});
+  const KPixDirectionWidget({super.key, required this.isExclusive, this.padding = 1.0, this.onChange, required this.selectionMap});
 
   @override
   State<KPixDirectionWidget> createState() => _KPixDirectionWidgetState();
@@ -41,15 +41,18 @@ class _KPixDirectionWidgetState extends State<KPixDirectionWidget>
 
   void _notify()
   {
-    final Set<Alignment> activeAlignments = <Alignment>{};
-    for (final MapEntry<Alignment, ValueNotifier<bool>> entry in widget.selectionMap.entries)
+    if (widget.onChange != null)
     {
-      if (entry.value.value)
+      final Set<Alignment> activeAlignments = <Alignment>{};
+      for (final MapEntry<Alignment, ValueNotifier<bool>> entry in widget.selectionMap.entries)
       {
-        activeAlignments.add(entry.key);
+        if (entry.value.value)
+        {
+          activeAlignments.add(entry.key);
+        }
       }
+      widget.onChange!(activeAlignments);
     }
-    widget.onChange(activeAlignments);
   }
 
   void _buttonPressed({required final Alignment alignment})
@@ -91,7 +94,7 @@ class _KPixDirectionWidgetState extends State<KPixDirectionWidget>
             builder: (final BuildContext context, final bool isSelected, final Widget? child)
             {
               return FilledButton(
-                style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(backgroundColor: WidgetStateProperty.all(Theme.of(context).primaryColor), tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero)) : null,
+                style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(backgroundColor: WidgetStateProperty.all(Theme.of(context).primaryColorDark), tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero)) : null,
                 onPressed: () {_buttonPressed(alignment: alignment);},
                 child: const SizedBox.shrink(),
               );

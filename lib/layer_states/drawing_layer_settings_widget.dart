@@ -18,12 +18,14 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/overlay_entries.dart';
 
 
 const Map<OuterStrokeStyle, String> _outerStrokeStyleButtonLabelMap =
@@ -88,6 +90,41 @@ class DrawingLayerSettingsWidget extends StatefulWidget
 class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
 {
   final double generalPadding = 8.0;
+  late KPixOverlay _colorPickDialog;
+
+
+  void onOuterColorSelected({required final ColorReference? color})
+  {
+    if (color != null)
+    {
+      _colorPickDialog.hide();
+      widget.settings.outerColorReference.value = color;
+    }
+  }
+
+  void onInnerColorSelected({required final ColorReference? color})
+  {
+    if (color != null)
+    {
+      _colorPickDialog.hide();
+      widget.settings.innerColorReference.value = color;
+    }
+  }
+
+  void onDropShadowColorSelected({required final ColorReference? color})
+  {
+    if (color != null)
+    {
+      _colorPickDialog.hide();
+      widget.settings.dropShadowColorReference.value = color;
+    }
+  }
+
+  void closeDialog()
+  {
+    _colorPickDialog.hide();
+  }
+
 
   @override
   Widget build(final BuildContext context)
@@ -179,7 +216,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                   {
                                     return IconButton.outlined(
                                       onPressed: () {
-                                        print("OUTER SOLID COLOR SELECTION");
+                                        _colorPickDialog = getColorPickerDialog(
+                                          title: "SELECT OUTER STROKE COLOR",
+                                          ramps: GetIt.I.get<AppState>().colorRamps,
+                                          onColorSelected: onOuterColorSelected,
+                                          onDismiss: closeDialog,);
+                                        _colorPickDialog.show(context: context);
                                       },
                                       icon: const FaIcon(FontAwesomeIcons.palette),
                                       style: ButtonStyle(
@@ -353,7 +395,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                     {
                                       return IconButton.outlined(
                                         onPressed: () {
-                                          print("INNER SOLID COLOR SELECT");
+                                          _colorPickDialog = getColorPickerDialog(
+                                            title: "SELECT INNER STROKE COLOR",
+                                            ramps: GetIt.I.get<AppState>().colorRamps,
+                                            onColorSelected: onInnerColorSelected,
+                                            onDismiss: closeDialog,);
+                                          _colorPickDialog.show(context: context);
                                         },
                                         icon: const FaIcon(FontAwesomeIcons.palette),
                                         style: ButtonStyle(
@@ -596,7 +643,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                             {
                                               return IconButton.outlined(
                                                 onPressed: () {
-                                                  print("Drop Shadow COLOR SELECT");
+                                                  _colorPickDialog = getColorPickerDialog(
+                                                    title: "SELECT DROP SHADOW COLOR",
+                                                    ramps: GetIt.I.get<AppState>().colorRamps,
+                                                    onColorSelected: onDropShadowColorSelected,
+                                                    onDismiss: closeDialog,);
+                                                  _colorPickDialog.show(context: context);
                                                 },
                                                 icon: const FaIcon(FontAwesomeIcons.palette),
                                                 style: ButtonStyle(

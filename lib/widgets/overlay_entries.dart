@@ -24,6 +24,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/controls/kpix_color_picker_widget.dart';
 import 'package:kpix/widgets/extra/about_screen_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
@@ -1247,3 +1248,46 @@ KPixOverlay getRasterLayerMenu({
       ),
     );
   }
+
+KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String title = "SELECT A COLOR"})
+{
+  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+          ),
+          Center(
+            child: Material(
+              elevation: options.elevation,
+              shadowColor: Theme.of(context).primaryColorDark,
+              borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: options.maxHeight,
+                  maxWidth: options.maxWidth,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  border: Border.all(
+                    color: Theme.of(context).primaryColorLight,
+                    width: options.borderWidth,
+                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+                ),
+                child: KPixColorPickerWidget(
+                  dismiss: onDismiss,
+                  colorSelected: onColorSelected,
+                  ramps: ramps,
+                  title: title,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}

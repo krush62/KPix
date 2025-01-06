@@ -28,13 +28,20 @@ class KPixDirectionWidget extends StatelessWidget
   final HashMap<Alignment, bool> selectionMap;
   const KPixDirectionWidget({super.key, required this.isExclusive, this.padding = 1.0, required this.onChange, required this.selectionMap});
 
-  void _buttonPressed({required final Alignment alignment})
+
+  HashMap<Alignment, bool> _getCopiedMap({required final HashMap<Alignment, bool> inputMap})
   {
-    final HashMap<Alignment, bool> notificationMap = HashMap<Alignment, bool>();
+    final HashMap<Alignment, bool> outputMap = HashMap<Alignment, bool>();
     for (final Alignment alignment in allAlignments)
     {
-      notificationMap[alignment] = selectionMap[alignment] ?? false;
+      outputMap[alignment] = inputMap[alignment] ?? false;
     }
+    return outputMap;
+  }
+
+  void _buttonPressed({required final Alignment alignment})
+  {
+    final HashMap<Alignment, bool> notificationMap = _getCopiedMap(inputMap: selectionMap,);
 
     if (isExclusive)
     {
@@ -58,14 +65,14 @@ class KPixDirectionWidget extends StatelessWidget
     }
   }
 
-  HashMap<Alignment, Widget> _getButtonMap({required final BuildContext context})
+  HashMap<Alignment, Widget> _getButtonMap({required final BuildContext context, required final HashMap<Alignment, bool> dirMap})
   {
     final HashMap<Alignment, Widget> buttonMap = HashMap<Alignment, Widget>();
     for (final Alignment alignment in allAlignments)
     {
-      final bool isSelected = selectionMap[alignment] ?? false;
+      final bool isSelected = dirMap[alignment] ?? false;
       buttonMap[alignment] = Padding(
-        padding:  EdgeInsets.all(padding),
+        padding: EdgeInsets.all(padding),
         child: AspectRatio(
           aspectRatio: 1,
           child: FilledButton(
@@ -81,10 +88,33 @@ class KPixDirectionWidget extends StatelessWidget
     return buttonMap;
   }
 
+  HashMap<Alignment, bool> _getCheckedMap()
+  {
+    final HashMap<Alignment, bool> checkedMap = _getCopiedMap(inputMap: selectionMap,);
+
+    final Iterable<MapEntry<Alignment, bool>> selectedEntries = checkedMap.entries.where((final MapEntry<Alignment, bool> entry) {
+      return entry.value == true;
+    });
+    if (selectedEntries.isEmpty)
+    {
+      checkedMap[Alignment.bottomRight] = true;
+    }
+    else if (isExclusive && selectedEntries.length > 1)
+    {
+      for (final MapEntry<Alignment, bool> entry in selectedEntries)
+      {
+        checkedMap[entry.key] = false;
+        checkedMap[Alignment.bottomRight] = true;
+      }
+    }
+    return checkedMap;
+  }
+
   @override
   Widget build(final BuildContext context)
   {
-    final HashMap<Alignment, Widget> buttonMap = _getButtonMap(context: context);
+    final HashMap<Alignment, bool> checkedMap = _getCheckedMap();
+    final HashMap<Alignment, Widget> buttonMap = _getButtonMap(context: context, dirMap: checkedMap);
     return Row(
       children: <Widget>[
         Expanded(

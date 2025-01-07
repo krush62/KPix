@@ -285,8 +285,8 @@ class AppState
     _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
     selectionState.deselect(addToHistoryStack: false, notify: false);
     _layerCollection.clear();
-    addNewDrawingLayer(select: true, addToHistoryStack: false);
     _setDefaultPalette();
+    addNewDrawingLayer(select: true, addToHistoryStack: false);
     GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
     projectName.value = null;
@@ -570,13 +570,17 @@ class AppState
       final CoordinateSetI canvSize = CoordinateSetI.from(other: historyState.canvasSize);
 
       //COLORS
-      final List<KPalRampData> ramps = <KPalRampData>[];
-      for (final HistoryRampData hRampData in historyState.rampList)
       {
-        final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
-        ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
+        final List<KPalRampData> ramps = <KPalRampData>[];
+        for (final HistoryRampData hRampData in historyState.rampList)
+        {
+          final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
+          ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
+        }
+        _colorRamps.value = ramps;
+        final ColorReference selCol = _colorRamps.value[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
+        _selectedColor.value = selCol;
       }
-      final ColorReference selCol = ramps[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
 
       LayerState? topMostShadingLayer;
       //LAYERS
@@ -593,11 +597,11 @@ class AppState
           for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
           {
             KPalRampData? ramp;
-            for (int i = 0; i < ramps.length; i++)
+            for (int i = 0; i < _colorRamps.value.length; i++)
             {
-              if (ramps[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
+              if (_colorRamps.value[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
               {
-                ramp = ramps[i];
+                ramp = _colorRamps.value[i];
                 break;
               }
             }
@@ -640,6 +644,7 @@ class AppState
           layerIndex++;
         }
       }
+      _layerCollection.replaceLayers(layers: layerList, selectedLayer: curSelLayer?? getSelectedLayer());
 
       //SELECTION
       final CoordinateColorMapNullable selectionContent = HashMap<CoordinateSetI, ColorReference?>();
@@ -647,31 +652,21 @@ class AppState
       {
         if (entry.value != null)
         {
-          selectionContent[CoordinateSetI.from(other: entry.key)] = ramps[entry.value!.rampIndex].references[entry.value!.colorIndex];
+          selectionContent[CoordinateSetI.from(other: entry.key)] = _colorRamps.value[entry.value!.rampIndex].references[entry.value!.colorIndex];
         }
         else
         {
           selectionContent[CoordinateSetI.from(other: entry.key)] = null;
         }
       }
-
-
-
-      // SET VALUES
-      // ramps
-      _colorRamps.value = ramps;
-      // selected color
-      _selectedColor.value = selCol;
-      //canvas
-      _canvasSize.x = canvSize.x;
-      _canvasSize.y = canvSize.y;
-      // layers
-      _layerCollection.replaceLayers(layers: layerList, selectedLayer: curSelLayer?? getSelectedLayer());
-      // selection state (incl layer)
       selectionState.selection.delete(keepSelection: false);
       selectionState.selection.addDirectlyAll(list: selectionContent);
       selectionState.createSelectionLines();
       selectionState.notifyRepaint();
+
+      _canvasSize.x = canvSize.x;
+      _canvasSize.y = canvSize.y;
+
       if (topMostShadingLayer != null)
       {
         rasterDrawingLayersBelow(layer: topMostShadingLayer);

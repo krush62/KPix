@@ -35,6 +35,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_settings_widget.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -215,6 +216,14 @@ class _RightBarWidgetState extends State<RightBarWidget>
               return hasProject ? ValueListenableBuilder<bool>(
                 valueListenable: _appState.layerSettingsVisibleNotifier,
                 builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
+                  Widget settingsWidget = const SizedBox.shrink();
+                  final LayerState? currentLayer = _appState.getSelectedLayer();
+                  if (currentLayer != null && currentLayer.runtimeType == DrawingLayerState)
+                  {
+                    final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
+                    settingsWidget = DrawingLayerSettingsWidget(settings: drawingLayer.settings);
+                  }
+
                   return IgnorePointer(
                     ignoring: !showLayerOptions,
                     child: AnimatedSlide(
@@ -232,7 +241,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                               ),
-                              DrawingLayerSettingsWidget(settings: DrawingLayerSettings(startingColor: _appState.colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints),),
+                              settingsWidget,
                               Tooltip(
                                 waitDuration: AppState.toolTipDuration,
                                 message: "Close",

@@ -17,9 +17,12 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 enum OuterStrokeStyle
 {
@@ -137,5 +140,21 @@ class DrawingLayerSettings
      innerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
      dropShadowSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
    }
+  }
+
+  void deleteRamp({required final KPalRampData ramp})
+  {
+    if (outerColorReference.value.ramp == ramp)
+    {
+      outerColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
+    }
+    if (innerColorReference.value.ramp == ramp)
+    {
+      innerColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
+    }
+    if (dropShadowColorReference.value.ramp == ramp)
+    {
+      dropShadowColorReference.value = GetIt.I.get<AppState>().colorRamps[0].references[0];
+    }
   }
 }

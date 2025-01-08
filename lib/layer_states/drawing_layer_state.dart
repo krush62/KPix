@@ -70,6 +70,9 @@ class DrawingLayerState extends LayerState
     visibilityState.value = vState;
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
+    settings.addListener(() {
+      doManualRaster = true;
+    });
   }
 
   factory DrawingLayerState.from({required final DrawingLayerState other, final List<LayerState>? layerStack})
@@ -186,7 +189,7 @@ class DrawingLayerState extends LayerState
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     final ByteData byteDataThb = ByteData(size.x * size.y * 4);
     final CoordinateColorMap dataWithSettingsPixels = CoordinateColorMap();
-    dataWithSettingsPixels.addAll(_getSettingsPixels(dlSettings: settings, data: _data));
+    dataWithSettingsPixels.addAll(settings.getSettingsPixels(data: _data, layerState: this));
     dataWithSettingsPixels.addAll(_data);
 
     for (final CoordinateColor entry in dataWithSettingsPixels.entries)
@@ -289,171 +292,10 @@ class DrawingLayerState extends LayerState
     return retColor;
   }
 
-  CoordinateColorMap _getSettingsPixels({required final DrawingLayerSettings dlSettings, required final CoordinateColorMap data})
-  {
-    final CoordinateColorMap settingsPixels = CoordinateColorMap();
-    //drop shadow
-    //TODO
-
-    //outer stroke
-    if (dlSettings.outerStrokeStyle.value != OuterStrokeStyle.off)
-    {
-      final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference = _getOuterStrokePixelsWithReference(selectionMap: dlSettings.outerSelectionMap.value, dataPositions: data.keys);
-      for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries)
-      {
-        if (dlSettings.outerStrokeStyle.value == OuterStrokeStyle.solid)
-        {
-          settingsPixels[pixelSet.key] = dlSettings.outerColorReference.value;
-        }
-        else if (dlSettings.outerStrokeStyle.value == OuterStrokeStyle.relative)
-        {
-          final ColorReference currentColor = data[pixelSet.value]!;
-          final KPalRampData currentRamp = currentColor.ramp;
-          final int rampIndex = (currentColor.colorIndex + dlSettings.outerDarkenBrighten.value).clamp(0, currentRamp.references.length - 1);
-          settingsPixels[pixelSet.key] = currentRamp.references[rampIndex];
-        }
-        else if (dlSettings.outerStrokeStyle.value == OuterStrokeStyle.shade)
-        {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, appState: GetIt.I.get<AppState>(), layerState: this);
-          if (currentColor != null)
-          {
-            final KPalRampData currentRamp = currentColor.ramp;
-            final int rampIndex = (currentColor.colorIndex + dlSettings.outerDarkenBrighten.value).clamp(0, currentRamp.references.length - 1);
-            settingsPixels[pixelSet.key] = currentRamp.references[rampIndex];
-          }
-        }
-        else if (dlSettings.outerStrokeStyle.value == OuterStrokeStyle.glow)
-        {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, appState: GetIt.I.get<AppState>(), layerState: this);
-          if (currentColor != null)
-          {
-            final KPalRampData currentRamp = currentColor.ramp;
-            final int rampIndex = (currentColor.colorIndex + dlSettings.outerGlowDepth.value).clamp(0, currentRamp.references.length - 1);
-            settingsPixels[pixelSet.key] = currentRamp.references[rampIndex];
-          }
-        }
-      }
-
-      if (dlSettings.outerStrokeStyle.value == OuterStrokeStyle.glow)
-      {
-        for (int i = 1; i < dlSettings.outerGlowDepth.value; i++)
-        {
-          final Set<CoordinateSetI> setPixels = <CoordinateSetI>{};
-          setPixels.addAll(data.keys);
-          setPixels.addAll(settingsPixels.keys);
-          final HashMap<CoordinateSetI, CoordinateSetI> glowPixels = _getOuterStrokePixelsWithReference(selectionMap: dlSettings.outerSelectionMap.value, dataPositions: setPixels);
-          for (final CoordinateSetI glowPixel in glowPixels.keys)
-          {
-            final ColorReference? currentColor = _getColorReferenceAtPos(coord: glowPixel, appState: GetIt.I.get<AppState>(), layerState: this);
-            if (currentColor != null)
-            {
-              final KPalRampData currentRamp = currentColor.ramp;
-              final int rampIndex = (currentColor.colorIndex + dlSettings.outerGlowDepth.value - i).clamp(0, currentRamp.references.length - 1);
-              settingsPixels[glowPixel] = currentRamp.references[rampIndex];
-            }
-          }
-        }
-      }
-
-
-    }
-
-
-    //inner stroke
-    //TODO
-
-    return settingsPixels;
-  }
-
-  //TODO add to helper
-  static HashMap<CoordinateSetI, CoordinateSetI> _getOuterStrokePixelsWithReference({required final HashMap<Alignment, bool> selectionMap, required final Iterable<CoordinateSetI> dataPositions})
-  {
-    final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixels = HashMap<CoordinateSetI, CoordinateSetI>();
-    for (final CoordinateSetI dataPosition in dataPositions)
-    {
-      final HashMap<Alignment, CoordinateSetI> surroundingPixels = _getAllSurroundingPositions(pos: dataPosition);
-      for (final MapEntry<Alignment, CoordinateSetI> surroundEntry in surroundingPixels.entries)
-      {
-        if (selectionMap[surroundEntry.key] != null && (selectionMap[surroundEntry.key] ?? false == true) && !dataPositions.contains(surroundEntry.value) &&
-            (outerStrokePixels[surroundEntry.value] == null || _isAdjacentAlignment(alignment: surroundEntry.key)))
-        {
-            outerStrokePixels[surroundEntry.value] = dataPosition;
-        }
-      }
-
-    }
-    return outerStrokePixels;
-  }
-
-//TODO add to helper
-  static HashMap<Alignment, CoordinateSetI> _getAllSurroundingPositions({required final CoordinateSetI pos})
-  {
-    final HashMap<Alignment, CoordinateSetI> surroundingPixels = HashMap<Alignment, CoordinateSetI>();
-    surroundingPixels[Alignment.topLeft] = CoordinateSetI(x: pos.x - 1, y: pos.y - 1);
-    surroundingPixels[Alignment.topCenter] = CoordinateSetI(x: pos.x, y: pos.y - 1);
-    surroundingPixels[Alignment.topRight] = CoordinateSetI(x: pos.x + 1, y: pos.y - 1);
-    surroundingPixels[Alignment.centerRight] = CoordinateSetI(x: pos.x + 1, y: pos.y);
-    surroundingPixels[Alignment.bottomRight] = CoordinateSetI(x: pos.x + 1, y: pos.y + 1);
-    surroundingPixels[Alignment.bottomCenter] = CoordinateSetI(x: pos.x, y: pos.y + 1);
-    surroundingPixels[Alignment.bottomLeft] = CoordinateSetI(x: pos.x - 1, y: pos.y + 1);
-    surroundingPixels[Alignment.centerLeft] = CoordinateSetI(x: pos.x - 1, y: pos.y);
-
-    return surroundingPixels;
-  }
-
-
-  static bool _isAdjacentAlignment({required final Alignment alignment})
-  {
-    return alignment == Alignment.topCenter ||
-        alignment == Alignment.centerRight ||
-        alignment == Alignment.bottomCenter ||
-        alignment == Alignment.centerLeft;
-  }
-
-  //TODO add to helper
-  static ColorReference? _getColorReferenceAtPos({required final CoordinateSetI coord, required final AppState appState, required final LayerState? layerState})
-  {
-    ColorReference? currentColor;
-    int colorShift = 0;
-    final int currentIndex = layerState != null ? appState.getLayerPosition(state: layerState) : 0;
-
-    if (currentIndex != -1)
-    {
-      for (int i = appState.layerCount - 1; i >= currentIndex; i--)
-      {
-        final LayerState layer = appState.getLayerAt(index: i);
-        if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
-        {
-          final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
-          final ColorReference? colRef = drawingLayerState.getDataEntry(coord: coord);
-          if (colRef != null)
-          {
-            currentColor = colRef;
-            colorShift = 0;
-          }
-        }
-        else if (layer.runtimeType == ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
-        {
-          final ShadingLayerState shadingLayer = layer as ShadingLayerState;
-          if (shadingLayer.hasCoord(coord: coord))
-          {
-            colorShift += shadingLayer.getValueAt(coord: coord)!;
-          }
-        }
-      }
-    }
-    if (currentColor != null && colorShift != 0)
-    {
-      final int finalIndex = (currentColor.colorIndex + colorShift).clamp(0, currentColor.ramp.references.length - 1);
-
-      currentColor = currentColor.ramp.references[finalIndex];
-    }
-
-    return currentColor;
-  }
 
 
   //TODO this _HAS_ to take the layer settings into account (outline etc)
+  //TODO OPTIONAL!!!! by default off
   //e.g. store dataWithSettingsPixels created in _createRaster
 
   ColorReference? getDataEntry({required final CoordinateSetI coord})
@@ -473,6 +315,7 @@ class DrawingLayerState extends LayerState
   {
     return _data;
   }
+
 
   void setDataAll({required final CoordinateColorMapNullable list})
   {

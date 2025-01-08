@@ -284,9 +284,27 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       Expanded(
                         flex: 7,
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            const Text("Depth"),
+                            const Text("Direction"),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                const Text("<"),
+                                ValueListenableBuilder<bool>(
+                                  valueListenable: widget.settings.outerGlowDirection,
+                                  builder: (final BuildContext context, final bool glowDir, final Widget? child) {
+                                    return Switch(
+                                      value: glowDir,
+                                      onChanged: (final bool value) {
+                                        widget.settings.outerGlowDirection.value = value;
+                                      },
+                                    );
+                                  },
+                                ),
+                                const Text(">"),
+                              ],
+                            ),
                             ValueListenableBuilder<int>(
                               valueListenable: widget.settings.outerGlowDepth,
                               builder: (final BuildContext context, final int value, final Widget? child) {
@@ -294,6 +312,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                   value: value.toDouble(),
                                   min: widget.settings.constraints.glowDepthMin.toDouble(),
                                   max: widget.settings.constraints.glowDepthMax.toDouble(),
+                                  label: "$value steps",
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
                                   onChanged: (final double value) {
                                     widget.settings.outerGlowDepth.value = value.round();
@@ -613,21 +632,6 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           height: 100,
                           child: Row(
                             children: <Widget>[
-                              Expanded(
-                                flex: 2,
-                                child: ValueListenableBuilder<HashMap<Alignment, bool>>(
-                                  valueListenable: widget.settings.dropShadowSelectionMap,
-                                  builder: (final BuildContext context, final HashMap<Alignment, bool> dropShadowMap, final Widget? child) {
-                                    return KPixDirectionWidget(
-                                      selectionMap: dropShadowMap,
-                                      onChange: (final HashMap<Alignment, bool> directionMap) {
-                                        widget.settings.dropShadowSelectionMap.value = directionMap;
-                                      },
-                                      isExclusive: true,
-                                    );
-                                  },
-                                ),
-                              ),
                               SizedBox(width: generalPadding),
                               if (dropShadowStyle == DropShadowStyle.solid)
                                 Expanded(

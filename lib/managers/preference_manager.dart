@@ -393,13 +393,13 @@ enum PreferenceInt
   DrawingLayerConstraints_MinDarkenBrighten(defaultValue: -5),
   DrawingLayerConstraints_DefaultDarkenBrighten(defaultValue: -1),
   DrawingLayerConstraints_MaxDarkenBrighten(defaultValue: 5),
-  DrawingLayerConstraints_MinGlowDepth(defaultValue: 1),
-  DrawingLayerConstraints_DefaultGlowDepth(defaultValue: 2),
+  DrawingLayerConstraints_MinGlowDepth(defaultValue: 2),
+  DrawingLayerConstraints_DefaultGlowDepth(defaultValue: 3),
   DrawingLayerConstraints_MaxGlowDepth(defaultValue: 8),
   DrawingLayerConstraints_MinBevelDistance(defaultValue: 1),
   DrawingLayerConstraints_DefaultBevelDistance(defaultValue: 2),
   DrawingLayerConstraints_MaxBevelDistance(defaultValue: 8),
-  DrawingLayerConstraints_MinDropShadowDistance(defaultValue: 0),
+  DrawingLayerConstraints_MinDropShadowDistance(defaultValue: -16),
   DrawingLayerConstraints_DefaultDropShadowDistance(defaultValue: 1),
   DrawingLayerConstraints_MaxDropShadowDistance(defaultValue: 16),
 
@@ -465,6 +465,8 @@ enum PreferenceBool
 
   SelectShapeAfterInsert(defaultValue: false),
   SelectLayerAfterInsert(defaultValue: true),
+
+  DrawingLayerConstraints_DefaultGlowDirection(defaultValue: true),
   ;
   const PreferenceBool({
     required this.defaultValue,
@@ -821,13 +823,13 @@ class PreferenceManager
         glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
         glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
         glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
+        glowDirectionDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowDirection),
         bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
         bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
         bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),
         dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
         dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
-        dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),
-    );
+        dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),

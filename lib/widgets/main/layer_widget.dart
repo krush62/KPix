@@ -165,6 +165,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _settingsButtonPressed()
   {
+    _appState.selectLayer(newLayer: widget.layerState, addToHistoryStack: true);
     _appState.layerSettingsVisible = true;
   }
 
@@ -391,23 +392,43 @@ class _LayerWidgetState extends State<LayerWidget> {
                                   child: Tooltip(
                                     message: "Layer Actions...",
                                     waitDuration: AppState.toolTipDuration,
-                                    child: IconButton.outlined(
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(
-                                        maxHeight: _options.buttonSizeMax,
-                                        maxWidth: _options.buttonSizeMax,
-                                        minWidth: _options.buttonSizeMin,
-                                        minHeight: _options.buttonSizeMin,
-                                      ),
-                                      style: const ButtonStyle(
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      onPressed: _actionsButtonPressed,
-                                      icon: FaIcon(
-                                        FontAwesomeIcons.bars,
-                                        size: _options.iconSize,
-                                      ),
+                                    child: Builder(
+                                      builder: (final BuildContext context) {
+                                        ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
+                                        if (widget.layerState.runtimeType == DrawingLayerState)
+                                        {
+                                          final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                                          lockStateNotifier = drawingLayer.lockState;
+                                        }
+                                        else if (widget.layerState.runtimeType == ShadingLayerState)
+                                        {
+                                          final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
+                                          lockStateNotifier = shadingLayer.lockState;
+                                        }
+                                        return ValueListenableBuilder<LayerLockState>(
+                                          valueListenable: lockStateNotifier,
+                                          builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
+                                            return IconButton.outlined(
+                                              padding: EdgeInsets.zero,
+                                              constraints: BoxConstraints(
+                                                maxHeight: _options.buttonSizeMax,
+                                                maxWidth: _options.buttonSizeMax,
+                                                minWidth: _options.buttonSizeMin,
+                                                minHeight: _options.buttonSizeMin,
+                                              ),
+                                              style: const ButtonStyle(
+                                                tapTargetSize:
+                                                MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                              onPressed: lockState != LayerLockState.locked ? _actionsButtonPressed : null,
+                                              icon: FaIcon(
+                                                FontAwesomeIcons.bars,
+                                                size: _options.iconSize,
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
@@ -427,23 +448,43 @@ class _LayerWidgetState extends State<LayerWidget> {
                                 child: Tooltip(
                                   message: "Settings",
                                   waitDuration: AppState.toolTipDuration,
-                                  child: IconButton.outlined(
-                                    padding: EdgeInsets.zero,
-                                    constraints: BoxConstraints(
-                                      maxHeight: _options.buttonSizeMax,
-                                      maxWidth: _options.buttonSizeMax,
-                                      minWidth: _options.buttonSizeMin,
-                                      minHeight: _options.buttonSizeMin,
-                                    ),
-                                    style: const ButtonStyle(
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    onPressed: _settingsButtonPressed,
-                                    icon: FaIcon(
-                                      FontAwesomeIcons.gear,
-                                      size: _options.iconSize,
-                                    ),
+                                  child: Builder(
+                                    builder: (final BuildContext context) {
+                                      ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
+                                      if (widget.layerState.runtimeType == DrawingLayerState)
+                                      {
+                                        final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                                        lockStateNotifier = drawingLayer.lockState;
+                                      }
+                                      else if (widget.layerState.runtimeType == ShadingLayerState)
+                                      {
+                                        final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
+                                        lockStateNotifier = shadingLayer.lockState;
+                                      }
+                                      return ValueListenableBuilder<LayerLockState>(
+                                        valueListenable: lockStateNotifier,
+                                        builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
+                                          return IconButton.outlined(
+                                            padding: EdgeInsets.zero,
+                                            constraints: BoxConstraints(
+                                              maxHeight: _options.buttonSizeMax,
+                                              maxWidth: _options.buttonSizeMax,
+                                              minWidth: _options.buttonSizeMin,
+                                              minHeight: _options.buttonSizeMin,
+                                            ),
+                                            style: const ButtonStyle(
+                                              tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                            ),
+                                            onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
+                                            icon: FaIcon(
+                                              FontAwesomeIcons.gear,
+                                              size: _options.iconSize,
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
                                   ),
                                 ),
                               ),

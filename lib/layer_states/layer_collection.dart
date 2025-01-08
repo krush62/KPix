@@ -455,6 +455,7 @@ class LayerCollection with ChangeNotifier
         _layers.insert(newPosition, state);
       }
     }
+    notifyListeners();
   }
 
   void rasterLayer({required final LayerState rasterLayer, required final CoordinateSetI canvasSize})

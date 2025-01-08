@@ -20,6 +20,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class CreditEntry
@@ -49,7 +50,7 @@ class CreditsWidget extends StatefulWidget
 
 class _CreditsWidgetState extends State<CreditsWidget>
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<List<CreditEntry>> _creditEntries = ValueNotifier<List<CreditEntry>>(<CreditEntry>[]);
 
   @override
@@ -86,6 +87,10 @@ class _CreditsWidgetState extends State<CreditsWidget>
     return entries;
   }
 
+  void _dismissPressed()
+  {
+    widget.onDismiss();
+  }
 
   @override
   Widget build(final BuildContext context)
@@ -99,61 +104,48 @@ class _CreditsWidgetState extends State<CreditsWidget>
         textNormal: Theme.of(context).textTheme.bodyMedium!,
       ).then((final List<CreditEntry> entries){_creditEntries.value = entries;});
     }
-    return Material(      
-      elevation: options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-      child: Container(
-        padding: EdgeInsets.all(options.padding * 2),
-        constraints: BoxConstraints(
-          minHeight: options.minHeight,
-          minWidth: options.minWidth,
-          maxHeight: options.maxHeight * 2,
-          maxWidth: options.maxWidth * 2,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: options.borderWidth,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-        ),
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ValueListenableBuilder<List<CreditEntry>>(
-                valueListenable: _creditEntries,
-                builder: (final BuildContext context1, final List<CreditEntry> entryList, final Widget? child) {
-                  return ListView.builder(
-                    itemCount: entryList.length,
-                    itemBuilder: (final BuildContext context2, final int index)
-                    {
-                      return Text(entryList[index]._content, style: entryList[index].style);
-                    },
-                  );
-                },
-              ),
+
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _options.minHeight,
+        minWidth: _options.minWidth,
+        maxHeight: _options.maxHeight * 2,
+        maxWidth: _options.maxWidth * 2,
+      ),
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: ValueListenableBuilder<List<CreditEntry>>(
+              valueListenable: _creditEntries,
+              builder: (final BuildContext context1, final List<CreditEntry> entryList, final Widget? child) {
+                return ListView.builder(
+                  itemCount: entryList.length,
+                  itemBuilder: (final BuildContext context2, final int index)
+                  {
+                    return Text(entryList[index]._content, style: entryList[index].style);
+                  },
+                );
+              },
             ),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Tooltip(
-                    message: "Close",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: options.iconSize,
-                      ),
-                      onPressed: widget.onDismiss,
+          ),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Tooltip(
+                  message: "Close",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    icon: FaIcon(
+                      FontAwesomeIcons.xmark,
+                      size: _options.iconSize,
                     ),
+                    onPressed: _dismissPressed,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

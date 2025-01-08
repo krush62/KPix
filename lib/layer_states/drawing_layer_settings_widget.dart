@@ -81,6 +81,7 @@ const Map<DropShadowStyle, String> _dropShadowStyleTooltipMap =
 class DrawingLayerSettingsWidget extends StatefulWidget
 {
   final DrawingLayerSettings settings;
+
   const DrawingLayerSettingsWidget({super.key, required this.settings});
 
   @override
@@ -484,7 +485,25 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              const Text("Depth"),
+                              const Text("Direction"),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  const Text("<"),
+                                  ValueListenableBuilder<bool>(
+                                    valueListenable: widget.settings.innerGlowDirection,
+                                    builder: (final BuildContext context, final bool glowDir, final Widget? child) {
+                                      return Switch(
+                                        value: glowDir,
+                                        onChanged: (final bool value) {
+                                          widget.settings.innerGlowDirection.value = value;
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  const Text(">"),
+                                ],
+                              ),
                               ValueListenableBuilder<int>(
                                 valueListenable: widget.settings.innerGlowDepth,
                                 builder: (final BuildContext context, final int value, final Widget? child) {
@@ -493,6 +512,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                     min: widget.settings.constraints.glowDepthMin.toDouble(),
                                     max: widget.settings.constraints.glowDepthMax.toDouble(),
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                    label: "$value steps",
                                     onChanged: (final double value) {
                                       widget.settings.innerGlowDepth.value = value.round();
                                     },
@@ -508,17 +528,32 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              const Text("Distance"),
                               ValueListenableBuilder<int>(
                                 valueListenable: widget.settings.bevelDistance,
-                                builder: (final BuildContext context, final int value, final Widget? child) {
+                                builder: (final BuildContext context, final int distance, final Widget? child) {
                                   return KPixSlider(
-                                    value: value.toDouble(),
+                                    value: distance.toDouble(),
                                     min: widget.settings.constraints.bevelDistanceMin.toDouble(),
                                     max: widget.settings.constraints.bevelDistanceMax.toDouble(),
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                    label: "$distance px",
                                     onChanged: (final double value) {
                                       widget.settings.bevelDistance.value = value.round();
+                                    },
+                                  );
+                                },
+                              ),
+                              ValueListenableBuilder<int>(
+                                valueListenable: widget.settings.bevelStrength,
+                                builder: (final BuildContext context, final int strength, final Widget? child) {
+                                  return KPixSlider(
+                                    value: strength.toDouble(),
+                                    min: widget.settings.constraints.bevelStrengthMin.toDouble(),
+                                    max: widget.settings.constraints.bevelStrengthMax.toDouble(),
+                                    textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                    label: "$strength steps",
+                                    onChanged: (final double value) {
+                                      widget.settings.bevelStrength.value = value.round();
                                     },
                                   );
                                 },

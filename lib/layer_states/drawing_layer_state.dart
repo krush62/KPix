@@ -189,8 +189,8 @@ class DrawingLayerState extends LayerState
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     final ByteData byteDataThb = ByteData(size.x * size.y * 4);
     final CoordinateColorMap dataWithSettingsPixels = CoordinateColorMap();
-    dataWithSettingsPixels.addAll(settings.getSettingsPixels(data: _data, layerState: this));
     dataWithSettingsPixels.addAll(_data);
+    dataWithSettingsPixels.addAll(settings.getSettingsPixels(data: _data, layerState: this));
 
     for (final CoordinateColor entry in dataWithSettingsPixels.entries)
     {

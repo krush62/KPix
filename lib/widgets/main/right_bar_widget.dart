@@ -232,8 +232,18 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
                       child: Align(
                         alignment: Alignment.centerRight,
-                        child: ColoredBox(
-                          color: Theme.of(context).primaryColor,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor,
+                            border: Border(
+                              left: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+                              bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+                              top: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+
+                            ),
+                            borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
+                          ),
+
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[

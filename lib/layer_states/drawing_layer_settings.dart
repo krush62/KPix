@@ -86,6 +86,9 @@ class DrawingLayerSettingsConstraints
   final int bevelDistanceMin;
   final int bevelDistanceDefault;
   final int bevelDistanceMax;
+  final int bevelStrengthMin;
+  final int bevelStrengthDefault;
+  final int bevelStrengthMax;
   final int dropShadowOffsetMin;
   final int dropShadowOffsetDefault;
   final int dropShadowOffsetMax;
@@ -101,6 +104,9 @@ class DrawingLayerSettingsConstraints
     required this.bevelDistanceMin,
     required this.bevelDistanceDefault,
     required this.bevelDistanceMax,
+    required this.bevelStrengthMin,
+    required this.bevelStrengthDefault,
+    required this.bevelStrengthMax,
     required this.dropShadowOffsetMin,
     required this.dropShadowOffsetDefault,
     required this.dropShadowOffsetMax,});
@@ -124,8 +130,10 @@ class DrawingLayerSettings with ChangeNotifier
   final ValueNotifier<int> innerDarkenBrighten;
   final ValueNotifier<int> innerGlowDepth;
   final ValueNotifier<int> bevelDistance;
+  final ValueNotifier<int> bevelStrength;
   final ValueNotifier<int> dropShadowDarkenBrighten;
   final ValueNotifier<bool> outerGlowDirection;
+  final ValueNotifier<bool> innerGlowDirection;
 
   DrawingLayerSettings({required final ColorReference startingColor, required this.constraints}) :
     outerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
@@ -133,12 +141,14 @@ class DrawingLayerSettings with ChangeNotifier
     innerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
     innerGlowDepth = ValueNotifier<int>(constraints.glowDepthDefault),
     bevelDistance = ValueNotifier<int>(constraints.bevelDistanceDefault),
+    bevelStrength = ValueNotifier<int>(constraints.bevelStrengthDefault),
     outerColorReference = ValueNotifier<ColorReference>(startingColor),
     innerColorReference = ValueNotifier<ColorReference>(startingColor),
     dropShadowColorReference = ValueNotifier<ColorReference>(startingColor),
     dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: constraints.dropShadowOffsetDefault, y: constraints.dropShadowOffsetDefault),),
     dropShadowDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
-    outerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault)
+    outerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault),
+    innerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault)
   {
    for (final Alignment alignment in allAlignments)
    {
@@ -159,8 +169,10 @@ class DrawingLayerSettings with ChangeNotifier
    innerDarkenBrighten.addListener(valueChanged);
    innerGlowDepth.addListener(valueChanged);
    bevelDistance.addListener(valueChanged);
+   bevelStrength.addListener(valueChanged);
    dropShadowDarkenBrighten.addListener(valueChanged);
    outerGlowDirection.addListener(valueChanged);
+   innerGlowDirection.addListener(valueChanged);
 
   }
 
@@ -277,18 +289,123 @@ class DrawingLayerSettings with ChangeNotifier
         }
       }
 
-
     }
 
 
     //inner stroke
-    //TODO
+
+    if (innerStrokeStyle.value != InnerStrokeStyle.off)
+    {
+      final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: data, canvasSize: appState.canvasSize);
+      if (innerStrokeStyle.value == InnerStrokeStyle.solid || innerStrokeStyle.value == InnerStrokeStyle.shade)
+      {
+        for (final CoordinateSetI coord in innerStrokePixels)
+        {
+          if (innerStrokeStyle.value == InnerStrokeStyle.solid)
+          {
+            innerPixels[coord] = innerColorReference.value;
+          }
+          else if (innerStrokeStyle.value == InnerStrokeStyle.shade)
+          {
+            final ColorReference? currentColor = layerState.getDataEntry(coord: coord);
+            if (currentColor != null)
+            {
+              final KPalRampData currentRamp = currentColor.ramp;
+              final int rampIndex = (currentColor.colorIndex + innerDarkenBrighten.value).clamp(0, currentRamp.references.length - 1);
+              innerPixels[coord] = currentRamp.references[rampIndex];
+            }
+          }
+        }
+      }
+      else if (innerStrokeStyle.value == InnerStrokeStyle.glow)
+      {
+        final CoordinateColorMap dataPixels = CoordinateColorMap();
+        dataPixels.addAll(data);
+        for (int i = 0; i < innerGlowDepth.value; i++)
+        {
+          final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: appState.canvasSize);
+          for (final CoordinateSetI coord in innerStrokePixels)
+          {
+            final ColorReference? currentColor = layerState.getDataEntry(coord: coord);
+            if (currentColor != null)
+            {
+              final KPalRampData currentRamp = currentColor.ramp;
+              final int steps = innerGlowDirection.value ? innerGlowDepth.value - i : -innerGlowDepth.value + i;
+              final int rampIndex = (currentColor.colorIndex + steps).clamp(0, currentRamp.references.length - 1);
+              innerPixels[coord] = currentRamp.references[rampIndex];
+            }
+            dataPixels.remove(coord);
+          }
+        }
+      }
+      else if (innerStrokeStyle.value == InnerStrokeStyle.bevel)
+      {
+        final HashMap<Alignment, bool> oppositeSelectionMap = HashMap<Alignment, bool>();
+        final HashMap<Alignment, bool> allDirectionsMap = HashMap<Alignment, bool>();
+        for (final Alignment alignment in allAlignments)
+        {
+          oppositeSelectionMap[alignment] = false;
+          allDirectionsMap[alignment] = true;
+        }
+        for (final MapEntry<Alignment, bool> entry in innerSelectionMap.value.entries)
+        {
+          if (entry.value == true)
+          {
+             oppositeSelectionMap[entry.key] = true;
+             oppositeSelectionMap[_getOppositeAlignment(alignment: entry.key)] = true;
+             break;
+          }
+        }
+
+        final CoordinateColorMap dataPixels = CoordinateColorMap();
+        dataPixels.addAll(data);
+        for (int i = 0; i < bevelDistance.value; i++)
+        {
+
+          if (i == bevelDistance.value - 1)
+          {
+            final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: oppositeSelectionMap, data: dataPixels, canvasSize: appState.canvasSize);
+            final Set<CoordinateSetI> directionPixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: appState.canvasSize);
+            oppositeStrokePixels.removeAll(directionPixels);
+
+            for (final CoordinateSetI coord in oppositeStrokePixels)
+            {
+              final ColorReference? currentColor = layerState.getDataEntry(coord: coord);
+              if (currentColor != null)
+              {
+                final KPalRampData currentRamp = currentColor.ramp;
+                final int rampIndex = (currentColor.colorIndex - bevelStrength.value).clamp(0, currentRamp.references.length - 1);
+                innerPixels[coord] = currentRamp.references[rampIndex];
+              }
+            }
+            for (final CoordinateSetI coord in directionPixels)
+            {
+              final ColorReference? currentColor = layerState.getDataEntry(coord: coord);
+              if (currentColor != null)
+              {
+                final KPalRampData currentRamp = currentColor.ramp;
+                final int rampIndex = (currentColor.colorIndex + bevelStrength.value).clamp(0, currentRamp.references.length - 1);
+                innerPixels[coord] = currentRamp.references[rampIndex];
+              }
+            }
+          }
+          else
+          {
+            final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: allDirectionsMap, data: dataPixels, canvasSize: appState.canvasSize);
+            for (final CoordinateSetI coord in oppositeStrokePixels)
+            {
+              dataPixels.remove(coord);
+            }
+          }
+        }
+      }
+    }
+
     shadowPixels.addAll(outerPixels);
     shadowPixels.addAll(innerPixels);
     return shadowPixels;
   }
 
-  //TODO add to helper
   static HashMap<CoordinateSetI, CoordinateSetI> _getOuterStrokePixelsWithReference({required final HashMap<Alignment, bool> selectionMap, required final Iterable<CoordinateSetI> dataPositions, required final CoordinateSetI canvasSize})
   {
     final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixels = HashMap<CoordinateSetI, CoordinateSetI>();
@@ -309,7 +426,6 @@ class DrawingLayerSettings with ChangeNotifier
     return outerStrokePixels;
   }
 
-//TODO add to helper
   static HashMap<Alignment, CoordinateSetI> _getAllSurroundingPositions({required final CoordinateSetI pos})
   {
     final HashMap<Alignment, CoordinateSetI> surroundingPixels = HashMap<Alignment, CoordinateSetI>();
@@ -325,7 +441,6 @@ class DrawingLayerSettings with ChangeNotifier
     return surroundingPixels;
   }
 
-  //TODO add to helper
   static bool _isAdjacentAlignment({required final Alignment alignment})
   {
     return alignment == Alignment.topCenter ||
@@ -334,7 +449,6 @@ class DrawingLayerSettings with ChangeNotifier
         alignment == Alignment.centerLeft;
   }
 
-  //TODO add to helper
   static ColorReference? _getColorReferenceAtPos({required final CoordinateSetI coord, required final AppState appState, required final DrawingLayerState layerState})
   {
     ColorReference? currentColor;
@@ -376,7 +490,6 @@ class DrawingLayerSettings with ChangeNotifier
     return currentColor;
   }
 
-  //TODO add to helper
   static Set<CoordinateSetI> _getDropShadowCoordinates({required final Iterable<CoordinateSetI> dataPositions, required final CoordinateSetI offset, required final CoordinateSetI canvasSize})
   {
     final Set<CoordinateSetI> coords = <CoordinateSetI>{};
@@ -391,7 +504,37 @@ class DrawingLayerSettings with ChangeNotifier
     return coords;
   }
 
+  static Set<CoordinateSetI> _getInnerStrokeCoordinates({required final HashMap<Alignment, bool> selectionMap, required final CoordinateColorMap data, required final CoordinateSetI canvasSize})
+  {
+    final Set<CoordinateSetI> coords = <CoordinateSetI>{};
 
+    for (final CoordinateSetI dataPosition in data.keys)
+    {
+      final HashMap<Alignment, CoordinateSetI> surroundingPixels = _getAllSurroundingPositions(pos: dataPosition);
+      for (final MapEntry<Alignment, CoordinateSetI> surroundEntry in surroundingPixels.entries)
+      {
+        if (data[surroundEntry.value] == null && selectionMap[surroundEntry.key] == true)
+        {
+          coords.add(dataPosition);
+          break;
+        }
+      }
 
+    }
+    return coords;
+  }
+
+  Alignment _getOppositeAlignment({required final Alignment alignment})
+  {
+    if (alignment == Alignment.topLeft) {return Alignment.bottomRight;}
+    else if (alignment == Alignment.topCenter) {return Alignment.bottomCenter;}
+    else if (alignment == Alignment.topLeft) {return Alignment.bottomRight;}
+    else if (alignment == Alignment.centerRight) {return Alignment.centerLeft;}
+    else if (alignment == Alignment.bottomRight) {return Alignment.topLeft;}
+    else if (alignment == Alignment.bottomCenter) {return Alignment.topCenter;}
+    else if (alignment == Alignment.bottomLeft) {return Alignment.topRight;}
+    else if (alignment == Alignment.centerLeft) {return Alignment.centerRight;}
+    else {return Alignment.center;};
+  }
 
 }

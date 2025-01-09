@@ -937,8 +937,7 @@ class AppState
     _layerCollection.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize);
     if (addToHistoryStack)
     {
-      //TODO This needs its own TypeIdentifier
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster);
     }
   }
 

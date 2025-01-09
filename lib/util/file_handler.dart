@@ -450,8 +450,6 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final int y = byteData.getUint16(offset);
             offset+=2;
             final int shading = byteData.getInt8(offset++);
-            //TODO check against current shading constraints
-            //if (shading < -ShadingLayerState.shadingMax || shading > ShadingLayerState.shadingMax) return LoadFileSet(status: "Shading value out of range on layer $i: $shading");
             data[CoordinateSetI(x: x, y: y)] = shading;
           }
 

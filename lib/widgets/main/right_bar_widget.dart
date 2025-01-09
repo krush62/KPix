@@ -33,10 +33,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_settings_widget.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_settings_widget.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
@@ -218,10 +219,20 @@ class _RightBarWidgetState extends State<RightBarWidget>
                 builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
                   Widget settingsWidget = const SizedBox.shrink();
                   final LayerState? currentLayer = _appState.getSelectedLayer();
-                  if (currentLayer != null && currentLayer.runtimeType == DrawingLayerState)
+                  if (currentLayer != null)
                   {
-                    final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
-                    settingsWidget = DrawingLayerSettingsWidget(settings: drawingLayer.settings);
+                    if (currentLayer.runtimeType == DrawingLayerState)
+                    {
+                      final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
+                      settingsWidget = DrawingLayerSettingsWidget(settings: drawingLayer.settings);
+                    }
+                    else if (currentLayer.runtimeType == ShadingLayerState)
+                    {
+                      final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
+                      settingsWidget = ShadingLayerSettingsWidget(settings: shadingLayer.settings);
+                    }
+
+
                   }
 
                   return IgnorePointer(
@@ -232,7 +243,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
                       child: Align(
                         alignment: Alignment.centerRight,
-                        child: Container(
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Theme.of(context).primaryColor,
                             border: Border(

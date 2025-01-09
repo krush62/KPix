@@ -22,26 +22,34 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 
 class ShadingLayerState extends LayerState
 {
-  static const int shadingMax = 5;
-  static const int _brightnessStep = 255 ~/ ((shadingMax * 2) + 1);
+  //static const int shadingMax = 5;
+  //static const int _brightnessStep = 255 ~/ ((shadingMax * 2) + 1);
+  final ShadingLayerSettings settings;
   final HashMap<int, int> _thumbnailBrightnessMap = HashMap<int, int>();
   final HashMap<CoordinateSetI, int> _shadingData = HashMap<CoordinateSetI, int>();
   final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
   bool isRendering = false;
   bool _shouldRender = true;
 
-  ShadingLayerState()
+  factory ShadingLayerState()
+  {
+    final ShadingLayerSettings settings = ShadingLayerSettings(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints);
+    return ShadingLayerState._(settings: settings);
+  }
+
+  ShadingLayerState._({required this.settings})
   {
     _init();
   }
 
-  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState})
+  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings}) : settings = newSettings
   {
     _init();
     for (final MapEntry<CoordinateSetI, int> entry in data.entries)
@@ -58,19 +66,44 @@ class ShadingLayerState extends LayerState
     {
       data[entry.key] = entry.value;
     }
-    return ShadingLayerState.withData(data: data, lState: other.lockState.value);
+    final ShadingLayerSettings settings = ShadingLayerSettings.from(other: other.settings);
+
+    return ShadingLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings);
+  }
+
+  void _update()
+  {
+    int counter = 0;
+    final int brightnessStep = 255 ~/ (settings.shadingLow.value.abs() + settings.shadingHigh.value.abs() + 1);
+    for (int i = settings.shadingLow.value; i <= settings.shadingHigh.value; i++)
+    {
+      _thumbnailBrightnessMap[i] = counter * brightnessStep;
+      counter++;
+    }
   }
 
   void _init()
   {
-    int counter = 0;
-    for (int i = -shadingMax; i <= shadingMax; i++)
-    {
-      _thumbnailBrightnessMap[i] = counter * _brightnessStep;
-      counter++;
-    }
+    _update();
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+
+    settings.addListener(() {
+      _settingsChanged();
+    });
+  }
+
+  void _settingsChanged()
+  {
+    for (final MapEntry<CoordinateSetI, int> entry in _shadingData.entries)
+    {
+      if (_shadingData[entry.key] != null)
+      {
+        _shadingData[entry.key] = _shadingData[entry.key]!.clamp(settings.shadingLow.value, settings.shadingHigh.value);
+      }
+
+    }
+    _shouldRender = true;
   }
 
   HashMap<CoordinateSetI, int> get shadingData
@@ -114,7 +147,7 @@ class ShadingLayerState extends LayerState
     {
       for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
       {
-        _shadingData[entry.key] = entry.value.clamp(-shadingMax, shadingMax);
+        _shadingData[entry.key] = entry.value.clamp(settings.shadingLow.value, settings.shadingHigh.value);
       }
       _shouldRender = true;
     }
@@ -160,6 +193,7 @@ class ShadingLayerState extends LayerState
     thumbnail.value = image;
     isRendering = false;
     _shouldRender = false;
+    GetIt.I.get<AppState>().rasterDrawingLayersBelow(layer: this);
   }
 
   void _updateTimerCallback({required final Timer timer})

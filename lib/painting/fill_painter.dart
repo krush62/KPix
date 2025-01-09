@@ -268,7 +268,7 @@ class FillPainter extends IToolPainter
           shadeVal--;
         }
 
-        final int finalShadeVal = shadeVal.clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
+        final int finalShadeVal = shadeVal.clamp(layer.settings.shadingLow.value, layer.settings.shadingHigh.value);
         if (finalShadeVal == 0)
         {
            removePixels.add(curCoord);
@@ -414,7 +414,7 @@ class FillPainter extends IToolPainter
             shadeVal--;
           }
 
-          final int finalShadeVal = shadeVal.clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
+          final int finalShadeVal = shadeVal.clamp(layer.settings.shadingLow.value, layer.settings.shadingHigh.value);
           if (finalShadeVal == 0)
           {
             removePixels.add(curCoord);

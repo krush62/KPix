@@ -19,14 +19,16 @@ import 'dart:collection';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_shading_layer_settings.dart';
 import 'package:kpix/util/helper.dart';
 
 class HistoryShadingLayer extends HistoryLayer
 {
   final LayerLockState lockState;
   final HashMap<CoordinateSetI, int> data;
+  final HistoryShadingLayerSettings settings;
 
-  HistoryShadingLayer({required super.visibilityState, required this.lockState, required this.data});
+  HistoryShadingLayer({required super.visibilityState, required this.lockState, required this.data, required this.settings});
   factory HistoryShadingLayer.fromShadingLayerState({required final ShadingLayerState layerState})
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
@@ -38,8 +40,8 @@ class HistoryShadingLayer extends HistoryLayer
     {
       dt[entry.key] = entry.value;
     }
+    final HistoryShadingLayerSettings settings = HistoryShadingLayerSettings.fromShadingLayerSettings(settings: layerState.settings);
 
-
-    return HistoryShadingLayer(visibilityState: visState, lockState: lState, data: dt);
+    return HistoryShadingLayer(visibilityState: visState, lockState: lState, data: dt, settings: settings);
   }
 }

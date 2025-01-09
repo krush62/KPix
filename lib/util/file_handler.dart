@@ -249,7 +249,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
         if (historyLayerValueMap[layerType] == HistoryDrawingLayer) //DRAWING LAYER
         {
-          HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef:  HistoryColorReference(colorIndex: 0, rampIndex: 0));
+          HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: HistoryColorReference(colorIndex: 0, rampIndex: 0));
           final int lockStateVal = byteData.getUint8(offset++);
           final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
           if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
@@ -262,8 +262,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final int outerAlignmentMask = byteData.getUint8(offset++);
             final HashMap<Alignment, bool> outerStrokeDirections = _unPackAlignments(byte: outerAlignmentMask);
             final int outerStrokeColorRampIndex = byteData.getUint8(offset++);
+            if (outerStrokeColorRampIndex >= rampList.length) return LoadFileSet(status: "Outer Stroke Color Ramp index out of range for layer $i : $outerStrokeColorRampIndex");
             final int outerStrokeColorIndex = byteData.getUint8(offset++);
-            //TODO check if indices are allowed
+            if (outerStrokeColorIndex >= rampList[outerStrokeColorRampIndex].settings.colorCount) return LoadFileSet(status: "Outer Stroke Color index out of range for layer $i: $outerStrokeColorIndex");
             final HistoryColorReference outerColorReference = HistoryColorReference(colorIndex: outerStrokeColorIndex, rampIndex: outerStrokeColorRampIndex);
             final int outerStrokeDarkenBrighten = byteData.getInt8(offset++);
             if (outerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || outerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for outer stroke is out of range for layer $i: $outerStrokeDarkenBrighten");
@@ -280,8 +281,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final int innerAlignmentMask = byteData.getUint8(offset++);
             final HashMap<Alignment, bool> innerStrokeDirections = _unPackAlignments(byte: innerAlignmentMask);
             final int innerStrokeColorRampIndex = byteData.getUint8(offset++);
+            if (innerStrokeColorRampIndex >= rampList.length) return LoadFileSet(status: "Inner Stroke Color Ramp index out of range for layer $i : $innerStrokeColorRampIndex");
             final int innerStrokeColorIndex = byteData.getUint8(offset++);
-            //TODO check if indices are allowed
+            if (innerStrokeColorIndex >= rampList[innerStrokeColorRampIndex].settings.colorCount) return LoadFileSet(status: "Inner Stroke Color index out of range for layer $i: $innerStrokeColorIndex");
             final HistoryColorReference innerColorReference = HistoryColorReference(colorIndex: innerStrokeColorIndex, rampIndex: innerStrokeColorRampIndex);
             final int innerStrokeDarkenBrighten = byteData.getInt8(offset++);
             if (innerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || innerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for inner stroke is out of range for layer $i: $innerStrokeDarkenBrighten");
@@ -300,8 +302,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final DropShadowStyle? dropShadowStyle = dropShadowStyleValueMap[dropShadowStyleVal];
             if (dropShadowStyle == null) return LoadFileSet(status: "Invalid drop shadow style for layer $i: $dropShadowStyleVal");
             final int dropShadowColorRampIndex = byteData.getUint8(offset++);
+            if (dropShadowColorRampIndex >= rampList.length) return LoadFileSet(status: "Drop Shadow Color Ramp index out of range for layer $i : $dropShadowColorRampIndex");
             final int dropShadowColorIndex = byteData.getUint8(offset++);
-            //TODO check if indices are allowed
+            if (dropShadowColorIndex >= rampList[dropShadowColorRampIndex].settings.colorCount) return LoadFileSet(status: "Drop Shadow Color index out of range for layer $i: $dropShadowColorIndex");
             final HistoryColorReference dropShadowColorReference = HistoryColorReference(colorIndex: dropShadowColorIndex, rampIndex: dropShadowColorRampIndex);
             final int dropShadowOffsetX = byteData.getInt8(offset++);
             if (dropShadowOffsetX < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetX > drawingLayerSettingsConstraints.dropShadowOffsetMax) return LoadFileSet(status: "Drop Shadow offset x is out of range for layer $i: $dropShadowOffsetX");

@@ -15,6 +15,7 @@
  */
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert' show utf8;
 import 'dart:math';
 import 'dart:typed_data';
@@ -22,6 +23,7 @@ import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
@@ -36,6 +38,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
@@ -661,6 +664,81 @@ Future<ByteData> _getImageData({required final AppState appState, required final
           }
         }
         byteData.setUint8(offset++, lockVal);
+
+        if (fileVersion >= 2)
+        {
+          //* outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
+          int outerStrokeStyleVal = 0;
+          for (int j = 0; j < outerStrokeStyleValueMap.length; j++)
+          {
+            if (outerStrokeStyleValueMap[j] == drawingLayer.settings.outerStrokeStyle)
+            {
+              outerStrokeStyleVal = j;
+              break;
+            }
+          }
+          byteData.setUint8(offset++, outerStrokeStyleVal);
+          //* outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+          byteData.setUint8(offset++, _packAlignments(alignments: drawingLayer.settings.outerSelectionMap));
+          //* outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+          byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.rampIndex);
+          //* outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+          byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.colorIndex);
+          //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
+          byteData.setInt8(offset++, drawingLayer.settings.outerDarkenBrighten);
+          //* outer_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          byteData.setInt8(offset++, drawingLayer.settings.outerGlowDepth);
+          //* outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+          byteData.setInt8(offset++, drawingLayer.settings.outerGlowDirection ? 1 : 0);
+          //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
+          int innerStrokeStyleVal = 0;
+          for (int j = 0; j < innerStrokeStyleValueMap.length; j++)
+          {
+            if (innerStrokeStyleValueMap[j] == drawingLayer.settings.innerStrokeStyle)
+            {
+              innerStrokeStyleVal = j;
+              break;
+            }
+          }
+          byteData.setUint8(offset++, innerStrokeStyleVal);
+          //* inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+          byteData.setUint8(offset++, _packAlignments(alignments: drawingLayer.settings.innerSelectionMap));
+          //* inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+          byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.rampIndex);
+          //* inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+          byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.colorIndex);
+          //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+          byteData.setInt8(offset++, drawingLayer.settings.innerDarkenBrighten);
+          //* inner_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          byteData.setUint8(offset++, drawingLayer.settings.innerGlowDepth);
+          //* inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+          byteData.setUint8(offset++, drawingLayer.settings.innerGlowDirection ? 1 : 0);
+          //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
+          byteData.setUint8(offset++, drawingLayer.settings.bevelDistance);
+          //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
+          byteData.setUint8(offset++, drawingLayer.settings.bevelStrength);
+          //* drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
+          int dropShadowStyleVal = 0;
+          for (int j = 0; j < dropShadowStyleValueMap.length; j++)
+          {
+            if (dropShadowStyleValueMap[j] == drawingLayer.settings.dropShadowStyle)
+            {
+              dropShadowStyleVal = j;
+              break;
+            }
+          }
+          byteData.setUint8(offset++, dropShadowStyleVal);
+          //* drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+          byteData.setUint8(offset++, drawingLayer.settings.dropShadowColorReference.rampIndex);
+          //* drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
+          byteData.setUint8(offset++, drawingLayer.settings.dropShadowColorReference.colorIndex);
+          //* drop_shadow_offset_x ``byte (1)`` // -16...16
+          byteData.setInt8(offset++, drawingLayer.settings.dropShadowOffset.x);
+          //* drop_shadow_offset_y ``byte (1)`` // -16...16
+          byteData.setInt8(offset++, drawingLayer.settings.dropShadowOffset.y);
+          //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+          byteData.setInt8(offset++, drawingLayer.settings.dropShadowDarkenBrighten);
+        }
         //data count
         int dataLength = drawingLayer.data.length;
         if (i == saveData.selectedLayerIndex)
@@ -781,6 +859,14 @@ Future<ByteData> _getImageData({required final AppState appState, required final
         }
         byteData.setUint8(offset++, lockVal);
 
+        if (fileVersion >= 2)
+        {
+          //* shading_step_limit_low ``ubyte (1)`` // 1...6
+          byteData.setUint8(offset++, -shadingLayer.settings.shadingLow);
+          //* shading_step_limit_high ``ubyte (1)`` // 1...6
+          byteData.setUint8(offset++, shadingLayer.settings.shadingHigh);
+        }
+
         //data count
         final int dataLength = shadingLayer.data.length;
         byteData.setUint32(offset, dataLength);
@@ -802,6 +888,24 @@ Future<ByteData> _getImageData({required final AppState appState, required final
 
     return byteData;
   }
+
+int _packAlignments({required final HashMap<Alignment, bool> alignments})
+{
+  assert(allAlignments.length == 8);
+  assert(alignments.length == 8);
+
+  int byte = 0;
+  int i = 0;
+  for (final Alignment alignment in allAlignments)
+  {
+    if (alignments[alignment] == true)
+    {
+      byte |= 1 << i;
+    }
+    i++;
+  }
+  return byte;
+}
 
   Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampList}) async
   {
@@ -1539,6 +1643,54 @@ Future<ByteData> _getImageData({required final AppState appState, required final
         final HistoryDrawingLayer drawingLayer = saveData.layerList[i] as HistoryDrawingLayer;
         //lock type
         size += 1;
+
+        if (fileVersion >= 2)
+        {
+          //* outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
+          size += 1;
+          //* outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+          size += 1;
+          //* outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+          size += 1;
+          //* outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+          size += 1;
+          //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
+          size += 1;
+          //* outer_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          size += 1;
+          //* outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+          size += 1;
+          //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
+          size += 1;
+          //* inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+          size += 1;
+          //* inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+          size += 1;
+          //* inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+          size += 1;
+          //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+          size += 1;
+          //* inner_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          size += 1;
+          //* inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+          size += 1;
+          //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
+          size += 1;
+          //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
+          size += 1;
+          //* drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
+          size += 1;
+          //* drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+          size += 1;
+          //* drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
+          size += 1;
+          //* drop_shadow_offset_x ``byte (1)`` // -16...16
+          size += 1;
+          //* drop_shadow_offset_y ``byte (1)`` // -16...16
+          size += 1;
+          //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+          size += 1;
+        }
         //data count
         size += 4;
         for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
@@ -1617,6 +1769,14 @@ Future<ByteData> _getImageData({required final AppState appState, required final
         final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
         //lock type
         size += 1;
+        if (fileVersion >= 2)
+        {
+          //* shading_step_limit_low ``ubyte (1)`` // 1...6
+          size += 1;
+          //* shading_step_limit_high ``ubyte (1)`` // 1...6
+          size += 1;
+        }
+
         //data count
         size += 4;
         for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)

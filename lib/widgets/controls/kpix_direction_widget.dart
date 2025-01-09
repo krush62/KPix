@@ -18,7 +18,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
-final Set<Alignment> allAlignments = <Alignment>{Alignment.topLeft, Alignment.topCenter, Alignment.topRight, Alignment.centerRight, Alignment.bottomRight, Alignment.bottomCenter, Alignment.bottomLeft, Alignment.centerLeft};
+final LinkedHashSet<Alignment> allAlignments = LinkedHashSet<Alignment>.from(<Alignment>[Alignment.topLeft, Alignment.topCenter, Alignment.topRight, Alignment.centerRight, Alignment.bottomRight, Alignment.bottomCenter, Alignment.bottomLeft, Alignment.centerLeft]);
 
 class KPixDirectionWidget extends StatelessWidget
 {

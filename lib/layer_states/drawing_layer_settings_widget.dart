@@ -333,7 +333,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
 
 
 
-
+          SizedBox(height: generalPadding),
           Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
           SizedBox(height: generalPadding),
 
@@ -567,7 +567,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             ),
           ),
 
-
+          SizedBox(height: generalPadding),
           Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
           SizedBox(height: generalPadding),
 
@@ -755,7 +755,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               );
             },
           ),
-
+          SizedBox(height: generalPadding),
           Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
           SizedBox(height: generalPadding),
 

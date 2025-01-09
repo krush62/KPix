@@ -44,7 +44,7 @@ class DrawingLayerState extends LayerState
   List<LayerState>? layerStack;
   final DrawingLayerSettings settings;
 
-  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content})
+  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings})
   {
     final CoordinateColorMap data2 = HashMap<CoordinateSetI, ColorReference>();
 
@@ -58,7 +58,7 @@ class DrawingLayerState extends LayerState
         }
       }
     }
-    final DrawingLayerSettings settings = DrawingLayerSettings(startingColor: GetIt.I.get<AppState>().colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
+    final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: GetIt.I.get<AppState>().colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
     return DrawingLayerState._(data: data2, size: size, settings: settings);
   }
 
@@ -83,7 +83,8 @@ class DrawingLayerState extends LayerState
     {
       data[ref.key] = ref.value;
     }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: other.settings);
+    final DrawingLayerSettings newSettings = DrawingLayerSettings.fromOther(other: other.settings);
+    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
   }
 
   factory DrawingLayerState.deepClone({required final DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})

@@ -19,6 +19,7 @@ import 'dart:collection';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/util/helper.dart';
@@ -29,7 +30,8 @@ class HistoryDrawingLayer extends HistoryLayer
   final LayerLockState lockState;
   final CoordinateSetI size;
   final HashMap<CoordinateSetI, HistoryColorReference> data;
-  HistoryDrawingLayer({required super.visibilityState, required this.lockState, required this.size, required this.data});
+  final HistoryDrawingLayerSettings settings;
+  HistoryDrawingLayer({required super.visibilityState, required this.lockState, required this.size, required this.data, required this.settings});
   factory HistoryDrawingLayer.fromDrawingLayerState({required final DrawingLayerState layerState, required final List<HistoryRampData> ramps })
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
@@ -60,7 +62,7 @@ class HistoryDrawingLayer extends HistoryLayer
         dt.remove(entry.key);
       }
     }
-
-    return HistoryDrawingLayer(visibilityState: visState, lockState: lState, size: sz, data: dt);
+    final HistoryDrawingLayerSettings settings = HistoryDrawingLayerSettings.fromDrawingLayerSettings(settings: layerState.settings);
+    return HistoryDrawingLayer(visibilityState: visState, lockState: lState, size: sz, data: dt, settings: settings);
   }
 }

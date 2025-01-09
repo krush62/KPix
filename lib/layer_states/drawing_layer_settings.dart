@@ -56,8 +56,8 @@ enum InnerStrokeStyle
 const Map<int, InnerStrokeStyle> innerStrokeStyleValueMap = <int, InnerStrokeStyle>{
   0:InnerStrokeStyle.off,
   1:InnerStrokeStyle.solid,
-  3:InnerStrokeStyle.glow,
   2:InnerStrokeStyle.bevel,
+  3:InnerStrokeStyle.glow,
   4:InnerStrokeStyle.shade,
 };
 
@@ -93,7 +93,7 @@ class DrawingLayerSettingsConstraints
   final int dropShadowOffsetDefault;
   final int dropShadowOffsetMax;
 
-  DrawingLayerSettingsConstraints({
+  const DrawingLayerSettingsConstraints({
     required this.darkenBrightenMin,
     required this.darkenBrightenDefault,
     required this.darkenBrightenMax,
@@ -113,70 +113,166 @@ class DrawingLayerSettingsConstraints
 }
 
 
-class DrawingLayerSettings with ChangeNotifier
-{
+class DrawingLayerSettings with ChangeNotifier {
   final DrawingLayerSettingsConstraints constraints;
-  final ValueNotifier<OuterStrokeStyle> outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(OuterStrokeStyle.off);
-  final ValueNotifier<InnerStrokeStyle> innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(InnerStrokeStyle.off);
-  final ValueNotifier<DropShadowStyle> dropShadowStyle = ValueNotifier<DropShadowStyle>(DropShadowStyle.off);
-  final ValueNotifier<HashMap<Alignment, bool>> outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>());
-  final ValueNotifier<HashMap<Alignment, bool>> innerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>());
+
+  final ValueNotifier<OuterStrokeStyle> outerStrokeStyle;
+  final ValueNotifier<HashMap<Alignment, bool>> outerSelectionMap;
   final ValueNotifier<ColorReference> outerColorReference;
-  final ValueNotifier<ColorReference> innerColorReference;
-  final ValueNotifier<ColorReference> dropShadowColorReference;
-  final ValueNotifier<CoordinateSetI> dropShadowOffset;
   final ValueNotifier<int> outerDarkenBrighten;
   final ValueNotifier<int> outerGlowDepth;
+  final ValueNotifier<bool> outerGlowDirection;
+
+  final ValueNotifier<InnerStrokeStyle> innerStrokeStyle;
+  final ValueNotifier<HashMap<Alignment, bool>> innerSelectionMap;
+  final ValueNotifier<ColorReference> innerColorReference;
   final ValueNotifier<int> innerDarkenBrighten;
   final ValueNotifier<int> innerGlowDepth;
+  final ValueNotifier<bool> innerGlowDirection;
   final ValueNotifier<int> bevelDistance;
   final ValueNotifier<int> bevelStrength;
-  final ValueNotifier<int> dropShadowDarkenBrighten;
-  final ValueNotifier<bool> outerGlowDirection;
-  final ValueNotifier<bool> innerGlowDirection;
 
-  DrawingLayerSettings({required final ColorReference startingColor, required this.constraints}) :
+  final ValueNotifier<DropShadowStyle> dropShadowStyle;
+  final ValueNotifier<ColorReference> dropShadowColorReference;
+  final ValueNotifier<CoordinateSetI> dropShadowOffset;
+  final ValueNotifier<int> dropShadowDarkenBrighten;
+
+  DrawingLayerSettings({
+    required this.constraints,
+    required final OuterStrokeStyle outerStrokeStyle,
+    required final HashMap<Alignment, bool> outerSelectionMap,
+    required final ColorReference outerColorReference,
+    required final int outerDarkenBrighten,
+    required final int outerGlowDepth,
+    required final bool outerGlowDirection,
+    required final InnerStrokeStyle innerStrokeStyle,
+    required final HashMap<Alignment, bool> innerSelectionMap,
+    required final ColorReference innerColorReference,
+    required final int innerDarkenBrighten,
+    required final int innerGlowDepth,
+    required final bool innerGlowDirection,
+    required final int bevelDistance,
+    required final int bevelStrength,
+    required final DropShadowStyle dropShadowStyle,
+    required final ColorReference dropShadowColorReference,
+    required final CoordinateSetI dropShadowOffset,
+    required final int dropShadowDarkenBrighten,
+  })
+      :
+        outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(outerStrokeStyle),
+        outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(
+            outerSelectionMap),
+        outerDarkenBrighten = ValueNotifier<int>(outerDarkenBrighten),
+        outerGlowDepth = ValueNotifier<int>(outerGlowDepth),
+        innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(innerStrokeStyle),
+        innerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(
+            innerSelectionMap),
+        innerDarkenBrighten = ValueNotifier<int>(innerDarkenBrighten),
+        innerGlowDepth = ValueNotifier<int>(innerGlowDepth),
+        bevelDistance = ValueNotifier<int>(bevelDistance),
+        bevelStrength = ValueNotifier<int>(bevelStrength),
+        outerColorReference = ValueNotifier<ColorReference>(
+            outerColorReference),
+        innerColorReference = ValueNotifier<ColorReference>(
+            innerColorReference),
+        dropShadowStyle = ValueNotifier<DropShadowStyle>(dropShadowStyle),
+        dropShadowColorReference = ValueNotifier<ColorReference>(
+            dropShadowColorReference),
+        dropShadowOffset = ValueNotifier<CoordinateSetI>(dropShadowOffset,),
+        dropShadowDarkenBrighten = ValueNotifier<int>(dropShadowDarkenBrighten),
+        outerGlowDirection = ValueNotifier<bool>(outerGlowDirection),
+        innerGlowDirection = ValueNotifier<bool>(innerGlowDirection)
+  {
+    _setupListeners();
+  }
+
+
+  DrawingLayerSettings.defaultValues({required final ColorReference startingColor, required this.constraints}) :
+    outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(OuterStrokeStyle.off),
+    outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>()),
     outerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
     outerGlowDepth = ValueNotifier<int>(constraints.glowDepthDefault),
+    innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(InnerStrokeStyle.off),
+    innerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>()),
     innerDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
     innerGlowDepth = ValueNotifier<int>(constraints.glowDepthDefault),
     bevelDistance = ValueNotifier<int>(constraints.bevelDistanceDefault),
     bevelStrength = ValueNotifier<int>(constraints.bevelStrengthDefault),
     outerColorReference = ValueNotifier<ColorReference>(startingColor),
     innerColorReference = ValueNotifier<ColorReference>(startingColor),
+    dropShadowStyle = ValueNotifier<DropShadowStyle>(DropShadowStyle.off),
     dropShadowColorReference = ValueNotifier<ColorReference>(startingColor),
     dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: constraints.dropShadowOffsetDefault, y: constraints.dropShadowOffsetDefault),),
     dropShadowDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
     outerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault),
     innerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault)
   {
-   for (final Alignment alignment in allAlignments)
-   {
-     outerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
-     innerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
-   }
-   outerStrokeStyle.addListener(valueChanged);
-   innerStrokeStyle.addListener(valueChanged);
-   dropShadowStyle.addListener(valueChanged);
-   outerSelectionMap.addListener(valueChanged);
-   innerSelectionMap.addListener(valueChanged);
-   outerColorReference.addListener(valueChanged);
-   innerColorReference.addListener(valueChanged);
-   dropShadowColorReference.addListener(valueChanged);
-   dropShadowOffset.addListener(valueChanged);
-   outerDarkenBrighten.addListener(valueChanged);
-   outerGlowDepth.addListener(valueChanged);
-   innerDarkenBrighten.addListener(valueChanged);
-   innerGlowDepth.addListener(valueChanged);
-   bevelDistance.addListener(valueChanged);
-   bevelStrength.addListener(valueChanged);
-   dropShadowDarkenBrighten.addListener(valueChanged);
-   outerGlowDirection.addListener(valueChanged);
-   innerGlowDirection.addListener(valueChanged);
-
+    for (final Alignment alignment in allAlignments)
+    {
+      outerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
+      innerSelectionMap.value[alignment] = alignment == Alignment.bottomRight;
+    }
+   _setupListeners();
   }
 
-  void valueChanged()
+
+  DrawingLayerSettings.fromOther({required final DrawingLayerSettings other}) :
+        constraints = other.constraints,
+        outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(other.outerStrokeStyle.value),
+        outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>()),
+        outerDarkenBrighten = ValueNotifier<int>(other.outerDarkenBrighten.value),
+        outerGlowDepth = ValueNotifier<int>(other.outerGlowDepth.value),
+        innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(other.innerStrokeStyle.value),
+        innerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(HashMap<Alignment, bool>()),
+        innerDarkenBrighten = ValueNotifier<int>(other.innerDarkenBrighten.value),
+        innerGlowDepth = ValueNotifier<int>(other.innerGlowDepth.value),
+        bevelDistance = ValueNotifier<int>(other.bevelDistance.value),
+        bevelStrength = ValueNotifier<int>(other.bevelStrength.value),
+        outerColorReference = ValueNotifier<ColorReference>(other.outerColorReference.value),
+        innerColorReference = ValueNotifier<ColorReference>(other.innerColorReference.value),
+        dropShadowStyle = ValueNotifier<DropShadowStyle>(other.dropShadowStyle.value),
+        dropShadowColorReference = ValueNotifier<ColorReference>(other.dropShadowColorReference.value),
+        dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI.from(other: other.dropShadowOffset.value)),
+        dropShadowDarkenBrighten = ValueNotifier<int>(other.dropShadowDarkenBrighten.value),
+        outerGlowDirection = ValueNotifier<bool>(other.outerGlowDirection.value),
+        innerGlowDirection = ValueNotifier<bool>(other.innerGlowDirection.value)
+  {
+    for (final Alignment alignment in allAlignments)
+    {
+      outerSelectionMap.value[alignment] = other.outerSelectionMap.value[alignment] ?? false;
+      innerSelectionMap.value[alignment] = other.innerSelectionMap.value[alignment] ?? false;
+    }
+    _setupListeners();
+  }
+
+
+
+
+
+  void _setupListeners()
+  {
+
+    outerStrokeStyle.addListener(_valueChanged);
+    innerStrokeStyle.addListener(_valueChanged);
+    dropShadowStyle.addListener(_valueChanged);
+    outerSelectionMap.addListener(_valueChanged);
+    innerSelectionMap.addListener(_valueChanged);
+    outerColorReference.addListener(_valueChanged);
+    innerColorReference.addListener(_valueChanged);
+    dropShadowColorReference.addListener(_valueChanged);
+    dropShadowOffset.addListener(_valueChanged);
+    outerDarkenBrighten.addListener(_valueChanged);
+    outerGlowDepth.addListener(_valueChanged);
+    innerDarkenBrighten.addListener(_valueChanged);
+    innerGlowDepth.addListener(_valueChanged);
+    bevelDistance.addListener(_valueChanged);
+    bevelStrength.addListener(_valueChanged);
+    dropShadowDarkenBrighten.addListener(_valueChanged);
+    outerGlowDirection.addListener(_valueChanged);
+    innerGlowDirection.addListener(_valueChanged);
+  }
+
+  void _valueChanged()
   {
     notifyListeners();
   }
@@ -534,7 +630,8 @@ class DrawingLayerSettings with ChangeNotifier
     else if (alignment == Alignment.bottomCenter) {return Alignment.topCenter;}
     else if (alignment == Alignment.bottomLeft) {return Alignment.topRight;}
     else if (alignment == Alignment.centerLeft) {return Alignment.centerRight;}
-    else {return Alignment.center;};
+    else {return Alignment.center;}
   }
+
 
 }

@@ -106,6 +106,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
       referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
       gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
+      drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+      shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
     ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
     _closeSaveBeforeLoadWarning();
     widget.dismiss();

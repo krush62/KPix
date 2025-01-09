@@ -18,6 +18,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
@@ -406,6 +407,10 @@ enum PreferenceInt
   DrawingLayerConstraints_DefaultDropShadowDistance(defaultValue: 1),
   DrawingLayerConstraints_MaxDropShadowDistance(defaultValue: 16),
 
+  ShadingLayerConstraints_MinAmount(defaultValue: 1),
+  ShadingLayerConstraints_DefaultAmount(defaultValue: 2),
+  ShadingLayerConstraints_MaxAmount(defaultValue: 6),
+
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
 
@@ -604,6 +609,7 @@ class PreferenceManager
   late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
+  late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
   late SelectionBarWidgetOptions selectionBarWidgetOptions;
   late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
   late CanvasSizeOptions canvasSizeOptions;
@@ -836,6 +842,10 @@ class PreferenceManager
         dropShadowOffsetMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDropShadowDistance),
         dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
         dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
+    shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
+        shadingAmountMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
+        shadingAmountDefault: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmount),
+        shadingAmountMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),

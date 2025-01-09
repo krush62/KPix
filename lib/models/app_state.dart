@@ -19,11 +19,13 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
@@ -610,7 +612,27 @@ class AppState
               content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
             }
           }
-          final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content);
+          final DrawingLayerSettings drawingLayerSettings = DrawingLayerSettings(
+            constraints: historyDrawingLayer.settings.constraints,
+            outerStrokeStyle: historyDrawingLayer.settings.outerStrokeStyle,
+            outerSelectionMap: historyDrawingLayer.settings.outerSelectionMap,
+            outerColorReference: _colorRamps.value[historyDrawingLayer.settings.outerColorReference.rampIndex].references[historyDrawingLayer.settings.outerColorReference.colorIndex],
+            outerDarkenBrighten: historyDrawingLayer.settings.outerDarkenBrighten,
+            outerGlowDepth: historyDrawingLayer.settings.outerGlowDepth,
+            outerGlowDirection: historyDrawingLayer.settings.outerGlowDirection,
+            innerStrokeStyle: historyDrawingLayer.settings.innerStrokeStyle,
+            innerSelectionMap: historyDrawingLayer.settings.innerSelectionMap,
+            innerColorReference: _colorRamps.value[historyDrawingLayer.settings.innerColorReference.rampIndex].references[historyDrawingLayer.settings.innerColorReference.colorIndex],
+            innerDarkenBrighten: historyDrawingLayer.settings.innerDarkenBrighten,
+            innerGlowDepth: historyDrawingLayer.settings.innerGlowDepth,
+            innerGlowDirection: historyDrawingLayer.settings.innerGlowDirection,
+            bevelDistance: historyDrawingLayer.settings.bevelDistance,
+            bevelStrength: historyDrawingLayer.settings.bevelStrength,
+            dropShadowStyle: historyDrawingLayer.settings.dropShadowStyle,
+            dropShadowColorReference: _colorRamps.value[historyDrawingLayer.settings.dropShadowColorReference.rampIndex].references[historyDrawingLayer.settings.dropShadowColorReference.colorIndex],
+            dropShadowOffset: historyDrawingLayer.settings.dropShadowOffset,
+            dropShadowDarkenBrighten: historyDrawingLayer.settings.dropShadowDarkenBrighten,);
+          final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content, drawingLayerSettings: drawingLayerSettings);
           drawingLayer.lockState.value = historyLayer.lockState;
           layerState = drawingLayer;
         }
@@ -627,7 +649,7 @@ class AppState
         else if (historyLayer.runtimeType == HistoryShadingLayer)
         {
           final HistoryShadingLayer shadingLayer = historyLayer as HistoryShadingLayer;
-          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState);
+          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: ShadingLayerSettings(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints));
           topMostShadingLayer ??= layerState;
         }
 

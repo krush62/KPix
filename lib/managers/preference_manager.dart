@@ -843,9 +843,9 @@ class PreferenceManager
         dropShadowOffsetDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDropShadowDistance),
         dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
     shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
-        shadingAmountMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
-        shadingAmountDefault: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmount),
-        shadingAmountMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
+        shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
+        shadingStepsDefault: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmount),
+        shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),

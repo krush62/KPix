@@ -649,7 +649,8 @@ class AppState
         else if (historyLayer.runtimeType == HistoryShadingLayer)
         {
           final HistoryShadingLayer shadingLayer = historyLayer as HistoryShadingLayer;
-          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: ShadingLayerSettings(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints));
+          final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: shadingLayer.settings.constraints, shadingLow: shadingLayer.settings.shadingLow, shadingHigh: shadingLayer.settings.shadingHigh,);
+          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: shadingLayerSettings);
           topMostShadingLayer ??= layerState;
         }
 

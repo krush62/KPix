@@ -29,12 +29,12 @@ class HistoryShadingLayerSettings
   });
 
   HistoryShadingLayerSettings.defaultValue({required this.constraints}) :
-      shadingLow = constraints.shadingAmountMin,
-      shadingHigh = constraints.shadingAmountMax;
+      shadingLow = constraints.shadingStepsMin,
+      shadingHigh = constraints.shadingStepsMax;
 
   HistoryShadingLayerSettings.fromShadingLayerSettings({required final ShadingLayerSettings settings}) :
       constraints = settings.constraints,
-      shadingLow = settings.shadingLow.value,
-      shadingHigh = settings.shadingHigh.value;
+      shadingLow = settings.shadingStepsMinus.value,
+      shadingHigh = settings.shadingStepsPlus.value;
 
 }

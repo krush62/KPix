@@ -52,15 +52,15 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
               const Expanded(child: Text("Max Darken")),
               Expanded(
                 child: ValueListenableBuilder<int>(
-                  valueListenable: widget.settings.shadingLow,
+                  valueListenable: widget.settings.shadingStepsMinus,
                   builder: (final BuildContext context1, final int shadingLow, final Widget? child1)
                   {
                     return KPixSlider(
-                      value: -shadingLow.toDouble(),
-                      min: widget.settings.constraints.shadingAmountMin.toDouble(),
-                      max: widget.settings.constraints.shadingAmountMax.toDouble(),
+                      value: shadingLow.toDouble(),
+                      min: widget.settings.constraints.shadingStepsMin.toDouble(),
+                      max: widget.settings.constraints.shadingStepsMax.toDouble(),
                       onChanged: (final double value) {
-                        widget.settings.shadingLow.value = -value.round();
+                        widget.settings.shadingStepsMinus.value = value.round();
                       },
                       textStyle: Theme.of(context).textTheme.bodyMedium!,
                     );
@@ -74,15 +74,15 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
               const Expanded(child: Text("Max Brighten")),
               Expanded(
                 child: ValueListenableBuilder<int>(
-                  valueListenable: widget.settings.shadingHigh,
+                  valueListenable: widget.settings.shadingStepsPlus,
                   builder: (final BuildContext context1, final int shadingHigh, final Widget? child1)
                   {
                     return KPixSlider(
                       value: shadingHigh.toDouble(),
-                      min: widget.settings.constraints.shadingAmountMin.toDouble(),
-                      max: widget.settings.constraints.shadingAmountMax.toDouble(),
+                      min: widget.settings.constraints.shadingStepsMin.toDouble(),
+                      max: widget.settings.constraints.shadingStepsMax.toDouble(),
                       onChanged: (final double value) {
-                        widget.settings.shadingHigh.value = value.round();
+                        widget.settings.shadingStepsPlus.value = value.round();
                       },
                       textStyle: Theme.of(context).textTheme.bodyMedium!,
                     );

@@ -161,23 +161,23 @@ class DrawingLayerSettings with ChangeNotifier {
       :
         outerStrokeStyle = ValueNotifier<OuterStrokeStyle>(outerStrokeStyle),
         outerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(
-            outerSelectionMap),
+            outerSelectionMap,),
         outerDarkenBrighten = ValueNotifier<int>(outerDarkenBrighten),
         outerGlowDepth = ValueNotifier<int>(outerGlowDepth),
         innerStrokeStyle = ValueNotifier<InnerStrokeStyle>(innerStrokeStyle),
         innerSelectionMap = ValueNotifier<HashMap<Alignment, bool>>(
-            innerSelectionMap),
+            innerSelectionMap,),
         innerDarkenBrighten = ValueNotifier<int>(innerDarkenBrighten),
         innerGlowDepth = ValueNotifier<int>(innerGlowDepth),
         bevelDistance = ValueNotifier<int>(bevelDistance),
         bevelStrength = ValueNotifier<int>(bevelStrength),
         outerColorReference = ValueNotifier<ColorReference>(
-            outerColorReference),
+            outerColorReference,),
         innerColorReference = ValueNotifier<ColorReference>(
-            innerColorReference),
+            innerColorReference,),
         dropShadowStyle = ValueNotifier<DropShadowStyle>(dropShadowStyle),
         dropShadowColorReference = ValueNotifier<ColorReference>(
-            dropShadowColorReference),
+            dropShadowColorReference,),
         dropShadowOffset = ValueNotifier<CoordinateSetI>(dropShadowOffset,),
         dropShadowDarkenBrighten = ValueNotifier<int>(dropShadowDarkenBrighten),
         outerGlowDirection = ValueNotifier<bool>(outerGlowDirection),

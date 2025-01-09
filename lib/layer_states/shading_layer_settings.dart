@@ -18,44 +18,51 @@ import 'package:flutter/material.dart';
 
 class ShadingLayerSettingsConstraints
 {
-  final int shadingAmountMin;
-  final int shadingAmountDefault;
-  final int shadingAmountMax;
+  final int shadingStepsMin;
+  final int shadingStepsDefault;
+  final int shadingStepsMax;
 
   const ShadingLayerSettingsConstraints({
-    required this.shadingAmountMin,
-    required this.shadingAmountDefault,
-    required this.shadingAmountMax,
+    required this.shadingStepsMin,
+    required this.shadingStepsDefault,
+    required this.shadingStepsMax,
   });
 }
 
 class ShadingLayerSettings with ChangeNotifier
 {
   final ShadingLayerSettingsConstraints constraints;
-  final ValueNotifier<int> shadingLow;
-  final ValueNotifier<int> shadingHigh;
+  final ValueNotifier<int> shadingStepsMinus;
+  final ValueNotifier<int> shadingStepsPlus;
 
-  ShadingLayerSettings({
+  ShadingLayerSettings({required this.constraints, required final int shadingLow, required final int shadingHigh}) :
+        shadingStepsMinus = ValueNotifier<int>(shadingLow),
+        shadingStepsPlus = ValueNotifier<int>(shadingHigh)
+  {
+    _setupListeners();
+  }
+
+  ShadingLayerSettings.defaultValue({
     required this.constraints,
   }) :
-        shadingLow = ValueNotifier<int>(-constraints.shadingAmountDefault),
-        shadingHigh = ValueNotifier<int>(constraints.shadingAmountDefault)
+        shadingStepsMinus = ValueNotifier<int>(constraints.shadingStepsDefault),
+        shadingStepsPlus = ValueNotifier<int>(constraints.shadingStepsDefault)
   {
-    _init();
+    _setupListeners();
   }
 
   ShadingLayerSettings.from({required final ShadingLayerSettings other}) :
         constraints = other.constraints,
-        shadingLow = ValueNotifier<int>(other.shadingLow.value),
-        shadingHigh = ValueNotifier<int>(other.shadingHigh.value)
+        shadingStepsMinus = ValueNotifier<int>(other.shadingStepsMinus.value),
+        shadingStepsPlus = ValueNotifier<int>(other.shadingStepsPlus.value)
   {
-    _init();
+    _setupListeners();
   }
 
-  void _init()
+  void _setupListeners()
   {
-    shadingLow.addListener(_valueChanged);
-    shadingHigh.addListener(_valueChanged);
+    shadingStepsMinus.addListener(_valueChanged);
+    shadingStepsPlus.addListener(_valueChanged);
   }
 
   void _valueChanged()

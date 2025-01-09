@@ -433,9 +433,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           if (fVersion >= 2)
           {
             final int shadingStepLimitLow = byteData.getUint8(offset++);
-            if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingAmountMin || shadingStepLimitLow > shadingLayerSettingsConstraints.shadingAmountMax) return LoadFileSet(status: "Shading step limit low is out of range for layer $i: $shadingStepLimitLow");
+            if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitLow > shadingLayerSettingsConstraints.shadingStepsMax) return LoadFileSet(status: "Shading step limit low is out of range for layer $i: $shadingStepLimitLow");
             final int shadingStepLimitHigh = byteData.getUint8(offset++);
-            if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingAmountMin || shadingStepLimitHigh > shadingLayerSettingsConstraints.shadingAmountMax) return LoadFileSet(status: "Shading step limit high is out of range for layer $i: $shadingStepLimitHigh");
+            if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitHigh > shadingLayerSettingsConstraints.shadingStepsMax) return LoadFileSet(status: "Shading step limit high is out of range for layer $i: $shadingStepLimitHigh");
             shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
           }
 

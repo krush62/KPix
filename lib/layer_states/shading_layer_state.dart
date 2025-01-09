@@ -40,7 +40,7 @@ class ShadingLayerState extends LayerState
 
   factory ShadingLayerState()
   {
-    final ShadingLayerSettings settings = ShadingLayerSettings(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints);
+    final ShadingLayerSettings settings = ShadingLayerSettings.defaultValue(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints);
     return ShadingLayerState._(settings: settings);
   }
 
@@ -74,8 +74,8 @@ class ShadingLayerState extends LayerState
   void _update()
   {
     int counter = 0;
-    final int brightnessStep = 255 ~/ (settings.shadingLow.value.abs() + settings.shadingHigh.value.abs() + 1);
-    for (int i = settings.shadingLow.value; i <= settings.shadingHigh.value; i++)
+    final int brightnessStep = 255 ~/ (settings.shadingStepsMinus.value + settings.shadingStepsPlus.value + 1);
+    for (int i = -settings.shadingStepsMinus.value; i <= settings.shadingStepsPlus.value; i++)
     {
       _thumbnailBrightnessMap[i] = counter * brightnessStep;
       counter++;
@@ -99,7 +99,7 @@ class ShadingLayerState extends LayerState
     {
       if (_shadingData[entry.key] != null)
       {
-        _shadingData[entry.key] = _shadingData[entry.key]!.clamp(settings.shadingLow.value, settings.shadingHigh.value);
+        _shadingData[entry.key] = _shadingData[entry.key]!.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
       }
 
     }
@@ -147,7 +147,7 @@ class ShadingLayerState extends LayerState
     {
       for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
       {
-        _shadingData[entry.key] = entry.value.clamp(settings.shadingLow.value, settings.shadingHigh.value);
+        _shadingData[entry.key] = entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
       }
       _shouldRender = true;
     }

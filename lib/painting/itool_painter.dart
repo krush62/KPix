@@ -614,7 +614,7 @@ abstract class IToolPainter
               if (currentLayer.hasCoord(coord: coord))
               {
                 final int currentVal = currentLayer.getValueAt(coord: coord)!;
-                if (currentVal + shift < currentLayer.settings.shadingLow.value || currentVal + shift > currentLayer.settings.shadingHigh.value)
+                if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
                 {
                   shift = 0;
                 }
@@ -739,7 +739,7 @@ abstract class IToolPainter
             shift += stampEntry.value;
 
             final int currentVal = currentLayer.hasCoord(coord: coord) ? currentLayer.getValueAt(coord: coord)! : 0;
-            if (currentVal + shift < currentLayer.settings.shadingLow.value || currentVal + shift > currentLayer.settings.shadingHigh.value)
+            if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
             {
               shift = 0;
             }
@@ -780,7 +780,7 @@ abstract class IToolPainter
     for (final MapEntry<CoordinateSetI, int> entry in stampData.entries)
     {
       final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! + currentShift + entry.value : currentShift + entry.value).clamp(shadingLayer.settings.shadingLow.value, shadingLayer.settings.shadingHigh.value);
+      final int targetShift = (shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! + currentShift + entry.value : currentShift + entry.value).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
       if (targetShift == 0)
       {
         removeCoords.add(entry.key);
@@ -806,7 +806,7 @@ abstract class IToolPainter
     for (final CoordinateSetI coord in coordinates)
     {
       final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(shadingLayer.settings.shadingLow.value, shadingLayer.settings.shadingHigh.value);
+      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
       if (targetShift == 0)
       {
         removeCoords.add(coord);

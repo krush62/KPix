@@ -256,6 +256,24 @@ class DrawingLayerState extends LayerState
     return (await completerImg.future, await completerThb.future);
   }
 
+  void rasterOutline()
+  {
+    final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, appState: GetIt.I.get<AppState>());
+    setDataAll(list: outerPixels);
+  }
+
+  void rasterInline()
+  {
+    final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, appState: GetIt.I.get<AppState>());
+    setDataAll(list: innerPixels);
+  }
+
+  void rasterDropShadow()
+  {
+    final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, appState: GetIt.I.get<AppState>());
+    setDataAll(list: dropShadowPixels);
+  }
+
   Color _geCurrentColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor})
   {
     Color retColor = inputColor.getIdColor().color;

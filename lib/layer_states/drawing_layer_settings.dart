@@ -304,10 +304,18 @@ class DrawingLayerSettings with ChangeNotifier {
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState})
   {
     final AppState appState = GetIt.I.get<AppState>();
+    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, appState: appState, data: data);
+    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, appState: appState, data: data);
+    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, appState: appState, data: data);
+
+    shadowPixels.addAll(outerPixels);
+    shadowPixels.addAll(innerPixels);
+    return shadowPixels;
+  }
+
+  CoordinateColorMap getDropShadowPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final AppState appState})
+  {
     final CoordinateColorMap shadowPixels = CoordinateColorMap();
-    final CoordinateColorMap outerPixels = CoordinateColorMap();
-    final CoordinateColorMap innerPixels = CoordinateColorMap();
-    //drop shadow
     if (dropShadowStyle.value != DropShadowStyle.off)
     {
       final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: appState.canvasSize);
@@ -329,8 +337,12 @@ class DrawingLayerSettings with ChangeNotifier {
         }
       }
     }
+    return shadowPixels;
+  }
 
-    //outer stroke
+  CoordinateColorMap getOuterStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final AppState appState})
+  {
+    final CoordinateColorMap outerPixels = CoordinateColorMap();
     if (outerStrokeStyle.value != OuterStrokeStyle.off)
     {
       final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: appState.canvasSize);
@@ -393,10 +405,12 @@ class DrawingLayerSettings with ChangeNotifier {
       }
 
     }
+    return outerPixels;
+  }
 
-
-    //inner stroke
-
+  CoordinateColorMap getInnerStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final AppState appState})
+  {
+    final CoordinateColorMap innerPixels = CoordinateColorMap();
     if (innerStrokeStyle.value != InnerStrokeStyle.off)
     {
       final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: data, canvasSize: appState.canvasSize);
@@ -454,9 +468,9 @@ class DrawingLayerSettings with ChangeNotifier {
         {
           if (entry.value == true)
           {
-             oppositeSelectionMap[entry.key] = true;
-             oppositeSelectionMap[_getOppositeAlignment(alignment: entry.key)] = true;
-             break;
+            oppositeSelectionMap[entry.key] = true;
+            oppositeSelectionMap[_getOppositeAlignment(alignment: entry.key)] = true;
+            break;
           }
         }
 
@@ -503,10 +517,7 @@ class DrawingLayerSettings with ChangeNotifier {
         }
       }
     }
-
-    shadowPixels.addAll(outerPixels);
-    shadowPixels.addAll(innerPixels);
-    return shadowPixels;
+    return innerPixels;
   }
 
   static HashMap<CoordinateSetI, CoordinateSetI> _getOuterStrokePixelsWithReference({required final HashMap<Alignment, bool> selectionMap, required final Iterable<CoordinateSetI> dataPositions, required final CoordinateSetI canvasSize})

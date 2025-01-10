@@ -228,7 +228,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
                       drawingLayer.settings.editStarted = true;
                       drawingLayer.settings.hasChanges = false;
-                      settingsWidget = DrawingLayerSettingsWidget(settings: drawingLayer.settings);
+                      settingsWidget = DrawingLayerSettingsWidget(layer: drawingLayer,);
                     }
                     else if (currentLayer.runtimeType == ShadingLayerState)
                     {
@@ -237,8 +237,6 @@ class _RightBarWidgetState extends State<RightBarWidget>
                       shadingLayer.settings.hasChanges = false;
                       settingsWidget = ShadingLayerSettingsWidget(settings: shadingLayer.settings);
                     }
-
-
                   }
 
                   return IgnorePointer(

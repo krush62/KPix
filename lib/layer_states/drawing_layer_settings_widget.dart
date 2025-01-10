@@ -20,7 +20,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
@@ -80,9 +83,9 @@ const Map<DropShadowStyle, String> _dropShadowStyleTooltipMap =
 
 class DrawingLayerSettingsWidget extends StatefulWidget
 {
-  final DrawingLayerSettings settings;
+  final DrawingLayerState layer;
 
-  const DrawingLayerSettingsWidget({super.key, required this.settings});
+  const DrawingLayerSettingsWidget({super.key, required this.layer});
 
   @override
   State<DrawingLayerSettingsWidget> createState() => _DrawingLayerSettingsWidgetState();
@@ -90,7 +93,10 @@ class DrawingLayerSettingsWidget extends StatefulWidget
 
 class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
 {
-  final double generalPadding = 8.0;
+  static const double _generalPadding = 8.0;
+  static const double _buttonHeight = 24;
+  static const double _iconSize = 16;
+  static const double _dividerHeight = 2.0;
   late KPixOverlay _colorPickDialog;
 
 
@@ -99,7 +105,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     if (color != null)
     {
       _colorPickDialog.hide();
-      widget.settings.outerColorReference.value = color;
+      widget.layer.settings.outerColorReference.value = color;
     }
   }
 
@@ -108,7 +114,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     if (color != null)
     {
       _colorPickDialog.hide();
-      widget.settings.innerColorReference.value = color;
+      widget.layer.settings.innerColorReference.value = color;
     }
   }
 
@@ -117,7 +123,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     if (color != null)
     {
       _colorPickDialog.hide();
-      widget.settings.dropShadowColorReference.value = color;
+      widget.layer.settings.dropShadowColorReference.value = color;
     }
   }
 
@@ -131,22 +137,22 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   Widget build(final BuildContext context)
   {
     return Padding(
-      padding: EdgeInsets.all(generalPadding),
+      padding: const EdgeInsets.all(_generalPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
 
-          Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: generalPadding),
+          Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: _generalPadding),
 
 
           //OUTER STROKE
           Text("OUTER STROKE", style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
           //outer stroke style
           ValueListenableBuilder<OuterStrokeStyle>(
-            valueListenable: widget.settings.outerStrokeStyle,
+            valueListenable: widget.layer.settings.outerStrokeStyle,
             builder: (final BuildContext context, final OuterStrokeStyle outerStrokeStyle, final Widget? child)
             {
               final List<ButtonSegment<OuterStrokeStyle>> outerStrokeButtons = <ButtonSegment<OuterStrokeStyle>>[];
@@ -172,16 +178,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                 selected: <OuterStrokeStyle>{outerStrokeStyle},
                 showSelectedIcon: false,
                 onSelectionChanged: (final Set<OuterStrokeStyle> values) {
-                  widget.settings.outerStrokeStyle.value = values.first;
+                  widget.layer.settings.outerStrokeStyle.value = values.first;
                 },
               );
             },
           ),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
           SizedBox(
             height: 100,
             child: ValueListenableBuilder<OuterStrokeStyle>(
-              valueListenable: widget.settings.outerStrokeStyle,
+              valueListenable: widget.layer.settings.outerStrokeStyle,
               builder: (final BuildContext context, final OuterStrokeStyle outerStrokeStyle, final Widget? child)
               {
                 return Row(
@@ -190,71 +196,56 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       Expanded(
                         flex: 2,
                         child: ValueListenableBuilder<HashMap<Alignment, bool>>(
-                          valueListenable: widget.settings.outerSelectionMap,
+                          valueListenable: widget.layer.settings.outerSelectionMap,
                           builder: (final BuildContext context, final HashMap<Alignment, bool> outerMap, final Widget? child) {
                             return KPixDirectionWidget(
                               selectionMap: outerMap,
                               onChange: (final HashMap<Alignment, bool> directionMap) {
-                                widget.settings.outerSelectionMap.value = directionMap;
+                                widget.layer.settings.outerSelectionMap.value = directionMap;
                               },
                               isExclusive: false,
                             );
                           },
                         ),
                       ),
-                    SizedBox(width: generalPadding),
-                    if (outerStrokeStyle == OuterStrokeStyle.solid)
+                    const SizedBox(width: _generalPadding),
+                    if (outerStrokeStyle == OuterStrokeStyle.solid)...<Widget>[
                       Expanded(
-                        flex: 7,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: AspectRatio(
-                                aspectRatio: 1,
-                                child: ValueListenableBuilder<ColorReference>(
-                                  valueListenable: widget.settings.outerColorReference,
-                                  builder: (final BuildContext context, final ColorReference outerColor, final Widget? child)
-                                  {
-                                    return IconButton.outlined(
-                                      onPressed: () {
-                                        _colorPickDialog = getColorPickerDialog(
-                                          title: "SELECT OUTER STROKE COLOR",
-                                          ramps: GetIt.I.get<AppState>().colorRamps,
-                                          onColorSelected: onOuterColorSelected,
-                                          onDismiss: closeDialog,);
-                                        _colorPickDialog.show(context: context);
-                                      },
-                                      icon: const FaIcon(FontAwesomeIcons.palette),
-                                      style: ButtonStyle(
-                                        backgroundColor: WidgetStatePropertyAll<Color?>(outerColor.getIdColor().color),
-                                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                          RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(4.0),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
+                        flex: 2,
+                        child: ValueListenableBuilder<ColorReference>(
+                          valueListenable: widget.layer.settings.outerColorReference,
+                          builder: (final BuildContext context, final ColorReference outerColor, final Widget? child)
+                          {
+                            return AspectRatio(
+                              aspectRatio: 1,
+                              child: IconButton.outlined(
+                                onPressed: () {
+                                  _colorPickDialog = getColorPickerDialog(
+                                    title: "SELECT OUTER STROKE COLOR",
+                                    ramps: GetIt.I.get<AppState>().colorRamps,
+                                    onColorSelected: onOuterColorSelected,
+                                    onDismiss: closeDialog,);
+                                  _colorPickDialog.show(context: context);
+                                },
+                                icon: const FaIcon(FontAwesomeIcons.palette),
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStatePropertyAll<Color?>(outerColor.getIdColor().color),
+                                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4.0),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: generalPadding),
-                            Expanded(
-                              flex: 2,
-                              child: Tooltip(
-                                message: "Raster Solid Outline",
-                                waitDuration: AppState.toolTipDuration,
-                                child: IconButton.outlined(
-                                  onPressed: () {
-                                    print("OUTER RASTER SOLID OUTLINE");
-                                  },
-                                  icon: const FaIcon(FontAwesomeIcons.paintbrush),
-                                ),
-                              ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
+                      const Expanded(
+                          flex: 5,
+                          child: SizedBox.shrink(),
+                      ),
+                    ],
                     if (outerStrokeStyle == OuterStrokeStyle.relative || outerStrokeStyle == OuterStrokeStyle.shade)
                       Expanded(
                         flex: 7,
@@ -263,17 +254,17 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           children: <Widget>[
                             const Text("Darken/Brighten"),
                             ValueListenableBuilder<int>(
-                              valueListenable: widget.settings.outerDarkenBrighten,
+                              valueListenable: widget.layer.settings.outerDarkenBrighten,
                               builder: (final BuildContext context, final int value, final Widget? child)
                               {
                                 return KPixSlider(
                                   value: value.toDouble(),
-                                  min: widget.settings.constraints.darkenBrightenMin.toDouble(),
-                                  max: widget.settings.constraints.darkenBrightenMax.toDouble(),
+                                  min: widget.layer.settings.constraints.darkenBrightenMin.toDouble(),
+                                  max: widget.layer.settings.constraints.darkenBrightenMax.toDouble(),
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
                                   showPlusSignForPositive: true,
                                   onChanged: (final double value) {
-                                    widget.settings.outerDarkenBrighten.value = value.round();
+                                    widget.layer.settings.outerDarkenBrighten.value = value.round();
                                   },
                                 );
                               },
@@ -293,12 +284,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               children: <Widget>[
                                 const Text("<"),
                                 ValueListenableBuilder<bool>(
-                                  valueListenable: widget.settings.outerGlowDirection,
+                                  valueListenable: widget.layer.settings.outerGlowDirection,
                                   builder: (final BuildContext context, final bool glowDir, final Widget? child) {
                                     return Switch(
                                       value: glowDir,
                                       onChanged: (final bool value) {
-                                        widget.settings.outerGlowDirection.value = value;
+                                        widget.layer.settings.outerGlowDirection.value = value;
                                       },
                                     );
                                   },
@@ -307,16 +298,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               ],
                             ),
                             ValueListenableBuilder<int>(
-                              valueListenable: widget.settings.outerGlowDepth,
+                              valueListenable: widget.layer.settings.outerGlowDepth,
                               builder: (final BuildContext context, final int value, final Widget? child) {
                                 return KPixSlider(
                                   value: value.toDouble(),
-                                  min: widget.settings.constraints.glowDepthMin.toDouble(),
-                                  max: widget.settings.constraints.glowDepthMax.toDouble(),
+                                  min: widget.layer.settings.constraints.glowDepthMin.toDouble(),
+                                  max: widget.layer.settings.constraints.glowDepthMax.toDouble(),
                                   label: "$value steps",
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
                                   onChanged: (final double value) {
-                                    widget.settings.outerGlowDepth.value = value.round();
+                                    widget.layer.settings.outerGlowDepth.value = value.round();
                                   },
                                 );
                               },
@@ -330,21 +321,43 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               },
             ),
           ),
+          const SizedBox(width: _generalPadding),
+          Tooltip(
+            message: "Apply Outline",
+            waitDuration: AppState.toolTipDuration,
+            child: SizedBox(
+              height: _buttonHeight,
+              child: ValueListenableBuilder<OuterStrokeStyle>(
+                valueListenable: widget.layer.settings.outerStrokeStyle,
+                builder: (final BuildContext context, final OuterStrokeStyle outerStrokeStyle, final Widget? child) {
+                  return IconButton.outlined(
+                    padding: EdgeInsets.zero,
+                    iconSize: _iconSize,
+                    onPressed: (outerStrokeStyle == OuterStrokeStyle.solid || outerStrokeStyle == OuterStrokeStyle.relative) ? () {
+                      widget.layer.rasterOutline();
+                      widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
+                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                    } : null,
+                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                  );
+                },
+              ),
+            ),
+          ),
 
 
-
-          SizedBox(height: generalPadding),
-          Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
+          Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: _generalPadding),
 
 
 
           //INNER STROKE
           Text("INNER STROKE", style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
           //inner stroke style
           ValueListenableBuilder<InnerStrokeStyle>(
-            valueListenable: widget.settings.innerStrokeStyle,
+            valueListenable: widget.layer.settings.innerStrokeStyle,
             builder: (final BuildContext context, final InnerStrokeStyle innerStrokeStyle, final Widget? child)
             {
               final List<ButtonSegment<InnerStrokeStyle>> innerStrokeButtons = <ButtonSegment<InnerStrokeStyle>>[];
@@ -370,16 +383,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                 selected: <InnerStrokeStyle>{innerStrokeStyle},
                 showSelectedIcon: false,
                 onSelectionChanged: (final Set<InnerStrokeStyle> values) {
-                  widget.settings.innerStrokeStyle.value = values.first;
+                  widget.layer.settings.innerStrokeStyle.value = values.first;
                 },
               );
             },
           ),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
           SizedBox(
             height: 100,
             child: ValueListenableBuilder<InnerStrokeStyle>(
-                valueListenable: widget.settings.innerStrokeStyle,
+                valueListenable: widget.layer.settings.innerStrokeStyle,
                 builder: (final BuildContext context, final InnerStrokeStyle innerStrokeStyle, final Widget? child)
                 {
                   return Row(
@@ -388,71 +401,56 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         Expanded(
                           flex: 2,
                           child: ValueListenableBuilder<HashMap<Alignment, bool>>(
-                            valueListenable: widget.settings.innerSelectionMap,
+                            valueListenable: widget.layer.settings.innerSelectionMap,
                             builder: (final BuildContext context, final HashMap<Alignment, bool> innerMap, final Widget? child) {
                               return KPixDirectionWidget(
                                 selectionMap: innerMap,
                                 onChange: (final HashMap<Alignment, bool> directionMap) {
-                                  widget.settings.innerSelectionMap.value = directionMap;
+                                  widget.layer.settings.innerSelectionMap.value = directionMap;
                                 },
                                 isExclusive: innerStrokeStyle == InnerStrokeStyle.bevel,
                               );
                             },
                           ),
                         ),
-                      SizedBox(width: generalPadding),
-                      if (innerStrokeStyle == InnerStrokeStyle.solid)
+                      const SizedBox(width: _generalPadding),
+                      if (innerStrokeStyle == InnerStrokeStyle.solid)...<Widget>[
                         Expanded(
-                          flex: 7,
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: AspectRatio(
-                                  aspectRatio: 1,
-                                  child: ValueListenableBuilder<ColorReference>(
-                                    valueListenable: widget.settings.innerColorReference,
-                                    builder: (final BuildContext context, final ColorReference innerColor, final Widget? child)
-                                    {
-                                      return IconButton.outlined(
-                                        onPressed: () {
-                                          _colorPickDialog = getColorPickerDialog(
-                                            title: "SELECT INNER STROKE COLOR",
-                                            ramps: GetIt.I.get<AppState>().colorRamps,
-                                            onColorSelected: onInnerColorSelected,
-                                            onDismiss: closeDialog,);
-                                          _colorPickDialog.show(context: context);
-                                        },
-                                        icon: const FaIcon(FontAwesomeIcons.palette),
-                                        style: ButtonStyle(
-                                          backgroundColor: WidgetStatePropertyAll<Color?>(innerColor.getIdColor().color),
-                                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(4.0),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
+                          flex: 2,
+                          child: ValueListenableBuilder<ColorReference>(
+                            valueListenable: widget.layer.settings.innerColorReference,
+                            builder: (final BuildContext context, final ColorReference innerColor, final Widget? child)
+                            {
+                              return AspectRatio(
+                                aspectRatio: 1,
+                                child: IconButton.outlined(
+                                  onPressed: () {
+                                    _colorPickDialog = getColorPickerDialog(
+                                      title: "SELECT INNER STROKE COLOR",
+                                      ramps: GetIt.I.get<AppState>().colorRamps,
+                                      onColorSelected: onInnerColorSelected,
+                                      onDismiss: closeDialog,);
+                                    _colorPickDialog.show(context: context);
+                                  },
+                                  icon: const FaIcon(FontAwesomeIcons.palette),
+                                  style: ButtonStyle(
+                                    backgroundColor: WidgetStatePropertyAll<Color?>(innerColor.getIdColor().color),
+                                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4.0),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: generalPadding),
-                              Expanded(
-                                flex: 2,
-                                child: Tooltip(
-                                  message: "Raster Solid Inline",
-                                  waitDuration: AppState.toolTipDuration,
-                                  child: IconButton.outlined(
-                                    onPressed: () {
-                                      print("RASTER INNER SOLID STROKE");
-                                    },
-                                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
-                                  ),
-                                ),
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
+                        const Expanded(
+                          flex: 5,
+                          child: SizedBox.shrink(),
+                        ),
+                      ],
                       if (innerStrokeStyle == InnerStrokeStyle.shade)
                         Expanded(
                           flex: 7,
@@ -461,16 +459,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                             children: <Widget>[
                               const Text("Darken/Brighten"),
                               ValueListenableBuilder<int>(
-                                valueListenable: widget.settings.innerDarkenBrighten,
+                                valueListenable: widget.layer.settings.innerDarkenBrighten,
                                 builder: (final BuildContext context, final int value, final Widget? child) {
                                   return KPixSlider(
                                     value: value.toDouble(),
-                                    min: widget.settings.constraints.darkenBrightenMin.toDouble(),
-                                    max: widget.settings.constraints.darkenBrightenMax.toDouble(),
+                                    min: widget.layer.settings.constraints.darkenBrightenMin.toDouble(),
+                                    max: widget.layer.settings.constraints.darkenBrightenMax.toDouble(),
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
                                     showPlusSignForPositive: true,
                                     onChanged: (final double value) {
-                                      widget.settings.innerDarkenBrighten.value = value.round();
+                                      widget.layer.settings.innerDarkenBrighten.value = value.round();
                                     },
                                   );
                                 },
@@ -491,12 +489,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                 children: <Widget>[
                                   const Text("<"),
                                   ValueListenableBuilder<bool>(
-                                    valueListenable: widget.settings.innerGlowDirection,
+                                    valueListenable: widget.layer.settings.innerGlowDirection,
                                     builder: (final BuildContext context, final bool glowDir, final Widget? child) {
                                       return Switch(
                                         value: glowDir,
                                         onChanged: (final bool value) {
-                                          widget.settings.innerGlowDirection.value = value;
+                                          widget.layer.settings.innerGlowDirection.value = value;
                                         },
                                       );
                                     },
@@ -505,16 +503,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                 ],
                               ),
                               ValueListenableBuilder<int>(
-                                valueListenable: widget.settings.innerGlowDepth,
+                                valueListenable: widget.layer.settings.innerGlowDepth,
                                 builder: (final BuildContext context, final int value, final Widget? child) {
                                   return KPixSlider(
                                     value: value.toDouble(),
-                                    min: widget.settings.constraints.glowDepthMin.toDouble(),
-                                    max: widget.settings.constraints.glowDepthMax.toDouble(),
+                                    min: widget.layer.settings.constraints.glowDepthMin.toDouble(),
+                                    max: widget.layer.settings.constraints.glowDepthMax.toDouble(),
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
                                     label: "$value steps",
                                     onChanged: (final double value) {
-                                      widget.settings.innerGlowDepth.value = value.round();
+                                      widget.layer.settings.innerGlowDepth.value = value.round();
                                     },
                                   );
                                 },
@@ -529,31 +527,31 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               ValueListenableBuilder<int>(
-                                valueListenable: widget.settings.bevelDistance,
+                                valueListenable: widget.layer.settings.bevelDistance,
                                 builder: (final BuildContext context, final int distance, final Widget? child) {
                                   return KPixSlider(
                                     value: distance.toDouble(),
-                                    min: widget.settings.constraints.bevelDistanceMin.toDouble(),
-                                    max: widget.settings.constraints.bevelDistanceMax.toDouble(),
+                                    min: widget.layer.settings.constraints.bevelDistanceMin.toDouble(),
+                                    max: widget.layer.settings.constraints.bevelDistanceMax.toDouble(),
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
                                     label: "$distance px",
                                     onChanged: (final double value) {
-                                      widget.settings.bevelDistance.value = value.round();
+                                      widget.layer.settings.bevelDistance.value = value.round();
                                     },
                                   );
                                 },
                               ),
                               ValueListenableBuilder<int>(
-                                valueListenable: widget.settings.bevelStrength,
+                                valueListenable: widget.layer.settings.bevelStrength,
                                 builder: (final BuildContext context, final int strength, final Widget? child) {
                                   return KPixSlider(
                                     value: strength.toDouble(),
-                                    min: widget.settings.constraints.bevelStrengthMin.toDouble(),
-                                    max: widget.settings.constraints.bevelStrengthMax.toDouble(),
+                                    min: widget.layer.settings.constraints.bevelStrengthMin.toDouble(),
+                                    max: widget.layer.settings.constraints.bevelStrengthMax.toDouble(),
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
                                     label: "$strength steps",
                                     onChanged: (final double value) {
-                                      widget.settings.bevelStrength.value = value.round();
+                                      widget.layer.settings.bevelStrength.value = value.round();
                                     },
                                   );
                                 },
@@ -567,18 +565,42 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             ),
           ),
 
-          SizedBox(height: generalPadding),
-          Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: generalPadding),
+          const SizedBox(width: _generalPadding),
+          Tooltip(
+            message: "Raster Inline",
+            waitDuration: AppState.toolTipDuration,
+            child: SizedBox(
+              height: _buttonHeight,
+              child: ValueListenableBuilder<InnerStrokeStyle>(
+                valueListenable: widget.layer.settings.innerStrokeStyle,
+                builder: (final BuildContext context, final InnerStrokeStyle innerStrokeStyle, final Widget? child) {
+                  return IconButton.outlined(
+                    padding: EdgeInsets.zero,
+                    iconSize: _iconSize,
+                    onPressed: (innerStrokeStyle != InnerStrokeStyle.off) ? () {
+                      widget.layer.rasterInline();
+                      widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
+                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                    } : null,
+                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: _generalPadding),
+          Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: _generalPadding),
 
 
 
           //DROP SHADOW
           Text("DROP SHADOW", style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
           //inner stroke style
           ValueListenableBuilder<DropShadowStyle>(
-            valueListenable: widget.settings.dropShadowStyle,
+            valueListenable: widget.layer.settings.dropShadowStyle,
             builder: (final BuildContext context, final DropShadowStyle dropShadowStyle, final Widget? child)
             {
               final List<ButtonSegment<DropShadowStyle>> dropShadowButtons = <ButtonSegment<DropShadowStyle>>[];
@@ -605,14 +627,14 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                 selected: <DropShadowStyle>{dropShadowStyle},
                 showSelectedIcon: false,
                 onSelectionChanged: (final Set<DropShadowStyle> values) {
-                  widget.settings.dropShadowStyle.value = values.first;
+                  widget.layer.settings.dropShadowStyle.value = values.first;
                 },
               );
             },
           ),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
           ValueListenableBuilder<DropShadowStyle>(
-            valueListenable: widget.settings.dropShadowStyle,
+            valueListenable: widget.layer.settings.dropShadowStyle,
             builder: (final BuildContext context, final DropShadowStyle dropShadowStyle, final Widget? child)
             {
               return Visibility(
@@ -621,7 +643,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                 maintainAnimation: true,
                 maintainState: true,
                 child: ValueListenableBuilder<CoordinateSetI>(
-                  valueListenable: widget.settings.dropShadowOffset,
+                  valueListenable: widget.layer.settings.dropShadowOffset,
                   builder: (final BuildContext context, final CoordinateSetI offset, final Widget? child) {
                     return Column(
                       children: <Widget>[
@@ -633,11 +655,11 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               flex: 2,
                               child: KPixSlider(
                                 value: offset.x.toDouble(),
-                                min: widget.settings.constraints.dropShadowOffsetMin.toDouble(),
-                                max: widget.settings.constraints.dropShadowOffsetMax.toDouble(),
+                                min: widget.layer.settings.constraints.dropShadowOffsetMin.toDouble(),
+                                max: widget.layer.settings.constraints.dropShadowOffsetMax.toDouble(),
                                 showPlusSignForPositive: true,
                                 onChanged: (final double value) {
-                                  widget.settings.dropShadowOffset.value = CoordinateSetI(x: value.round(), y: offset.y);
+                                  widget.layer.settings.dropShadowOffset.value = CoordinateSetI(x: value.round(), y: offset.y);
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyMedium!,
                               ),
@@ -652,11 +674,11 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               flex: 2,
                               child: KPixSlider(
                                 value: offset.y.toDouble(),
-                                min: widget.settings.constraints.dropShadowOffsetMin.toDouble(),
-                                max: widget.settings.constraints.dropShadowOffsetMax.toDouble(),
+                                min: widget.layer.settings.constraints.dropShadowOffsetMin.toDouble(),
+                                max: widget.layer.settings.constraints.dropShadowOffsetMax.toDouble(),
                                 showPlusSignForPositive: true,
                                 onChanged: (final double value) {
-                                  widget.settings.dropShadowOffset.value = CoordinateSetI(x: offset.x, y: value.round());
+                                  widget.layer.settings.dropShadowOffset.value = CoordinateSetI(x: offset.x, y: value.round());
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyMedium!,
                               ),
@@ -664,61 +686,38 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           ],
                         ),
                         SizedBox(
-                          height: 100,
+                          height: 65,
                           child: Row(
                             children: <Widget>[
-                              SizedBox(width: generalPadding),
+                              const Expanded(child: SizedBox(width: _generalPadding)),
                               if (dropShadowStyle == DropShadowStyle.solid)
-                                Expanded(
-                                  flex: 7,
-                                  child: Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: AspectRatio(
-                                          aspectRatio: 1,
-                                          child: ValueListenableBuilder<ColorReference>(
-                                            valueListenable: widget.settings.dropShadowColorReference,
-                                            builder: (final BuildContext context, final ColorReference dropShadowColor, final Widget? child)
-                                            {
-                                              return IconButton.outlined(
-                                                onPressed: () {
-                                                  _colorPickDialog = getColorPickerDialog(
-                                                    title: "SELECT DROP SHADOW COLOR",
-                                                    ramps: GetIt.I.get<AppState>().colorRamps,
-                                                    onColorSelected: onDropShadowColorSelected,
-                                                    onDismiss: closeDialog,);
-                                                  _colorPickDialog.show(context: context);
-                                                },
-                                                icon: const FaIcon(FontAwesomeIcons.palette),
-                                                style: ButtonStyle(
-                                                  backgroundColor: WidgetStatePropertyAll<Color?>(dropShadowColor.getIdColor().color),
-                                                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                                    RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(4.0),
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
+                                ValueListenableBuilder<ColorReference>(
+                                  valueListenable: widget.layer.settings.dropShadowColorReference,
+                                  builder: (final BuildContext context, final ColorReference dropShadowColor, final Widget? child)
+                                  {
+                                    return AspectRatio(
+                                      aspectRatio: 1,
+                                      child: IconButton.outlined(
+                                        onPressed: () {
+                                          _colorPickDialog = getColorPickerDialog(
+                                            title: "SELECT DROP SHADOW COLOR",
+                                            ramps: GetIt.I.get<AppState>().colorRamps,
+                                            onColorSelected: onDropShadowColorSelected,
+                                            onDismiss: closeDialog,);
+                                          _colorPickDialog.show(context: context);
+                                        },
+                                        icon: const FaIcon(FontAwesomeIcons.palette),
+                                        style: ButtonStyle(
+                                          backgroundColor: WidgetStatePropertyAll<Color?>(dropShadowColor.getIdColor().color),
+                                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(4.0),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: generalPadding),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Tooltip(
-                                          message: "Raster Solid Drop Shadow",
-                                          waitDuration: AppState.toolTipDuration,
-                                          child: IconButton.outlined(
-                                            onPressed: () {
-                                              print("RASTER INNER SOLID STROKE");
-                                            },
-                                            icon: const FaIcon(FontAwesomeIcons.paintbrush),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    );
+                                  },
                                 ),
                               if (dropShadowStyle == DropShadowStyle.shade)
                                 Expanded(
@@ -728,16 +727,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                     children: <Widget>[
                                       const Text("Darken/Brighten"),
                                       ValueListenableBuilder<int>(
-                                        valueListenable: widget.settings.dropShadowDarkenBrighten,
+                                        valueListenable: widget.layer.settings.dropShadowDarkenBrighten,
                                         builder: (final BuildContext context, final int value, final Widget? child) {
                                           return KPixSlider(
                                             value: value.toDouble(),
-                                            min: widget.settings.constraints.darkenBrightenMin.toDouble(),
-                                            max: widget.settings.constraints.darkenBrightenMax.toDouble(),
+                                            min: widget.layer.settings.constraints.darkenBrightenMin.toDouble(),
+                                            max: widget.layer.settings.constraints.darkenBrightenMax.toDouble(),
                                             showPlusSignForPositive: true,
                                             textStyle: Theme.of(context).textTheme.bodyMedium!,
                                             onChanged: (final double value) {
-                                              widget.settings.dropShadowDarkenBrighten.value = value.round();
+                                              widget.layer.settings.dropShadowDarkenBrighten.value = value.round();
                                             },
                                           );
                                         },
@@ -745,6 +744,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                     ],
                                   ),
                                 ),
+                              const Expanded(child: SizedBox(width: _generalPadding)),
                             ],
                           ),
                         ),
@@ -755,9 +755,32 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               );
             },
           ),
-          SizedBox(height: generalPadding),
-          Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: generalPadding),
+          const SizedBox(height: _generalPadding),
+          Tooltip(
+            message: "Apply Drop Shadow",
+            waitDuration: AppState.toolTipDuration,
+            child: SizedBox(
+              height: _buttonHeight,
+              child: ValueListenableBuilder<DropShadowStyle>(
+                valueListenable: widget.layer.settings.dropShadowStyle,
+                builder: (final BuildContext context, final DropShadowStyle dropShadowStyle, final Widget? child) {
+                  return IconButton.outlined(
+                    padding: EdgeInsets.zero,
+                    iconSize: _iconSize,
+                    onPressed: (dropShadowStyle == DropShadowStyle.solid) ? () {
+                      widget.layer.rasterDropShadow();
+                      widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
+                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                    } : null,
+                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: _generalPadding),
+          Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: _generalPadding),
 
         ],
       ),

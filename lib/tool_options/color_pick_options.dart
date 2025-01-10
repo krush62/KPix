@@ -61,7 +61,7 @@ class ColorPickOptions extends IToolOptions
             ),
           ],
         ),
-        const Text("Raw Mode does not use any values from shading layers or layer settings that use shading.")
+        const Text("Raw Mode does not use any values from shading layers or layer settings that use shading."),
       ],
     );
   }

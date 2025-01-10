@@ -862,7 +862,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
         if (fileVersion >= 2)
         {
           //* shading_step_limit_low ``ubyte (1)`` // 1...6
-          byteData.setUint8(offset++, -shadingLayer.settings.shadingLow);
+          byteData.setUint8(offset++, shadingLayer.settings.shadingLow);
           //* shading_step_limit_high ``ubyte (1)`` // 1...6
           byteData.setUint8(offset++, shadingLayer.settings.shadingHigh);
         }

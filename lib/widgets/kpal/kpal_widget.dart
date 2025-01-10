@@ -49,6 +49,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -296,79 +297,64 @@ class _KPalState extends State<KPal>
   @override
   Widget build(final BuildContext context)
   {
-    return Padding(
-      padding: EdgeInsets.all(_options.outsidePadding),
-      child: Align(
-        child: Container(
-          constraints: const BoxConstraints(
-            maxHeight: 1000,
-            maxWidth: 1600,
-
-          ),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).primaryColorLight,
-              width: _options.borderWidth,
+    return Center(
+      child: KPixAnimationWidget(
+        constraints: const BoxConstraints(
+          maxHeight: 1000,
+          maxWidth: 1600,
+        ),
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: KPalRamp(
+                rampData: widget._colorRamp,
+                originalRampData: _originalData,
+              ),
             ),
-            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-          ),
-          child: Material(
-            color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-            child: Column(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Expanded(
-                  child: KPalRamp(
-                    rampData: widget._colorRamp,
-                    originalRampData: _originalData,
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.insidePadding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.xmark,
+                        size: _options.iconSize,
+                      ),
+                      onPressed: _discardChange,
+                    ),
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.insidePadding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.xmark,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: _discardChange,
-                        ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.insidePadding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.trash,
+                        size: _options.iconSize,
                       ),
+                      onPressed: () {
+                        _showDeleteDialog();
+                      },
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.insidePadding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.trash,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: () {
-                            _showDeleteDialog();
-                          },
-                        ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.insidePadding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.check,
+                        size: _options.iconSize,
                       ),
+                      onPressed: _acceptChange,
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.insidePadding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.check,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: _acceptChange,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );

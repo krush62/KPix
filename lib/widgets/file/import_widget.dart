@@ -24,6 +24,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -89,205 +90,192 @@ class _ImportWidgetState extends State<ImportWidget>
   @override
   Widget build(final BuildContext context)
   {
-    return Material(
-      elevation: _options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _options.minHeight,
-          minWidth: _options.minWidth,
-          maxHeight: _options.maxHeight,
-          maxWidth: _options.maxWidth,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: _options.borderWidth,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(_options.padding),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text("IMPORT IMAGE", style: Theme.of(context).textTheme.titleLarge),
-              SizedBox(height: _options.padding),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  const Expanded(
-                    flex: 2,
-                    child: Text("File"),
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _options.minHeight,
+        minWidth: _options.minWidth,
+        maxHeight: _options.maxHeight,
+        maxWidth: _options.maxWidth,
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(_options.padding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text("IMPORT IMAGE", style: Theme.of(context).textTheme.titleLarge),
+            SizedBox(height: _options.padding),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                const Expanded(
+                  flex: 2,
+                  child: Text("File"),
+                ),
+                Expanded(
+                  flex: 6,
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _fileNameNotifier,
+                    builder: (final BuildContext context, final String? path, final Widget? child) {
+                      return Text(
+                        path == null ? "<NO FILE SELECTED>" : extractFilenameFromPath(path: path),
+                        textAlign: TextAlign.center,
+                      );
+                    },
                   ),
-                  Expanded(
-                    flex: 6,
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _fileNameNotifier,
-                      builder: (final BuildContext context, final String? path, final Widget? child) {
-                        return Text(
-                          path == null ? "<NO FILE SELECTED>" : extractFilenameFromPath(path: path),
-                          textAlign: TextAlign.center,
-                        );
-                      },
+                ),
+                Expanded(
+                  child: Tooltip(
+                    message: "Choose Image",
+                    waitDuration: AppState.toolTipDuration,
+                    child: IconButton.outlined(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.all(_options.padding),
+                      onPressed: _chooseImagePressed,
+                      icon: FaIcon(
+                        FontAwesomeIcons.folderOpen,
+                        size: _options.iconSize / 2,
+                      ),
+                      color: Theme.of(context).primaryColorLight,
+                      style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
-                  Expanded(
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                const Expanded(
+                  flex: 2,
+                  child: Text("Max Color Ramps"),
+                ),
+                Expanded(
+                  flex: 6,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: _maxRampsNotifier,
+                    builder: (final BuildContext context, final int maxRampValue, final Widget? child) {
+                      return KPixSlider(
+                        value: maxRampValue.toDouble(),
+                        min: _constraints.rampCountMin.toDouble(),
+                        max: _constraints.maxClusters.toDouble(),
+                        divisions: _constraints.maxClusters - _constraints.rampCountMin,
+                        onChanged: (final double newValue) {
+                          _maxRampsNotifier.value = newValue.round();
+                        },
+                        textStyle: Theme.of(context).textTheme.bodyLarge!,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                const Expanded(
+                  flex: 2,
+                  child: Text("Max Colors per Ramp"),
+                ),
+                Expanded(
+                  flex: 6,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: _maxColorsPerRampNotifier,
+                    builder: (final BuildContext context, final int maxColorsValue, final Widget? child) {
+                      return KPixSlider(
+                        value: maxColorsValue.toDouble(),
+                        min: _constraints.colorCountMin.toDouble(),
+                        max: _constraints.colorCountMax.toDouble(),
+                        divisions: _constraints.colorCountMax - _constraints.colorCountMin,
+                        onChanged: (final double newValue) {
+                          _maxColorsPerRampNotifier.value = newValue.round();
+                        },
+                        textStyle: Theme.of(context).textTheme.bodyLarge!,
+                      );
+                    },
+                  ),
+                ),
+
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                const Expanded(
+                  flex: 8,
+                  child: Text("Include Image as Reference Layer"),
+                ),
+                Expanded(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _includeReferenceNotifier,
+                    builder: (final BuildContext context, final bool includeReference, final Widget? child) {
+                      return Switch(
+                        value: includeReference,
+                        onChanged: (final bool newVal) {
+                          _includeReferenceNotifier.value = newVal;
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.padding),
                     child: Tooltip(
-                      message: "Choose Image",
                       waitDuration: AppState.toolTipDuration,
+                      message: "Close",
                       child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(_options.padding),
-                        onPressed: _chooseImagePressed,
                         icon: FaIcon(
-                          FontAwesomeIcons.folderOpen,
-                          size: _options.iconSize / 2,
+                          FontAwesomeIcons.xmark,
+                          size: _options.iconSize,
                         ),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor,
-                        ),
+                        onPressed: () {
+                          widget.dismiss();
+                        },
                       ),
                     ),
                   ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  const Expanded(
-                    flex: 2,
-                    child: Text("Max Color Ramps"),
-                  ),
-                  Expanded(
-                    flex: 6,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: _maxRampsNotifier,
-                      builder: (final BuildContext context, final int maxRampValue, final Widget? child) {
-                        return KPixSlider(
-                          value: maxRampValue.toDouble(),
-                          min: _constraints.rampCountMin.toDouble(),
-                          max: _constraints.maxClusters.toDouble(),
-                          divisions: _constraints.maxClusters - _constraints.rampCountMin,
-                          onChanged: (final double newValue) {
-                            _maxRampsNotifier.value = newValue.round();
-                          },
-                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  const Expanded(
-                    flex: 2,
-                    child: Text("Max Colors per Ramp"),
-                  ),
-                  Expanded(
-                    flex: 6,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: _maxColorsPerRampNotifier,
-                      builder: (final BuildContext context, final int maxColorsValue, final Widget? child) {
-                        return KPixSlider(
-                          value: maxColorsValue.toDouble(),
-                          min: _constraints.colorCountMin.toDouble(),
-                          max: _constraints.colorCountMax.toDouble(),
-                          divisions: _constraints.colorCountMax - _constraints.colorCountMin,
-                          onChanged: (final double newValue) {
-                            _maxColorsPerRampNotifier.value = newValue.round();
-                          },
-                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                        );
-                      },
-                    ),
-                  ),
-
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  const Expanded(
-                    flex: 8,
-                    child: Text("Include Image as Reference Layer"),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _includeReferenceNotifier,
-                      builder: (final BuildContext context, final bool includeReference, final Widget? child) {
-                        return Switch(
-                          value: includeReference,
-                          onChanged: (final bool newVal) {
-                            _includeReferenceNotifier.value = newVal;
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
-                      child: Tooltip(
-                        waitDuration: AppState.toolTipDuration,
-                        message: "Close",
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.xmark,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: () {
-                            widget.dismiss();
-                          },
-                        ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.padding),
+                    child: Tooltip(
+                      waitDuration: AppState.toolTipDuration,
+                      message: "Import",
+                      child: ValueListenableBuilder<String?>(
+                        valueListenable: _fileNameNotifier,
+                        builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
+                          return IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.check,
+                              size: _options.iconSize,
+                            ),
+                            onPressed: _fileNameNotifier.value == null ? null : () {
+                              _loadImage();
+                            },
+                          );
+                        },
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
-                      child: Tooltip(
-                        waitDuration: AppState.toolTipDuration,
-                        message: "Import",
-                        child: ValueListenableBuilder<String?>(
-                          valueListenable: _fileNameNotifier,
-                          builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
-                            return IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.check,
-                                size: _options.iconSize,
-                              ),
-                              onPressed: _fileNameNotifier.value == null ? null : () {
-                                _loadImage();
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

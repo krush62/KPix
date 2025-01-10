@@ -24,6 +24,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
@@ -252,126 +253,93 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   @override
   Widget build(final BuildContext context)
   {
-    return Material(
-      elevation: _alertOptions.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _alertOptions.minHeight,
-          minWidth: _alertOptions.minWidth,
-          maxHeight: _alertOptions.maxHeight,
-          maxWidth: _alertOptions.maxWidth,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: _alertOptions.borderWidth,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
-        ),
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: _alertOptions.padding),
-            Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
-            Expanded(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
-                ),
-                child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
-                  valueListenable: _paletteEntries,
-                  builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
-                    return GridView.extent(
-                      maxCrossAxisExtent: _alertOptions.maxWidth / _options.colCount,
-                      padding: EdgeInsets.all(_alertOptions.padding),
-                      childAspectRatio: _options.entryAspectRatio,
-                      mainAxisSpacing: _alertOptions.padding,
-                      crossAxisSpacing: _alertOptions.padding,
-                      children: pList,
-                    );
-                  },
-                ),
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _alertOptions.minHeight,
+        minWidth: _alertOptions.minWidth,
+        maxHeight: _alertOptions.maxHeight,
+        maxWidth: _alertOptions.maxWidth,
+      ),
+      child: Column(
+        children: <Widget>[
+          SizedBox(height: _alertOptions.padding),
+          Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
+          Expanded(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColorDark,
+                borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
+              ),
+              child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
+                valueListenable: _paletteEntries,
+                builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
+                  return GridView.extent(
+                    maxCrossAxisExtent: _alertOptions.maxWidth / _options.colCount,
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    childAspectRatio: _options.entryAspectRatio,
+                    mainAxisSpacing: _alertOptions.padding,
+                    crossAxisSpacing: _alertOptions.padding,
+                    children: pList,
+                  );
+                },
               ),
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Expanded(
-                  child: Tooltip(
-                    waitDuration: AppState.toolTipDuration,
-                    message: "Close",
-                    child: Padding(
-                      padding: EdgeInsets.all(_alertOptions.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.xmark,
-                          size: _alertOptions.iconSize,
-                        ),
-                        onPressed: _dismissPressed,
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Expanded(
+                child: Tooltip(
+                  waitDuration: AppState.toolTipDuration,
+                  message: "Close",
+                  child: Padding(
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.xmark,
+                        size: _alertOptions.iconSize,
                       ),
+                      onPressed: _dismissPressed,
                     ),
                   ),
                 ),
-                Expanded(
-                    child: Tooltip(
-                      message: "Import Palette",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Padding(
-                        padding: EdgeInsets.all(_alertOptions.padding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.fileImport,
-                            size: _alertOptions.iconSize,
-                          ),
-                          onPressed: kIsWeb ? null : _importPalettePressed,
-                        ),
-                      ),
-                    ),
-                ),
-                Expanded(
+              ),
+              Expanded(
                   child: Tooltip(
-                    message: "Save Current Palette",
+                    message: "Import Palette",
                     waitDuration: AppState.toolTipDuration,
                     child: Padding(
                       padding: EdgeInsets.all(_alertOptions.padding),
                       child: IconButton.outlined(
                         icon: FaIcon(
-                          FontAwesomeIcons.plus,
+                          FontAwesomeIcons.fileImport,
                           size: _alertOptions.iconSize,
                         ),
-                        onPressed: kIsWeb ? null : _addCurrentPalette,
+                        onPressed: kIsWeb ? null : _importPalettePressed,
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                    child: Tooltip(
-                      message: "Delete Selected Palette",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Padding(
-                        padding: EdgeInsets.all(_alertOptions.padding),
-                        child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
-                          valueListenable: _selectedWidget,
-                          builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                            return IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.trashCan,
-                                size: _alertOptions.iconSize,
-                              ),
-                              onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deletePalettePressed : null,
-                            );
-                          },
-                        ),
+              ),
+              Expanded(
+                child: Tooltip(
+                  message: "Save Current Palette",
+                  waitDuration: AppState.toolTipDuration,
+                  child: Padding(
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.plus,
+                        size: _alertOptions.iconSize,
                       ),
+                      onPressed: kIsWeb ? null : _addCurrentPalette,
                     ),
+                  ),
                 ),
-                Expanded(
+              ),
+              Expanded(
                   child: Tooltip(
-                    message: "Apply Selected Palette",
+                    message: "Delete Selected Palette",
                     waitDuration: AppState.toolTipDuration,
                     child: Padding(
                       padding: EdgeInsets.all(_alertOptions.padding),
@@ -380,20 +348,40 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                         builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
                           return IconButton.outlined(
                             icon: FaIcon(
-                              FontAwesomeIcons.check,
+                              FontAwesomeIcons.trashCan,
                               size: _alertOptions.iconSize,
                             ),
-                            onPressed: selWidget != null ? _applyPalette : null,
+                            onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deletePalettePressed : null,
                           );
                         },
                       ),
                     ),
                   ),
+              ),
+              Expanded(
+                child: Tooltip(
+                  message: "Apply Selected Palette",
+                  waitDuration: AppState.toolTipDuration,
+                  child: Padding(
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
+                      valueListenable: _selectedWidget,
+                      builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
+                        return IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.check,
+                            size: _alertOptions.iconSize,
+                          ),
+                          onPressed: selWidget != null ? _applyPalette : null,
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

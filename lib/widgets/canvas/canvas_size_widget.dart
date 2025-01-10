@@ -25,6 +25,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
@@ -226,357 +227,341 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
   @override
   Widget build(final BuildContext context)
   {
-    return Material(
-      elevation: _options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _options.minHeight,
-          minWidth: _options.minWidth,
-          maxHeight: _options.maxHeight * 1.5,
-          maxWidth: _options.maxWidth * 2,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: _options.borderWidth,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(_options.padding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Expanded(
-                      flex: 4,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _options.minHeight,
+        minWidth: _options.minWidth,
+        maxHeight: _options.maxHeight * 1.5,
+        maxWidth: _options.maxWidth * 2,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(_options.padding),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Expanded(
+                  flex: 4,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text("Canvas Size", style: Theme.of(context).textTheme.titleLarge),
+                      Row(
                         children: <Widget>[
-                          Text("Canvas Size", style: Theme.of(context).textTheme.titleLarge),
-                          Row(
-                            children: <Widget>[
-                              const Expanded(
-                                child: Text("Width"),
-                              ),
-                              Expanded(
-                                flex: 7,
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _size,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return KPixSlider(
-                                      onChanged: (final double newVal) {_sizeXSliderChanged(newVal: newVal);},
-                                      value: value.x.toDouble(),
-                                      min: _sizeOptions.sizeMin.toDouble(),
-                                      max: _sizeOptions.sizeMax.toDouble(),
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                    );
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: _options.padding),
-                              Expanded(
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _size,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    final TextEditingController controller = TextEditingController(text: value.x.toString());
-                                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                    return TextField(
-                                      focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
-                                      textAlign: TextAlign.end,
-                                      controller: controller,
-                                      onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);},
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
+                          const Expanded(
+                            child: Text("Width"),
                           ),
-                          Row(
-                            children: <Widget>[
-                              const Expanded(
-                                child: Text("Height"),
-                              ),
-                              Expanded(
-                                flex: 7,
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _size,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return KPixSlider(
-                                      onChanged: (final double newVal) {_sizeYSliderChanged(newVal: newVal);},
-                                      value: value.y.toDouble(),
-                                      min: _sizeOptions.sizeMin.toDouble(),
-                                      max: _sizeOptions.sizeMax.toDouble(),
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                    );
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: _options.padding),
-                              Expanded(
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _size,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    final TextEditingController controller = TextEditingController(text: value.y.toString());
-                                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                    return TextField(
-                                      focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
-                                      textAlign: TextAlign.end,
-                                      controller: controller,
-                                      onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);},
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
+                          Expanded(
+                            flex: 7,
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _size,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                return KPixSlider(
+                                  onChanged: (final double newVal) {_sizeXSliderChanged(newVal: newVal);},
+                                  value: value.x.toDouble(),
+                                  min: _sizeOptions.sizeMin.toDouble(),
+                                  max: _sizeOptions.sizeMax.toDouble(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                );
+                              },
+                            ),
                           ),
-                          SizedBox(height: _options.padding,),
-                          Text("Offset", style: Theme.of(context).textTheme.titleLarge),
-                          Row(
-                            children: <Widget>[
-                              const Expanded(
-                                child:
-                                Text("X"),
-                              ),
-                              Expanded(
-                                flex: 7,
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _offset,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return KPixSlider(
-                                      min: _minOffset.value.x.toDouble(),
-                                      max: _maxOffset.value.x.toDouble(),
-                                      onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
-                                      value: value.x.toDouble(),
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                    );
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: _options.padding),
-                              Expanded(
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _offset,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    final TextEditingController controller = TextEditingController(text: value.x.toString());
-                                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                    return TextField(
-                                      focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
-                                      textAlign: TextAlign.end,
-                                      controller: controller,
-                                      onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);},
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: <Widget>[
-                              const Expanded(
-                                child: Text("Y"),
-                              ),
-                              Expanded(
-                                flex: 7,
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _offset,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    return KPixSlider(
-                                      min: _minOffset.value.y.toDouble(),
-                                      max: _maxOffset.value.y.toDouble(),
-                                      onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
-                                      value: value.y.toDouble(),
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                    );
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: _options.padding),
-                              Expanded(
-                                child: ValueListenableBuilder<CoordinateSetI>(
-                                  valueListenable: _offset,
-                                  builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                    final TextEditingController controller = TextEditingController(text: value.y.toString());
-                                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                    return TextField(
-                                      focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
-                                      textAlign: TextAlign.end,
-                                      controller: controller,
-                                      onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);},
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
+                          SizedBox(width: _options.padding),
+                          Expanded(
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _size,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                final TextEditingController controller = TextEditingController(text: value.x.toString());
+                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                                return TextField(
+                                  focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
+                                  textAlign: TextAlign.end,
+                                  controller: controller,
+                                  onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);},
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    SizedBox(
-                      width: _options.padding * 2,
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                      Row(
                         children: <Widget>[
-                          ValueListenableBuilder<CoordinateSetI>(
-                            valueListenable: _size,
-                            builder: (final BuildContext context1, final CoordinateSetI size, final Widget? child1) {
-                              return ValueListenableBuilder<CoordinateSetI>(
-                                valueListenable: _offset,
-                                builder: (final BuildContext context2, final CoordinateSetI offset, final Widget? child) {
-                                  final CoordinateSetD scaledCanvasSize = CoordinateSetD(x: _appState.canvasSize.x * _scalingFactor, y: _appState.canvasSize.y * _scalingFactor);
-                                  final CoordinateSetD scaledNewSize = CoordinateSetD(x: _size.value.x * _scalingFactor, y: _size.value.y * _scalingFactor);
+                          const Expanded(
+                            child: Text("Height"),
+                          ),
+                          Expanded(
+                            flex: 7,
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _size,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                return KPixSlider(
+                                  onChanged: (final double newVal) {_sizeYSliderChanged(newVal: newVal);},
+                                  value: value.y.toDouble(),
+                                  min: _sizeOptions.sizeMin.toDouble(),
+                                  max: _sizeOptions.sizeMax.toDouble(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(width: _options.padding),
+                          Expanded(
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _size,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                final TextEditingController controller = TextEditingController(text: value.y.toString());
+                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                                return TextField(
+                                  focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
+                                  textAlign: TextAlign.end,
+                                  controller: controller,
+                                  onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);},
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: _options.padding,),
+                      Text("Offset", style: Theme.of(context).textTheme.titleLarge),
+                      Row(
+                        children: <Widget>[
+                          const Expanded(
+                            child:
+                            Text("X"),
+                          ),
+                          Expanded(
+                            flex: 7,
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _offset,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                return KPixSlider(
+                                  min: _minOffset.value.x.toDouble(),
+                                  max: _maxOffset.value.x.toDouble(),
+                                  onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
+                                  value: value.x.toDouble(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(width: _options.padding),
+                          Expanded(
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _offset,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                final TextEditingController controller = TextEditingController(text: value.x.toString());
+                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                                return TextField(
+                                  focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
+                                  textAlign: TextAlign.end,
+                                  controller: controller,
+                                  onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);},
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: <Widget>[
+                          const Expanded(
+                            child: Text("Y"),
+                          ),
+                          Expanded(
+                            flex: 7,
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _offset,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                return KPixSlider(
+                                  min: _minOffset.value.y.toDouble(),
+                                  max: _maxOffset.value.y.toDouble(),
+                                  onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
+                                  value: value.y.toDouble(),
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(width: _options.padding),
+                          Expanded(
+                            child: ValueListenableBuilder<CoordinateSetI>(
+                              valueListenable: _offset,
+                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
+                                final TextEditingController controller = TextEditingController(text: value.y.toString());
+                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                                return TextField(
+                                  focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
+                                  textAlign: TextAlign.end,
+                                  controller: controller,
+                                  onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);},
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: _options.padding * 2,
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      ValueListenableBuilder<CoordinateSetI>(
+                        valueListenable: _size,
+                        builder: (final BuildContext context1, final CoordinateSetI size, final Widget? child1) {
+                          return ValueListenableBuilder<CoordinateSetI>(
+                            valueListenable: _offset,
+                            builder: (final BuildContext context2, final CoordinateSetI offset, final Widget? child) {
+                              final CoordinateSetD scaledCanvasSize = CoordinateSetD(x: _appState.canvasSize.x * _scalingFactor, y: _appState.canvasSize.y * _scalingFactor);
+                              final CoordinateSetD scaledNewSize = CoordinateSetD(x: _size.value.x * _scalingFactor, y: _size.value.y * _scalingFactor);
 
-                                  return Stack(
-                                    children: <Widget>[
-                                      SizedBox(
-                                        width: _sizeOptions.previewSize.toDouble(),
-                                        height: _sizeOptions.previewSize.toDouble(),
-                                      ),
-                                      Positioned(
-                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
-                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
-                                        width: scaledCanvasSize.x,
-                                        height: scaledCanvasSize.y,
-                                        child: ValueListenableBuilder<ui.Image?>(
-                                          valueListenable: _image,
-                                          builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
-                                            return RawImage(
-                                              fit: BoxFit.fill,
-                                              filterQuality: ui.FilterQuality.none,
-                                              image: img,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      Positioned(
-                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
-                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
-                                        width: scaledCanvasSize.x,
-                                        height: scaledCanvasSize.y,
-                                        child: DecoratedBox(
+                              return Stack(
+                                children: <Widget>[
+                                  SizedBox(
+                                    width: _sizeOptions.previewSize.toDouble(),
+                                    height: _sizeOptions.previewSize.toDouble(),
+                                  ),
+                                  Positioned(
+                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
+                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
+                                    width: scaledCanvasSize.x,
+                                    height: scaledCanvasSize.y,
+                                    child: ValueListenableBuilder<ui.Image?>(
+                                      valueListenable: _image,
+                                      builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
+                                        return RawImage(
+                                          fit: BoxFit.fill,
+                                          filterQuality: ui.FilterQuality.none,
+                                          image: img,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
+                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
+                                    width: scaledCanvasSize.x,
+                                    height: scaledCanvasSize.y,
+                                    child: DecoratedBox(
 
-                                          decoration: BoxDecoration(
-                                            border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
-                                          ),
-                                        ),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
                                       ),
-                                      Positioned(
-                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                        width: scaledNewSize.x,
-                                        height: scaledNewSize.y,
-                                        child: DecoratedBox(
-                                          decoration: BoxDecoration(
-                                              border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3),
-                                          ),
-                                        ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                    width: scaledNewSize.x,
+                                    height: scaledNewSize.y,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3),
                                       ),
-                                      Positioned(
-                                        left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                        top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                        width: scaledNewSize.x,
-                                        height: scaledNewSize.y,
-                                        child: DecoratedBox(
-                                          decoration: BoxDecoration(
-                                              border: Border.all(color:  Theme.of(context).primaryColorLight),
-                                          ),
-                                        ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                    width: scaledNewSize.x,
+                                    height: scaledNewSize.y,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color:  Theme.of(context).primaryColorLight),
                                       ),
-                                    ],
-                                  );
-                                },
+                                    ),
+                                  ),
+                                ],
                               );
                             },
+                          );
+                        },
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.all(_options.padding),
+                              child: IconButton.outlined(
+                                icon: FaIcon(
+                                  FontAwesomeIcons.leftRight,
+                                  size: _options.iconSize / 2,
+                                ),
+                                onPressed: _centerH,
+                              ),
+                            ),
                           ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Expanded(
-                                child: Padding(
-                                  padding: EdgeInsets.all(_options.padding),
-                                  child: IconButton.outlined(
-                                    icon: FaIcon(
-                                      FontAwesomeIcons.leftRight,
-                                      size: _options.iconSize / 2,
-                                    ),
-                                    onPressed: _centerH,
-                                  ),
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.all(_options.padding),
+                              child: IconButton.outlined(
+                                icon: FaIcon(
+                                  FontAwesomeIcons.upDown,
+                                  size: _options.iconSize / 2,
                                 ),
+                                onPressed: _centerV,
                               ),
-                              Expanded(
-                                child: Padding(
-                                  padding: EdgeInsets.all(_options.padding),
-                                  child: IconButton.outlined(
-                                    icon: FaIcon(
-                                      FontAwesomeIcons.upDown,
-                                      size: _options.iconSize / 2,
-                                    ),
-                                    onPressed: _centerV,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: _options.padding,),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(_options.padding),
+                  child: IconButton.outlined(
+                    icon: FaIcon(
+                      FontAwesomeIcons.xmark,
+                      size: _options.iconSize,
                     ),
-                  ],
+                    onPressed: () {
+                      widget.dismiss();
+                    },
+                  ),
                 ),
               ),
-
-              SizedBox(height: _options.padding,),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.xmark,
-                          size: _options.iconSize,
-                        ),
-                        onPressed: () {
-                          widget.dismiss();
-                        },
-                      ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(_options.padding),
+                  child: IconButton.outlined(
+                    icon: FaIcon(
+                      FontAwesomeIcons.check,
+                      size: _options.iconSize,
                     ),
+                    onPressed: () {
+                      widget.accept(size: _size.value, offset: _offset.value);
+                    },
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.check,
-                          size: _options.iconSize,
-                        ),
-                        onPressed: () {
-                          widget.accept(size: _size.value, offset: _offset.value);
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

@@ -194,12 +194,22 @@ class DrawingLayerState extends LayerState
 
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     final ByteData byteDataThb = ByteData(size.x * size.y * 4);
-    _settingsPixels = settings.getSettingsPixels(data: _data, layerState: this);
-    final CoordinateColorMap dataWithSettingsPixels = CoordinateColorMap();
-    dataWithSettingsPixels.addAll(_data);
-    dataWithSettingsPixels.addAll(_settingsPixels);
 
-    for (final CoordinateColor entry in dataWithSettingsPixels.entries)
+    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    allColorPixels.addAll(_data);
+    if (hasSelection)
+    {
+      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
+        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null).map(
+              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
+        ),
+      );
+      allColorPixels.addAll(nonNullMap);
+    }
+    _settingsPixels = settings.getSettingsPixels(data: allColorPixels, layerState: this);
+    allColorPixels.addAll(_settingsPixels);
+
+    for (final CoordinateColor entry in allColorPixels.entries)
     {
       final ColorReference colRef = ColorReference(colorIndex: entry.value.colorIndex, ramp: entry.value.ramp);
       final Color originalColor = colRef.getIdColor().color;
@@ -209,25 +219,6 @@ class DrawingLayerState extends LayerState
       {
         byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
         byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
-      }
-    }
-    if (hasSelection)
-    {
-      final Iterable<CoordinateSetI> selectionCoords = appState.selectionState.selection.getCoordinates();
-      for (final CoordinateSetI coord in selectionCoords)
-      {
-        final ColorReference? colRef = appState.selectionState.selection.getColorReference(coord: coord);
-        if (colRef != null && coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
-        {
-          final Color originalColor = colRef.getIdColor().color;
-          final Color shadedColor = _geCurrentColorShading(coord: coord, appState: appState, inputColor: colRef);
-          final int index = (coord.y * size.x + coord.x) * 4;
-          if (index >= 0 && index < byteDataImg.lengthInBytes)
-          {
-            byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
-            byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
-          }
-        }
       }
     }
 

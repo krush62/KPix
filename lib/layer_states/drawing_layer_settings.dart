@@ -424,7 +424,15 @@ class DrawingLayerSettings with ChangeNotifier {
           }
           else if (innerStrokeStyle.value == InnerStrokeStyle.shade)
           {
-            final ColorReference? currentColor = layerState.getDataEntry(coord: coord);
+            final ColorReference? currentColor;
+            if (appState.getSelectedLayer() == layerState && appState.selectionState.selection.contains(coord: coord))
+            {
+              currentColor = appState.selectionState.selection.getColorReference(coord: coord);
+            }
+            else
+            {
+              currentColor = layerState.getDataEntry(coord: coord);
+            }
             if (currentColor != null)
             {
               final KPalRampData currentRamp = currentColor.ramp;
@@ -443,7 +451,15 @@ class DrawingLayerSettings with ChangeNotifier {
           final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: appState.canvasSize);
           for (final CoordinateSetI coord in innerStrokePixels)
           {
-            final ColorReference? currentColor = layerState.getDataEntry(coord: coord);
+            final ColorReference? currentColor;
+            if (appState.getSelectedLayer() == layerState && appState.selectionState.selection.contains(coord: coord))
+            {
+              currentColor = appState.selectionState.selection.getColorReference(coord: coord);
+            }
+            else
+            {
+              currentColor = layerState.getDataEntry(coord: coord);
+            }
             if (currentColor != null)
             {
               final KPalRampData currentRamp = currentColor.ramp;

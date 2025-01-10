@@ -488,7 +488,7 @@ abstract class IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
         {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != selectedColor) ||
+          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord, withSettingsPixels: true) != selectedColor) ||
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != selectedColor))
           {

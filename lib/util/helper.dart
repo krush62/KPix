@@ -512,15 +512,30 @@ class StackCol<T> {
 
   Future<ui.Image> getImageFromLayers({
     required final AppState appState,
+    final List<LayerState>? layerStack,
     final int scalingFactor = 1,}) async
   {
+    List<LayerState> layerList;
+    if (layerStack != null)
+    {
+      layerList = layerStack;
+    }
+    else
+    {
+      layerList = List<LayerState>.empty(growable: true);
+      for (int i = 0; i < appState.layerCount; i++)
+      {
+        layerList.add(appState.getLayerAt(index: i));
+      }
+    }
+
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
-    for (int i = appState.layerCount - 1; i >= 0; i--)
+    for (int i = layerList.length - 1; i >= 0; i--)
     {
-      if (appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible && appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
+      if (layerList[i].visibilityState.value == LayerVisibilityState.visible && layerList[i].runtimeType == DrawingLayerState)
       {
-        final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
+        final DrawingLayerState drawingLayer = layerList[i] as DrawingLayerState;
         if (drawingLayer.rasterImage.value != null)
         {
           paintImage(
@@ -533,7 +548,7 @@ class StackCol<T> {
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          if (appState.selectionState.selection.hasValues() && i == appState.getSelectedLayerIndex())
+          if (appState.selectionState.selection.hasValues() && i == appState.getSelectedLayerIndex() && layerStack == null)
           {
             final Paint paint = Paint();
             for (final MapEntry<CoordinateSetI, ColorReference?> entry in appState.selectionState.selection.selectedPixels.entries)

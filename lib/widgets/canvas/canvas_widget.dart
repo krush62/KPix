@@ -276,7 +276,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      if (!_shaderOptions.isEnabled.value)
+      if (!_shaderOptions.isEnabled.value && !(_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
       {
         _previousTool = _appState.selectedTool;
         _appState.setToolSelection(tool: ToolType.pick);

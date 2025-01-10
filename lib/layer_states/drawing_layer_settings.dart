@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
@@ -304,21 +305,37 @@ class DrawingLayerSettings with ChangeNotifier {
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, appState: appState, data: data);
-    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, appState: appState, data: data);
-    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, appState: appState, data: data);
+    final SelectionList? selectionList = appState.getSelectedLayer() == layerState ? appState.selectionState.selection : null;
+
+    List<LayerState> layers;
+    if (layerState.layerStack != null)
+    {
+      layers = layerState.layerStack!;
+    }
+    else
+    {
+      layers = <LayerState>[];
+      for (int i = 0; i < appState.layerCount; i++)
+      {
+        layers.add(appState.getLayerAt(index: i));
+      }
+    }
+
+    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layers, data: data, canvasSize: appState.canvasSize);
+    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layers, data: data, canvasSize: appState.canvasSize);
+    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layers, data: data, canvasSize: appState.canvasSize, selectionList: selectionList);
 
     shadowPixels.addAll(outerPixels);
     shadowPixels.addAll(innerPixels);
     return shadowPixels;
   }
 
-  CoordinateColorMap getDropShadowPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final AppState appState})
+  CoordinateColorMap getDropShadowPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final CoordinateSetI canvasSize, required final List<LayerState> layers})
   {
     final CoordinateColorMap shadowPixels = CoordinateColorMap();
     if (dropShadowStyle.value != DropShadowStyle.off)
     {
-      final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: appState.canvasSize);
+      final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: canvasSize);
       for (final CoordinateSetI coord in dropShadowCoordinates)
       {
         if (dropShadowStyle.value == DropShadowStyle.solid)
@@ -327,7 +344,7 @@ class DrawingLayerSettings with ChangeNotifier {
         }
         else if (dropShadowStyle.value == DropShadowStyle.shade)
         {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: coord, appState: appState, layerState: layerState);
+          final ColorReference? currentColor = _getColorReferenceAtPos(coord: coord, layers: layers, layerState: layerState);
           if (currentColor != null)
           {
             final KPalRampData currentRamp = currentColor.ramp;
@@ -340,12 +357,12 @@ class DrawingLayerSettings with ChangeNotifier {
     return shadowPixels;
   }
 
-  CoordinateColorMap getOuterStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final AppState appState})
+  CoordinateColorMap getOuterStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final CoordinateSetI canvasSize, required final List<LayerState> layers})
   {
     final CoordinateColorMap outerPixels = CoordinateColorMap();
     if (outerStrokeStyle.value != OuterStrokeStyle.off)
     {
-      final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: appState.canvasSize);
+      final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: canvasSize);
       for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries)
       {
         if (outerStrokeStyle.value == OuterStrokeStyle.solid)
@@ -361,7 +378,7 @@ class DrawingLayerSettings with ChangeNotifier {
         }
         else if (outerStrokeStyle.value == OuterStrokeStyle.shade)
         {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, appState: appState, layerState: layerState);
+          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, layers: layers, layerState: layerState);
           if (currentColor != null)
           {
             final KPalRampData currentRamp = currentColor.ramp;
@@ -371,7 +388,7 @@ class DrawingLayerSettings with ChangeNotifier {
         }
         else if (outerStrokeStyle.value == OuterStrokeStyle.glow)
         {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, appState: appState, layerState: layerState);
+          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, layers: layers, layerState: layerState);
           if (currentColor != null)
           {
             final KPalRampData currentRamp = currentColor.ramp;
@@ -389,10 +406,10 @@ class DrawingLayerSettings with ChangeNotifier {
           final Set<CoordinateSetI> setPixels = <CoordinateSetI>{};
           setPixels.addAll(data.keys);
           setPixels.addAll(outerPixels.keys);
-          final HashMap<CoordinateSetI, CoordinateSetI> glowPixels = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: setPixels, canvasSize: appState.canvasSize);
+          final HashMap<CoordinateSetI, CoordinateSetI> glowPixels = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: setPixels, canvasSize: canvasSize);
           for (final CoordinateSetI glowPixel in glowPixels.keys)
           {
-            final ColorReference? currentColor = _getColorReferenceAtPos(coord: glowPixel, appState: appState, layerState: layerState);
+            final ColorReference? currentColor = _getColorReferenceAtPos(coord: glowPixel, layers: layers, layerState: layerState);
             if (currentColor != null)
             {
               final KPalRampData currentRamp = currentColor.ramp;
@@ -408,12 +425,12 @@ class DrawingLayerSettings with ChangeNotifier {
     return outerPixels;
   }
 
-  CoordinateColorMap getInnerStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final AppState appState})
+  CoordinateColorMap getInnerStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final CoordinateSetI canvasSize, required final List<LayerState> layers, required final SelectionList? selectionList})
   {
     final CoordinateColorMap innerPixels = CoordinateColorMap();
     if (innerStrokeStyle.value != InnerStrokeStyle.off)
     {
-      final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: data, canvasSize: appState.canvasSize);
+      final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: data, canvasSize: canvasSize);
       if (innerStrokeStyle.value == InnerStrokeStyle.solid || innerStrokeStyle.value == InnerStrokeStyle.shade)
       {
         for (final CoordinateSetI coord in innerStrokePixels)
@@ -425,9 +442,9 @@ class DrawingLayerSettings with ChangeNotifier {
           else if (innerStrokeStyle.value == InnerStrokeStyle.shade)
           {
             final ColorReference? currentColor;
-            if (appState.getSelectedLayer() == layerState && appState.selectionState.selection.contains(coord: coord))
+            if (selectionList != null && selectionList.contains(coord: coord))
             {
-              currentColor = appState.selectionState.selection.getColorReference(coord: coord);
+              currentColor = selectionList.getColorReference(coord: coord);
             }
             else
             {
@@ -448,13 +465,13 @@ class DrawingLayerSettings with ChangeNotifier {
         dataPixels.addAll(data);
         for (int i = 0; i < innerGlowDepth.value; i++)
         {
-          final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: appState.canvasSize);
+          final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: canvasSize);
           for (final CoordinateSetI coord in innerStrokePixels)
           {
             final ColorReference? currentColor;
-            if (appState.getSelectedLayer() == layerState && appState.selectionState.selection.contains(coord: coord))
+            if (selectionList != null && selectionList.contains(coord: coord))
             {
-              currentColor = appState.selectionState.selection.getColorReference(coord: coord);
+              currentColor = selectionList.getColorReference(coord: coord);
             }
             else
             {
@@ -497,8 +514,8 @@ class DrawingLayerSettings with ChangeNotifier {
 
           if (i == bevelDistance.value - 1)
           {
-            final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: oppositeSelectionMap, data: dataPixels, canvasSize: appState.canvasSize);
-            final Set<CoordinateSetI> directionPixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: appState.canvasSize);
+            final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: oppositeSelectionMap, data: dataPixels, canvasSize: canvasSize);
+            final Set<CoordinateSetI> directionPixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: canvasSize);
             oppositeStrokePixels.removeAll(directionPixels);
 
             for (final CoordinateSetI coord in oppositeStrokePixels)
@@ -524,7 +541,7 @@ class DrawingLayerSettings with ChangeNotifier {
           }
           else
           {
-            final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: allDirectionsMap, data: dataPixels, canvasSize: appState.canvasSize);
+            final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: allDirectionsMap, data: dataPixels, canvasSize: canvasSize);
             for (final CoordinateSetI coord in oppositeStrokePixels)
             {
               dataPixels.remove(coord);
@@ -579,17 +596,26 @@ class DrawingLayerSettings with ChangeNotifier {
         alignment == Alignment.centerLeft;
   }
 
-  static ColorReference? _getColorReferenceAtPos({required final CoordinateSetI coord, required final AppState appState, required final DrawingLayerState layerState, final bool withSettingsPixels = false})
+  static ColorReference? _getColorReferenceAtPos({required final CoordinateSetI coord, required final List<LayerState> layers, required final DrawingLayerState layerState, final bool withSettingsPixels = false})
   {
     ColorReference? currentColor;
     int colorShift = 0;
-    final int currentIndex = appState.getLayerPosition(state: layerState);
+    int currentIndex = -1;
+    for (int i = 0; i < layers.length; i++)
+    {
+      if (layers[i] == layerState)
+      {
+        currentIndex = i;
+        break;
+      }
+    }
+
 
     if (currentIndex != -1)
     {
-      for (int i = appState.layerCount - 1; i >= currentIndex; i--)
+      for (int i = layers.length - 1; i >= currentIndex; i--)
       {
-        final LayerState layer = appState.getLayerAt(index: i);
+        final LayerState layer = layers[i];
         if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
           final DrawingLayerState drawingLayerState = layer as DrawingLayerState;

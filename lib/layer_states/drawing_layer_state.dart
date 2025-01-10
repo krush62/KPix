@@ -36,6 +36,7 @@ class DrawingLayerState extends LayerState
   final CoordinateSetI size;
 
   final CoordinateColorMap _data;
+  CoordinateColorMap _settingsPixels;
   bool isRasterizing = false;
   bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
@@ -46,7 +47,8 @@ class DrawingLayerState extends LayerState
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings})
   {
-    final CoordinateColorMap data2 = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
 
     if (content != null)
     {
@@ -54,15 +56,17 @@ class DrawingLayerState extends LayerState
       {
         if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
         {
-          data2[entry.key] = entry.value!;
+          data[entry.key] = entry.value!;
         }
       }
     }
     final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: GetIt.I.get<AppState>().colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
-    return DrawingLayerState._(data: data2, size: size, settings: settings);
+    return DrawingLayerState._(data: data, settingsPixels: settingsPixels, size: size, settings: settings);
   }
 
-  DrawingLayerState._({required final CoordinateColorMap data, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack, required this.settings}) : _data = data
+  DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack, required this.settings}) :
+        _data = data,
+        _settingsPixels = settingsPixels
   {
     isRasterizing = true;
     _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thumbnailImage: images.$2, startedFromManual: false));
@@ -78,23 +82,24 @@ class DrawingLayerState extends LayerState
   factory DrawingLayerState.from({required final DrawingLayerState other, final List<LayerState>? layerStack})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
-
+    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateColor ref in other._data.entries)
     {
       data[ref.key] = ref.value;
     }
     final DrawingLayerSettings newSettings = DrawingLayerSettings.fromOther(other: other.settings);
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
+    return DrawingLayerState._(size: other.size, settingsPixels: settingsPixels, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
   }
 
   factory DrawingLayerState.deepClone({required final DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateColor ref in other._data.entries)
     {
       data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
     }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value, settings: other.settings);
+    return DrawingLayerState._(size: other.size, data: data, settingsPixels: settingsPixels, lState: other.lockState.value, vState: other.visibilityState.value, settings: other.settings);
   }
 
   Future<void> updateTimerCallback({required final Timer timer}) async
@@ -189,9 +194,10 @@ class DrawingLayerState extends LayerState
 
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     final ByteData byteDataThb = ByteData(size.x * size.y * 4);
+    _settingsPixels = settings.getSettingsPixels(data: _data, layerState: this);
     final CoordinateColorMap dataWithSettingsPixels = CoordinateColorMap();
     dataWithSettingsPixels.addAll(_data);
-    dataWithSettingsPixels.addAll(settings.getSettingsPixels(data: _data, layerState: this));
+    dataWithSettingsPixels.addAll(_settingsPixels);
 
     for (final CoordinateColor entry in dataWithSettingsPixels.entries)
     {
@@ -293,15 +299,13 @@ class DrawingLayerState extends LayerState
     return retColor;
   }
 
-
-
-  //TODO this _HAS_ to take the layer settings into account (outline etc)
-  //TODO OPTIONAL!!!! by default off
-  //e.g. store dataWithSettingsPixels created in _createRaster
-
-  ColorReference? getDataEntry({required final CoordinateSetI coord})
+  ColorReference? getDataEntry({required final CoordinateSetI coord, final bool withSettingsPixels = false})
   {
-    if (_data.containsKey(coord))
+    if (withSettingsPixels && _settingsPixels.containsKey(coord))
+    {
+      return _settingsPixels[coord];
+    }
+    else if (_data.containsKey(coord))
     {
       return _data[coord];
     }

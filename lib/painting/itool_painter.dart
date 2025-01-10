@@ -591,7 +591,7 @@ abstract class IToolPainter
                 if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
                 {
                   final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
-                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
                   if (col != null)
                   {
                     currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
@@ -717,10 +717,10 @@ abstract class IToolPainter
             if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
             {
               final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
-              final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+              final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
               if (col != null)
               {
-                currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+                currentColor = col;
               }
             }
             else if (currentColor != null && appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
@@ -728,24 +728,18 @@ abstract class IToolPainter
               final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
               if (shadingLayer.hasCoord(coord: coord))
               {
-                final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
+                final int newColorIndex = (currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length -1);
                 currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
               }
             }
           }
           if (currentColor != null)
           {
-            int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
-            shift += stampEntry.value;
+            final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+            final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value);
+            final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
+            pixelMap[coord] = ColorReference(colorIndex: targetIndex, ramp: currentColor.ramp);
 
-            final int currentVal = currentLayer.hasCoord(coord: coord) ? currentLayer.getValueAt(coord: coord)! : 0;
-            if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
-            {
-              shift = 0;
-            }
-
-            final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
-            pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
           }
         }
       }
@@ -779,8 +773,9 @@ abstract class IToolPainter
     final HashMap<CoordinateSetI, int> changeCoords = HashMap<CoordinateSetI, int>();
     for (final MapEntry<CoordinateSetI, int> entry in stampData.entries)
     {
-      final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! + currentShift + entry.value : currentShift + entry.value).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
+      final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+      final int currentShift = shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! : 0;
+      final int targetShift = (shadingDirection + currentShift + (entry.value * shadingDirection)).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
       if (targetShift == 0)
       {
         removeCoords.add(entry.key);

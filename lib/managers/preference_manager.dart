@@ -408,7 +408,7 @@ enum PreferenceInt
   DrawingLayerConstraints_MaxDropShadowDistance(defaultValue: 16),
 
   ShadingLayerConstraints_MinAmount(defaultValue: 1),
-  ShadingLayerConstraints_DefaultAmount(defaultValue: 2),
+  ShadingLayerConstraints_DefaultAmount(defaultValue: 4),
   ShadingLayerConstraints_MaxAmount(defaultValue: 6),
 
   Painter_CheckerBoardSize(defaultValue: 8),

@@ -545,7 +545,7 @@ class DrawingLayerSettings with ChangeNotifier {
         alignment == Alignment.centerLeft;
   }
 
-  static ColorReference? _getColorReferenceAtPos({required final CoordinateSetI coord, required final AppState appState, required final DrawingLayerState layerState})
+  static ColorReference? _getColorReferenceAtPos({required final CoordinateSetI coord, required final AppState appState, required final DrawingLayerState layerState, final bool withSettingsPixels = false})
   {
     ColorReference? currentColor;
     int colorShift = 0;
@@ -559,7 +559,7 @@ class DrawingLayerSettings with ChangeNotifier {
         if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
           final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
-          final ColorReference? colRef = drawingLayerState.getDataEntry(coord: coord);
+          final ColorReference? colRef = drawingLayerState.getDataEntry(coord: coord, withSettingsPixels: withSettingsPixels);
           if (colRef != null)
           {
             currentColor = colRef;

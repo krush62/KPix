@@ -505,7 +505,7 @@ class LayerCollection with ChangeNotifier
     {
       for (final DrawingLayerState drawingLayer in drawingLayers)
       {
-        final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key);
+        final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key, withSettingsPixels: true);
         if (curCol != null)
         {
           final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
@@ -664,7 +664,7 @@ class LayerCollection with ChangeNotifier
     return _layers;
   }
 
-  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos, required final ColorReference? selectionReference})
+  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos, required final ColorReference? selectionReference, final bool withSettingsPixels = false})
   {
     ColorReference? colRef;
     for (final LayerState layer in _layers)
@@ -677,9 +677,10 @@ class LayerCollection with ChangeNotifier
           colRef = selectionReference;
           break;
         }
-        if (drawingLayer.getDataEntry(coord: normPos) != null)
+        final ColorReference? coordAtPos = drawingLayer.getDataEntry(coord: normPos, withSettingsPixels: withSettingsPixels);
+        if (coordAtPos != null)
         {
-          colRef = drawingLayer.getDataEntry(coord: normPos);
+          colRef = coordAtPos;
           break;
         }
       }

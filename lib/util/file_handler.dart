@@ -343,8 +343,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final int y = byteData.getUint16(offset);
             offset+=2;
             final int colorRampIndex = byteData.getUint8(offset++);
+            if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
             final int colorIndex = byteData.getUint8(offset++);
-            //TODO check if indices are allowed
+            if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
             data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
           }
           layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data, settings: drawingLayerSettings));

@@ -160,7 +160,7 @@ class AppState
 
   ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
   {
-    return _layerCollection.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos));
+    return _layerCollection.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
   }
 
   final RepaintNotifier repaintNotifier = RepaintNotifier();

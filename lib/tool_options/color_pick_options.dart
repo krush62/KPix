@@ -20,12 +20,49 @@ import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class ColorPickOptions extends IToolOptions
 {
-  static Container getWidget({
+  final ValueNotifier<bool> rawMode = ValueNotifier<bool>(false);
+
+  static Column getWidget({
     required final BuildContext context,
     required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final ColorPickOptions colorPickOptions,
   })
   {
-    return Container();
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Raw Mode",
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: colorPickOptions.rawMode,
+                  builder: (final BuildContext context, final bool rawMode, final Widget? child)
+                  {
+                    return Switch(
+                      onChanged: (final bool newVal) {colorPickOptions.rawMode.value = newVal;},
+                      value: rawMode,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        const Text("Raw Mode does not use any values from shading layers or layer settings that use shading.")
+      ],
+    );
   }
 }

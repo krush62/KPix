@@ -664,27 +664,46 @@ class LayerCollection with ChangeNotifier
     return _layers;
   }
 
-  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos, required final ColorReference? selectionReference, final bool withSettingsPixels = false})
+  ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos, required final ColorReference? selectionReference, required final bool rawMode})
   {
     ColorReference? colRef;
+    int shading = 0;
     for (final LayerState layer in _layers)
     {
-      if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)
+      if (!rawMode && layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == ShadingLayerState)
+      {
+        final ShadingLayerState shadingLayer = layer as ShadingLayerState;
+        final int valueAtCoord = shadingLayer.getValueAt(coord: normPos) ?? 0;
+        shading += valueAtCoord;
+      }
+      else if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayer = layer as DrawingLayerState;
         if (currentLayer == drawingLayer && selectionReference != null)
         {
           colRef = selectionReference;
+          if (!rawMode && drawingLayer.getSettingsPixel(coord: normPos) != null)
+          {
+            colRef = drawingLayer.getSettingsPixel(coord: normPos);
+          }
           break;
         }
-        final ColorReference? coordAtPos = drawingLayer.getDataEntry(coord: normPos, withSettingsPixels: withSettingsPixels);
-        if (coordAtPos != null)
+        else
         {
-          colRef = coordAtPos;
-          break;
+          final ColorReference? coordAtPos = drawingLayer.getDataEntry(coord: normPos, withSettingsPixels: !rawMode);
+          if (coordAtPos != null)
+          {
+            colRef = coordAtPos;
+            break;
+          }
         }
       }
     }
+    if (shading != 0 && colRef != null)
+    {
+      colRef = colRef.ramp.references[ (colRef.colorIndex + shading).clamp(0, colRef.ramp.references.length - 1)];
+    }
+
     return colRef;
   }
 

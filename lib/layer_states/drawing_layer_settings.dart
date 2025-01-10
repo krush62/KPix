@@ -136,6 +136,8 @@ class DrawingLayerSettings with ChangeNotifier {
   final ValueNotifier<ColorReference> dropShadowColorReference;
   final ValueNotifier<CoordinateSetI> dropShadowOffset;
   final ValueNotifier<int> dropShadowDarkenBrighten;
+  bool editStarted = false;
+  bool hasChanges = false;
 
   DrawingLayerSettings({
     required this.constraints,
@@ -274,6 +276,11 @@ class DrawingLayerSettings with ChangeNotifier {
 
   void _valueChanged()
   {
+    if (editStarted)
+    {
+      hasChanges = true;
+    }
+
     notifyListeners();
   }
 

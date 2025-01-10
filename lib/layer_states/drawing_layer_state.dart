@@ -299,6 +299,11 @@ class DrawingLayerState extends LayerState
     return retColor;
   }
 
+  ColorReference? getSettingsPixel({required final CoordinateSetI coord})
+  {
+      return _settingsPixels[coord];
+  }
+
   ColorReference? getDataEntry({required final CoordinateSetI coord, final bool withSettingsPixels = false})
   {
     if (withSettingsPixels && _settingsPixels.containsKey(coord))

@@ -34,6 +34,8 @@ class ShadingLayerSettings with ChangeNotifier
   final ShadingLayerSettingsConstraints constraints;
   final ValueNotifier<int> shadingStepsMinus;
   final ValueNotifier<int> shadingStepsPlus;
+  bool editStarted = false;
+  bool hasChanges = false;
 
   ShadingLayerSettings({required this.constraints, required final int shadingLow, required final int shadingHigh}) :
         shadingStepsMinus = ValueNotifier<int>(shadingLow),
@@ -67,6 +69,10 @@ class ShadingLayerSettings with ChangeNotifier
 
   void _valueChanged()
   {
+    if (editStarted)
+    {
+      hasChanges = true;
+    }
     notifyListeners();
   }
 }

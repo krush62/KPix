@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -165,7 +166,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _settingsButtonPressed()
   {
-    _appState.selectLayer(newLayer: widget.layerState, addToHistoryStack: true);
+    _appState.selectLayer(newLayer: widget.layerState);
     _appState.layerSettingsVisible = true;
   }
 
@@ -451,36 +452,73 @@ class _LayerWidgetState extends State<LayerWidget> {
                                   child: Builder(
                                     builder: (final BuildContext context) {
                                       ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
+                                      Listenable changeListenable = ChangeNotifier();
                                       if (widget.layerState.runtimeType == DrawingLayerState)
                                       {
                                         final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
                                         lockStateNotifier = drawingLayer.lockState;
+                                        changeListenable = drawingLayer.settings;
                                       }
                                       else if (widget.layerState.runtimeType == ShadingLayerState)
                                       {
                                         final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
                                         lockStateNotifier = shadingLayer.lockState;
+                                        changeListenable = shadingLayer.settings;
                                       }
                                       return ValueListenableBuilder<LayerLockState>(
                                         valueListenable: lockStateNotifier,
                                         builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
-                                          return IconButton.outlined(
-                                            padding: EdgeInsets.zero,
-                                            constraints: BoxConstraints(
-                                              maxHeight: _options.buttonSizeMax,
-                                              maxWidth: _options.buttonSizeMax,
-                                              minWidth: _options.buttonSizeMin,
-                                              minHeight: _options.buttonSizeMin,
-                                            ),
-                                            style: const ButtonStyle(
-                                              tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                            ),
-                                            onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
-                                            icon: FaIcon(
-                                              FontAwesomeIcons.gear,
-                                              size: _options.iconSize,
-                                            ),
+                                          return ListenableBuilder(
+                                            listenable: changeListenable,
+                                            builder: (final BuildContext context, final Widget? child) {
+                                              bool hasChanges = false;
+                                              if (widget.layerState.runtimeType == DrawingLayerState)
+                                              {
+                                                final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                                                if (drawingLayer.settings.outerStrokeStyle.value != OuterStrokeStyle.off ||
+                                                    drawingLayer.settings.innerStrokeStyle.value != InnerStrokeStyle.off ||
+                                                    drawingLayer.settings.dropShadowStyle.value != DropShadowStyle.off)
+                                                {
+                                                  hasChanges = true;
+                                                }
+                                              }
+                                              else if (widget.layerState.runtimeType == ShadingLayerState)
+                                              {
+                                                final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
+                                                if (shadingLayer.settings.shadingStepsMinus.value != shadingLayer.settings.constraints.shadingStepsDefault ||
+                                                    shadingLayer.settings.shadingStepsPlus.value != shadingLayer.settings.constraints.shadingStepsDefault)
+                                                {
+                                                  hasChanges = true;
+                                                }
+                                              }
+
+                                              return IconButton.outlined(
+                                                padding: EdgeInsets.zero,
+                                                constraints: BoxConstraints(
+                                                  maxHeight: _options.buttonSizeMax,
+                                                  maxWidth: _options.buttonSizeMax,
+                                                  minWidth: _options.buttonSizeMin,
+                                                  minHeight: _options.buttonSizeMin,
+                                                ),
+                                                style: ButtonStyle(
+                                                  tapTargetSize:
+                                                  MaterialTapTargetSize.shrinkWrap,
+                                                  backgroundColor: !hasChanges ? null : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColorLight,),
+                                                  iconColor: !hasChanges
+                                                      ? null
+                                                      : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColor,),
+                                                ),
+                                                onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
+                                                icon: FaIcon(
+                                                  FontAwesomeIcons.gear,
+                                                  size: _options.iconSize,
+                                                ),
+                                              );
+                                            },
                                           );
                                         },
                                       );

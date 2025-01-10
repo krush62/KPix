@@ -38,6 +38,8 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_settings_widget.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
+import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
@@ -224,11 +226,15 @@ class _RightBarWidgetState extends State<RightBarWidget>
                     if (currentLayer.runtimeType == DrawingLayerState)
                     {
                       final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
+                      drawingLayer.settings.editStarted = true;
+                      drawingLayer.settings.hasChanges = false;
                       settingsWidget = DrawingLayerSettingsWidget(settings: drawingLayer.settings);
                     }
                     else if (currentLayer.runtimeType == ShadingLayerState)
                     {
                       final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
+                      shadingLayer.settings.editStarted = true;
+                      shadingLayer.settings.hasChanges = false;
                       settingsWidget = ShadingLayerSettingsWidget(settings: shadingLayer.settings);
                     }
 
@@ -271,6 +277,29 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                   child: IconButton.outlined(
                                     onPressed: () {
                                       _appState.layerSettingsVisible = false;
+                                      if (currentLayer != null)
+                                      {
+                                        if (currentLayer.runtimeType == DrawingLayerState)
+                                        {
+                                          final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
+                                          drawingLayer.settings.editStarted = false;
+                                          if (drawingLayer.settings.hasChanges)
+                                          {
+                                            GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
+                                            drawingLayer.settings.hasChanges = false;
+                                          }
+                                        }
+                                        else if (currentLayer.runtimeType == ShadingLayerState)
+                                        {
+                                          final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
+                                          shadingLayer.settings.editStarted = false;
+                                          if (shadingLayer.settings.hasChanges)
+                                          {
+                                            GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
+                                            shadingLayer.settings.hasChanges = false;
+                                          }
+                                        }
+                                      }
                                     },
                                     icon: const FaIcon(FontAwesomeIcons.arrowRightLong,),
                                   ),

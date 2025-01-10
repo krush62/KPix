@@ -1003,7 +1003,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
             {
               colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
             }
-            colAtPos ??= layerState.getDataEntry(coord: curCoord);
+            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
 
             if (colAtPos == null)
             {
@@ -1152,7 +1152,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
               {
                 colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
               }
-              colAtPos ??= layerState.getDataEntry(coord: curCoord);
+              colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
 
               if (colAtPos == null)
               {

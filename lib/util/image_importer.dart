@@ -267,7 +267,7 @@ class ImportResult
       valueRangeMin: (minValue * 100).round(),
       valueRangeMax: (maxValue * 100).round(),
     );
-    //TODO maybe add shifts
+    //TODO maybe add shifts (?)
     return KPalRampData(uuid: const Uuid().v1(), settings: rampSettings);
 
   }

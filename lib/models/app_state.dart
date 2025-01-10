@@ -941,6 +941,7 @@ class AppState
     }
   }
 
+  //TODO THIS MIGHT ALWAYS NEED TO RENDER ALL LAYERS NOT ONLY BELOW
   void rasterDrawingLayersBelow({required final LayerState layer})
   {
     _layerCollection.rasterDrawingLayersBelow(layer: layer);

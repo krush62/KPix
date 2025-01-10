@@ -832,10 +832,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                       builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
                         return IgnorePointer(
                           ignoring: toolType != ToolType.select && hasNoSelection,
-                          child: AnimatedScale(
+                          child: AnimatedSlide(
                             duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                            scale: (toolType == ToolType.select || !hasNoSelection) ? 1.0 : 0.0,
-                            alignment: Alignment.bottomCenter,
+                            offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
+                            curve: Curves.easeInOut,
                             //opacity: toolType == ToolType.select ? 1.0 : 0.0,
                             child: const Align(
                                 alignment: Alignment.bottomCenter,

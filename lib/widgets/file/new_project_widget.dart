@@ -26,7 +26,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class NewProjectWidget extends StatefulWidget
 {

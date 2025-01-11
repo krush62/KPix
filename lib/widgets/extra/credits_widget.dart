@@ -21,7 +21,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class CreditEntry
 {

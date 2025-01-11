@@ -37,7 +37,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 
 class ColorRampRowWidget extends StatefulWidget {

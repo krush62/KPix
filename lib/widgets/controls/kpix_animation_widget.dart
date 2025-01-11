@@ -18,7 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class KPixAnimationWidget extends StatefulWidget
 {
@@ -39,11 +39,12 @@ class _KPixAnimationWidgetState extends State<KPixAnimationWidget> with SingleTi
   late Animation<double> animation;
   late BoxConstraints _constraints;
 
-  void dismiss(final Function() dismissFunction)
+
+  @override
+  void dispose()
   {
-    animationController.reverse().then((final void value) {
-      dismissFunction();
-    });
+    animationController.dispose();
+    super.dispose();
   }
 
   @override

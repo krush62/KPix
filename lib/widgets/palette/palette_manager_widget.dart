@@ -27,7 +27,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:path/path.dart' as p;
 

@@ -17,10 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
@@ -36,6 +33,12 @@ import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_load_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_raster_layer_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_reduced_layer_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_save_menu.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
 
@@ -76,6 +79,7 @@ class OverlayEntrySubMenuOptions
   final double width;
   final double buttonHeight;
   final int smokeOpacity;
+  final int animationLengthMs;
 
   OverlayEntrySubMenuOptions({
     required this.offsetX,
@@ -85,6 +89,7 @@ class OverlayEntrySubMenuOptions
     required this.width,
     required this.buttonHeight,
     required this.smokeOpacity,
+    required this.animationLengthMs,
   });
 }
 
@@ -126,7 +131,6 @@ class OverlayEntryAlertDialogOptions
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
@@ -134,87 +138,7 @@ class OverlayEntryAlertDialogOptions
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          Positioned(
-            width: options.width / 2,
-            child: CompositedTransformFollower(
-              link: layerLink,
-              showWhenUnlinked: false,
-              offset: Offset(
-                options.offsetX,
-                options.offsetY + options.buttonSpacing,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "New Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(
-                              options.buttonSpacing,),
-                          onPressed: () {onNewFile();},
-                          icon: FaIcon(
-                              FontAwesomeIcons.file,
-                              size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Open Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(
-                              options.buttonSpacing,),
-                          onPressed: () {onLoadFile();},
-                          icon: FaIcon(
-                              FontAwesomeIcons.folderOpen,
-                              size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Import Image",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(
-                              options.buttonSpacing,),
-                          onPressed: () {onImportFile();},
-                          icon: FaIcon(
-                              FontAwesomeIcons.fileImport,
-                              size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          OverlayLoadMenu(layerLink: layerLink, onNewFile: onNewFile, onImportFile: onImportFile, onLoadFile: onLoadFile),
         ],
       ),
     ),);
@@ -230,7 +154,7 @@ class OverlayEntryAlertDialogOptions
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
+
     return KPixOverlay(entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
@@ -238,84 +162,7 @@ class OverlayEntryAlertDialogOptions
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          Positioned(
-            width: options.width / 2,
-            child: CompositedTransformFollower(
-              link: layerLink,
-              showWhenUnlinked: false,
-              offset: Offset(
-                options.offsetX,
-                options.offsetY + options.buttonSpacing,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Save Project${hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onSaveFile();},
-                          icon: FaIcon(
-                            Icons.save,
-                            size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Save Project As${hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onSaveAsFile();},
-                          icon: FaIcon(
-                            Icons.save_as,
-                            size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(options.buttonSpacing / 2),
-                      child: Tooltip(
-                        message: "Export Project/Palette${hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onExportFile();},
-                          icon: FaIcon(
-                            Icons.share,
-                            size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          OverlaySaveMenu(layerLink: layerLink, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile),
         ],
       ),
     ),);
@@ -331,11 +178,6 @@ class OverlayEntryAlertDialogOptions
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    final LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    const int buttonCount = 3;
-    final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
-    final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -344,76 +186,7 @@ class OverlayEntryAlertDialogOptions
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: () {onDismiss();},
             ),
-            Positioned(
-              width: width,
-              height: height,
-              child: CompositedTransformFollower(
-                link: layerLink,
-                showWhenUnlinked: false,
-                offset: Offset(
-                  -width,
-                  layerWidgetOptions.height/2 - height/2 - layerWidgetOptions.innerPadding,
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Tooltip(
-                        message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(
-                              options.buttonSpacing,),
-                          onPressed: () {onDelete();},
-                          icon: FaIcon(
-                            FontAwesomeIcons.trashCan,
-                            size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                      ),
-                      Tooltip(
-                        message: "Duplicate Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onDuplicate();},
-                          icon: FaIcon(
-                            FontAwesomeIcons.clone,
-                            size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                      Tooltip(
-                        message: "Merge Down Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge)}",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.all(options.buttonSpacing),
-                          onPressed: () {onMergeDown();},
-                          icon: FaIcon(
-                            FontAwesomeIcons.turnDown,
-                            size: options.buttonHeight,),
-                          color: Theme.of(context).primaryColorLight,
-                          style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            OverlayDrawingLayerMenu(onDelete: onDelete, onMergeDown: onMergeDown, onDuplicate: onDuplicate, layerLink: layerLink),
           ],
         ),
       ),
@@ -428,11 +201,6 @@ class OverlayEntryAlertDialogOptions
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    final LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-    const int buttonCount = 2;
-    final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
-    final double height = options.buttonHeight + 2 * options.buttonSpacing;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -441,60 +209,7 @@ class OverlayEntryAlertDialogOptions
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: () {onDismiss();},
             ),
-            Positioned(
-              width: width,
-              height: height,
-              child: CompositedTransformFollower(
-                link: layerLink,
-                showWhenUnlinked: false,
-                offset: Offset(
-                  -width,
-                  layerWidgetOptions.height/2 - height/2 - layerWidgetOptions.innerPadding,
-                ),
-                child: Material(
-                    color: Colors.transparent,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Tooltip(
-                          message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.all(
-                                options.buttonSpacing,),
-                            onPressed: () {onDelete();},
-                            icon: FaIcon(
-                                FontAwesomeIcons.trashCan,
-                                size: options.buttonHeight,),
-                            color: Theme.of(context).primaryColorLight,
-                            style: IconButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                        ),
-                        Tooltip(
-                          message: "Duplicate Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                              constraints: const BoxConstraints(),
-                              padding: EdgeInsets.all(options.buttonSpacing),
-                              onPressed: () {onDuplicate();},
-                              icon: FaIcon(
-                                FontAwesomeIcons.clone,
-                                size: options.buttonHeight,),
-                              color: Theme.of(context).primaryColorLight,
-                              style: IconButton.styleFrom(
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            OverlayReducedLayerMenu(onDelete: onDelete, onDuplicate: onDuplicate, layerLink: layerLink),
             ],
           ),
         ),
@@ -510,11 +225,6 @@ KPixOverlay getRasterLayerMenu({
 })
 {
   final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-  final LayerWidgetOptions layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-  final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
-  const int buttonCount = 3;
-  final double width = (options.buttonHeight + (options.buttonSpacing * 2)) * buttonCount;
-  final double height = options.buttonHeight + 2 * options.buttonSpacing;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
@@ -523,76 +233,7 @@ KPixOverlay getRasterLayerMenu({
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          Positioned(
-            width: width,
-            height: height,
-            child: CompositedTransformFollower(
-              link: layerLink,
-              showWhenUnlinked: false,
-              offset: Offset(
-                -width,
-                layerWidgetOptions.height/2 - height/2 - layerWidgetOptions.innerPadding,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Tooltip(
-                      message: "Delete Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(
-                          options.buttonSpacing,),
-                        onPressed: () {onDelete();},
-                        icon: FaIcon(
-                          FontAwesomeIcons.trashCan,
-                          size: options.buttonHeight,),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: Theme.of(context).primaryColor,),
-                      ),
-                    ),
-                    Tooltip(
-                      message: "Duplicate Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(options.buttonSpacing),
-                        onPressed: () {onDuplicate();},
-                        icon: FaIcon(
-                          FontAwesomeIcons.clone,
-                          size: options.buttonHeight,),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: Theme.of(context).primaryColor,),
-                      ),
-                    ),
-                    Tooltip(
-                      message: "Raster Layer",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        constraints: const BoxConstraints(),
-                        padding: EdgeInsets.all(options.buttonSpacing),
-                        onPressed: () {onRaster();},
-                        icon: FaIcon(
-                          FontAwesomeIcons.paintbrush,
-                          size: options.buttonHeight,),
-                        color: Theme.of(context).primaryColorLight,
-                        style: IconButton.styleFrom(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: Theme.of(context).primaryColor,),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          OverlayRasterLayerMenu(layerLink: layerLink, onDuplicate: onDuplicate, onDelete: onDelete, onRaster: onRaster),
         ],
       ),
     ),
@@ -1063,7 +704,6 @@ KPixOverlay getRasterLayerMenu({
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixOverlay(entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
@@ -1071,106 +711,7 @@ KPixOverlay getRasterLayerMenu({
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          Positioned(
-            width: options.width / 2,
-            child: CompositedTransformFollower(
-              link: layerLink,
-              showWhenUnlinked: false,
-              offset: Offset(
-                options.offsetX,
-                options.offsetY + options.buttonSpacing,
-              ),
-              child: Material(
-                  color: Colors.transparent,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: Tooltip(
-                          message: "Add New Drawing Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
-                          preferBelow: false,
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.all(options.buttonSpacing),
-                            onPressed: () {onNewDrawingLayer();},
-                            icon: FaIcon(
-                                FontAwesomeIcons.paintbrush,
-                                size: options.buttonHeight,),
-                            color: Theme.of(context).primaryColorLight,
-                            style: IconButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: Tooltip(
-                          message: "Add New Shading Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
-                          preferBelow: false,
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.all(options.buttonSpacing),
-                            onPressed: () {onNewShadingLayer();},
-                            icon: FaIcon(
-                              Icons.exposure,
-                              size: options.buttonHeight,),
-                            color: Theme.of(context).primaryColorLight,
-                            style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: Tooltip(
-                          message: "Add New Reference Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
-                          preferBelow: false,
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.all(options.buttonSpacing),
-                            onPressed: () {onNewReferenceLayer();},
-                            icon: FaIcon(
-                                FontAwesomeIcons.image,
-                                size: options.buttonHeight,),
-                            color: Theme.of(context).primaryColorLight,
-                            style: IconButton.styleFrom(
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(options.buttonSpacing / 2),
-                        child: Tooltip(
-                          message: "Add New Grid Layer${hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.all(options.buttonSpacing),
-                            onPressed: () {onNewGridLayer();},
-                            icon: FaIcon(
-                              FontAwesomeIcons.tableCells,
-                              size: options.buttonHeight,),
-                            color: Theme.of(context).primaryColorLight,
-                            style: IconButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              backgroundColor: Theme.of(context).primaryColor,),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-              ),
-            ),
-          ),
+          OverlayAddNewLayerMenu(layerLink: layerLink, onNewDrawingLayer: onNewDrawingLayer, onNewReferenceLayer: onNewReferenceLayer, onNewGridLayer: onNewGridLayer, onNewShadingLayer: onNewShadingLayer),
         ],
       ),
     ),);

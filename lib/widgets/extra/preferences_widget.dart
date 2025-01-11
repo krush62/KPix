@@ -25,7 +25,7 @@ import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 enum PreferenceSectionType
 {

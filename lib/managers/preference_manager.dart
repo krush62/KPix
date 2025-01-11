@@ -52,7 +52,7 @@ import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
@@ -228,10 +228,6 @@ enum PreferenceDouble
 
 enum PreferenceInt
 {
-  Layout_SplitView_GrooveCountMin(defaultValue: 5),
-  Layout_SplitView_GrooveCountMax(defaultValue: 9),
-  Layout_SplitView_AnimationLength(defaultValue: 250),
-
   Layout_Canvas_HistoryCheck_PollRate(defaultValue: 250),
   Layout_Canvas_IdleTimerRate(defaultValue: 15),
 
@@ -246,6 +242,8 @@ enum PreferenceInt
   Layout_MainToolbar_ToolHeight(defaultValue: 300),
 
   Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
+
+  Layout_OverlayEntrySubMenu_AnimationLengthMs(defaultValue: 150),
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_DragDelay(defaultValue: 200),
@@ -793,7 +791,8 @@ class PreferenceManager
         buttonSpacing: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
         width: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
         buttonHeight: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonHeight),
-        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),);
+        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
+        animationLengthMs: _getValueI(PreferenceInt.Layout_OverlayEntrySubMenu_AnimationLengthMs),);
     alertDialogOptions = OverlayEntryAlertDialogOptions(
         smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
         minWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinWidth),

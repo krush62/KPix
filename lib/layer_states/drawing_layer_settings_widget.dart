@@ -28,7 +28,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 
 const Map<OuterStrokeStyle, String> _outerStrokeStyleButtonLabelMap =

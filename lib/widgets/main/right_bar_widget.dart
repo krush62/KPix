@@ -46,7 +46,7 @@ import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class RightBarWidget extends StatefulWidget
 {

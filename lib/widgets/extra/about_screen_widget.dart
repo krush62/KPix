@@ -25,7 +25,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AboutScreenWidget extends StatefulWidget

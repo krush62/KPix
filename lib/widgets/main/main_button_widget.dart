@@ -30,7 +30,7 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions

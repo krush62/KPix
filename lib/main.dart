@@ -40,7 +40,7 @@ import 'package:kpix/widgets/controls/kpix_splitter.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
-import 'package:kpix/widgets/overlay_entries.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';

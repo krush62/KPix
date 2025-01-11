@@ -15,9 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/util/helper.dart';
@@ -49,7 +47,7 @@ class ColorPickPainter extends IToolPainter
       {
         _oldCursorPos.x = _cursorPosNorm.x;
         _oldCursorPos.y = _cursorPosNorm.y;
-        final ColorReference? colRef = getColorFromImageAtPosition(appState: appState, normPos: _cursorPosNorm);
+        final ColorReference? colRef = appState.getColorFromImageAtPosition(normPos: _cursorPosNorm);
         if (colRef != null && colRef != appState.selectedColor)
         {
           selectedColor = colRef;
@@ -57,30 +55,6 @@ class ColorPickPainter extends IToolPainter
       }
     }
   }
-
-  static ColorReference? getColorFromImageAtPosition({required final AppState appState, required final CoordinateSetI normPos})
-  {
-    ColorReference? colRef;
-    for (final LayerState layer in appState.layers)
-    {
-      if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        if (appState.currentLayer == drawingLayer && appState.selectionState.selection.getColorReference(coord: normPos) != null)
-        {
-          colRef = appState.selectionState.selection.getColorReference(coord: normPos);
-          break;
-        }
-        if (drawingLayer.getDataEntry(coord: normPos) != null)
-        {
-          colRef = drawingLayer.getDataEntry(coord: normPos);
-          break;
-        }
-      }
-    }
-    return colRef;
-  }
-
 
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})

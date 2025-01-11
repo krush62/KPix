@@ -368,4 +368,9 @@ class KPalRampData
       shiftedColors[i].value = IdColor(hsvColor: shiftedColor, uuid: shiftedColors[i].value.uuid);
     }
   }
+
+  int getIndex()
+  {
+    return GetIt.I.get<AppState>().colorRamps.indexOf(this);
+  }
 }

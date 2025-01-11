@@ -81,7 +81,7 @@ class _KPalRampState extends State<KPalRamp>
   {
     super.initState();
     _createColorCards();
-    _drawingLayers = _copyLayers(originalLayers: _appState.layers);
+    _drawingLayers = _copyLayers(originalLayers: _appState.visibleDrawingAndShadingLayers);
     _hasRenderChanges = true;
     _renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
     for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
@@ -94,11 +94,10 @@ class _KPalRampState extends State<KPalRamp>
   }
 
 
-  List<LayerState> _copyLayers({required final List<LayerState> originalLayers})
+  List<LayerState> _copyLayers({required final Iterable<LayerState> originalLayers})
   {
-    final Iterable<LayerState> visibleLayers = originalLayers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.runtimeType == DrawingLayerState || l.runtimeType == ShadingLayerState));
     final List<LayerState> drawingLayers = <LayerState>[];
-    for (final LayerState visibleLayer in visibleLayers)
+    for (final LayerState visibleLayer in originalLayers)
     {
       if (visibleLayer.runtimeType == DrawingLayerState)
       {
@@ -130,7 +129,7 @@ class _KPalRampState extends State<KPalRamp>
     final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.rasterImage.value == null || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
-      getImageFromLayers(layers: _drawingLayers, canvasSize: _appState.canvasSize, selectionList: _appState.selectionState.selection, selectedLayerIndex: _appState.getSelectedLayerIndex()).then((final ui.Image img) {
+      getImageFromLayers(appState: _appState, layerStack: _drawingLayers).then((final ui.Image img) {
         _previewImage.value = img;
       });
       _hasRenderChanges = false;
@@ -161,7 +160,7 @@ class _KPalRampState extends State<KPalRamp>
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
       if (colorCountChanged)
       {
-        _drawingLayers = _copyLayers(originalLayers: _appState.layers);
+        _drawingLayers = _copyLayers(originalLayers: _appState.visibleDrawingAndShadingLayers);
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final LayerState drawingLayer in _drawingLayers)
         {
@@ -383,6 +382,7 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _options.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.hueShift.toDouble(),
+                                  showPlusSignForPositive: true,
                                   min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
                                   max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
                                   divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
@@ -487,6 +487,7 @@ class _KPalRampState extends State<KPalRamp>
                                   value: widget.rampData.settings.satShift.toDouble(),
                                   min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
                                   max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
+                                  showPlusSignForPositive: true,
                                   divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
                                   onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,

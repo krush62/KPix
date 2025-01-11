@@ -24,6 +24,8 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
+import 'package:kpix/widgets/controls/kpix_color_picker_widget.dart';
 import 'package:kpix/widgets/extra/about_screen_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
@@ -613,12 +615,10 @@ KPixOverlay getRasterLayerMenu({
           ),
           Padding(
             padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.outsidePadding),
-            child: Align(
-              child: KPal(
-                accept: onAccept,
-                delete: onDelete,
-                colorRamp: colorRamp,
-              ),
+            child: KPal(
+              accept: onAccept,
+              delete: onDelete,
+              colorRamp: colorRamp,
             ),
           ),
         ],
@@ -644,24 +644,102 @@ KPixOverlay getRasterLayerMenu({
               onDismiss: outsideCancelable ? onCancel : null,//onCancel,
             ),
             Center(
-              child: Material(
-                elevation: options.elevation,
-                shadowColor: Theme.of(context).primaryColorDark,
-                borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                child: Container(
+              child: KPixAnimationWidget(
+                constraints: BoxConstraints(
+                  minHeight: options.minHeight,
+                  minWidth: options.minWidth,
+                  maxHeight: options.maxHeight,
+                  maxWidth: options.maxWidth,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Center(child: Padding(
+                      padding: EdgeInsets.all(options.padding),
+                      child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                    ),),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(options.padding),
+                            child: IconButton.outlined(
+                              icon: FaIcon(
+                                FontAwesomeIcons.check,
+                                size: options.iconSize,
+                              ),
+                              onPressed: () {
+                                onYes();
+                              },
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(options.padding),
+                            child: IconButton.outlined(
+                              icon: FaIcon(
+                                FontAwesomeIcons.xmark,
+                                size: options.iconSize,
+                              ),
+                              onPressed: () {
+                                onNo();
+                              },
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(options.padding),
+                            child: IconButton.outlined(
+                              icon: FaIcon(
+                                FontAwesomeIcons.ban,
+                                size: options.iconSize,
+                              ),
+                              onPressed: () {
+                                onCancel();
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  KPixOverlay getTwoButtonDialog({
+    required final Function() onYes,
+    required final Function() onNo,
+    required final bool outsideCancelable,
+    required final String message,
+  })
+  {
+    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    return KPixOverlay(
+        entry: OverlayEntry(
+          builder: (final BuildContext context) => Stack(
+            children: <Widget>[
+              ModalBarrier(
+                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                onDismiss: outsideCancelable ? onNo : null,
+              ),
+              Center(
+                child: KPixAnimationWidget(
                   constraints: BoxConstraints(
                     minHeight: options.minHeight,
                     minWidth: options.minWidth,
                     maxHeight: options.maxHeight,
                     maxWidth: options.maxWidth,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    border: Border.all(
-                      color: Theme.of(context).primaryColorLight,
-                      width: options.borderWidth,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -703,115 +781,11 @@ KPixOverlay getRasterLayerMenu({
                               ),
                             ),
                           ),
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.all(options.padding),
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.ban,
-                                  size: options.iconSize,
-                                ),
-                                onPressed: () {
-                                  onCancel();
-                                },
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  KPixOverlay getTwoButtonDialog({
-    required final Function() onYes,
-    required final Function() onNo,
-    required final bool outsideCancelable,
-    required final String message,
-  })
-  {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return KPixOverlay(
-        entry: OverlayEntry(
-          builder: (final BuildContext context) => Stack(
-            children: <Widget>[
-              ModalBarrier(
-                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                onDismiss: outsideCancelable ? onNo : null,
-              ),
-              Center(
-                child: Material(
-                  elevation: options.elevation,
-                  shadowColor: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                  child: Container(
-                      constraints: BoxConstraints(
-                        minHeight: options.minHeight,
-                        minWidth: options.minWidth,
-                        maxHeight: options.maxHeight,
-                        maxWidth: options.maxWidth,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        border: Border.all(
-                          color: Theme.of(context).primaryColorLight,
-                          width: options.borderWidth,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Center(child: Padding(
-                            padding: EdgeInsets.all(options.padding),
-                            child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
-                          ),),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Expanded(
-                                child: Padding(
-                                  padding: EdgeInsets.all(options.padding),
-                                  child: IconButton.outlined(
-                                    icon: FaIcon(
-                                      FontAwesomeIcons.check,
-                                      size: options.iconSize,
-                                    ),
-                                    onPressed: () {
-                                      onYes();
-                                    },
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: EdgeInsets.all(options.padding),
-                                  child: IconButton.outlined(
-                                    icon: FaIcon(
-                                      FontAwesomeIcons.xmark,
-                                      size: options.iconSize,
-                                    ),
-                                    onPressed: () {
-                                      onNo();
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -1213,31 +1187,15 @@ KPixOverlay getRasterLayerMenu({
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
             Center(
-              child: Material(
-                elevation: options.elevation,
-                shadowColor: Theme.of(context).primaryColorDark,
-                borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                child: Container(
+              child: Center(
+                child: KPixAnimationWidget(
                   constraints: BoxConstraints(
                     maxHeight: options.maxHeight / 4.0,
                     maxWidth: options.maxWidth / 2.0,
                   ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    border: Border.all(
-                      color: Theme.of(context).primaryColorLight,
-                      width: options.borderWidth,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-                  ),
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(options.padding),
-                      child: Text(
-                        message,
-                        style: Theme.of(context).textTheme.headlineLarge,
-                      ),
-                    ),
+                  child: Text(
+                    message,
+                    style: Theme.of(context).textTheme.headlineLarge,
                   ),
                 ),
               ),
@@ -1247,3 +1205,33 @@ KPixOverlay getRasterLayerMenu({
       ),
     );
   }
+
+KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String title = "SELECT A COLOR"})
+{
+  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+          ),
+          Center(
+            child: KPixAnimationWidget(
+              constraints: BoxConstraints(
+                maxHeight: options.maxHeight,
+                maxWidth: options.maxWidth,
+              ),
+              child: KPixColorPickerWidget(
+                dismiss: onDismiss,
+                colorSelected: onColorSelected,
+                ramps: ramps,
+                title: title,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}

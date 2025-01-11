@@ -488,7 +488,7 @@ abstract class IToolPainter
         if (!shaderOptions.isEnabled.value) //without shading
         {
           //if no selection and current pixel is different
-          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != selectedColor) ||
+          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord, withSettingsPixels: true) != selectedColor) ||
               //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != selectedColor))
           {
@@ -552,9 +552,9 @@ abstract class IToolPainter
     {
       for (int i = currentIndex; i >= 0; i--)
       {
-        if (appState.layers[i].runtimeType == ShadingLayerState && appState.layers[i].visibilityState.value == LayerVisibilityState.visible)
+        if (appState.getLayerAt(index: i).runtimeType == ShadingLayerState && appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
         {
-          final ShadingLayerState shadingLayer = appState.layers[i] as ShadingLayerState;
+          final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
             colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getValueAt(coord: coord)!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
@@ -580,27 +580,26 @@ abstract class IToolPainter
             coord.x < canvasSize.x &&
             coord.y < canvasSize.y)
         {
-          final List<LayerState> layers = appState.layers;
           final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
           if (currentLayerPos >= 0)
           {
             ColorReference? currentColor;
-            for (int i = layers.length - 1; i >= 0; i--)
+            for (int i = appState.layerCount - 1; i >= 0; i--)
             {
-              if (layers[i].visibilityState.value == LayerVisibilityState.visible)
+              if (appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
               {
-                if (layers[i].runtimeType == DrawingLayerState)
+                if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
                 {
-                  final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+                  final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
+                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
                   if (col != null)
                   {
                     currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
                   }
                 }
-                else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
+                else if (currentColor != null && appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
                 {
-                  final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+                  final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
                   if (shadingLayer.hasCoord(coord: coord))
                   {
                     final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
@@ -615,7 +614,7 @@ abstract class IToolPainter
               if (currentLayer.hasCoord(coord: coord))
               {
                 final int currentVal = currentLayer.getValueAt(coord: coord)!;
-                if (currentVal + shift < -ShadingLayerState.shadingMax || currentVal + shift > ShadingLayerState.shadingMax)
+                if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
                 {
                   shift = 0;
                 }
@@ -709,45 +708,38 @@ abstract class IToolPainter
           coord.x < canvasSize.x &&
           coord.y < canvasSize.y)
       {
-        final List<LayerState> layers = appState.layers;
         final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
         if (currentLayerPos >= 0)
         {
           ColorReference? currentColor;
-          for (int i = layers.length - 1; i >= currentLayerPos; i--)
+          for (int i = appState.layerCount - 1; i >= currentLayerPos; i--)
           {
-            if (layers[i].runtimeType == DrawingLayerState)
+            if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
             {
-              final DrawingLayerState drawingLayer = layers[i] as DrawingLayerState;
-              final ColorReference? col = drawingLayer.getDataEntry(coord: coord);
+              final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
+              final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
               if (col != null)
               {
-                currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+                currentColor = col;
               }
             }
-            else if (currentColor != null && layers[i].runtimeType == ShadingLayerState)
+            else if (currentColor != null && appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
             {
-              final ShadingLayerState shadingLayer = layers[i] as ShadingLayerState;
+              final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
               if (shadingLayer.hasCoord(coord: coord))
               {
-                final int newColorIndex = currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!;
+                final int newColorIndex = (currentColor.colorIndex + shadingLayer.getValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length -1);
                 currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
               }
             }
           }
           if (currentColor != null)
           {
-            int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
-            shift += stampEntry.value;
+            final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+            final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value);
+            final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
+            pixelMap[coord] = ColorReference(colorIndex: targetIndex, ramp: currentColor.ramp);
 
-            final int currentVal = currentLayer.hasCoord(coord: coord) ? currentLayer.getValueAt(coord: coord)! : 0;
-            if (currentVal + shift < -ShadingLayerState.shadingMax || currentVal + shift > ShadingLayerState.shadingMax)
-            {
-              shift = 0;
-            }
-
-            final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
-            pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
           }
         }
       }
@@ -781,8 +773,9 @@ abstract class IToolPainter
     final HashMap<CoordinateSetI, int> changeCoords = HashMap<CoordinateSetI, int>();
     for (final MapEntry<CoordinateSetI, int> entry in stampData.entries)
     {
-      final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! + currentShift + entry.value : currentShift + entry.value).clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
+      final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+      final int currentShift = shadingLayer.hasCoord(coord: entry.key) ? shadingLayer.getValueAt(coord: entry.key)! : 0;
+      final int targetShift = (shadingDirection + currentShift + (entry.value * shadingDirection)).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
       if (targetShift == 0)
       {
         removeCoords.add(entry.key);
@@ -808,7 +801,7 @@ abstract class IToolPainter
     for (final CoordinateSetI coord in coordinates)
     {
       final int currentShift = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(-ShadingLayerState.shadingMax, ShadingLayerState.shadingMax);
+      final int targetShift = (shadingLayer.hasCoord(coord: coord) ? shadingLayer.getValueAt(coord: coord)! + currentShift : currentShift).clamp(-shadingLayer.settings.shadingStepsMinus.value, shadingLayer.settings.shadingStepsPlus.value);
       if (targetShift == 0)
       {
         removeCoords.add(coord);

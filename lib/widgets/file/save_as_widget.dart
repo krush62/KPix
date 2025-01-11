@@ -22,6 +22,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:path/path.dart' as p;
 
@@ -62,123 +63,110 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
   @override
   Widget build(final BuildContext context)
   {
-    return Material(
-      elevation: _options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _options.minHeight,
-          minWidth: _options.minWidth,
-          maxHeight: _options.maxHeight,
-          maxWidth: _options.maxWidth,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: _options.borderWidth,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(_options.padding),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
-              SizedBox(height: _options.padding),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _options.minHeight,
+        minWidth: _options.minWidth,
+        maxHeight: _options.maxHeight,
+        maxWidth: _options.maxWidth,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
+          SizedBox(height: _options.padding),
+          Padding(
+            padding:  EdgeInsets.all(_options.padding),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Expanded(
+                  child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable: _fileName,
+                    builder: (final BuildContext context, final String? filePath, final Widget? child) {
+                      final TextEditingController controller = TextEditingController(text: filePath);
+                      controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                      return TextField(
+                        textAlign: TextAlign.end,
+                        focusNode: _hotkeyManager.saveAsFileNameTextFocus,
+                        controller: controller,
+                        onChanged: (final String value) {
+                          _fileName.value = value;
+                          _updateFileNameStatus();
+                        },
+                      );
+                    },
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: _fileName,
-                      builder: (final BuildContext context, final String? filePath, final Widget? child) {
-                        final TextEditingController controller = TextEditingController(text: filePath);
-                        controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                        return TextField(
-                          textAlign: TextAlign.end,
-                          focusNode: _hotkeyManager.saveAsFileNameTextFocus,
-                          controller: controller,
-                          onChanged: (final String value) {
-                            _fileName.value = value;
-                            _updateFileNameStatus();
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  const Expanded(
-                    child: Text(".$fileExtensionKpix"),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder<FileNameStatus>(
-                      valueListenable: _fileNameStatus,
-                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                        return Tooltip(
-                          message: fileNameStatusTextMap[status],
-                          waitDuration: AppState.toolTipDuration,
-                          child: FaIcon(
-                            fileNameStatusIconMap[status],
-                            size: _options.iconSize / 2,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.padding),
-                        child: IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.xmark,
-                            size: _options.iconSize,
-                          ),
-                          onPressed: () {
-                            widget.dismiss();
-                          },
+                ),
+                const Expanded(
+                  child: Text(".$fileExtensionKpix"),
+                ),
+                Expanded(
+                  child: ValueListenableBuilder<FileNameStatus>(
+                    valueListenable: _fileNameStatus,
+                    builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+                      return Tooltip(
+                        message: fileNameStatusTextMap[status],
+                        waitDuration: AppState.toolTipDuration,
+                        child: FaIcon(
+                          fileNameStatusIconMap[status],
+                          size: _options.iconSize / 2,
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(_options.padding),
-                        child: ValueListenableBuilder<FileNameStatus>(
-                          valueListenable: _fileNameStatus,
-                          builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                            return IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.check,
-                                size: _options.iconSize,
-                              ),
-                              onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
-                                  () {
-                                widget.accept(fileName: _fileName.value, callback: widget.callback);
-                              } : null,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
           ),
-      ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.padding),
+                    child: IconButton.outlined(
+                      icon: FaIcon(
+                        FontAwesomeIcons.xmark,
+                        size: _options.iconSize,
+                      ),
+                      onPressed: () {
+                        widget.dismiss();
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.padding),
+                    child: ValueListenableBuilder<FileNameStatus>(
+                      valueListenable: _fileNameStatus,
+                      builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+                        return IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.check,
+                            size: _options.iconSize,
+                          ),
+                          onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
+                              () {
+                            widget.accept(fileName: _fileName.value, callback: widget.callback);
+                          } : null,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
     );
   }
 }

@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/oss_licenses.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 class LicensesWidget extends StatelessWidget
@@ -33,24 +34,12 @@ class LicensesWidget extends StatelessWidget
   Widget build(final BuildContext context)
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-    return Material(
-      elevation: options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
         minHeight: options.minHeight,
         minWidth: options.minWidth,
         maxHeight: options.maxHeight * 2,
         maxWidth: options.maxWidth * 2,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-        border: Border.all(
-          color: Theme.of(context).primaryColorLight,
-          width: options.borderWidth,
-        ),
-        borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
       ),
       child: Column(
         children: <Widget>[
@@ -94,7 +83,6 @@ class LicensesWidget extends StatelessWidget
           ),
         ],
       ),
-    ),
-  );
+    );
   }
 }

@@ -27,16 +27,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/shading_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_shading_layer.dart';
+import 'package:kpix/managers/history/history_shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
@@ -45,6 +48,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
@@ -135,7 +139,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 };
 
 
-  const int fileVersion = 1;
+  const int fileVersion = 2;
   const String magicNumber = "4B504958";
   const String fileExtensionKpix = "kpix";
   const String fileExtensionKpal = "kpal";
@@ -168,7 +172,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
   }
 
 
-  Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings}) async
+  Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints}) async
   {
     try
     {
@@ -180,7 +184,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       final int fVersion = byteData.getUint8(offset++);
 
       if (mNumber != int.parse(magicNumber, radix: 16)) return LoadFileSet(status: "Wrong magic number: $mNumber");
-      if (fVersion != fileVersion) return LoadFileSet(status: "File Version: $fVersion");
+      if (fVersion > fileVersion) return LoadFileSet(status: "File Version: $fVersion");
 
       final int rampCount = byteData.getUint8(offset++);
       if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
@@ -245,9 +249,90 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
         if (historyLayerValueMap[layerType] == HistoryDrawingLayer) //DRAWING LAYER
         {
+          HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: HistoryColorReference(colorIndex: 0, rampIndex: 0));
           final int lockStateVal = byteData.getUint8(offset++);
           final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
           if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
+          if (fVersion >= 2)
+          {
+            //outer stroke
+            final int outerStrokeStyleVal = byteData.getUint8(offset++);
+            final OuterStrokeStyle? outerStrokeStyle = outerStrokeStyleValueMap[outerStrokeStyleVal];
+            if (outerStrokeStyle == null) return LoadFileSet(status: "Invalid outer stroke style for layer $i: $outerStrokeStyleVal");
+            final int outerAlignmentMask = byteData.getUint8(offset++);
+            final HashMap<Alignment, bool> outerStrokeDirections = _unPackAlignments(byte: outerAlignmentMask);
+            final int outerStrokeColorRampIndex = byteData.getUint8(offset++);
+            if (outerStrokeColorRampIndex >= rampList.length) return LoadFileSet(status: "Outer Stroke Color Ramp index out of range for layer $i : $outerStrokeColorRampIndex");
+            final int outerStrokeColorIndex = byteData.getUint8(offset++);
+            if (outerStrokeColorIndex >= rampList[outerStrokeColorRampIndex].settings.colorCount) return LoadFileSet(status: "Outer Stroke Color index out of range for layer $i: $outerStrokeColorIndex");
+            final HistoryColorReference outerColorReference = HistoryColorReference(colorIndex: outerStrokeColorIndex, rampIndex: outerStrokeColorRampIndex);
+            final int outerStrokeDarkenBrighten = byteData.getInt8(offset++);
+            if (outerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || outerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for outer stroke is out of range for layer $i: $outerStrokeDarkenBrighten");
+            final int outerStrokeGlowDepth = byteData.getUint8(offset++);
+            if (outerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || outerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax) return LoadFileSet(status: "Glow Depth for outer stroke is out of range for layer $i: $outerStrokeGlowDepth");
+            final int outerStrokeGlowDirectionValue = byteData.getUint8(offset++);
+            if (outerStrokeGlowDirectionValue != 0 && outerStrokeGlowDirectionValue != 1) return LoadFileSet(status: "Invalid glow direction value for outer stroke for layer $i: $outerStrokeGlowDirectionValue");
+            final bool outerStrokeGlowDirection = outerStrokeGlowDirectionValue != 0;
+
+            //inner stroke
+            final int innerStrokeStyleVal = byteData.getUint8(offset++);
+            final InnerStrokeStyle? innerStrokeStyle = innerStrokeStyleValueMap[innerStrokeStyleVal];
+            if (innerStrokeStyle == null) return LoadFileSet(status: "Invalid inner stroke style for layer $i: $outerStrokeStyleVal");
+            final int innerAlignmentMask = byteData.getUint8(offset++);
+            final HashMap<Alignment, bool> innerStrokeDirections = _unPackAlignments(byte: innerAlignmentMask);
+            final int innerStrokeColorRampIndex = byteData.getUint8(offset++);
+            if (innerStrokeColorRampIndex >= rampList.length) return LoadFileSet(status: "Inner Stroke Color Ramp index out of range for layer $i : $innerStrokeColorRampIndex");
+            final int innerStrokeColorIndex = byteData.getUint8(offset++);
+            if (innerStrokeColorIndex >= rampList[innerStrokeColorRampIndex].settings.colorCount) return LoadFileSet(status: "Inner Stroke Color index out of range for layer $i: $innerStrokeColorIndex");
+            final HistoryColorReference innerColorReference = HistoryColorReference(colorIndex: innerStrokeColorIndex, rampIndex: innerStrokeColorRampIndex);
+            final int innerStrokeDarkenBrighten = byteData.getInt8(offset++);
+            if (innerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || innerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for inner stroke is out of range for layer $i: $innerStrokeDarkenBrighten");
+            final int innerStrokeGlowDepth = byteData.getUint8(offset++);
+            if (innerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || innerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax) return LoadFileSet(status: "Glow Depth for inner stroke is out of range for layer $i: $innerStrokeGlowDepth");
+            final int innerStrokeGlowDirectionValue = byteData.getUint8(offset++);
+            if (innerStrokeGlowDirectionValue != 0 && innerStrokeGlowDirectionValue != 1) return LoadFileSet(status: "Invalid glow direction value for inner stroke for layer $i: $innerStrokeGlowDirectionValue");
+            final bool innerStrokeGlowDirection = innerStrokeGlowDirectionValue != 0;
+            final int innerStrokeBevelDistance = byteData.getUint8(offset++);
+            if (innerStrokeBevelDistance < drawingLayerSettingsConstraints.bevelDistanceMin || innerStrokeBevelDistance > drawingLayerSettingsConstraints.bevelDistanceMax) return LoadFileSet(status: "Bevel Distance out of range for layer $i: $innerStrokeBevelDistance");
+            final int innerStrokeBevelStrength = byteData.getUint8(offset++);
+            if (innerStrokeBevelStrength < drawingLayerSettingsConstraints.bevelStrengthMin || innerStrokeBevelStrength > drawingLayerSettingsConstraints.bevelStrengthMax) return LoadFileSet(status: "Bevel Strength out of range for layer $i: $innerStrokeBevelStrength");
+
+            //drop shadow
+            final int dropShadowStyleVal = byteData.getUint8(offset++);
+            final DropShadowStyle? dropShadowStyle = dropShadowStyleValueMap[dropShadowStyleVal];
+            if (dropShadowStyle == null) return LoadFileSet(status: "Invalid drop shadow style for layer $i: $dropShadowStyleVal");
+            final int dropShadowColorRampIndex = byteData.getUint8(offset++);
+            if (dropShadowColorRampIndex >= rampList.length) return LoadFileSet(status: "Drop Shadow Color Ramp index out of range for layer $i : $dropShadowColorRampIndex");
+            final int dropShadowColorIndex = byteData.getUint8(offset++);
+            if (dropShadowColorIndex >= rampList[dropShadowColorRampIndex].settings.colorCount) return LoadFileSet(status: "Drop Shadow Color index out of range for layer $i: $dropShadowColorIndex");
+            final HistoryColorReference dropShadowColorReference = HistoryColorReference(colorIndex: dropShadowColorIndex, rampIndex: dropShadowColorRampIndex);
+            final int dropShadowOffsetX = byteData.getInt8(offset++);
+            if (dropShadowOffsetX < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetX > drawingLayerSettingsConstraints.dropShadowOffsetMax) return LoadFileSet(status: "Drop Shadow offset x is out of range for layer $i: $dropShadowOffsetX");
+            final int dropShadowOffsetY = byteData.getInt8(offset++);
+            if (dropShadowOffsetY < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetY > drawingLayerSettingsConstraints.dropShadowOffsetMax) return LoadFileSet(status: "Drop Shadow offset y is out of range for layer $i: $dropShadowOffsetY");
+            final int dropShadowDarkenBrighten = byteData.getInt8(offset++);
+            if (dropShadowDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || dropShadowDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for drop shadow is out of range for layer $i: $dropShadowDarkenBrighten");
+            drawingLayerSettings = HistoryDrawingLayerSettings(
+                constraints: drawingLayerSettingsConstraints,
+                outerStrokeStyle: outerStrokeStyle,
+                outerSelectionMap: outerStrokeDirections,
+                outerColorReference: outerColorReference,
+                outerDarkenBrighten: outerStrokeDarkenBrighten,
+                outerGlowDepth: outerStrokeGlowDepth,
+                outerGlowDirection: outerStrokeGlowDirection,
+                innerStrokeStyle: innerStrokeStyle,
+                innerSelectionMap: innerStrokeDirections,
+                innerColorReference: innerColorReference,
+                innerDarkenBrighten: innerStrokeDarkenBrighten,
+                innerGlowDepth: innerStrokeGlowDepth,
+                innerGlowDirection: innerStrokeGlowDirection,
+                bevelDistance: innerStrokeBevelDistance,
+                bevelStrength: innerStrokeBevelStrength,
+                dropShadowStyle: dropShadowStyle,
+                dropShadowColorReference: dropShadowColorReference,
+                dropShadowOffset: CoordinateSetI(x: dropShadowOffsetX, y: dropShadowOffsetY),
+                dropShadowDarkenBrighten: dropShadowDarkenBrighten,);
+          }
           final int dataCount = byteData.getUint32(offset);
           offset+=4;
           final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap<CoordinateSetI, HistoryColorReference>();
@@ -258,10 +343,12 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final int y = byteData.getUint16(offset);
             offset+=2;
             final int colorRampIndex = byteData.getUint8(offset++);
+            if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
             final int colorIndex = byteData.getUint8(offset++);
+            if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
             data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
           }
-          layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data));
+          layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data, settings: drawingLayerSettings));
         }
         else if (historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
         {
@@ -345,6 +432,18 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           final int lockStateVal = byteData.getUint8(offset++);
           final LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
           if (lockState == null) return LoadFileSet(status: "Invalid lock type for layer $i: $lockStateVal");
+
+          HistoryShadingLayerSettings shadingLayerSettings = HistoryShadingLayerSettings.defaultValue(constraints: shadingLayerSettingsConstraints);
+          if (fVersion >= 2)
+          {
+            final int shadingStepLimitLow = byteData.getUint8(offset++);
+            if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitLow > shadingLayerSettingsConstraints.shadingStepsMax) return LoadFileSet(status: "Shading step limit low is out of range for layer $i: $shadingStepLimitLow");
+            final int shadingStepLimitHigh = byteData.getUint8(offset++);
+            if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitHigh > shadingLayerSettingsConstraints.shadingStepsMax) return LoadFileSet(status: "Shading step limit high is out of range for layer $i: $shadingStepLimitHigh");
+            shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
+          }
+
+
           final int dataCount = byteData.getUint32(offset);
           offset+=4;
           final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
@@ -355,11 +454,10 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final int y = byteData.getUint16(offset);
             offset+=2;
             final int shading = byteData.getInt8(offset++);
-            if (shading < -ShadingLayerState.shadingMax || shading > ShadingLayerState.shadingMax) return LoadFileSet(status: "Shading value out of range on layer $i: $shading");
             data[CoordinateSetI(x: x, y: y)] = shading;
           }
 
-          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data));
+          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings));
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
@@ -372,6 +470,19 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       return LoadFileSet(status: "Could not load file $path");
     }
   }
+
+
+
+HashMap<Alignment, bool> _unPackAlignments({required final int byte})
+{
+  assert(allAlignments.length == 8);
+  final HashMap<Alignment, bool> alignments = HashMap<Alignment, bool>();
+  for (int i = 0; i < 8; i++)
+  {
+    alignments[allAlignments.elementAt(i)] = (byte & (1 << i)) != 0;
+  }
+  return alignments;
+}
 
   Future<String?> getPathForKPixFile() async
   {
@@ -511,6 +622,8 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
         referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
         gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
+        drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+        shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
       ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
     }
   }
@@ -546,7 +659,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
       if (pngPath != null)
       {
-        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layers: appState.layers, selectionList: appState.selectionState.selection, selectedLayerIndex: appState.getSelectedLayerIndex());
+        final ui.Image img = await getImageFromLayers(appState: appState);
         final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
         await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
       }
@@ -1081,6 +1194,8 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
             referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
             gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
+            drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+            shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
         );
         final AppState appState = GetIt.I.get<AppState>();
         if (loadFileSet.historyState != null && loadFileSet.path != null)

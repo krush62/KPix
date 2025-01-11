@@ -276,7 +276,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      if (!_shaderOptions.isEnabled.value)
+      if (!_shaderOptions.isEnabled.value && !(_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
       {
         _previousTool = _appState.selectedTool;
         _appState.setToolSelection(tool: ToolType.pick);
@@ -338,7 +338,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      if (_shaderOptions.isEnabled.value)
+      if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
       {
         final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
         if (currentDirection == ShaderDirection.left)
@@ -690,7 +690,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
       if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
       {
-        if (_shaderOptions.isEnabled.value)
+        if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
         {
           final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
           if (currentDirection == ShaderDirection.left)
@@ -713,7 +713,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
               value: _cursorPos.value!.y - _canvasOffset.value.dy,
               pixelSize: _appState.zoomFactor.toDouble(),)
             ,);
-          final ColorReference? colRef = ColorPickPainter.getColorFromImageAtPosition(appState: _appState, normPos: normPos);
+          final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
           if (colRef != null && colRef != _appState.selectedColor)
           {
             _appState.colorSelected(color: colRef);
@@ -832,10 +832,10 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                       builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
                         return IgnorePointer(
                           ignoring: toolType != ToolType.select && hasNoSelection,
-                          child: AnimatedScale(
+                          child: AnimatedSlide(
                             duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                            scale: (toolType == ToolType.select || !hasNoSelection) ? 1.0 : 0.0,
-                            alignment: Alignment.bottomCenter,
+                            offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
+                            curve: Curves.easeInOut,
                             //opacity: toolType == ToolType.select ? 1.0 : 0.0,
                             child: const Align(
                                 alignment: Alignment.bottomCenter,

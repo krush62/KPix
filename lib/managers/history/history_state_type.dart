@@ -29,10 +29,14 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewDrawing, description: "add new drawing layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerNewReference: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewReference, description: "add new reference layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerNewGrid: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewGrid, description: "add new grid layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerNewShading: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerNewShading, description: "add new shading layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerOrderChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerOrderChange, description: "change layer order", compressionBehavior: HistoryStateCompressionBehavior.merge),
   HistoryStateTypeIdentifier.layerVisibilityChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerVisibilityChange, description: "layer visibility changed", compressionBehavior: HistoryStateCompressionBehavior.delete),
   HistoryStateTypeIdentifier.layerLockChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerLockChange, description: "layer lock state changed", compressionBehavior: HistoryStateCompressionBehavior.delete),
   HistoryStateTypeIdentifier.layerChangeReferenceImage: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, description: "change reference image", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerRaster, description: "raster layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsChange, description: "layer settings change", compressionBehavior: HistoryStateCompressionBehavior.merge),
+  HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsRaster, description: "layer settings raster", compressionBehavior: HistoryStateCompressionBehavior.merge),
 
   HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasSizeChange, description: "change canvas size", compressionBehavior: HistoryStateCompressionBehavior.leave),
 
@@ -67,6 +71,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.kPalChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalChange, description: "update ramp", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalPaletteReplace, description: "replace palette", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.kPalAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalAdd, description: "add new ramp", compressionBehavior: HistoryStateCompressionBehavior.leave),
+
 };
 
 
@@ -84,10 +89,14 @@ enum HistoryStateTypeIdentifier
   layerNewDrawing,
   layerNewReference,
   layerNewGrid,
+  layerNewShading,
   layerOrderChange,
   layerVisibilityChange,
   layerLockChange,
   layerChangeReferenceImage,
+  layerRaster,
+  layerSettingsChange,
+  layerSettingsRaster,
 
   selectionNew,
   selectionDeselect,

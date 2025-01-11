@@ -36,6 +36,7 @@ class KPixSlider extends StatelessWidget
   final double topBottomPadding;
   final String? label;
   final bool isRainbow;
+  final bool showPlusSignForPositive;
 
   const KPixSlider({
     super.key,
@@ -57,6 +58,7 @@ class KPixSlider extends StatelessWidget
     this.topBottomPadding = 8.0,
     this.label,
     this.isRainbow = false,
+    this.showPlusSignForPositive = false,
 
   });
 
@@ -67,6 +69,20 @@ class KPixSlider extends StatelessWidget
     final Color bgColor = inActiveTrackColor ?? Theme.of(context).primaryColor;
     final Color disColor = disabledColor ?? Theme.of(context).primaryColorDark;
     final Color bColor = borderColor ?? Theme.of(context).primaryColorLight;
+
+    String displayText;
+    if (label != null)
+    {
+      displayText = label!;
+    }
+    else if (value > 0 && showPlusSignForPositive)
+    {
+      displayText = "+${value.toStringAsFixed(decimals)}";
+    }
+    else
+    {
+      displayText = value.toStringAsFixed(decimals);
+    }
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: topBottomPadding),
@@ -98,7 +114,7 @@ class KPixSlider extends StatelessWidget
                     alignment: Alignment.center,
                     children: <Widget>[
                       Text(
-                        label ?? value.toStringAsFixed(decimals),
+                        displayText,
                         style: TextStyle(
                           fontSize: textStyle.fontSize,
                           fontFamily: textStyle.fontFamily,
@@ -109,7 +125,7 @@ class KPixSlider extends StatelessWidget
                         ),
                       ),
                       Text(
-                        label ?? value.toStringAsFixed(decimals),
+                        displayText,
                         style: TextStyle(
                           fontSize: textStyle.fontSize,
                           fontFamily: textStyle.fontFamily,
@@ -229,6 +245,10 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
         ..color = isEnabled ? sliderTheme.activeTrackColor! : sliderTheme.disabledActiveTrackColor!
         ..style = PaintingStyle.fill;
 
+      final Paint inActivePaint = Paint()
+      ..color = isEnabled ? sliderTheme.inactiveTrackColor! : Colors.transparent
+      ..style = PaintingStyle.fill;
+
       if (isRainbow)
       {
         activePaint = Paint()
@@ -244,7 +264,13 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
         trackRect.bottom,
       );
 
-
+      if (!isRainbow)
+      {
+        context.canvas.drawRRect(
+          RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
+          inActivePaint,
+        );
+      }
 
       context.canvas.drawRRect(
         RRect.fromRectAndRadius(isRainbow ? trackRect : activeTrack, Radius.circular(borderRadius)),

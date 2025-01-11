@@ -116,6 +116,23 @@ class ColorSet
       ),
     ),
 
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(_lightColors.light),
+        overlayColor: WidgetStateProperty.all(_lightColors.light),
+        surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            side: BorderSide(color: _lightColors.light),
+            borderRadius:
+            const BorderRadius.all(Radius.circular(4)),
+          ),
+        ),
+      ),
+    ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         elevation: WidgetStateProperty.all(_lightColors.elevation),
@@ -135,6 +152,7 @@ class ColorSet
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
           backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.light : _lightColors.normal),
+          padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
         ),
     ),
     textSelectionTheme: TextSelectionThemeData(
@@ -161,27 +179,29 @@ class ColorSet
 
     //fontFamily: "PixelFonts",
 
-    textTheme: GoogleFonts.oxaniumTextTheme( TextTheme(
-      displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: darkColors.light),
-      displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: darkColors.light),
-      displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: darkColors.light),
+    textTheme: GoogleFonts.oxaniumTextTheme(
+      TextTheme(
+        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: darkColors.light),
+        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: darkColors.light),
+        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: darkColors.light),
 
-      headlineLarge: TextStyle(fontSize: 32, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: darkColors.light),
-      headlineMedium: TextStyle(fontSize: 28, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: darkColors.light),
-      headlineSmall: TextStyle(fontSize: 24, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: darkColors.light),
+        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: darkColors.light),
+        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: darkColors.light),
+        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: darkColors.light),
 
-      titleLarge: TextStyle(fontSize: 22, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w600, color: darkColors.light),
-      titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600, color: darkColors.light),
-      titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: darkColors.light),
+        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: darkColors.light),
+        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: darkColors.light),
+        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: darkColors.light),
 
-      labelLarge: TextStyle(fontSize: 14, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: darkColors.light),
-      labelMedium: TextStyle(fontSize: 12,letterSpacing: 0.5, fontWeight: FontWeight.w600, color: darkColors.light),
-      labelSmall: TextStyle(fontSize: 11, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: darkColors.light),
+        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: darkColors.light),
+        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: darkColors.light),
+        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: darkColors.light),
 
-      bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: darkColors.light),
-      bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: darkColors.light),
-      bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: darkColors.light),
-    ),),
+        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: darkColors.light),
+        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: darkColors.light),
+        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: darkColors.light),
+      ),
+    ),
 
     sliderTheme: SliderThemeData(
       activeTrackColor: darkColors.light,
@@ -229,6 +249,23 @@ class ColorSet
       ),
     ),
 
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(darkColors.light),
+        overlayColor: WidgetStateProperty.all(darkColors.light),
+        surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            side: BorderSide(color: darkColors.light, width: 2),
+            borderRadius:
+            const BorderRadius.all(Radius.circular(4)),
+          ),
+        ),
+      ),
+    ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         elevation: WidgetStateProperty.all(darkColors.elevation),
@@ -247,6 +284,7 @@ class ColorSet
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? darkColors.normal : darkColors.light),
           backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? darkColors.light : darkColors.normal),
+          padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
         ),
     ),
       textSelectionTheme: TextSelectionThemeData(

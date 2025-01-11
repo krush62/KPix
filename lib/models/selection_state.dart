@@ -610,7 +610,7 @@ class SelectionState with ChangeNotifier
   void copyMerged({final bool notify = true, final bool keepSelection = false})
   {
     final CoordinateColorMapNullable tempCB = HashMap<CoordinateSetI, ColorReference?>();
-    final Iterable<LayerState> visibleLayers = _appState.layers.where((final LayerState x) => x.visibilityState.value == LayerVisibilityState.visible);
+    final Iterable<LayerState> visibleLayers = _appState.visibleLayers;
     final Iterable<CoordinateSetI> coords = selection.getCoordinates();
     bool hasValues = false;
 

@@ -192,11 +192,20 @@ class _KPixRangeSliderTrackShape extends RoundedRectRangeSliderTrackShape {
       ..color = sliderTheme.activeTrackColor!
       ..style = PaintingStyle.fill;
 
+    final Paint inActivePaint = Paint()
+      ..color = isEnabled ? sliderTheme.inactiveTrackColor! : Colors.transparent
+      ..style = PaintingStyle.fill;
+
     final Rect activeTrack = Rect.fromLTRB(
       startThumbCenter.dx,
       trackRect.top,
       endThumbCenter.dx,
       trackRect.bottom,
+    );
+
+    context.canvas.drawRRect(
+      RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
+      inActivePaint,
     );
 
     context.canvas.drawRRect(

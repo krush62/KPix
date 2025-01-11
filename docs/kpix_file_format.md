@@ -35,7 +35,7 @@ The kpix file format consists of the following three consecutive sections:
 
 ### Header
 * magic_number ``ubyte (4)`` //``4B 50 49 58``
-* file_format_version ``ubyte (1)`` // currently: ``01``
+* file_format_version ``ubyte (1)`` // currently: ``02``
 
 ### Palette
 * ramp_count ``ubyte (1)`` // how many color ramps in the palette
@@ -65,7 +65,29 @@ The kpix file format consists of the following three consecutive sections:
 
   // data for type ``01`` (drawing layer)  
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``01`` = transparency locked, ``02`` = locked
-  * data_count ``uint (1)`` //how many non-transparent pixels on layer
+  * outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
+  * outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+  * outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+  * outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+  * outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
+  * outer_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+  * outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+  * inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
+  * inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+  * inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+  * inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+  * inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+  * inner_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+  * inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+  * inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
+  * inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
+  * drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
+  * drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+  * drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
+  * drop_shadow_offset_x ``byte (1)`` // -16...16
+  * drop_shadow_offset_y ``byte (1)`` // -16...16
+  * drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+  * data_count ``uint (1)`` // how many non-transparent pixels on layer
   * Image_Data ``(data_count)``
     * x ``ushort (1)`` // x position
     * y ``ushort (1)`` // y position
@@ -93,6 +115,8 @@ The kpix file format consists of the following three consecutive sections:
 
   // data for type ``04`` (shading layer)
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``02`` = locked
+  * shading_step_limit_low ``ubyte (1)`` // 1...6
+  * shading_step_limit_high ``ubyte (1)`` // 1...6
   * data_count ``uint (1)`` //how many shading pixels exist on the layer
   * Image_Data ``(data_count)``
     * x ``ushort (1)`` // x position

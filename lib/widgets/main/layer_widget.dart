@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -29,9 +30,9 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
-class LayerWidget extends StatefulWidget
-{
+class LayerWidget extends StatefulWidget {
   final LayerState layerState;
+
   const LayerWidget({
     super.key,
     required this.layerState,
@@ -41,65 +42,69 @@ class LayerWidget extends StatefulWidget
   State<LayerWidget> createState() => _LayerWidgetState();
 }
 
-const Map<Type, IconData> layerIconMap =
-<Type, IconData>{
+const Map<Type, IconData> layerIconMap = <Type, IconData>{
   ReferenceLayerState: FontAwesomeIcons.image,
   GridLayerState: FontAwesomeIcons.tableCells,
   ShadingLayerState: Icons.exposure,
 };
 
-class _LayerWidgetState extends State<LayerWidget>
-{
+class _LayerWidgetState extends State<LayerWidget> {
   final AppState _appState = GetIt.I.get<AppState>();
-  final LayerWidgetOptions _options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
+  final LayerWidgetOptions _options =
+      GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
-  static const Map<LayerVisibilityState, IconData> _visibilityIconMap = <LayerVisibilityState, IconData>{
+  static const Map<LayerVisibilityState, IconData> _visibilityIconMap =
+      <LayerVisibilityState, IconData>{
     LayerVisibilityState.visible: FontAwesomeIcons.eye,
     LayerVisibilityState.hidden: FontAwesomeIcons.eyeSlash,
   };
 
-  static const Map<LayerVisibilityState, String> _visibilityTooltipMap = <LayerVisibilityState, String>{
+  static const Map<LayerVisibilityState, String> _visibilityTooltipMap =
+      <LayerVisibilityState, String>{
     LayerVisibilityState.visible: "Visible",
     LayerVisibilityState.hidden: "Hidden",
   };
 
-  static const Map<LayerLockState, IconData> _lockIconMap = <LayerLockState, IconData>{
+  static const Map<LayerLockState, IconData> _lockIconMap =
+      <LayerLockState, IconData>{
     LayerLockState.unlocked: FontAwesomeIcons.lockOpen,
     LayerLockState.transparency: FontAwesomeIcons.unlockKeyhole,
     LayerLockState.locked: FontAwesomeIcons.lock,
   };
 
-  static const Map<LayerLockState, String> _lockStringMap = <LayerLockState, String>{
+  static const Map<LayerLockState, String> _lockStringMap =
+      <LayerLockState, String>{
     LayerLockState.unlocked: "Unlocked",
     LayerLockState.transparency: "Transparency locked",
     LayerLockState.locked: "Locked",
   };
 
-  final LayerLink settingsLink = LayerLink();
-  late KPixOverlay settingsMenuDrawing;
-  late KPixOverlay settingsMenuReduced;
-  late KPixOverlay settingsMenuRaster;
+  final LayerLink actionsLink = LayerLink();
+  late KPixOverlay actionsMenuDrawing;
+  late KPixOverlay actionsMenuReduced;
+  late KPixOverlay actionsMenuRaster;
 
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
-    settingsMenuDrawing = getDrawingLayerMenu(
-      onDismiss: _closeSettingsMenus,
-      layerLink: settingsLink,
+    actionsMenuDrawing = getDrawingLayerMenu(
+      onDismiss: _closeActionsMenus,
+      layerLink: actionsLink,
       onDelete: _deletePressed,
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
     );
-    settingsMenuReduced = getReducedLayerMenu(
-      onDismiss: _closeSettingsMenus,
-      layerLink: settingsLink,
+    actionsMenuReduced = getReducedLayerMenu(
+      onDismiss: _closeActionsMenus,
+      layerLink: actionsLink,
       onDelete: _deletePressed,
       onDuplicate: _duplicatePressed,
     );
-    settingsMenuRaster = getRasterLayerMenu(
-      onDismiss: _closeSettingsMenus,
-      layerLink: settingsLink,
+    actionsMenuRaster = getRasterLayerMenu(
+      onDismiss: _closeActionsMenus,
+      layerLink: actionsLink,
       onDelete: _deletePressed,
       onDuplicate: _duplicatePressed,
       onRaster: _rasterPressed,
@@ -109,51 +114,45 @@ class _LayerWidgetState extends State<LayerWidget>
   void _deletePressed()
   {
     _appState.layerDeleted(deleteLayer: widget.layerState);
-    _closeSettingsMenus();
+    _closeActionsMenus();
   }
 
   void _mergeDownPressed()
   {
     _appState.layerMerged(mergeLayer: widget.layerState);
-    _closeSettingsMenus();
+    _closeActionsMenus();
   }
 
   void _duplicatePressed()
   {
     _appState.layerDuplicated(duplicateLayer: widget.layerState);
-    _closeSettingsMenus();
+    _closeActionsMenus();
   }
 
   void _rasterPressed()
   {
     _appState.layerRastered(rasterLayer: widget.layerState);
-    _closeSettingsMenus();
+    _closeActionsMenus();
   }
 
-  void _closeSettingsMenus()
+  void _closeActionsMenus()
   {
-    settingsMenuDrawing.hide();
-    settingsMenuReduced.hide();
-    settingsMenuRaster.hide();
+    actionsMenuDrawing.hide();
+    actionsMenuReduced.hide();
+    actionsMenuRaster.hide();
   }
 
-  void _settingsButtonPressed()
+  void _actionsButtonPressed()
   {
     final Type layerType = widget.layerState.runtimeType;
-    if (layerType == DrawingLayerState)
-    {
-      settingsMenuDrawing.show(context: context);
-    }
-    else if (layerType == GridLayerState || layerType == ShadingLayerState)
-    {
-      settingsMenuRaster.show(context: context);
-    }
-    else
-    {
-      settingsMenuReduced.show(context: context);
+    if (layerType == DrawingLayerState) {
+      actionsMenuDrawing.show(context: context);
+    } else if (layerType == GridLayerState || layerType == ShadingLayerState) {
+      actionsMenuRaster.show(context: context);
+    } else {
+      actionsMenuReduced.show(context: context);
     }
   }
-
 
   void _visibilityButtonPressed()
   {
@@ -165,9 +164,16 @@ class _LayerWidgetState extends State<LayerWidget>
     _appState.changeLayerLockState(layerState: widget.layerState);
   }
 
+  void _settingsButtonPressed()
+  {
+    _appState.selectLayer(newLayer: widget.layerState);
+    _appState.layerSettingsVisible = true;
+  }
+
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context)
+  {
     return LongPressDraggable<LayerState>(
       delay: Duration(milliseconds: _options.dragDelay),
       data: widget.layerState,
@@ -182,181 +188,357 @@ class _LayerWidgetState extends State<LayerWidget>
         color: Theme.of(context).primaryColor,
       ),
       child: Padding(
-        padding: EdgeInsets.only(left: _options.outerPadding, right: _options.outerPadding),
+        padding: EdgeInsets.only(
+            left: _options.outerPadding, right: _options.outerPadding,),
         child: SizedBox(
           height: _options.height,
           child: ValueListenableBuilder<bool>(
             valueListenable: widget.layerState.isSelected,
-            builder: (final BuildContext context, final bool isSelected, final Widget? child) {
-            return Container(
-              padding: EdgeInsets.all(_options.innerPadding),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.all(
+            builder: (final BuildContext context, final bool isSelected,
+                final Widget? child,) {
+              return Container(
+                padding: EdgeInsets.all(_options.innerPadding),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.all(
                     Radius.circular(_options.borderRadius),
+                  ),
+                  border: Border.all(
+                    color: isSelected
+                        ? Theme.of(context).primaryColorLight
+                        : Theme.of(context).primaryColorDark,
+                    width: _options.borderWidth,
+                  ),
                 ),
-                border: Border.all(
-                  color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark,
-                  width: _options.borderWidth,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(
-                        right: _options.innerPadding,),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Expanded(
-                          child: ValueListenableBuilder<LayerVisibilityState>(
-                            valueListenable: widget.layerState.visibilityState,
-                            builder: (final BuildContext context, final LayerVisibilityState visibility, final Widget? child) {
-                              return Tooltip(
-                                message: _visibilityTooltipMap[visibility]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchVisibility),
-                                waitDuration: AppState.toolTipDuration,
-                                child: IconButton.outlined(
-                                  padding: EdgeInsets.zero,
-                                  constraints: BoxConstraints(
-                                    maxHeight: _options.buttonSizeMax,
-                                    maxWidth: _options.buttonSizeMax,
-                                    minWidth: _options.buttonSizeMin,
-                                    minHeight: _options.buttonSizeMin,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(
+                        right: _options.innerPadding,
+                      ),
+                      child: Builder(
+                        builder: (final BuildContext context) {
+                          final Column leftColumn = Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Expanded(
+                                child: ValueListenableBuilder<
+                                    LayerVisibilityState>(
+                                  valueListenable:
+                                      widget.layerState.visibilityState,
+                                  builder: (final BuildContext context,
+                                      final LayerVisibilityState visibility,
+                                      final Widget? child,) {
+                                    return Tooltip(
+                                      message:
+                                          _visibilityTooltipMap[visibility]! +
+                                              _hotkeyManager.getShortcutString(
+                                                  action: HotkeyAction
+                                                      .layersSwitchVisibility,),
+                                      waitDuration: AppState.toolTipDuration,
+                                      child: IconButton.outlined(
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(
+                                          maxHeight: _options.buttonSizeMax,
+                                          maxWidth: _options.buttonSizeMax,
+                                          minWidth: _options.buttonSizeMin,
+                                          minHeight: _options.buttonSizeMin,
+                                        ),
+                                        style: ButtonStyle(
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          backgroundColor: visibility ==
+                                                  LayerVisibilityState.hidden
+                                              ? WidgetStatePropertyAll<Color?>(
+                                                  Theme.of(context)
+                                                      .primaryColorLight,)
+                                              : null,
+                                          iconColor: visibility ==
+                                                  LayerVisibilityState.hidden
+                                              ? WidgetStatePropertyAll<Color?>(
+                                                  Theme.of(context)
+                                                      .primaryColor,)
+                                              : null,
+                                        ),
+                                        onPressed: _visibilityButtonPressed,
+                                        icon: FaIcon(
+                                          _visibilityIconMap[visibility],
+                                          size: _options.iconSize,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+
+                          if (widget.layerState.runtimeType ==
+                                  DrawingLayerState ||
+                              widget.layerState.runtimeType ==
+                                  ShadingLayerState) {
+                            final ValueNotifier<LayerLockState> layerLockState =
+                                (widget.layerState.runtimeType ==
+                                        DrawingLayerState)
+                                    ? (widget.layerState as DrawingLayerState)
+                                        .lockState
+                                    : (widget.layerState as ShadingLayerState)
+                                        .lockState;
+                            leftColumn.children
+                                .add(SizedBox(height: _options.innerPadding));
+                            leftColumn.children.add(
+                              Expanded(
+                                child: ValueListenableBuilder<LayerLockState>(
+                                  valueListenable: layerLockState,
+                                  builder: (final BuildContext context,
+                                      final LayerLockState lock,
+                                      final Widget? child,) {
+                                    return Tooltip(
+                                      message: _lockStringMap[lock]! +
+                                          _hotkeyManager.getShortcutString(
+                                              action: HotkeyAction
+                                                  .layersSwitchLock,),
+                                      waitDuration: AppState.toolTipDuration,
+                                      child: IconButton.outlined(
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(
+                                          maxHeight: _options.buttonSizeMax,
+                                          maxWidth: _options.buttonSizeMax,
+                                          minWidth: _options.buttonSizeMin,
+                                          minHeight: _options.buttonSizeMin,
+                                        ),
+                                        style: ButtonStyle(
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          backgroundColor: lock ==
+                                                  LayerLockState.unlocked
+                                              ? null
+                                              : WidgetStatePropertyAll<Color?>(
+                                                  Theme.of(context)
+                                                      .primaryColorLight,),
+                                          iconColor: lock ==
+                                                  LayerLockState.unlocked
+                                              ? null
+                                              : WidgetStatePropertyAll<Color?>(
+                                                  Theme.of(context)
+                                                      .primaryColor,),
+                                        ),
+                                        onPressed: _lockButtonPressed,
+                                        icon: FaIcon(
+                                          _lockIconMap[lock],
+                                          size: _options.iconSize,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          }
+                          return leftColumn;
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          _appState.selectLayer(newLayer: widget.layerState);
+                        },
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            ValueListenableBuilder<ui.Image?>(
+                              valueListenable: widget.layerState.thumbnail,
+                              builder: (final BuildContext context,
+                                  final ui.Image? img, final Widget? child,) {
+                                return RawImage(
+                                  image: img,
+                                );
+                              },
+                            ),
+                            Center(
+                              child: FaIcon(
+                                layerIconMap[widget.layerState.runtimeType],
+                                size: _options.height / 2,
+                                color: Theme.of(context).primaryColorLight,
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    offset: const Offset(0.0, 1.0),
+                                    blurRadius: 2.0,
+                                    color: Theme.of(context).primaryColorDark,
                                   ),
-                                  style: ButtonStyle(
-                                    tapTargetSize: MaterialTapTargetSize
-                                        .shrinkWrap,
-                                    backgroundColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColorLight) : null,
-                                    iconColor: visibility == LayerVisibilityState.hidden ? WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColor) : null,
-                                  ),
-                                  onPressed: _visibilityButtonPressed,
-                                  icon: FaIcon(
-                                    _visibilityIconMap[visibility],
-                                    size: _options.iconSize,
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: _options.innerPadding,
+                      ),
+                      child: Builder(
+                        builder: (final BuildContext context) {
+                          final Column rightColumn = Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Expanded(
+                                child: CompositedTransformTarget(
+                                  link: actionsLink,
+                                  child: Tooltip(
+                                    message: "Layer Actions...",
+                                    waitDuration: AppState.toolTipDuration,
+                                    child: Builder(
+                                      builder: (final BuildContext context) {
+                                        ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
+                                        if (widget.layerState.runtimeType == DrawingLayerState)
+                                        {
+                                          final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                                          lockStateNotifier = drawingLayer.lockState;
+                                        }
+                                        else if (widget.layerState.runtimeType == ShadingLayerState)
+                                        {
+                                          final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
+                                          lockStateNotifier = shadingLayer.lockState;
+                                        }
+                                        return ValueListenableBuilder<LayerLockState>(
+                                          valueListenable: lockStateNotifier,
+                                          builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
+                                            return IconButton.outlined(
+                                              padding: EdgeInsets.zero,
+                                              constraints: BoxConstraints(
+                                                maxHeight: _options.buttonSizeMax,
+                                                maxWidth: _options.buttonSizeMax,
+                                                minWidth: _options.buttonSizeMin,
+                                                minHeight: _options.buttonSizeMin,
+                                              ),
+                                              style: const ButtonStyle(
+                                                tapTargetSize:
+                                                MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                              onPressed: lockState != LayerLockState.locked ? _actionsButtonPressed : null,
+                                              icon: FaIcon(
+                                                FontAwesomeIcons.bars,
+                                                size: _options.iconSize,
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                        SizedBox(height: _options.innerPadding),
-                        Builder(
-                          builder: (final BuildContext context) {
-                            if (widget.layerState.runtimeType == DrawingLayerState || widget.layerState.runtimeType == ShadingLayerState)
-                            {
-                              final ValueNotifier<LayerLockState> layerLockState = (widget.layerState.runtimeType == DrawingLayerState) ? (widget.layerState as DrawingLayerState).lockState : (widget.layerState as ShadingLayerState).lockState;
-                              return Expanded(
-                                child: ValueListenableBuilder<LayerLockState>(
-                                    valueListenable: layerLockState,
-                                    builder: (final BuildContext context, final LayerLockState lock, final Widget? child) {
-                                      return Tooltip(
-                                        message: _lockStringMap[lock]! + _hotkeyManager.getShortcutString(action: HotkeyAction.layersSwitchLock),
-                                        waitDuration: AppState.toolTipDuration,
-                                        child: IconButton.outlined(
-                                            padding: EdgeInsets.zero,
-                                            constraints: BoxConstraints(
-                                              maxHeight: _options.buttonSizeMax,
-                                              maxWidth: _options.buttonSizeMax,
-                                              minWidth: _options.buttonSizeMin,
-                                              minHeight: _options.buttonSizeMin,
-                                            ),
-                                            style: ButtonStyle(
-                                              tapTargetSize: MaterialTapTargetSize
-                                                  .shrinkWrap,
-                                              backgroundColor: lock == LayerLockState.unlocked ? null : WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColorLight),
-                                              iconColor: lock == LayerLockState.unlocked ? null: WidgetStatePropertyAll<Color?>(Theme.of(context).primaryColor),
-                                            ),
-                                            onPressed: _lockButtonPressed,
-                                            icon: FaIcon(
-                                              _lockIconMap[lock],
-                                              size: _options.iconSize,
-                                            ),
-                                        ),
+                              ),
+                            ],
+                          );
+
+                          if (widget.layerState.runtimeType ==
+                                  DrawingLayerState ||
+                              widget.layerState.runtimeType ==
+                                  ShadingLayerState) {
+                            rightColumn.children
+                                .add(SizedBox(height: _options.innerPadding));
+
+                            rightColumn.children.add(
+                              Expanded(
+                                child: Tooltip(
+                                  message: "Settings",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: Builder(
+                                    builder: (final BuildContext context) {
+                                      ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
+                                      Listenable changeListenable = ChangeNotifier();
+                                      if (widget.layerState.runtimeType == DrawingLayerState)
+                                      {
+                                        final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                                        lockStateNotifier = drawingLayer.lockState;
+                                        changeListenable = drawingLayer.settings;
+                                      }
+                                      else if (widget.layerState.runtimeType == ShadingLayerState)
+                                      {
+                                        final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
+                                        lockStateNotifier = shadingLayer.lockState;
+                                        changeListenable = shadingLayer.settings;
+                                      }
+                                      return ValueListenableBuilder<LayerLockState>(
+                                        valueListenable: lockStateNotifier,
+                                        builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
+                                          return ListenableBuilder(
+                                            listenable: changeListenable,
+                                            builder: (final BuildContext context, final Widget? child) {
+                                              bool hasChanges = false;
+                                              if (widget.layerState.runtimeType == DrawingLayerState)
+                                              {
+                                                final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
+                                                if (drawingLayer.settings.outerStrokeStyle.value != OuterStrokeStyle.off ||
+                                                    drawingLayer.settings.innerStrokeStyle.value != InnerStrokeStyle.off ||
+                                                    drawingLayer.settings.dropShadowStyle.value != DropShadowStyle.off)
+                                                {
+                                                  hasChanges = true;
+                                                }
+                                              }
+                                              else if (widget.layerState.runtimeType == ShadingLayerState)
+                                              {
+                                                final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
+                                                if (shadingLayer.settings.shadingStepsMinus.value != shadingLayer.settings.constraints.shadingStepsDefault ||
+                                                    shadingLayer.settings.shadingStepsPlus.value != shadingLayer.settings.constraints.shadingStepsDefault)
+                                                {
+                                                  hasChanges = true;
+                                                }
+                                              }
+
+                                              return IconButton.outlined(
+                                                padding: EdgeInsets.zero,
+                                                constraints: BoxConstraints(
+                                                  maxHeight: _options.buttonSizeMax,
+                                                  maxWidth: _options.buttonSizeMax,
+                                                  minWidth: _options.buttonSizeMin,
+                                                  minHeight: _options.buttonSizeMin,
+                                                ),
+                                                style: ButtonStyle(
+                                                  tapTargetSize:
+                                                  MaterialTapTargetSize.shrinkWrap,
+                                                  backgroundColor: !hasChanges ? null : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColorLight,),
+                                                  iconColor: !hasChanges
+                                                      ? null
+                                                      : WidgetStatePropertyAll<Color?>(
+                                                    Theme.of(context)
+                                                        .primaryColor,),
+                                                ),
+                                                onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
+                                                icon: FaIcon(
+                                                  FontAwesomeIcons.gear,
+                                                  size: _options.iconSize,
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
                                       );
                                     },
+                                  ),
                                 ),
-                              );
-                            }
-                            else //REFERENCE LAYER
-                            {
-                               return const SizedBox.shrink();
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        _appState.selectLayer(newLayer: widget.layerState);
-                      },
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          ValueListenableBuilder<ui.Image?>(
-                            valueListenable: widget.layerState.thumbnail,
-                            builder: (final BuildContext context, final ui.Image? img, final Widget? child)
-                            {
-                              return RawImage(image: img,);
-                            },
-                          ),
-                          Center(
-                            child: FaIcon(
-                              layerIconMap[widget.layerState.runtimeType],
-                              size: _options.height / 2,
-                              color: Theme.of(context).primaryColorLight,
-                              shadows:  <Shadow>[
-                                Shadow(
-                                  offset: const Offset(0.0, 1.0),
-                                  blurRadius: 2.0,
-                                  color: Theme.of(context).primaryColorDark,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                              ),
+                            );
+                          }
+                          return rightColumn;
+                        },
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                        left: _options.innerPadding,),
-                    child: CompositedTransformTarget(
-                      link: settingsLink,
-                      child: Tooltip(
-                        message: "Settings...",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          constraints: BoxConstraints(
-                            maxHeight: _options.buttonSizeMax,
-                            maxWidth: _options.buttonSizeMax,
-                            minWidth: _options.buttonSizeMin,
-                            minHeight: _options.buttonSizeMin,
-                          ),
-                          style: const ButtonStyle(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: _settingsButtonPressed,
-                          icon: FaIcon(
-                            FontAwesomeIcons.bars,
-                            size: _options.iconSize,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
     );
   }
-
 }

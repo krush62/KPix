@@ -24,6 +24,7 @@ import 'package:kpix/preferences/desktop_preferences.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/preferences/stylus_preferences.dart';
 import 'package:kpix/preferences/touch_preferences.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 
 enum PreferenceSectionType
@@ -69,164 +70,148 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
 
   @override
   Widget build(final BuildContext context) {
-    return Material(
-      elevation: _options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _options.minHeight,
-          minWidth: _options.minWidth,
-          maxHeight: _options.maxHeight,
-          maxWidth: _options.maxWidth,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: _options.borderWidth,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(_options.padding),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              ValueListenableBuilder<PreferenceSectionType>(
-                valueListenable: _prefSection,
-                builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
-                  return SegmentedButton<PreferenceSectionType>(
-                    segments: <ButtonSegment<PreferenceSectionType>>[
-                      ButtonSegment<PreferenceSectionType>(
-                        value: PreferenceSectionType.gui,
-                        label: Tooltip(
-                          message: preferenceMap[PreferenceSectionType.gui]!.title,
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            preferenceMap[PreferenceSectionType.gui]!.icon,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<PreferenceSectionType>(
-                        value: PreferenceSectionType.behavior,
-                        label: Tooltip(
-                          message: preferenceMap[PreferenceSectionType.behavior]!.title,
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            preferenceMap[PreferenceSectionType.behavior]!.icon,
-                          ),
-                        ),
-                      ),
-                      //for a future release
-                      ButtonSegment<PreferenceSectionType>(
-                        value: PreferenceSectionType.controlsPC,
-                        label: Tooltip(
-                          message: preferenceMap[PreferenceSectionType.controlsPC]!.title,
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            preferenceMap[PreferenceSectionType.controlsPC]!.icon,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<PreferenceSectionType>(
-                        value: PreferenceSectionType.controlsStylus,
-                        label: Tooltip(
-                          message: preferenceMap[PreferenceSectionType.controlsStylus]!.title,
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            preferenceMap[PreferenceSectionType.controlsStylus]!.icon,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<PreferenceSectionType>(
-                          value: PreferenceSectionType.controlsTouch,
-                          label: Tooltip(
-                            message: preferenceMap[PreferenceSectionType.controlsTouch]!.title,
-                            waitDuration: AppState.toolTipDuration,
-                            child: Icon(preferenceMap[PreferenceSectionType.controlsTouch]!.icon,
-                            ),
-                        ),
-                      ),
-                    ],
-                    selected: <PreferenceSectionType>{pref},
-                    showSelectedIcon: false,
-                    onSelectionChanged: (final Set<PreferenceSectionType> prefSections) {_prefSection.value = prefSections.first;},
-                  );
-                },
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
-                child: Divider(
-                  color: Theme.of(context).primaryColorLight,
-                  thickness: _options.borderWidth,
-                  height: _options.borderWidth,
-                ),
-              ),
-              Expanded(
-                child: ValueListenableBuilder<PreferenceSectionType>(
-                  valueListenable: _prefSection,
-                  builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
-                    switch(pref)
-                    {
-                      case PreferenceSectionType.gui:
-                        return GuiPreferences(prefs: GetIt.I.get<PreferenceManager>().guiPreferenceContent);
-                      case PreferenceSectionType.behavior:
-                        return BehaviorPreferences(prefs: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent);
-                      case PreferenceSectionType.controlsStylus:
-                        return StylusPreferences(prefs: GetIt.I.get<PreferenceManager>().stylusPreferenceContent);
-                      case PreferenceSectionType.controlsTouch:
-                        return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
-                      case PreferenceSectionType.controlsPC:
-                        return DesktopPreferences(prefs: GetIt.I.get<PreferenceManager>().desktopPreferenceContent);
-                      default:
-                        return const Placeholder();
-                    }
-                  },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
-                child: Divider(
-                  color: Theme.of(context).primaryColorLight,
-                  thickness: _options.borderWidth,
-                  height: _options.borderWidth,
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.xmark,
-                          size: _options.iconSize,
-                        ),
-                        onPressed: widget.dismiss,
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _options.minHeight,
+        minWidth: _options.minWidth,
+        maxHeight: _options.maxHeight,
+        maxWidth: _options.maxWidth,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          ValueListenableBuilder<PreferenceSectionType>(
+            valueListenable: _prefSection,
+            builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
+              return SegmentedButton<PreferenceSectionType>(
+                segments: <ButtonSegment<PreferenceSectionType>>[
+                  ButtonSegment<PreferenceSectionType>(
+                    value: PreferenceSectionType.gui,
+                    label: Tooltip(
+                      message: preferenceMap[PreferenceSectionType.gui]!.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: Icon(
+                        preferenceMap[PreferenceSectionType.gui]!.icon,
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
-                      child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.check,
-                          size: _options.iconSize,
-                        ),
-                        onPressed: widget.accept,
+                  ButtonSegment<PreferenceSectionType>(
+                    value: PreferenceSectionType.behavior,
+                    label: Tooltip(
+                      message: preferenceMap[PreferenceSectionType.behavior]!.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: Icon(
+                        preferenceMap[PreferenceSectionType.behavior]!.icon,
                       ),
+                    ),
+                  ),
+                  //for a future release
+                  ButtonSegment<PreferenceSectionType>(
+                    value: PreferenceSectionType.controlsPC,
+                    label: Tooltip(
+                      message: preferenceMap[PreferenceSectionType.controlsPC]!.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: Icon(
+                        preferenceMap[PreferenceSectionType.controlsPC]!.icon,
+                      ),
+                    ),
+                  ),
+                  ButtonSegment<PreferenceSectionType>(
+                    value: PreferenceSectionType.controlsStylus,
+                    label: Tooltip(
+                      message: preferenceMap[PreferenceSectionType.controlsStylus]!.title,
+                      waitDuration: AppState.toolTipDuration,
+                      child: Icon(
+                        preferenceMap[PreferenceSectionType.controlsStylus]!.icon,
+                      ),
+                    ),
+                  ),
+                  ButtonSegment<PreferenceSectionType>(
+                      value: PreferenceSectionType.controlsTouch,
+                      label: Tooltip(
+                        message: preferenceMap[PreferenceSectionType.controlsTouch]!.title,
+                        waitDuration: AppState.toolTipDuration,
+                        child: Icon(preferenceMap[PreferenceSectionType.controlsTouch]!.icon,
+                        ),
                     ),
                   ),
                 ],
+                selected: <PreferenceSectionType>{pref},
+                showSelectedIcon: false,
+                onSelectionChanged: (final Set<PreferenceSectionType> prefSections) {_prefSection.value = prefSections.first;},
+              );
+            },
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+            child: Divider(
+              color: Theme.of(context).primaryColorLight,
+              thickness: _options.borderWidth,
+              height: _options.borderWidth,
+            ),
+          ),
+          Expanded(
+            child: ValueListenableBuilder<PreferenceSectionType>(
+              valueListenable: _prefSection,
+              builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
+                switch(pref)
+                {
+                  case PreferenceSectionType.gui:
+                    return GuiPreferences(prefs: GetIt.I.get<PreferenceManager>().guiPreferenceContent);
+                  case PreferenceSectionType.behavior:
+                    return BehaviorPreferences(prefs: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent);
+                  case PreferenceSectionType.controlsStylus:
+                    return StylusPreferences(prefs: GetIt.I.get<PreferenceManager>().stylusPreferenceContent);
+                  case PreferenceSectionType.controlsTouch:
+                    return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
+                  case PreferenceSectionType.controlsPC:
+                    return DesktopPreferences(prefs: GetIt.I.get<PreferenceManager>().desktopPreferenceContent);
+                  default:
+                    return const Placeholder();
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+            child: Divider(
+              color: Theme.of(context).primaryColorLight,
+              thickness: _options.borderWidth,
+              height: _options.borderWidth,
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(_options.padding),
+                  child: IconButton.outlined(
+                    icon: FaIcon(
+                      FontAwesomeIcons.xmark,
+                      size: _options.iconSize,
+                    ),
+                    onPressed: widget.dismiss,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(_options.padding),
+                  child: IconButton.outlined(
+                    icon: FaIcon(
+                      FontAwesomeIcons.check,
+                      size: _options.iconSize,
+                    ),
+                    onPressed: widget.accept,
+                  ),
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

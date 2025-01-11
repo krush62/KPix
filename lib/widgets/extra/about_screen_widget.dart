@@ -24,6 +24,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
+import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -43,6 +44,11 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   late KPixOverlay _licenseScreen;
   late KPixOverlay _creditsScreen;
 
+  void _dismissPressed()
+  {
+    widget.onDismiss();
+  }
+
   @override
   void initState()
   {
@@ -53,157 +59,150 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
 
   void _licensesPressed()
   {
-    _licenseScreen.show(context: context);
+    setState(() {
+      _licenseScreen.show(context: context);
+    });
+
   }
 
   void _creditsPressed()
   {
-    _creditsScreen.show(context: context);
+    setState(() {
+      _creditsScreen.show(context: context);
+    });
+
   }
 
   void _dismissDialogs()
   {
-    _licenseScreen.hide();
-    _creditsScreen.hide();
+    setState(() {
+      _licenseScreen.hide();
+      _creditsScreen.hide();
+    });
+
   }
 
   @override
   Widget build(final BuildContext context)
   {
-    return Material(
-      elevation: _options.elevation,
-      shadowColor: Theme.of(context).primaryColorDark,
-      borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _options.minHeight,
-          minWidth: _options.minWidth,
-          maxHeight: _options.minHeight,
-          maxWidth: _options.maxWidth,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
-          border: Border.all(
-            color: Theme.of(context).primaryColorLight,
-            width: _options.borderWidth,
+    return KPixAnimationWidget(
+      constraints: BoxConstraints(
+        minHeight: _options.minHeight,
+        minWidth: _options.minWidth,
+        maxHeight: _options.minHeight,
+        maxWidth: _options.maxWidth,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Expanded(
+            child: Image.asset("imgs/kpix_icon.png"),
           ),
-          borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(_options.padding),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(
-                child: Image.asset("imgs/kpix_icon.png"),
-              ),
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: EdgeInsets.only(left: _options.padding),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: EdgeInsets.only(left: _options.padding),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
-                          Expanded(child: SizedBox(width: _options.padding)),
-                          ValueListenableBuilder<bool>(
-                            valueListenable: GetIt.I.get<AppState>().hasUpdateNotifier,
-                            builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
-                            {
-                              final UpdateInfoPackage? updateInfo = GetIt.I.get<AppState>().updatePackage;
-                              if (hasUpdate && updateInfo != null)
-                              {
-                                return RichText(
-                                  textAlign: TextAlign.right,
-                                  text: TextSpan(
-                                    text: "New version available (${updateInfo.version}).\n",
-                                    style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen),
-                                    children: <InlineSpan>[
-                                      TextSpan(
-                                          text: "Download from GitHub.",
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () {
-                                              if (GetIt.I.get<AppState>().updatePackage != null)
-                                              {
-                                                launchURL(url: updateInfo.url);
-                                              }
-                                            },
-                                          style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen, decoration: TextDecoration.underline, decorationColor: notificationGreen),
-                                      ),
-                                    ],
+                      Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
+                      Expanded(child: SizedBox(width: _options.padding)),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: GetIt.I.get<AppState>().hasUpdateNotifier,
+                        builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                        {
+                          final UpdateInfoPackage? updateInfo = GetIt.I.get<AppState>().updatePackage;
+                          if (hasUpdate && updateInfo != null)
+                          {
+                            return RichText(
+                              textAlign: TextAlign.right,
+                              text: TextSpan(
+                                text: "New version available (${updateInfo.version}).\n",
+                                style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen),
+                                children: <InlineSpan>[
+                                  TextSpan(
+                                    text: "Download from GitHub.",
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        if (GetIt.I.get<AppState>().updatePackage != null)
+                                        {
+                                          launchURL(url: updateInfo.url);
+                                        }
+                                      },
+                                    style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen, decoration: TextDecoration.underline, decorationColor: notificationGreen),
                                   ),
-                                );
-                              }
-                              else
-                              {
-                                return const SizedBox.shrink();
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-
-                      Text("A Pixel Art Creation Tool", style: Theme.of(context).textTheme.labelMedium),
-                      Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
-                      SizedBox(height: _options.padding,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Expanded(
-                            child: Tooltip(
-                              message: "Credits",
-                              waitDuration: AppState.toolTipDuration,
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.peopleGroup,
-                                  size: _options.iconSize,
-                                ),
-                                onPressed: _creditsPressed,
+                                ],
                               ),
-                            ),
-                          ),
-                          SizedBox(width: _options.padding),
-                          Expanded(
-                            child: Tooltip(
-                              message: "Licenses",
-                              waitDuration: AppState.toolTipDuration,
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.section,
-                                  size: _options.iconSize,
-                                ),
-                                onPressed: _licensesPressed,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: _options.padding),
-                          Expanded(
-                            child: Tooltip(
-                              message: "Close",
-                              waitDuration: AppState.toolTipDuration,
-                              child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.xmark,
-                                  size: _options.iconSize,
-                                ),
-                                onPressed: widget.onDismiss,
-                              ),
-                            ),
-                          ),
-                        ],
+                            );
+                          }
+                          else
+                          {
+                            return const SizedBox.shrink();
+                          }
+                        },
                       ),
                     ],
                   ),
-                ),
+
+                  Text("A Pixel Art Creation Tool", style: Theme.of(context).textTheme.labelMedium),
+                  Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
+                  SizedBox(height: _options.padding,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Expanded(
+                        child: Tooltip(
+                          message: "Credits",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.peopleGroup,
+                              size: _options.iconSize,
+                            ),
+                            onPressed: _creditsPressed,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: _options.padding),
+                      Expanded(
+                        child: Tooltip(
+                          message: "Licenses",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.section,
+                              size: _options.iconSize,
+                            ),
+                            onPressed: _licensesPressed,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: _options.padding),
+                      Expanded(
+                        child: Tooltip(
+                          message: "Close",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.xmark,
+                              size: _options.iconSize,
+                            ),
+                            onPressed: _dismissPressed,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

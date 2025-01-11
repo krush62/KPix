@@ -20,10 +20,12 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
@@ -35,16 +37,19 @@ class DrawingLayerState extends LayerState
   final CoordinateSetI size;
 
   final CoordinateColorMap _data;
+  CoordinateColorMap _settingsPixels;
   bool isRasterizing = false;
   bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
   ui.Image? previousRaster;
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   List<LayerState>? layerStack;
+  final DrawingLayerSettings settings;
 
-  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content})
+  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings})
   {
-    final CoordinateColorMap data2 = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
 
     if (content != null)
     {
@@ -52,14 +57,17 @@ class DrawingLayerState extends LayerState
       {
         if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < size.x && entry.key.y < size.y && entry.value != null)
         {
-          data2[entry.key] = entry.value!;
+          data[entry.key] = entry.value!;
         }
       }
     }
-    return DrawingLayerState._(data: data2, size: size);
+    final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: GetIt.I.get<AppState>().colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
+    return DrawingLayerState._(data: data, settingsPixels: settingsPixels, size: size, settings: settings);
   }
 
-  DrawingLayerState._({required final CoordinateColorMap data, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack}) : _data = data
+  DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, required this.size, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack, required this.settings}) :
+        _data = data,
+        _settingsPixels = settingsPixels
   {
     isRasterizing = true;
     _createRaster().then((final (ui.Image, ui.Image) images) => _rasterizingDone(image: images.$1, thumbnailImage: images.$2, startedFromManual: false));
@@ -67,28 +75,32 @@ class DrawingLayerState extends LayerState
     visibilityState.value = vState;
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
-
+    settings.addListener(() {
+      doManualRaster = true;
+    });
   }
 
   factory DrawingLayerState.from({required final DrawingLayerState other, final List<LayerState>? layerStack})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
-
+    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateColor ref in other._data.entries)
     {
       data[ref.key] = ref.value;
     }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack);
+    final DrawingLayerSettings newSettings = DrawingLayerSettings.fromOther(other: other.settings);
+    return DrawingLayerState._(size: other.size, settingsPixels: settingsPixels, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
   }
 
   factory DrawingLayerState.deepClone({required final DrawingLayerState other, required final KPalRampData originalRampData, required final KPalRampData rampData})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateColor ref in other._data.entries)
     {
       data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
     }
-    return DrawingLayerState._(size: other.size, data: data, lState: other.lockState.value, vState: other.visibilityState.value);
+    return DrawingLayerState._(size: other.size, data: data, settingsPixels: settingsPixels, lState: other.lockState.value, vState: other.visibilityState.value, settings: other.settings);
   }
 
   Future<void> updateTimerCallback({required final Timer timer}) async
@@ -116,6 +128,8 @@ class DrawingLayerState extends LayerState
     {
       _data.remove(coord);
     }
+
+    settings.deleteRamp(ramp: ramp);
 
     isRasterizing = false;
   }
@@ -181,38 +195,32 @@ class DrawingLayerState extends LayerState
 
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     final ByteData byteDataThb = ByteData(size.x * size.y * 4);
-    for (final CoordinateColorNullable entry in _data.entries)
-    {
-      if (entry.value != null)
-      {
-        final ColorReference colRef = ColorReference(colorIndex: entry.value!.colorIndex, ramp: entry.value!.ramp);
-        final Color originalColor = colRef.getIdColor().color;
-        final Color shadedColor = _getColorShading(coord: entry.key, appState: appState, inputColor: colRef);
-        final int index = (entry.key.y * size.x + entry.key.x) * 4;
-        if (index < byteDataImg.lengthInBytes)
-        {
-          byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
-          byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
-        }
-      }
-    }
+
+    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    allColorPixels.addAll(_data);
     if (hasSelection)
     {
-      final Iterable<CoordinateSetI> selectionCoords = appState.selectionState.selection.getCoordinates();
-      for (final CoordinateSetI coord in selectionCoords)
+      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
+        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null).map(
+              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
+        ),
+      );
+      allColorPixels.addAll(nonNullMap);
+    }
+    _settingsPixels = settings.getSettingsPixels(data: allColorPixels, layerState: this);
+
+    allColorPixels.addAll(_settingsPixels);
+
+    for (final CoordinateColor entry in allColorPixels.entries)
+    {
+      final ColorReference colRef = ColorReference(colorIndex: entry.value.colorIndex, ramp: entry.value.ramp);
+      final Color originalColor = colRef.getIdColor().color;
+      final Color shadedColor = _geCurrentColorShading(coord: entry.key, appState: appState, inputColor: colRef);
+      final int index = (entry.key.y * size.x + entry.key.x) * 4;
+      if (index >= 0 && index < byteDataImg.lengthInBytes)
       {
-        final ColorReference? colRef = appState.selectionState.selection.getColorReference(coord: coord);
-        if (colRef != null && coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
-        {
-          final Color originalColor = colRef.getIdColor().color;
-          final Color shadedColor = _getColorShading(coord: coord, appState: appState, inputColor: colRef);
-          final int index = (coord.y * size.x + coord.x) * 4;
-          if (index >= 0 && index < byteDataImg.lengthInBytes)
-          {
-            byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
-            byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
-          }
-        }
+        byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
+        byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
       }
     }
 
@@ -241,7 +249,44 @@ class DrawingLayerState extends LayerState
     return (await completerImg.future, await completerThb.future);
   }
 
-  Color _getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor})
+  void rasterOutline()
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<LayerState> layers = <LayerState>[];
+    for (int i = 0; i < appState.layerCount; i++)
+    {
+      layers.add(appState.getLayerAt(index: i));
+    }
+    final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
+    setDataAll(list: outerPixels);
+  }
+
+  void rasterInline()
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final SelectionList? selectionList = appState.getSelectedLayer() == this ? appState.selectionState.selection : null;
+    final List<LayerState> layers = <LayerState>[];
+    for (int i = 0; i < appState.layerCount; i++)
+    {
+      layers.add(appState.getLayerAt(index: i));
+    }
+    final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
+    setDataAll(list: innerPixels);
+  }
+
+  void rasterDropShadow()
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<LayerState> layers = <LayerState>[];
+    for (int i = 0; i < appState.layerCount; i++)
+    {
+      layers.add(appState.getLayerAt(index: i));
+    }
+    final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
+    setDataAll(list: dropShadowPixels);
+  }
+
+  Color _geCurrentColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor})
   {
     Color retColor = inputColor.getIdColor().color;
     int colorShift = 0;
@@ -258,14 +303,15 @@ class DrawingLayerState extends LayerState
         }
       }
     }
-    final List<LayerState> layerList = layerStack ?? appState.layers;
+    //final List<LayerState> layerList = layerStack ?? appState.layers;
     if (currentIndex != -1)
     {
       for (int i = currentIndex; i >= 0; i--)
       {
-        if (layerList[i].runtimeType == ShadingLayerState && layerList[i].visibilityState.value == LayerVisibilityState.visible)
+        final LayerState layer = layerStack != null ? layerStack![i] : appState.getLayerAt(index: i);
+        if (layer.runtimeType == ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          final ShadingLayerState shadingLayer = layerList[i] as ShadingLayerState;
+          final ShadingLayerState shadingLayer = layer as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
             colorShift += shadingLayer.getValueAt(coord: coord)!;
@@ -283,10 +329,18 @@ class DrawingLayerState extends LayerState
     return retColor;
   }
 
-
-  ColorReference? getDataEntry({required final CoordinateSetI coord})
+  ColorReference? getSettingsPixel({required final CoordinateSetI coord})
   {
-    if (_data.containsKey(coord))
+      return _settingsPixels[coord];
+  }
+
+  ColorReference? getDataEntry({required final CoordinateSetI coord, final bool withSettingsPixels = false})
+  {
+    if (withSettingsPixels && _settingsPixels.containsKey(coord))
+    {
+      return _settingsPixels[coord];
+    }
+    else if (_data.containsKey(coord))
     {
       return _data[coord];
     }
@@ -301,6 +355,7 @@ class DrawingLayerState extends LayerState
   {
     return _data;
   }
+
 
   void setDataAll({required final CoordinateColorMapNullable list})
   {

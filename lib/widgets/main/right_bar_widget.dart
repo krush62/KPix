@@ -263,10 +263,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
                               Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.only(top: 8.0),
                                 child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                               ),
-                              settingsWidget,
+                              const SizedBox(height: 8.0),
+                              Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  child: settingsWidget,
+                                ),
+                              ),
                               Tooltip(
                                 waitDuration: AppState.toolTipDuration,
                                 message: "Close",

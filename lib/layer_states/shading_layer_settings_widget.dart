@@ -38,10 +38,6 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Divider(height: 2.0, thickness: 2.0, color: Theme
-              .of(context)
-              .primaryColorLight,),
-          SizedBox(height: generalPadding),
           Text("SHADING RANGE", style: Theme
               .of(context)
               .textTheme

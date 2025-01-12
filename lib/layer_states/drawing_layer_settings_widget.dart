@@ -97,6 +97,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   static const double _buttonHeight = 24;
   static const double _iconSize = 16;
   static const double _dividerHeight = 2.0;
+  static const double _visualDensityVert = -3.0;
   late KPixOverlay _colorPickDialog;
 
 
@@ -143,10 +144,6 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
 
-          Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
-          const SizedBox(height: _generalPadding),
-
-
           //OUTER STROKE
           Text("OUTER STROKE", style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
           const SizedBox(height: _generalPadding),
@@ -174,6 +171,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               }
 
               return SegmentedButton<OuterStrokeStyle>(
+                style: Theme.of(context).segmentedButtonTheme.style!.copyWith(visualDensity: const VisualDensity(vertical: _visualDensityVert)),
                 segments: outerStrokeButtons,
                 selected: <OuterStrokeStyle>{outerStrokeStyle},
                 showSelectedIcon: false,
@@ -185,7 +183,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
           ),
           const SizedBox(height: _generalPadding),
           SizedBox(
-            height: 100,
+            height: 80,
             child: ValueListenableBuilder<OuterStrokeStyle>(
               valueListenable: widget.layer.settings.outerStrokeStyle,
               builder: (final BuildContext context, final OuterStrokeStyle outerStrokeStyle, final Widget? child)
@@ -278,23 +276,25 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            const Text("Direction"),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: <Widget>[
-                                const Text("<"),
-                                ValueListenableBuilder<bool>(
-                                  valueListenable: widget.layer.settings.outerGlowDirection,
-                                  builder: (final BuildContext context, final bool glowDir, final Widget? child) {
-                                    return Switch(
-                                      value: glowDir,
-                                      onChanged: (final bool value) {
-                                        widget.layer.settings.outerGlowDirection.value = value;
-                                      },
-                                    );
-                                  },
+                                const Expanded(flex: 4, child: Text("Direction", textAlign: TextAlign.end,)),
+                                const Expanded(child: Text("<", textAlign: TextAlign.end)),
+                                Expanded(
+                                  flex: 3,
+                                  child: ValueListenableBuilder<bool>(
+                                    valueListenable: widget.layer.settings.outerGlowDirection,
+                                    builder: (final BuildContext context, final bool glowDir, final Widget? child) {
+                                      return Switch(
+                                        value: glowDir,
+                                        onChanged: (final bool value) {
+                                          widget.layer.settings.outerGlowDirection.value = value;
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ),
-                                const Text(">"),
+                                const Expanded(child: Text(">", textAlign: TextAlign.start,)),
                               ],
                             ),
                             ValueListenableBuilder<int>(
@@ -330,16 +330,23 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               child: ValueListenableBuilder<OuterStrokeStyle>(
                 valueListenable: widget.layer.settings.outerStrokeStyle,
                 builder: (final BuildContext context, final OuterStrokeStyle outerStrokeStyle, final Widget? child) {
-                  return IconButton.outlined(
-                    padding: EdgeInsets.zero,
-                    iconSize: _iconSize,
-                    onPressed: (outerStrokeStyle == OuterStrokeStyle.solid || outerStrokeStyle == OuterStrokeStyle.relative) ? () {
-                      widget.layer.rasterOutline();
-                      widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
-                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
-                    } : null,
-                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
-                  );
+                  if (outerStrokeStyle == OuterStrokeStyle.off)
+                  {
+                    return const SizedBox(height: _buttonHeight);
+                  }
+                  else
+                  {
+                    return IconButton.outlined(
+                      padding: EdgeInsets.zero,
+                      iconSize: _iconSize,
+                      onPressed: (outerStrokeStyle == OuterStrokeStyle.solid || outerStrokeStyle == OuterStrokeStyle.relative) ? () {
+                        widget.layer.rasterOutline();
+                        widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
+                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                      } : null,
+                      icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                    );
+                  }
                 },
               ),
             ),
@@ -379,6 +386,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               }
 
               return SegmentedButton<InnerStrokeStyle>(
+                style: Theme.of(context).segmentedButtonTheme.style!.copyWith(visualDensity: const VisualDensity(vertical: _visualDensityVert)),
                 segments: innerStrokeButtons,
                 selected: <InnerStrokeStyle>{innerStrokeStyle},
                 showSelectedIcon: false,
@@ -390,7 +398,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
           ),
           const SizedBox(height: _generalPadding),
           SizedBox(
-            height: 100,
+            height: 80,
             child: ValueListenableBuilder<InnerStrokeStyle>(
                 valueListenable: widget.layer.settings.innerStrokeStyle,
                 builder: (final BuildContext context, final InnerStrokeStyle innerStrokeStyle, final Widget? child)
@@ -483,23 +491,25 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              const Text("Direction"),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
-                                  const Text("<"),
-                                  ValueListenableBuilder<bool>(
-                                    valueListenable: widget.layer.settings.innerGlowDirection,
-                                    builder: (final BuildContext context, final bool glowDir, final Widget? child) {
-                                      return Switch(
-                                        value: glowDir,
-                                        onChanged: (final bool value) {
-                                          widget.layer.settings.innerGlowDirection.value = value;
-                                        },
-                                      );
-                                    },
+                                  const Expanded(flex: 4, child: Text("Direction", textAlign: TextAlign.end,)),
+                                  const Expanded(child: Text("<", textAlign: TextAlign.end)),
+                                  Expanded(
+                                    flex: 3,
+                                    child: ValueListenableBuilder<bool>(
+                                      valueListenable: widget.layer.settings.innerGlowDirection,
+                                      builder: (final BuildContext context, final bool glowDir, final Widget? child) {
+                                        return Switch(
+                                          value: glowDir,
+                                          onChanged: (final bool value) {
+                                            widget.layer.settings.innerGlowDirection.value = value;
+                                          },
+                                        );
+                                      },
+                                    ),
                                   ),
-                                  const Text(">"),
+                                  const Expanded(child: Text(">", textAlign: TextAlign.start,)),
                                 ],
                               ),
                               ValueListenableBuilder<int>(
@@ -567,23 +577,30 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
 
           const SizedBox(width: _generalPadding),
           Tooltip(
-            message: "Raster Inline",
+            message: "Apply Inline",
             waitDuration: AppState.toolTipDuration,
             child: SizedBox(
               height: _buttonHeight,
               child: ValueListenableBuilder<InnerStrokeStyle>(
                 valueListenable: widget.layer.settings.innerStrokeStyle,
                 builder: (final BuildContext context, final InnerStrokeStyle innerStrokeStyle, final Widget? child) {
-                  return IconButton.outlined(
-                    padding: EdgeInsets.zero,
-                    iconSize: _iconSize,
-                    onPressed: (innerStrokeStyle != InnerStrokeStyle.off) ? () {
-                      widget.layer.rasterInline();
-                      widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
-                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
-                    } : null,
-                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
-                  );
+                  if (innerStrokeStyle == InnerStrokeStyle.off)
+                  {
+                    return const SizedBox(height: _buttonHeight);
+                  }
+                  else
+                  {
+                    return IconButton.outlined(
+                      padding: EdgeInsets.zero,
+                      iconSize: _iconSize,
+                      onPressed: (innerStrokeStyle != InnerStrokeStyle.off) ? () {
+                        widget.layer.rasterInline();
+                        widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
+                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                      } : null,
+                      icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                    );
+                  }
                 },
               ),
             ),
@@ -623,6 +640,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
 
 
               return SegmentedButton<DropShadowStyle>(
+                style: Theme.of(context).segmentedButtonTheme.style!.copyWith(visualDensity: const VisualDensity(vertical: _visualDensityVert)),
                 segments: dropShadowButtons,
                 selected: <DropShadowStyle>{dropShadowStyle},
                 showSelectedIcon: false,
@@ -764,24 +782,28 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
               child: ValueListenableBuilder<DropShadowStyle>(
                 valueListenable: widget.layer.settings.dropShadowStyle,
                 builder: (final BuildContext context, final DropShadowStyle dropShadowStyle, final Widget? child) {
-                  return IconButton.outlined(
-                    padding: EdgeInsets.zero,
-                    iconSize: _iconSize,
-                    onPressed: (dropShadowStyle == DropShadowStyle.solid) ? () {
-                      widget.layer.rasterDropShadow();
-                      widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
-                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
-                    } : null,
-                    icon: const FaIcon(FontAwesomeIcons.paintbrush),
-                  );
+                  if (dropShadowStyle == DropShadowStyle.off)
+                  {
+                    return const SizedBox(height: _buttonHeight);
+                  }
+                  else
+                  {
+                    return IconButton.outlined(
+                      padding: EdgeInsets.zero,
+                      iconSize: _iconSize,
+                      onPressed: (dropShadowStyle == DropShadowStyle.solid) ? () {
+                        widget.layer.rasterDropShadow();
+                        widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
+                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                      } : null,
+                      icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                    );
+                  }
                 },
               ),
             ),
           ),
           const SizedBox(height: _generalPadding),
-          Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
-          const SizedBox(height: _generalPadding),
-
         ],
       ),
     );

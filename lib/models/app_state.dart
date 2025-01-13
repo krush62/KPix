@@ -1041,11 +1041,7 @@ class AppState
   void changeCanvasSize({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    final LayerState? currentCropLayer = _layerCollection.changeLayerSizes(newSize: newSize, offset: offset);
-    if (currentCropLayer != null)
-    {
-      selectionState.selection.changeLayer(oldLayer: null, newLayer: currentCropLayer);
-    }
+    _layerCollection.changeLayerSizes(newSize: newSize, offset: offset);
     _setCanvasDimensions(width: newSize.x, height: newSize.y);
   }
 

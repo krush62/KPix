@@ -430,7 +430,7 @@ class DrawingLayerState extends LayerState
     return DrawingLayerState(size: newSize, content: rotatedContent);
   }
 
-  DrawingLayerState getResizedLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
+  void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     final CoordinateColorMap croppedContent = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateColor entry in _data.entries)
@@ -460,6 +460,10 @@ class DrawingLayerState extends LayerState
         }
       }
     }
-    return DrawingLayerState(size: newSize, content: croppedContent);
+    _data.clear();
+    rasterQueue.clear();
+    _data.addAll(croppedContent);
+
   }
+
 }

@@ -598,41 +598,28 @@ class LayerCollection with ChangeNotifier
     return currentTransformLayer;
   }
 
-  LayerState? changeLayerSizes({required final CoordinateSetI newSize, required final CoordinateSetI offset})
+  void changeLayerSizes({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
-    LayerState? currentCropLayer;
     for (final LayerState layer in _layers)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer.runtimeType == ShadingLayerState)
       {
-        DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer = drawingLayer.getResizedLayer(newSize: newSize, offset: offset);
-        if (layer == currentLayer)
-        {
-          currentCropLayer = drawingLayer;
-        }
+        final ShadingLayerState shadingLayerState = layer as ShadingLayerState;
+        shadingLayerState.resizeLayer(newSize: newSize, offset: offset);
+        shadingLayerState.manualRender();
       }
-      else
+      else if (layer.runtimeType == DrawingLayerState)
       {
-        if (layer.runtimeType == GridLayerState)
-        {
-          final GridLayerState gridLayer = layer as GridLayerState;
-          gridLayer.manualRender();
-        }
-        if (layer == currentLayer)
-        {
-          currentCropLayer = layer;
-        }
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        drawingLayer.resizeLayer(newSize: newSize, offset: offset);
+        drawingLayer.doManualRaster = true;
       }
-
+      else if (layer.runtimeType == GridLayerState)
+      {
+        final GridLayerState gridLayer = layer as GridLayerState;
+        gridLayer.manualRender();
+      }
     }
-    _currentLayer.value = currentCropLayer;
-    if (currentCropLayer != null)
-    {
-      currentCropLayer.isSelected.value = true;
-    }
-
-    return currentCropLayer;
   }
 
   void deleteRampFromLayers({required final KPalRampData ramp})

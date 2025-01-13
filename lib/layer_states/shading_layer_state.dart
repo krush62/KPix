@@ -208,4 +208,20 @@ class ShadingLayerState extends LayerState
     }
   }
 
+  void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
+  {
+    final HashMap<CoordinateSetI, int> croppedContent = HashMap<CoordinateSetI, int>();
+    for (final MapEntry<CoordinateSetI, int> entry in _shadingData.entries)
+    {
+      final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
+      if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
+      {
+        croppedContent[newCoord] = entry.value;
+      }
+    }
+
+    _shadingData.clear();
+    _shadingData.addAll(croppedContent);
+  }
+
 }

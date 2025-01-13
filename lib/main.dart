@@ -69,7 +69,10 @@ class ThemeNotifier extends ChangeNotifier
   }
 }
 
-ThemeNotifier themeSettings = ThemeNotifier();
+final ThemeNotifier themeSettings = ThemeNotifier();
+const Size defaultDesktopSize = Size(1600, 900);
+const Size minimumApplicationSize = Size(1200, 600);
+
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
 void main(final List<String> args) {
@@ -110,9 +113,8 @@ void main(final List<String> args) {
 
   if (isDesktop()) {
     doWhenWindowReady(() {
-      const Size initialSize = Size(1600, 900);
-      appWindow.minSize = initialSize;
-      appWindow.size = initialSize;
+      appWindow.minSize = defaultDesktopSize;
+      appWindow.size = defaultDesktopSize;
       appWindow.alignment = Alignment.center;
       appWindow.title = "KPix";
       appWindow.maximize();
@@ -150,14 +152,15 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   void initState()
   {
     super.initState();
-    _initPrefs();
-    WidgetsBinding.instance.addObserver(this);
-    _lastAppLifeCycleState = AppLifecycleState.resumed;
-    if (!kIsWeb)
-    {
-      //TODO this should be some kind of setting/parameter
-      _recoverTimer = Timer.periodic(const Duration(minutes: 2), (final Timer _) {_recoverCheck();});
-    }
+    _initPrefs().then((final void value) {
+      WidgetsBinding.instance.addObserver(this);
+      _lastAppLifeCycleState = AppLifecycleState.resumed;
+      if (!kIsWeb)
+      {
+        _recoverTimer = Timer.periodic(Duration(minutes: GetIt.I.get<PreferenceManager>().mainLayoutOptions.recoverCheckIntervalMinutes), (final Timer _) {_recoverCheck();});
+      }
+    },);
+
   }
 
   @override
@@ -228,66 +231,80 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     final String internalDirString = await findInternalDir();
     final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString);
 
-    GetIt.I.registerSingleton<AppState>(appState);
-    GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
-    GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
-    GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
-
-    //For the future: Device independent canvas scaling
+    bool hasCorrectResolution = true;
     if (context.mounted)
     {
+      GetIt.I.registerSingleton<AppState>(appState);
       final BuildContext c = context;
       appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
-    }
-
-    //CREATE DIALOG OVERLAYS
-    _closeWarningDialog = getThreeButtonDialog(
-        onYes: _closeWarningYes,
-        onNo: _closeWarningNo,
-        onCancel: _closeAllMenus,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-    );
-
-    _saveNewWarningDialog = getThreeButtonDialog(
-        onYes: _saveNewWarningYes,
-        onNo: _saveNewWarningNo,
-        onCancel: _saveNewWarningCancel,
-        outsideCancelable: false,
-        message: "There are unsaved changes, do you want to save first?",
-    );
-    _newProjectDialog = getNewProjectDialog(
-        onDismiss: () {exitApplication();},
-        onAccept: _newFilePressed,
-        onOpen: _openPressed,
-    );
-
-
-    GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
-
-    final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
-    if (themeSettings.themeMode != currentTheme)
-    {
-      themeSettings.themeMode = currentTheme;
-    }
-    appState.hasProjectNotifier.addListener(_hasProjectChanged);
-
-    if (!kIsWeb)
-    {
-      await createInternalDirectories();
-      await _handleInitialFile();
-      if (isDesktop())
+      final Size logicalSize = MediaQuery.of(c).size;
+      if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
       {
-        getLatestVersionInfo().then((final UpdateInfoPackage? value) {
-          updateDataReceived(updateInfo: value);
-        });
+        hasCorrectResolution = false;
+      }
+
+      if (!hasCorrectResolution)
+      {
+        final KPixOverlay resolutionDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: "This device does not support the minimum logical resolution to run this application.");
+        resolutionDialog.show(context: c);
+      }
+      else
+      {
+
+        GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
+        GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
+        GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
+
+        //CREATE DIALOG OVERLAYS
+        _closeWarningDialog = getThreeButtonDialog(
+          onYes: _closeWarningYes,
+          onNo: _closeWarningNo,
+          onCancel: _closeAllMenus,
+          outsideCancelable: false,
+          message: "There are unsaved changes, do you want to save first?",
+        );
+
+        _saveNewWarningDialog = getThreeButtonDialog(
+          onYes: _saveNewWarningYes,
+          onNo: _saveNewWarningNo,
+          onCancel: _saveNewWarningCancel,
+          outsideCancelable: false,
+          message: "There are unsaved changes, do you want to save first?",
+        );
+        _newProjectDialog = getNewProjectDialog(
+          onDismiss: () {exitApplication();},
+          onAccept: _newFilePressed,
+          onOpen: _openPressed,
+        );
+
+
+        GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
+
+        final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
+        if (themeSettings.themeMode != currentTheme)
+        {
+          themeSettings.themeMode = currentTheme;
+        }
+        appState.hasProjectNotifier.addListener(_hasProjectChanged);
+
+        if (!kIsWeb)
+        {
+          await createInternalDirectories();
+          await _handleInitialFile();
+          if (isDesktop())
+          {
+            getLatestVersionInfo().then((final UpdateInfoPackage? value) {
+              updateDataReceived(updateInfo: value);
+            });
+          }
+        }
+        else
+        {
+          _hasProjectChanged();
+        }
+        initialized.value = true;
       }
     }
-    else
-    {
-      _hasProjectChanged();
-    }
-    initialized.value = true;
   }
 
   void updateDataReceived({required final UpdateInfoPackage? updateInfo})
@@ -322,7 +339,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     {
       if (cmdLineArgs.isNotEmpty && isDesktop())
       {
-        initialFilePath = cmdLineArgs[0];
+        initialFilePath = cmdLineArgs.first;
       }
       else if (!kIsWeb && Platform.isAndroid)
       {
@@ -501,7 +518,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         else
         {
           return  Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().mainLayoutOptions.loadingScreenPadding),
             child: Stack(
               children: <Widget>[
                 Center(child: Image.asset("imgs/kpix_icon.png"),),
@@ -549,7 +566,7 @@ class MainWidget extends StatelessWidget
                     children: <Widget>[
                       WindowTitleBarBox(child: MoveWindow()),
                       Padding(
-                        padding: const EdgeInsets.all(4.0),
+                        padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().mainLayoutOptions.titleBarPadding),
                         child: ValueListenableBuilder<bool>(
                           valueListenable: GetIt.I.get<AppState>().hasChanges,
                             builder: (final BuildContext context, final bool __, final Widget? ___) {
@@ -618,6 +635,9 @@ class MainLayoutOptions
   final double splitViewFlexRightMax;
   final double splitViewFlexLeftDefault;
   final double splitViewFlexRightDefault;
+  final int recoverCheckIntervalMinutes;
+  final double titleBarPadding;
+  final double loadingScreenPadding;
 
 
   // ignore: unreachable_from_main
@@ -629,5 +649,8 @@ class MainLayoutOptions
     required this.splitViewFlexRightMax,
     required this.splitViewFlexLeftDefault,
     required this.splitViewFlexRightDefault,
+    required this.recoverCheckIntervalMinutes,
+    required this.loadingScreenPadding,
+    required this.titleBarPadding,
   });
 }

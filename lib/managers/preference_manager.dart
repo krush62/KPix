@@ -66,13 +66,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-  Layout_SplitView_DividerWidth(defaultValue: 8.0),
-  Layout_SplitView_FlexLeftMin(defaultValue: 0.15),
-  Layout_SplitView_FlexLeftDefault(defaultValue: 0.2),
-  Layout_SplitView_FlexLeftMax(defaultValue: 0.25),
-  Layout_SplitView_FlexRightMin(defaultValue: 0.1),
-  Layout_SplitView_FlexRightDefault(defaultValue: 0.15),
-  Layout_SplitView_FlexRightMax(defaultValue: 0.2),
+  MainLayout_SplitView_DividerWidth(defaultValue: 8.0),
+  MainLayout_SplitView_FlexLeftMin(defaultValue: 0.15),
+  MainLayout_SplitView_FlexLeftDefault(defaultValue: 0.2),
+  MainLayout_SplitView_FlexLeftMax(defaultValue: 0.25),
+  MainLayout_SplitView_FlexRightMin(defaultValue: 0.1),
+  MainLayout_SplitView_FlexRightDefault(defaultValue: 0.15),
+  MainLayout_SplitView_FlexRightMax(defaultValue: 0.2),
+  MainLayout_TitleBar_Padding(defaultValue: 4.0),
+  MainLayout_LoadingScreen_Padding(defaultValue: 32.0),
 
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
@@ -228,6 +230,8 @@ enum PreferenceDouble
 
 enum PreferenceInt
 {
+  Main_RecoveryCheckInterValMinutes(defaultValue: 2),
+
   Layout_Canvas_HistoryCheck_PollRate(defaultValue: 250),
   Layout_Canvas_IdleTimerRate(defaultValue: 15),
 
@@ -733,13 +737,16 @@ class PreferenceManager
   void _loadWidgetOptions()
   {
     mainLayoutOptions = MainLayoutOptions(
-        splitViewDividerWidth: _getValueD(PreferenceDouble.Layout_SplitView_DividerWidth),
-        splitViewFlexLeftMin: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMin),
-        splitViewFlexLeftMax: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftMax),
-        splitViewFlexRightMin: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightMin),
-        splitViewFlexRightMax: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightMax),
-        splitViewFlexLeftDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexLeftDefault),
-        splitViewFlexRightDefault: _getValueD(PreferenceDouble.Layout_SplitView_FlexRightDefault),
+        splitViewDividerWidth: _getValueD(PreferenceDouble.MainLayout_SplitView_DividerWidth),
+        splitViewFlexLeftMin: _getValueD(PreferenceDouble.MainLayout_SplitView_FlexLeftMin),
+        splitViewFlexLeftMax: _getValueD(PreferenceDouble.MainLayout_SplitView_FlexLeftMax),
+        splitViewFlexRightMin: _getValueD(PreferenceDouble.MainLayout_SplitView_FlexRightMin),
+        splitViewFlexRightMax: _getValueD(PreferenceDouble.MainLayout_SplitView_FlexRightMax),
+        splitViewFlexLeftDefault: _getValueD(PreferenceDouble.MainLayout_SplitView_FlexLeftDefault),
+        splitViewFlexRightDefault: _getValueD(PreferenceDouble.MainLayout_SplitView_FlexRightDefault),
+        recoverCheckIntervalMinutes: _getValueI(PreferenceInt.Main_RecoveryCheckInterValMinutes),
+        loadingScreenPadding: _getValueD(PreferenceDouble.MainLayout_LoadingScreen_Padding),
+        titleBarPadding: _getValueD(PreferenceDouble.MainLayout_TitleBar_Padding),
         );
     canvasWidgetOptions = CanvasOptions(
         historyCheckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),

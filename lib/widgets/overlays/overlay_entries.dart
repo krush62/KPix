@@ -434,6 +434,65 @@ KPixOverlay getRasterLayerMenu({
     );
   }
 
+KPixOverlay getSingleButtonDialog({
+  required final Function() onAction,
+  required final String message,
+})
+{
+  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+          ),
+          Center(
+            child: KPixAnimationWidget(
+              constraints: BoxConstraints(
+                minHeight: options.minHeight,
+                minWidth: options.minWidth,
+                maxHeight: options.maxHeight,
+                maxWidth: options.maxWidth,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Center(child: Padding(
+                    padding: EdgeInsets.all(options.padding),
+                    child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
+                  ),),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(options.padding),
+                          child: IconButton.outlined(
+                            icon: FaIcon(
+                              FontAwesomeIcons.check,
+                              size: options.iconSize,
+                            ),
+                            onPressed: () {
+                              onAction();
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
   KPixOverlay getExportDialog({
     required final Function() onDismiss,

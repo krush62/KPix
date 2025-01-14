@@ -85,25 +85,9 @@ class DrawingLayerState extends LayerState
 
   void _settingsChanged()
   {
-    final AppState appState = GetIt.I.get<AppState>();
-    bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
-    if (layerStack != null)
-    {
-      hasSelection = false;
-    }
-    final CoordinateColorMap allColorPixels = CoordinateColorMap();
-    allColorPixels.addAll(_data);
-    if (hasSelection)
-    {
-      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
-        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null).map(
-              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
-        ),
-      );
-      allColorPixels.addAll(nonNullMap);
-    }
+    final CoordinateColorMap allColorPixels = _getContentWithSelection();
     _settingsPixels = settings.getSettingsPixels(data: allColorPixels, layerState: this);
-    appState.rasterDrawingLayers();
+    GetIt.I.get<AppState>().rasterDrawingLayers();
   }
 
 
@@ -200,15 +184,32 @@ class DrawingLayerState extends LayerState
 
   }
 
-  Future<(ui.Image, ui.Image)> _createRaster() async
+  CoordinateColorMap _getContentWithSelection()
   {
+    final CoordinateColorMap allColorPixels = CoordinateColorMap();
     final AppState appState = GetIt.I.get<AppState>();
     bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
     if (layerStack != null)
     {
       hasSelection = false;
     }
+    allColorPixels.addAll(_data);
+    if (hasSelection)
+    {
+      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
+        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < appState.canvasSize.x && entry.key.y < appState.canvasSize.y).map(
+              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
+        ),
+      );
+      allColorPixels.addAll(nonNullMap);
+    }
+    return allColorPixels;
+  }
 
+
+  Future<(ui.Image, ui.Image)> _createRaster() async
+  {
+    final AppState appState = GetIt.I.get<AppState>();
     for (final CoordinateColorNullable entry in rasterQueue.entries)
     {
       if (entry.value == null)
@@ -225,30 +226,24 @@ class DrawingLayerState extends LayerState
     final ByteData byteDataImg = ByteData(size.x * size.y * 4);
     final ByteData byteDataThb = ByteData(size.x * size.y * 4);
 
-    final CoordinateColorMap allColorPixels = CoordinateColorMap();
-    allColorPixels.addAll(_data);
-    if (hasSelection)
-    {
-      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
-        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null).map(
-              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
-        ),
-      );
-      allColorPixels.addAll(nonNullMap);
-    }
+    final CoordinateColorMap allColorPixels = _getContentWithSelection();
     _settingsPixels = settings.getSettingsPixels(data: allColorPixels, layerState: this);
     allColorPixels.addAll(_settingsPixels);
 
     for (final CoordinateColor entry in allColorPixels.entries)
     {
-      final ColorReference colRef = ColorReference(colorIndex: entry.value.colorIndex, ramp: entry.value.ramp);
-      final Color originalColor = colRef.getIdColor().color;
-      final Color shadedColor = _geCurrentColorShading(coord: entry.key, appState: appState, inputColor: colRef);
-      final int index = (entry.key.y * size.x + entry.key.x) * 4;
-      if (index >= 0 && index < byteDataImg.lengthInBytes)
+      //just to make sure
+      if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < appState.canvasSize.x && entry.key.y < appState.canvasSize.y)
       {
-        byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
-        byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
+        final ColorReference colRef = ColorReference(colorIndex: entry.value.colorIndex, ramp: entry.value.ramp);
+        final Color originalColor = colRef.getIdColor().color;
+        final Color shadedColor = _geCurrentColorShading(coord: entry.key, appState: appState, inputColor: colRef);
+        final int index = (entry.key.y * size.x + entry.key.x) * 4;
+        if (index >= 0 && index < byteDataImg.lengthInBytes)
+        {
+          byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
+          byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
+        }
       }
     }
 

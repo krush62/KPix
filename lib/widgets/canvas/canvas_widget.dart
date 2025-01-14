@@ -796,6 +796,36 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _canvasOffset.value = Offset(coords.x, coords.y);
   }
 
+  void _panZoomEnd({required final PointerPanZoomEndEvent event})
+  {
+    _isDragging.value = false;
+
+  }
+
+  void _panZoomUpdate({required final PointerPanZoomUpdateEvent event})
+  {
+    if (!_isDragging.value)
+    {
+      _isDragging.value = true;
+      _touchZoomStartLevel = _appState.zoomFactor;
+      _dragStartLoc = event.position;
+      _initialTouchZoomDistance = 0.0;
+    }
+    else
+    {
+      const double factor = 25.0;
+      final double currentDistance = event.scale >= 1.0 ? event.scale * factor - 1 : -(1.0 / event.scale) * factor;
+      final double zoomSteps = (currentDistance - _initialTouchZoomDistance) / _touchPrefs.zoomStepDistance.value;
+      _appState.setZoomLevelByDistance(startZoomLevel: _touchZoomStartLevel, steps: zoomSteps.toInt());
+      if (zoomSteps > -1.0 && zoomSteps < 1.0)
+      {
+        _setOffset(newOffset: _canvasOffset.value + event.panDelta);
+      }
+      _appState.repaintNotifier.repaint();
+    }
+  }
+
+
   @override
   Widget build(final BuildContext context) {
     return Expanded(
@@ -814,6 +844,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                   onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
                   onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
                   onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
+                  onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},
+                  onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_panZoomUpdate(event: event);},
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,
@@ -853,4 +885,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       ),
     );
   }
+
+
+
 }

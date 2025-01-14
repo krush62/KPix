@@ -19,6 +19,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -32,6 +33,7 @@ class SelectionPainter extends IToolPainter
   final CoordinateSetI selectionEnd = CoordinateSetI(x: 0, y: 0);
   bool hasNewSelection = false;
   final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   bool movementStarted = false;
   List<CoordinateSetI> polygonPoints = <CoordinateSetI>[];
   bool polygonDown = false;
@@ -69,9 +71,13 @@ class SelectionPainter extends IToolPainter
         if (_shouldMove)
         {
           movementStarted = true;
-          appState.selectionState.setOffset(offset: CoordinateSetI(
+          appState.selectionState.setOffset(
+            offset: CoordinateSetI(
               x: _cursorPosNorm.x - _normStartPos.x,
-              y: _cursorPosNorm.y - _normStartPos.y,),);
+              y: _cursorPosNorm.y - _normStartPos.y,
+            ),
+            withContent: !_hotkeyManager.controlIsPressed
+          );
         }
         else
         {

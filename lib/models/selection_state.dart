@@ -81,10 +81,10 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) inverse();}, action: HotkeyAction.selectionInvert);
     hotkeyManager.addListener(func: selectAll, action: HotkeyAction.selectionSelectAll);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) deselect(addToHistoryStack: true);}, action: HotkeyAction.selectionDeselect);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: -1));}, action: HotkeyAction.selectionMoveUp);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: 1));}, action: HotkeyAction.selectionMoveDown);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: -1, y: 0));}, action: HotkeyAction.selectionMoveLeft);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 1, y: 0));}, action: HotkeyAction.selectionMoveRight);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: -1), withContent: true);}, action: HotkeyAction.selectionMoveUp);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: 1), withContent: true);}, action: HotkeyAction.selectionMoveDown);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: -1, y: 0), withContent: true);}, action: HotkeyAction.selectionMoveLeft);
+    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 1, y: 0), withContent: true);}, action: HotkeyAction.selectionMoveRight);
 
   }
 
@@ -289,7 +289,8 @@ class SelectionState with ChangeNotifier
 
     for (final CoordinateSetI coord in coords)
     {
-      switch (selectionOptions.mode.value) {
+      switch (mode)
+      {
         case SelectionMode.replace:
         case SelectionMode.add:
           if (!selection.contains(coord: coord)) {
@@ -790,15 +791,15 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void _moveSelection({required final CoordinateSetI offset})
+  void _moveSelection({required final CoordinateSetI offset, required final bool withContent})
   {
-    setOffset(offset: offset);
+    setOffset(offset: offset, withContent: withContent);
     finishMovement();
   }
 
-  void setOffset({required final CoordinateSetI offset})
+  void setOffset({required final CoordinateSetI offset, required final bool withContent})
   {
-    selection.shiftSelection(offset: offset);
+    selection.shiftSelection(offset: offset, withContent: withContent);
     createSelectionLines();
   }
 
@@ -868,7 +869,7 @@ class SelectionList
     isEmptyNotifer.value = _content.isEmpty;
   }
 
-  void transferAll({required final Set<CoordinateSetI> coords})
+  void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
   {
     if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
     {
@@ -879,7 +880,10 @@ class SelectionList
       }
       drawingLayer.removeDataAll(removeCoordList: coords);
     }
-    isEmptyNotifer.value = _content.isEmpty;
+    if (notifyEmpty)
+    {
+      isEmptyNotifer.value = _content.isEmpty;
+    }
   }
 
   void addEmpty({required final CoordinateSetI coord})
@@ -932,7 +936,7 @@ class SelectionList
     isEmptyNotifer.value = _content.isEmpty;
   }
 
-  void clear()
+  void clear({final bool notifyEmpty = true})
   {
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateColorNullable entry in _content.entries)
@@ -948,7 +952,10 @@ class SelectionList
       drawingLayer.setDataAll(list: refs);
     }
     _content.clear();
-    isEmptyNotifer.value = _content.isEmpty;
+    if (notifyEmpty)
+    {
+      isEmptyNotifer.value = _content.isEmpty;
+    }
   }
 
   void deleteDirectly({required final CoordinateSetI coord})
@@ -1047,25 +1054,45 @@ class SelectionList
     return contains(coord: coord) ? _content[coord] : null;
   }
 
-  void shiftSelection({required final CoordinateSetI offset})
+  void shiftSelection({required final CoordinateSetI offset, required final bool withContent})
   {
+
     if (offset != _lastOffset)
     {
-      final CoordinateColorMapNullable newContent = HashMap<CoordinateSetI, ColorReference?>();
-      for (final CoordinateColorNullable entry in _content.entries)
+      if (withContent)
       {
-        newContent[CoordinateSetI(x: entry.key.x + (offset.x - _lastOffset.x), y: entry.key.y + (offset.y - _lastOffset.y))] = entry.value;
-      }
-      _content = newContent;
-      _lastOffset.x = offset.x;
-      _lastOffset.y = offset.y;
+        final CoordinateColorMapNullable newContent = HashMap<CoordinateSetI, ColorReference?>();
+        for (final CoordinateColorNullable entry in _content.entries)
+        {
+          newContent[CoordinateSetI(x: entry.key.x + (offset.x - _lastOffset.x), y: entry.key.y + (offset.y - _lastOffset.y))] = entry.value;
+        }
+        _content = newContent;
+        _lastOffset.x = offset.x;
+        _lastOffset.y = offset.y;
 
-      if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+        if (_appState.currentLayer != null && _appState.currentLayer.runtimeType == DrawingLayerState)
+        {
+          final DrawingLayerState drawingLayer = _appState.currentLayer! as DrawingLayerState;
+          drawingLayer.doManualRaster = true;
+        }
+      }
+      else
       {
-        final DrawingLayerState drawingLayer = _appState.currentLayer! as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
+        final Set<CoordinateSetI> coordinateList = <CoordinateSetI>{};
+        for (final CoordinateSetI coord in selectedPixels.keys)
+        {
+          final CoordinateSetI newCoord = CoordinateSetI(x: coord.x + (offset.x - _lastOffset.x), y: coord.y + (offset.y - _lastOffset.y));
+          if (newCoord.x >= 0 && newCoord.y >= 0 && newCoord.x < _appState.canvasSize.x && newCoord.y < _appState.canvasSize.y)
+          {
+            coordinateList.add(newCoord);
+          }
+        }
+        _lastOffset.x = offset.x;
+        _lastOffset.y = offset.y;
 
+        clear(notifyEmpty: false);
+        transferAll(coords: coordinateList, notifyEmpty: false);
+      }
     }
     isEmptyNotifer.value = _content.isEmpty;
   }

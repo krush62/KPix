@@ -112,7 +112,7 @@ class FillPainter extends IToolPainter
           else //SHADING LAYER
           {
             _floodFillShading(layer: drawParams.currentShadingLayer!, start: _cursorPosNorm, shadeDirection: shaderOptions.shaderDirection.value);
-            appState.rasterDrawingLayersBelow(layer: drawParams.currentShadingLayer!);
+            appState.rasterDrawingLayers();
           }
         }
         else
@@ -124,7 +124,7 @@ class FillPainter extends IToolPainter
           else //SHADING LAYER
           {
             _wholeFillShading(layer: drawParams.currentShadingLayer!, start: _cursorPosNorm, shadeDirection: shaderOptions.shaderDirection.value);
-            appState.rasterDrawingLayersBelow(layer: drawParams.currentShadingLayer!);
+            appState.rasterDrawingLayers();
           }
 
         }

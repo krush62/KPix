@@ -38,6 +38,7 @@ class LayerCollection with ChangeNotifier
   final List<LayerState> _layers = <LayerState>[];
   final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
   final ValueNotifier<bool> settingsVisible = ValueNotifier<bool>(false);
+
   LayerState? get currentLayer
   {
     return _currentLayer.value;
@@ -538,21 +539,7 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
-  void rasterDrawingLayersBelow({required final LayerState layer})
-  {
-    //shade all layers below
-    final int currentLayerindex = getLayerPosition(state: layer);
-    for (int i = _layers.length - 1; i > currentLayerindex; i--)
-    {
-      if (_layers[i].runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = _layers[i] as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
-    }
-  }
-
-  void reRasterDrawingLayers()
+ void reRasterDrawingLayers()
   {
     for (final LayerState layer in _layers)
     {

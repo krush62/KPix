@@ -788,7 +788,7 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    appState.rasterDrawingLayersBelow(layer: shadingLayer);
+    appState.rasterDrawingLayers();
 
     contentRaster = null;
     hasHistoryData = true;
@@ -814,7 +814,7 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    appState.rasterDrawingLayersBelow(layer: shadingLayer);
+    appState.rasterDrawingLayers();
 
     contentRaster = null;
     hasHistoryData = true;

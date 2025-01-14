@@ -153,7 +153,7 @@ class ShadingLayerState extends LayerState
     }
   }
 
-  Future<ui.Image> _createRaster() async
+  Future<ui.Image> _createThumbnail() async
   {
     final AppState appState = GetIt.I.get<AppState>();
     final ByteData byteDataImg = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
@@ -193,7 +193,7 @@ class ShadingLayerState extends LayerState
     thumbnail.value = image;
     isRendering = false;
     _shouldRender = false;
-    GetIt.I.get<AppState>().rasterDrawingLayersBelow(layer: this);
+    GetIt.I.get<AppState>().rasterDrawingLayers();
   }
 
   void _updateTimerCallback({required final Timer timer})
@@ -201,7 +201,7 @@ class ShadingLayerState extends LayerState
     if (_shouldRender && !isRendering)
     {
       isRendering = true;
-      _createRaster().then((final ui.Image image)
+      _createThumbnail().then((final ui.Image image)
       {
         _rasterCreated(image: image);
       });

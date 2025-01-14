@@ -46,6 +46,7 @@ class DrawingLayerState extends LayerState
   List<LayerState>? layerStack;
   final DrawingLayerSettings settings;
 
+
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
@@ -75,10 +76,36 @@ class DrawingLayerState extends LayerState
     visibilityState.value = vState;
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
     Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
-    settings.addListener(() {
-      doManualRaster = true;
+    settings.addListener(()
+    {
+      _settingsChanged();
     });
+    _settingsChanged();
   }
+
+  void _settingsChanged()
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
+    if (layerStack != null)
+    {
+      hasSelection = false;
+    }
+    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    allColorPixels.addAll(_data);
+    if (hasSelection)
+    {
+      final CoordinateColorMap nonNullMap = CoordinateColorMap.fromEntries(
+        appState.selectionState.selection.selectedPixels.entries.where((final MapEntry<CoordinateSetI, ColorReference?> entry) => entry.value != null).map(
+              (final MapEntry<CoordinateSetI, ColorReference?> entry) => MapEntry<CoordinateSetI, ColorReference>(entry.key, entry.value!),
+        ),
+      );
+      allColorPixels.addAll(nonNullMap);
+    }
+    _settingsPixels = settings.getSettingsPixels(data: allColorPixels, layerState: this);
+    appState.rasterDrawingLayers();
+  }
+
 
   factory DrawingLayerState.from({required final DrawingLayerState other, final List<LayerState>? layerStack})
   {
@@ -169,6 +196,8 @@ class DrawingLayerState extends LayerState
       doManualRaster = false;
     }
     GetIt.I.get<AppState>().repaintNotifier.repaint();
+
+
   }
 
   Future<(ui.Image, ui.Image)> _createRaster() async
@@ -208,7 +237,6 @@ class DrawingLayerState extends LayerState
       allColorPixels.addAll(nonNullMap);
     }
     _settingsPixels = settings.getSettingsPixels(data: allColorPixels, layerState: this);
-
     allColorPixels.addAll(_settingsPixels);
 
     for (final CoordinateColor entry in allColorPixels.entries)

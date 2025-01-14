@@ -692,7 +692,7 @@ class AppState
 
       if (topMostShadingLayer != null)
       {
-        rasterDrawingLayersBelow(layer: topMostShadingLayer);
+        rasterDrawingLayers();
       }
     }
   }
@@ -787,7 +787,7 @@ class AppState
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
     }
     repaintNotifier.repaint();
-    rasterDrawingLayersBelow(layer: _layerCollection.first);
+    rasterDrawingLayers();
 
   }
 
@@ -803,7 +803,7 @@ class AppState
     }
     if (layerState.runtimeType == ShadingLayerState)
     {
-      rasterDrawingLayersBelow(layer: layerState);
+      rasterDrawingLayers();
     }
 
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
@@ -885,7 +885,7 @@ class AppState
     {
       if (deleteLayer.runtimeType == ShadingLayerState)
       {
-        rasterDrawingLayersBelow(layer: deleteLayer);
+        rasterDrawingLayers();
       }
 
       if (addToHistoryStack)
@@ -924,7 +924,7 @@ class AppState
     _layerCollection.duplicateLayer(duplicateLayer: duplicateLayer);
     if (duplicateLayer.runtimeType == ShadingLayerState)
     {
-      rasterDrawingLayersBelow(layer: duplicateLayer); //this should probably be one layer above
+      rasterDrawingLayers();
     }
     if (addToHistoryStack)
     {
@@ -941,10 +941,9 @@ class AppState
     }
   }
 
-  //TODO THIS MIGHT ALWAYS NEED TO RENDER ALL LAYERS NOT ONLY BELOW
-  void rasterDrawingLayersBelow({required final LayerState layer})
+  void rasterDrawingLayers({final DrawingLayerState? exceptionLayer})
   {
-    _layerCollection.rasterDrawingLayersBelow(layer: layer);
+    _layerCollection.reRasterDrawingLayers();
   }
 
 

@@ -344,7 +344,8 @@ class DrawingLayerSettings with ChangeNotifier {
         }
         else if (dropShadowStyle.value == DropShadowStyle.shade)
         {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: coord, layers: layers, layerState: layerState);
+          final ColorReference? currentColor = _getColorReferenceAtPos(coord: coord, layers: layers, layerState: layerState, withSettingsPixels: true);
+
           if (currentColor != null)
           {
             final KPalRampData currentRamp = currentColor.ramp;
@@ -613,13 +614,14 @@ class DrawingLayerSettings with ChangeNotifier {
 
     if (currentIndex != -1)
     {
-      for (int i = layers.length - 1; i >= currentIndex; i--)
+      for (int i = layers.length - 1; i > currentIndex; i--)
       {
         final LayerState layer = layers[i];
         if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
           final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
           final ColorReference? colRef = drawingLayerState.getDataEntry(coord: coord, withSettingsPixels: withSettingsPixels);
+
           if (colRef != null)
           {
             currentColor = colRef;
@@ -639,7 +641,6 @@ class DrawingLayerSettings with ChangeNotifier {
     if (currentColor != null && colorShift != 0)
     {
       final int finalIndex = (currentColor.colorIndex + colorShift).clamp(0, currentColor.ramp.references.length - 1);
-
       currentColor = currentColor.ramp.references[finalIndex];
     }
 

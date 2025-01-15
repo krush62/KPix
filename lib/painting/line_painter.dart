@@ -176,9 +176,7 @@ class LinePainter extends IToolPainter
           }
 
           hasHistoryData = true;
-          _lineStarted = false;
-          _dragStarted = false;
-          _linePoints.clear();
+          reset();
         }
         _isDown = false;
       }
@@ -275,6 +273,14 @@ class LinePainter extends IToolPainter
   @override
   void reset()
   {
+    _cursorPosNorm.x = 0;
+    _cursorPosNorm.y = 0;
+    _previousCursorPosNorm.x = -1;
+    _previousCursorPosNorm.y = -1;
+    _lineStartPos.x = 0;
+    _lineStartPos.y = 0;
+    _lineEndPos1.x = 0;
+    _lineEndPos2.y = 0;
     _contentPoints.clear();
     _linePoints.clear();
     _previousSize = -1;

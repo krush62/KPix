@@ -193,24 +193,17 @@ class LinePainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    //Surrounding
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
     final Path path = Path();
-    for (int i = 0; i < pathPoints.length; i++)
+    if (pathPoints.isNotEmpty)
     {
-      if (i == 0)
-      {
-        path.moveTo((pathPoints[i].x * drawParams.pixelSize) + drawParams.offset.dx, (pathPoints[i].y * drawParams.pixelSize) + drawParams.offset.dy);
-      }
+      path.moveTo((pathPoints.first.x * drawParams.pixelSize) + drawParams.offset.dx, (pathPoints.first.y * drawParams.pixelSize) + drawParams.offset.dy);
 
-      if (i < pathPoints.length - 1)
+      for (final CoordinateSetI point in pathPoints.skip(1))
       {
-        path.lineTo((pathPoints[i + 1].x * drawParams.pixelSize) + drawParams.offset.dx, (pathPoints[i + 1].y * drawParams.pixelSize) + drawParams.offset.dy);
+        path.lineTo((point.x * drawParams.pixelSize) + drawParams.offset.dx, (point.y * drawParams.pixelSize) + drawParams.offset.dy);
       }
-      else
-      {
-        path.lineTo((pathPoints[0].x * drawParams.pixelSize) + drawParams.offset.dx, (pathPoints[0].y * drawParams.pixelSize) + drawParams.offset.dy);
-      }
+      path.close();
     }
 
     drawParams.paint.style = PaintingStyle.stroke;

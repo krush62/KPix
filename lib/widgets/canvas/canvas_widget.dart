@@ -116,7 +116,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   bool _timerStylusRunning = false;
   bool _stylusButtonDetected = false;
   bool _stylusHoverDetected = false;
-  bool _stylusButtonDown = false;
+  final ValueNotifier<bool> _stylusButtonDown = ValueNotifier<bool>(false);
   DateTime _stylusDownTimeStamp = DateTime.now();
 
   late Offset _dragStartLoc;
@@ -142,6 +142,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     primaryDown: _primaryIsDown,
     secondaryDown: _secondaryIsDown,
     primaryPressStart: _pressStartLoc,
+    stylusButton1Down: _stylusButtonDown,
   );
 
   late ToolType _previousTool;
@@ -675,16 +676,16 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   void _stylusBtnTimeout({required final Timer t})
   {
-    if (_stylusButtonDetected && !_stylusButtonDown)
+    if (_stylusButtonDetected && !_stylusButtonDown.value)
     {
       _needSecondaryStartLoc = true;
-      _stylusButtonDown = true;
+      _stylusButtonDown.value = true;
       _stylusDownTimeStamp = DateTime.now();
       //stylusBtnDown();
       _timerStylusBtnLongPress = Timer(_timeoutLongPress, handleTimeoutStylusBtnLongPress);
       _timerStylusRunning = true;
     }
-    else if (!_stylusButtonDetected && _stylusButtonDown)
+    else if (!_stylusButtonDetected && _stylusButtonDown.value)
     {
       final int diffMs = DateTime.now().difference(_stylusDownTimeStamp).inMilliseconds;
       //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
@@ -723,7 +724,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
       _needSecondaryStartLoc = false;
       //stylusBtnUp();
-      _stylusButtonDown = false;
+      _stylusButtonDown.value = false;
       _timerStylusBtnLongPress.cancel();
       _timerStylusRunning = false;
       _stylusLongMoveStarted.value = false;

@@ -61,12 +61,15 @@ class LinePainter extends IToolPainter
       if (_cursorPosNorm != _previousCursorPosNorm || _options.width.value != _previousSize)
       {
         _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: _cursorPosNorm);
-        _previousCursorPosNorm.x = _cursorPosNorm.x;
-        _previousCursorPosNorm.y = _cursorPosNorm.y;
-        _previousSize = _options.width.value;
 
         if (_lineStarted)
         {
+          if ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown)
+          {
+            _lineStartPos.x -= _previousCursorPosNorm.x - _cursorPosNorm.x;
+            _lineStartPos.y -= _previousCursorPosNorm.y - _cursorPosNorm.y;
+          }
+
           if (!_dragStarted || _lineEndPos1 == _lineEndPos2) // STRAIGHT LINE
           {
             if (_options.integerAspectRatio.value)
@@ -114,6 +117,11 @@ class LinePainter extends IToolPainter
             hasAsyncUpdate = true;
           });
         }
+
+        _previousCursorPosNorm.x = _cursorPosNorm.x;
+        _previousCursorPosNorm.y = _cursorPosNorm.y;
+        _previousSize = _options.width.value;
+
       }
     }
 

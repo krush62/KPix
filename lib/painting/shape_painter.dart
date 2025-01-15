@@ -55,7 +55,7 @@ class ShapePainter extends IToolPainter
     if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
     {
       bool selectionChanged = false;
-      if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dx != drawParams.primaryPressStart.dy)
+      if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
       {
         _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
         _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
@@ -67,18 +67,7 @@ class ShapePainter extends IToolPainter
         _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
       }
 
-      if (_normStartPos != _lastNormStartPos)
-      {
-        _lastNormStartPos.x = _normStartPos.x;
-        _lastNormStartPos.y = _normStartPos.y;
-        selectionChanged = true;
-      }
-      if (_cursorPosNorm != _lastNormEndPos)
-      {
-        _lastNormEndPos.x = _cursorPosNorm.x;
-        _lastNormEndPos.y = _cursorPosNorm.y;
-        selectionChanged = true;
-      }
+
 
       if (!_waitingForRasterization &&
           (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
@@ -87,6 +76,13 @@ class ShapePainter extends IToolPainter
         _isStarted = drawParams.primaryDown && drawParams.cursorPos != null;
         if (_isStarted)
         {
+          if ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown)
+          {
+            _normStartPos.x -= _lastNormEndPos.x - _cursorPosNorm.x;
+            _normStartPos.y -= _lastNormEndPos.y - _cursorPosNorm.y;
+          }
+
+
           final CoordinateSetI endPos = CoordinateSetI.from(other: _normStartPos);
 
           if (_hotkeyManager.shiftIsPressed)
@@ -134,6 +130,19 @@ class ShapePainter extends IToolPainter
                 }
               }
             }
+          }
+
+          if (_normStartPos != _lastNormStartPos)
+          {
+            _lastNormStartPos.x = _normStartPos.x;
+            _lastNormStartPos.y = _normStartPos.y;
+            selectionChanged = true;
+          }
+          if (_cursorPosNorm != _lastNormEndPos)
+          {
+            _lastNormEndPos.x = _cursorPosNorm.x;
+            _lastNormEndPos.y = _cursorPosNorm.y;
+            selectionChanged = true;
           }
 
           if (selectionChanged)

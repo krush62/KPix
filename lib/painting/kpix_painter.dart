@@ -76,6 +76,7 @@ class DrawingParameters
   final CoordinateSetD? cursorPos;
   final bool primaryDown;
   final bool secondaryDown;
+  final bool stylusButtonDown;
   final Offset primaryPressStart;
   final DrawingLayerState? currentDrawingLayer;
   final ReferenceLayerState? currentReferenceLayer;
@@ -90,6 +91,7 @@ class DrawingParameters
     required this.drawingSize,
     required this.cursorPos,
     required this.primaryDown,
+    required this.stylusButtonDown,
     required this.secondaryDown,
     required this.primaryPressStart,
     required final LayerState currentLayer,
@@ -113,6 +115,7 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<bool> _stylusLongMoveStarted;
   final ValueNotifier<bool> _stylusLongMoveVertical;
   final ValueNotifier<bool> _stylusLongMoveHorizontal;
+  final ValueNotifier<bool> _stylusButton1Down;
   final ValueNotifier<bool> _primaryDown;
   final ValueNotifier<bool> _secondaryDown;
   final ValueNotifier<Offset> _primaryPressStart;
@@ -146,6 +149,7 @@ class KPixPainter extends CustomPainter
     required final ValueNotifier<bool> isDragging,
     required final ValueNotifier<bool> stylusLongMoveStarted,
     required final ValueNotifier<bool> stylusLongMoveVertical,
+    required final ValueNotifier<bool> stylusButton1Down,
     required final ValueNotifier<bool> stylusLongMoveHorizontal,})
       : _appState = appState,
         _offset = offset,
@@ -154,6 +158,7 @@ class KPixPainter extends CustomPainter
         _stylusLongMoveStarted = stylusLongMoveStarted,
         _stylusLongMoveVertical = stylusLongMoveVertical,
         _stylusLongMoveHorizontal = stylusLongMoveHorizontal,
+        _stylusButton1Down = stylusButton1Down,
         _primaryDown = primaryDown,
         _secondaryDown = secondaryDown,
         _primaryPressStart = primaryPressStart,
@@ -220,6 +225,7 @@ class KPixPainter extends CustomPainter
       }
 
       final DrawingParameters drawParams = DrawingParameters(
+        stylusButtonDown: _stylusButton1Down.value,
         offset: _offset.value,
         canvas: canvas,
         paint: Paint(),

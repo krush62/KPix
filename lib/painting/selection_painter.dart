@@ -39,6 +39,7 @@ class SelectionPainter extends IToolPainter
   bool polygonDown = false;
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: -1, y: -1);
   Offset _lastStartPos = Offset.zero;
   bool _isStartOnCanvas = false;
   bool _shouldMove = false;
@@ -76,7 +77,7 @@ class SelectionPainter extends IToolPainter
               x: _cursorPosNorm.x - _normStartPos.x,
               y: _cursorPosNorm.y - _normStartPos.y,
             ),
-            withContent: !_hotkeyManager.controlIsPressed
+            withContent: !(_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed),
           );
         }
         else
@@ -91,13 +92,18 @@ class SelectionPainter extends IToolPainter
             selectionEnd.y = _cursorPosNorm.y;
             hasNewSelection = true;
           }
-          else
+          else if (_cursorPosNorm.x != _previousCursorPosNorm.x || _cursorPosNorm.y != _previousCursorPosNorm.y)
           {
+
+            if (hasNewSelection && ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown))
+            {
+              _normStartPos.x -= _previousCursorPosNorm.x - _cursorPosNorm.x;
+              _normStartPos.y -= _previousCursorPosNorm.y - _cursorPosNorm.y;
+            }
             selectionStart.x = min(_normStartPos.x, _cursorPosNorm.x);
             selectionStart.y = min(_normStartPos.y, _cursorPosNorm.y);
             selectionEnd.x = max(_normStartPos.x, _cursorPosNorm.x);
             selectionEnd.y = max(_normStartPos.y, _cursorPosNorm.y);
-
 
             if (options.keepAspectRatio.value)
             {
@@ -127,6 +133,9 @@ class SelectionPainter extends IToolPainter
               }
             }
             hasNewSelection = true;
+
+            _previousCursorPosNorm.x = _cursorPosNorm.x;
+            _previousCursorPosNorm.y = _cursorPosNorm.y;
           }
         }
       }
@@ -347,6 +356,17 @@ class SelectionPainter extends IToolPainter
   @override
   void reset()
   {
+    _cursorPosNorm.x = 0;
+    _cursorPosNorm.y = 0;
+    _previousCursorPosNorm.x = -1;
+    _previousCursorPosNorm.y = -1;
+    _normStartPos.x = 0;
+    _normStartPos.y = 0;
+    _cursorPosNorm.y = 0;
+    selectionStart.x = 0;
+    selectionStart.y = 0;
+    selectionEnd.x = 0;
+    selectionEnd.y = 0;
     hasNewSelection = false;
     movementStarted = false;
     polygonPoints.clear();

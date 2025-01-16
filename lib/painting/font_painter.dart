@@ -31,7 +31,6 @@ class FontPainter extends IToolPainter
   FontPainter({required super.painterOptions});
 
   final TextOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.textOptions;
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
   int _previousSize = -1;
@@ -47,126 +46,120 @@ class FontPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null)
+    if (drawParams.cursorPosNorm != null)
     {
-      _cursorPosNorm.x = getClosestPixel(
-          value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble(),)
-          ;
-      _cursorPosNorm.y = getClosestPixel(
-          value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble(),)
-          ;
-      _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * drawParams.pixelSize);
-      _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
-    }
+      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x) * drawParams.pixelSize);
+      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y) * drawParams.pixelSize);
 
-    final bool shouldUpdate =
-        _currentText != _options.text.value ||
-        _oldCursorPos != _cursorPosNorm ||
-        _previousSize != _options.size.value ||
-        _lastShadingEnabled != shaderOptions.isEnabled.value ||
-        _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
-        _lastShadingDirection != shaderOptions.shaderDirection.value ||
-        _lastColorSelection != appState.selectedColor;
 
-    if (shouldUpdate)
-    {
-      _textContent.clear();
-      final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
-      int offset = 0;
-      for (int i = 0; i < _options.text.value.length; i++)
+      final bool shouldUpdate =
+          _currentText != _options.text.value ||
+          _oldCursorPos != drawParams.cursorPosNorm! ||
+          _previousSize != _options.size.value ||
+          _lastShadingEnabled != shaderOptions.isEnabled.value ||
+          _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
+          _lastShadingDirection != shaderOptions.shaderDirection.value ||
+          _lastColorSelection != appState.selectedColor;
+
+      if (shouldUpdate)
       {
-        final int unicodeVal = _options.text.value.codeUnitAt(i);
-        final Glyph? glyph = currentFont.glyphMap[unicodeVal];
-        if (glyph != null)
+        _textContent.clear();
+        final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
+        int offset = 0;
+        for (int i = 0; i < _options.text.value.length; i++)
         {
-          for (int x = 0; x < glyph.width; x++)
+          final int unicodeVal = _options.text.value.codeUnitAt(i);
+          final Glyph? glyph = currentFont.glyphMap[unicodeVal];
+          if (glyph != null)
           {
-            for (int y = 0; y < currentFont.height; y++)
+            for (int x = 0; x < glyph.width; x++)
             {
-              final bool valAtPos = glyph.dataMatrix[x][y];
-              if (valAtPos)
+              for (int y = 0; y < currentFont.height; y++)
               {
-                for (int a = 0; a < _options.size.value; a++)
+                final bool valAtPos = glyph.dataMatrix[x][y];
+                if (valAtPos)
                 {
-                  for (int b = 0; b < _options.size.value; b++)
+                  for (int a = 0; a < _options.size.value; a++)
                   {
-                    _textContent.add(CoordinateSetI(x: _cursorPosNorm.x + offset + (x * _options.size.value) + a, y: _cursorPosNorm.y + (y * _options.size.value) + b));
+                    for (int b = 0; b < _options.size.value; b++)
+                    {
+                      _textContent.add(CoordinateSetI(x: drawParams.cursorPosNorm!.x + offset + (x * _options.size.value) + a, y: drawParams.cursorPosNorm!.y + (y * _options.size.value) + b));
+                    }
                   }
                 }
               }
             }
+            offset += (glyph.width + 1) * _options.size.value;
           }
-          offset += (glyph.width + 1) * _options.size.value;
         }
-      }
-      _currentText = _options.text.value;
-      _previousSize = _options.size.value;
+        _currentText = _options.text.value;
+        _previousSize = _options.size.value;
 
-      final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
-        getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
-        getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _textContent, shaderOptions: shaderOptions);
-      rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
-        cursorRaster = rasterSet;
-        hasAsyncUpdate = true;
-      });
-    }
-
-    //DUMP
-    if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-        drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden)
-    {
-      if (drawParams.primaryDown && !_down)
-      {
-        _down = true;
+        final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
+          getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+          getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _textContent, shaderOptions: shaderOptions);
+        rasterizeDrawingPixels(drawingPixels: cursorPixels).then((final ContentRasterSet? rasterSet) {
+          cursorRaster = rasterSet;
+          hasAsyncUpdate = true;
+        });
       }
-      else if (!drawParams.primaryDown && _down)
+
+      //DUMP
+      if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+          drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden)
       {
-        if (_textContent.isNotEmpty)
+        if (drawParams.primaryDown && !_down)
         {
-          if (drawParams.currentDrawingLayer != null)
-          {
-            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
-            _dumpDrawing(drawParams: drawParams, drawingPixels: drawingPixels);
-          }
-          else
-          {
-            dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _textContent, shaderOptions: shaderOptions);
-          }
+          _down = true;
         }
-        _down = false;
+        else if (!drawParams.primaryDown && _down)
+        {
+          if (_textContent.isNotEmpty)
+          {
+            if (drawParams.currentDrawingLayer != null)
+            {
+              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              _dumpDrawing(drawParams: drawParams, drawingPixels: drawingPixels);
+            }
+            else
+            {
+              dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _textContent, shaderOptions: shaderOptions);
+            }
+          }
+          _down = false;
+        }
       }
-    }
 
-    _oldCursorPos.x = _cursorPosNorm.x;
-    _oldCursorPos.y = _cursorPosNorm.y;
-    _lastShadingEnabled = shaderOptions.isEnabled.value;
-    _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
-    _lastShadingDirection = shaderOptions.shaderDirection.value;
-    _lastColorSelection = appState.selectedColor;
+      _oldCursorPos.x = drawParams.cursorPosNorm!.x;
+      _oldCursorPos.y = drawParams.cursorPosNorm!.y;
+      _lastShadingEnabled = shaderOptions.isEnabled.value;
+      _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
+      _lastShadingDirection = shaderOptions.shaderDirection.value;
+      _lastColorSelection = appState.selectedColor;
 
-    if (drawParams.cursorPos == null)
-    {
-      cursorRaster = null;
+      if (drawParams.cursorPos == null)
+      {
+        cursorRaster = null;
+      }
     }
   }
 
-  void _dumpDrawing({required final DrawingParameters drawParams, required final CoordinateColorMap drawingPixels})
-  {
-    if (!appState.selectionState.selection.isEmpty)
+    void _dumpDrawing({required final DrawingParameters drawParams, required final CoordinateColorMap drawingPixels})
     {
-      appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
-    }
-    /*else if (!_shaderOptions.isEnabled.value)
-    {
-      appState.selectionState.add(data: drawingPixels, notify: false);
-    }*/
-    else
-    {
-      drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
-    }
-    hasHistoryData = true;
+      if (!appState.selectionState.selection.isEmpty)
+      {
+        appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
+      }
+      /*else if (!_shaderOptions.isEnabled.value)
+      {
+        appState.selectionState.add(data: drawingPixels, notify: false);
+      }*/
+      else
+      {
+        drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
+      }
+      hasHistoryData = true;
+
   }
 
   @override
@@ -200,8 +193,8 @@ class FontPainter extends IToolPainter
         }
       }
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
@@ -216,7 +209,7 @@ class FontPainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
-    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+    statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
 
   @override

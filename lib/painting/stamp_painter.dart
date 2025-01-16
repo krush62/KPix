@@ -50,11 +50,11 @@ class StampPainter extends IToolPainter
   {
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = getClosestPixel(
+      _cursorPosNorm.x = IToolPainter.getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
           pixelSize: drawParams.pixelSize.toDouble(),)
           ;
-      _cursorPosNorm.y = getClosestPixel(
+      _cursorPosNorm.y = IToolPainter.getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: drawParams.pixelSize.toDouble(),)
           ;

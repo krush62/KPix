@@ -23,7 +23,6 @@ import 'package:kpix/util/helper.dart';
 class ColorPickPainter extends IToolPainter
 {
   ColorPickPainter({required super.painterOptions});
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   ColorReference? selectedColor;
@@ -32,22 +31,16 @@ class ColorPickPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null)
+    if (drawParams.cursorPosNorm != null)
     {
-      _cursorPosNorm.x = getClosestPixel(
-          value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble(),);
-      _cursorPosNorm.y = getClosestPixel(
-          value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble(),);
-      _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x + 0.5) * drawParams.pixelSize);
-      _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y + 0.5) * drawParams.pixelSize);
+      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize);
+      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize);
 
-      if (drawParams.secondaryDown || (drawParams.primaryDown && _oldCursorPos != _cursorPosNorm))
+      if (drawParams.secondaryDown || (drawParams.primaryDown && _oldCursorPos != drawParams.cursorPosNorm))
       {
-        _oldCursorPos.x = _cursorPosNorm.x;
-        _oldCursorPos.y = _cursorPosNorm.y;
-        final ColorReference? colRef = appState.getColorFromImageAtPosition(normPos: _cursorPosNorm);
+        _oldCursorPos.x = drawParams.cursorPosNorm!.x;
+        _oldCursorPos.y = drawParams.cursorPosNorm!.y;
+        final ColorReference? colRef = appState.getColorFromImageAtPosition(normPos: drawParams.cursorPosNorm!);
         if (colRef != null && colRef != appState.selectedColor)
         {
           selectedColor = colRef;
@@ -93,6 +86,6 @@ class ColorPickPainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
-    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+    statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
 }

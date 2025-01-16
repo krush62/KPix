@@ -38,7 +38,6 @@ class PencilPainter extends IToolPainter
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final List<CoordinateSetI> _paintPositions = <CoordinateSetI>[];
   final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   int _previousToolSize = -1;
   Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
@@ -60,17 +59,10 @@ class PencilPainter extends IToolPainter
   {
     if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
     {
-      if (drawParams.cursorPos != null) {
-        _cursorPosNorm.x = getClosestPixel(
-            value: drawParams.cursorPos!.x - drawParams.offset.dx,
-            pixelSize: drawParams.pixelSize.toDouble(),)
-            ;
-        _cursorPosNorm.y = getClosestPixel(
-            value: drawParams.cursorPos!.y - drawParams.offset.dy,
-            pixelSize: drawParams.pixelSize.toDouble(),)
-            ;
+      if (drawParams.cursorPosNorm != null) {
+
         _hasNewCursorPos =
-            _cursorPosNorm != _previousCursorPosNorm ||
+            drawParams.cursorPosNorm! != _previousCursorPosNorm ||
             _previousToolSize != _options.size.value ||
             _lastShadingEnabled != shaderOptions.isEnabled.value ||
             _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
@@ -79,9 +71,9 @@ class PencilPainter extends IToolPainter
 
         if (_hasNewCursorPos)
         {
-          _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
-          _previousCursorPosNorm.x = _cursorPosNorm.x;
-          _previousCursorPosNorm.y = _cursorPosNorm.y;
+          _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: drawParams.cursorPosNorm!);
+          _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;
+          _previousCursorPosNorm.y = drawParams.cursorPosNorm!.y;
           _previousToolSize = _options.size.value;
           _lastShadingEnabled = shaderOptions.isEnabled.value;
           _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
@@ -102,9 +94,9 @@ class PencilPainter extends IToolPainter
             }
             else
             {
-              if (_paintPositions.isEmpty || (_cursorPosNorm.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true) && _hasNewCursorPos))
+              if (_paintPositions.isEmpty || (drawParams.cursorPosNorm!.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true) && _hasNewCursorPos))
               {
-                final CoordinateSetI drawPos = CoordinateSetI(x: _cursorPosNorm.x, y: _cursorPosNorm.y);
+                final CoordinateSetI drawPos = CoordinateSetI(x: drawParams.cursorPosNorm!.x, y: drawParams.cursorPosNorm!.y);
                 _paintPositions.add(drawPos);
                 _allPaintPositions.add(drawPos);
                 _lastDrawingPosition = drawPos;
@@ -124,10 +116,10 @@ class PencilPainter extends IToolPainter
               }
               else
               {
-                final List<CoordinateSetI> bresenLine = bresenham(start: _paintPositions[_paintPositions.length - 1], end: _cursorPosNorm).sublist(1);
+                final List<CoordinateSetI> bresenLine = bresenham(start: _paintPositions[_paintPositions.length - 1], end: drawParams.cursorPosNorm!).sublist(1);
                 _paintPositions.addAll(bresenLine);
                 _allPaintPositions.addAll(bresenLine);
-                _lastDrawingPosition = CoordinateSetI.from(other: _cursorPosNorm);
+                _lastDrawingPosition = CoordinateSetI.from(other: drawParams.cursorPosNorm!);
               }
             }
           }
@@ -208,8 +200,8 @@ class PencilPainter extends IToolPainter
           else if (_hotkeyManager.shiftIsPressed && _isLineDrawing)
           {
             final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
-            getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
-            getLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, shape: _options.shape.value);
+            getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
+            getLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, shape: _options.shape.value);
             if (drawParams.currentDrawingLayer != null)
             {
               _drawingPixels.addAll(getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
@@ -239,8 +231,8 @@ class PencilPainter extends IToolPainter
         if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty)
         {
           final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
-          getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
-          getLinePoints(startPos: _lastDrawingPosition!, endPos: _cursorPosNorm, size: _options.size.value, shape: _options.shape.value);
+          getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
+          getLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, shape: _options.shape.value);
 
           final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
             getPixelsToDraw(coords: linePoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
@@ -323,7 +315,7 @@ class PencilPainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
       super.setStatusBarData(drawParams: drawParams);
-      statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+      statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
 
   @override

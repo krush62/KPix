@@ -760,7 +760,7 @@ abstract class IToolPainter
     }
   }
 
-  int getClosestPixel({required final double value, required final double pixelSize})
+  static int getClosestPixel({required final double value, required final double pixelSize})
   {
     final double remainder = value % pixelSize;
     final double lowerMultiple = value - remainder;

@@ -74,6 +74,7 @@ class DrawingParameters
   final CoordinateSetI drawingEnd;
   final Size drawingSize;
   final CoordinateSetD? cursorPos;
+  final CoordinateSetI? cursorPosNorm;
   final bool primaryDown;
   final bool secondaryDown;
   final bool stylusButtonDown;
@@ -90,6 +91,7 @@ class DrawingParameters
     required this.canvasSize,
     required this.drawingSize,
     required this.cursorPos,
+    required this.cursorPosNorm,
     required this.primaryDown,
     required this.stylusButtonDown,
     required this.secondaryDown,
@@ -233,6 +235,7 @@ class KPixPainter extends CustomPainter
         canvasSize: _appState.canvasSize,
         drawingSize: size,
         cursorPos: _coords.value,
+        cursorPosNorm: _coords.value != null ? CoordinateSetI(x: IToolPainter.getClosestPixel(value: _coords.value!.x - _offset.value.dx,pixelSize: _appState.zoomFactor.toDouble()), y: IToolPainter.getClosestPixel(value: _coords.value!.y - _offset.value.dy,pixelSize: _appState.zoomFactor.toDouble())) : null,
         primaryDown: _primaryDown.value,
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,

@@ -31,7 +31,6 @@ import 'package:kpix/util/typedefs.dart';
 class EraserPainter extends IToolPainter
 {
   final EraserOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   bool _isDown = false;
   bool _hasErasedPixels = false;
@@ -41,17 +40,8 @@ class EraserPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
+    if (drawParams.cursorPosNorm != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
     {
-      _cursorPosNorm.x = getClosestPixel(
-          value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble(),)
-          ;
-      _cursorPosNorm.y = getClosestPixel(
-          value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble(),)
-          ;
-
 
       //if (_cursorPosNorm != _previousCursorPosNorm)
       {
@@ -59,10 +49,10 @@ class EraserPainter extends IToolPainter
             (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
             (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
         {
-          final List<CoordinateSetI> pixelsToDelete = <CoordinateSetI>[_cursorPosNorm];
-          if (!_cursorPosNorm.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
+          final List<CoordinateSetI> pixelsToDelete = <CoordinateSetI>[drawParams.cursorPosNorm!];
+          if (!drawParams.cursorPosNorm!.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
           {
-            pixelsToDelete.addAll(bresenham(start: _previousCursorPosNorm, end: _cursorPosNorm).sublist(1));
+            pixelsToDelete.addAll(bresenham(start: _previousCursorPosNorm, end: drawParams.cursorPosNorm!).sublist(1));
           }
           final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
           for (final CoordinateSetI delCoord in pixelsToDelete)
@@ -107,8 +97,8 @@ class EraserPainter extends IToolPainter
             appState.rasterDrawingLayers();
           }
         }
-        _previousCursorPosNorm.x = _cursorPosNorm.x;
-        _previousCursorPosNorm.y = _cursorPosNorm.y;
+        _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;
+        _previousCursorPosNorm.y = drawParams.cursorPosNorm!.y;
       }
     }
     if (drawParams.primaryDown && _isDown == false)
@@ -129,9 +119,9 @@ class EraserPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPos != null);
+    assert(drawParams.cursorPosNorm != null);
 
-    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: _cursorPosNorm);
+    final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: drawParams.cursorPosNorm!);
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: contentPoints);
 
     final Path path = Path();
@@ -165,7 +155,7 @@ class EraserPainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
-    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+    statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
 
   @override

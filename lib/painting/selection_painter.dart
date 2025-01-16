@@ -38,7 +38,6 @@ class SelectionPainter extends IToolPainter
   List<CoordinateSetI> polygonPoints = <CoordinateSetI>[];
   bool polygonDown = false;
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: -1, y: -1);
   Offset _lastStartPos = Offset.zero;
   bool _isStartOnCanvas = false;
@@ -54,131 +53,131 @@ class SelectionPainter extends IToolPainter
     {
       if (_lastStartPos != drawParams.primaryPressStart)
       {
-        _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-        _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
         _lastStartPos = drawParams.primaryPressStart;
       }
-      if (drawParams.cursorPos != null)
+      if (drawParams.cursorPosNorm != null)
       {
-        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble());
-        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
-      }
 
-      _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null;
-      if (_isStartOnCanvas)
-      {
-        _shouldMove = (drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) &&
-            (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
-        if (_shouldMove)
+
+
+        _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null;
+        if (_isStartOnCanvas)
         {
-          movementStarted = true;
-          appState.selectionState.setOffset(
-            offset: CoordinateSetI(
-              x: _cursorPosNorm.x - _normStartPos.x,
-              y: _cursorPosNorm.y - _normStartPos.y,
-            ),
-            withContent: !(_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed),
-          );
-        }
-        else
-        {
-          if (options.shape.value == SelectShape.polygon)
+          _shouldMove = (drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) &&
+              (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+          if (_shouldMove)
           {
-            polygonDown = true;
-          }
-          else if (options.shape.value == SelectShape.wand)
-          {
-            selectionEnd.x = _cursorPosNorm.x;
-            selectionEnd.y = _cursorPosNorm.y;
-            hasNewSelection = true;
-          }
-          else if (_cursorPosNorm.x != _previousCursorPosNorm.x || _cursorPosNorm.y != _previousCursorPosNorm.y)
-          {
-
-            if (hasNewSelection && ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown))
-            {
-              _normStartPos.x -= _previousCursorPosNorm.x - _cursorPosNorm.x;
-              _normStartPos.y -= _previousCursorPosNorm.y - _cursorPosNorm.y;
-            }
-            selectionStart.x = min(_normStartPos.x, _cursorPosNorm.x);
-            selectionStart.y = min(_normStartPos.y, _cursorPosNorm.y);
-            selectionEnd.x = max(_normStartPos.x, _cursorPosNorm.x);
-            selectionEnd.y = max(_normStartPos.y, _cursorPosNorm.y);
-
-            if (options.keepAspectRatio.value)
-            {
-              final int width = selectionEnd.x - selectionStart.x;
-              final int height = selectionEnd.y - selectionStart.y;
-              if (width > height)
-              {
-                if (_normStartPos.x < _cursorPosNorm.x)
-                {
-                  selectionEnd.x = selectionStart.x + height;
-                }
-                else
-                {
-                  selectionStart.x = selectionEnd.x - height;
-                }
-              }
-              else
-              {
-                if (_normStartPos.y < _cursorPosNorm.y)
-                {
-                  selectionEnd.y = selectionStart.y + width;
-                }
-                else
-                {
-                  selectionStart.y = selectionEnd.y - width;
-                }
-              }
-            }
-            hasNewSelection = true;
-
-            _previousCursorPosNorm.x = _cursorPosNorm.x;
-            _previousCursorPosNorm.y = _cursorPosNorm.y;
-          }
-        }
-      }
-      else if (!drawParams.primaryDown)
-      {
-        if (movementStarted)
-        {
-          movementStarted = false;
-          appState.selectionState.finishMovement();
-        }
-        if (polygonDown)
-        {
-          final CoordinateSetI point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
-          bool isInsideCircle = false;
-          if (polygonPoints.isNotEmpty)
-          {
-            if (getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
-            {
-              isInsideCircle = true;
-            }
-          }
-
-          if (polygonPoints.isEmpty || !isInsideCircle)
-          {
-            polygonPoints.add(point);
-            polygonDown = false;
+            movementStarted = true;
+            appState.selectionState.setOffset(
+              offset: CoordinateSetI(
+                x: drawParams.cursorPosNorm!.x - _normStartPos.x,
+                y: drawParams.cursorPosNorm!.y - _normStartPos.y,
+              ),
+              withContent: !(_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed),
+            );
           }
           else
           {
-            if (polygonPoints.length > 2)
+            if (options.shape.value == SelectShape.polygon)
             {
+              polygonDown = true;
+            }
+            else if (options.shape.value == SelectShape.wand)
+            {
+              selectionEnd.x = drawParams.cursorPosNorm!.x;
+              selectionEnd.y = drawParams.cursorPosNorm!.y;
               hasNewSelection = true;
             }
-            else
+            else if (drawParams.cursorPosNorm!.x != _previousCursorPosNorm.x || drawParams.cursorPosNorm!.y != _previousCursorPosNorm.y)
             {
-              polygonDown = false;
+
+              if (hasNewSelection && ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown))
+              {
+                _normStartPos.x -= _previousCursorPosNorm.x - drawParams.cursorPosNorm!.x;
+                _normStartPos.y -= _previousCursorPosNorm.y - drawParams.cursorPosNorm!.y;
+              }
+              selectionStart.x = min(_normStartPos.x, drawParams.cursorPosNorm!.x);
+              selectionStart.y = min(_normStartPos.y, drawParams.cursorPosNorm!.y);
+              selectionEnd.x = max(_normStartPos.x, drawParams.cursorPosNorm!.x);
+              selectionEnd.y = max(_normStartPos.y, drawParams.cursorPosNorm!.y);
+
+              if (options.keepAspectRatio.value)
+              {
+                final int width = selectionEnd.x - selectionStart.x;
+                final int height = selectionEnd.y - selectionStart.y;
+                if (width > height)
+                {
+                  if (_normStartPos.x < drawParams.cursorPosNorm!.x)
+                  {
+                    selectionEnd.x = selectionStart.x + height;
+                  }
+                  else
+                  {
+                    selectionStart.x = selectionEnd.x - height;
+                  }
+                }
+                else
+                {
+                  if (_normStartPos.y < drawParams.cursorPosNorm!.y)
+                  {
+                    selectionEnd.y = selectionStart.y + width;
+                  }
+                  else
+                  {
+                    selectionStart.y = selectionEnd.y - width;
+                  }
+                }
+              }
+              hasNewSelection = true;
+
+              _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;
+              _previousCursorPosNorm.y = drawParams.cursorPosNorm!.y;
             }
           }
         }
-      }
-      else //NO BUTTON PRESS AND NOT ON CANVAS
-      {
+        else if (!drawParams.primaryDown)
+        {
+          if (movementStarted)
+          {
+            movementStarted = false;
+            appState.selectionState.finishMovement();
+          }
+          if (polygonDown)
+          {
+            final CoordinateSetI point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
+            bool isInsideCircle = false;
+            if (polygonPoints.isNotEmpty)
+            {
+              if (getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+              {
+                isInsideCircle = true;
+              }
+            }
 
+            if (polygonPoints.isEmpty || !isInsideCircle)
+            {
+              polygonPoints.add(point);
+              polygonDown = false;
+            }
+            else
+            {
+              if (polygonPoints.length > 2)
+              {
+                hasNewSelection = true;
+              }
+              else
+              {
+                polygonDown = false;
+              }
+            }
+          }
+        }
+        else //NO BUTTON PRESS AND NOT ON CANVAS
+        {
+
+        }
       }
     }
   }
@@ -186,109 +185,111 @@ class SelectionPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPos != null);
-
-    if (_isStartOnCanvas && !_shouldMove && !polygonDown && (options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse))
+    if (drawParams.cursorPosNorm != null)
     {
-      drawParams.paint.style = PaintingStyle.stroke;
-      final CoordinateSetD cursorStartPos = CoordinateSetD(
+      if (_isStartOnCanvas && !_shouldMove && !polygonDown && (options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse))
+      {
+        drawParams.paint.style = PaintingStyle.stroke;
+        final CoordinateSetD cursorStartPos = CoordinateSetD(
           x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
           y: drawParams.offset.dy +
               selectionStart.y * drawParams.pixelSize,);
-      final CoordinateSetD cursorEndPos = CoordinateSetD(
+        final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
               (selectionEnd.x + 1) * drawParams.pixelSize,
           y: drawParams.offset.dy +
               (selectionEnd.y + 1) * drawParams.pixelSize,);
 
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
 
-      //RECTANGLE
-      if (options.shape.value == SelectShape.rectangle)
-      {
-        drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-        drawParams.paint.color = whiteToolAlphaColor;
-        drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        //RECTANGLE
+        if (options.shape.value == SelectShape.rectangle)
+        {
+          drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+          drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+          drawParams.paint.color = whiteToolAlphaColor;
+          drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        }
+
+        //ELLIPSE
+        else if (options.shape.value == SelectShape.ellipse)
+        {
+          drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+          drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+          drawParams.paint.color = whiteToolAlphaColor;
+          drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        }
       }
 
-      //ELLIPSE
-      else if (options.shape.value == SelectShape.ellipse)
+      if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
       {
-        drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize,);
+        drawParams.paint.style = PaintingStyle.stroke;
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
         drawParams.paint.color = whiteToolAlphaColor;
-        drawParams.canvas.drawOval(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+      }
+      else if (options.shape.value == SelectShape.polygon)
+      {
+        final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize,
+          y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize,);
+
+        final Path rhombusPath = Path();
+        rhombusPath.moveTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
+        rhombusPath.lineTo(cursorPos.x, cursorPos.y - (1 * painterOptions.cursorSize));
+        rhombusPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
+        rhombusPath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
+        rhombusPath.lineTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
+
+        drawParams.paint.style = PaintingStyle.stroke;
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
+        drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+        drawParams.paint.color = whiteToolAlphaColor;
+        drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
+      }
+      else if (options.shape.value == SelectShape.wand)
+      {
+        final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize,
+          y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize,);
+        final Path outlinePath = Path();
+        outlinePath.moveTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
+        outlinePath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
+        outlinePath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (5 * painterOptions.cursorSize));
+        outlinePath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
+        outlinePath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
+
+        final Path fillPath = Path();
+        fillPath.moveTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y + (1 * painterOptions.cursorSize));
+        fillPath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
+        fillPath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (5 * painterOptions.cursorSize));
+        fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
+
+
+        drawParams.paint.style = PaintingStyle.stroke;
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
+        drawParams.canvas.drawPath(fillPath, drawParams.paint);
+
+        drawParams.paint.style = PaintingStyle.stroke;
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
+        drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+        drawParams.paint.color = whiteToolAlphaColor;
+        drawParams.canvas.drawPath(outlinePath, drawParams.paint);
       }
     }
 
-    if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
-    {
-      final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
-    }
-    else if (options.shape.value == SelectShape.polygon)
-    {
-      final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
-          y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize,);
-
-      final Path rhombusPath = Path();
-      rhombusPath.moveTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
-      rhombusPath.lineTo(cursorPos.x, cursorPos.y - (1 * painterOptions.cursorSize));
-      rhombusPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
-      rhombusPath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
-      rhombusPath.lineTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
-
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawPath(rhombusPath, drawParams.paint);
-    }
-    else if (options.shape.value == SelectShape.wand)
-    {
-      final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
-          y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize,);
-      final Path outlinePath = Path();
-      outlinePath.moveTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
-      outlinePath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
-      outlinePath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (5 * painterOptions.cursorSize));
-      outlinePath.lineTo(cursorPos.x, cursorPos.y + (1 * painterOptions.cursorSize));
-      outlinePath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y);
-
-      final Path fillPath = Path();
-      fillPath.moveTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y + (1 * painterOptions.cursorSize));
-      fillPath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y + (4 * painterOptions.cursorSize));
-      fillPath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (5 * painterOptions.cursorSize));
-      fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
-
-
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawPath(fillPath, drawParams.paint);
-
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
-    }
   }
 
   @override
@@ -297,10 +298,10 @@ class SelectionPainter extends IToolPainter
     {
       final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
       CoordinateSetD(
-          x: drawParams.offset.dx + getClosestPixel(
+          x: drawParams.offset.dx + IToolPainter.getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
               pixelSize: drawParams.pixelSize.toDouble(),) * drawParams.pixelSize + (drawParams.pixelSize / 2),
-          y: drawParams.offset.dy + getClosestPixel(
+          y: drawParams.offset.dy + IToolPainter.getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
               pixelSize: drawParams.pixelSize.toDouble(),) * drawParams.pixelSize + (drawParams.pixelSize / 2),)
           : null;
@@ -343,7 +344,7 @@ class SelectionPainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     if (drawParams.cursorPos != null)
     {
-      statusBarData.cursorPos = _cursorPosNorm;
+      statusBarData.cursorPos = drawParams.cursorPosNorm;
       if ((options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse) && drawParams.primaryDown)
       {
         final int width = (selectionStart.x - selectionEnd.x).abs() + 1;
@@ -356,13 +357,10 @@ class SelectionPainter extends IToolPainter
   @override
   void reset()
   {
-    _cursorPosNorm.x = 0;
-    _cursorPosNorm.y = 0;
     _previousCursorPosNorm.x = -1;
     _previousCursorPosNorm.y = -1;
     _normStartPos.x = 0;
     _normStartPos.y = 0;
-    _cursorPosNorm.y = 0;
     selectionStart.x = 0;
     selectionStart.y = 0;
     selectionEnd.x = 0;

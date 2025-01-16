@@ -40,7 +40,6 @@ class ShapePainter extends IToolPainter
   Offset _lastStartPos = Offset.zero;
   final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormStartPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lastNormEndPos = CoordinateSetI(x: 0, y: 0);
   bool _isStarted = false;
   bool _waitingForRasterization = false;
@@ -52,19 +51,14 @@ class ShapePainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
+    if ((drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null) && drawParams.cursorPosNorm != null)
     {
       bool selectionChanged = false;
       if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
       {
-        _normStartPos.x = getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-        _normStartPos.y = getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
         _lastStartPos = drawParams.primaryPressStart;
-      }
-      if (drawParams.cursorPos != null)
-      {
-        _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble());
-        _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
       }
 
 
@@ -78,8 +72,8 @@ class ShapePainter extends IToolPainter
         {
           if ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown)
           {
-            _normStartPos.x -= _lastNormEndPos.x - _cursorPosNorm.x;
-            _normStartPos.y -= _lastNormEndPos.y - _cursorPosNorm.y;
+            _normStartPos.x -= _lastNormEndPos.x - drawParams.cursorPosNorm!.x;
+            _normStartPos.y -= _lastNormEndPos.y - drawParams.cursorPosNorm!.y;
           }
 
 
@@ -87,14 +81,14 @@ class ShapePainter extends IToolPainter
 
           if (_hotkeyManager.shiftIsPressed)
           {
-            endPos.x = _normStartPos.x + (_normStartPos.x - _cursorPosNorm.x);
-            endPos.y = _normStartPos.y + (_normStartPos.y - _cursorPosNorm.y);
+            endPos.x = _normStartPos.x + (_normStartPos.x - drawParams.cursorPosNorm!.x);
+            endPos.y = _normStartPos.y + (_normStartPos.y - drawParams.cursorPosNorm!.y);
           }
 
-          _selectionStart.x = min(endPos.x, _cursorPosNorm.x);
-          _selectionStart.y = min(endPos.y, _cursorPosNorm.y);
-          _selectionEnd.x = max(endPos.x, _cursorPosNorm.x);
-          _selectionEnd.y = max(endPos.y, _cursorPosNorm.y);
+          _selectionStart.x = min(endPos.x, drawParams.cursorPosNorm!.x);
+          _selectionStart.y = min(endPos.y, drawParams.cursorPosNorm!.y);
+          _selectionEnd.x = max(endPos.x, drawParams.cursorPosNorm!.x);
+          _selectionEnd.y = max(endPos.y, drawParams.cursorPosNorm!.y);
 
           if (_options.keepRatio.value)
           {
@@ -116,16 +110,24 @@ class ShapePainter extends IToolPainter
             }
             else
             {
-              if (width > height) {
-                if (_normStartPos.x < _cursorPosNorm.x) {
+              if (width > height)
+              {
+                if (_normStartPos.x < drawParams.cursorPosNorm!.x) {
                   _selectionEnd.x = _selectionStart.x + height;
-                } else {
+                }
+                else
+                {
                   _selectionStart.x = _selectionEnd.x - height;
                 }
-              } else {
-                if (_normStartPos.y < _cursorPosNorm.y) {
+              }
+              else
+              {
+                if (_normStartPos.y < drawParams.cursorPosNorm!.y)
+                {
                   _selectionEnd.y = _selectionStart.y + width;
-                } else {
+                }
+                else
+                {
                   _selectionStart.y = _selectionEnd.y - width;
                 }
               }
@@ -138,10 +140,10 @@ class ShapePainter extends IToolPainter
             _lastNormStartPos.y = _normStartPos.y;
             selectionChanged = true;
           }
-          if (_cursorPosNorm != _lastNormEndPos)
+          if (drawParams.cursorPosNorm! != _lastNormEndPos)
           {
-            _lastNormEndPos.x = _cursorPosNorm.x;
-            _lastNormEndPos.y = _cursorPosNorm.y;
+            _lastNormEndPos.x = drawParams.cursorPosNorm!.x;
+            _lastNormEndPos.y = drawParams.cursorPosNorm!.y;
             selectionChanged = true;
           }
 
@@ -210,41 +212,42 @@ class ShapePainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPos != null);
-
-    if (_isStarted)
+    if (drawParams.cursorPosNorm != null)
     {
-      drawParams.paint.style = PaintingStyle.stroke;
-      final CoordinateSetD cursorStartPos = CoordinateSetD(
+      if (_isStarted)
+      {
+        drawParams.paint.style = PaintingStyle.stroke;
+        final CoordinateSetD cursorStartPos = CoordinateSetD(
           x: drawParams.offset.dx + _selectionStart.x * drawParams.pixelSize,
           y: drawParams.offset.dy +
               _selectionStart.y * drawParams.pixelSize,);
-      final CoordinateSetD cursorEndPos = CoordinateSetD(
+        final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
               (_selectionEnd.x + 1) * drawParams.pixelSize,
           y: drawParams.offset.dy +
               (_selectionEnd.y + 1) * drawParams.pixelSize,);
 
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
-    }
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+        drawParams.paint.color = whiteToolAlphaColor;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorStartPos.x, cursorStartPos.y, cursorEndPos.x, cursorEndPos.y), drawParams.paint);
+      }
 
-    if (!drawParams.primaryDown)
-    {
-      final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
-      drawParams.paint.style = PaintingStyle.stroke;
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-      drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
-      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-      drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+      if (!drawParams.primaryDown)
+      {
+        final CoordinateSetD cursorPos = CoordinateSetD(
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize,);
+        drawParams.paint.style = PaintingStyle.stroke;
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+        drawParams.paint.color = blackToolAlphaColor;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+        drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+        drawParams.paint.color = whiteToolAlphaColor;
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+      }
     }
   }
 
@@ -465,7 +468,7 @@ class ShapePainter extends IToolPainter
     super.setStatusBarData(drawParams: drawParams);
     if (drawParams.cursorPos != null)
     {
-      statusBarData.cursorPos = _cursorPosNorm;
+      statusBarData.cursorPos = drawParams.cursorPosNorm;
       if (drawParams.primaryDown)
       {
         final int width = (_selectionStart.x - _selectionEnd.x).abs() + 1;

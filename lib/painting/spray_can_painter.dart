@@ -35,8 +35,8 @@ class SprayCanPainter extends IToolPainter
   SprayCanPainter({required super.painterOptions});
 
   final SprayCanOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.sprayCanOptions;
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
+  CoordinateSetI? _lastCursorPosNorm;
   Set<CoordinateSetI> _cursorPoints = <CoordinateSetI>{};
   final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
   bool _waitingForDump = false;
@@ -52,80 +52,70 @@ class SprayCanPainter extends IToolPainter
     {
       if (drawParams.cursorPos != null)
       {
-        _cursorPosNorm.x = getClosestPixel(
-            value: drawParams.cursorPos!.x - drawParams.offset.dx,
-            pixelSize: drawParams.pixelSize.toDouble(),)
-            ;
-        _cursorPosNorm.y = getClosestPixel(
-            value: drawParams.cursorPos!.y - drawParams.offset.dy,
-            pixelSize: drawParams.pixelSize.toDouble(),)
-            ;
-
-        _cursorPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: _cursorPosNorm);
-
-      }
-
-      if (!_waitingForDump && (
-          (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-          (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden)))
-      {
-        if (drawParams.primaryDown)
+        _cursorPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: drawParams.cursorPosNorm!);
+        _lastCursorPosNorm = drawParams.cursorPosNorm;
+        if (!_waitingForDump && (
+            (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
+            (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden)))
         {
-          if (!timerInitialized || !timer.isActive)
+          if (drawParams.primaryDown)
           {
-            timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {_timeout(timer: timer);});
-            timerInitialized = true;
-          }
+            if (!timerInitialized || !timer.isActive)
+            {
+              timer = Timer.periodic(Duration(milliseconds: 500 ~/ _options.intensity.value), (final Timer timer) {_timeout(timer: timer);});
+              timerInitialized = true;
+            }
 
-          if (!_isDown)
-          {
-            _isDown = true;
+            if (!_isDown)
+            {
+              _isDown = true;
+            }
+            if (_hasNewPositions)
+            {
+              _drawingPixels.clear();
+              _drawingPixels.addAll(
+              drawParams.currentDrawingLayer != null ?
+                getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+                getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
+              );
+
+              rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+                contentRaster = rasterSet;
+                hasAsyncUpdate = true;
+              });
+              _hasNewPositions = false;
+            }
           }
-          if (_hasNewPositions)
+          else if (!drawParams.primaryDown && _isDown)
           {
+            timer.cancel();
             _drawingPixels.clear();
             _drawingPixels.addAll(
-            drawParams.currentDrawingLayer != null ?
-              getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+              drawParams.currentDrawingLayer != null ?
+              getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
               getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
             );
 
-            rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
-              contentRaster = rasterSet;
-              hasAsyncUpdate = true;
-            });
-            _hasNewPositions = false;
+            if (drawParams.currentDrawingLayer != null)
+            {
+              _dumpDrawing(currentLayer: drawParams.currentDrawingLayer!);
+              _waitingForDump = true;
+            }
+            else
+            {
+              dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _allPaintPositions, shaderOptions: shaderOptions);
+              _drawingPixels.clear();
+            }
+
+            _allPaintPositions.clear();
+            _isDown = false;
           }
         }
-        else if (!drawParams.primaryDown && _isDown)
+        else if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForDump)
         {
-          timer.cancel();
           _drawingPixels.clear();
-          _drawingPixels.addAll(
-            drawParams.currentDrawingLayer != null ?
-            getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-            getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
-          );
-
-          if (drawParams.currentDrawingLayer != null)
-          {
-            _dumpDrawing(currentLayer: drawParams.currentDrawingLayer!);
-            _waitingForDump = true;
-          }
-          else
-          {
-            dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _allPaintPositions, shaderOptions: shaderOptions);
-            _drawingPixels.clear();
-          }
-
-          _allPaintPositions.clear();
-          _isDown = false;
+          _waitingForDump = false;
         }
-      }
-      else if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForDump)
-      {
-        _drawingPixels.clear();
-        _waitingForDump = false;
       }
     }
   }
@@ -149,13 +139,16 @@ class SprayCanPainter extends IToolPainter
 
   void _timeout({required final Timer timer})
   {
-    final double r = _options.radius.value * sqrt(Random().nextDouble());
-    final double theta = Random().nextDouble() * 2 * pi;
-    final int x = (_cursorPosNorm.x + (r * cos(theta))).round();
-    final int y = (_cursorPosNorm.y + (r * sin(theta))).round();
-    _allPaintPositions.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)));
-    hasAsyncUpdate = true;
-    _hasNewPositions = true;
+    if (_lastCursorPosNorm != null)
+    {
+      final double r = _options.radius.value * sqrt(Random().nextDouble());
+      final double theta = Random().nextDouble() * 2 * pi;
+      final int x = (_lastCursorPosNorm!.x + (r * cos(theta))).round();
+      final int y = (_lastCursorPosNorm!.y + (r * sin(theta))).round();
+      _allPaintPositions.addAll(getRoundSquareContentPoints(shape: PencilShape.round, size: _options.blobSize.value, position: CoordinateSetI(x: x, y: y)));
+      hasAsyncUpdate = true;
+      _hasNewPositions = true;
+    }
   }
 
 
@@ -197,7 +190,7 @@ class SprayCanPainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
-    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+    statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
 
   @override

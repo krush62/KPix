@@ -33,7 +33,6 @@ class LinePainter extends IToolPainter
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
   Set<CoordinateSetI> _linePoints = <CoordinateSetI>{};
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
   int _previousSize = -1;
   bool _lineStarted = false;
@@ -48,33 +47,25 @@ class LinePainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.cursorPos != null)
+    if (drawParams.cursorPosNorm != null)
     {
-      _cursorPosNorm.x = getClosestPixel(
-          value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble(),)
-          ;
-      _cursorPosNorm.y = getClosestPixel(
-          value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble(),)
-          ;
-      if (_cursorPosNorm != _previousCursorPosNorm || _options.width.value != _previousSize)
+      if (drawParams.cursorPosNorm! != _previousCursorPosNorm || _options.width.value != _previousSize)
       {
-        _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: _cursorPosNorm);
+        _contentPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.width.value, position: drawParams.cursorPosNorm!);
 
         if (_lineStarted)
         {
           if ((_hotkeyManager.altIsPressed && !_hotkeyManager.shiftIsPressed) || drawParams.stylusButtonDown)
           {
-            _lineStartPos.x -= _previousCursorPosNorm.x - _cursorPosNorm.x;
-            _lineStartPos.y -= _previousCursorPosNorm.y - _cursorPosNorm.y;
+            _lineStartPos.x -= _previousCursorPosNorm.x - drawParams.cursorPosNorm!.x;
+            _lineStartPos.y -= _previousCursorPosNorm.y - drawParams.cursorPosNorm!.y;
           }
 
           if (!_dragStarted || _lineEndPos1 == _lineEndPos2) // STRAIGHT LINE
           {
             if (_options.integerAspectRatio.value)
             {
-              _linePoints = getIntegerRatioLinePoints(startPos: _lineStartPos, endPos: _cursorPosNorm, size: _options.width.value, angles: _options.angles, shape: PencilShape.round);
+              _linePoints = getIntegerRatioLinePoints(startPos: _lineStartPos, endPos: drawParams.cursorPosNorm!, size: _options.width.value, angles: _options.angles, shape: PencilShape.round);
               if (_hotkeyManager.shiftIsPressed)
               {
                 final Set<CoordinateSetI> otherDirPoints = <CoordinateSetI>{};
@@ -87,8 +78,8 @@ class LinePainter extends IToolPainter
             }
             else
             {
-              final CoordinateSetI startPos = _hotkeyManager.shiftIsPressed ? CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - _cursorPosNorm.x), y: _lineStartPos.y + (_lineStartPos.y - _cursorPosNorm.y)) : _lineStartPos;
-              _linePoints = getLinePoints(startPos: startPos, endPos: _cursorPosNorm, size: _options.width.value, shape: PencilShape.round);
+              final CoordinateSetI startPos = _hotkeyManager.shiftIsPressed ? CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - drawParams.cursorPosNorm!.x), y: _lineStartPos.y + (_lineStartPos.y - drawParams.cursorPosNorm!.y)) : _lineStartPos;
+              _linePoints = getLinePoints(startPos: startPos, endPos: drawParams.cursorPosNorm!, size: _options.width.value, shape: PencilShape.round);
 
             }
           }
@@ -118,8 +109,8 @@ class LinePainter extends IToolPainter
           });
         }
 
-        _previousCursorPosNorm.x = _cursorPosNorm.x;
-        _previousCursorPosNorm.y = _cursorPosNorm.y;
+        _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;
+        _previousCursorPosNorm.y = drawParams.cursorPosNorm!.y;
         _previousSize = _options.width.value;
 
       }
@@ -134,8 +125,8 @@ class LinePainter extends IToolPainter
         {
           if (_lineStarted && !_dragStarted)
           {
-            _lineEndPos1.x = _cursorPosNorm.x;
-            _lineEndPos1.y = _cursorPosNorm.y;
+            _lineEndPos1.x = drawParams.cursorPosNorm!.x;
+            _lineEndPos1.y = drawParams.cursorPosNorm!.y;
             _dragStarted = true;
           }
           _isDown = true;
@@ -143,8 +134,8 @@ class LinePainter extends IToolPainter
 
         if (_dragStarted)
         {
-          _lineEndPos2.x = _cursorPosNorm.x;
-          _lineEndPos2.y = _cursorPosNorm.y;
+          _lineEndPos2.x = drawParams.cursorPosNorm!.x;
+          _lineEndPos2.y = drawParams.cursorPosNorm!.y;
         }
       }
       else if (!drawParams.primaryDown && _isDown) //DUMPING
@@ -152,8 +143,8 @@ class LinePainter extends IToolPainter
         //FIRST (set starting point)
         if (!_lineStarted)
         {
-          _lineStartPos.x = _cursorPosNorm.x;
-          _lineStartPos.y = _cursorPosNorm.y;
+          _lineStartPos.x = drawParams.cursorPosNorm!.x;
+          _lineStartPos.y = drawParams.cursorPosNorm!.y;
           _lineStarted = true;
         }
         else
@@ -257,13 +248,13 @@ class LinePainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
-    if (drawParams.cursorPos != null)
+    if (drawParams.cursorPosNorm != null)
     {
-      statusBarData.cursorPos = _cursorPosNorm;
+      statusBarData.cursorPos = drawParams.cursorPosNorm;
       if (_lineStarted)
       {
-        final int width = (_cursorPosNorm.x - _lineStartPos.x).abs() + 1;
-        final int height =(_cursorPosNorm.y - _lineStartPos.y).abs() + 1;
+        final int width = (drawParams.cursorPosNorm!.x - _lineStartPos.x).abs() + 1;
+        final int height =(drawParams.cursorPosNorm!.y - _lineStartPos.y).abs() + 1;
         statusBarData.aspectRatio = statusBarData.diagonal = statusBarData.dimension = CoordinateSetI(x: width, y: height);
         statusBarData.angle = _lineStartPos;
       }
@@ -273,8 +264,6 @@ class LinePainter extends IToolPainter
   @override
   void reset()
   {
-    _cursorPosNorm.x = 0;
-    _cursorPosNorm.y = 0;
     _previousCursorPosNorm.x = -1;
     _previousCursorPosNorm.y = -1;
     _lineStartPos.x = 0;

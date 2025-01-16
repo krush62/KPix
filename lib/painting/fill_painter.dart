@@ -31,8 +31,6 @@ import 'package:kpix/util/typedefs.dart';
 
 class FillPainter extends IToolPainter
 {
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-
   FillPainter({required super.painterOptions});
   final FillOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.fillOptions;
   bool _isDown = false;
@@ -43,17 +41,15 @@ class FillPainter extends IToolPainter
   {
     if (drawParams.cursorPos != null)
     {
-      _cursorPosNorm.x = getClosestPixel(value: drawParams.cursorPos!.x - drawParams.offset.dx,pixelSize: drawParams.pixelSize.toDouble());
-      _cursorPosNorm.y = getClosestPixel(value: drawParams.cursorPos!.y - drawParams.offset.dy,pixelSize: drawParams.pixelSize.toDouble());
-    }
-    if (drawParams.primaryDown && !_isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
-    {
-      _shouldDraw = true;
-      _isDown = true;
-    }
-    else if (_isDown && !drawParams.primaryDown)
-    {
-      _isDown = false;
+      if (drawParams.primaryDown && !_isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+      {
+        _shouldDraw = true;
+        _isDown = true;
+      }
+      else if (_isDown && !drawParams.primaryDown)
+      {
+        _isDown = false;
+      }
     }
   }
 
@@ -61,57 +57,60 @@ class FillPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPos != null);
+    assert(drawParams.cursorPosNorm != null);
+    if (drawParams.cursorPosNorm != null)
+    {
+      final CoordinateSetD cursorPos = CoordinateSetD(
+        x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize,
+        y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize,);
+      final Path outlinePath = Path();
+      outlinePath.moveTo(cursorPos.x, cursorPos.y);
+      outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));
+      outlinePath.lineTo(cursorPos.x + (6 * painterOptions.cursorSize), cursorPos.y);
+      outlinePath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
+      outlinePath.lineTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y);
+      outlinePath.lineTo(cursorPos.x, cursorPos.y);
 
-    final CoordinateSetD cursorPos = CoordinateSetD(
-        x: drawParams.offset.dx + (_cursorPosNorm.x + 0.5) * drawParams.pixelSize,
-        y: drawParams.offset.dy + (_cursorPosNorm.y + 0.5) * drawParams.pixelSize,);
-    final Path outlinePath = Path();
-    outlinePath.moveTo(cursorPos.x, cursorPos.y);
-    outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));
-    outlinePath.lineTo(cursorPos.x + (6 * painterOptions.cursorSize), cursorPos.y);
-    outlinePath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
-    outlinePath.lineTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y);
-    outlinePath.lineTo(cursorPos.x, cursorPos.y);
+      final Path fillPath = Path();
+      fillPath.moveTo(cursorPos.x, cursorPos.y);
+      fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y - (1 * painterOptions.cursorSize));
+      fillPath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y - (1 * painterOptions.cursorSize));
+      fillPath.lineTo(cursorPos.x + (6 * painterOptions.cursorSize), cursorPos.y);
+      fillPath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
+      fillPath.lineTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y);
 
-    final Path fillPath = Path();
-    fillPath.moveTo(cursorPos.x, cursorPos.y);
-    fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y - (1 * painterOptions.cursorSize));
-    fillPath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y - (1 * painterOptions.cursorSize));
-    fillPath.lineTo(cursorPos.x + (6 * painterOptions.cursorSize), cursorPos.y);
-    fillPath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
-    fillPath.lineTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y);
+      drawParams.paint.style = PaintingStyle.fill;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawPath(fillPath, drawParams.paint);
 
-    drawParams.paint.style = PaintingStyle.fill;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = Colors.black;
-    drawParams.canvas.drawPath(fillPath, drawParams.paint);
+      drawParams.paint.style = PaintingStyle.stroke;
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
+      drawParams.paint.color = Colors.black;
+      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+      drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
+      drawParams.paint.color = Colors.white;
+      drawParams.canvas.drawPath(outlinePath, drawParams.paint);
+    }
 
-    drawParams.paint.style = PaintingStyle.stroke;
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
-    drawParams.paint.color = Colors.black;
-    drawParams.canvas.drawPath(outlinePath, drawParams.paint);
-    drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
-    drawParams.paint.color = Colors.white;
-    drawParams.canvas.drawPath(outlinePath, drawParams.paint);
   }
 
   @override
   void drawExtras({required final DrawingParameters drawParams}) {
-    if (_shouldDraw && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
+    if (drawParams.cursorPosNorm != null && _shouldDraw && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
     {
-      if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.unlocked || (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.transparency && drawParams.currentDrawingLayer!.getDataEntry(coord: _cursorPosNorm) != null))) ||
+      if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.unlocked || (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.transparency && drawParams.currentDrawingLayer!.getDataEntry(coord: drawParams.cursorPosNorm!) != null))) ||
         (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.visibilityState.value == LayerVisibilityState.visible && drawParams.currentShadingLayer!.lockState.value == LayerLockState.unlocked))
       {
         if (_options.fillAdjacent.value)
         {
           if (drawParams.currentDrawingLayer != null)
           {
-            _floodFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _floodFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
           else //SHADING LAYER
           {
-            _floodFillShading(layer: drawParams.currentShadingLayer!, start: _cursorPosNorm, shadeDirection: shaderOptions.shaderDirection.value);
+            _floodFillShading(layer: drawParams.currentShadingLayer!, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
             appState.rasterDrawingLayers();
           }
         }
@@ -119,11 +118,11 @@ class FillPainter extends IToolPainter
         {
           if (drawParams.currentDrawingLayer != null)
           {
-            _wholeFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: _cursorPosNorm, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _wholeFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
           else //SHADING LAYER
           {
-            _wholeFillShading(layer: drawParams.currentShadingLayer!, start: _cursorPosNorm, shadeDirection: shaderOptions.shaderDirection.value);
+            _wholeFillShading(layer: drawParams.currentShadingLayer!, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
             appState.rasterDrawingLayers();
           }
 
@@ -441,7 +440,7 @@ class FillPainter extends IToolPainter
   void setStatusBarData({required final DrawingParameters drawParams})
   {
     super.setStatusBarData(drawParams: drawParams);
-    statusBarData.cursorPos = drawParams.cursorPos != null ? _cursorPosNorm : null;
+    statusBarData.cursorPos = drawParams.cursorPosNorm;
   }
 
   @override

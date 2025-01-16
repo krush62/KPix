@@ -24,6 +24,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -39,6 +40,10 @@ class StampPainter extends IToolPainter
   bool _down = false;
   final HashMap<CoordinateSetI, int> _stampData = HashMap<CoordinateSetI, int>();
   int _previousSize = -1;
+  bool _lastShadingEnabled = false;
+  ShaderDirection _lastShadingDirection = ShaderDirection.left;
+  bool _lastShadingCurrentRamp = false;
+  ColorReference? _lastColorSelection;
 
   @override
   void calculate({required final DrawingParameters drawParams})
@@ -61,7 +66,15 @@ class StampPainter extends IToolPainter
       (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
       (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
     {
-      if (_oldCursorPos != _cursorPosNorm || _previousSize != _options.scale.value)
+      final bool shouldUpdate =
+        _oldCursorPos != _cursorPosNorm ||
+        _previousSize != _options.scale.value ||
+        _lastShadingEnabled != shaderOptions.isEnabled.value ||
+        _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
+        _lastShadingDirection != shaderOptions.shaderDirection.value ||
+        _lastColorSelection != appState.selectedColor;
+
+      if (shouldUpdate)
       {
         _stampData.clear();
         final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
@@ -121,6 +134,10 @@ class StampPainter extends IToolPainter
 
     _oldCursorPos.x = _cursorPosNorm.x;
     _oldCursorPos.y = _cursorPosNorm.y;
+    _lastShadingEnabled = shaderOptions.isEnabled.value;
+    _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
+    _lastShadingDirection = shaderOptions.shaderDirection.value;
+    _lastColorSelection = appState.selectedColor;
 
     if (drawParams.cursorPos == null)
     {

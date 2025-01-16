@@ -21,6 +21,7 @@ import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -37,6 +38,10 @@ class FontPainter extends IToolPainter
   String _currentText = "";
   final Set<CoordinateSetI> _textContent = <CoordinateSetI>{};
   bool _down = false;
+  bool _lastShadingEnabled = false;
+  ShaderDirection _lastShadingDirection = ShaderDirection.left;
+  bool _lastShadingCurrentRamp = false;
+  ColorReference? _lastColorSelection;
 
 
   @override
@@ -56,7 +61,16 @@ class FontPainter extends IToolPainter
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
 
-    if (_currentText != _options.text.value || _oldCursorPos != _cursorPosNorm || _previousSize != _options.size.value)
+    final bool shouldUpdate =
+        _currentText != _options.text.value ||
+        _oldCursorPos != _cursorPosNorm ||
+        _previousSize != _options.size.value ||
+        _lastShadingEnabled != shaderOptions.isEnabled.value ||
+        _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
+        _lastShadingDirection != shaderOptions.shaderDirection.value ||
+        _lastColorSelection != appState.selectedColor;
+
+    if (shouldUpdate)
     {
       _textContent.clear();
       final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
@@ -127,6 +141,10 @@ class FontPainter extends IToolPainter
 
     _oldCursorPos.x = _cursorPosNorm.x;
     _oldCursorPos.y = _cursorPosNorm.y;
+    _lastShadingEnabled = shaderOptions.isEnabled.value;
+    _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
+    _lastShadingDirection = shaderOptions.shaderDirection.value;
+    _lastColorSelection = appState.selectedColor;
 
     if (drawParams.cursorPos == null)
     {

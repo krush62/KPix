@@ -179,6 +179,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     });
 
     _hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
+    _shaderOptions.isEnabled.addListener(_updateFromChange);
+    _shaderOptions.onlyCurrentRampEnabled.addListener(_updateFromChange);
+    _shaderOptions.shaderDirection.addListener(_updateFromChange);
+    _appState.selectedColorNotifier.addListener(_updateFromChange);
+  }
+
+  void _updateFromChange()
+  {
+    _appState.repaintNotifier.repaint();
   }
 
   void _setOptimalZoom()

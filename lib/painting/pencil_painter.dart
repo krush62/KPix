@@ -25,6 +25,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/util/helper.dart';
@@ -46,7 +47,10 @@ class PencilPainter extends IToolPainter
   CoordinateSetI? _lastDrawingPosition;
   bool _isLineDrawing = false;
   bool _hasNewCursorPos = false;
-
+  bool _lastShadingEnabled = false;
+  ShaderDirection _lastShadingDirection = ShaderDirection.left;
+  bool _lastShadingCurrentRamp = false;
+  ColorReference? _lastColorSelection;
 
 
   PencilPainter({required super.painterOptions});
@@ -65,7 +69,13 @@ class PencilPainter extends IToolPainter
             value: drawParams.cursorPos!.y - drawParams.offset.dy,
             pixelSize: drawParams.pixelSize.toDouble(),)
             ;
-        _hasNewCursorPos = _cursorPosNorm != _previousCursorPosNorm || _previousToolSize != _options.size.value;
+        _hasNewCursorPos =
+            _cursorPosNorm != _previousCursorPosNorm ||
+            _previousToolSize != _options.size.value ||
+            _lastShadingEnabled != shaderOptions.isEnabled.value ||
+            _lastShadingCurrentRamp != shaderOptions.onlyCurrentRampEnabled.value ||
+            _lastShadingDirection != shaderOptions.shaderDirection.value ||
+            _lastColorSelection != appState.selectedColor;
 
         if (_hasNewCursorPos)
         {
@@ -73,6 +83,10 @@ class PencilPainter extends IToolPainter
           _previousCursorPosNorm.x = _cursorPosNorm.x;
           _previousCursorPosNorm.y = _cursorPosNorm.y;
           _previousToolSize = _options.size.value;
+          _lastShadingEnabled = shaderOptions.isEnabled.value;
+          _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
+          _lastShadingDirection = shaderOptions.shaderDirection.value;
+          _lastColorSelection = appState.selectedColor;
         }
       }
       if (!_waitingForDump)

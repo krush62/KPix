@@ -690,10 +690,7 @@ class AppState
       _canvasSize.x = canvSize.x;
       _canvasSize.y = canvSize.y;
 
-      if (topMostShadingLayer != null)
-      {
-        rasterDrawingLayers();
-      }
+      rasterDrawingLayers();
     }
   }
 
@@ -786,7 +783,6 @@ class AppState
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
     }
-    repaintNotifier.repaint();
     rasterDrawingLayers();
 
   }
@@ -801,10 +797,8 @@ class AppState
     {
       layerState.visibilityState.value = LayerVisibilityState.visible;
     }
-    if (layerState.runtimeType == ShadingLayerState)
-    {
-      rasterDrawingLayers();
-    }
+
+    rasterDrawingLayers();
 
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
   }

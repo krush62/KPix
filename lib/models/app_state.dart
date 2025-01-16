@@ -483,7 +483,7 @@ class AppState
   DrawingLayerState addNewDrawingLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
     final bool setSelectionStateLayer = _layerCollection.isEmpty;
-    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize, select: select);
+    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content);
     if (setSelectionStateLayer)
     {
       selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);

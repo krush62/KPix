@@ -330,6 +330,7 @@ enum PreferenceInt
   Tool_Line_WidthMax(defaultValue: 16),
   Tool_Line_Width(defaultValue: 1),
   Tool_Line_BezierCalculationPoints(defaultValue: 1000),
+  Tool_Line_SegmentSortStyle(defaultValue: 1),
   Tool_Curve_WidthMin(defaultValue: 1),
   Tool_Curve_WidthMax(defaultValue: 16),
   Tool_Curve_Width(defaultValue: 1),
@@ -468,6 +469,7 @@ enum PreferenceBool
   Tool_Select_WandContinuous(defaultValue: true),
   Tool_Select_WandWholeRamp(defaultValue: false),
   Tool_Line_IntegerAspectRatio(defaultValue: false),
+  Tool_Line_SegmentSorting(defaultValue: false),
   Tool_Wand_SelectFromWholeRamp(defaultValue: false),
   Tool_Wand_Continuous(defaultValue: true),
   Tool_Stamp_FlipH(defaultValue: false),
@@ -975,6 +977,8 @@ class PreferenceManager
         intensityMax: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMax),
         intensityDefault: _getValueI(PreferenceInt.Tool_SprayCan_Intensity),);
     final LineOptions lineOptions = LineOptions(
+        segmentSortingDefault: _getValueB(PreferenceBool.Tool_Line_SegmentSorting),
+        segmentSortStyleDefault: _getValueI(PreferenceInt.Tool_Line_SegmentSortStyle),
         widthMin: _getValueI(PreferenceInt.Tool_Line_WidthMin),
         widthMax: _getValueI(PreferenceInt.Tool_Line_WidthMax),
         widthDefault: _getValueI(PreferenceInt.Tool_Line_Width),

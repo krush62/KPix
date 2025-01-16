@@ -19,6 +19,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
@@ -47,6 +48,21 @@ class AngleData
   AngleData({required this.x, required this.y}) : angle = atan2(x.toDouble(), y.toDouble());
 }
 
+enum SegmentSortStyle
+{
+  asc,
+  ascDesc,
+  descAsc,
+  desc,
+}
+
+const Map<int, SegmentSortStyle> segmentSortStyleValueMap =
+<int, SegmentSortStyle>{
+  0:SegmentSortStyle.asc,
+  1:SegmentSortStyle.ascDesc,
+  2:SegmentSortStyle.descAsc,
+  3:SegmentSortStyle.desc,
+};
 
 class LineOptions extends IToolOptions
 {
@@ -54,12 +70,16 @@ class LineOptions extends IToolOptions
   final int widthMax;
   final int widthDefault;
   final bool integerAspectRatioDefault;
+  final bool segmentSortingDefault;
+  final int segmentSortStyleDefault;
   final int bezierCalculationPoints;
   final Set<AngleData> angles = <AngleData>{};
 
-  final ValueNotifier<int> width = ValueNotifier<int>(1);
-  final ValueNotifier<bool> integerAspectRatio = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> unmodifiedIntegerAspectRatio = ValueNotifier<bool>(false);
+  final ValueNotifier<int> width;
+  final ValueNotifier<bool> integerAspectRatio;
+  final ValueNotifier<bool> unmodifiedIntegerAspectRatio;
+  final ValueNotifier<bool> segmentSorting;
+  final ValueNotifier<SegmentSortStyle> segmentSortStyle;
 
   LineOptions({
     required this.widthMin,
@@ -67,11 +87,15 @@ class LineOptions extends IToolOptions
     required this.widthDefault,
     required this.integerAspectRatioDefault,
     required this.bezierCalculationPoints,
-  })
+    required this.segmentSortingDefault,
+    required this.segmentSortStyleDefault,
+  }) :
+    segmentSorting = ValueNotifier<bool>(segmentSortingDefault),
+    segmentSortStyle = ValueNotifier<SegmentSortStyle>(segmentSortStyleValueMap[segmentSortStyleDefault] ?? SegmentSortStyle.ascDesc),
+    width = ValueNotifier<int>(widthDefault),
+    integerAspectRatio = ValueNotifier<bool>(integerAspectRatioDefault),
+    unmodifiedIntegerAspectRatio = ValueNotifier<bool>(integerAspectRatioDefault)
   {
-    width.value = widthDefault;
-    integerAspectRatio.value = integerAspectRatioDefault;
-    unmodifiedIntegerAspectRatio.value = integerAspectRatioDefault;
 
     for (int i = -1; i <= 1; i+=2)
     {
@@ -168,6 +192,90 @@ class LineOptions extends IToolOptions
                           value: lineOptions.integerAspectRatio.value,
                         );
                       },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Segment Sorting",
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: lineOptions.segmentSorting,
+                  builder: (final BuildContext context, final bool segmentSorting, final Widget? child){
+                    return Row(
+                      children: <Widget>[
+                        Switch(
+                          onChanged: (final bool newVal) {
+                            lineOptions.segmentSorting.value = newVal;
+                          },
+                          value: segmentSorting,
+                        ),
+                        SizedBox(width: toolSettingsWidgetOptions.padding),
+                        if (segmentSorting)
+                          ValueListenableBuilder<SegmentSortStyle>(
+                            valueListenable: lineOptions.segmentSortStyle,
+                            builder: (final BuildContext context, final SegmentSortStyle sortStyle, final Widget? child) {
+                              return Expanded(
+                                child: SegmentedButton<SegmentSortStyle>(
+                                  selected: <SegmentSortStyle>{sortStyle},
+                                  onSelectionChanged: (final Set<SegmentSortStyle> p0) {
+                                    lineOptions.segmentSortStyle.value = p0.first;
+                                  },
+                                  segments: const <ButtonSegment<SegmentSortStyle>>[
+                                    ButtonSegment<SegmentSortStyle>(
+                                      value: SegmentSortStyle.asc,
+                                      label: Tooltip(
+                                        message: "Ascending segment order",
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: Text("<"),
+                                      ),
+                                    ),
+                                    ButtonSegment<SegmentSortStyle>(
+                                      value: SegmentSortStyle.ascDesc,
+                                      label: Tooltip(
+                                        message: "Ascending/Descending segment order",
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: Text("<>"),
+                                      ),
+                                    ),
+                                    ButtonSegment<SegmentSortStyle>(
+                                      value: SegmentSortStyle.descAsc,
+                                      label: Tooltip(
+                                        message: "Descending/Ascending segment order",
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: Text("><"),
+                                      ),
+                                    ),
+                                    ButtonSegment<SegmentSortStyle>(
+                                      value: SegmentSortStyle.desc,
+                                      label: Tooltip(
+                                        message: "Descending segment order",
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: Text(">"),
+                                      ),
+                                    ),
+                                  ],
+                                  showSelectedIcon: false,
+                                ),
+                              );
+                            },
+                          ),
+                      ],
                     );
                   },
                 ),

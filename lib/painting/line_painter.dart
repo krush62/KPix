@@ -79,9 +79,17 @@ class LinePainter extends IToolPainter
             else
             {
               final CoordinateSetI startPos = _hotkeyManager.shiftIsPressed ? CoordinateSetI(x: _lineStartPos.x + (_lineStartPos.x - drawParams.cursorPosNorm!.x), y: _lineStartPos.y + (_lineStartPos.y - drawParams.cursorPosNorm!.y)) : _lineStartPos;
-              _linePoints = getLinePoints(startPos: startPos, endPos: drawParams.cursorPosNorm!, size: _options.width.value, shape: PencilShape.round);
-
+              if (_options.segmentSorting.value)
+              {
+                _linePoints = _smoothStraightLine(start: startPos, end: drawParams.cursorPosNorm!, size: _options.width.value, shape: PencilShape.round, sortStyle: _options.segmentSortStyle.value);
+              }
+              else
+              {
+                _linePoints = getLinePoints(startPos: startPos, endPos: drawParams.cursorPosNorm!, size: _options.width.value, shape: PencilShape.round);
+              }
             }
+
+
           }
           else // CURVE
           {
@@ -176,6 +184,153 @@ class LinePainter extends IToolPainter
     if (drawParams.cursorPos == null || !_lineStarted)
     {
       cursorRaster = null;
+    }
+  }
+
+  Set<CoordinateSetI> _smoothStraightLine({required final CoordinateSetI start, required final CoordinateSetI end, required final int size, required final PencilShape shape, required final SegmentSortStyle sortStyle})
+  {
+
+    final CoordinateSetI d = CoordinateSetI(x: (end.x - start.x).abs(), y: (end.y - start.y).abs());
+    final CoordinateSetI s = CoordinateSetI(x: start.x < end.x ? 1 : -1, y: start.y < end.y ? 1 : -1);
+
+    final bool isHorizontal = d.x > d.y;
+
+    int err = d.x - d.y;
+    final CoordinateSetI currentPoint = CoordinateSetI.from(other: start);
+
+    List<int> segments = <int>[];
+    int lengthCounter = 1;
+
+    while (true)
+    {
+      if (currentPoint.x == end.x && currentPoint.y == end.y) break;
+      final int e2 = err * 2;
+      if (e2 > -d.y)
+      {
+        if (!isHorizontal)
+        {
+          segments.add(lengthCounter);
+          lengthCounter = 0;
+        }
+        else
+        {
+          lengthCounter++;
+        }
+        err -= d.y;
+        currentPoint.x += s.x;
+      }
+      if (e2 < d.x)
+      {
+        if (isHorizontal)
+        {
+          segments.add(lengthCounter);
+          lengthCounter = 0;
+        }
+        else
+        {
+          lengthCounter++;
+        }
+        err += d.x;
+        currentPoint.y += s.y;
+      }
+    }
+    segments.add(lengthCounter);
+    segments.removeWhere((final int element) {
+      return element == 0;
+    });
+    segments.sort();
+    if (sortStyle == SegmentSortStyle.desc || sortStyle == SegmentSortStyle.descAsc)
+    {
+      segments = segments.reversed.toList();
+    }
+    if (sortStyle == SegmentSortStyle.ascDesc || sortStyle == SegmentSortStyle.descAsc)
+    {
+      final List<int> pyramid = List<int>.filled(segments.length, 50);
+      int left = 0;
+      int right = segments.length - 1;
+
+      for (int i = 0; i < segments.length; i++)
+      {
+        if (i.isEven)
+        {
+          pyramid[left++] = segments[i];
+        }
+        else
+        {
+          pyramid[right--] = segments[i];
+        }
+      }
+
+      for (int i = 0; i < segments.length; i++)
+      {
+        segments[i] = pyramid[i];
+      }
+    }
+    final Set<CoordinateSetI> points = <CoordinateSetI>{};
+    final CoordinateSetI curPos = CoordinateSetI.from(other: start);
+    for (final int segm in segments)
+    {
+      for (int i = 0; i < segm; i++)
+      {
+        if (isHorizontal)
+        {
+          if (end.x > start.x)
+          {
+            points.add(CoordinateSetI(x: curPos.x++, y: curPos.y));
+          }
+          else
+          {
+            points.add(CoordinateSetI(x: curPos.x--, y: curPos.y));
+          }
+        }
+        else
+        {
+          if (end.y > start.y)
+          {
+            points.add(CoordinateSetI(x: curPos.x, y: curPos.y++));
+          }
+          else
+          {
+            points.add(CoordinateSetI(x: curPos.x, y: curPos.y--));
+          }
+        }
+      }
+      if (isHorizontal)
+      {
+        if (end.y > start.y)
+        {
+          curPos.y++;
+        }
+        else
+        {
+          curPos.y--;
+        }
+      }
+      else
+      {
+        if (end.x > start.x)
+        {
+          curPos.x++;
+        }
+        else
+        {
+          curPos.x--;
+        }
+      }
+    }
+
+    if (size > 1)
+    {
+      final Set<CoordinateSetI> lPoints = <CoordinateSetI>{};
+      for (final CoordinateSetI coord in points)
+      {
+        lPoints.addAll(getRoundSquareContentPoints(shape: shape, size: size, position: coord));
+      }
+      return lPoints;
+    }
+    else
+    {
+      return points;
     }
   }
 

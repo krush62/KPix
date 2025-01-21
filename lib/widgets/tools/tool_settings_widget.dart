@@ -30,6 +30,9 @@ import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 
 class ToolSettingsWidgetOptions
@@ -61,6 +64,29 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
   final AppState appState = GetIt.I.get<AppState>();
   final ToolOptions toolOptions = GetIt.I.get<PreferenceManager>().toolOptions;
   final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
+  late KPixOverlay _stampManagerDialog;
+
+  @override
+  void initState() {
+    super.initState();
+    _stampManagerDialog = getStampManagerDialog(onDismiss: _hideStampManagerDialog, onLoad: _newStampLoaded);
+  }
+
+  void _hideStampManagerDialog()
+  {
+    _stampManagerDialog.hide();
+  }
+
+  void _newStampLoaded({required final StampManagerEntryData data})
+  {
+    GetIt.I.get<StampManager>().selectedStamp.value = data;
+    _hideStampManagerDialog();
+  }
+
+  void _showStampManagerDialog()
+  {
+    _stampManagerDialog.show(context: context);
+  }
 
 
   @override
@@ -129,6 +155,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
           case ToolType.stamp:
             toolWidget = StampOptions.getWidget(
                 context: context,
+                showStampManager: _showStampManagerDialog,
                 toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 stampOptions: toolOptions.stampOptions,);
             //break;

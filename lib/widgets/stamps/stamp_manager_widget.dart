@@ -20,12 +20,31 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 
 
+class StampManager
+{
+  final ValueNotifier<List<StampManagerEntryData>> stampList = ValueNotifier<List<StampManagerEntryData>>(<StampManagerEntryData>[]);
+  final ValueNotifier<StampManagerEntryData?> selectedStamp = ValueNotifier<StampManagerEntryData?>(null);
 
+  Future<void> loadAllStamps() async
+  {
+    stampList.value = await loadStamps(loadUserStamps: !kIsWeb);
+    if (stampList.value.isNotEmpty)
+    {
+      selectedStamp.value = stampList.value.first;
+    }
+    else
+    {
+      selectedStamp.value = null;
+    }
+  }
+}
 
 class StampManagerOptions
 {
@@ -39,7 +58,7 @@ class StampManagerOptions
 class StampManagerWidget extends StatefulWidget
 {
   final Function() dismiss;
-  final Function() fileLoad;
+  final StampEntryDataFn fileLoad;
   const StampManagerWidget({super.key, required this.dismiss, required this.fileLoad});
 
   @override
@@ -50,6 +69,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
 {
   final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final StampManagerOptions _options = GetIt.I.get<PreferenceManager>().stampManagerOptions;
+  final StampManager _stampManager = GetIt.I.get<StampManager>();
   final ValueNotifier<List<StampManagerEntryWidget>> _fileEntries = ValueNotifier<List<StampManagerEntryWidget>>(<StampManagerEntryWidget>[]);
   final ValueNotifier<StampManagerEntryWidget?> _selectedWidget = ValueNotifier<StampManagerEntryWidget?>(null);
   late KPixOverlay _deleteWarningDialog;
@@ -75,8 +95,9 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     final List<StampManagerEntryWidget> fList = <StampManagerEntryWidget>[];
     if (!kIsWeb)
     {
-      final List<StampManagerEntryData> internalFiles = await loadStampsFromInternal();
-      for (final StampManagerEntryData fileData in internalFiles)
+
+      final List<StampManagerEntryData> stamps = _stampManager.stampList.value;
+      for (final StampManagerEntryData fileData in stamps)
       {
         fList.add(StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
       }
@@ -89,7 +110,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   {
     if (_selectedWidget.value != null)
     {
-      deleteStamp(fullStampPath: _selectedWidget.value!.entryData.path).then((final bool success) {
+      deleteFile(path: _selectedWidget.value!.entryData.path).then((final bool success) {
         _fileDeleted(success: success);
       });
     }
@@ -120,11 +141,6 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   void _deleteStampPressed()
   {
     _deleteWarningDialog.show(context: context);
-  }
-
-  void _loadStamp()
-  {
-    //TODO
   }
 
   @override
@@ -218,7 +234,9 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
                             FontAwesomeIcons.check,
                             size: _alertOptions.iconSize,
                           ),
-                          onPressed: selWidget != null ? _loadStamp : null,
+                          onPressed: selWidget != null ? () {
+                            widget.fileLoad(data: selWidget.entryData);
+                          } : null,
                         );
                       },
                     ),

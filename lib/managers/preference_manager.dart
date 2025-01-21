@@ -22,7 +22,6 @@ import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
-import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
@@ -57,6 +56,8 @@ import 'package:kpix/widgets/palette/color_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
@@ -157,6 +158,12 @@ enum PreferenceDouble
   Layout_ProjectManager_EntryAspectRatio(defaultValue: 0.75),
   Layout_ProjectManager_MaxWidth(defaultValue: 800.0),
   Layout_ProjectManager_MaxHeight(defaultValue: 600.0),
+
+  Layout_StampManagerEntry_BorderWidth(defaultValue: 2.0),
+  Layout_StampManagerEntry_BorderRadius(defaultValue: 3.0),
+  Layout_StampManager_EntryAspectRatio(defaultValue: 0.75),
+  Layout_StampManager_MaxWidth(defaultValue: 800.0),
+  Layout_StampManager_MaxHeight(defaultValue: 600.0),
 
   ReferenceLayer_AspectRatioDefault(defaultValue: 0.0),
   ReferenceLayer_AspectRatioMax(defaultValue: 5.0),
@@ -264,6 +271,8 @@ enum PreferenceInt
   Layout_PaletteManager_ColCount(defaultValue: 4),
   Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
   Layout_ProjectManager_ColCount(defaultValue: 5),
+  Layout_StampManagerEntry_LayoutFlex(defaultValue: 6),
+  Layout_StampManager_ColCount(defaultValue: 5),
 
   ReferenceLayer_OpacityDefault(defaultValue: 100),
   ReferenceLayer_OpacityMax(defaultValue: 100),
@@ -338,7 +347,6 @@ enum PreferenceInt
   Tool_Stamp_ScaleMin(defaultValue: 1),
   Tool_Stamp_ScaleMax(defaultValue: 8),
   Tool_Stamp_ScaleDefault(defaultValue: 1),
-  Tool_Stamp_StampDefault(defaultValue: 0),
 
 
 
@@ -621,7 +629,8 @@ class PreferenceManager
   late PaletteManagerOptions paletteManagerOptions;
   late ProjectManagerEntryOptions projectManagerEntryOptions;
   late ProjectManagerOptions projectManagerOptions;
-
+  late StampManagerEntryOptions stampManagerEntryOptions;
+  late StampManagerOptions stampManagerOptions;
   late KPixPainterOptions kPixPainterOptions;
 
   late ToolOptions toolOptions;
@@ -637,7 +646,6 @@ class PreferenceManager
   late ColorNames colorNames;
 
   final FontManager _fontManager;
-  final StampManager _stampManager;
 
   late GuiPreferenceContent guiPreferenceContent;
   late BehaviorPreferenceContent behaviorPreferenceContent;
@@ -648,7 +656,7 @@ class PreferenceManager
 
 
 
-  PreferenceManager(final SharedPreferences prefs, final FontManager fontManager, final StampManager stampManager) : _prefs = prefs, _fontManager = fontManager, _stampManager = stampManager
+  PreferenceManager(final SharedPreferences prefs, final FontManager fontManager) : _prefs = prefs, _fontManager = fontManager
   {
     _init();
     _loadWidgetOptions();
@@ -881,6 +889,15 @@ class PreferenceManager
         entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
         maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
         maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight),);
+    stampManagerEntryOptions = StampManagerEntryOptions(
+      borderRadius: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderRadius),
+      borderWidth: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderWidth),
+      layoutFlex: _getValueI(PreferenceInt.Layout_StampManagerEntry_LayoutFlex),);
+    stampManagerOptions = StampManagerOptions(
+      colCount: _getValueI(PreferenceInt.Layout_StampManager_ColCount),
+      entryAspectRatio: _getValueD(PreferenceDouble.Layout_StampManager_EntryAspectRatio),
+      maxWidth: _getValueD(PreferenceDouble.Layout_StampManager_MaxWidth),
+      maxHeight: _getValueD(PreferenceDouble.Layout_StampManager_MaxHeight),);
 
     referenceLayerSettings = ReferenceLayerSettings(
       opacityDefault: _getValueI(PreferenceInt.ReferenceLayer_OpacityDefault),
@@ -985,11 +1002,9 @@ class PreferenceManager
         bezierCalculationPoints: _getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
         integerAspectRatioDefault: _getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio),);
     final StampOptions stampOptions = StampOptions(
-        stampManager: _stampManager,
         scaleMin: _getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
         scaleMax: _getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
         scaleDefault: _getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
-        stampDefault: _getValueI(PreferenceInt.Tool_Stamp_StampDefault),
         flipHDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
         flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),);
     toolOptions = ToolOptions(

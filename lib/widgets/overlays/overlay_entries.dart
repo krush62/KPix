@@ -41,6 +41,7 @@ import 'package:kpix/widgets/overlays/overlay_reduced_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_save_menu.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 
 class KPixOverlay
@@ -752,6 +753,25 @@ KPixOverlay getSingleButtonDialog({
       ),
     );
   }
+
+KPixOverlay getStampManagerDialog({required final Function() onDismiss, required final StampEntryDataFn onLoad})
+{
+  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+          ),
+          Center(
+            child: StampManagerWidget(dismiss: onDismiss, fileLoad: onLoad,),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   KPixOverlay getAddLayerMenu({
     required final Function() onDismiss,

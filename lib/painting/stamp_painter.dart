@@ -21,19 +21,21 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 class StampPainter extends IToolPainter
 {
   StampPainter({required super.painterOptions});
 
   final StampOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.stampOptions;
+  final StampManager _manager = GetIt.I.get<StampManager>();
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
@@ -74,10 +76,10 @@ class StampPainter extends IToolPainter
         _lastShadingDirection != shaderOptions.shaderDirection.value ||
         _lastColorSelection != appState.selectedColor;
 
-      if (shouldUpdate)
+      if (shouldUpdate && _manager.selectedStamp.value != null)
       {
         _stampData.clear();
-        final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
+        final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
         for (final MapEntry<CoordinateSetI, int> entry in currentStamp.data.entries)
         {
           int stampX = entry.key.x;
@@ -186,9 +188,9 @@ class StampPainter extends IToolPainter
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
 
-    if (drawParams.currentDrawingLayer != null)
+    if (drawParams.currentDrawingLayer != null && _manager.selectedStamp.value != null)
     {
-      final KStamp currentStamp = _options.stampManager.stampMap[_options.stamp.value]!;
+      final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
           y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);

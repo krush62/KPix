@@ -15,9 +15,11 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:kpix/managers/stamp_manager.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 
@@ -26,24 +28,18 @@ class StampOptions extends IToolOptions
   final int scaleMin;
   final int scaleMax;
   final int scaleDefault;
-  final int stampDefault;
   final bool flipHDefault;
   final bool flipVDefault;
 
-  final StampManager stampManager;
-
   final ValueNotifier<int> scale = ValueNotifier<int>(1);
-  final ValueNotifier<StampType> stamp = ValueNotifier<StampType>(StampType.stampCircle15);
   final ValueNotifier<bool> flipH = ValueNotifier<bool>(false);
   final ValueNotifier<bool> flipV = ValueNotifier<bool>(false);
 
 
   StampOptions({
-    required this.stampManager,
     required this.scaleMin,
     required this.scaleMax,
     required this.scaleDefault,
-    required this.stampDefault,
     required this.flipHDefault,
     required this.flipVDefault,
   })
@@ -51,13 +47,13 @@ class StampOptions extends IToolOptions
     scale.value = scaleDefault;
     flipH.value = flipHDefault;
     flipV.value = flipVDefault;
-    stamp.value = stampIndexMap[stampDefault] ?? StampType.stampCircle15;
   }
 
   static Column getWidget({
     required final BuildContext context,
     required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final StampOptions stampOptions,
+    required final Function() showStampManager,
   }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -67,34 +63,98 @@ class StampOptions extends IToolOptions
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Expanded(
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Stamp",
-                    style: Theme.of(context).textTheme.labelLarge,
+              child: SizedBox(
+                height: 80,
+                child: OutlinedButton(
+                  style: Theme.of(context).outlinedButtonTheme.style!.copyWith(
+                    shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))),
+                    side: WidgetStateProperty.all(BorderSide(width: 4.0, color: Theme.of(context).primaryColorLight)),
                   ),
+                  onPressed: () {
+                    showStampManager();
+                  },
+                  child: ValueListenableBuilder<StampManagerEntryData?>(
+                    valueListenable: GetIt.I.get<StampManager>().selectedStamp,
+                    builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
+                    {
+                      if (stampData != null)
+                      {
+                        if (stampData.thumbnail != null)
+                        {
+                          return Padding(
+                            padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
+                            child: RawImage(image: stampData.thumbnail, fit: BoxFit.contain, filterQuality: FilterQuality.none, scale: 0.1,),
+                          );
+                        }
+                        else
+                        {
+                          return Text(stampData.name);
+                        }
+                      }
+                      else
+                      {
+                        return const Text("<NO STAMP>");
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
+            SizedBox(
+              width: toolSettingsWidgetOptions.padding,
+            ),
             Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<StampType>(
-                valueListenable: stampOptions.stamp,
-                builder: (final BuildContext context, final StampType stamp, final Widget? child)
-                {
-                  return DropdownButton<StampType>(
-                    value: stamp,
-                    dropdownColor: Theme.of(context).primaryColorDark,
-                    focusColor: Theme.of(context).primaryColor,
-                    isExpanded: true,
-                    onChanged: (final StampType? type) {stampOptions.stamp.value = type!;},
-                    items: stampIndexMap.values.map<DropdownMenuItem<StampType>>((final StampType value) {
-                      return DropdownMenuItem<StampType>(
-                        value: value,
-                        child: Text(stampNameMap[value]!),
-                      );
-                    }).toList(),
-                  );
-                },
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "Flip H",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: toolSettingsWidgetOptions.padding),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: stampOptions.flipH,
+                        builder: (final BuildContext context, final bool flipH, final Widget? child){
+                          return Switch(
+                            onChanged: (final bool newVal) {stampOptions.flipH.value = newVal;},
+                            value: flipH,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Expanded
+                        (
+                        child: Align
+                          (
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "Flip V",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: toolSettingsWidgetOptions.padding),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: stampOptions.flipV,
+                        builder: (final BuildContext context, final bool flipV, final Widget? child){
+                          return Switch(
+                            onChanged: (final bool newVal) {stampOptions.flipV.value = newVal;},
+                            value: flipV,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -133,67 +193,7 @@ class StampOptions extends IToolOptions
             ),
           ],
         ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Flip Horizontal",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-              ),
-            ),
-            Expanded
-            (
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: stampOptions.flipH,
-                  builder: (final BuildContext context, final bool flipH, final Widget? child){
-                    return Switch(
-                      onChanged: (final bool newVal) {stampOptions.flipH.value = newVal;},
-                      value: flipH,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-        Row(
-          children: <Widget>[
-            Expanded
-            (
-              child: Align
-              (
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Flip Vertical",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded
-            (
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align
-              (
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: stampOptions.flipV,
-                  builder: (final BuildContext context, final bool flipV, final Widget? child){
-                    return Switch(
-                      onChanged: (final bool newVal) {stampOptions.flipV.value = newVal;},
-                      value: flipV,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+
       ],
     );
   }

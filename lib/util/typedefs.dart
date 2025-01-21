@@ -21,6 +21,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 
 typedef IdColorSelectedFn = void Function({required IdColor newColor});
 typedef ColorReferenceSelectedFn = void Function({required ColorReference? color});
@@ -33,6 +34,7 @@ typedef NewFileFn = void Function({required CoordinateSetI size});
 typedef SaveFileFn = void Function({required String fileName, required Function()? callback});
 typedef SaveKnownFileFn = void Function({Function()? callback});
 typedef ImportImageFn = void Function({required ImportData importData});
+typedef StampEntryDataFn = void Function({required StampManagerEntryData data});
 
 typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;

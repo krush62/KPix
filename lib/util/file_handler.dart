@@ -53,6 +53,7 @@ import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:path/path.dart' as p;
@@ -144,6 +145,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
   const String fileExtensionKpix = "kpix";
   const String fileExtensionKpal = "kpal";
   const String palettesSubDirName = "palettes";
+  const String stampsSubDirName = "stamps";
   const String projectsSubDirName = "projects";
   const String recoverSubDirName = "recover";
   const String thumbnailExtension = "png";
@@ -1081,6 +1083,126 @@ HashMap<Alignment, bool> _unPackAlignments({required final int byte})
     }
     return paletteData;
   }
+Future<List<StampManagerEntryData>> loadStamps({required final bool loadUserStamps}) async
+{
+  final List<StampManagerEntryData> allStamps = <StampManagerEntryData>[];
+  allStamps.addAll(await _loadInstalledStamps());
+  if (loadUserStamps)
+  {
+    allStamps.addAll(await _loadUserStamps());
+  }
+  return allStamps;
+}
+
+Future<List<StampManagerEntryData>> _loadInstalledStamps() async
+{
+  final List<StampManagerEntryData> stampData = <StampManagerEntryData>[];
+  final AssetManifest assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+  final List<String> stampAssetList = assetManifest.listAssets().where((final String string) => string.startsWith("stamps/") && string.endsWith(".png")).toList();
+
+  for (final String path in stampAssetList)
+  {
+
+    final ByteData byteData = await rootBundle.load(path);
+    final Uint8List pngBytes = byteData.buffer.asUint8List();
+    final StampManagerEntryData data = await _readStampFromFileData(pngBytes: pngBytes, fileName: path, isLocked: true);
+    if (data.thumbnail != null)
+    {
+      stampData.add(data);
+    }
+  }
+  return stampData;
+}
+
+Future<List<StampManagerEntryData>> _loadUserStamps() async
+{
+  final List<StampManagerEntryData> stampData = <StampManagerEntryData>[];
+  final Directory dir = Directory(p.join(GetIt.I.get<AppState>().internalDir, stampsSubDirName));
+  final List<String> filesWithExtension = <String>[];
+  if (await dir.exists())
+  {
+    dir.listSync(followLinks: false).forEach((final FileSystemEntity entity)
+    {
+      if (entity is File && entity.path.endsWith(".png"))
+      {
+        filesWithExtension.add(entity.absolute.path);
+      }
+    });
+  }
+  for (final String filePath in filesWithExtension)
+  {
+    final Uint8List pngBytes = await File(filePath).readAsBytes();
+    final StampManagerEntryData data = await _readStampFromFileData(pngBytes: pngBytes, fileName: filePath, isLocked: false);
+
+    if (data.thumbnail != null)
+    {
+      stampData.add(data);
+    }
+  }
+  return stampData;
+}
+
+Future<StampManagerEntryData> _readStampFromFileData({required final Uint8List pngBytes, required final String fileName, required final bool isLocked}) async
+{
+  final ui.Image decImg = await decodeImageFromList(pngBytes);
+  final int imgHeight = decImg.height;
+  final int imgWidth = decImg.width;
+  final ByteData? imgData = await decImg.toByteData();
+  final HashMap<CoordinateSetI, int> stampMap = HashMap<CoordinateSetI, int>();
+  ui.Image? thumbnail;
+
+  if (imgData != null)
+  {
+    for (int x = 0; x < imgWidth; x++)
+    {
+      for (int y = 0; y < imgHeight; y++)
+      {
+        final int r = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 0);
+        final int g = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 1);
+        final int b = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 2);
+        final int a = imgData.getUint8((y * imgWidth * 4) + (x * 4) + 3);
+        if (a == 255 && r == g && r == b)
+        {
+          int? val;
+          if (r == 0)
+          {
+            val = -2;
+          }
+          else if (r == 64)
+          {
+            val = -1;
+          }
+          else if (r == 128)
+          {
+            val = 0;
+          }
+          else if (r == 192)
+          {
+            val = 1;
+          }
+          else if (r == 255)
+          {
+            val = 2;
+          }
+
+          if (val != null)
+          {
+            stampMap[CoordinateSetI(x: x, y: y)] = val;
+          }
+        }
+      }
+    }
+    try
+    {
+      final ui.Codec codec = await ui.instantiateImageCodec(pngBytes);
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      thumbnail = frame.image;
+    }
+    catch(_){}
+
+  }
+  return StampManagerEntryData(path: fileName, isLocked: isLocked, name: extractFilenameFromPath(path: fileName, keepExtension: false), data: stampMap, thumbnail: thumbnail, width: imgWidth, height: imgHeight);
+}
 
   Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async
   {
@@ -1144,6 +1266,7 @@ HashMap<Alignment, bool> _unPackAlignments({required final int byte})
       Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName)),
       Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName)),
       Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName)),
+      Directory(p.join(GetIt.I.get<AppState>().internalDir, stampsSubDirName)),
     ];
 
     for (final Directory dir in internalDirectories)

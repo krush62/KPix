@@ -14,10 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/util/helper.dart';
 
 class StampManagerEntryOptions
 {
@@ -35,6 +37,9 @@ class StampManagerEntryOptions
 class StampManagerEntryData
 {
   final ui.Image? thumbnail;
+  final HashMap<CoordinateSetI, int> data;
+  final int width;
+  final int height;
   final String path;
   final bool isLocked;
   final String _name;
@@ -50,7 +55,7 @@ class StampManagerEntryData
     }
   }
 
-  StampManagerEntryData({required this.path, required this.thumbnail, required final String name, required this.isLocked}) : _name = name;
+  StampManagerEntryData({required this.path, required this.thumbnail, required final String name, required this.isLocked, required this.data, required this.width, required this.height}) : _name = name;
 }
 
 class StampManagerEntryWidget extends StatefulWidget

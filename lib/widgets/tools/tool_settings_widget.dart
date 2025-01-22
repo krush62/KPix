@@ -174,12 +174,5 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
         );
       },
     );
-
-
-
-
-
-
   }
-  
 }

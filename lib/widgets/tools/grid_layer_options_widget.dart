@@ -170,6 +170,11 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
             valueListenable: widget.gridState.gridTypeNotifier,
             builder: (final BuildContext context, final GridType gridType, final Widget? child) {
               final bool isPerspective = isPerspectiveGridType(gridType: gridType);
+              if (widget.gridState.vanishingPoint1 > widget.gridState.vanishingPoint2)
+              {
+                widget.gridState.vanishingPoint1Notifier.value = widget.gridState.vanishingPoint2;
+              }
+
               return Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -354,38 +359,71 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                     ],
                   ),
                   if (isPerspective)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Horizon",
-                            style: Theme.of(context).textTheme.labelLarge,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Horizon",
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<double>(
-                          valueListenable: widget.gridState.horizonPositionNotifier,
-                          builder: (final BuildContext context, final double horizon, final Widget? child) {
-                            return KPixSlider(
-                              value: horizon,
-                              min: _gridSettings.vanishingPointMin,
-                              max: _gridSettings.vanishingPointMax,
-                              decimals: 2,
-                              onChanged: (final double newVal) {
-                                widget.gridState.horizonPositionNotifier.value = newVal;
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: widget.gridState.horizonPositionNotifier,
+                            builder: (final BuildContext context, final double horizon, final Widget? child) {
+                              return KPixSlider(
+                                value: horizon,
+                                min: _gridSettings.vanishingPointMin,
+                                max: _gridSettings.vanishingPointMax,
+                                decimals: 2,
+                                onChanged: (final double newVal) {
+                                  widget.gridState.horizonPositionNotifier.value = newVal;
+                                },
+                                textStyle: Theme.of(context).textTheme.bodyLarge!,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  if (gridType == GridType.onePointPerspective)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Vanishing Point",
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: widget.gridState.vanishingPoint1Notifier,
+                            builder: (final BuildContext context, final double horizon, final Widget? child) {
+                              return KPixSlider(
+                                value: horizon,
+                                min: _gridSettings.vanishingPointMin,
+                                max: _gridSettings.vanishingPointMax,
+                                decimals: 2,
+                                onChanged: (final double newVal) {
+                                  widget.gridState.vanishingPoint1Notifier.value = newVal;
+                                },
+                                textStyle: Theme.of(context).textTheme.bodyLarge!,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   if (gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

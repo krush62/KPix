@@ -15,7 +15,6 @@
  */
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
@@ -30,7 +29,6 @@ import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/managers/stamp_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
@@ -41,6 +39,7 @@ import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -225,8 +224,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     final SharedPreferences sPrefs = await SharedPreferences.getInstance();
     final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
-    final HashMap<StampType, KStamp> stampMap = await StampManager.readStamps();
-    GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap), StampManager(stampMap: stampMap)));
+    GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
     final String exportDirString = await findExportDir();
     final String internalDirString = await findInternalDir();
     final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString);
@@ -250,6 +248,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       }
       else
       {
+
+        final StampManager stampManager = StampManager();
+        await stampManager.loadAllStamps();
+        GetIt.I.registerSingleton<StampManager>(stampManager);
 
         GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
         GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());

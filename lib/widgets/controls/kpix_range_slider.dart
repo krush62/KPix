@@ -90,30 +90,32 @@ class KPixRangeSlider extends StatelessWidget
           ),
           Positioned.fill(
             child: Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: <Widget>[
-                  Text(
-                    label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
-                    style: TextStyle(
-                      fontSize: textStyle.fontSize,
-                      fontFamily: textStyle.fontFamily,
-                      foreground: Paint()
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = fontStrokeWidth
-                        ..color = bgColor,
+              child: IgnorePointer(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    Text(
+                      label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
+                      style: TextStyle(
+                        fontSize: textStyle.fontSize,
+                        fontFamily: textStyle.fontFamily,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = fontStrokeWidth
+                          ..color = bgColor,
+                      ),
                     ),
-                  ),
-                  Text(
-                    label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
-                    style: TextStyle(
-                      fontSize: textStyle.fontSize,
-                      fontFamily: textStyle.fontFamily,
-                      fontWeight: FontWeight.bold,
-                      color: onChanged != null ? fgColor : disColor,
+                    Text(
+                      label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
+                      style: TextStyle(
+                        fontSize: textStyle.fontSize,
+                        fontFamily: textStyle.fontFamily,
+                        fontWeight: FontWeight.bold,
+                        color: onChanged != null ? fgColor : disColor,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

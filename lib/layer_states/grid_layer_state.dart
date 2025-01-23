@@ -239,7 +239,7 @@ class GridLayerState extends LayerState
 
       if (gridType == GridType.onePointPerspective)
       {
-        final CoordinateSetI vanishingPoint = CoordinateSetI(x: appState.canvasSize.x ~/ 2, y: horizonY);
+        final CoordinateSetI vanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
         for (int i = 1; i <= intervalX; i++)
         {
           final double t = i / (intervalX + 1);

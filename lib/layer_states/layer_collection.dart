@@ -569,7 +569,7 @@ class LayerCollection with ChangeNotifier
     {
       if (layer.runtimeType == DrawingLayerState)
       {
-        DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
         drawingLayer.transformLayer(transformation: transformation, oldSize: oldSize);
       }
     }

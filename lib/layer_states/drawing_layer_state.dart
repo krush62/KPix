@@ -34,7 +34,7 @@ import 'package:kpix/widgets/kpal/kpal_widget.dart';
 class DrawingLayerState extends LayerState
 {
   final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
-  final CoordinateSetI size;
+  CoordinateSetI size;
 
   final CoordinateColorMap _data;
   CoordinateColorMap _settingsPixels;
@@ -483,6 +483,7 @@ class DrawingLayerState extends LayerState
         }
       }
     }
+    size = newSize;
     _data.clear();
     rasterQueue.clear();
     _data.addAll(croppedContent);

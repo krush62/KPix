@@ -350,7 +350,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
             data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
           }
-          layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, size: canvasSize, data: data, settings: drawingLayerSettings));
+          layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: drawingLayerSettings));
         }
         else if (historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
         {

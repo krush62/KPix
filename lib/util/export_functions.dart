@@ -541,9 +541,9 @@ Future<ByteData> _getImageData({required final AppState appState, required final
       }
       if (layerList != null)
       {
-        outBytes.setUint16(offset, layerList[i].size.x, Endian.little); //width
+        outBytes.setUint16(offset, canvasSize.x, Endian.little); //width
         offset+=2;
-        outBytes.setUint16(offset, layerList[i].size.y, Endian.little); //height
+        outBytes.setUint16(offset, canvasSize.y, Endian.little); //height
         offset+=2;
       }
       else
@@ -993,9 +993,9 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
       {
         final DrawingLayerState layerState = appState.getLayerAt(index: l) as DrawingLayerState;
         final List<int> imgBytes = <int>[];
-        for (int y = 0; y < layerState.size.y; y++)
+        for (int y = 0; y < appState.canvasSize.y; y++)
         {
-          for (int x = 0; x < layerState.size.x; x++)
+          for (int x = 0; x < appState.canvasSize.x; x++)
           {
             final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
             ColorReference? colAtPos;
@@ -1140,8 +1140,8 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
         do //TILING
         {
           final List<int> imgBytes = <int>[];
-          final int endX = min(x + tileSize, layerState.size.x);
-          final int endY = min(y + tileSize, layerState.size.y);
+          final int endX = min(x + tileSize, appState.canvasSize.x);
+          final int endY = min(y + tileSize, appState.canvasSize.y);
           for (int b = y; b < endY; b++)
           {
             for (int a = x; a < endX; a++)
@@ -1177,10 +1177,10 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
           final List<int> encData = const ZLibEncoder().encode(imgBytes);
           tileList.add(encData);
 
-          x = (endX >= layerState.size.x) ? 0 : endX;
-          y = (endX >= layerState.size.x) ? endY : y;
+          x = (endX >= appState.canvasSize.x) ? 0 : endX;
+          y = (endX >= appState.canvasSize.x) ? endY : y;
         }
-        while (y < layerState.size.y);
+        while (y < appState.canvasSize.y);
 
         layerNames.add(utf8.encode("Layer$l"));
         layerEncBytes.add(tileList);
@@ -1333,9 +1333,9 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
       setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
       final DrawingLayerState currentLayer = drawingLayers[i];
-      outBytes.setUint32(offset, currentLayer.size.x);
+      outBytes.setUint32(offset, appState.canvasSize.x);
       offset+=4;
-      outBytes.setUint32(offset, currentLayer.size.y);
+      outBytes.setUint32(offset, appState.canvasSize.y);
       offset+=4;
       outBytes.setUint32(offset, 5);
       offset+=4;
@@ -1513,9 +1513,9 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
 
       //HIERARCHY
       setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
-      outBytes.setUint32(offset, currentLayer.size.x);
+      outBytes.setUint32(offset, appState.canvasSize.x);
       offset+=4;
-      outBytes.setUint32(offset, currentLayer.size.y);
+      outBytes.setUint32(offset, appState.canvasSize.y);
       offset+=4;
       outBytes.setUint32(offset, 2);
       offset+=4;
@@ -1533,9 +1533,9 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
 
       //LEVEL1
       setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
-      outBytes.setUint32(offset, currentLayer.size.x);
+      outBytes.setUint32(offset, appState.canvasSize.x);
       offset+=4;
-      outBytes.setUint32(offset, currentLayer.size.y);
+      outBytes.setUint32(offset, appState.canvasSize.y);
       offset+=4;
       final List<int> tileOffsetsLv1 = <int>[];
       final List<List<int>> currentTiles = layerEncBytes[i];
@@ -1562,17 +1562,17 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
 
       //LEVEL2
       setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
-      outBytes.setUint32(offset, currentLayer.size.x ~/ 2);
+      outBytes.setUint32(offset, appState.canvasSize.x ~/ 2);
       offset+=4;
-      outBytes.setUint32(offset, currentLayer.size.y ~/ 2);
+      outBytes.setUint32(offset, appState.canvasSize.y ~/ 2);
       offset+=4;
       outBytes.setUint32(offset, 0);
       offset+=4;
       //LEVEL3
       setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
-      outBytes.setUint32(offset, currentLayer.size.x ~/ 4);
+      outBytes.setUint32(offset, appState.canvasSize.x ~/ 4);
       offset+=4;
-      outBytes.setUint32(offset, currentLayer.size.y ~/ 4);
+      outBytes.setUint32(offset, appState.canvasSize.y ~/ 4);
       offset+=4;
       outBytes.setUint32(offset, 0);
       offset+=4;

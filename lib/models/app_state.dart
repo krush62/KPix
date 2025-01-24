@@ -994,11 +994,7 @@ class AppState
   void canvasTransform({required final CanvasTransformation transformation})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    final DrawingLayerState? currentTransformLayer = _layerCollection.transformLayers(transformation: transformation);
-    if (currentTransformLayer != null)
-    {
-      selectionState.selection.changeLayer(oldLayer: null, newLayer: currentTransformLayer);
-    }
+    _layerCollection.transformLayers(transformation: transformation, oldSize: canvasSize);
     if (transformation == CanvasTransformation.rotate)
     {
       _setCanvasDimensions(width: _canvasSize.y, height: _canvasSize.x);
@@ -1085,7 +1081,7 @@ class AppState
     {
       final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
       final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
-      _setCanvasDimensions(width: drawingLayer.size.x, height: drawingLayer.size.y, addToHistoryStack: false);
+      _setCanvasDimensions(width: importResult.data!.canvasSize.x, height: importResult.data!.canvasSize.y, addToHistoryStack: false);
       drawingLayer.isSelected.value = true;
       final List<LayerState> layerList = <LayerState>[];
       layerList.add(drawingLayer);

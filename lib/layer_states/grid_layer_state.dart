@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -240,15 +241,10 @@ class GridLayerState extends LayerState
       if (gridType == GridType.onePointPerspective)
       {
         final CoordinateSetI vanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
-        for (int i = 1; i <= intervalX; i++)
+        final List<CoordinateSetI> edgePoints = _getEdgePoints(width: appState.canvasSize.x, height: appState.canvasSize.y, x: vanishingPoint, numLines: intervalX);
+        for (final CoordinateSetI edgePoint in edgePoints)
         {
-          final double t = i / (intervalX + 1);
-          final double startY = appState.canvasSize.y * t;
-          final double startX = appState.canvasSize.x * t;
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: vanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: vanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: vanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: vanishingPoint));
+          rasterCoords.addAll(bresenham(start: vanishingPoint, end: edgePoint));
         }
       }
       else if (gridType == GridType.twoPointPerspective)
@@ -256,41 +252,41 @@ class GridLayerState extends LayerState
         final CoordinateSetI leftVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
         final CoordinateSetI rightVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint2).round(), y: horizonY);
 
-        for (int i = 1; i <= intervalX; i++)
+        final List<CoordinateSetI> edgePointsLeft = _getEdgePoints(width: appState.canvasSize.x, height: appState.canvasSize.y, x: leftVanishingPoint, numLines: intervalX, showLeft: false);
+        for (final CoordinateSetI edgePoint in edgePointsLeft)
         {
-          final double t = i / (intervalX + 1);
-          final double startY = appState.canvasSize.y * t;
-          final double startX = appState.canvasSize.x * t;
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: leftVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: rightVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: leftVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: 0), end: rightVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: leftVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: appState.canvasSize.y - 1), end: rightVanishingPoint));
+          rasterCoords.addAll(bresenham(start: leftVanishingPoint, end: edgePoint));
         }
+
+        final List<CoordinateSetI> edgePointsRight = _getEdgePoints(width: appState.canvasSize.x, height: appState.canvasSize.y, x: rightVanishingPoint, numLines: intervalX, showRight: false);
+        for (final CoordinateSetI edgePoint in edgePointsRight)
+        {
+          rasterCoords.addAll(bresenham(start: rightVanishingPoint, end: edgePoint));
+        }
+
+
       }
       else if (gridType == GridType.threePointPerspective)
       {
-        final CoordinateSetI verticalVanishingPoint = CoordinateSetI(x: appState.canvasSize.x ~/ 2, y: (appState.canvasSize.x.toDouble() * vanishingPoint3).round());
+        final CoordinateSetI verticalVanishingPoint = CoordinateSetI(x: appState.canvasSize.x ~/ 2, y: (appState.canvasSize.y.toDouble() * vanishingPoint3).round());
         final CoordinateSetI leftVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint1).round(), y: horizonY);
         final CoordinateSetI rightVanishingPoint = CoordinateSetI(x: (appState.canvasSize.x * vanishingPoint2).round(), y: horizonY);
 
-        for (int i = 1; i <= intervalX; i++)
+        final List<CoordinateSetI> edgePointsLeft = _getEdgePoints(width: appState.canvasSize.x, height: appState.canvasSize.y, x: leftVanishingPoint, numLines: intervalX, showLeft: false);
+        for (final CoordinateSetI edgePoint in edgePointsLeft)
         {
-          final double t = i / (intervalX + 1);
-          final double startY = appState.canvasSize.y * t;
-          final double startX = appState.canvasSize.x * t;
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: leftVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: rightVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: 0, y: startY.round()), end: verticalVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: appState.canvasSize.x - 1, y: startY.round()), end: verticalVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y > horizonY ? 0 : appState.canvasSize.y - 1), end: verticalVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: leftVanishingPoint));
-          rasterCoords.addAll(bresenham(start: CoordinateSetI(x: startX.round(), y: verticalVanishingPoint.y < horizonY ? 0 : appState.canvasSize.y - 1), end: rightVanishingPoint));
+          rasterCoords.addAll(bresenham(start: leftVanishingPoint, end: edgePoint));
         }
-
+        final List<CoordinateSetI> edgePointsRight = _getEdgePoints(width: appState.canvasSize.x, height: appState.canvasSize.y, x: rightVanishingPoint, numLines: intervalX, showRight: false);
+        for (final CoordinateSetI edgePoint in edgePointsRight)
+        {
+          rasterCoords.addAll(bresenham(start: rightVanishingPoint, end: edgePoint));
+        }
+        final List<CoordinateSetI> edgePointsVertical = _getEdgePoints(width: appState.canvasSize.x, height: appState.canvasSize.y, x: verticalVanishingPoint, numLines: intervalX, showBottom: vanishingPoint3 < horizonPosition, showTop: vanishingPoint3 > horizonPosition);
+        for (final CoordinateSetI edgePoint in edgePointsVertical)
+        {
+          rasterCoords.addAll(bresenham(start: verticalVanishingPoint, end: edgePoint));
+        }
       }
     }
     else
@@ -421,6 +417,74 @@ class GridLayerState extends LayerState
       }
     }
     return rasterCoords;
+  }
+
+  List<CoordinateSetI> _getEdgePoints({required final int width, required final int height, required final CoordinateSetI x, required final int numLines, final bool showLeft = true, final bool showRight = true, final bool showTop = true, final bool showBottom = true }) {
+    final List<CoordinateSetI> result = <CoordinateSetI>[];
+    for (int i = 0; i < numLines; i++)
+    {
+      final double angle = (2 * pi / numLines) * i + (pi / 2);  // Shift by 90 degrees
+      final double s = sin(angle);
+      final double c = cos(angle);
+
+      double tX;
+      double tY;
+
+      // Calculate intersections with vertical boundaries (left and right edges)
+      if (c > 0)
+      {
+        tX = (width - x.x) / c;
+      }
+      else if (c < 0)
+      {
+        tX = -x.x / c;
+      }
+      else
+      {
+        tX = double.infinity; // Avoid division by zero
+      }
+
+      // Calculate intersections with horizontal boundaries (top and bottom edges)
+      if (s > 0)
+      {
+        tY = (height - x.y) / s;
+      }
+      else if (s < 0)
+      {
+        tY = -x.y / s;
+      }
+      else
+      {
+        tY = double.infinity; // Avoid division by zero
+      }
+
+      // Choose the nearest intersection point
+      if (tX < tY)
+      {
+        if (c > 0)
+        {
+          if (showRight) result.add(CoordinateSetI(x: width - 1, y: (x.y + s * tX).round())); //right
+        }
+        else
+        {
+          if (showLeft) result.add(CoordinateSetI(x: 0, y: (x.y + s * tX).round())); //left
+        }
+
+      }
+      else
+      {
+        if (s > 0)
+        {
+          if (showBottom) result.add(CoordinateSetI(x: (x.x + c * tY).round(), y: height - 1)); //bottom
+        }
+        else
+        {
+          if (showTop) result.add(CoordinateSetI(x: (x.x + c * tY).round(), y: 0)); //top
+        }
+      }
+    }
+
+    return result;
   }
 
 }

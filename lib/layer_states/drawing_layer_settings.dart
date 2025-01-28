@@ -248,10 +248,6 @@ class DrawingLayerSettings with ChangeNotifier {
     _setupListeners();
   }
 
-
-
-
-
   void _setupListeners()
   {
 
@@ -361,7 +357,7 @@ class DrawingLayerSettings with ChangeNotifier {
   CoordinateColorMap getOuterStrokePixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final CoordinateSetI canvasSize, required final List<LayerState> layers})
   {
     final CoordinateColorMap outerPixels = CoordinateColorMap();
-    if (outerStrokeStyle.value != OuterStrokeStyle.off)
+    if (outerStrokeStyle.value == OuterStrokeStyle.solid || outerStrokeStyle.value == OuterStrokeStyle.shade || outerStrokeStyle.value == OuterStrokeStyle.relative)
     {
       final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: canvasSize);
       for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries)
@@ -387,42 +383,34 @@ class DrawingLayerSettings with ChangeNotifier {
             outerPixels[pixelSet.key] = currentRamp.references[rampIndex];
           }
         }
-        else if (outerStrokeStyle.value == OuterStrokeStyle.glow)
+      }
+    }
+    else if (outerStrokeStyle.value == OuterStrokeStyle.glow)
+    {
+      for (int i = 0; i < outerGlowDepth.value; i++)
+      {
+        final Set<CoordinateSetI> setPixels = <CoordinateSetI>{};
+        setPixels.addAll(data.keys);
+        setPixels.addAll(outerPixels.keys);
+        final HashMap<CoordinateSetI, int> glowPixels = _getOuterStrokePixelsWithAmount(selectionMap: outerSelectionMap.value, dataPositions: setPixels, canvasSize: canvasSize);
+        for (final MapEntry<CoordinateSetI, int> glowPixel in glowPixels.entries)
         {
-          final ColorReference? currentColor = _getColorReferenceAtPos(coord: pixelSet.key, layers: layers, layerState: layerState);
+          
+          final ColorReference? currentColor = _getColorReferenceAtPos(coord: glowPixel.key, layers: layers, layerState: layerState);
           if (currentColor != null)
           {
             final KPalRampData currentRamp = currentColor.ramp;
-            final int steps = outerGlowDirection.value ? outerGlowDepth.value : -outerGlowDepth.value;
+
+            final int steps = outerGlowDirection.value ? outerGlowDepth.value - i: -outerGlowDepth.value + i + glowPixel.value - 1;
+            print(steps);
             final int rampIndex = (currentColor.colorIndex + steps).clamp(0, currentRamp.references.length - 1);
-            outerPixels[pixelSet.key] = currentRamp.references[rampIndex];
+            outerPixels[glowPixel.key] = currentRamp.references[rampIndex];
           }
         }
       }
-
-      if (outerStrokeStyle.value == OuterStrokeStyle.glow)
-      {
-        for (int i = 1; i < outerGlowDepth.value; i++)
-        {
-          final Set<CoordinateSetI> setPixels = <CoordinateSetI>{};
-          setPixels.addAll(data.keys);
-          setPixels.addAll(outerPixels.keys);
-          final HashMap<CoordinateSetI, CoordinateSetI> glowPixels = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: setPixels, canvasSize: canvasSize);
-          for (final CoordinateSetI glowPixel in glowPixels.keys)
-          {
-            final ColorReference? currentColor = _getColorReferenceAtPos(coord: glowPixel, layers: layers, layerState: layerState);
-            if (currentColor != null)
-            {
-              final KPalRampData currentRamp = currentColor.ramp;
-              final int steps = outerGlowDirection.value ? outerGlowDepth.value - i : -outerGlowDepth.value + i;
-              final int rampIndex = (currentColor.colorIndex + steps).clamp(0, currentRamp.references.length - 1);
-              outerPixels[glowPixel] = currentRamp.references[rampIndex];
-            }
-          }
-        }
-      }
-
     }
+
+
     return outerPixels;
   }
 
@@ -584,6 +572,32 @@ class DrawingLayerSettings with ChangeNotifier {
             (outerStrokePixels[surroundEntry.value] == null || _isAdjacentAlignment(alignment: surroundEntry.key)))
         {
           outerStrokePixels[surroundEntry.value] = dataPosition;
+        }
+      }
+
+    }
+    return outerStrokePixels;
+  }
+
+  static HashMap<CoordinateSetI, int> _getOuterStrokePixelsWithAmount({required final HashMap<Alignment, bool> selectionMap, required final Iterable<CoordinateSetI> dataPositions, required final CoordinateSetI canvasSize})
+  {
+    final HashMap<CoordinateSetI, int> outerStrokePixels = HashMap<CoordinateSetI, int>();
+    for (final CoordinateSetI dataPosition in dataPositions)
+    {
+      final HashMap<Alignment, CoordinateSetI> surroundingPixels = _getAllSurroundingPositions(pos: dataPosition);
+      for (final MapEntry<Alignment, CoordinateSetI> surroundEntry in surroundingPixels.entries)
+      {
+        if (selectionMap[surroundEntry.key] != null && (selectionMap[surroundEntry.key] ?? false == true) && !dataPositions.contains(surroundEntry.value) &&
+            surroundEntry.value.x >= 0 && surroundEntry.value.x < canvasSize.x && surroundEntry.value.y >= 0 && surroundEntry.value.y < canvasSize.y)
+        {
+          if (outerStrokePixels.containsKey(surroundEntry.value))
+          {
+            outerStrokePixels[surroundEntry.value] = outerStrokePixels[surroundEntry.value]! + 1;
+          }
+          else
+          {
+            outerStrokePixels[surroundEntry.value] = 1;
+          }
         }
       }
 

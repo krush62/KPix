@@ -99,6 +99,22 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   static const double _dividerHeight = 2.0;
   static const double _visualDensityVert = -3.0;
   late KPixOverlay _colorPickDialog;
+  late List<int> _darkenBrightenValues;
+
+  @override
+  void initState()
+  {
+    super.initState();
+    _darkenBrightenValues = <int>[];
+    for (int i = widget.layer.settings.constraints.darkenBrightenMin; i < 0; i++)
+    {
+      _darkenBrightenValues.add(i);
+    }
+    for (int i = 1; i <= widget.layer.settings.constraints.darkenBrightenMax; i++)
+    {
+      _darkenBrightenValues.add(i);
+    }
+  }
 
 
   void onOuterColorSelected({required final ColorReference? color})
@@ -131,6 +147,13 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   void closeDialog()
   {
     _colorPickDialog.hide();
+  }
+
+  String _getDarknessBrightnessSliderLabel({required final int value})
+  {
+    final String prefix = value > 0 ? "+" : "";
+    final String suffix = value == 1 || value == -1 ? " step" : " steps";
+    return prefix + value.toString() + suffix;
   }
 
 
@@ -255,14 +278,19 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               valueListenable: widget.layer.settings.outerDarkenBrighten,
                               builder: (final BuildContext context, final int value, final Widget? child)
                               {
+                                int valueIndex = _darkenBrightenValues.indexOf(value);
+                                if (valueIndex == -1)
+                                {
+                                  valueIndex = _darkenBrightenValues.length ~/ 2;
+                                }
                                 return KPixSlider(
-                                  value: value.toDouble(),
-                                  min: widget.layer.settings.constraints.darkenBrightenMin.toDouble(),
-                                  max: widget.layer.settings.constraints.darkenBrightenMax.toDouble(),
+                                  value: valueIndex.toDouble(),
+                                  max: _darkenBrightenValues.length.toDouble() - 1,
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                  showPlusSignForPositive: true,
-                                  onChanged: (final double value) {
-                                    widget.layer.settings.outerDarkenBrighten.value = value.round();
+                                  label: _getDarknessBrightnessSliderLabel(value: value),
+                                  onChanged: (final double value)
+                                  {
+                                    widget.layer.settings.outerDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
                                   },
                                 );
                               },
@@ -356,8 +384,6 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
           const SizedBox(height: _generalPadding),
           Divider(height: _dividerHeight, thickness: _dividerHeight, color: Theme.of(context).primaryColorLight,),
           const SizedBox(height: _generalPadding),
-
-
 
           //INNER STROKE
           Text("INNER STROKE", style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
@@ -469,14 +495,18 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                               ValueListenableBuilder<int>(
                                 valueListenable: widget.layer.settings.innerDarkenBrighten,
                                 builder: (final BuildContext context, final int value, final Widget? child) {
+                                  int valueIndex = _darkenBrightenValues.indexOf(value);
+                                  if (valueIndex == -1)
+                                  {
+                                    valueIndex = _darkenBrightenValues.length ~/ 2;
+                                  }
                                   return KPixSlider(
-                                    value: value.toDouble(),
-                                    min: widget.layer.settings.constraints.darkenBrightenMin.toDouble(),
-                                    max: widget.layer.settings.constraints.darkenBrightenMax.toDouble(),
+                                    value: valueIndex.toDouble(),
+                                    max: _darkenBrightenValues.length.toDouble() - 1,
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                    showPlusSignForPositive: true,
+                                    label: _getDarknessBrightnessSliderLabel(value: value),
                                     onChanged: (final double value) {
-                                      widget.layer.settings.innerDarkenBrighten.value = value.round();
+                                      widget.layer.settings.innerDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
                                     },
                                   );
                                 },
@@ -746,15 +776,21 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                       const Text("Darken/Brighten"),
                                       ValueListenableBuilder<int>(
                                         valueListenable: widget.layer.settings.dropShadowDarkenBrighten,
-                                        builder: (final BuildContext context, final int value, final Widget? child) {
+                                        builder: (final BuildContext context, final int value, final Widget? child)
+                                        {
+                                          int valueIndex = _darkenBrightenValues.indexOf(value);
+                                          if (valueIndex == -1)
+                                          {
+                                            valueIndex = _darkenBrightenValues.length ~/ 2;
+                                          }
                                           return KPixSlider(
-                                            value: value.toDouble(),
-                                            min: widget.layer.settings.constraints.darkenBrightenMin.toDouble(),
-                                            max: widget.layer.settings.constraints.darkenBrightenMax.toDouble(),
+                                            value: valueIndex.toDouble(),
+                                            max: _darkenBrightenValues.length.toDouble() - 1,
                                             showPlusSignForPositive: true,
                                             textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                            label: _getDarknessBrightnessSliderLabel(value: value),
                                             onChanged: (final double value) {
-                                              widget.layer.settings.dropShadowDarkenBrighten.value = value.round();
+                                              widget.layer.settings.dropShadowDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
                                             },
                                           );
                                         },

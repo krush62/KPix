@@ -491,19 +491,37 @@ class DrawingLayerSettings with ChangeNotifier {
       }
       else if (innerStrokeStyle.value == InnerStrokeStyle.bevel)
       {
+        final HashMap<Alignment, bool> usedSelectionMap = HashMap<Alignment, bool>();
         final HashMap<Alignment, bool> oppositeSelectionMap = HashMap<Alignment, bool>();
         final HashMap<Alignment, bool> allDirectionsMap = HashMap<Alignment, bool>();
         for (final Alignment alignment in allAlignments)
         {
+          usedSelectionMap[alignment] = false;
           oppositeSelectionMap[alignment] = false;
           allDirectionsMap[alignment] = true;
         }
+
         for (final MapEntry<Alignment, bool> entry in innerSelectionMap.value.entries)
         {
           if (entry.value == true)
           {
-            oppositeSelectionMap[entry.key] = true;
-            oppositeSelectionMap[_getOppositeAlignment(alignment: entry.key)] = true;
+            if (_alignmentIsDiagonal(alignment: entry.key))
+            {
+              final Set<Alignment> adjacentAlignments = _getAdjacentDirections(alignment: entry.key);
+              for (final Alignment alignment in adjacentAlignments)
+              {
+                usedSelectionMap[alignment] = true;
+              }
+            }
+            else
+            {
+              usedSelectionMap[entry.key] = true;
+            }
+            final Set<Alignment> oppositeAlignments = _getOppositeAlignments(alignment: entry.key);
+            for (final Alignment oppAlign in oppositeAlignments)
+            {
+              oppositeSelectionMap[oppAlign] = true;
+            }
             break;
           }
         }
@@ -512,12 +530,11 @@ class DrawingLayerSettings with ChangeNotifier {
         dataPixels.addAll(data);
         for (int i = 0; i < bevelDistance.value; i++)
         {
-
           if (i == bevelDistance.value - 1)
           {
+
             final Set<CoordinateSetI> oppositeStrokePixels = _getInnerStrokeCoordinates(selectionMap: oppositeSelectionMap, data: dataPixels, canvasSize: canvasSize);
-            final Set<CoordinateSetI> directionPixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: canvasSize);
-            oppositeStrokePixels.removeAll(directionPixels);
+            final Set<CoordinateSetI> directionPixels = _getInnerStrokeCoordinates(selectionMap: usedSelectionMap, data: dataPixels, canvasSize: canvasSize);
 
             for (final CoordinateSetI coord in oppositeStrokePixels)
             {
@@ -681,17 +698,106 @@ class DrawingLayerSettings with ChangeNotifier {
     return coords;
   }
 
-  Alignment _getOppositeAlignment({required final Alignment alignment})
+  Set<Alignment> _getOppositeAlignments({required final Alignment alignment, final bool useDiagonals = false})
   {
-    if (alignment == Alignment.topLeft) {return Alignment.bottomRight;}
-    else if (alignment == Alignment.topCenter) {return Alignment.bottomCenter;}
-    else if (alignment == Alignment.topLeft) {return Alignment.bottomRight;}
-    else if (alignment == Alignment.centerRight) {return Alignment.centerLeft;}
-    else if (alignment == Alignment.bottomRight) {return Alignment.topLeft;}
-    else if (alignment == Alignment.bottomCenter) {return Alignment.topCenter;}
-    else if (alignment == Alignment.bottomLeft) {return Alignment.topRight;}
-    else if (alignment == Alignment.centerLeft) {return Alignment.centerRight;}
-    else {return Alignment.center;}
+    if (alignment == Alignment.topLeft)
+    {
+      if (useDiagonals)
+      {
+        return <Alignment>{Alignment.bottomRight};
+      }
+      else
+      {
+        return _getAdjacentDirections(alignment: Alignment.bottomRight);
+      }
+    }
+    else if (alignment == Alignment.topRight)
+    {
+      if (useDiagonals)
+      {
+        return <Alignment>{Alignment.bottomLeft};
+      }
+      else
+      {
+        return _getAdjacentDirections(alignment: Alignment.bottomLeft);
+      }
+    }
+    else if (alignment == Alignment.bottomRight)
+    {
+      if (useDiagonals)
+      {
+        return <Alignment>{Alignment.topLeft};
+      }
+      else
+      {
+        return _getAdjacentDirections(alignment: Alignment.topLeft);
+      }
+    }
+    else if (alignment == Alignment.bottomLeft)
+    {
+      if (useDiagonals)
+      {
+        return <Alignment>{Alignment.topRight};
+      }
+      else
+      {
+        return _getAdjacentDirections(alignment: Alignment.topRight);
+      }
+    }
+    else if (alignment == Alignment.topCenter) {return <Alignment>{Alignment.bottomCenter};}
+    else if (alignment == Alignment.centerRight) {return <Alignment>{Alignment.centerLeft};}
+    else if (alignment == Alignment.bottomCenter) {return <Alignment>{Alignment.topCenter};}
+    else if (alignment == Alignment.centerLeft) {return <Alignment>{Alignment.centerRight};}
+    else {return <Alignment>{Alignment.center};}
+  }
+
+  bool _alignmentIsDiagonal({required final Alignment alignment})
+  {
+    if (alignment == Alignment.topLeft || alignment == Alignment.topRight || alignment == Alignment.bottomRight || alignment == Alignment.bottomLeft)
+    {
+      return true;
+    }
+    return false;
+  }
+
+  Set<Alignment> _getAdjacentDirections({required final Alignment alignment})
+  {
+    if (alignment == Alignment.topLeft)
+    {
+      return <Alignment>{Alignment.centerLeft, Alignment.topCenter};
+    }
+    else if (alignment == Alignment.topCenter)
+    {
+      return <Alignment>{Alignment.topLeft, Alignment.topRight};
+    }
+    else if (alignment == Alignment.topRight)
+    {
+      return <Alignment>{Alignment.topCenter, Alignment.centerRight};
+    }
+    else if (alignment == Alignment.centerRight)
+    {
+      return <Alignment>{Alignment.topRight, Alignment.bottomRight};
+    }
+    else if (alignment == Alignment.bottomRight)
+    {
+      return <Alignment>{Alignment.centerRight, Alignment.bottomCenter};
+    }
+    else if (alignment == Alignment.bottomCenter)
+    {
+      return <Alignment>{Alignment.bottomLeft, Alignment.bottomRight};
+    }
+    else if (alignment == Alignment.bottomLeft)
+    {
+      return <Alignment>{Alignment.bottomCenter, Alignment.centerLeft};
+    }
+    else if (alignment == Alignment.centerLeft)
+    {
+      return <Alignment>{Alignment.bottomLeft, Alignment.topLeft};
+    }
+    else
+    {
+      return <Alignment>{alignment};
+    }
   }
 
 

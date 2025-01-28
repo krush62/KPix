@@ -108,7 +108,6 @@ class _KPalRampState extends State<KPalRamp>
       {
         drawingLayers.add(visibleLayer);
       }
-
     }
     return drawingLayers;
   }
@@ -179,7 +178,6 @@ class _KPalRampState extends State<KPalRamp>
         {
           (drawingLayer as DrawingLayerState).doManualRaster = true;
         }
-
       }
       _hasRenderChanges = true;
     });

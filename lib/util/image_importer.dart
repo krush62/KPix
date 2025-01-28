@@ -39,9 +39,10 @@ class ImportDataSet
 {
   final ReferenceLayerState? referenceLayer;
   final DrawingLayerState drawingLayer;
+  final CoordinateSetI canvasSize;
   final List<KPalRampData> rampDataList;
 
-  ImportDataSet({required this.referenceLayer, required this.rampDataList, required this.drawingLayer});
+  ImportDataSet({required this.referenceLayer, required this.rampDataList, required this.drawingLayer, required this.canvasSize});
 }
 
 class ImportResult
@@ -98,7 +99,7 @@ class ImportResult
             referenceLayer = await _getReferenceLayer(img: image, imgPath: importData.filePath);
           }
           _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
-          final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer);
+          final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: image.width, y: image.height));
           return ImportResult(message: "SUCCESS", data: importDataSet);
         }
       }

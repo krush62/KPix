@@ -565,26 +565,17 @@ class LayerCollection with ChangeNotifier
     }
   }
 
-  DrawingLayerState? transformLayers({required final CanvasTransformation transformation})
+  void transformLayers({required final CanvasTransformation transformation, required final CoordinateSetI oldSize})
   {
-    DrawingLayerState? currentTransformLayer;
     for (final LayerState layer in _layers)
     {
       if (layer.runtimeType == DrawingLayerState)
       {
-        DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer = drawingLayer.getTransformedLayer(transformation: transformation);
-
-        if (layer == currentLayer)
-        {
-          currentTransformLayer = drawingLayer;
-          currentTransformLayer.isSelected.value = true;
-        }
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        drawingLayer.transformLayer(transformation: transformation, oldSize: oldSize);
       }
     }
-    _currentLayer.value = currentTransformLayer;
     notifyListeners();
-    return currentTransformLayer;
   }
 
   void changeLayerSizes({required final CoordinateSetI newSize, required final CoordinateSetI offset})

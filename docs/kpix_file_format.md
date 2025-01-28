@@ -70,15 +70,15 @@ The kpix file format consists of the following three consecutive sections:
   * outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
   * outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
   * outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
-  * outer_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
-  * outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+  * outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
+  * outer_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
   * inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
   * inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
   * inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
   * inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
   * inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
-  * inner_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
-  * inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+  * inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
+  * inner_stroke_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
   * inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
   * inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
   * drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade

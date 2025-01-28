@@ -15,6 +15,7 @@
  */
 
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -83,7 +84,7 @@ class DrawingLayerSettingsConstraints
   final int glowDepthMin;
   final int glowDepthDefault;
   final int glowDepthMax;
-  final bool glowDirectionDefault;
+  final bool glowRecursiveDefault;
   final int bevelDistanceMin;
   final int bevelDistanceDefault;
   final int bevelDistanceMax;
@@ -101,7 +102,7 @@ class DrawingLayerSettingsConstraints
     required this.glowDepthMin,
     required this.glowDepthDefault,
     required this.glowDepthMax,
-    required this.glowDirectionDefault,
+    required this.glowRecursiveDefault,
     required this.bevelDistanceMin,
     required this.bevelDistanceDefault,
     required this.bevelDistanceMax,
@@ -122,14 +123,14 @@ class DrawingLayerSettings with ChangeNotifier {
   final ValueNotifier<ColorReference> outerColorReference;
   final ValueNotifier<int> outerDarkenBrighten;
   final ValueNotifier<int> outerGlowDepth;
-  final ValueNotifier<bool> outerGlowDirection;
+  final ValueNotifier<bool> outerGlowRecursive;
 
   final ValueNotifier<InnerStrokeStyle> innerStrokeStyle;
   final ValueNotifier<HashMap<Alignment, bool>> innerSelectionMap;
   final ValueNotifier<ColorReference> innerColorReference;
   final ValueNotifier<int> innerDarkenBrighten;
   final ValueNotifier<int> innerGlowDepth;
-  final ValueNotifier<bool> innerGlowDirection;
+  final ValueNotifier<bool> innerGlowRecursive;
   final ValueNotifier<int> bevelDistance;
   final ValueNotifier<int> bevelStrength;
 
@@ -147,13 +148,13 @@ class DrawingLayerSettings with ChangeNotifier {
     required final ColorReference outerColorReference,
     required final int outerDarkenBrighten,
     required final int outerGlowDepth,
-    required final bool outerGlowDirection,
+    required final bool outerGlowRecursive,
     required final InnerStrokeStyle innerStrokeStyle,
     required final HashMap<Alignment, bool> innerSelectionMap,
     required final ColorReference innerColorReference,
     required final int innerDarkenBrighten,
     required final int innerGlowDepth,
-    required final bool innerGlowDirection,
+    required final bool innerGlowRecursive,
     required final int bevelDistance,
     required final int bevelStrength,
     required final DropShadowStyle dropShadowStyle,
@@ -183,8 +184,8 @@ class DrawingLayerSettings with ChangeNotifier {
             dropShadowColorReference,),
         dropShadowOffset = ValueNotifier<CoordinateSetI>(dropShadowOffset,),
         dropShadowDarkenBrighten = ValueNotifier<int>(dropShadowDarkenBrighten),
-        outerGlowDirection = ValueNotifier<bool>(outerGlowDirection),
-        innerGlowDirection = ValueNotifier<bool>(innerGlowDirection)
+        outerGlowRecursive = ValueNotifier<bool>(outerGlowRecursive),
+        innerGlowRecursive = ValueNotifier<bool>(innerGlowRecursive)
   {
     _setupListeners();
   }
@@ -207,8 +208,8 @@ class DrawingLayerSettings with ChangeNotifier {
     dropShadowColorReference = ValueNotifier<ColorReference>(startingColor),
     dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: constraints.dropShadowOffsetDefault, y: constraints.dropShadowOffsetDefault),),
     dropShadowDarkenBrighten = ValueNotifier<int>(constraints.darkenBrightenDefault),
-    outerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault),
-    innerGlowDirection = ValueNotifier<bool>(constraints.glowDirectionDefault)
+    outerGlowRecursive = ValueNotifier<bool>(constraints.glowRecursiveDefault),
+    innerGlowRecursive = ValueNotifier<bool>(constraints.glowRecursiveDefault)
   {
     for (final Alignment alignment in allAlignments)
     {
@@ -237,8 +238,8 @@ class DrawingLayerSettings with ChangeNotifier {
         dropShadowColorReference = ValueNotifier<ColorReference>(other.dropShadowColorReference.value),
         dropShadowOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI.from(other: other.dropShadowOffset.value)),
         dropShadowDarkenBrighten = ValueNotifier<int>(other.dropShadowDarkenBrighten.value),
-        outerGlowDirection = ValueNotifier<bool>(other.outerGlowDirection.value),
-        innerGlowDirection = ValueNotifier<bool>(other.innerGlowDirection.value)
+        outerGlowRecursive = ValueNotifier<bool>(other.outerGlowRecursive.value),
+        innerGlowRecursive = ValueNotifier<bool>(other.innerGlowRecursive.value)
   {
     for (final Alignment alignment in allAlignments)
     {
@@ -267,8 +268,8 @@ class DrawingLayerSettings with ChangeNotifier {
     bevelDistance.addListener(_valueChanged);
     bevelStrength.addListener(_valueChanged);
     dropShadowDarkenBrighten.addListener(_valueChanged);
-    outerGlowDirection.addListener(_valueChanged);
-    innerGlowDirection.addListener(_valueChanged);
+    outerGlowRecursive.addListener(_valueChanged);
+    innerGlowRecursive.addListener(_valueChanged);
   }
 
   void _valueChanged()
@@ -387,26 +388,28 @@ class DrawingLayerSettings with ChangeNotifier {
     }
     else if (outerStrokeStyle.value == OuterStrokeStyle.glow)
     {
-      for (int i = 0; i < outerGlowDepth.value; i++)
+      int lastSelfGlowAmount = 100000;
+      for (int i = 0; i < outerGlowDepth.value.abs(); i++)
       {
         final Set<CoordinateSetI> setPixels = <CoordinateSetI>{};
         setPixels.addAll(data.keys);
         setPixels.addAll(outerPixels.keys);
         final HashMap<CoordinateSetI, int> glowPixels = _getOuterStrokePixelsWithAmount(selectionMap: outerSelectionMap.value, dataPositions: setPixels, canvasSize: canvasSize);
+        int highestSelfGlowAmount = 0;
         for (final MapEntry<CoordinateSetI, int> glowPixel in glowPixels.entries)
         {
-          
           final ColorReference? currentColor = _getColorReferenceAtPos(coord: glowPixel.key, layers: layers, layerState: layerState);
           if (currentColor != null)
           {
             final KPalRampData currentRamp = currentColor.ramp;
-
-            final int steps = outerGlowDirection.value ? outerGlowDepth.value - i: -outerGlowDepth.value + i + glowPixel.value - 1;
-            print(steps);
+            final int selfGlowAmount = outerGlowRecursive.value ? min(glowPixel.value - 1, lastSelfGlowAmount) : 0;
+            highestSelfGlowAmount = max(highestSelfGlowAmount, selfGlowAmount);
+            final int steps = outerGlowDepth.value > 0 ? outerGlowDepth.value - i + selfGlowAmount : outerGlowDepth.value + i - selfGlowAmount;
             final int rampIndex = (currentColor.colorIndex + steps).clamp(0, currentRamp.references.length - 1);
             outerPixels[glowPixel.key] = currentRamp.references[rampIndex];
           }
         }
+        lastSelfGlowAmount = highestSelfGlowAmount;
       }
     }
 
@@ -469,7 +472,7 @@ class DrawingLayerSettings with ChangeNotifier {
             if (currentColor != null)
             {
               final KPalRampData currentRamp = currentColor.ramp;
-              final int steps = innerGlowDirection.value ? innerGlowDepth.value - i : -innerGlowDepth.value + i;
+              final int steps = innerGlowDepth.value > 0 ? innerGlowDepth.value - i : -innerGlowDepth.value + i;
               final int rampIndex = (currentColor.colorIndex + steps).clamp(0, currentRamp.references.length - 1);
               innerPixels[coord] = currentRamp.references[rampIndex];
             }

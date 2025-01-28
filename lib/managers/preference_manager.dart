@@ -405,9 +405,9 @@ enum PreferenceInt
   DrawingLayerConstraints_MinDarkenBrighten(defaultValue: -5),
   DrawingLayerConstraints_DefaultDarkenBrighten(defaultValue: -1),
   DrawingLayerConstraints_MaxDarkenBrighten(defaultValue: 5),
-  DrawingLayerConstraints_MinGlowDepth(defaultValue: 2),
+  DrawingLayerConstraints_MinGlowDepth(defaultValue: -6),
   DrawingLayerConstraints_DefaultGlowDepth(defaultValue: 3),
-  DrawingLayerConstraints_MaxGlowDepth(defaultValue: 8),
+  DrawingLayerConstraints_MaxGlowDepth(defaultValue: 6),
   DrawingLayerConstraints_MinBevelDistance(defaultValue: 1),
   DrawingLayerConstraints_DefaultBevelDistance(defaultValue: 1),
   DrawingLayerConstraints_MaxBevelDistance(defaultValue: 8),
@@ -486,7 +486,7 @@ enum PreferenceBool
   SelectShapeAfterInsert(defaultValue: false),
   SelectLayerAfterInsert(defaultValue: true),
 
-  DrawingLayerConstraints_DefaultGlowDirection(defaultValue: true),
+  DrawingLayerConstraints_DefaultGlowRecursive(defaultValue: true),
   ;
   const PreferenceBool({
     required this.defaultValue,
@@ -848,7 +848,7 @@ class PreferenceManager
         glowDepthMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinGlowDepth),
         glowDepthDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultGlowDepth),
         glowDepthMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxGlowDepth),
-        glowDirectionDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowDirection),
+        glowRecursiveDefault: _getValueB(PreferenceBool.DrawingLayerConstraints_DefaultGlowRecursive),
         bevelDistanceMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinBevelDistance),
         bevelDistanceDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultBevelDistance),
         bevelDistanceMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxBevelDistance),

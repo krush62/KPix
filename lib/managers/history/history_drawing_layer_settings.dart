@@ -30,14 +30,14 @@ class HistoryDrawingLayerSettings {
   final HistoryColorReference outerColorReference;
   final int outerDarkenBrighten;
   final int outerGlowDepth;
-  final bool outerGlowDirection;
+  final bool outerGlowRecursive;
 
   final InnerStrokeStyle innerStrokeStyle;
   final HashMap<Alignment, bool> innerSelectionMap;
   final HistoryColorReference innerColorReference;
   final int innerDarkenBrighten;
   final int innerGlowDepth;
-  final bool innerGlowDirection;
+  final bool innerGlowRecursive;
   final int bevelDistance;
   final int bevelStrength;
 
@@ -53,13 +53,13 @@ class HistoryDrawingLayerSettings {
     required this.outerColorReference,
     required this.outerDarkenBrighten,
     required this.outerGlowDepth,
-    required this.outerGlowDirection,
+    required this.outerGlowRecursive,
     required this.innerStrokeStyle,
     required this.innerSelectionMap,
     required this.innerColorReference,
     required this.innerDarkenBrighten,
     required this.innerGlowDepth,
-    required this.innerGlowDirection,
+    required this.innerGlowRecursive,
     required this.bevelDistance,
     required this.bevelStrength,
     required this.dropShadowStyle,
@@ -76,13 +76,13 @@ class HistoryDrawingLayerSettings {
         outerColorReference = colRef,
         outerDarkenBrighten = constraints.darkenBrightenDefault,
         outerGlowDepth = constraints.glowDepthDefault,
-        outerGlowDirection = constraints.glowDirectionDefault,
+        outerGlowRecursive = constraints.glowRecursiveDefault,
         innerStrokeStyle = InnerStrokeStyle.off,
         innerSelectionMap = HashMap<Alignment, bool>(),
         innerColorReference = colRef,
         innerDarkenBrighten = constraints.darkenBrightenDefault,
         innerGlowDepth = constraints.glowDepthDefault,
-        innerGlowDirection = constraints.glowDirectionDefault,
+        innerGlowRecursive = constraints.glowRecursiveDefault,
         bevelDistance = constraints.bevelDistanceDefault,
         bevelStrength = constraints.bevelStrengthDefault,
         dropShadowStyle = DropShadowStyle.off,
@@ -105,13 +105,13 @@ class HistoryDrawingLayerSettings {
       outerColorReference = HistoryColorReference(colorIndex: settings.outerColorReference.value.colorIndex, rampIndex: settings.outerColorReference.value.ramp.getIndex()),
       outerDarkenBrighten = settings.outerDarkenBrighten.value,
       outerGlowDepth = settings.outerGlowDepth.value,
-      outerGlowDirection = settings.outerGlowDirection.value,
+      outerGlowRecursive = settings.outerGlowRecursive.value,
       innerStrokeStyle = settings.innerStrokeStyle.value,
       innerSelectionMap = HashMap<Alignment, bool>(),
       innerColorReference = HistoryColorReference(colorIndex: settings.innerColorReference.value.colorIndex, rampIndex: settings.innerColorReference.value.ramp.getIndex()),
       innerDarkenBrighten = settings.innerDarkenBrighten.value,
       innerGlowDepth = settings.innerGlowDepth.value,
-      innerGlowDirection = settings.innerGlowDirection.value,
+      innerGlowRecursive = settings.innerGlowRecursive.value,
       bevelDistance = settings.bevelDistance.value,
       bevelStrength = settings.bevelStrength.value,
       dropShadowStyle = settings.dropShadowStyle.value,

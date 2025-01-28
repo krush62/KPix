@@ -100,6 +100,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
   static const double _visualDensityVert = -3.0;
   late KPixOverlay _colorPickDialog;
   late List<int> _darkenBrightenValues;
+  late List<int> _glowDepthValues;
 
   @override
   void initState()
@@ -113,6 +114,15 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     for (int i = 1; i <= widget.layer.settings.constraints.darkenBrightenMax; i++)
     {
       _darkenBrightenValues.add(i);
+    }
+    _glowDepthValues = <int>[];
+    for (int i = widget.layer.settings.constraints.glowDepthMin; i < 0; i++)
+    {
+      _glowDepthValues.add(i);
+    }
+    for (int i = 1; i <= widget.layer.settings.constraints.glowDepthMax; i++)
+    {
+      _glowDepthValues.add(i);
     }
   }
 
@@ -149,7 +159,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
     _colorPickDialog.hide();
   }
 
-  String _getDarknessBrightnessSliderLabel({required final int value})
+  String _getStepSliderLabel({required final int value})
   {
     final String prefix = value > 0 ? "+" : "";
     final String suffix = value == 1 || value == -1 ? " step" : " steps";
@@ -287,7 +297,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                   value: valueIndex.toDouble(),
                                   max: _darkenBrightenValues.length.toDouble() - 1,
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                  label: _getDarknessBrightnessSliderLabel(value: value),
+                                  label: _getStepSliderLabel(value: value),
                                   onChanged: (final double value)
                                   {
                                     widget.layer.settings.outerDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
@@ -306,17 +316,17 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                const Expanded(flex: 4, child: Text("Direction", textAlign: TextAlign.end,)),
+                                const Expanded(flex: 4, child: Text("Recursive", textAlign: TextAlign.end,)),
                                 const Expanded(child: Text("<", textAlign: TextAlign.end)),
                                 Expanded(
                                   flex: 3,
                                   child: ValueListenableBuilder<bool>(
-                                    valueListenable: widget.layer.settings.outerGlowDirection,
+                                    valueListenable: widget.layer.settings.outerGlowRecursive,
                                     builder: (final BuildContext context, final bool glowDir, final Widget? child) {
                                       return Switch(
                                         value: glowDir,
                                         onChanged: (final bool value) {
-                                          widget.layer.settings.outerGlowDirection.value = value;
+                                          widget.layer.settings.outerGlowRecursive.value = value;
                                         },
                                       );
                                     },
@@ -327,15 +337,20 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                             ),
                             ValueListenableBuilder<int>(
                               valueListenable: widget.layer.settings.outerGlowDepth,
-                              builder: (final BuildContext context, final int value, final Widget? child) {
+                              builder: (final BuildContext context, final int value, final Widget? child)
+                              {
+                                int valueIndex = _glowDepthValues.indexOf(value);
+                                if (valueIndex == -1)
+                                {
+                                  valueIndex = _glowDepthValues.length ~/ 2;
+                                }
                                 return KPixSlider(
-                                  value: value.toDouble(),
-                                  min: widget.layer.settings.constraints.glowDepthMin.toDouble(),
-                                  max: widget.layer.settings.constraints.glowDepthMax.toDouble(),
-                                  label: "$value steps",
+                                  value: valueIndex.toDouble(),
+                                  max: _glowDepthValues.length.toDouble() - 1,
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                  label: _getStepSliderLabel(value: value),
                                   onChanged: (final double value) {
-                                    widget.layer.settings.outerGlowDepth.value = value.round();
+                                    widget.layer.settings.outerGlowDepth.value = _glowDepthValues[value.toInt()];
                                   },
                                 );
                               },
@@ -504,7 +519,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                     value: valueIndex.toDouble(),
                                     max: _darkenBrightenValues.length.toDouble() - 1,
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                    label: _getDarknessBrightnessSliderLabel(value: value),
+                                    label: _getStepSliderLabel(value: value),
                                     onChanged: (final double value) {
                                       widget.layer.settings.innerDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
                                     },
@@ -528,12 +543,12 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                   Expanded(
                                     flex: 3,
                                     child: ValueListenableBuilder<bool>(
-                                      valueListenable: widget.layer.settings.innerGlowDirection,
+                                      valueListenable: widget.layer.settings.innerGlowRecursive,
                                       builder: (final BuildContext context, final bool glowDir, final Widget? child) {
                                         return Switch(
                                           value: glowDir,
                                           onChanged: (final bool value) {
-                                            widget.layer.settings.innerGlowDirection.value = value;
+                                            widget.layer.settings.innerGlowRecursive.value = value;
                                           },
                                         );
                                       },
@@ -788,7 +803,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                             max: _darkenBrightenValues.length.toDouble() - 1,
                                             showPlusSignForPositive: true,
                                             textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                            label: _getDarknessBrightnessSliderLabel(value: value),
+                                            label: _getStepSliderLabel(value: value),
                                             onChanged: (final double value) {
                                               widget.layer.settings.dropShadowDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
                                             },

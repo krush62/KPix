@@ -686,10 +686,10 @@ Future<ByteData> _getImageData({required final AppState appState, required final
           byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.colorIndex);
           //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
           byteData.setInt8(offset++, drawingLayer.settings.outerDarkenBrighten);
-          //* outer_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          //* outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
           byteData.setInt8(offset++, drawingLayer.settings.outerGlowDepth);
-          //* outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
-          byteData.setInt8(offset++, drawingLayer.settings.outerGlowDirection ? 1 : 0);
+          //* outer_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
+          byteData.setInt8(offset++, drawingLayer.settings.outerGlowRecursive ? 1 : 0);
           //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
           int innerStrokeStyleVal = 0;
           for (int j = 0; j < innerStrokeStyleValueMap.length; j++)
@@ -709,10 +709,10 @@ Future<ByteData> _getImageData({required final AppState appState, required final
           byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.colorIndex);
           //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
           byteData.setInt8(offset++, drawingLayer.settings.innerDarkenBrighten);
-          //* inner_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
-          byteData.setUint8(offset++, drawingLayer.settings.innerGlowDepth);
-          //* inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
-          byteData.setUint8(offset++, drawingLayer.settings.innerGlowDirection ? 1 : 0);
+          //* inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...6
+          byteData.setInt8(offset++, drawingLayer.settings.innerGlowDepth);
+          //* inner_stroke_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
+          byteData.setUint8(offset++, drawingLayer.settings.innerGlowRecursive ? 1 : 0);
           //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
           byteData.setUint8(offset++, drawingLayer.settings.bevelDistance);
           //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
@@ -1656,7 +1656,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
           size += 1;
           //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
           size += 1;
-          //* outer_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          //* outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
           size += 1;
           //* outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
           size += 1;
@@ -1670,7 +1670,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
           size += 1;
           //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
           size += 1;
-          //* inner_stroke_glow_depth ``ubyte (1)`` // amount of glow depth 2...8
+          //* inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
           size += 1;
           //* inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
           size += 1;

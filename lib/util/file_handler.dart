@@ -270,11 +270,11 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final HistoryColorReference outerColorReference = HistoryColorReference(colorIndex: outerStrokeColorIndex, rampIndex: outerStrokeColorRampIndex);
             final int outerStrokeDarkenBrighten = byteData.getInt8(offset++);
             if (outerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || outerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for outer stroke is out of range for layer $i: $outerStrokeDarkenBrighten");
-            final int outerStrokeGlowDepth = byteData.getUint8(offset++);
+            final int outerStrokeGlowDepth = byteData.getInt8(offset++);
             if (outerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || outerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax) return LoadFileSet(status: "Glow Depth for outer stroke is out of range for layer $i: $outerStrokeGlowDepth");
-            final int outerStrokeGlowDirectionValue = byteData.getUint8(offset++);
-            if (outerStrokeGlowDirectionValue != 0 && outerStrokeGlowDirectionValue != 1) return LoadFileSet(status: "Invalid glow direction value for outer stroke for layer $i: $outerStrokeGlowDirectionValue");
-            final bool outerStrokeGlowDirection = outerStrokeGlowDirectionValue != 0;
+            final int outerStrokeGlowRecursiveValue = byteData.getUint8(offset++);
+            if (outerStrokeGlowRecursiveValue != 0 && outerStrokeGlowRecursiveValue != 1) return LoadFileSet(status: "Invalid glow recursive value for outer stroke for layer $i: $outerStrokeGlowRecursiveValue");
+            final bool outerStrokeGlowRecursive = outerStrokeGlowRecursiveValue != 0;
 
             //inner stroke
             final int innerStrokeStyleVal = byteData.getUint8(offset++);
@@ -289,11 +289,11 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             final HistoryColorReference innerColorReference = HistoryColorReference(colorIndex: innerStrokeColorIndex, rampIndex: innerStrokeColorRampIndex);
             final int innerStrokeDarkenBrighten = byteData.getInt8(offset++);
             if (innerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || innerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax) return LoadFileSet(status: "Darken/Brighten for inner stroke is out of range for layer $i: $innerStrokeDarkenBrighten");
-            final int innerStrokeGlowDepth = byteData.getUint8(offset++);
+            final int innerStrokeGlowDepth = byteData.getInt8(offset++);
             if (innerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || innerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax) return LoadFileSet(status: "Glow Depth for inner stroke is out of range for layer $i: $innerStrokeGlowDepth");
-            final int innerStrokeGlowDirectionValue = byteData.getUint8(offset++);
-            if (innerStrokeGlowDirectionValue != 0 && innerStrokeGlowDirectionValue != 1) return LoadFileSet(status: "Invalid glow direction value for inner stroke for layer $i: $innerStrokeGlowDirectionValue");
-            final bool innerStrokeGlowDirection = innerStrokeGlowDirectionValue != 0;
+            final int innerStrokeGlowRecursiveValue = byteData.getUint8(offset++);
+            if (innerStrokeGlowRecursiveValue != 0 && innerStrokeGlowRecursiveValue != 1) return LoadFileSet(status: "Invalid recursive value for inner stroke for layer $i: $innerStrokeGlowRecursiveValue");
+            final bool innerStrokeGlowRecursive = innerStrokeGlowRecursiveValue != 0;
             final int innerStrokeBevelDistance = byteData.getUint8(offset++);
             if (innerStrokeBevelDistance < drawingLayerSettingsConstraints.bevelDistanceMin || innerStrokeBevelDistance > drawingLayerSettingsConstraints.bevelDistanceMax) return LoadFileSet(status: "Bevel Distance out of range for layer $i: $innerStrokeBevelDistance");
             final int innerStrokeBevelStrength = byteData.getUint8(offset++);
@@ -321,13 +321,13 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
                 outerColorReference: outerColorReference,
                 outerDarkenBrighten: outerStrokeDarkenBrighten,
                 outerGlowDepth: outerStrokeGlowDepth,
-                outerGlowDirection: outerStrokeGlowDirection,
+                outerGlowRecursive: outerStrokeGlowRecursive,
                 innerStrokeStyle: innerStrokeStyle,
                 innerSelectionMap: innerStrokeDirections,
                 innerColorReference: innerColorReference,
                 innerDarkenBrighten: innerStrokeDarkenBrighten,
                 innerGlowDepth: innerStrokeGlowDepth,
-                innerGlowDirection: innerStrokeGlowDirection,
+                innerGlowRecursive: innerStrokeGlowRecursive,
                 bevelDistance: innerStrokeBevelDistance,
                 bevelStrength: innerStrokeBevelStrength,
                 dropShadowStyle: dropShadowStyle,

@@ -217,7 +217,8 @@ class LineOptions extends IToolOptions
                 child: ValueListenableBuilder<bool>(
                   valueListenable: lineOptions.segmentSorting,
                   builder: (final BuildContext context, final bool segmentSorting, final Widget? child){
-                    return Row(
+                    return
+                      Row(
                       children: <Widget>[
                         Switch(
                           onChanged: (final bool newVal) {

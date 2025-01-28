@@ -417,6 +417,7 @@ class LayerCollection with ChangeNotifier
         {
           final DrawingLayerState drawingLayer = layer as DrawingLayerState;
           drawingLayer.remapAllColors(rampMap: rampMap);
+          drawingLayer.remapLayerEffectColors(rampMap: rampMap);
           drawingLayer.doManualRaster = true;
         }
       }
@@ -559,6 +560,7 @@ class LayerCollection with ChangeNotifier
       {
         final DrawingLayerState drawingLayer = layer as DrawingLayerState;
         drawingLayer.remapSingleRamp(newData: newData, map: map);
+        drawingLayer.remapSingleRampLayerEffects(newData: newData, map: map);
       }
     }
   }

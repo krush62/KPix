@@ -155,6 +155,13 @@ class DrawingLayerState extends LayerState
     isRasterizing = false;
   }
 
+  void remapLayerEffectColors({required final HashMap<ColorReference, ColorReference> rampMap})
+  {
+    settings.innerColorReference.value = rampMap[settings.innerColorReference.value]!;
+    settings.outerColorReference.value = rampMap[settings.outerColorReference.value]!;
+    settings.dropShadowColorReference.value = rampMap[settings.dropShadowColorReference.value]!;
+  }
+
   void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})
   {
     isRasterizing = true;
@@ -166,6 +173,22 @@ class DrawingLayerState extends LayerState
       }
     }
     isRasterizing = false;
+  }
+
+  void remapSingleRampLayerEffects({required final KPalRampData newData, required final HashMap<int, int> map})
+  {
+    if (settings.innerColorReference.value.ramp == newData)
+    {
+      settings.innerColorReference.value = newData.references[map[settings.innerColorReference.value.colorIndex]!];
+    }
+    if (settings.outerColorReference.value.ramp == newData)
+    {
+      settings.outerColorReference.value = newData.references[map[settings.outerColorReference.value.colorIndex]!];
+    }
+    if (settings.dropShadowColorReference.value.ramp == newData)
+    {
+      settings.dropShadowColorReference.value = newData.references[map[settings.dropShadowColorReference.value.colorIndex]!];
+    }
   }
 
 

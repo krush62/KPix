@@ -162,11 +162,13 @@ class _KPalRampState extends State<KPalRamp>
       {
         _drawingLayers = _copyLayers(originalLayers: _appState.visibleDrawingAndShadingLayers);
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
-        for (final LayerState drawingLayer in _drawingLayers)
+        for (final LayerState layerState in _drawingLayers)
         {
-          if (drawingLayer.runtimeType == DrawingLayerState)
+          if (layerState.runtimeType == DrawingLayerState)
           {
-            (drawingLayer as DrawingLayerState).remapSingleRamp(newData: widget.rampData, map: indexMap);
+            final DrawingLayerState drawingLayer = layerState as DrawingLayerState;
+            drawingLayer.remapSingleRamp(newData: widget.rampData, map: indexMap);
+            drawingLayer.remapSingleRampLayerEffects(newData: widget.rampData, map: indexMap);
           }
         }
         _createColorCards();

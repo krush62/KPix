@@ -316,23 +316,18 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                const Expanded(flex: 4, child: Text("Recursive", textAlign: TextAlign.end,)),
-                                const Expanded(child: Text("<", textAlign: TextAlign.end)),
-                                Expanded(
-                                  flex: 3,
-                                  child: ValueListenableBuilder<bool>(
-                                    valueListenable: widget.layer.settings.outerGlowRecursive,
-                                    builder: (final BuildContext context, final bool glowDir, final Widget? child) {
-                                      return Switch(
-                                        value: glowDir,
-                                        onChanged: (final bool value) {
-                                          widget.layer.settings.outerGlowRecursive.value = value;
-                                        },
-                                      );
-                                    },
-                                  ),
+                                const Expanded(child: Text("Recursive", textAlign: TextAlign.end,)),
+                                ValueListenableBuilder<bool>(
+                                  valueListenable: widget.layer.settings.outerGlowRecursive,
+                                  builder: (final BuildContext context, final bool glowRec, final Widget? child) {
+                                    return Switch(
+                                      value: glowRec,
+                                      onChanged: (final bool value) {
+                                        widget.layer.settings.outerGlowRecursive.value = value;
+                                      },
+                                    );
+                                  },
                                 ),
-                                const Expanded(child: Text(">", textAlign: TextAlign.start,)),
                               ],
                             ),
                             ValueListenableBuilder<int>(
@@ -538,36 +533,36 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                             children: <Widget>[
                               Row(
                                 children: <Widget>[
-                                  const Expanded(flex: 4, child: Text("Direction", textAlign: TextAlign.end,)),
-                                  const Expanded(child: Text("<", textAlign: TextAlign.end)),
-                                  Expanded(
-                                    flex: 3,
-                                    child: ValueListenableBuilder<bool>(
-                                      valueListenable: widget.layer.settings.innerGlowRecursive,
-                                      builder: (final BuildContext context, final bool glowDir, final Widget? child) {
-                                        return Switch(
-                                          value: glowDir,
-                                          onChanged: (final bool value) {
-                                            widget.layer.settings.innerGlowRecursive.value = value;
-                                          },
-                                        );
-                                      },
-                                    ),
+                                  const Expanded(child: Text("Recursive", textAlign: TextAlign.end,)),
+                                  ValueListenableBuilder<bool>(
+                                    valueListenable: widget.layer.settings.innerGlowRecursive,
+                                    builder: (final BuildContext context, final bool glowRec, final Widget? child) {
+                                      return Switch(
+                                        value: glowRec,
+                                        onChanged: (final bool value) {
+                                          widget.layer.settings.innerGlowRecursive.value = value;
+                                        },
+                                      );
+                                    },
                                   ),
-                                  const Expanded(child: Text(">", textAlign: TextAlign.start,)),
                                 ],
                               ),
                               ValueListenableBuilder<int>(
                                 valueListenable: widget.layer.settings.innerGlowDepth,
-                                builder: (final BuildContext context, final int value, final Widget? child) {
+                                builder: (final BuildContext context, final int value, final Widget? child)
+                                {
+                                  int valueIndex = _glowDepthValues.indexOf(value);
+                                  if (valueIndex == -1)
+                                  {
+                                    valueIndex = _glowDepthValues.length ~/ 2;
+                                  }
                                   return KPixSlider(
-                                    value: value.toDouble(),
-                                    min: widget.layer.settings.constraints.glowDepthMin.toDouble(),
-                                    max: widget.layer.settings.constraints.glowDepthMax.toDouble(),
+                                    value: valueIndex.toDouble(),
+                                    max: _glowDepthValues.length.toDouble() - 1,
                                     textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                    label: "$value steps",
+                                    label: _getStepSliderLabel(value: value),
                                     onChanged: (final double value) {
-                                      widget.layer.settings.innerGlowDepth.value = value.round();
+                                      widget.layer.settings.innerGlowDepth.value =  _glowDepthValues[value.toInt()];
                                     },
                                   );
                                 },

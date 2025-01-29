@@ -453,31 +453,36 @@ class DrawingLayerSettings with ChangeNotifier {
       }
       else if (innerStrokeStyle.value == InnerStrokeStyle.glow)
       {
+        int lastSelfGlowAmount = 100000;
         final CoordinateColorMap dataPixels = CoordinateColorMap();
         dataPixels.addAll(data);
-        for (int i = 0; i < innerGlowDepth.value; i++)
+        for (int i = 0; i < innerGlowDepth.value.abs(); i++)
         {
-          final Set<CoordinateSetI> innerStrokePixels = _getInnerStrokeCoordinates(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: canvasSize);
-          for (final CoordinateSetI coord in innerStrokePixels)
+          final Map<CoordinateSetI, int> innerStrokePixels = _getInnerStrokeCoordinatesWithAmount(selectionMap: innerSelectionMap.value, data: dataPixels, canvasSize: canvasSize);
+          int highestSelfGlowAmount = 0;
+          for (final MapEntry<CoordinateSetI, int> coord in innerStrokePixels.entries)
           {
             final ColorReference? currentColor;
-            if (selectionList != null && selectionList.contains(coord: coord))
+            if (selectionList != null && selectionList.contains(coord: coord.key))
             {
-              currentColor = selectionList.getColorReference(coord: coord);
+              currentColor = selectionList.getColorReference(coord: coord.key);
             }
             else
             {
-              currentColor = layerState.getDataEntry(coord: coord);
+              currentColor = layerState.getDataEntry(coord: coord.key);
             }
             if (currentColor != null)
             {
               final KPalRampData currentRamp = currentColor.ramp;
-              final int steps = innerGlowDepth.value > 0 ? innerGlowDepth.value - i : -innerGlowDepth.value + i;
+              final int selfGlowAmount = innerGlowRecursive.value ? min(coord.value - 1, lastSelfGlowAmount) : 0;
+              highestSelfGlowAmount = max(highestSelfGlowAmount, selfGlowAmount);
+              final int steps = innerGlowDepth.value > 0 ? innerGlowDepth.value - i + selfGlowAmount: innerGlowDepth.value + i - selfGlowAmount;
               final int rampIndex = (currentColor.colorIndex + steps).clamp(0, currentRamp.references.length - 1);
-              innerPixels[coord] = currentRamp.references[rampIndex];
+              innerPixels[coord.key] = currentRamp.references[rampIndex];
             }
-            dataPixels.remove(coord);
+            dataPixels.remove(coord.key);
           }
+          lastSelfGlowAmount = highestSelfGlowAmount;
         }
       }
       else if (innerStrokeStyle.value == InnerStrokeStyle.bevel)
@@ -708,6 +713,32 @@ class DrawingLayerSettings with ChangeNotifier {
         {
           coords.add(dataPosition);
           break;
+        }
+      }
+
+    }
+    return coords;
+  }
+
+  static Map<CoordinateSetI, int> _getInnerStrokeCoordinatesWithAmount({required final HashMap<Alignment, bool> selectionMap, required final CoordinateColorMap data, required final CoordinateSetI canvasSize})
+  {
+    final Map<CoordinateSetI, int> coords = <CoordinateSetI, int>{};
+
+    for (final CoordinateSetI dataPosition in data.keys)
+    {
+      final HashMap<Alignment, CoordinateSetI> surroundingPixels = _getAllSurroundingPositions(pos: dataPosition);
+      for (final MapEntry<Alignment, CoordinateSetI> surroundEntry in surroundingPixels.entries)
+      {
+        if (data[surroundEntry.value] == null && selectionMap[surroundEntry.key] == true)
+        {
+          if (coords.containsKey(dataPosition))
+          {
+            coords[dataPosition] = coords[dataPosition]! + 1;
+          }
+          else
+          {
+            coords[dataPosition] = 1;
+          }
         }
       }
 

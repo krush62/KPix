@@ -51,7 +51,6 @@ class FontPainter extends IToolPainter
       _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x) * drawParams.pixelSize);
       _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y) * drawParams.pixelSize);
 
-
       final bool shouldUpdate =
           _currentText != _options.text.value ||
           _oldCursorPos != drawParams.cursorPosNorm! ||
@@ -137,10 +136,10 @@ class FontPainter extends IToolPainter
       _lastShadingDirection = shaderOptions.shaderDirection.value;
       _lastColorSelection = appState.selectedColor;
 
-      if (drawParams.cursorPos == null)
-      {
-        cursorRaster = null;
-      }
+    }
+    else
+    {
+      cursorRaster = null;
     }
   }
 

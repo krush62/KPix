@@ -602,7 +602,7 @@ class LayerCollection with ChangeNotifier
     }
   }
 
-  void deleteRampFromLayers({required final KPalRampData ramp})
+  void deleteRampFromLayers({required final KPalRampData ramp, required final ColorReference backupColor})
   {
     for (final LayerState layer in _layers)
     {
@@ -610,6 +610,7 @@ class LayerCollection with ChangeNotifier
       {
         final DrawingLayerState drawingLayer = layer as DrawingLayerState;
         drawingLayer.deleteRamp(ramp: ramp);
+        drawingLayer.deleteRampFromLayerEffects(ramp: ramp, backupColor: backupColor);
       }
 
     }

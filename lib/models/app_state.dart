@@ -384,7 +384,7 @@ class AppState
       rampDataList.remove(ramp);
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
-      _layerCollection.deleteRampFromLayers(ramp: ramp);
+      _layerCollection.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
       _layerCollection.reRasterDrawingLayers();
       repaintNotifier.repaint();
       if (addToHistoryStack)

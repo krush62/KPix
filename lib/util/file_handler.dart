@@ -173,7 +173,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
     }
   }
 
-
+//TODO strict parameter could be a (dev) setting
   Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
   {
     final StringBuffer returnString = StringBuffer();

@@ -143,6 +143,22 @@ class DrawingLayerState extends LayerState
     isRasterizing = false;
   }
 
+  void deleteRampFromLayerEffects({required final KPalRampData ramp, required final ColorReference backupColor})
+  {
+    if (settings.innerColorReference.value.ramp == ramp)
+    {
+      settings.innerColorReference.value = backupColor;
+    }
+    if (settings.outerColorReference.value.ramp == ramp)
+    {
+      settings.outerColorReference.value = backupColor;
+    }
+    if (settings.dropShadowColorReference.value.ramp == ramp)
+    {
+      settings.dropShadowColorReference.value = backupColor;
+    }
+  }
+
   void remapAllColors({required final HashMap<ColorReference, ColorReference> rampMap})
   {
     isRasterizing = true;
@@ -155,9 +171,9 @@ class DrawingLayerState extends LayerState
 
   void remapLayerEffectColors({required final HashMap<ColorReference, ColorReference> rampMap})
   {
-    settings.innerColorReference.value = rampMap[settings.innerColorReference.value]!;
-    settings.outerColorReference.value = rampMap[settings.outerColorReference.value]!;
-    settings.dropShadowColorReference.value = rampMap[settings.dropShadowColorReference.value]!;
+    settings.innerColorReference.value = rampMap.containsKey(settings.innerColorReference.value) ? rampMap[settings.innerColorReference.value]! : rampMap.values.first;
+    settings.outerColorReference.value = rampMap.containsKey(settings.outerColorReference.value) ? rampMap[settings.outerColorReference.value]! : rampMap.values.first;
+    settings.dropShadowColorReference.value = rampMap.containsKey(settings.dropShadowColorReference.value) ? rampMap[settings.dropShadowColorReference.value]! : rampMap.values.first;
   }
 
   void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})

@@ -792,6 +792,32 @@ class AppState
 
   }
 
+
+  void changeColorOrder({required final KPalRampData ramp, required final int newPosition, final bool addToHistoryStack = true})
+  {
+    final int sourcePosition = _colorRamps.value.indexOf(ramp);
+    if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
+    {
+      final List<KPalRampData> newListOfRamps = <KPalRampData>[];
+      newListOfRamps.addAll(_colorRamps.value);
+
+      newListOfRamps.removeAt(sourcePosition);
+      if (newPosition > sourcePosition)
+      {
+        newListOfRamps.insert(newPosition - 1, ramp);
+      }
+      else
+      {
+        newListOfRamps.insert(newPosition, ramp);
+      }
+      _colorRamps.value = newListOfRamps;
+    }
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
+    }
+  }
+
   void changeLayerVisibility({required final LayerState layerState})
   {
     if (layerState.visibilityState.value == LayerVisibilityState.visible)

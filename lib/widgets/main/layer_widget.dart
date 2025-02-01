@@ -194,8 +194,8 @@ class _LayerWidgetState extends State<LayerWidget> {
           height: _options.height,
           child: ValueListenableBuilder<bool>(
             valueListenable: widget.layerState.isSelected,
-            builder: (final BuildContext context, final bool isSelected,
-                final Widget? child,) {
+            builder: (final BuildContext context, final bool isSelected,final Widget? child,)
+            {
               return Container(
                 padding: EdgeInsets.all(_options.innerPadding),
                 decoration: BoxDecoration(

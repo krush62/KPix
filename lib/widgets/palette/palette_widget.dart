@@ -44,11 +44,15 @@ class PaletteWidgetOptions
   final double padding;
   final double managerButtonSize;
   final double borderRadius;
+  final double dropTargetHeight;
+  final int dropTargetAnimationLength;
 
   PaletteWidgetOptions({
     required this.padding,
     required this.managerButtonSize,
     required this.borderRadius,
+    required this.dropTargetHeight,
+    required this.dropTargetAnimationLength,
   });
 
 }
@@ -67,7 +71,6 @@ class PaletteWidget extends StatefulWidget
 
 class _PaletteWidgetState extends State<PaletteWidget>
 {
-  final ValueNotifier<List<Widget>> _colorRampWidgetList = ValueNotifier<List<Widget>>(<Widget>[]);
   final AppState _appState = GetIt.I.get<AppState>();
   late KPixOverlay _paletteManager;
   late KPixOverlay _kPal;
@@ -113,6 +116,23 @@ class _PaletteWidgetState extends State<PaletteWidget>
     _kPal.show(context: context);
   }
 
+  Widget _getDropContainer({required final PaletteWidgetOptions paletteWidgetOptions, required final int index})
+  {
+    return DragTarget<KPalRampData>(
+      builder: (final BuildContext context, final List<KPalRampData?> candidateItems, final List<dynamic> rejectedItems)
+      {
+        return AnimatedContainer(
+          height: candidateItems.isEmpty ? paletteWidgetOptions.padding / 2 : paletteWidgetOptions.dropTargetHeight,
+          color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
+          duration: Duration(milliseconds: paletteWidgetOptions.dropTargetAnimationLength),
+        );
+      },
+      onAcceptWithDetails: (final DragTargetDetails<KPalRampData> details) {
+        _appState.changeColorOrder(ramp: details.data, newPosition: index);
+      },
+    );
+  }
+
 
   @override
   Widget build(final BuildContext context) {
@@ -121,9 +141,11 @@ class _PaletteWidgetState extends State<PaletteWidget>
     return Expanded(
       child: ValueListenableBuilder<List<KPalRampData>>(
         valueListenable: appState.colorRampNotifier,
-        builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child){
-
+        builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child)
+        {
+          int dropTargetIndex = 0;
           final List<Widget> widgetList = <Widget>[];
+          widgetList.add(_getDropContainer(paletteWidgetOptions: paletteWidgetOptions, index: dropTargetIndex++));
           for (final KPalRampData rampData in rampDataSet)
           {
             widgetList.add(
@@ -133,86 +155,78 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   showKPalFn: _createKPal,
                 ),
             );
-            widgetList.add(
-              SizedBox(height: paletteWidgetOptions.padding / 2,),
-            );
+            widgetList.add(_getDropContainer(paletteWidgetOptions: paletteWidgetOptions, index: dropTargetIndex++));
           }
-          _colorRampWidgetList.value = widgetList;
-          return ValueListenableBuilder<List<Widget>>(
-            valueListenable: _colorRampWidgetList,
-            builder: (final BuildContext context, final List<Widget> widgetRows, final Widget? child) {
-              return Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColorDark,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(paletteWidgetOptions.borderRadius), bottomRight: Radius.circular(paletteWidgetOptions.borderRadius)),
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColorDark,
+              borderRadius: BorderRadius.only(topRight: Radius.circular(paletteWidgetOptions.borderRadius), bottomRight: Radius.circular(paletteWidgetOptions.borderRadius)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Tooltip(
+                  message: "Palette Manager",
+                  waitDuration: AppState.toolTipDuration,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: paletteWidgetOptions.padding, left: paletteWidgetOptions.padding, right: paletteWidgetOptions.padding),
+                    child: IconButton.outlined(
+                      onPressed: _paletteManagerPressed,
+                      icon: const FaIcon(FontAwesomeIcons.palette),
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
+                        maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
+                        iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Tooltip(
-                      message: "Palette Manager",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Padding(
-                        padding: EdgeInsets.only(top: paletteWidgetOptions.padding, left: paletteWidgetOptions.padding, right: paletteWidgetOptions.padding),
-                        child: IconButton.outlined(
-                          onPressed: _paletteManagerPressed,
-                          icon: const FaIcon(FontAwesomeIcons.palette),
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                            maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                            iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
+                      child: Column(
+                        children: <Widget>[
+                          ...widgetList,
+                        ],
                       ),
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
-                          child: Column(
-                            children: <Widget>[
-                              ...widgetRows,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Tooltip(
-                      message: "Add New Color Ramp",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Padding(
-                        padding: EdgeInsets.all(paletteWidgetOptions.padding),
-                        child: IconButton.outlined(
-                          onPressed: () {
-                            appState.addNewRamp().then
-                              ((final KPalRampData? ramp) {
-                                if (ramp != null)
-                                {
-                                  _createKPal(ramp: ramp);
-                                }
+                  ),
+                ),
+                Tooltip(
+                  message: "Add New Color Ramp",
+                  waitDuration: AppState.toolTipDuration,
+                  child: Padding(
+                    padding: EdgeInsets.all(paletteWidgetOptions.padding),
+                    child: IconButton.outlined(
+                      onPressed: () {
+                        appState.addNewRamp().then
+                          ((final KPalRampData? ramp) {
+                            if (ramp != null)
+                            {
+                              _createKPal(ramp: ramp);
                             }
-                            );
-                          },
-                          icon: const FaIcon(FontAwesomeIcons.plus),
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                            maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                            iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
+                        }
+                        );
+                      },
+                      icon: const FaIcon(FontAwesomeIcons.plus),
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
+                        maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
+                        iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
+                        padding: EdgeInsets.zero,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           );
         },
       ),

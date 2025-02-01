@@ -38,7 +38,6 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 
 class ColorRampRowWidgetOptions
@@ -47,12 +46,16 @@ class ColorRampRowWidgetOptions
   final double borderWidth;
   final double buttonPadding;
   final double buttonScaleFactor;
+  final double dragFeedbackSquareSize;
+  final double dragFeedbackSquarePadding;
 
   const ColorRampRowWidgetOptions({
     required this.borderRadius,
     required this.borderWidth,
     required this.buttonPadding,
     required this.buttonScaleFactor,
+    required this.dragFeedbackSquareSize,
+    required this.dragFeedbackSquarePadding,
   });
 }
 
@@ -108,17 +111,30 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
   {
     _widgetList.clear();
     _widgetList.add(
-      IconButton(
-        padding: EdgeInsets.all(_options.buttonPadding),
-        iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize * _options.buttonScaleFactor,
-        constraints: const BoxConstraints(),
-        icon: FaIcon(
-          color: Theme.of(context).primaryColor,
-          FontAwesomeIcons.gripLines,
+      LongPressDraggable<KPalRampData>(
+        data: widget.rampData,
+        feedback: Builder(
+          builder: (final BuildContext context) {
+            final List<Widget> widgetList = <Widget>[];
+            for (int i = 0; i < widget.rampData.shiftedColors.length; i++)
+            {
+              widgetList.add(Padding(padding: EdgeInsets.all(_options.dragFeedbackSquarePadding), child: FaIcon(FontAwesomeIcons.solidSquare, size: _options.dragFeedbackSquareSize)));
+            }
+            return Row(children: widgetList,);
+          },
         ),
-        onPressed: null,
-        style: IconButton.styleFrom(
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        child: IconButton(
+          padding: EdgeInsets.all(_options.buttonPadding),
+          iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize * _options.buttonScaleFactor,
+          constraints: const BoxConstraints(),
+          icon: FaIcon(
+            color: Theme.of(context).primaryColor,
+            FontAwesomeIcons.gripLines,
+          ),
+          onPressed: null,
+          style: IconButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ),
       ),
     );

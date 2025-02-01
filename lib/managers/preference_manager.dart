@@ -87,11 +87,14 @@ enum PreferenceDouble
   Layout_Palette_Padding(defaultValue: 8.0),
   Layout_Palette_ManagerButtonSize(defaultValue: 32.0),
   Layout_Palette_BorderRadius(defaultValue: 8.0),
+  Layout_Palette_DropTargetHeight(defaultValue: 32.0),
 
   Layout_ColorRampRow_BorderRadius(defaultValue: 8.0),
   Layout_ColorRampRow_BorderWidth(defaultValue: 2.0),
   Layout_ColorRampRow_ButtonPadding(defaultValue: 8.0),
   Layout_ColorRampRow_ButtonScaleFactor(defaultValue: 0.8),
+  Layout_ColorRampRow_DragFeedbackSquareSize(defaultValue: 16.0),
+  Layout_ColorRampRow_DragFeedbackSquarePadding(defaultValue: 1.0),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
@@ -251,6 +254,8 @@ enum PreferenceInt
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
   Layout_Tools_ColCount(defaultValue: 6),
+
+  Layout_Palette_DropTargetAnimationLength(defaultValue: 100),
 
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
 
@@ -777,12 +782,16 @@ class PreferenceManager
     paletteWidgetOptions = PaletteWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_Palette_Padding),
         managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize),
-        borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius),);
+        borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius),
+        dropTargetHeight: _getValueD(PreferenceDouble.Layout_Palette_DropTargetHeight),
+        dropTargetAnimationLength: _getValueI(PreferenceInt.Layout_Palette_DropTargetAnimationLength),);
     colorRampRowOptions = ColorRampRowWidgetOptions(
       borderRadius: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderRadius),
       borderWidth: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderWidth),
       buttonPadding: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonPadding),
-      buttonScaleFactor: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonScaleFactor),);
+      buttonScaleFactor: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonScaleFactor),
+      dragFeedbackSquareSize: _getValueD(PreferenceDouble.Layout_ColorRampRow_DragFeedbackSquareSize),
+      dragFeedbackSquarePadding: _getValueD(PreferenceDouble.Layout_ColorRampRow_DragFeedbackSquarePadding),);
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),

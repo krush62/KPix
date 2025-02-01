@@ -67,8 +67,11 @@ class PaletteWidget extends StatefulWidget
 
 class _PaletteWidgetState extends State<PaletteWidget>
 {
-  final ValueNotifier<List<ColorRampRowWidget>> _colorRampWidgetList = ValueNotifier<List<ColorRampRowWidget>>(<ColorRampRowWidget>[]);
+  final ValueNotifier<List<Widget>> _colorRampWidgetList = ValueNotifier<List<Widget>>(<Widget>[]);
+  final AppState _appState = GetIt.I.get<AppState>();
   late KPixOverlay _paletteManager;
+  late KPixOverlay _kPal;
+
   @override
   void initState()
   {
@@ -88,6 +91,29 @@ class _PaletteWidgetState extends State<PaletteWidget>
   }
 
 
+  void _colorRampUpdate({required final KPalRampData ramp, required final KPalRampData originalData, final bool addToHistoryStack = true})
+  {
+    _kPal.hide();
+    _appState.updateRamp(ramp: ramp, originalData: originalData, addToHistoryStack: addToHistoryStack);
+  }
+
+  void _colorRampDelete({required final KPalRampData ramp, final bool addToHistoryStack = true})
+  {
+    _kPal.hide();
+    _appState.deleteRamp(ramp: ramp, addToHistoryStack: addToHistoryStack);
+  }
+
+  void _createKPal({required final KPalRampData ramp, final bool addToHistoryStack = true})
+  {
+    _kPal = getKPal(
+      onAccept: _colorRampUpdate,
+      onDelete: _colorRampDelete,
+      colorRamp: ramp,
+    );
+    _kPal.show(context: context);
+  }
+
+
   @override
   Widget build(final BuildContext context) {
     final AppState appState = GetIt.I.get<AppState>();
@@ -97,25 +123,24 @@ class _PaletteWidgetState extends State<PaletteWidget>
         valueListenable: appState.colorRampNotifier,
         builder: (final BuildContext context, final List<KPalRampData> rampDataSet, final Widget? child){
 
-          final List<ColorRampRowWidget> widgetList = <ColorRampRowWidget>[];
+          final List<Widget> widgetList = <Widget>[];
           for (final KPalRampData rampData in rampDataSet)
           {
             widgetList.add(
                 ColorRampRowWidget(
                   rampData: rampData,
                   colorSelectedFn: appState.colorSelected,
-                  colorsUpdatedFn: appState.updateRamp,
-                  deleteRowFn: appState.deleteRamp,
+                  showKPalFn: _createKPal,
                 ),
             );
+            widgetList.add(
+              SizedBox(height: paletteWidgetOptions.padding / 2,),
+            );
           }
-          widgetList.add(ColorRampRowWidget(
-            addNewRampFn: appState.addNewRamp,
-          ),);
           _colorRampWidgetList.value = widgetList;
-          return ValueListenableBuilder<List<ColorRampRowWidget>>(
+          return ValueListenableBuilder<List<Widget>>(
             valueListenable: _colorRampWidgetList,
-            builder: (final BuildContext context, final List<ColorRampRowWidget> widgetRows, final Widget? child) {
+            builder: (final BuildContext context, final List<Widget> widgetRows, final Widget? child) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -153,6 +178,33 @@ class _PaletteWidgetState extends State<PaletteWidget>
                             children: <Widget>[
                               ...widgetRows,
                             ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Tooltip(
+                      message: "Add New Color Ramp",
+                      waitDuration: AppState.toolTipDuration,
+                      child: Padding(
+                        padding: EdgeInsets.all(paletteWidgetOptions.padding),
+                        child: IconButton.outlined(
+                          onPressed: () {
+                            appState.addNewRamp().then
+                              ((final KPalRampData? ramp) {
+                                if (ramp != null)
+                                {
+                                  _createKPal(ramp: ramp);
+                                }
+                            }
+                            );
+                          },
+                          icon: const FaIcon(FontAwesomeIcons.plus),
+                          style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
+                            maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
+                            iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
+                            padding: EdgeInsets.zero,
                           ),
                         ),
                       ),

@@ -423,7 +423,7 @@ class AppState
     _selectedColor.value = _colorRamps.value[0].references[0];
   }
 
-  void addNewRamp({final bool addToHistoryStack = true})
+  Future<KPalRampData?> addNewRamp({final bool addToHistoryStack = true}) async
   {
     final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     if (colorRamps.length < constraints.rampCountMax)
@@ -443,10 +443,12 @@ class AppState
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
       }
+      return newRamp;
     }
     else
     {
       showMessage(text: "Not more than ${constraints.rampCountMax} color ramps allowed!");
+      return null;
     }
   }
 

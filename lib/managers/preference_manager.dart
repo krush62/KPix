@@ -53,6 +53,7 @@ import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
+import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
@@ -86,6 +87,11 @@ enum PreferenceDouble
   Layout_Palette_Padding(defaultValue: 8.0),
   Layout_Palette_ManagerButtonSize(defaultValue: 32.0),
   Layout_Palette_BorderRadius(defaultValue: 8.0),
+
+  Layout_ColorRampRow_BorderRadius(defaultValue: 8.0),
+  Layout_ColorRampRow_BorderWidth(defaultValue: 2.0),
+  Layout_ColorRampRow_ButtonPadding(defaultValue: 8.0),
+  Layout_ColorRampRow_ButtonScaleFactor(defaultValue: 0.8),
 
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
@@ -632,6 +638,7 @@ class PreferenceManager
   late StampManagerEntryOptions stampManagerEntryOptions;
   late StampManagerOptions stampManagerOptions;
   late KPixPainterOptions kPixPainterOptions;
+  late ColorRampRowWidgetOptions colorRampRowOptions;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
@@ -771,6 +778,11 @@ class PreferenceManager
         padding: _getValueD(PreferenceDouble.Layout_Palette_Padding),
         managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize),
         borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius),);
+    colorRampRowOptions = ColorRampRowWidgetOptions(
+      borderRadius: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderRadius),
+      borderWidth: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderWidth),
+      buttonPadding: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonPadding),
+      buttonScaleFactor: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonScaleFactor),);
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
@@ -933,6 +945,7 @@ class PreferenceManager
       vanishingPoint3Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint3Default),
       gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault),
     );
+
   }
 
   void _loadToolOptions()

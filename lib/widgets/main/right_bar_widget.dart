@@ -170,8 +170,9 @@ class _RightBarWidgetState extends State<RightBarWidget>
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _appState.hasProjectNotifier,
                     builder: (final BuildContext context, final bool hasProject, final Widget? child) {
-                      return hasProject ? SingleChildScrollView(
-                        child: Column(
+                      if (hasProject)
+                      {
+                        return Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
                             Padding(
@@ -195,17 +196,29 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 ),
                               ),
                             ),
-                            ListenableBuilder(
-                              listenable: _appState.layerListChangeNotifier,
-                              builder: (final BuildContext context, final Widget? child)
-                              {
-                                _createWidgetList();
-                                return Column(children: _widgetList);
-                              },
+                            Expanded(
+                              child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  ListenableBuilder(
+                                    listenable: _appState.layerListChangeNotifier,
+                                    builder: (final BuildContext context, final Widget? child)
+                                    {
+                                      _createWidgetList();
+                                      return Column(children: _widgetList);
+                                    },
+                                  ),
+                                ],
+                              ),                    ),
                             ),
                           ],
-                        ),
-                      ) : const SizedBox.shrink();
+                        );
+                      }
+                      else
+                      {
+                        return const SizedBox.shrink();
+                      }
                     },
                   ),
                 ),

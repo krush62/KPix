@@ -29,7 +29,6 @@ import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
@@ -52,58 +51,57 @@ class ImportResult
   ImportResult({this.data, required this.message});
 }
 
-  Future<ImportResult> import({required final ImportData importData}) async
+  Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
   {
-    final CanvasSizeOptions canvasSizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
-    final ui.Image? image = await _loadImage(path: importData.filePath, bytes: importData.imageBytes);
-    if (image == null)
+
+    final ByteData? imageData = await importData.image.toByteData();
+    if (imageData == null)
     {
-      return ImportResult(message: "Could not load image!");
+      return ImportResult(message: "Could not convert image data!");
     }
     else
     {
-      final ByteData? imageData = await image.toByteData();
-      if (imageData == null)
+      DrawingLayerState drawingLayer;
+      List<KPalRampData> ramps = <KPalRampData>[];
+      final List<HSVColor> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
+      if (importData.createNewPalette)
       {
-        return ImportResult(message: "Could not convert image data!");
+        final List<HSVColor> distinctHsvColorList = hsvColorList.toSet().toList(growable: false);
+        final List<List<HSVColor>> clusteredColors = await _adaptiveClusterWithMaxRamps(maxRamps: importData.maxRamps, colors: distinctHsvColorList, initialClusters: 16);
+
+        final List<List<HSVColor>> interpolatedColors = <List<HSVColor>>[];
+        for (final List<HSVColor> clusterColorRamp in clusteredColors)
+        {
+          final List<HSVColor> interpolatedRamp = await _interpolateColorsFromRamp(ramp: clusterColorRamp, maxColors: importData.maxColors);
+          interpolatedColors.add(interpolatedRamp);
+        }
+
+
+        for (final List<HSVColor> interRamp in interpolatedColors)
+        {
+          ramps.add(await _getParamsFromColorList(colors: interRamp));
+        }
+
+        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.image.width, height: importData.image.height, ramps: ramps);
+        _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
       }
       else
       {
-        if (image.width > canvasSizeOptions.sizeMax || image.height > canvasSizeOptions.sizeMax)
-        {
-          return ImportResult(message: "Image dimensions cannot exceed ${canvasSizeOptions.sizeMax}x${canvasSizeOptions.sizeMax}!!");
-        }
-        else
-        {
-          final List<HSVColor> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
-          final List<HSVColor> distinctHsvColorList = hsvColorList.toSet().toList(growable: false);
-          final List<List<HSVColor>> clusteredColors = await _adaptiveClusterWithMaxRamps(maxRamps: importData.maxRamps, colors: distinctHsvColorList, initialClusters: 16);
-
-          final List<List<HSVColor>> interpolatedColors = <List<HSVColor>>[];
-          for (final List<HSVColor> clusterColorRamp in clusteredColors)
-          {
-            final List<HSVColor> interpolatedRamp = await _interpolateColorsFromRamp(ramp: clusterColorRamp, maxColors: importData.maxColors);
-            interpolatedColors.add(interpolatedRamp);
-          }
-
-          final List<KPalRampData> ramps = <KPalRampData>[];
-          for (final List<HSVColor> interRamp in interpolatedColors)
-          {
-            ramps.add(await _getParamsFromColorList(colors: interRamp));
-          }
-
-          final DrawingLayerState drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: image.width, height: image.height, ramps: ramps);
-          ReferenceLayerState? referenceLayer;
-          if (importData.includeReference)
-          {
-            referenceLayer = await _getReferenceLayer(img: image, imgPath: importData.filePath);
-          }
-          _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
-          final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: image.width, y: image.height));
-          return ImportResult(message: "SUCCESS", data: importDataSet);
-        }
+        ramps = currentRamps;
+        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.image.width, height: importData.image.height, ramps: ramps);
       }
+
+      ReferenceLayerState? referenceLayer;
+      if (importData.includeReference)
+      {
+        referenceLayer = await _getReferenceLayer(img: importData.image, imgPath: importData.filePath);
+      }
+
+      final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.image.width, y: importData.image.height));
+      return ImportResult(message: "SUCCESS", data: importDataSet);
+
     }
+
   }
 
   Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, required final Set<ColorReference> references}) async
@@ -392,12 +390,13 @@ class ImportResult
 
 
 
-  Future<ui.Image?> _loadImage({required final String path, final Uint8List? bytes}) async
+  Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}) async
   {
+    ui.Image? image;
     final File imageFile = File(path);
     if (bytes == null && !await imageFile.exists())
     {
-      return null;
+      image = null;
     }
     else
     {
@@ -406,13 +405,15 @@ class ImportResult
         final Uint8List imageBytes = bytes ?? await imageFile.readAsBytes();
         final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
         final ui.FrameInfo frame = await codec.getNextFrame();
-        return frame.image;
+        image = frame.image;
+        codec.dispose();
       }
       catch(_)
       {
-        return null;
+        image = null;
       }
     }
+    return image;
   }
 
 

@@ -349,10 +349,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _importImage({required final ImportData importData})
   {
     _importLoadingDialog.show(context: context);
-    import(importData: importData).then((final ImportResult result)
+    import(importData: importData, currentRamps: _appState.colorRamps).then((final ImportResult result)
     {
       _appState.importFile(importResult: result);
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      _appState.rasterDrawingLayers();
       _closeAllMenus();
     });
   }

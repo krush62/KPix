@@ -345,14 +345,14 @@ class _ImportWidgetState extends State<ImportWidget>
                     aspectRatio: 1,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).primaryColorLight, width: 2.0),
-                        borderRadius: BorderRadius.circular(2.0)
+                        border: Border.all(color: Theme.of(context).primaryColorLight, width: _options.borderWidth),
+                        borderRadius: BorderRadius.circular(_options.borderRadius / 2),
                       ),
                       child: ValueListenableBuilder<ui.Image?>(
                         valueListenable: _imageNotifier,
                         builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
                           return Padding(
-                            padding: const EdgeInsets.all(2.0),
+                            padding: EdgeInsets.all(_options.borderWidth),
                             child: RawImage(image: img, fit: BoxFit.contain, filterQuality: FilterQuality.none,),
                           );
                         },

@@ -183,9 +183,9 @@ class LayerCollection with ChangeNotifier
     return newLayer;
   }
 
-  DrawingLayerState addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize})
+  DrawingLayerState addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
   {
-    final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content);
+    final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content, ramps: ramps);
     if (_layers.isEmpty)
     {
       newLayer.isSelected.value = true;
@@ -459,13 +459,13 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
-  void rasterLayer({required final LayerState rasterLayer, required final CoordinateSetI canvasSize})
+  void rasterLayer({required final LayerState rasterLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
   {
     if (rasterLayer.runtimeType == GridLayerState)
     {
       final GridLayerState gridLayer = rasterLayer as GridLayerState;
       gridLayer.getHashMap().then((final CoordinateColorMap data) {
-        _replaceCurrentLayerWithDrawingLayer(data: data, originalLayer: rasterLayer, canvasSize: canvasSize);
+        _replaceCurrentLayerWithDrawingLayer(data: data, originalLayer: rasterLayer, canvasSize: canvasSize, ramps: ramps);
       });
     }
     else if (rasterLayer.runtimeType == ShadingLayerState)
@@ -526,9 +526,9 @@ class LayerCollection with ChangeNotifier
     }
   }
 
-  void _replaceCurrentLayerWithDrawingLayer({required final CoordinateColorMap data, required final LayerState originalLayer, required final CoordinateSetI canvasSize})
+  void _replaceCurrentLayerWithDrawingLayer({required final CoordinateColorMap data, required final LayerState originalLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
   {
-    final DrawingLayerState drawingLayer = DrawingLayerState(size: canvasSize, content: data);
+    final DrawingLayerState drawingLayer = DrawingLayerState(size: canvasSize, content: data, ramps: ramps);
     final int insertIndex = getLayerPosition(state: originalLayer);
     _layers.remove(originalLayer);
     _layers.insert(insertIndex, drawingLayer);

@@ -485,7 +485,7 @@ class AppState
   DrawingLayerState addNewDrawingLayer({final bool addToHistoryStack = true, final bool select = false, final CoordinateColorMapNullable? content})
   {
     final bool setSelectionStateLayer = _layerCollection.isEmpty;
-    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content);
+    final DrawingLayerState newLayer = _layerCollection.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
     if (setSelectionStateLayer)
     {
       selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
@@ -604,11 +604,11 @@ class AppState
           for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
           {
             KPalRampData? ramp;
-            for (int i = 0; i < _colorRamps.value.length; i++)
+            for (int i = 0; i < colorRamps.length; i++)
             {
-              if (_colorRamps.value[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
+              if (colorRamps[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
               {
-                ramp = _colorRamps.value[i];
+                ramp = colorRamps[i];
                 break;
               }
             }
@@ -637,7 +637,7 @@ class AppState
             dropShadowColorReference: _colorRamps.value[historyDrawingLayer.settings.dropShadowColorReference.rampIndex].references[historyDrawingLayer.settings.dropShadowColorReference.colorIndex],
             dropShadowOffset: historyDrawingLayer.settings.dropShadowOffset,
             dropShadowDarkenBrighten: historyDrawingLayer.settings.dropShadowDarkenBrighten,);
-          final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content, drawingLayerSettings: drawingLayerSettings);
+          final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content, drawingLayerSettings: drawingLayerSettings, ramps: colorRamps);
           drawingLayer.lockState.value = historyLayer.lockState;
           layerState = drawingLayer;
         }
@@ -959,7 +959,7 @@ class AppState
 
   void layerRastered({required final LayerState rasterLayer, final bool addToHistoryStack = true})
   {
-    _layerCollection.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize);
+    _layerCollection.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster);
@@ -1113,6 +1113,8 @@ class AppState
       final DrawingLayerState drawingLayer = importResult.data!.drawingLayer;
       final ReferenceLayerState? referenceLayer = importResult.data!.referenceLayer;
       _setCanvasDimensions(width: importResult.data!.canvasSize.x, height: importResult.data!.canvasSize.y, addToHistoryStack: false);
+      _colorRamps.value = importResult.data!.rampDataList;
+      _selectedColor.value = _colorRamps.value[0].references[0];
       drawingLayer.isSelected.value = true;
       final List<LayerState> layerList = <LayerState>[];
       layerList.add(drawingLayer);
@@ -1121,8 +1123,6 @@ class AppState
         layerList.add(referenceLayer);
       }
       _layerCollection.replaceLayers(layers: layerList, selectedLayer: drawingLayer);
-      _colorRamps.value = importResult.data!.rampDataList;
-      _selectedColor.value = _colorRamps.value[0].references[0];
       GetIt.I.get<HistoryManager>().clear();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
       projectName.value = null;

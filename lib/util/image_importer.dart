@@ -83,7 +83,19 @@ class ImportResult
         }
 
         drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.image.width, height: importData.image.height, ramps: ramps);
-        _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
+        await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
+        if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
+        {
+          drawingLayer.settings.outerColorReference.value = ramps.first.references.first;
+        }
+        if (!ramps.contains(drawingLayer.settings.innerColorReference.value.ramp))
+        {
+          drawingLayer.settings.innerColorReference.value = ramps.first.references.first;
+        }
+        if (!ramps.contains(drawingLayer.settings.dropShadowColorReference.value.ramp))
+        {
+          drawingLayer.settings.dropShadowColorReference.value = ramps.first.references.first;
+        }
       }
       else
       {
@@ -165,7 +177,7 @@ class ImportResult
       }
       col++;
     }
-    return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent);
+    return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent, ramps: ramps);
   }
 
   ColorReference _findClosestColor({required final HSVColor hsvColor, required final List<KPalRampData> ramps})

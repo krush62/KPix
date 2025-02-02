@@ -608,7 +608,7 @@ class StackCol<T> {
               content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
             }
           }
-          final DrawingLayerState drawingLayer = DrawingLayerState(size: state.canvasSize, content: content);
+          final DrawingLayerState drawingLayer = DrawingLayerState(size: state.canvasSize, content: content, ramps: ramps);
           drawingLayer.doManualRaster = true;
           while (drawingLayer.isRasterizing)
           {

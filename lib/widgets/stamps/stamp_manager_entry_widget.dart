@@ -107,7 +107,10 @@ class _StampManagerEntryWidgetState extends State<StampManagerEntryWidget>
                 ),
                 Expanded(
                   flex: _options.layoutFlex,
-                  child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,),
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.borderWidth),
+                    child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,),
+                  ),
                 ),
               ],
             ),

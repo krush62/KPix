@@ -119,8 +119,11 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                 ),
                 Expanded(
                   flex: _options.layoutFlex,
-                  child: Column(
-                    children: colorColumn,
+                  child: Padding(
+                    padding: EdgeInsets.all(_options.borderWidth),
+                    child: Column(
+                      children: colorColumn,
+                    ),
                   ),
                 ),
                 Expanded(

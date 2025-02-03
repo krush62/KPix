@@ -779,10 +779,6 @@ class KPixPainter extends CustomPainter
         fit: BoxFit.none,
         alignment: Alignment.topLeft,
         filterQuality: FilterQuality.none,);
-      /*final Paint paint = Paint()..color = Colors.red;
-      drawParams.canvas.drawRect(ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-        drawParams.scaledCanvasSize.x.toDouble(),
-        drawParams.scaledCanvasSize.y.toDouble(),), paint);*/
     }
   }
 

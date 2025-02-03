@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -50,6 +51,7 @@ class KPixPainterOptions
   final double selectionPolygonCircleRadius;
   final double selectionStrokeWidthLarge;
   final double selectionStrokeWidthSmall;
+  final int backupPainterPollingRateMs;
 
   KPixPainterOptions({
     required this.cursorSize,
@@ -59,6 +61,7 @@ class KPixPainterOptions
     required this.selectionPolygonCircleRadius,
     required this.selectionStrokeWidthLarge,
     required this.selectionStrokeWidthSmall,
+    required this.backupPainterPollingRateMs,
   });
 }
 
@@ -140,7 +143,6 @@ class KPixPainter extends CustomPainter
   Offset _referenceImglastStartPos = Offset.zero;
   final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD(x: 0, y: 0);
 
-
   KPixPainter({
     required final AppState appState,
     required final ValueNotifier<Offset> offset,
@@ -166,6 +168,7 @@ class KPixPainter extends CustomPainter
         _primaryPressStart = primaryPressStart,
         super(repaint: appState.repaintNotifier)
   {
+    Timer.periodic(Duration(milliseconds: _options.backupPainterPollingRateMs), (final Timer t) {_captureTimeout();});
     _guiOptions.selectionOpacity.addListener(() {
       _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
     },);
@@ -190,6 +193,8 @@ class KPixPainter extends CustomPainter
     };
 
   }
+
+
 
   void _setSelectionColors({required final int percentageValue})
   {
@@ -590,8 +595,64 @@ class KPixPainter extends CustomPainter
           drawParams.canvas.drawPath(path, drawParams.paint);
         }
       }
+    }
+  }
 
 
+  final List<int> _previousRasterHashes = <int>[]; //TODO move me
+
+  bool _shouldCapture()
+  {
+    final Iterable<DrawingLayerState> drawingLayers =_appState.visibleLayers.whereType<DrawingLayerState>();
+    if (drawingLayers.length != _previousRasterHashes.length)
+    {
+      return true;
+    }
+    final List<int> rasterHashes = <int>[];
+    for (final DrawingLayerState drawingLayer in drawingLayers)
+    {
+      if (drawingLayer.isRasterizing)
+      {
+        return false;
+      }
+      if (drawingLayer.rasterImage.value == null)
+      {
+        return false;
+      }
+      else
+      {
+        rasterHashes.add(drawingLayer.rasterImage.value!.hashCode);
+      }
+    }
+
+    for (final int hash in rasterHashes)
+    {
+      if (!_previousRasterHashes.contains(hash))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  ui.Image? _backupImage;
+
+  void _captureTimeout()
+  {
+    if (_shouldCapture())
+    {
+      getImageFromLayers(appState: _appState).then((final ui.Image img) {
+        _backupImage = img;
+        final Iterable<DrawingLayerState> drawingLayers =_appState.visibleLayers.whereType<DrawingLayerState>();
+        _previousRasterHashes.clear();
+        for (final DrawingLayerState drawingLayer in drawingLayers)
+        {
+          if (drawingLayer.rasterImage.value != null)
+          {
+            _previousRasterHashes.add(drawingLayer.rasterImage.value.hashCode);
+          }
+        }
+      });
     }
   }
 
@@ -600,109 +661,129 @@ class KPixPainter extends CustomPainter
     final List<LayerState> visibleLayers = _appState.visibleLayers.toList();
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
 
-    for (int i = visibleLayers.length - 1; i >= 0; i--)
-    {
-      if (visibleLayers[i].runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = visibleLayers[i] as DrawingLayerState;
-        final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
+    final bool hasRasterizingLayers = visibleLayers.whereType<DrawingLayerState>().any((final DrawingLayerState drawingLayer) => drawingLayer.isRasterizing);
 
-         if (displayImage != null)
+    if (!hasRasterizingLayers || _backupImage == null)
+    {
+      for (int i = visibleLayers.length - 1; i >= 0; i--)
+      {
+        if (visibleLayers[i].runtimeType == DrawingLayerState)
         {
-          //TODO can we optimize this by not drawing the full raster image???
-          paintImage(
+          final DrawingLayerState drawingLayer = visibleLayers[i] as DrawingLayerState;
+          final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
+
+          if (displayImage != null)
+          {
+            //TODO can we optimize this by not drawing the full raster image???
+            paintImage(
               canvas: drawParams.canvas,
               rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                  drawParams.scaledCanvasSize.x.toDouble(),
-                  drawParams.scaledCanvasSize.y.toDouble(),),
-              image: drawingLayer.rasterImage.value!,
+                drawParams.scaledCanvasSize.x.toDouble(),
+                drawParams.scaledCanvasSize.y.toDouble(),),
+              image: displayImage,
               scale: 1.0 / pxlSzDbl,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
+          }
         }
-      }
-      else if (visibleLayers[i].runtimeType == ReferenceLayerState)
-      {
-        final ReferenceLayerState refLayer = visibleLayers[i] as ReferenceLayerState;
-        if (refLayer.image != null)
+        else if (visibleLayers[i].runtimeType == ReferenceLayerState)
         {
-          final ui.Image image = refLayer.image!.image;
+          final ReferenceLayerState refLayer = visibleLayers[i] as ReferenceLayerState;
+          if (refLayer.image != null)
+          {
+            final ui.Image image = refLayer.image!.image;
 
-          final ui.Rect srcRect = ui.Rect.fromLTWH(
-            -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-            -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-            drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-            drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-          );
+            final ui.Rect srcRect = ui.Rect.fromLTWH(
+              -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+              -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+              drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+              drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+            );
 
-          final ui.Rect targetRect = ui.Rect.fromLTWH(
-            drawParams.offset.dx,
-            drawParams.offset.dy,
-            drawParams.scaledCanvasSize.x.toDouble(),
-            drawParams.scaledCanvasSize.y.toDouble(),
-          );
+            final ui.Rect targetRect = ui.Rect.fromLTWH(
+              drawParams.offset.dx,
+              drawParams.offset.dy,
+              drawParams.scaledCanvasSize.x.toDouble(),
+              drawParams.scaledCanvasSize.y.toDouble(),
+            );
 
-          final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
-          drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
+            final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
+            drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
+          }
         }
-      }
-      else if (visibleLayers[i].runtimeType == GridLayerState)
-      {
-        final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
-        if (gridLayer.raster != null)
+        else if (visibleLayers[i].runtimeType == GridLayerState)
         {
-          //TODO can we optimize this by not drawing the full raster image???
-          paintImage(
+          final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
+          if (gridLayer.raster != null)
+          {
+            //TODO can we optimize this by not drawing the full raster image???
+            paintImage(
               canvas: drawParams.canvas,
               rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                  drawParams.scaledCanvasSize.x.toDouble(),
-                  drawParams.scaledCanvasSize.y.toDouble(),),
+                drawParams.scaledCanvasSize.x.toDouble(),
+                drawParams.scaledCanvasSize.y.toDouble(),),
               image: gridLayer.raster!,
               scale: 1.0 / pxlSzDbl,
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
+          }
+        }
+
+        //DRAW CURSOR AND RASTER CONTENT
+        if (visibleLayers[i].isSelected.value && (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState))
+        {
+          final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
+          if (contentRasterSet != null)
+          {
+            paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
+                (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
+                (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+              image: contentRasterSet.image,
+              scale: 1.0 / pxlSzDbl,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none,);
+          }
+
+
+          final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+          if (cursorRasterSet != null)
+          {
+            paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
+                (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
+                (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+              image: cursorRasterSet.image,
+              scale: 1.0 / pxlSzDbl,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none,);
+          }
         }
       }
-
-      //DRAW CURSOR AND RASTER CONTENT
-      if (visibleLayers[i].isSelected.value && (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState))
-      {
-        final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
-        if (contentRasterSet != null)
-        {
-          paintImage(
-            canvas: drawParams.canvas,
-            rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
-              (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
-              (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-            image: contentRasterSet.image,
-            scale: 1.0 / pxlSzDbl,
-            fit: BoxFit.none,
-            alignment: Alignment.topLeft,
-            filterQuality: FilterQuality.none,);
-        }
-
-
-        final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
-        if (cursorRasterSet != null)
-        {
-          paintImage(
-            canvas: drawParams.canvas,
-            rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
-              (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
-              (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-            image: cursorRasterSet.image,
-            scale: 1.0 / pxlSzDbl,
-            fit: BoxFit.none,
-            alignment: Alignment.topLeft,
-            filterQuality: FilterQuality.none,);
-        }
-      }
-
     }
-
+    else
+    {
+      paintImage(
+        canvas: drawParams.canvas,
+        rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+          drawParams.scaledCanvasSize.x.toDouble(),
+          drawParams.scaledCanvasSize.y.toDouble(),),
+        image: _backupImage!,
+        scale: 1.0 / pxlSzDbl,
+        fit: BoxFit.none,
+        alignment: Alignment.topLeft,
+        filterQuality: FilterQuality.none,);
+      /*final Paint paint = Paint()..color = Colors.red;
+      drawParams.canvas.drawRect(ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
+        drawParams.scaledCanvasSize.x.toDouble(),
+        drawParams.scaledCanvasSize.y.toDouble(),), paint);*/
+    }
   }
 
   (ui.Color, ui.Color) getCheckerBoardColors(final int contrast)

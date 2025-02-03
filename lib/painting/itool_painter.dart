@@ -155,7 +155,7 @@ abstract class IToolPainter
   late Color blackToolAlphaColor;
   late Color whiteToolAlphaColor;
   bool hasHistoryData = false;
-  ContentRasterSet? contentRaster;
+  ContentRasterSet? _contentRaster;
   ContentRasterSet? cursorRaster;
   bool hasAsyncUpdate = false;
 
@@ -225,13 +225,36 @@ abstract class IToolPainter
     return coords;
   }
 
+
+  set contentRaster(final ContentRasterSet? content)
+  {
+    if (content != null)
+    {
+      _contentRaster = content;
+    }
+    else
+    {
+      _resetContentRaster();
+    }
+  }
+
+  ContentRasterSet? get contentRaster => _contentRaster;
+
+  void _resetContentRaster()
+  {
+    //TODO this is a (working) hack and the rasterizing status of the currentLayer should be the factor when to really reset contentRaster
+    Future<void>.delayed(const Duration(milliseconds: 100), ()
+    {
+      _contentRaster = null;
+    });
+  }
+
   Future<ContentRasterSet?> rasterizeDrawingPixels({required final CoordinateColorMap drawingPixels}) async
   {
     if (drawingPixels.isNotEmpty)
     {
       final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
       final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
-      //print("min: $minX|$minY max: $maxX|$maxY");
       final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
       final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
       final ByteData byteDataImg = ByteData(size.x * size.y * 4);
@@ -790,8 +813,8 @@ abstract class IToolPainter
 
     appState.rasterDrawingLayers();
 
-    contentRaster = null;
     hasHistoryData = true;
+    contentRaster = null;
   }
 
   void dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions})
@@ -816,7 +839,7 @@ abstract class IToolPainter
 
     appState.rasterDrawingLayers();
 
-    contentRaster = null;
     hasHistoryData = true;
+    contentRaster = null;
   }
 }

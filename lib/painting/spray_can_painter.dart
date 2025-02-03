@@ -132,8 +132,8 @@ class SprayCanPainter extends IToolPainter
       {
         currentLayer.setDataAll(list: _drawingPixels);
       }
-      contentRaster = null;
       hasHistoryData = true;
+      contentRaster = null;
     }
   }
 

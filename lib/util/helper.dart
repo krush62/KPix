@@ -502,14 +502,6 @@ class StackCol<T> {
     return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
   }
 
-  Future<ui.Image> getImageFromCustomPainter({required final CustomPainter cPainter, required final CoordinateSetI size}) async
-  {
-    final ui.PictureRecorder recorder = ui.PictureRecorder();
-    cPainter.paint(Canvas(recorder), Size(size.x.toDouble(), size.y.toDouble()));
-    final ui.Picture picture = recorder.endRecording();
-    return picture.toImage(size.x, size.y);
-  }
-
   Future<ui.Image> getImageFromLayers({
     required final AppState appState,
     final List<LayerState>? layerStack,

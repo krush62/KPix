@@ -436,6 +436,8 @@ enum PreferenceInt
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
 
+  Painter_BackupImagePollingRateMs(defaultValue: 50),
+
   ColorNames_Scheme(defaultValue: 0),
 
   Opacity_Tool(defaultValue: 50),
@@ -1142,6 +1144,7 @@ class PreferenceManager
         selectionPolygonCircleRadius: _getValueD(PreferenceDouble.Painter_SelectionPolygonCircleRadius),
         selectionStrokeWidthLarge: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthLarge),
         selectionStrokeWidthSmall: _getValueD(PreferenceDouble.Painter_SelectionStrokeWidthSmall),
+        backupPainterPollingRateMs: _getValueI(PreferenceInt.Painter_BackupImagePollingRateMs),
     );
   }
 

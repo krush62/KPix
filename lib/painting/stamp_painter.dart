@@ -82,8 +82,8 @@ class StampPainter extends IToolPainter
         final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
         for (final MapEntry<CoordinateSetI, int> entry in currentStamp.data.entries)
         {
-          int stampX = entry.key.x;
-          int stampY = entry.key.y;
+          int stampX = entry.key.x - currentStamp.width;
+          int stampY = entry.key.y - currentStamp.height;
           if (_options.flipH.value)
           {
             stampX = currentStamp.width - stampX;
@@ -171,13 +171,13 @@ class StampPainter extends IToolPainter
   {
     final Path path = Path();
     path.moveTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (-5 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (-5 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (-3 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (-4 * painterOptions.cursorSize), _cursorStartPos.y + (-4 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (-4 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (-2 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (5 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (5 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (3 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (4 * painterOptions.cursorSize), _cursorStartPos.y + (4 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y + (4 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (2 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
+    path.lineTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
     path.lineTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
 
     drawParams.paint.style = PaintingStyle.stroke;
@@ -197,10 +197,10 @@ class StampPainter extends IToolPainter
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize * _options.scale.value).toDouble(), cursorPos.y - (currentStamp.height * drawParams.pixelSize * _options.scale.value).toDouble(), (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize * _options.scale.value).toDouble(), cursorPos.y - (currentStamp.height * drawParams.pixelSize * _options.scale.value).toDouble(), (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
     }
   }
 

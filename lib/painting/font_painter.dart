@@ -65,6 +65,8 @@ class FontPainter extends IToolPainter
         _textContent.clear();
         final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
         int offset = 0;
+
+        final int textWidth = _getTextWidth(currentFont: currentFont);
         for (int i = 0; i < _options.text.value.length; i++)
         {
           final int unicodeVal = _options.text.value.codeUnitAt(i);
@@ -82,7 +84,7 @@ class FontPainter extends IToolPainter
                   {
                     for (int b = 0; b < _options.size.value; b++)
                     {
-                      _textContent.add(CoordinateSetI(x: drawParams.cursorPosNorm!.x + offset + (x * _options.size.value) + a, y: drawParams.cursorPosNorm!.y + (y * _options.size.value) + b));
+                      _textContent.add(CoordinateSetI(x: -(textWidth * _options.size.value) + drawParams.cursorPosNorm!.x + offset + (x * _options.size.value) + a, y: -(currentFont.height * _options.size.value) + drawParams.cursorPosNorm!.y + (y * _options.size.value) + b));
                     }
                   }
                 }
@@ -143,6 +145,21 @@ class FontPainter extends IToolPainter
     }
   }
 
+  int _getTextWidth({required final KFont currentFont})
+  {
+    int textWidth = 0;
+    for (int i = 0; i < _options.text.value.length; i++)
+    {
+      final int unicodeVal = _options.text.value.codeUnitAt(i);
+      final Glyph? glyph = currentFont.glyphMap[unicodeVal];
+      if (glyph != null)
+      {
+        textWidth += glyph.width + 1;
+      }
+    }
+    return textWidth;
+  }
+
     void _dumpDrawing({required final DrawingParameters drawParams, required final CoordinateColorMap drawingPixels})
     {
       if (!appState.selectionState.selection.isEmpty)
@@ -168,39 +185,28 @@ class FontPainter extends IToolPainter
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
     drawParams.paint.color = Colors.black;
-    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-2 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), drawParams.paint);
-    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), drawParams.paint);
+    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (2 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), drawParams.paint);
+    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y + (painterOptions.cursorSize)), Offset(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y + (3 * painterOptions.cursorSize)), drawParams.paint);
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
     drawParams.paint.color = Colors.white;
-    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-2 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), drawParams.paint);
-    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (-1 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), drawParams.paint);
+    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (2 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), Offset(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize)), drawParams.paint);
+    drawParams.canvas.drawLine(Offset(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y + (painterOptions.cursorSize)), Offset(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y + (3 * painterOptions.cursorSize)), drawParams.paint);
 
     if (drawParams.currentDrawingLayer != null)
     {
       final KFont currentFont = _options.fontManager.getFont(type: _options.font.value!);
-      int width = 0;
-      final int height = currentFont.height * _options.size.value;
-      for (int i = 0; i < _options.text.value.length; i++)
-      {
-        final int unicodeVal = _options.text.value.codeUnitAt(i);
-        final Glyph? glyph = currentFont.glyphMap[unicodeVal];
-        if (glyph != null)
-        {
-          final int space = (i < _options.text.value.length - 1) ? 1 : 0;
-          width += (glyph.width + space) * _options.size.value;
+      final int width = _getTextWidth(currentFont: currentFont);
 
-        }
-      }
       final CoordinateSetD cursorPos = CoordinateSetD(
           x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize,
           y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (width * drawParams.pixelSize).toDouble(), (height * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(-(width * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.x, -(currentFont.height * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.y, (width * drawParams.pixelSize * _options.size.value).toDouble(), (currentFont.height * drawParams.pixelSize * _options.size.value).toDouble()), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x, cursorPos.y, (width * drawParams.pixelSize).toDouble(), (height * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(-(width * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.x, -(currentFont.height * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.y, (width * drawParams.pixelSize * _options.size.value).toDouble(), (currentFont.height * drawParams.pixelSize * _options.size.value).toDouble()), drawParams.paint);
     }
   }
 

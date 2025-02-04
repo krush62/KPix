@@ -8,6 +8,7 @@
 - [Does KPix support different languages?](#does-kpix-support-different-languages)
 - [Why are there limits to the canvas size, color count and layer count?](#why-are-there-limits-to-the-canvas-size-color-count-and-layer-count)
 - [How to change layer order?](#how-to-change-layer-order)
+- [Where are my project files stored?](#where-are-my-project-files-stored)
 - [How can I support this project?](#how-can-i-support-this-project)
  
 ---

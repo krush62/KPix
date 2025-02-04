@@ -43,6 +43,14 @@ Just long press the layer preview image, wait until the drag indicator appears a
 ## How to move the contents of a drawing layer?
 KPix does not have a dedicated move tool. Instead, use the selection/marquee tool to select the area you want to move and move the selection by dragging from inside the selection. 
 
+## Where are my project files stored?
+KPix uses the user directories of the system to store project files. Usually, **the user should not change these contents** directly. You can export your project as KPix file using the regular export dialog.
+These internal user directories are:
+- Windows: %APPDATA%\de.krush62\kpix
+- Linux: \$HOME/.local/share/de.krush62.kpix or \$XDG_DATA_HOME/de.krush62.kpix or $HOME/.local/share/de.krush62.kpix
+- Android: /data/data/de.krush62.kpix/files
+The project files (and other files like palettes, stamps, ...) are inside these directories.
+- 
 ## How can I support this project?
 You can support KPix by:
 - providing feedback (of any kind, really) via the [discussions page](https://github.com/krush62/KPix/discussions) (bugs, ideas, questions)

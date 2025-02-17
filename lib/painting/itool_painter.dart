@@ -23,6 +23,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -225,28 +226,58 @@ abstract class IToolPainter
     return coords;
   }
 
-
-  set contentRaster(final ContentRasterSet? content)
-  {
-    if (content != null)
-    {
-      _contentRaster = content;
-    }
-    else
-    {
-      _resetContentRaster();
-    }
-  }
-
   ContentRasterSet? get contentRaster => _contentRaster;
 
-  void _resetContentRaster()
+  // ignore: use_setters_to_change_properties
+  void setContentRasterData({required final ContentRasterSet content})
   {
-    //TODO this is a (working) hack and the rasterizing status of the currentLayer should be the factor when to really reset contentRaster
-    Future<void>.delayed(const Duration(milliseconds: 100), ()
-    {
+      _contentRaster = content;
+  }
+
+  void resetContentRaster({required final LayerState currentLayer})
+  {
+    _waitForLayerToFinishRasterizing(currentLayer: currentLayer).then((final void _) {
       _contentRaster = null;
     });
+  }
+
+  Future<void> _waitForLayerToFinishRasterizing({required final LayerState currentLayer}) async
+  {
+    const int waitingTimeMs = 25;
+    const int maxWaitingIterations = 40;
+    const int initialDelay = 150;
+
+    //TODO wait until rasterizing starts instead of static delay
+    await Future<void>.delayed(const Duration(milliseconds: initialDelay));
+
+    int iterations = 0;
+    if (currentLayer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState dLayer = currentLayer as DrawingLayerState;
+      while (dLayer.isRasterizing && iterations < maxWaitingIterations)
+      {
+        await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
+        iterations++;
+      }
+    }
+    else if (currentLayer.runtimeType == ShadingLayerState)
+    {
+      final ShadingLayerState sLayer = currentLayer as ShadingLayerState;
+      while (sLayer.isRendering && iterations < maxWaitingIterations)
+      {
+        await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
+        iterations++;
+      }
+    }
+    else if (currentLayer.runtimeType == GridLayerState)
+    {
+      final GridLayerState gLayer = currentLayer as GridLayerState;
+      while (gLayer.isRendering && iterations < maxWaitingIterations)
+      {
+        await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
+        iterations++;
+      }
+    }
   }
 
   Future<ContentRasterSet?> rasterizeDrawingPixels({required final CoordinateColorMap drawingPixels}) async
@@ -814,7 +845,7 @@ abstract class IToolPainter
     appState.rasterDrawingLayers();
 
     hasHistoryData = true;
-    contentRaster = null;
+    resetContentRaster(currentLayer: shadingLayer);
   }
 
   void dumpShading({required final ShadingLayerState shadingLayer, required final Set<CoordinateSetI> coordinates, required final ShaderOptions shaderOptions})
@@ -840,6 +871,6 @@ abstract class IToolPainter
     appState.rasterDrawingLayers();
 
     hasHistoryData = true;
-    contentRaster = null;
+    resetContentRaster(currentLayer: shadingLayer);
   }
 }

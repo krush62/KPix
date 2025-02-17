@@ -108,6 +108,7 @@ class ColorSet
           backgroundColor: WidgetStateProperty.all(_lightColors.normal),
           overlayColor: WidgetStateProperty.all(_lightColors.light),
           surfaceTintColor: WidgetStateProperty.all(_lightColors.normal),
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
           side: WidgetStateProperty.all(
               BorderSide(
                   color: _lightColors.light,
@@ -242,6 +243,7 @@ class ColorSet
           backgroundColor: WidgetStateProperty.all(darkColors.normal),
           overlayColor: WidgetStateProperty.all(darkColors.light),
           surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+          padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
           side: WidgetStateProperty.all(BorderSide(
               color: darkColors.light,
           ),

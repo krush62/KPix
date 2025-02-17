@@ -164,7 +164,14 @@ class PencilPainter extends IToolPainter
             }
 
             rasterizeDrawingPixels(drawingPixels: addPixels).then((final ContentRasterSet? rasterSet) {
-              contentRaster = rasterSet;
+              if (rasterSet != null)
+              {
+                setContentRasterData(content: rasterSet);
+              }
+              else
+              {
+                resetContentRaster(currentLayer: drawParams.currentDrawingLayer ?? drawParams.currentShadingLayer!);
+              }
               hasAsyncUpdate = true;
             });
 
@@ -273,8 +280,7 @@ class PencilPainter extends IToolPainter
       }
     }
     hasHistoryData = true;
-    contentRaster = null;
-
+    resetContentRaster(currentLayer: currentLayer);
   }
 
 

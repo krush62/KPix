@@ -45,7 +45,7 @@ class DrawingLayerState extends LayerState
   final DrawingLayerSettings settings;
 
 
-  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings})
+  factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
     final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
@@ -60,7 +60,7 @@ class DrawingLayerState extends LayerState
         }
       }
     }
-    final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: GetIt.I.get<AppState>().colorRamps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
+    final DrawingLayerSettings settings = drawingLayerSettings ?? DrawingLayerSettings.defaultValues(startingColor: ramps[0].references[0], constraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints);
     return DrawingLayerState._(data: data, settingsPixels: settingsPixels, settings: settings);
   }
 

@@ -39,7 +39,7 @@ class GridLayerState extends LayerState
   final ValueNotifier<double> vanishingPoint1Notifier;
   final ValueNotifier<double> vanishingPoint2Notifier;
   final ValueNotifier<double> vanishingPoint3Notifier;
-  bool _isRendering = false;
+  bool isRendering = false;
   bool _shouldRender = true;
   ui.Image? raster;
 
@@ -151,9 +151,9 @@ class GridLayerState extends LayerState
 
   void _updateTimerCallback({required final Timer timer})
   {
-    if (_shouldRender && !_isRendering)
+    if (_shouldRender && !isRendering)
     {
-      _isRendering = true;
+      isRendering = true;
       _createRaster().then((final ui.Image image)
       {
         _rasterCreated(image: image);
@@ -165,7 +165,7 @@ class GridLayerState extends LayerState
   {
     raster = image;
     thumbnail.value = image;
-    _isRendering = false;
+    isRendering = false;
     _shouldRender = false;
   }
 

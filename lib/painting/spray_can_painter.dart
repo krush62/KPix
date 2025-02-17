@@ -79,8 +79,17 @@ class SprayCanPainter extends IToolPainter
                 getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
               );
 
-              rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
-                contentRaster = rasterSet;
+              rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet)
+              {
+                if (rasterSet != null)
+                {
+                  setContentRasterData(content: rasterSet);
+                }
+                else
+                {
+                  resetContentRaster(currentLayer: drawParams.currentDrawingLayer ?? drawParams.currentShadingLayer!);
+                }
+
                 hasAsyncUpdate = true;
               });
               _hasNewPositions = false;
@@ -133,7 +142,7 @@ class SprayCanPainter extends IToolPainter
         currentLayer.setDataAll(list: _drawingPixels);
       }
       hasHistoryData = true;
-      contentRaster = null;
+      resetContentRaster(currentLayer: currentLayer);
     }
   }
 

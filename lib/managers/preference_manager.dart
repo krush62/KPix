@@ -283,7 +283,7 @@ enum PreferenceInt
   Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
   Layout_ProjectManager_ColCount(defaultValue: 5),
   Layout_StampManagerEntry_LayoutFlex(defaultValue: 6),
-  Layout_StampManager_ColCount(defaultValue: 5),
+  Layout_StampManager_ColCount(defaultValue: 6),
 
   ReferenceLayer_OpacityDefault(defaultValue: 100),
   ReferenceLayer_OpacityMax(defaultValue: 100),

@@ -95,11 +95,15 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     final List<StampManagerEntryWidget> fList = <StampManagerEntryWidget>[];
     if (!kIsWeb)
     {
-
       final List<StampManagerEntryData> stamps = _stampManager.stampList.value;
       for (final StampManagerEntryData fileData in stamps)
       {
-        fList.add(StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
+        final StampManagerEntryWidget entryWidget = StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData);
+        fList.add(entryWidget);
+        if (fileData == _stampManager.selectedStamp.value)
+        {
+          _selectedWidget.value = entryWidget;
+        }
       }
     }
 

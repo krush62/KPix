@@ -104,6 +104,23 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
+  int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
+  {
+    int pixelCount = 0;
+    for (final LayerState layer in _layers)
+    {
+      if (layer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        if (includeInvisible || drawingLayer.visibilityState.value == LayerVisibilityState.visible)
+        {
+          pixelCount += drawingLayer.getPixelCountForRamp(ramp: ramp);
+        }
+      }
+    }
+    return pixelCount;
+  }
+
 
   ReferenceLayerState addNewReferenceLayer({final bool select = false})
   {

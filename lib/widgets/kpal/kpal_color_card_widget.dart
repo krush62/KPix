@@ -132,10 +132,6 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
          decoration: BoxDecoration(
            color: Theme.of(context).primaryColor,
            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
-           border: Border.all(
-             width: _options.borderWidth,
-             color: Theme.of(context).primaryColorLight,
-           ),
          ),
 
          child: ValueListenableBuilder<IdColor>(
@@ -147,26 +143,25 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                children: <Widget>[
                  Expanded(
                    flex: _options.colorNameFlex,
-                   child: Center(
-                     child: Column(
-                       mainAxisSize: MainAxisSize.min,
-                       children: <Widget>[
-                         Text(
-                           textAlign: TextAlign.center,
-                           widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : "",
-                           style: Theme.of(context).textTheme.titleSmall,
-                         ),
-                         Text(
-                           textAlign: TextAlign.center,
-                           widget.showName ? colorToHexString(c: currentColor.color, toUpper: true) : "",
-                           style: Theme.of(context).textTheme.bodySmall,
-                         ),
-                       ],
-                     ),
+                   child: Column(
+                     mainAxisSize: MainAxisSize.min,
+                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                     children: <Widget>[
+                       Text(
+                         textAlign: TextAlign.center,
+                         widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : "",
+                         style: Theme.of(context).textTheme.titleSmall,
+                       ),
+                       Text(
+                         textAlign: TextAlign.center,
+                         widget.showName ? colorToHexString(c: currentColor.color, toUpper: true) : "",
+                         style: Theme.of(context).textTheme.bodySmall,
+                       ),
+                     ],
                    ),
                  ),
                  Divider(
-                   color: Theme.of(context).primaryColorLight,
+                   color: Theme.of(context).primaryColorDark,
                    thickness: _options.borderWidth,
                    height: _options.borderWidth,
                  ),
@@ -254,7 +249,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                    ),
                  ),
                  Divider(
-                   color: Theme.of(context).primaryColorLight,
+                   color: Theme.of(context).primaryColorDark,
                    thickness: _options.borderWidth,
                    height: _options.borderWidth,
                  ),

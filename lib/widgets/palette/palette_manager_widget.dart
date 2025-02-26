@@ -163,6 +163,13 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     _paletteWarningDialog.show(context: context);
   }
 
+  void _appendPalette()
+  {
+    GetIt.I.get<AppState>().appendPalette(loadPaletteSet: LoadPaletteSet(status: "loading okay", rampData: _selectedWidget.value!.entryData.rampDataList));
+    _closeWarning();
+    widget.dismiss();
+  }
+
   void _deletePalettePressed()
   {
     _deleteWarningDialog.show(context: context);
@@ -329,7 +336,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                     padding: EdgeInsets.all(_alertOptions.padding),
                     child: IconButton.outlined(
                       icon: FaIcon(
-                        FontAwesomeIcons.plus,
+                        FontAwesomeIcons.floppyDisk,
                         size: _alertOptions.iconSize,
                       ),
                       onPressed: kIsWeb ? null : _addCurrentPalette,
@@ -357,6 +364,27 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                       ),
                     ),
                   ),
+              ),
+              Expanded(
+                child: Tooltip(
+                  message: "Append to Current Palette",
+                  waitDuration: AppState.toolTipDuration,
+                  child: Padding(
+                    padding: EdgeInsets.all(_alertOptions.padding),
+                    child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
+                      valueListenable: _selectedWidget,
+                      builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
+                        return IconButton.outlined(
+                          icon: FaIcon(
+                            FontAwesomeIcons.plus,
+                            size: _alertOptions.iconSize,
+                          ),
+                          onPressed: selWidget != null ? _appendPalette : null,
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
               Expanded(
                 child: Tooltip(

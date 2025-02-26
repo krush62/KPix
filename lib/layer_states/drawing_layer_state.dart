@@ -523,4 +523,16 @@ class DrawingLayerState extends LayerState
 
   }
 
+  int getPixelCountForRamp({required final KPalRampData ramp})
+  {
+    int count = 0;
+    for (final CoordinateColor entry in _data.entries)
+    {
+      if (entry.value.ramp == ramp)
+      {
+        count++;
+      }
+    }
+    return count;
+  }
 }

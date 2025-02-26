@@ -163,6 +163,11 @@ class AppState
     return _layerCollection.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
   }
 
+  int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
+  {
+    return _layerCollection.getPixelCountForRamp(ramp: ramp, includeInvisible: includeInvisible);
+  }
+
   final RepaintNotifier repaintNotifier = RepaintNotifier();
   final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
 
@@ -553,6 +558,24 @@ class AppState
     else
     {
       showMessage(text: "Loading palette failed (${loadPaletteSet.status})");
+    }
+  }
+
+  void appendPalette({required final LoadPaletteSet loadPaletteSet})
+  {
+    if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
+    {
+      final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
+      for (final KPalRampData ramp in loadPaletteSet.rampData!)
+      {
+        rampDataList.add(ramp);
+      }
+      _colorRamps.value = rampDataList;
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalAdd);
+    }
+    else
+    {
+      showMessage(text: "Appending palette failed (${loadPaletteSet.status})");
     }
   }
 

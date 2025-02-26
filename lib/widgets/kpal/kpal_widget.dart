@@ -237,13 +237,15 @@ class KPal extends StatefulWidget
   final KPalRampData _colorRamp;
   final ColorRampUpdateFn _accept;
   final ColorRampFn _delete;
+  final int _usedPixels;
 
   const KPal({
     super.key,
     required final KPalRampData colorRamp,
     required final void Function({bool addToHistoryStack, required KPalRampData originalData, required KPalRampData ramp}) accept,
     required final void Function({bool addToHistoryStack, required KPalRampData ramp}) delete,
-  }) : _delete = delete, _accept = accept, _colorRamp = colorRamp;
+    required final int usedPixels,
+  }) : _delete = delete, _accept = accept, _colorRamp = colorRamp, _usedPixels = usedPixels;
 
   @override
   State<KPal> createState() => _KPalState();
@@ -263,7 +265,7 @@ class _KPalState extends State<KPal>
         onNo: _dismissAlertDialog,
         onYes: _acceptDeletion,
         outsideCancelable: false,
-        message: "Do you really want to delete this color ramp?",
+        message: "Do you really want to delete this color ramp?\n${widget._usedPixels} pixel(s) will be deleted.",
       );
   }
 

@@ -25,18 +25,20 @@ enum ColorNameScheme
   pms,
   ralClassic,
   ralComplete,
-  ralDsp
+  ralDsp,
+  dmc
 }
 
 const String noColorName = "<UNKNOWN>";
 
-const Map<int, ColorNameScheme> _colorNameSchemeMap =
+const Map<int, ColorNameScheme> colorNameSchemeMap =
 <int, ColorNameScheme>{
   0: ColorNameScheme.general,
   1: ColorNameScheme.pms,
   2: ColorNameScheme.ralClassic,
   3: ColorNameScheme.ralComplete,
   4: ColorNameScheme.ralDsp,
+  5: ColorNameScheme.dmc,
 };
 
 const Map<ColorNameScheme, String> _colorNameFileNames =
@@ -46,6 +48,7 @@ const Map<ColorNameScheme, String> _colorNameFileNames =
   ColorNameScheme.ralClassic : "ral_classic.csv",
   ColorNameScheme.ralComplete : "ral_complete.csv",
   ColorNameScheme.ralDsp : "ral_dsp.csv",
+  ColorNameScheme.dmc : "dmc.csv",
 };
 
 class ColorNamesOptions{
@@ -61,7 +64,7 @@ class ColorNamesOptions{
     required this.defaultColorNamePath,
   })
   {
-    nameScheme = _colorNameSchemeMap[defaultNameScheme] ?? ColorNameScheme.general;
+    nameScheme = colorNameSchemeMap[defaultNameScheme] ?? ColorNameScheme.general;
     colorNamePath = defaultColorNamePath;
     colorFilename = _colorNameFileNames[nameScheme] ?? "general.csv";
 

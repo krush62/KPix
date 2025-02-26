@@ -17,6 +17,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //THEME
@@ -44,23 +45,6 @@ const int rasterContrastDivisions = 20;
 const int opacityMin = 0;
 const int opacityMax = 100;
 
-//COLOR NAME SCHEME
-enum ColorNameScheme
-{
-  general,
-  pms,
-  ralClassic,
-  ralDsp,
-  ralComplete
-}
-const Map<int, ColorNameScheme> colorNameSchemeIndexMap =
-<int, ColorNameScheme>{
-  0:ColorNameScheme.general,
-  1:ColorNameScheme.pms,
-  2:ColorNameScheme.ralClassic,
-  3:ColorNameScheme.ralDsp,
-  4:ColorNameScheme.ralComplete,
-};
 const Map<ColorNameScheme, String> colorNameSchemeStringMap =
 <ColorNameScheme, String>{
   ColorNameScheme.general:"General",
@@ -68,6 +52,7 @@ const Map<ColorNameScheme, String> colorNameSchemeStringMap =
   ColorNameScheme.ralClassic:"RAL Classic",
   ColorNameScheme.ralDsp:"RAL DSP",
   ColorNameScheme.ralComplete:"RAL Complete",
+  ColorNameScheme.dmc:"DMC",
 };
 
 
@@ -87,7 +72,7 @@ class GuiPreferenceContent
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
     final int rasterContrastNormalized = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
-    final ColorNameScheme colorNameScheme = colorNameSchemeIndexMap[colorNameSchemeValue]?? ColorNameScheme.general;
+    final ColorNameScheme colorNameScheme = colorNameSchemeMap[colorNameSchemeValue]?? ColorNameScheme.general;
     final int toolOpacity = toolOpacityValue.clamp(opacityMin, opacityMax);
     final int selectionOpacity = selectionOpacityValue.clamp(opacityMin, opacityMax);
     final int canvasBorderOpacity = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
@@ -222,30 +207,55 @@ class _GuiPreferencesState extends State<GuiPreferences>
                   valueListenable: widget.prefs.colorNameScheme,
                   builder: (final BuildContext context, final ColorNameScheme scheme, final Widget? child)
                   {
+
+
                     return SegmentedButton<ColorNameScheme>(
                       selected: <ColorNameScheme>{scheme},
                       showSelectedIcon: false,
                       onSelectionChanged: (final Set<ColorNameScheme> schemeList) {widget.prefs.colorNameScheme.value = schemeList.first;},
+
                       segments: <ButtonSegment<ColorNameScheme>>[
                         ButtonSegment<ColorNameScheme>(
                             value: ColorNameScheme.general,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.general]!),
+                            label: Text(
+                              colorNameSchemeStringMap[ColorNameScheme.general]!,
+                              style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.general ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                            ),
                         ),
                         ButtonSegment<ColorNameScheme>(
-                            value: ColorNameScheme.pms,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.pms]!),
+                          value: ColorNameScheme.pms,
+                          label: Text(
+                            colorNameSchemeStringMap[ColorNameScheme.pms]!,
+                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.pms ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                          ),
                         ),
                         ButtonSegment<ColorNameScheme>(
-                            value: ColorNameScheme.ralClassic,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralClassic]!),
+                          value: ColorNameScheme.ralClassic,
+                          label: Text(
+                            colorNameSchemeStringMap[ColorNameScheme.ralClassic]!,
+                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.ralClassic ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                          ),
                         ),
                         ButtonSegment<ColorNameScheme>(
-                            value: ColorNameScheme.ralDsp,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralDsp]!),
+                          value: ColorNameScheme.ralDsp,
+                          label: Text(
+                            colorNameSchemeStringMap[ColorNameScheme.ralDsp]!,
+                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.ralDsp ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                          ),
                         ),
                         ButtonSegment<ColorNameScheme>(
-                            value: ColorNameScheme.ralComplete,
-                            label: Text(colorNameSchemeStringMap[ColorNameScheme.ralComplete]!),
+                          value: ColorNameScheme.ralComplete,
+                          label: Text(
+                            colorNameSchemeStringMap[ColorNameScheme.ralComplete]!,
+                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.ralComplete ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                          ),
+                        ),
+                        ButtonSegment<ColorNameScheme>(
+                          value: ColorNameScheme.dmc,
+                          label: Text(
+                            colorNameSchemeStringMap[ColorNameScheme.dmc]!,
+                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.dmc ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
+                          ),
                         ),
                       ],
                     );

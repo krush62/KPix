@@ -1206,9 +1206,9 @@ class PreferenceManager
   Future<void> saveUserPrefs() async
   {
     //GUI PREFERENCES
-    if (guiPreferenceContent.colorNameScheme.value != colorNameSchemeIndexMap[_intMap[PreferenceInt.ColorNames_Scheme]!.value])
+    if (guiPreferenceContent.colorNameScheme.value != colorNameSchemeMap[_intMap[PreferenceInt.ColorNames_Scheme]!.value])
     {
-      _intMap[PreferenceInt.ColorNames_Scheme]!.value = colorNameSchemeIndexMap.keys.firstWhere((final int x) => colorNameSchemeIndexMap[x] == guiPreferenceContent.colorNameScheme.value, orElse:() => PreferenceInt.ColorNames_Scheme.defaultValue);
+      _intMap[PreferenceInt.ColorNames_Scheme]!.value = colorNameSchemeMap.keys.firstWhere((final int x) => colorNameSchemeMap[x] == guiPreferenceContent.colorNameScheme.value, orElse:() => PreferenceInt.ColorNames_Scheme.defaultValue);
       _loadColorNames();
     }
     _intMap[PreferenceInt.Painter_CheckerBoardContrast]!.value = guiPreferenceContent.rasterContrast.value;

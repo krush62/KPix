@@ -118,6 +118,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
   bool _stylusHoverDetected = false;
   final ValueNotifier<bool> _stylusButtonDown = ValueNotifier<bool>(false);
   DateTime _stylusDownTimeStamp = DateTime.now();
+  DateTime _stylusHoverTimeStamp = DateTime.now();
 
   late Offset _dragStartLoc;
 
@@ -571,6 +572,8 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         _stylusButtonDetected = true;
       }
       _stylusHoverDetected = true;
+      _stylusHoverTimeStamp = DateTime.now();
+
     }
     _updateLocation(details: details);
 
@@ -749,7 +752,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _cursorPos.value = null;
       _appState.repaintNotifier.repaint();
     }
-    else
+    else if (DateTime.now().difference(_stylusHoverTimeStamp).inMilliseconds > (_stylusPrefs.stylusPollInterval.value * 2))
     {
       _stylusHoverDetected = false;
     }

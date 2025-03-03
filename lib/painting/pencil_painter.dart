@@ -83,7 +83,7 @@ class PencilPainter extends IToolPainter
       }
       if (!_waitingForDump)
       {
-        if (drawParams.primaryDown)
+        if (drawParams.primaryDown && drawParams.cursorPosNorm != null)
         {
           if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
               (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))

@@ -752,7 +752,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       _cursorPos.value = null;
       _appState.repaintNotifier.repaint();
     }
-    else if (DateTime.now().difference(_stylusHoverTimeStamp).inMilliseconds > (_stylusPrefs.stylusPollInterval.value * 2))
+    else if (DateTime.now().difference(_stylusHoverTimeStamp).inMilliseconds > _stylusPrefs.stylusPollInterval.value)
     {
       _stylusHoverDetected = false;
     }

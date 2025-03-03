@@ -247,7 +247,7 @@ KPixOverlay getRasterLayerMenu({
     required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
     required final KPalRampData colorRamp,
-    required final int usedPixels
+    required final int usedPixels,
   })
   {
     return KPixOverlay(entry:  OverlayEntry(

@@ -38,7 +38,7 @@ class PencilPainter extends IToolPainter
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final List<CoordinateSetI> _paintPositions = <CoordinateSetI>[];
   final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
-  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  CoordinateSetI? _previousCursorPosNorm;
   int _previousToolSize = -1;
   Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
   bool _waitingForDump = false;
@@ -72,8 +72,7 @@ class PencilPainter extends IToolPainter
         if (_hasNewCursorPos)
         {
           _contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: drawParams.cursorPosNorm!);
-          _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;
-          _previousCursorPosNorm.y = drawParams.cursorPosNorm!.y;
+          _previousCursorPosNorm = CoordinateSetI(x: drawParams.cursorPosNorm!.x, y: drawParams.cursorPosNorm!.y);
           _previousToolSize = _options.size.value;
           _lastShadingEnabled = shaderOptions.isEnabled.value;
           _lastShadingCurrentRamp = shaderOptions.onlyCurrentRampEnabled.value;
@@ -83,7 +82,7 @@ class PencilPainter extends IToolPainter
       }
       if (!_waitingForDump)
       {
-        if (drawParams.primaryDown && drawParams.cursorPosNorm != null)
+        if (drawParams.primaryDown)
         {
           if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
               (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
@@ -92,11 +91,12 @@ class PencilPainter extends IToolPainter
             {
               _isLineDrawing = true;
             }
-            else
+            else if (drawParams.cursorPosNorm != null || _previousCursorPosNorm != null)
             {
-              if (_paintPositions.isEmpty || (drawParams.cursorPosNorm!.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true) && _hasNewCursorPos))
+              final CoordinateSetI cpn = drawParams.cursorPosNorm != null ? drawParams.cursorPosNorm! : _previousCursorPosNorm!;
+              if (_paintPositions.isEmpty || (cpn.isAdjacent(other: _paintPositions[_paintPositions.length - 1], withDiagonal: true) && _hasNewCursorPos))
               {
-                final CoordinateSetI drawPos = CoordinateSetI(x: drawParams.cursorPosNorm!.x, y: drawParams.cursorPosNorm!.y);
+                final CoordinateSetI drawPos = CoordinateSetI(x: cpn.x, y: cpn.y);
                 _paintPositions.add(drawPos);
                 _allPaintPositions.add(drawPos);
                 _lastDrawingPosition = drawPos;
@@ -116,10 +116,10 @@ class PencilPainter extends IToolPainter
               }
               else
               {
-                final List<CoordinateSetI> bresenLine = bresenham(start: _paintPositions[_paintPositions.length - 1], end: drawParams.cursorPosNorm!).sublist(1);
+                final List<CoordinateSetI> bresenLine = bresenham(start: _paintPositions[_paintPositions.length - 1], end: cpn).sublist(1);
                 _paintPositions.addAll(bresenLine);
                 _allPaintPositions.addAll(bresenLine);
-                _lastDrawingPosition = CoordinateSetI.from(other: drawParams.cursorPosNorm!);
+                _lastDrawingPosition = CoordinateSetI.from(other: cpn);
               }
             }
           }

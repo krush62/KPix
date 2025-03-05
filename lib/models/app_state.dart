@@ -584,7 +584,7 @@ class AppState
     projectName.value = saveName;
     hasChanges.value = false;
 
-    String displayPath = kIsWeb ? ("$path/$saveName") : path;
+    String displayPath = kIsWeb ? "$path/$saveName" : path;
     if (addKPixExtension)
     {
       displayPath += ".$fileExtensionKpix";

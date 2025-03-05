@@ -167,8 +167,8 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                     return TouchPreferences(prefs: GetIt.I.get<PreferenceManager>().touchPreferenceContent);
                   case PreferenceSectionType.controlsPC:
                     return DesktopPreferences(prefs: GetIt.I.get<PreferenceManager>().desktopPreferenceContent);
-                  default:
-                    return const Placeholder();
+                  //default:
+                    //return const Placeholder();
                 }
               },
             ),

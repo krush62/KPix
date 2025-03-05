@@ -1143,11 +1143,6 @@ linter:
     # https://dart-lang.github.io/linter/lints/unrelated_type_equality_checks.html
     - unrelated_type_equality_checks
 
-    # Web only
-    #
-    # https://dart-lang.github.io/linter/lints/unsafe_html.html
-    - unsafe_html
-
     # Very useful in preventing Flutter BuildContext bugs in async callbacks
     #
     # Dart SDK: 2.13.0 • (Linter v1.1.0)

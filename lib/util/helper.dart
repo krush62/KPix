@@ -205,7 +205,7 @@ class StackCol<T> {
   String colorToHexString({required final Color c, final bool withHashTag = true, final bool toUpper = false})
   {
     final String prefix = withHashTag ? "#" : "";
-    final String str = '$prefix${c.red.toRadixString(16).padLeft(2, '0')}${c.green.toRadixString(16).padLeft(2, '0')}${c.blue.toRadixString(16).padLeft(2, '0')}';
+    final String str = '$prefix${(c.r * 255).toInt().toRadixString(16).padLeft(2, '0')}${(c.g * 255).toInt().toRadixString(16).padLeft(2, '0')}${(c.b * 255).toInt().toRadixString(16).padLeft(2, '0')}';
     if (toUpper)
     {
       return  str.toUpperCase();
@@ -218,9 +218,9 @@ class StackCol<T> {
 
   String colorToRGBString({required final Color c})
   {
-    return '${c.red} | '
-        '${c.green} | '
-        '${c.blue}';
+    return '${(c.r * 255).toInt()} | '
+        '${(c.g * 255).toInt()} | '
+        '${(c.b * 255).toInt()}';
   }
 
   bool isDesktop({final bool includingWeb = false})
@@ -259,20 +259,17 @@ class StackCol<T> {
 
 
 
-  LabColor rgb2lab({required final int red, required final int green, required final int blue})
+  LabColor rgb2lab({required final double r, required final double g, required final double b})
   {
-    double r = red.toDouble() / 255.0;
-    double g = green.toDouble() / 255.0;
-    double b = blue.toDouble() / 255.0;
     double x;
     double y;
     double z;
-    r = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4).toDouble() : r / 12.92;
-    g = (g > 0.04045) ? pow((g + 0.055) / 1.055, 2.4).toDouble() : g / 12.92;
-    b = (b > 0.04045) ? pow((b + 0.055) / 1.055, 2.4).toDouble() : b / 12.92;
-    x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
-    y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
-    z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+    final double r2 = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4).toDouble() : r / 12.92;
+    final double g2 = (g > 0.04045) ? pow((g + 0.055) / 1.055, 2.4).toDouble() : g / 12.92;
+    final double b2 = (b > 0.04045) ? pow((b + 0.055) / 1.055, 2.4).toDouble() : b / 12.92;
+    x = (r2 * 0.4124 + g2 * 0.3576 + b2 * 0.1805) / 0.95047;
+    y = (r2 * 0.2126 + g2 * 0.7152 + b2 * 0.0722) / 1.00000;
+    z = (r2 * 0.0193 + g2 * 0.1192 + b2 * 0.9505) / 1.08883;
     x = (x > 0.008856) ? pow(x, 1.0 / 3.0).toDouble() : (7.787 * x) + 16.0 / 116.0;
     y = (y > 0.008856) ? pow(y, 1.0 / 3.0).toDouble() : (7.787 * y) + 16.0 / 116.0;
     z = (z > 0.008856) ? pow(z, 1.0 / 3.0).toDouble() : (7.787 * z) + 16.0 / 116.0;
@@ -280,15 +277,15 @@ class StackCol<T> {
   }
 
   double getDeltaE(
-      {required final int redA,
-        required final int greenA,
-        required final int blueA,
-        required final int redB,
-        required final int greenB,
-        required final int blueB,})
+      {required final double redA,
+        required final double greenA,
+        required final double blueA,
+        required final double redB,
+        required final double greenB,
+        required final double blueB,})
   {
-    final LabColor labA = rgb2lab(red: redA, green: greenA, blue: blueA);
-    final LabColor labB = rgb2lab(red: redB, green: greenB, blue: blueB);
+    final LabColor labA = rgb2lab(r: redA, g: greenA, b: blueA);
+    final LabColor labB = rgb2lab(r: redB, g: greenB, b: blueB);
     final double deltaL = labA.L - labB.L;
     final double deltaA = labA.A - labB.A;
     final double deltaB = labA.B - labB.B;
@@ -323,18 +320,19 @@ class StackCol<T> {
   {
     assert(rampList.isNotEmpty);
 
-    final int r = inputColor.getIdColor().color.red;
-    final int g = inputColor.getIdColor().color.green;
-    final int b = inputColor.getIdColor().color.blue;
+    final double r = inputColor.getIdColor().color.r;
+    final double g = inputColor.getIdColor().color.g;
+    final double b = inputColor.getIdColor().color.b;
     late ColorReference closestColor;
     double closestVal = double.maxFinite;
     for (final KPalRampData kPalRampData in rampList)
     {
       for (int i = 0; i < kPalRampData.settings.colorCount; i++)
       {
-         final int r2 = kPalRampData.shiftedColors[i].value.color.red;
-         final int g2 = kPalRampData.shiftedColors[i].value.color.green;
-         final int b2 = kPalRampData.shiftedColors[i].value.color.blue;
+         final double r2 = kPalRampData.shiftedColors[i].value.color.r;
+         final double g2 = kPalRampData.shiftedColors[i].value.color.g;
+         final double b2 = kPalRampData.shiftedColors[i].value.color.b;
+
          final double dist = getDeltaE(redA: r, greenA: g, blueA: b, redB: r2, greenB: g2, blueB: b2);
          if (dist < closestVal)
          {

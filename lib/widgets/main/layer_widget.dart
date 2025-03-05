@@ -180,7 +180,7 @@ class _LayerWidgetState extends State<LayerWidget> {
       feedback: Container(
         width: _options.dragFeedbackSize,
         height: _options.dragFeedbackSize,
-        color: Theme.of(context).primaryColor.withOpacity(_options.dragOpacity),
+        color: Theme.of(context).primaryColor.withAlpha(_options.dragOpacity.toInt() * 255),
       ),
       //childWhenDragging: const SizedBox.shrink(),
       childWhenDragging: Container(

@@ -125,7 +125,7 @@ class ColorNames
     }
   }
 
-  String getColorName({required final int r, required final int g, required final int b})
+  String getColorName({required final double r, required final double g, required final double b})
   {
     String bestName = noColorName;
     if (colorsLoaded) {
@@ -137,7 +137,7 @@ class ColorNames
           break;
         }
         else {
-          final double delta = getDeltaE(redA: r, greenA: g, blueA: b, redB: c.r, greenB: c.g, blueB: c.b);
+          final double delta = getDeltaE(redA: r, greenA: g, blueA: b, redB: c.r.toDouble() / 255, greenB: c.g.toDouble() / 255, blueB: c.b.toDouble() / 255);
           if (delta < bestDelta) {
             bestDelta = delta;
             bestName = c.name;

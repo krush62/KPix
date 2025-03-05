@@ -192,12 +192,12 @@ class ImportResult
         final Color convertColor = hsvColor.toColor();
         final ColorReference reference = ramps[i].references[j];
         final double delta = getDeltaE(
-            redA: reference.getIdColor().color.red,
-            greenA: reference.getIdColor().color.green,
-            blueA: reference.getIdColor().color.blue,
-            redB: convertColor.red,
-            greenB: convertColor.green,
-            blueB: convertColor.blue,);
+            redA: reference.getIdColor().color.r,
+            greenA: reference.getIdColor().color.g,
+            blueA: reference.getIdColor().color.b,
+            redB: convertColor.r,
+            greenB: convertColor.g,
+            blueB: convertColor.b,);
         /*final int redDelta = (reference.getIdColor().color.red - convertColor.red).abs();
         final int greenDelta = (reference.getIdColor().color.green - convertColor.green).abs();
         final int blueDelta = (reference.getIdColor().color.blue - convertColor.blue).abs();

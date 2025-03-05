@@ -278,8 +278,8 @@ class DrawingLayerState extends LayerState
         final int index = (entry.key.y * appState.canvasSize.x + entry.key.x) * 4;
         if (index >= 0 && index < byteDataImg.lengthInBytes)
         {
-          byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.value));
-          byteDataThb.setUint32(index, argbToRgba(argb: originalColor.value));
+          byteDataImg.setUint32(index, argbToRgba(argb: shadedColor.toARGB32()));
+          byteDataThb.setUint32(index, argbToRgba(argb: originalColor.toARGB32()));
         }
       }
     }

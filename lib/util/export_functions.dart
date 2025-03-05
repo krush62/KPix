@@ -124,7 +124,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     final ByteData byteData = ByteData(colorList.length * 4);
     for (int i = 0; i < colorList.length; i++)
     {
-      byteData.setUint32(i * 4, argbToRgba(argb: colorList[i].value));
+      byteData.setUint32(i * 4, argbToRgba(argb: colorList[i].toARGB32()));
     }
     return byteData;
   }
@@ -171,7 +171,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     stringBuffer.writeln('#');
     for (final ui.Color color in colorList)
     {
-      stringBuffer.writeln('${color.red} ${color.green} ${color.blue} ${colorNames.getColorName(r: color.red, g: color.green, b: color.blue)}');
+      stringBuffer.writeln('${(color.r * 255).toInt()} ${(color.g * 255).toInt()} ${(color.b * 255).toInt()} ${colorNames.getColorName(r: color.r, g: color.g, b: color.b)}');
     }
     final String str = stringBuffer.toString();
     return Uint8List.fromList(utf8.encode(str));
@@ -185,7 +185,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     stringBuffer.writeln('; KPix_${DateTime.now().toString().replaceAll(RegExp(r'[:\- ]'), '_')}');
     for (int i = 0; i < colorList.length; i++)
     {
-       stringBuffer.writeln("${colorToHexString(c: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].red, g: colorList[i].green, b: colorList[i].blue)}");
+       stringBuffer.writeln("${colorToHexString(c: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].r, g: colorList[i].g, b: colorList[i].b)}");
     }
     final String str = stringBuffer.toString();
     return Uint8List.fromList(utf8.encode(str));
@@ -200,7 +200,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     buffer.add(intToBytes(value: colorList.length, length: 4, reverse: true));
     for (final ui.Color color in colorList)
     {
-      final String colorName = colorNames.getColorName(r: color.red, g: color.green, b: color.blue);
+      final String colorName = colorNames.getColorName(r: color.r, g: color.g, b: color.b);
       buffer.add(intToBytes(value: 0x0100, length: 2));
       buffer.add(intToBytes(value: 22 + (colorName.length * 2), length: 4, reverse: true));
       buffer.add(intToBytes(value: colorName.length + 1, length: 2, reverse: true));
@@ -216,9 +216,9 @@ Future<ByteData> _getImageData({required final AppState appState, required final
       buffer.add(stringToBytes(value: "RGB ")); // Color model
 
       // Color values
-      buffer.add(float32ToBytes(value: color.red.toDouble() / 255.0, reverse: true));
-      buffer.add(float32ToBytes(value: color.green.toDouble() / 255.0, reverse: true));
-      buffer.add(float32ToBytes(value: color.blue.toDouble() / 255.0, reverse: true));
+      buffer.add(float32ToBytes(value: color.r, reverse: true));
+      buffer.add(float32ToBytes(value: color.g, reverse: true));
+      buffer.add(float32ToBytes(value: color.b, reverse: true));
 
       // Color type
       buffer.add(intToBytes(value: 0, length: 2, reverse: true));
@@ -235,7 +235,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     stringBuffer.writeln(colorList.length.toString());
     for (final ui.Color color in colorList)
     {
-      stringBuffer.writeln("${color.red} ${color.green} ${color.blue}");
+      stringBuffer.writeln("${(color.r * 255).toInt()} ${(color.g * 255).toInt()} ${(color.b * 255).toInt()}");
     }
     final String str = stringBuffer.toString();
     return Uint8List.fromList(utf8.encode(str));
@@ -252,7 +252,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
 
     for (final ui.Color color in colorList)
     {
-      stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${(color.red / 255.0).toStringAsFixed(6)},${(color.green / 255.0).toStringAsFixed(6)},${(color.blue / 255.0).toStringAsFixed(6)}"name="${escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue))}" />''');
+      stringBuffer.writeln('''\t\t\t<color cs="RGB" tints="${color.r.toStringAsFixed(6)},${color.g.toStringAsFixed(6)},${color.b.toStringAsFixed(6)}"name="${escapeXml(input: colorNames.getColorName(r: color.r, g: color.g, b: color.b))}" />''');
     }
 
     stringBuffer.writeln("\t\t</page>");
@@ -290,7 +290,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     for (final ui.Color color in colorList)
     {
       final String colorHex = colorToHexString(c: color).toLowerCase();
-      final String colorName = escapeXml(input: colorNames.getColorName(r: color.red, g: color.green, b: color.blue));
+      final String colorName = escapeXml(input: colorNames.getColorName(r: color.r, g: color.g, b: color.b));
       stringBuffer.writeln('\t<draw:color draw:name="$colorName" draw:color="$colorHex"/>');
     }
 
@@ -432,11 +432,11 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     {
       outBytes.setUint16(offset, 0, Endian.little); //has name
       offset+=2;
-      outBytes.setUint8(offset, colorList[i].red); //red
+      outBytes.setUint8(offset, (colorList[i].r * 255).toInt()); //red
       offset++;
-      outBytes.setUint8(offset, colorList[i].green); //green
+      outBytes.setUint8(offset, (colorList[i].g * 255).toInt()); //green
       offset++;
-      outBytes.setUint8(offset, colorList[i].blue); //blue
+      outBytes.setUint8(offset, (colorList[i].b * 255).toInt()); //blue
       offset++;
       outBytes.setUint8(offset, 255); //alpha
       offset++;
@@ -455,11 +455,11 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     offset++;
     for (int i = 0; i < colorList.length; i++)
     {
-      outBytes.setUint8(offset, colorList[i].red); //red
+      outBytes.setUint8(offset, (colorList[i].r * 255).toInt()); //red
       offset++;
-      outBytes.setUint8(offset, colorList[i].green); //green
+      outBytes.setUint8(offset, (colorList[i].g * 255).toInt()); //green
       offset++;
-      outBytes.setUint8(offset, colorList[i].blue); //blue
+      outBytes.setUint8(offset, (colorList[i].b * 255).toInt()); //blue
       offset++;
     }
 
@@ -1264,11 +1264,11 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
     offset+=4;
     for (final Color c in colorList)
     {
-      outBytes.setUint8(offset, c.red);
+      outBytes.setUint8(offset, (c.r * 255).toInt());
       offset++;
-      outBytes.setUint8(offset, c.green);
+      outBytes.setUint8(offset, (c.g * 255).toInt());
       offset++;
-      outBytes.setUint8(offset, c.blue);
+      outBytes.setUint8(offset, (c.b * 255).toInt());
       offset++;
     }
 

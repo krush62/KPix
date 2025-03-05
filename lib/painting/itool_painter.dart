@@ -295,7 +295,7 @@ abstract class IToolPainter
         final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
         if (index < byteDataImg.lengthInBytes)
         {
-          byteDataImg.setUint32(index, argbToRgba(argb: dColor.value));
+          byteDataImg.setUint32(index, argbToRgba(argb: dColor.toARGB32()));
         }
       }
 

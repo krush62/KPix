@@ -149,7 +149,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                      children: <Widget>[
                        Text(
                          textAlign: TextAlign.center,
-                         widget.showName ? _colorNames.getColorName(r: currentColor.color.red, g: currentColor.color.green, b: currentColor.color.blue) : "",
+                         widget.showName ? _colorNames.getColorName(r: currentColor.color.r, g: currentColor.color.g, b: currentColor.color.b) : "",
                          style: Theme.of(context).textTheme.titleSmall,
                        ),
                        Text(

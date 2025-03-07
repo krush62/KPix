@@ -24,5 +24,5 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "Create a tar.gz file of the build bundle contents"
 tar -czf "$TAR_FILE" -C "$BUNDLE_DIR" .
-
 mv -f "$TAR_FILE" "$OUTPUT_DIR/"
+

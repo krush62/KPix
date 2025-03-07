@@ -104,7 +104,7 @@ class ColorSet
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? darkColors.light : darkColors.normal),
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.light : _darkColors.normal),
           backgroundColor: WidgetStateProperty.all(_lightColors.normal),
           overlayColor: WidgetStateProperty.all(_lightColors.light),
           surfaceTintColor: WidgetStateProperty.all(_lightColors.normal),
@@ -153,6 +153,7 @@ class ColorSet
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
           backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.light : _lightColors.normal),
+          iconColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _lightColors.normal : _lightColors.light),
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
         ),
     ),
@@ -165,12 +166,12 @@ class ColorSet
 
 
 
-  ColorSet darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
+  ColorSet _darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
   ThemeData monochromeThemeDark = ThemeData(
 
-    primaryColor: darkColors.normal,
-    primaryColorLight: darkColors.light,
-    primaryColorDark: darkColors.dark,
+    primaryColor: _darkColors.normal,
+    primaryColorLight: _darkColors.light,
+    primaryColorDark: _darkColors.dark,
 
 
     colorScheme: ColorScheme.fromSeed(
@@ -182,70 +183,70 @@ class ColorSet
 
     textTheme: GoogleFonts.oxaniumTextTheme(
       TextTheme(
-        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: darkColors.light),
-        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: darkColors.light),
-        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: darkColors.light),
+        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: _darkColors.light),
+        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: _darkColors.light),
+        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: _darkColors.light),
 
-        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: darkColors.light),
-        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: darkColors.light),
-        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: darkColors.light),
+        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: _darkColors.light),
+        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: _darkColors.light),
+        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: _darkColors.light),
 
-        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: darkColors.light),
-        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: darkColors.light),
-        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: darkColors.light),
+        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: _darkColors.light),
+        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: _darkColors.light),
+        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: _darkColors.light),
 
-        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: darkColors.light),
-        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: darkColors.light),
-        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: darkColors.light),
+        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: _darkColors.light),
+        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: _darkColors.light),
+        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: _darkColors.light),
 
-        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: darkColors.light),
-        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: darkColors.light),
-        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: darkColors.light),
+        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light),
+        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light),
+        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light),
       ),
     ),
 
     sliderTheme: SliderThemeData(
-      activeTrackColor: darkColors.light,
-      inactiveTrackColor: darkColors.dark,
-      thumbColor: darkColors.light,
-      valueIndicatorColor: darkColors.light,
-      valueIndicatorStrokeColor: darkColors.normal,
-      overlayColor: darkColors.light.withAlpha(darkColors.alphaB),
+      activeTrackColor: _darkColors.light,
+      inactiveTrackColor: _darkColors.dark,
+      thumbColor: _darkColors.light,
+      valueIndicatorColor: _darkColors.light,
+      valueIndicatorStrokeColor: _darkColors.normal,
+      overlayColor: _darkColors.light.withAlpha(_darkColors.alphaB),
       valueIndicatorTextStyle: TextStyle(
-        color: darkColors.normal,
+        color: _darkColors.normal,
       ),
       showValueIndicator: ShowValueIndicator.always,
 
     ),
 
     switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light) : darkColors.normal),
-        trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? darkColors.dark : darkColors.normal) : darkColors.dark),
-        trackOutlineColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? darkColors.normal : darkColors.light),
-        overlayColor: WidgetStateProperty.all(darkColors.light.withAlpha(darkColors.alphaB)),
+        thumbColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light) : _darkColors.normal),
+        trackColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? (states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal) : _darkColors.dark),
+        trackOutlineColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light),
+        overlayColor: WidgetStateProperty.all(_darkColors.light.withAlpha(_darkColors.alphaB)),
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-              color: darkColors.light,
+              color: _darkColors.light,
           ),
       ),
       focusedBorder: UnderlineInputBorder(
         borderSide: BorderSide(
-          color: darkColors.light,
+          color: _darkColors.light,
         ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? darkColors.normal : darkColors.light),
-          backgroundColor: WidgetStateProperty.all(darkColors.normal),
-          overlayColor: WidgetStateProperty.all(darkColors.light),
-          surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.normal : _darkColors.light),
+          backgroundColor: WidgetStateProperty.all(_darkColors.normal),
+          overlayColor: WidgetStateProperty.all(_darkColors.light),
+          surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
           side: WidgetStateProperty.all(BorderSide(
-              color: darkColors.light,
+              color: _darkColors.light,
           ),
         ),
       ),
@@ -253,14 +254,14 @@ class ColorSet
 
     filledButtonTheme: FilledButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(darkColors.light),
-        overlayColor: WidgetStateProperty.all(darkColors.light),
-        surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+        backgroundColor: WidgetStateProperty.all(_darkColors.light),
+        overlayColor: WidgetStateProperty.all(_darkColors.light),
+        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
-            side: BorderSide(color: darkColors.light, width: 2),
+            side: BorderSide(color: _darkColors.light, width: 2),
             borderRadius:
             const BorderRadius.all(Radius.circular(4)),
           ),
@@ -270,26 +271,27 @@ class ColorSet
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        elevation: WidgetStateProperty.all(darkColors.elevation),
-        shadowColor: WidgetStateProperty.all(darkColors.dark),
-        foregroundColor: WidgetStateProperty.all(darkColors.light),
-        backgroundColor: WidgetStateProperty.all(darkColors.dark),
-        overlayColor: WidgetStateProperty.all(darkColors.normal),
-        surfaceTintColor: WidgetStateProperty.all(darkColors.light),
+        elevation: WidgetStateProperty.all(_darkColors.elevation),
+        shadowColor: WidgetStateProperty.all(_darkColors.dark),
+        foregroundColor: WidgetStateProperty.all(_darkColors.light),
+        backgroundColor: WidgetStateProperty.all(_darkColors.dark),
+        overlayColor: WidgetStateProperty.all(_darkColors.normal),
+        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
           side: WidgetStateProperty.all(BorderSide(
-              color: darkColors.light,
+              color: _darkColors.light,
           ),
         ),
       ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? darkColors.normal : darkColors.light),
-          backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? darkColors.light : darkColors.normal),
+          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.normal : _darkColors.light),
+          backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.light : _darkColors.normal),
+          iconColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.selected) ? _darkColors.normal : _darkColors.light),
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
         ),
     ),
       textSelectionTheme: TextSelectionThemeData(
-          cursorColor: darkColors.light,
+          cursorColor: _darkColors.light,
       ),
   );

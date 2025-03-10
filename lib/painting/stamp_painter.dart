@@ -86,11 +86,11 @@ class StampPainter extends IToolPainter
           int stampY = entry.key.y - currentStamp.height;
           if (_options.flipH.value)
           {
-            stampX = currentStamp.width - stampX;
+            stampX = -(stampX + currentStamp.width) - 1;
           }
           if (_options.flipV.value)
           {
-            stampY = currentStamp.height - stampY;
+            stampY = -(stampY + currentStamp.height) - 1;
           }
 
           for (int x = 0; x < _options.scale.value; x++)

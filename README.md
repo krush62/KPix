@@ -40,7 +40,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - stylus and touch support
 - automatic light/dark theme
 
-You might also want to read the [F.A.Q.](faq.md)
+You might also want to read the [F.A.Q.](faq.md) or watch the [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
 ## 🔥Features
 ### Drawing Tools

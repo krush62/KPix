@@ -41,7 +41,7 @@ class KPixDirectionWidget extends StatelessWidget
 
   void _buttonPressed({required final Alignment alignment})
   {
-    final HashMap<Alignment, bool> notificationMap = _getCopiedMap(inputMap: selectionMap,);
+    final HashMap<Alignment, bool> notificationMap = _getCheckedMap();
 
     if (isExclusive)
     {

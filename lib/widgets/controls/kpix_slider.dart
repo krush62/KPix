@@ -170,12 +170,10 @@ class _KPixSliderThumbShape extends RoundSliderThumbShape
 
     context.canvas.drawCircle(center, parentBox.size.height / 2 - padding, activePaint);
     context.canvas.drawCircle(center, parentBox.size.height / 2 - padding, inactivePaint);
-
   }
-
-
 }
 
+//TODO this might be deleted since SliderComponentShape.noThumb exists which does the exact same thing
 class _InvisibleSliderThumbShape extends SliderComponentShape {
   const _InvisibleSliderThumbShape();
 
@@ -281,8 +279,5 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
         RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
         outlinePaint,
       );
-
-
-
-  }
+   }
 }

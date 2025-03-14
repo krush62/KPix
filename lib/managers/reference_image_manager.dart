@@ -58,7 +58,7 @@ class ReferenceImageManager
       {
          return duplicateImages[0];
       }
-      else
+      else if (!path.isEmpty)
       {
         final File imageFile = File(path);
         if (imageData == null && !await imageFile.exists())
@@ -75,6 +75,10 @@ class ReferenceImageManager
           _images.add(refImg);
           return refImg;
         }
+      }
+      else
+      {
+        return null;
       }
     }
     catch (e)

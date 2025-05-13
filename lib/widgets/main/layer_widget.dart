@@ -484,8 +484,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                                               else if (widget.layerState.runtimeType == ShadingLayerState)
                                               {
                                                 final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
-                                                if (shadingLayer.settings.shadingStepsMinus.value != shadingLayer.settings.constraints.shadingStepsDefault ||
-                                                    shadingLayer.settings.shadingStepsPlus.value != shadingLayer.settings.constraints.shadingStepsDefault)
+                                                if (shadingLayer.settings.shadingStepsMinus.value != shadingLayer.settings.constraints.shadingStepsDefaultDarken ||
+                                                    shadingLayer.settings.shadingStepsPlus.value != shadingLayer.settings.constraints.shadingStepsDefaultBrighten)
                                                 {
                                                   hasChanges = true;
                                                 }

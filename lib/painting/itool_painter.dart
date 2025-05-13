@@ -662,16 +662,14 @@ abstract class IToolPainter
                 }
               }
             }
+
             if (currentColor != null)
             {
               int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
-              if (currentLayer.hasCoord(coord: coord))
+              final int currentVal = currentLayer.hasCoord(coord: coord) ? currentLayer.getValueAt(coord: coord)! : 0;
+              if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
               {
-                final int currentVal = currentLayer.getValueAt(coord: coord)!;
-                if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
-                {
-                  shift = 0;
-                }
+                shift = 0;
               }
               final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
               pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
@@ -793,7 +791,6 @@ abstract class IToolPainter
             final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value);
             final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
             pixelMap[coord] = ColorReference(colorIndex: targetIndex, ramp: currentColor.ramp);
-
           }
         }
       }

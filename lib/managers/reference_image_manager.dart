@@ -58,7 +58,7 @@ class ReferenceImageManager
       {
          return duplicateImages[0];
       }
-      else if (!path.isEmpty)
+      else if (path.isNotEmpty)
       {
         final File imageFile = File(path);
         if (imageData == null && !await imageFile.exists())

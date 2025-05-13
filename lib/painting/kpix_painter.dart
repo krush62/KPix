@@ -503,6 +503,26 @@ class KPixPainter extends CustomPainter
     }
   }
 
+  bool _isForbidden({required final DrawingParameters drawParams})
+  {
+    final bool onCanvas = isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos);
+    final bool isDrawingLayer = drawParams.currentDrawingLayer != null;
+    final bool isShadingLayer = drawParams.currentShadingLayer != null;
+    final bool isHidden = (isDrawingLayer && drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.hidden) || (isShadingLayer && drawParams.currentShadingLayer!.visibilityState.value == LayerVisibilityState.hidden);
+    final bool isLocked = (isDrawingLayer && drawParams.currentDrawingLayer!.lockState.value == LayerLockState.locked) || (isShadingLayer && drawParams.currentShadingLayer!.lockState.value == LayerLockState.locked);
+    final bool forbiddenDrawingTool = toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter;
+
+
+    final bool isForbidden =
+        //locked or hidden drawing layers
+        (onCanvas && forbiddenDrawingTool && isDrawingLayer && (isHidden || isLocked)) ||
+        //locked or hidden shading layers
+        (onCanvas && isShadingLayer && (isHidden || isLocked)) ||
+        //grid layers
+        drawParams.currentGridLayer != null;
+    return isForbidden;
+  }
+
   void _drawCursor({required final DrawingParameters drawParams})
   {
     if (_coords.value != null)
@@ -510,14 +530,7 @@ class KPixPainter extends CustomPainter
 
       if (!_isDragging.value && !drawParams.secondaryDown /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null || drawParams.currentGridLayer != null))
       {
-        final bool isForbidden =
-              //locked or hidden drawing layers
-              (isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter && drawParams.currentDrawingLayer != null && (drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.hidden || drawParams.currentDrawingLayer!.lockState.value == LayerLockState.locked)) ||
-              //locked or hidden shading layers
-              (isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!) && toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter && drawParams.currentShadingLayer != null && (drawParams.currentShadingLayer!.visibilityState.value == LayerVisibilityState.hidden || drawParams.currentShadingLayer!.lockState.value == LayerLockState.locked)) ||
-              //grid layers
-              drawParams.currentGridLayer != null;
-        if (isForbidden)
+        if (_isForbidden(drawParams: drawParams))
         {
           final double circleWidth = _options.cursorSize * 2;
           final double lineX = cos(pi / 4.0) * circleWidth;
@@ -731,8 +744,11 @@ class KPixPainter extends CustomPainter
           }
         }
 
+
+
+
         //DRAW CURSOR AND RASTER CONTENT
-        if (visibleLayers[i].isSelected.value && (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState))
+        if (visibleLayers[i].isSelected.value && (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState && !_isForbidden(drawParams: drawParams)))
         {
           final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
           if (contentRasterSet != null)
@@ -844,14 +860,21 @@ class KPixPainter extends CustomPainter
 
 
 
-  static bool isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD testCoords})
+  static bool isOnCanvas({required final DrawingParameters drawParams, required final CoordinateSetD? testCoords})
   {
-    bool isOn = false;
-    if (testCoords.x >= drawParams.offset.dx && testCoords.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && testCoords.y >= drawParams.offset.dy && testCoords.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)
+    if (testCoords == null)
     {
-      isOn = true;
+      return false;
     }
-    return isOn;
+    else
+    {
+      bool isOn = false;
+      if (testCoords.x >= drawParams.offset.dx && testCoords.x < drawParams.offset.dx + drawParams.scaledCanvasSize.x && testCoords.y >= drawParams.offset.dy && testCoords.y < drawParams.offset.dy + drawParams.scaledCanvasSize.y)
+      {
+        isOn = true;
+      }
+      return isOn;
+    }
   }
 
 

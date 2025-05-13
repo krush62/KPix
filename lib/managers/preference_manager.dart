@@ -428,9 +428,10 @@ enum PreferenceInt
   DrawingLayerConstraints_DefaultDropShadowDistance(defaultValue: 1),
   DrawingLayerConstraints_MaxDropShadowDistance(defaultValue: 16),
 
-  ShadingLayerConstraints_MinAmount(defaultValue: 1),
-  ShadingLayerConstraints_DefaultAmount(defaultValue: 4),
-  ShadingLayerConstraints_MaxAmount(defaultValue: 6),
+  ShadingLayerConstraints_MinAmount(defaultValue: 0),
+  ShadingLayerConstraints_DefaultAmountDarken(defaultValue: 4),
+  ShadingLayerConstraints_DefaultAmountBrighten(defaultValue: 4),
+  ShadingLayerConstraints_MaxAmount(defaultValue: 8),
 
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
@@ -446,6 +447,9 @@ enum PreferenceInt
   HistoryOptions_Steps(defaultValue: 100),
   HistoryOptions_StepsMax(defaultValue: 1000),
   HistoryOptions_StepsMin(defaultValue: 10),
+
+  DefaultShadingLayerSettings_Darken(defaultValue: 0),
+  DefaultShadingLayerSettings_MaxDarken(defaultValue: 5),
 
   ThemeType(defaultValue: 0),
 
@@ -881,7 +885,8 @@ class PreferenceManager
         dropShadowOffsetMax: _getValueI(PreferenceInt.DrawingLayerConstraints_MaxDropShadowDistance),);
     shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
         shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
-        shadingStepsDefault: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmount),
+        shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
+        shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
         shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
@@ -1158,12 +1163,19 @@ class PreferenceManager
       toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
     );
 
+    shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
+      shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
+      shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
+      shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
+      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
+
     behaviorPreferenceContent = BehaviorPreferenceContent(
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
       selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
       selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
       undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
       undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
+      shadingConstraints: shadingLayerSettingsConstraints,
     );
 
     stylusPreferenceContent = StylusPreferenceContent(
@@ -1227,6 +1239,10 @@ class PreferenceManager
       GetIt.I.get<HistoryManager>().changeMaxEntries(maxEntries: behaviorPreferenceContent.undoSteps.value);
     }
     _boolMap[PreferenceBool.SelectShapeAfterInsert]!.value = behaviorPreferenceContent.selectShapeAfterInsert.value;
+
+    _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken]!.value = behaviorPreferenceContent.shadingStepsMinus.value;
+    _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten]!.value = behaviorPreferenceContent.shadingStepsPlus.value;
+
 
     //STYLUS PREFERENCES
     _doubleMap[PreferenceDouble.StylusOptions_LongPressCancelDistance]!.value = stylusPreferenceContent.stylusLongPressCancelDistance.value;

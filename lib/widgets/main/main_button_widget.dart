@@ -338,7 +338,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _savePreferencesPressed()
   {
-    GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){_closeAllMenus();});
+    GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){
+      _reloadPreferences();
+      _closeAllMenus();
+    });
   }
 
   void _reloadPreferences()

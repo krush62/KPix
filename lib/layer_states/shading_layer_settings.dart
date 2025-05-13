@@ -19,12 +19,14 @@ import 'package:flutter/material.dart';
 class ShadingLayerSettingsConstraints
 {
   final int shadingStepsMin;
-  final int shadingStepsDefault;
+  final int shadingStepsDefaultBrighten;
+  final int shadingStepsDefaultDarken;
   final int shadingStepsMax;
 
   const ShadingLayerSettingsConstraints({
     required this.shadingStepsMin,
-    required this.shadingStepsDefault,
+    required this.shadingStepsDefaultBrighten,
+    required this.shadingStepsDefaultDarken,
     required this.shadingStepsMax,
   });
 }
@@ -47,8 +49,8 @@ class ShadingLayerSettings with ChangeNotifier
   ShadingLayerSettings.defaultValue({
     required this.constraints,
   }) :
-        shadingStepsMinus = ValueNotifier<int>(constraints.shadingStepsDefault),
-        shadingStepsPlus = ValueNotifier<int>(constraints.shadingStepsDefault)
+        shadingStepsMinus = ValueNotifier<int>(constraints.shadingStepsDefaultDarken),
+        shadingStepsPlus = ValueNotifier<int>(constraints.shadingStepsDefaultBrighten)
   {
     _setupListeners();
   }

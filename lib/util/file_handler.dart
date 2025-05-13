@@ -1110,7 +1110,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
               }
               else
               {
-                shadingStepLimitLow = shadingLayerSettingsConstraints.shadingStepsDefault;
+                shadingStepLimitLow = shadingLayerSettingsConstraints.shadingStepsDefaultDarken;
                 returnString.write("\n$msg");
               }
             }
@@ -1126,7 +1126,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
               }
               else
               {
-                shadingStepLimitHigh = shadingLayerSettingsConstraints.shadingStepsDefault;
+                shadingStepLimitHigh = shadingLayerSettingsConstraints.shadingStepsDefaultBrighten;
                 returnString.write("\n$msg");
               }
             }

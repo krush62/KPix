@@ -16,6 +16,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //UNDO STEPS
@@ -27,20 +28,26 @@ class BehaviorPreferenceContent
   final ValueNotifier<int> undoSteps;
   final ValueNotifier<bool> selectShapeAfterInsert;
   final ValueNotifier<bool> selectLayerAfterInsert;
+  final ValueNotifier<int> shadingStepsMinus;
+  final ValueNotifier<int> shadingStepsPlus;
   final int undoStepsMax;
   final int undoStepsMin;
+  final ShadingLayerSettingsConstraints shadingConstraints;
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin})
+  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints})
   {
       return BehaviorPreferenceContent._(
         undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
         selectShapeAfterInsert: ValueNotifier<bool>(selectAfterInsert),
         selectLayerAfterInsert: ValueNotifier<bool>(selectLayerAfterInsert),
+        shadingStepsMinus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultDarken),
+        shadingStepsPlus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultBrighten),
+        shadingConstraints: shadingConstraints,
         undoStepsMax: undoStepsMax,
         undoStepsMin: undoStepsMin,);
   }
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints});
 
 }
 
@@ -55,6 +62,8 @@ class BehaviorPreferences extends StatefulWidget
 }
 
 class _BehaviorPreferencesState extends State<BehaviorPreferences> {
+
+
   @override
   Widget build(final BuildContext context) {
     return Column(
@@ -117,6 +126,69 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                   return Switch(
                     value: select,
                     onChanged: (final bool newVal){widget.prefs.selectLayerAfterInsert.value = newVal;},
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Expanded(child: Text("Default Shading Layer Settings", style: Theme.of(context).textTheme.titleSmall)),
+            Expanded(
+              flex: 2,
+              child: ValueListenableBuilder<bool>(
+                valueListenable: widget.prefs.selectLayerAfterInsert,
+                builder: (final BuildContext context, final bool select, final Widget? child)
+                {
+                  return Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          const Expanded(child: Text("Max Darken")),
+                          Expanded(
+                            child: ValueListenableBuilder<int>(
+                              valueListenable: widget.prefs.shadingStepsMinus,
+                              builder: (final BuildContext context1, final int shadingLow, final Widget? child1)
+                              {
+                                return KPixSlider(
+                                  value: shadingLow.toDouble(),
+                                  min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
+                                  max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
+                                  onChanged: (final double value) {
+                                    widget.prefs.shadingStepsMinus.value = value.round();
+                                  },
+                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: <Widget>[
+                          const Expanded(child: Text("Max Brighten")),
+                          Expanded(
+                            child: ValueListenableBuilder<int>(
+                              valueListenable: widget.prefs.shadingStepsPlus,
+                              builder: (final BuildContext context1, final int shadingHigh, final Widget? child1)
+                              {
+                                return KPixSlider(
+                                  value: shadingHigh.toDouble(),
+                                  min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
+                                  max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
+                                  onChanged: (final double value) {
+                                    widget.prefs.shadingStepsPlus.value = value.round();
+                                  },
+                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   );
                 },
               ),

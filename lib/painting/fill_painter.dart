@@ -41,7 +41,7 @@ class FillPainter extends IToolPainter
   {
     if (drawParams.cursorPos != null)
     {
-      if (drawParams.primaryDown && !_isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!))
+      if (drawParams.primaryDown && !_isDown && KPixPainter.isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos))
       {
         _shouldDraw = true;
         _isDown = true;

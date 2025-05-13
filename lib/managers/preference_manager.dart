@@ -268,7 +268,6 @@ enum PreferenceInt
   Layout_OverlayEntrySubMenu_AnimationLengthMs(defaultValue: 150),
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
-  Layout_LayerWidget_DragDelay(defaultValue: 200),
   Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 20),
   Layout_LayerWidget_AddLayerButtonSize(defaultValue: 32),
 
@@ -861,7 +860,6 @@ class PreferenceManager
         dragOpacity: _getValueD(PreferenceDouble.Layout_LayerWidget_DragOpacity),
         dragTargetHeight: _getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
         dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
-        dragDelay: _getValueI(PreferenceInt.Layout_LayerWidget_DragDelay),
         thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
         addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize),);
     drawingLayerSettingsConstraints = DrawingLayerSettingsConstraints(

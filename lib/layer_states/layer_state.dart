@@ -33,7 +33,6 @@ class LayerWidgetOptions
   final double dragFeedbackSize;
   final double dragTargetHeight;
   final int dragTargetShowDuration;
-  final int dragDelay;
   final int thumbUpdateTimerMsec;
   final int addButtonSize;
 
@@ -50,7 +49,6 @@ class LayerWidgetOptions
     required this.dragFeedbackSize,
     required this.dragTargetHeight,
     required this.dragTargetShowDuration,
-    required this.dragDelay,
     required this.thumbUpdateTimerMsec,
     required this.addButtonSize,
   });

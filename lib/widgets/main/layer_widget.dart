@@ -174,8 +174,7 @@ class _LayerWidgetState extends State<LayerWidget> {
   @override
   Widget build(final BuildContext context)
   {
-    return LongPressDraggable<LayerState>(
-      delay: Duration(milliseconds: _options.dragDelay),
+    return Draggable<LayerState>(
       data: widget.layerState,
       feedback: Container(
         width: _options.dragFeedbackSize,

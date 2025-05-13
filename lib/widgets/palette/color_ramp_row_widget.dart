@@ -111,7 +111,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
   {
     _widgetList.clear();
     _widgetList.add(
-      LongPressDraggable<KPalRampData>(
+      Draggable<KPalRampData>(
         data: widget.rampData,
         feedback: Builder(
           builder: (final BuildContext context) {

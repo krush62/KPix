@@ -913,7 +913,7 @@ class AppState
   }
 
 
-  void selectLayer({required final LayerState newLayer, final bool addToHistoryStack = false})
+  void selectLayer({required final LayerState newLayer, final bool addToHistoryStack = true})
   {
     final LayerState oldLayer = _layerCollection.selectLayer(newLayer: newLayer);
     if (oldLayer != newLayer)

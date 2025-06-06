@@ -153,7 +153,9 @@ class ShapePainter extends IToolPainter
             _drawingPixels = drawParams.currentDrawingLayer != null ?
               getPixelsToDraw(coords: contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
               getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: contentPoints, shaderOptions: shaderOptions);
-            rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet) {
+
+            final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
+            rasterizeCursorPixels(drawingPixels: _drawingPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet) {
               cursorRaster = rasterSet;
               hasAsyncUpdate = true;
             });

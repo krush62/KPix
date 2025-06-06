@@ -557,7 +557,26 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
- void reRasterDrawingLayers()
+  void reRasterLayersAbove()
+  {
+    final int layerIndex = getSelectedLayerIndex() - 1;
+    if (layerIndex >= 0)
+    {
+      final LayerState layer = getLayer(index: layerIndex);
+      if (layer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        drawingLayer.doManualRaster = true;
+      }
+      else if (layer.runtimeType == ShadingLayerState)
+      {
+        final ShadingLayerState shadingLayer = layer as ShadingLayerState;
+        shadingLayer.manualRender();
+      }
+    }
+  }
+
+ void reRasterAllDrawingLayers()
   {
     for (final LayerState layer in _layers)
     {
@@ -565,6 +584,45 @@ class LayerCollection with ChangeNotifier
       {
         final DrawingLayerState drawingLayer = layer as DrawingLayerState;
         drawingLayer.doManualRaster = true;
+      }
+      else if (layer.runtimeType == ShadingLayerState)
+      {
+        final ShadingLayerState shadingLayer = layer as ShadingLayerState;
+        shadingLayer.manualRender();
+      }
+    }
+  }
+
+  //RASTER LAYER ABOVE
+  void layerRasterDone({required final LayerState layer})
+  {
+    LayerState? nextLayerState;
+    for (int i = getLayerPosition(state: layer) - 1; i >= 0; i--)
+    {
+      final LayerState ls = getLayer(index: i);
+      if (ls.runtimeType == DrawingLayerState || ls.runtimeType == ShadingLayerState)
+      {
+        nextLayerState = ls;
+        break;
+      }
+    }
+
+
+    print("NEW RASTER DATA FROM LAYER ${getLayerPosition(state: layer)}");
+
+    if (nextLayerState != null)
+    {
+      print("RASTERIZING LAYER ${getLayerPosition(state: nextLayerState)}");
+
+      if (nextLayerState.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = nextLayerState as DrawingLayerState;
+        drawingLayer.doManualRaster = true;
+      }
+      else if (nextLayerState.runtimeType == ShadingLayerState)
+      {
+        final ShadingLayerState shadingLayer = nextLayerState as ShadingLayerState;
+        shadingLayer.manualRender();
       }
     }
   }

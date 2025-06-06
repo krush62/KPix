@@ -390,7 +390,7 @@ class AppState
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
       _layerCollection.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
-      _layerCollection.reRasterDrawingLayers();
+      _layerCollection.reRasterAllDrawingLayers();
       repaintNotifier.repaint();
       if (addToHistoryStack)
       {
@@ -414,7 +414,7 @@ class AppState
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _layerCollection.remapLayers(newData: ramp, map: indexMap);
     }
-    _layerCollection.reRasterDrawingLayers();
+    _layerCollection.reRasterAllDrawingLayers();
     repaintNotifier.repaint();
     if (addToHistoryStack)
     {
@@ -718,7 +718,7 @@ class AppState
       _canvasSize.x = canvSize.x;
       _canvasSize.y = canvSize.y;
 
-      rasterDrawingLayers();
+      rasterAllDrawingLayers();
     }
   }
 
@@ -811,7 +811,7 @@ class AppState
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
     }
-    rasterDrawingLayers();
+    rasterAllDrawingLayers();
 
   }
 
@@ -851,8 +851,6 @@ class AppState
     {
       layerState.visibilityState.value = LayerVisibilityState.visible;
     }
-
-    rasterDrawingLayers();
 
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
   }
@@ -931,10 +929,6 @@ class AppState
   {
     if (_layerCollection.deleteLayer(deleteLayer: deleteLayer))
     {
-      if (deleteLayer.runtimeType == ShadingLayerState)
-      {
-        rasterDrawingLayers();
-      }
 
       if (addToHistoryStack)
       {
@@ -970,10 +964,6 @@ class AppState
   {
     selectionState.deselect(addToHistoryStack: false);
     _layerCollection.duplicateLayer(duplicateLayer: duplicateLayer);
-    if (duplicateLayer.runtimeType == ShadingLayerState)
-    {
-      rasterDrawingLayers();
-    }
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
@@ -989,11 +979,15 @@ class AppState
     }
   }
 
-  void rasterDrawingLayers({final DrawingLayerState? exceptionLayer})
+  void rasterAllDrawingLayers()
   {
-    _layerCollection.reRasterDrawingLayers();
+    _layerCollection.reRasterAllDrawingLayers();
   }
 
+  void newRasterData({required final LayerState layer})
+  {
+    _layerCollection.layerRasterDone(layer: layer);
+  }
 
   void colorSelected({required final ColorReference? color, final bool addToHistory = true})
   {

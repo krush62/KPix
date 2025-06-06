@@ -21,22 +21,25 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/typedefs.dart';
 
 class ShadingLayerState extends LayerState
 {
-  //static const int shadingMax = 5;
-  //static const int _brightnessStep = 255 ~/ ((shadingMax * 2) + 1);
   final ShadingLayerSettings settings;
   final HashMap<int, int> _thumbnailBrightnessMap = HashMap<int, int>();
   final HashMap<CoordinateSetI, int> _shadingData = HashMap<CoordinateSetI, int>();
   final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
   bool isRendering = false;
   bool _shouldRender = true;
+  ui.Image? previousRaster;
+  final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
+  CoordinateColorMap rasterPixels = CoordinateColorMap();
 
   factory ShadingLayerState()
   {
@@ -126,6 +129,7 @@ class ShadingLayerState extends LayerState
     return _shadingData[coord];
   }
 
+
   void removeCoords({required final Iterable<CoordinateSetI> coords})
   {
     if (lockState.value == LayerLockState.unlocked)
@@ -153,27 +157,74 @@ class ShadingLayerState extends LayerState
     }
   }
 
-  Future<ui.Image> _createThumbnail() async
+  Future<(ui.Image, ui.Image)> _createRasters() async
   {
     final AppState appState = GetIt.I.get<AppState>();
+    final ByteData byteDataThb = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
+    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+    final int currentIndex = appState.getLayerPosition(state: this);
     for (int x = 0; x < appState.canvasSize.x; x++)
     {
       for (int y = 0; y < appState.canvasSize.y; y++)
       {
+        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         final int? valAt = _shadingData[CoordinateSetI(x: x, y: y)];
         int brightVal = _thumbnailBrightnessMap[0]!;
         if (valAt != null)
         {
           brightVal = _thumbnailBrightnessMap[valAt]?? 0;
+          if (currentIndex != -1)
+          {
+            for (int i = currentIndex + 1; i < appState.layerCount; i++)
+            {
+              final LayerState layer = appState.getLayerAt(index: i);
+              ColorReference? refCol;
+              if (layer.runtimeType == ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+              {
+                final ShadingLayerState shadingLayer = layer as ShadingLayerState;
+                refCol = shadingLayer.rasterPixels[coord];
+              }
+              else if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+              {
+                final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+                refCol = drawingLayer.rasterPixels[coord];
+              }
+              if (refCol != null)
+              {
+                final int currentColorIndex = refCol.colorIndex;
+                final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+                allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
+                final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
+                final int index = (y * appState.canvasSize.x + x) * 4;
+                if (index >= 0 && index < byteDataImg.lengthInBytes)
+                {
+                  byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+                }
+                break;
+              }
+            }
+          }
         }
         final int pixelIndex = (y * appState.canvasSize.x + x) * 4;
-        byteDataImg.setUint8(pixelIndex + 0, brightVal);
-        byteDataImg.setUint8(pixelIndex + 1, brightVal);
-        byteDataImg.setUint8(pixelIndex + 2, brightVal);
-        byteDataImg.setUint8(pixelIndex + 3, 255);
+        byteDataThb.setUint8(pixelIndex + 0, brightVal);
+        byteDataThb.setUint8(pixelIndex + 1, brightVal);
+        byteDataThb.setUint8(pixelIndex + 2, brightVal);
+        byteDataThb.setUint8(pixelIndex + 3, 255);
       }
     }
+    rasterPixels = allColorPixels;
+    final Completer<ui.Image> completerThb = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+        byteDataThb.buffer.asUint8List(),
+        appState.canvasSize.x,
+        appState.canvasSize.y,
+        ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
+    {
+      completerThb.complete(convertedImage);
+    }
+    );
+    final ui.Image thbImg = await completerThb.future;
 
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -185,15 +236,18 @@ class ShadingLayerState extends LayerState
       completerImg.complete(convertedImage);
     }
     );
-    return completerImg.future;
+    final ui.Image rasterImg = await completerImg.future;
+    return (rasterImg, thbImg);
   }
 
-  void _rasterCreated({required final ui.Image image})
+  void _rasterCreated({required final ui.Image thb, required final ui.Image img})
   {
-    thumbnail.value = image;
+    thumbnail.value = thb;
+    previousRaster = rasterImage.value;
+    rasterImage.value = img;
     isRendering = false;
     _shouldRender = false;
-    GetIt.I.get<AppState>().rasterDrawingLayers();
+    GetIt.I.get<AppState>().newRasterData(layer: this);
   }
 
   void _updateTimerCallback({required final Timer timer})
@@ -201,9 +255,9 @@ class ShadingLayerState extends LayerState
     if (_shouldRender && !isRendering)
     {
       isRendering = true;
-      _createThumbnail().then((final ui.Image image)
+      _createRasters().then((final (ui.Image, ui.Image) images)
       {
-        _rasterCreated(image: image);
+        _rasterCreated(img: images.$1, thb: images.$2);
       });
     }
   }

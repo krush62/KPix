@@ -94,7 +94,8 @@ class EraserPainter extends IToolPainter
           else //Shading Layer
           {
             drawParams.currentShadingLayer!.removeCoords(coords: refs.keys);
-            appState.rasterDrawingLayers();
+            //TODO CHECK
+            //appState.rasterDrawingLayers();
           }
         }
         _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;

@@ -674,16 +674,26 @@ class KPixPainter extends CustomPainter
     final List<LayerState> visibleLayers = _appState.visibleLayers.toList();
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
 
+    //TODO This should also take Shading Layers into account
     final bool hasRasterizingLayers = visibleLayers.whereType<DrawingLayerState>().any((final DrawingLayerState drawingLayer) => drawingLayer.isRasterizing);
 
     if (!hasRasterizingLayers || _backupImage == null)
     {
       for (int i = visibleLayers.length - 1; i >= 0; i--)
       {
-        if (visibleLayers[i].runtimeType == DrawingLayerState)
+        if (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState)
         {
-          final DrawingLayerState drawingLayer = visibleLayers[i] as DrawingLayerState;
-          final ui.Image? displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
+          final ui.Image? displayImage;
+          if (visibleLayers[i].runtimeType == DrawingLayerState)
+          {
+            final DrawingLayerState drawingLayer = visibleLayers[i] as DrawingLayerState;
+            displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
+          }
+          else
+          {
+            final ShadingLayerState shadingLayer = visibleLayers[i] as ShadingLayerState;
+            displayImage = (shadingLayer.rasterImage.value != null && !shadingLayer.isRendering) ? shadingLayer.rasterImage.value : shadingLayer.previousRaster;
+          }
 
           if (displayImage != null)
           {
@@ -766,7 +776,7 @@ class KPixPainter extends CustomPainter
           }
 
 
-          final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+          /*final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
           if (cursorRasterSet != null)
           {
             paintImage(
@@ -779,8 +789,24 @@ class KPixPainter extends CustomPainter
               fit: BoxFit.none,
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          }
+          }*/
         }
+      }
+
+      //TODO cursor raster
+      final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+      if (cursorRasterSet != null)
+      {
+        paintImage(
+          canvas: drawParams.canvas,
+          rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
+            (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
+            (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+          image: cursorRasterSet.image,
+          scale: 1.0 / pxlSzDbl,
+          fit: BoxFit.none,
+          alignment: Alignment.topLeft,
+          filterQuality: FilterQuality.none,);
       }
     }
     else

@@ -317,6 +317,80 @@ abstract class IToolPainter
     }
   }
 
+
+  Future<ContentRasterSet?> rasterizeCursorPixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
+  {
+    if (drawingPixels.isNotEmpty)
+    {
+      final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
+      final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
+      final ByteData byteDataImg = ByteData(size.x * size.y * 4);
+      final int layerPosition = appState.getLayerPosition(state: currentLayer);
+
+      for (final CoordinateColor entry in drawingPixels.entries)
+      {
+        ColorReference colRef = entry.value;
+        for (int i = layerPosition - 1; i >= 0; i--)
+        {
+          final LayerState currentLayer = appState.getLayerAt(index: i);
+          if (currentLayer.runtimeType == DrawingLayerState)
+          {
+            final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
+            final int? shadingVal = drawingLayer.settingsShadingPixels[entry.key];
+            if (shadingVal != null)
+            {
+              final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
+              colRef = colRef.ramp.references[targetShading];
+            }
+            else
+            {
+              final ColorReference? layerColRef = drawingLayer.rasterPixels[entry.key];
+              if (layerColRef != null)
+              {
+                colRef = layerColRef;
+              }
+            }
+          }
+          else if (currentLayer.runtimeType == ShadingLayerState)
+          {
+            final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
+            final int? shadingVal = shadingLayer.shadingData[entry.key];
+            if (shadingVal != null)
+            {
+              final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
+              colRef = colRef.ramp.references[targetShading];
+            }
+          }
+        }
+
+        final Color dColor = colRef.getIdColor().color;
+        final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
+        if (index < byteDataImg.lengthInBytes)
+        {
+          byteDataImg.setUint32(index, argbToRgba(argb: dColor.toARGB32()));
+        }
+      }
+
+      final Completer<ui.Image> completerImg = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+          byteDataImg.buffer.asUint8List(),
+          size.x,
+          size.y,
+          ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
+      {
+        completerImg.complete(convertedImage);
+      }
+      );
+      return ContentRasterSet(image: await completerImg.future, offset: offset, size: size);
+    }
+    else
+    {
+      return null;
+    }
+  }
+
   Set<CoordinateSetI> getLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape})
   {
     Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
@@ -839,7 +913,7 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    appState.rasterDrawingLayers();
+    //appState.rasterDrawingLayersAbove();
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);
@@ -865,7 +939,7 @@ abstract class IToolPainter
     shadingLayer.removeCoords(coords: removeCoords);
     shadingLayer.addCoords(coords: changeCoords);
 
-    appState.rasterDrawingLayers();
+    //appState.rasterDrawingLayersAbove();
 
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);

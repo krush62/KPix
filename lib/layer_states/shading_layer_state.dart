@@ -43,12 +43,14 @@ class ShadingLayerState extends RasterableLayerState
     return ShadingLayerState._(settings: settings);
   }
 
-  ShadingLayerState._({required this.settings}) : super(layerSettings: settings)
+  ShadingLayerState._({required this.settings, final List<LayerState>? layerStack}) : super(layerSettings: settings, layerStack: layerStack)
   {
     _init();
   }
 
-  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings}) : settings = newSettings, super(layerSettings: newSettings)
+  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings, super.layerStack}) :
+        settings = newSettings,
+        super(layerSettings: newSettings)
   {
     _init();
     for (final MapEntry<CoordinateSetI, int> entry in data.entries)
@@ -58,7 +60,7 @@ class ShadingLayerState extends RasterableLayerState
     lockState.value = lState;
   }
 
-  factory ShadingLayerState.from({required final ShadingLayerState other})
+  factory ShadingLayerState.from({required final ShadingLayerState other, final List<LayerState>? layerStack})
   {
     final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
     for (final MapEntry<CoordinateSetI, int> entry in other.shadingData.entries)
@@ -67,7 +69,7 @@ class ShadingLayerState extends RasterableLayerState
     }
     final ShadingLayerSettings settings = ShadingLayerSettings.from(other: other.settings);
 
-    return ShadingLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings);
+    return ShadingLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
   }
 
   void _update()
@@ -199,6 +201,7 @@ class ShadingLayerState extends RasterableLayerState
       }
     }
     rasterPixels = allColorPixels;
+    print("RASTER PIXELS LENGTH: ${rasterPixels.length}");
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
     ui.decodeImageFromPixels(
         byteDataThb.buffer.asUint8List(),

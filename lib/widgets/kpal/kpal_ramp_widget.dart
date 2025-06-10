@@ -74,14 +74,14 @@ class _KPalRampState extends State<KPalRamp>
   late Timer _renderTimer;
   final String _valueToolTipMessage = "Press to reset";
 
-  late List<LayerState> _drawingLayers;
+  late List<RasterableLayerState> _drawingLayers;
 
   @override
   void initState()
   {
     super.initState();
     _createColorCards();
-    _drawingLayers = _copyLayers(originalLayers: _appState.visibleDrawingAndShadingLayers);
+    _drawingLayers = _copyLayers(originalLayers: _appState.visibleRasterLayers);
     _hasRenderChanges = true;
     _renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
     for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
@@ -94,9 +94,9 @@ class _KPalRampState extends State<KPalRamp>
   }
 
 
-  List<LayerState> _copyLayers({required final Iterable<LayerState> originalLayers})
+  List<RasterableLayerState> _copyLayers({required final Iterable<RasterableLayerState> originalLayers})
   {
-    final List<LayerState> drawingLayers = <LayerState>[];
+    final List<RasterableLayerState> drawingLayers = <RasterableLayerState>[];
     for (final LayerState visibleLayer in originalLayers)
     {
       if (visibleLayer.runtimeType == DrawingLayerState)
@@ -104,9 +104,10 @@ class _KPalRampState extends State<KPalRamp>
         final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState, layerStack: drawingLayers);
         drawingLayers.add(drawingLayer);
       }
-      else
+      else if (visibleLayer.runtimeType == ShadingLayerState)
       {
-        drawingLayers.add(visibleLayer);
+        final ShadingLayerState shadingLayer = ShadingLayerState.from(other: visibleLayer as ShadingLayerState, layerStack: drawingLayers);
+        drawingLayers.add(shadingLayer);
       }
     }
     return drawingLayers;
@@ -125,7 +126,7 @@ class _KPalRampState extends State<KPalRamp>
       _settingsChanged();
       _hasShiftChanges = false;
     }
-    final bool hasRasterizingLayers = _drawingLayers.whereType<DrawingLayerState>().where((final DrawingLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.rasterImage.value == null || l.isRasterizing)).isNotEmpty;
+    final bool hasRasterizingLayers = _drawingLayers.where((final RasterableLayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.doManualRaster || l.isRasterizing)).isNotEmpty;
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
       getImageFromLayers(appState: _appState, layerStack: _drawingLayers).then((final ui.Image img) {
@@ -159,7 +160,7 @@ class _KPalRampState extends State<KPalRamp>
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
       if (colorCountChanged)
       {
-        _drawingLayers = _copyLayers(originalLayers: _appState.visibleDrawingAndShadingLayers);
+        _drawingLayers = _copyLayers(originalLayers: _appState.visibleRasterLayers);
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final LayerState layerState in _drawingLayers)
         {
@@ -172,12 +173,9 @@ class _KPalRampState extends State<KPalRamp>
         }
         _createColorCards();
       }
-      for (final LayerState drawingLayer in _drawingLayers)
+      for (final RasterableLayerState rasterLayer in _drawingLayers)
       {
-        if (drawingLayer.runtimeType == DrawingLayerState)
-        {
-          (drawingLayer as DrawingLayerState).doManualRaster = true;
-        }
+          rasterLayer.doManualRaster = true;
       }
       _hasRenderChanges = true;
     });

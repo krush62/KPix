@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
@@ -123,9 +124,9 @@ class AppState
     return _layerCollection.getVisibleLayers();
   }
 
-  Iterable<LayerState> get visibleDrawingAndShadingLayers
+  Iterable<RasterableLayerState> get visibleRasterLayers
   {
-    return _layerCollection.getVisibleDrawingAndShadingLayers();
+    return _layerCollection.getVisibleRasterLayers();
   }
 
   ChangeNotifier get layerListChangeNotifier

@@ -664,9 +664,18 @@ class LayerCollection with ChangeNotifier
      return _layers.where((final LayerState x) => x.visibilityState.value == LayerVisibilityState.visible);
   }
 
-  Iterable<LayerState> getVisibleDrawingAndShadingLayers()
+  Iterable<RasterableLayerState> getVisibleRasterLayers()
   {
-    return _layers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l is RasterableLayerState));
+    final List<RasterableLayerState> rLayers  = <RasterableLayerState>[];
+    for (final LayerState layer in _layers)
+    {
+      if (layer.visibilityState.value == LayerVisibilityState.visible && layer is RasterableLayerState)
+      {
+        rLayers.add(layer);
+      }
+    }
+
+    return rLayers;
   }
 
   List<LayerState> getAllLayers()

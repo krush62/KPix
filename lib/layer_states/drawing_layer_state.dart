@@ -39,7 +39,7 @@ class DrawingLayerState extends RasterableLayerState
   final CoordinateColorMap _data;
   CoordinateColorMap _settingsPixels;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
-  List<LayerState>? layerStack;
+
   final DrawingLayerSettings settings;
   HashMap<CoordinateSetI, int> settingsShadingPixels = HashMap<CoordinateSetI, int>();
 
@@ -62,7 +62,7 @@ class DrawingLayerState extends RasterableLayerState
     return DrawingLayerState._(data: data, settingsPixels: settingsPixels, settings: settings);
   }
 
-  DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack, required this.settings}) :
+  DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, super.layerStack, required this.settings}) :
         _data = data,
         _settingsPixels = settingsPixels,
         super(layerSettings: settings)

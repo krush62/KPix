@@ -26,6 +26,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
@@ -502,38 +503,35 @@ class StackCol<T> {
 
   Future<ui.Image> getImageFromLayers({
     required final AppState appState,
-    final List<LayerState>? layerStack,
+    final List<RasterableLayerState>? layerStack,
     final int scalingFactor = 1,}) async
   {
-    List<LayerState> layerList;
+    List<RasterableLayerState> layerList;
     if (layerStack != null)
     {
       layerList = layerStack;
     }
     else
     {
-      layerList = List<LayerState>.empty(growable: true);
-      for (int i = 0; i < appState.layerCount; i++)
-      {
-        layerList.add(appState.getLayerAt(index: i));
-      }
+      layerList = List<RasterableLayerState>.empty(growable: true);
+      layerList.addAll(appState.visibleRasterLayers);
     }
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
     for (int i = layerList.length - 1; i >= 0; i--)
     {
-      if (layerList[i].visibilityState.value == LayerVisibilityState.visible && layerList[i].runtimeType == DrawingLayerState)
+      final LayerState cLayer = layerList[i];
+      if (cLayer.visibilityState.value == LayerVisibilityState.visible && cLayer is RasterableLayerState)
       {
-        final DrawingLayerState drawingLayer = layerList[i] as DrawingLayerState;
-        if (drawingLayer.rasterImage.value != null)
+        if (cLayer.rasterImage.value != null)
         {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
                   appState.canvasSize.x.toDouble() * scalingFactor,
                   appState.canvasSize.y.toDouble() * scalingFactor,),
-              image: drawingLayer.rasterImage.value!,
+              image: cLayer.rasterImage.value!,
               fit: BoxFit.none,
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,

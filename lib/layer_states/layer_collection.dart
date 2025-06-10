@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -563,15 +564,9 @@ class LayerCollection with ChangeNotifier
     if (layerIndex >= 0)
     {
       final LayerState layer = getLayer(index: layerIndex);
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer is RasterableLayerState)
       {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
-      else if (layer.runtimeType == ShadingLayerState)
-      {
-        final ShadingLayerState shadingLayer = layer as ShadingLayerState;
-        shadingLayer.manualRender();
+        layer.doManualRaster = true;
       }
     }
   }
@@ -580,15 +575,9 @@ class LayerCollection with ChangeNotifier
   {
     for (final LayerState layer in _layers)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer is RasterableLayerState)
       {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
-      else if (layer.runtimeType == ShadingLayerState)
-      {
-        final ShadingLayerState shadingLayer = layer as ShadingLayerState;
-        shadingLayer.manualRender();
+        layer.doManualRaster = true;
       }
     }
   }
@@ -600,26 +589,16 @@ class LayerCollection with ChangeNotifier
     for (int i = getLayerPosition(state: layer) - 1; i >= 0; i--)
     {
       final LayerState ls = getLayer(index: i);
-      if (ls.runtimeType == DrawingLayerState || ls.runtimeType == ShadingLayerState)
+      if (ls is RasterableLayerState)
       {
         nextLayerState = ls;
         break;
       }
     }
 
-    if (nextLayerState != null)
+    if (nextLayerState != null && nextLayerState is RasterableLayerState)
     {
-
-      if (nextLayerState.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = nextLayerState as DrawingLayerState;
-        drawingLayer.doManualRaster = true;
-      }
-      else if (nextLayerState.runtimeType == ShadingLayerState)
-      {
-        final ShadingLayerState shadingLayer = nextLayerState as ShadingLayerState;
-        shadingLayer.manualRender();
-      }
+      nextLayerState.doManualRaster = true;
     }
   }
 
@@ -653,17 +632,10 @@ class LayerCollection with ChangeNotifier
   {
     for (final LayerState layer in _layers)
     {
-      if (layer.runtimeType == ShadingLayerState)
+      if (layer is RasterableLayerState)
       {
-        final ShadingLayerState shadingLayerState = layer as ShadingLayerState;
-        shadingLayerState.resizeLayer(newSize: newSize, offset: offset);
-        shadingLayerState.manualRender();
-      }
-      else if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.resizeLayer(newSize: newSize, offset: offset);
-        drawingLayer.doManualRaster = true;
+        layer.resizeLayer(newSize: newSize, offset: offset);
+        layer.doManualRaster = true;
       }
       else if (layer.runtimeType == GridLayerState)
       {
@@ -694,7 +666,7 @@ class LayerCollection with ChangeNotifier
 
   Iterable<LayerState> getVisibleDrawingAndShadingLayers()
   {
-    return _layers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l.runtimeType == DrawingLayerState || l.runtimeType == ShadingLayerState));
+    return _layers.where((final LayerState l) => l.visibilityState.value == LayerVisibilityState.visible && (l is RasterableLayerState));
   }
 
   List<LayerState> getAllLayers()

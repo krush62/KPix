@@ -15,10 +15,11 @@
  */
  
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/shading_layer_settings.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
-class ShadingLayerSettingsWidget extends StatefulWidget
+class ShadingLayerSettingsWidget extends LayerSettingsWidget
 {
   final ShadingLayerSettings settings;
   const ShadingLayerSettingsWidget({super.key, required this.settings});

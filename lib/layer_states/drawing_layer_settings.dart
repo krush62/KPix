@@ -20,6 +20,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
@@ -115,7 +116,7 @@ class DrawingLayerSettingsConstraints
 }
 
 
-class DrawingLayerSettings with ChangeNotifier {
+class DrawingLayerSettings extends LayerSettings {
   final DrawingLayerSettingsConstraints constraints;
 
   final ValueNotifier<OuterStrokeStyle> outerStrokeStyle;
@@ -138,8 +139,6 @@ class DrawingLayerSettings with ChangeNotifier {
   final ValueNotifier<ColorReference> dropShadowColorReference;
   final ValueNotifier<CoordinateSetI> dropShadowOffset;
   final ValueNotifier<int> dropShadowDarkenBrighten;
-  bool editStarted = false;
-  bool hasChanges = false;
 
   DrawingLayerSettings({
     required this.constraints,
@@ -252,35 +251,27 @@ class DrawingLayerSettings with ChangeNotifier {
   void _setupListeners()
   {
 
-    outerStrokeStyle.addListener(_valueChanged);
-    innerStrokeStyle.addListener(_valueChanged);
-    dropShadowStyle.addListener(_valueChanged);
-    outerSelectionMap.addListener(_valueChanged);
-    innerSelectionMap.addListener(_valueChanged);
-    outerColorReference.addListener(_valueChanged);
-    innerColorReference.addListener(_valueChanged);
-    dropShadowColorReference.addListener(_valueChanged);
-    dropShadowOffset.addListener(_valueChanged);
-    outerDarkenBrighten.addListener(_valueChanged);
-    outerGlowDepth.addListener(_valueChanged);
-    innerDarkenBrighten.addListener(_valueChanged);
-    innerGlowDepth.addListener(_valueChanged);
-    bevelDistance.addListener(_valueChanged);
-    bevelStrength.addListener(_valueChanged);
-    dropShadowDarkenBrighten.addListener(_valueChanged);
-    outerGlowRecursive.addListener(_valueChanged);
-    innerGlowRecursive.addListener(_valueChanged);
+    outerStrokeStyle.addListener(valueChanged);
+    innerStrokeStyle.addListener(valueChanged);
+    dropShadowStyle.addListener(valueChanged);
+    outerSelectionMap.addListener(valueChanged);
+    innerSelectionMap.addListener(valueChanged);
+    outerColorReference.addListener(valueChanged);
+    innerColorReference.addListener(valueChanged);
+    dropShadowColorReference.addListener(valueChanged);
+    dropShadowOffset.addListener(valueChanged);
+    outerDarkenBrighten.addListener(valueChanged);
+    outerGlowDepth.addListener(valueChanged);
+    innerDarkenBrighten.addListener(valueChanged);
+    innerGlowDepth.addListener(valueChanged);
+    bevelDistance.addListener(valueChanged);
+    bevelStrength.addListener(valueChanged);
+    dropShadowDarkenBrighten.addListener(valueChanged);
+    outerGlowRecursive.addListener(valueChanged);
+    innerGlowRecursive.addListener(valueChanged);
   }
 
-  void _valueChanged()
-  {
-    if (editStarted)
-    {
-      hasChanges = true;
-    }
 
-    notifyListeners();
-  }
 
   void deleteRamp({required final KPalRampData ramp})
   {
@@ -899,5 +890,12 @@ class DrawingLayerSettings with ChangeNotifier {
     }
   }
 
+  @override
+  bool hasActiveSettings()
+  {
+    return outerStrokeStyle.value != OuterStrokeStyle.off ||
+        innerStrokeStyle.value != InnerStrokeStyle.off ||
+        dropShadowStyle.value != DropShadowStyle.off;
+  }
 
 }

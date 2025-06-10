@@ -21,25 +21,21 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_settings.dart';
+import 'package:kpix/layer_states/shading_layer_settings_widget.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
-class ShadingLayerState extends LayerState
+class ShadingLayerState extends RasterableLayerState
 {
   final ShadingLayerSettings settings;
   final HashMap<int, int> _thumbnailBrightnessMap = HashMap<int, int>();
   final HashMap<CoordinateSetI, int> _shadingData = HashMap<CoordinateSetI, int>();
-  final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
-  bool isRendering = false;
-  bool _shouldRender = true;
-  ui.Image? previousRaster;
-  final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
-  CoordinateColorMap rasterPixels = CoordinateColorMap();
 
   factory ShadingLayerState()
   {
@@ -47,12 +43,12 @@ class ShadingLayerState extends LayerState
     return ShadingLayerState._(settings: settings);
   }
 
-  ShadingLayerState._({required this.settings})
+  ShadingLayerState._({required this.settings}) : super(layerSettings: settings)
   {
     _init();
   }
 
-  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings}) : settings = newSettings
+  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings}) : settings = newSettings, super(layerSettings: newSettings)
   {
     _init();
     for (final MapEntry<CoordinateSetI, int> entry in data.entries)
@@ -106,17 +102,12 @@ class ShadingLayerState extends LayerState
       }
 
     }
-    _shouldRender = true;
+    doManualRaster = true;
   }
 
   HashMap<CoordinateSetI, int> get shadingData
   {
     return _shadingData;
-  }
-
-  void manualRender()
-  {
-    _shouldRender = true;
   }
 
   bool hasCoord({required final CoordinateSetI coord})
@@ -141,7 +132,7 @@ class ShadingLayerState extends LayerState
           _shadingData.remove(coord);
         }
       }
-      _shouldRender = true;
+      doManualRaster = true;
     }
   }
 
@@ -153,7 +144,7 @@ class ShadingLayerState extends LayerState
       {
         _shadingData[entry.key] = entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
       }
-      _shouldRender = true;
+      doManualRaster = true;
     }
   }
 
@@ -180,15 +171,9 @@ class ShadingLayerState extends LayerState
             {
               final LayerState layer = appState.getLayerAt(index: i);
               ColorReference? refCol;
-              if (layer.runtimeType == ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+              if (layer is RasterableLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
               {
-                final ShadingLayerState shadingLayer = layer as ShadingLayerState;
-                refCol = shadingLayer.rasterPixels[coord];
-              }
-              else if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
-              {
-                final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-                refCol = drawingLayer.rasterPixels[coord];
+                refCol = layer.rasterPixels[coord];
               }
               if (refCol != null)
               {
@@ -245,16 +230,16 @@ class ShadingLayerState extends LayerState
     thumbnail.value = thb;
     previousRaster = rasterImage.value;
     rasterImage.value = img;
-    isRendering = false;
-    _shouldRender = false;
+    isRasterizing = false;
+    doManualRaster = false;
     GetIt.I.get<AppState>().newRasterData(layer: this);
   }
 
   void _updateTimerCallback({required final Timer timer})
   {
-    if (_shouldRender && !isRendering)
+    if (doManualRaster && !isRasterizing)
     {
-      isRendering = true;
+      isRasterizing = true;
       _createRasters().then((final (ui.Image, ui.Image) images)
       {
         _rasterCreated(img: images.$1, thb: images.$2);
@@ -262,6 +247,7 @@ class ShadingLayerState extends LayerState
     }
   }
 
+  @override
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     final HashMap<CoordinateSetI, int> croppedContent = HashMap<CoordinateSetI, int>();
@@ -276,6 +262,11 @@ class ShadingLayerState extends LayerState
 
     _shadingData.clear();
     _shadingData.addAll(croppedContent);
+  }
+
+  @override
+  LayerSettingsWidget getSettingsWidget() {
+    return ShadingLayerSettingsWidget(settings: settings);
   }
 
 }

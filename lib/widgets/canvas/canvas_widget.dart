@@ -39,6 +39,7 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
@@ -467,7 +468,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
       if (_stylusLongMoveHorizontal.value && _appState.currentLayer != null)
       {
-        if (_appState.currentLayer.runtimeType == DrawingLayerState || _appState.currentLayer.runtimeType == ShadingLayerState)
+        if (_appState.currentLayer is RasterableLayerState)
         {
           _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
         }
@@ -604,7 +605,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         {
           if (_appState.currentLayer != null)
           {
-            if (_appState.currentLayer.runtimeType == DrawingLayerState || _appState.currentLayer.runtimeType == ShadingLayerState)
+            if (_appState.currentLayer is RasterableLayerState)
             {
               _appState.setToolSize(1, _appState.getCurrentToolSize());
             }
@@ -619,7 +620,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         {
           if (_appState.currentLayer != null)
           {
-            if (_appState.currentLayer.runtimeType == DrawingLayerState || _appState.currentLayer.runtimeType == ShadingLayerState)
+            if (_appState.currentLayer is RasterableLayerState)
             {
               _appState.setToolSize(-1, _appState.getCurrentToolSize());
             }

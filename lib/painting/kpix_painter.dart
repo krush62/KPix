@@ -23,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -681,19 +682,10 @@ class KPixPainter extends CustomPainter
     {
       for (int i = visibleLayers.length - 1; i >= 0; i--)
       {
-        if (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState)
+        final LayerState vLayer = visibleLayers[i];
+        if (vLayer is RasterableLayerState)
         {
-          final ui.Image? displayImage;
-          if (visibleLayers[i].runtimeType == DrawingLayerState)
-          {
-            final DrawingLayerState drawingLayer = visibleLayers[i] as DrawingLayerState;
-            displayImage = (drawingLayer.rasterImage.value != null && !drawingLayer.isRasterizing) ? drawingLayer.rasterImage.value : drawingLayer.previousRaster;
-          }
-          else
-          {
-            final ShadingLayerState shadingLayer = visibleLayers[i] as ShadingLayerState;
-            displayImage = (shadingLayer.rasterImage.value != null && !shadingLayer.isRendering) ? shadingLayer.rasterImage.value : shadingLayer.previousRaster;
-          }
+          final ui.Image? displayImage = (vLayer.rasterImage.value != null && !vLayer.isRasterizing) ? vLayer.rasterImage.value : vLayer.previousRaster;
 
           if (displayImage != null)
           {

@@ -19,10 +19,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -395,15 +395,10 @@ class _LayerWidgetState extends State<LayerWidget> {
                                     child: Builder(
                                       builder: (final BuildContext context) {
                                         ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
-                                        if (widget.layerState.runtimeType == DrawingLayerState)
+                                        if (widget.layerState is RasterableLayerState)
                                         {
-                                          final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
-                                          lockStateNotifier = drawingLayer.lockState;
-                                        }
-                                        else if (widget.layerState.runtimeType == ShadingLayerState)
-                                        {
-                                          final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
-                                          lockStateNotifier = shadingLayer.lockState;
+                                          final RasterableLayerState rasterLayer = widget.layerState as RasterableLayerState;
+                                          lockStateNotifier = rasterLayer.lockState;
                                         }
                                         return ValueListenableBuilder<LayerLockState>(
                                           valueListenable: lockStateNotifier,
@@ -452,17 +447,11 @@ class _LayerWidgetState extends State<LayerWidget> {
                                     builder: (final BuildContext context) {
                                       ValueNotifier<LayerLockState> lockStateNotifier = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
                                       Listenable changeListenable = ChangeNotifier();
-                                      if (widget.layerState.runtimeType == DrawingLayerState)
+                                      final LayerState layer = widget.layerState;
+                                      if (layer is RasterableLayerState)
                                       {
-                                        final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
-                                        lockStateNotifier = drawingLayer.lockState;
-                                        changeListenable = drawingLayer.settings;
-                                      }
-                                      else if (widget.layerState.runtimeType == ShadingLayerState)
-                                      {
-                                        final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
-                                        lockStateNotifier = shadingLayer.lockState;
-                                        changeListenable = shadingLayer.settings;
+                                        lockStateNotifier = layer.lockState;
+                                        changeListenable = layer.layerSettings;
                                       }
                                       return ValueListenableBuilder<LayerLockState>(
                                         valueListenable: lockStateNotifier,
@@ -470,27 +459,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           return ListenableBuilder(
                                             listenable: changeListenable,
                                             builder: (final BuildContext context, final Widget? child) {
-                                              bool hasChanges = false;
-                                              if (widget.layerState.runtimeType == DrawingLayerState)
-                                              {
-                                                final DrawingLayerState drawingLayer = widget.layerState as DrawingLayerState;
-                                                if (drawingLayer.settings.outerStrokeStyle.value != OuterStrokeStyle.off ||
-                                                    drawingLayer.settings.innerStrokeStyle.value != InnerStrokeStyle.off ||
-                                                    drawingLayer.settings.dropShadowStyle.value != DropShadowStyle.off)
-                                                {
-                                                  hasChanges = true;
-                                                }
-                                              }
-                                              else if (widget.layerState.runtimeType == ShadingLayerState)
-                                              {
-                                                final ShadingLayerState shadingLayer = widget.layerState as ShadingLayerState;
-                                                if (shadingLayer.settings.shadingStepsMinus.value != shadingLayer.settings.constraints.shadingStepsDefaultDarken ||
-                                                    shadingLayer.settings.shadingStepsPlus.value != shadingLayer.settings.constraints.shadingStepsDefaultBrighten)
-                                                {
-                                                  hasChanges = true;
-                                                }
-                                              }
-
+                                              final LayerState layer = widget.layerState;
+                                              final bool hasChanges = layer is RasterableLayerState && layer.layerSettings.hasActiveSettings();
                                               return IconButton.outlined(
                                                 padding: EdgeInsets.zero,
                                                 constraints: BoxConstraints(

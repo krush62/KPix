@@ -21,6 +21,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
@@ -81,7 +82,7 @@ const Map<DropShadowStyle, String> _dropShadowStyleTooltipMap =
   DropShadowStyle.shade: "Shaded drop shadow",
 };
 
-class DrawingLayerSettingsWidget extends StatefulWidget
+class DrawingLayerSettingsWidget extends LayerSettingsWidget
 {
   final DrawingLayerState layer;
 

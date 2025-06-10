@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/layer_settings.dart';
 
 class ShadingLayerSettingsConstraints
 {
@@ -31,13 +32,11 @@ class ShadingLayerSettingsConstraints
   });
 }
 
-class ShadingLayerSettings with ChangeNotifier
+class ShadingLayerSettings extends LayerSettings
 {
   final ShadingLayerSettingsConstraints constraints;
   final ValueNotifier<int> shadingStepsMinus;
   final ValueNotifier<int> shadingStepsPlus;
-  bool editStarted = false;
-  bool hasChanges = false;
 
   ShadingLayerSettings({required this.constraints, required final int shadingLow, required final int shadingHigh}) :
         shadingStepsMinus = ValueNotifier<int>(shadingLow),
@@ -65,16 +64,14 @@ class ShadingLayerSettings with ChangeNotifier
 
   void _setupListeners()
   {
-    shadingStepsMinus.addListener(_valueChanged);
-    shadingStepsPlus.addListener(_valueChanged);
+    shadingStepsMinus.addListener(valueChanged);
+    shadingStepsPlus.addListener(valueChanged);
   }
 
-  void _valueChanged()
-  {
-    if (editStarted)
-    {
-      hasChanges = true;
-    }
-    notifyListeners();
+  @override
+  bool hasActiveSettings() {
+    return shadingStepsMinus.value != constraints.shadingStepsDefaultDarken ||
+        shadingStepsPlus.value != constraints.shadingStepsDefaultBrighten;
   }
+
 }

@@ -21,7 +21,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer_settings_widget.dart';
+import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -30,21 +33,15 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
-class DrawingLayerState extends LayerState
+class DrawingLayerState extends RasterableLayerState
 {
-  final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
+
   final CoordinateColorMap _data;
   CoordinateColorMap _settingsPixels;
-  bool isRasterizing = false;
-  bool doManualRaster = false;
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
-  ui.Image? previousRaster;
-  final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   List<LayerState>? layerStack;
   final DrawingLayerSettings settings;
-  CoordinateColorMap rasterPixels = CoordinateColorMap();
   HashMap<CoordinateSetI, int> settingsShadingPixels = HashMap<CoordinateSetI, int>();
-
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {
@@ -67,7 +64,8 @@ class DrawingLayerState extends LayerState
 
   DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, this.layerStack, required this.settings}) :
         _data = data,
-        _settingsPixels = settingsPixels
+        _settingsPixels = settingsPixels,
+        super(layerSettings: settings)
   {
     isRasterizing = true;
     _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: false));
@@ -435,6 +433,7 @@ class DrawingLayerState extends LayerState
     setDataAll(list: rotatedContent);
   }
 
+  @override
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     final CoordinateColorMap croppedContent = HashMap<CoordinateSetI, ColorReference>();
@@ -482,5 +481,10 @@ class DrawingLayerState extends LayerState
       }
     }
     return count;
+  }
+
+  @override
+  LayerSettingsWidget getSettingsWidget() {
+    return DrawingLayerSettingsWidget(layer: this);
   }
 }

@@ -25,6 +25,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -251,19 +252,9 @@ abstract class IToolPainter
     await Future<void>.delayed(const Duration(milliseconds: initialDelay));
 
     int iterations = 0;
-    if (currentLayer.runtimeType == DrawingLayerState)
+    if (currentLayer is RasterableLayerState)
     {
-      final DrawingLayerState dLayer = currentLayer as DrawingLayerState;
-      while (dLayer.isRasterizing && iterations < maxWaitingIterations)
-      {
-        await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
-        iterations++;
-      }
-    }
-    else if (currentLayer.runtimeType == ShadingLayerState)
-    {
-      final ShadingLayerState sLayer = currentLayer as ShadingLayerState;
-      while (sLayer.isRendering && iterations < maxWaitingIterations)
+      while (currentLayer.isRasterizing && iterations < maxWaitingIterations)
       {
         await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
         iterations++;

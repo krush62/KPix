@@ -33,11 +33,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer_settings_widget.dart';
-import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/shading_layer_settings_widget.dart';
-import 'package:kpix/layer_states/shading_layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -234,22 +231,11 @@ class _RightBarWidgetState extends State<RightBarWidget>
                 builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
                   Widget settingsWidget = const SizedBox.shrink();
                   final LayerState? currentLayer = _appState.getSelectedLayer();
-                  if (currentLayer != null)
+                  if (currentLayer != null && currentLayer is RasterableLayerState)
                   {
-                    if (currentLayer.runtimeType == DrawingLayerState)
-                    {
-                      final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
-                      drawingLayer.settings.editStarted = true;
-                      drawingLayer.settings.hasChanges = false;
-                      settingsWidget = DrawingLayerSettingsWidget(layer: drawingLayer,);
-                    }
-                    else if (currentLayer.runtimeType == ShadingLayerState)
-                    {
-                      final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
-                      shadingLayer.settings.editStarted = true;
-                      shadingLayer.settings.hasChanges = false;
-                      settingsWidget = ShadingLayerSettingsWidget(settings: shadingLayer.settings);
-                    }
+                    currentLayer.layerSettings.editStarted = true;
+                    currentLayer.layerSettings.hasChanges = false;
+                    settingsWidget = currentLayer.getSettingsWidget();
                   }
 
                   return IgnorePointer(
@@ -294,27 +280,13 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                   child: IconButton.outlined(
                                     onPressed: () {
                                       _appState.layerSettingsVisible = false;
-                                      if (currentLayer != null)
+                                      if (currentLayer != null && currentLayer is RasterableLayerState)
                                       {
-                                        if (currentLayer.runtimeType == DrawingLayerState)
+                                        currentLayer.layerSettings.editStarted = false;
+                                        if (currentLayer.layerSettings.hasChanges)
                                         {
-                                          final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
-                                          drawingLayer.settings.editStarted = false;
-                                          if (drawingLayer.settings.hasChanges)
-                                          {
-                                            GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
-                                            drawingLayer.settings.hasChanges = false;
-                                          }
-                                        }
-                                        else if (currentLayer.runtimeType == ShadingLayerState)
-                                        {
-                                          final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
-                                          shadingLayer.settings.editStarted = false;
-                                          if (shadingLayer.settings.hasChanges)
-                                          {
-                                            GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
-                                            shadingLayer.settings.hasChanges = false;
-                                          }
+                                          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
+                                          currentLayer.layerSettings.hasChanges = false;
                                         }
                                       }
                                     },

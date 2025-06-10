@@ -607,12 +607,8 @@ class LayerCollection with ChangeNotifier
       }
     }
 
-
-    print("NEW RASTER DATA FROM LAYER ${getLayerPosition(state: layer)}");
-
     if (nextLayerState != null)
     {
-      print("RASTERIZING LAYER ${getLayerPosition(state: nextLayerState)}");
 
       if (nextLayerState.runtimeType == DrawingLayerState)
       {

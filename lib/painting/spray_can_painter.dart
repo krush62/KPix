@@ -75,11 +75,11 @@ class SprayCanPainter extends IToolPainter
               _drawingPixels.clear();
               _drawingPixels.addAll(
               drawParams.currentDrawingLayer != null ?
-                getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions, withShadingLayers: true) :
+                getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
                 getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
               );
-
-              rasterizeDrawingPixels(drawingPixels: _drawingPixels).then((final ContentRasterSet? rasterSet)
+              final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
+              rasterizePixels(drawingPixels: _drawingPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet)
               {
                 if (rasterSet != null)
                 {

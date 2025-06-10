@@ -753,47 +753,8 @@ class KPixPainter extends CustomPainter
               filterQuality: FilterQuality.none,);
           }
         }
-
-
-
-
-        //DRAW CURSOR AND RASTER CONTENT
-        if (visibleLayers[i].isSelected.value && (visibleLayers[i].runtimeType == DrawingLayerState || visibleLayers[i].runtimeType == ShadingLayerState && !_isForbidden(drawParams: drawParams)))
-        {
-          final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
-          if (contentRasterSet != null)
-          {
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
-                (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-              image: contentRasterSet.image,
-              scale: 1.0 / pxlSzDbl,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
-          }
-
-
-          /*final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
-          if (cursorRasterSet != null)
-          {
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * drawParams.pixelSize),
-                (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
-                (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
-              image: cursorRasterSet.image,
-              scale: 1.0 / pxlSzDbl,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
-          }*/
-        }
       }
 
-      //TODO cursor raster
       final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
       if (cursorRasterSet != null)
       {
@@ -803,6 +764,21 @@ class KPixPainter extends CustomPainter
             (cursorRasterSet.size.x * drawParams.pixelSize).toDouble(),
             (cursorRasterSet.size.y * drawParams.pixelSize).toDouble(),),
           image: cursorRasterSet.image,
+          scale: 1.0 / pxlSzDbl,
+          fit: BoxFit.none,
+          alignment: Alignment.topLeft,
+          filterQuality: FilterQuality.none,);
+      }
+
+      final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
+      if (contentRasterSet != null)
+      {
+        paintImage(
+          canvas: drawParams.canvas,
+          rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * drawParams.pixelSize) , drawParams.offset.dy + (contentRasterSet.offset.y * drawParams.pixelSize),
+            (contentRasterSet.size.x * drawParams.pixelSize).toDouble(),
+            (contentRasterSet.size.y * drawParams.pixelSize).toDouble(),),
+          image: contentRasterSet.image,
           scale: 1.0 / pxlSzDbl,
           fit: BoxFit.none,
           alignment: Alignment.topLeft,

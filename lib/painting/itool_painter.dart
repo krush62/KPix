@@ -280,45 +280,7 @@ abstract class IToolPainter
     }
   }
 
-  Future<ContentRasterSet?> rasterizeDrawingPixels({required final CoordinateColorMap drawingPixels}) async
-  {
-    if (drawingPixels.isNotEmpty)
-    {
-      final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
-      final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
-      final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
-      final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
-      final ByteData byteDataImg = ByteData(size.x * size.y * 4);
-      for (final CoordinateColor entry in drawingPixels.entries)
-      {
-        final Color dColor = entry.value.getIdColor().color;
-        final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
-        if (index < byteDataImg.lengthInBytes)
-        {
-          byteDataImg.setUint32(index, argbToRgba(argb: dColor.toARGB32()));
-        }
-      }
-
-      final Completer<ui.Image> completerImg = Completer<ui.Image>();
-      ui.decodeImageFromPixels(
-          byteDataImg.buffer.asUint8List(),
-          size.x,
-          size.y,
-          ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
-      {
-        completerImg.complete(convertedImage);
-      }
-      );
-      return ContentRasterSet(image: await completerImg.future, offset: offset, size: size);
-    }
-    else
-    {
-      return null;
-    }
-  }
-
-
-  Future<ContentRasterSet?> rasterizeCursorPixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
+  Future<ContentRasterSet?> rasterizePixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
   {
     if (drawingPixels.isNotEmpty)
     {
@@ -335,7 +297,7 @@ abstract class IToolPainter
         for (int i = layerPosition - 1; i >= 0; i--)
         {
           final LayerState currentLayer = appState.getLayerAt(index: i);
-          if (currentLayer.runtimeType == DrawingLayerState)
+          if (currentLayer.runtimeType == DrawingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
           {
             final DrawingLayerState drawingLayer = currentLayer as DrawingLayerState;
             final int? shadingVal = drawingLayer.settingsShadingPixels[entry.key];
@@ -353,7 +315,7 @@ abstract class IToolPainter
               }
             }
           }
-          else if (currentLayer.runtimeType == ShadingLayerState)
+          else if (currentLayer.runtimeType == ShadingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
           {
             final ShadingLayerState shadingLayer = currentLayer as ShadingLayerState;
             final int? shadingVal = shadingLayer.shadingData[entry.key];
@@ -604,7 +566,7 @@ abstract class IToolPainter
     return path;
   }
 
-  CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor, final bool withShadingLayers = false})
+  CoordinateColorMap getPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateSetI coord in coords)
@@ -654,21 +616,8 @@ abstract class IToolPainter
         }
       }
     }
+    return pixelMap;
 
-
-    if (withShadingLayers)
-    {
-      final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
-      for (final CoordinateColor entry in pixelMap.entries)
-      {
-        shadedPixelMap[entry.key] = _getColorShading(coord: entry.key, appState: appState, inputColor: entry.value, currentLayer: currentLayer);
-      }
-      return shadedPixelMap;
-    }
-    else
-    {
-      return pixelMap;
-    }
   }
 
   ColorReference _getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor, required final LayerState currentLayer})

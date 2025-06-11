@@ -18,7 +18,10 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -40,14 +43,12 @@ class EraserPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.cursorPosNorm != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
+    if (drawParams.cursorPosNorm != null && drawParams.currentRasterLayer != null)
     {
-
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
       //if (_cursorPosNorm != _previousCursorPosNorm)
       {
-        if (drawParams.primaryDown &&
-            (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-            (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
+        if (drawParams.primaryDown && rasterLayer.lockState.value != LayerLockState.locked && rasterLayer.visibilityState.value != LayerVisibilityState.hidden)
         {
           final List<CoordinateSetI> pixelsToDelete = <CoordinateSetI>[drawParams.cursorPosNorm!];
           if (!drawParams.cursorPosNorm!.isAdjacent(other: _previousCursorPosNorm, withDiagonal: true))
@@ -65,11 +66,12 @@ class EraserPainter extends IToolPainter
                   coord.x < drawParams.canvasSize.x &&
                   coord.y < drawParams.canvasSize.y)
               {
-                if (drawParams.currentDrawingLayer != null)
+                if (rasterLayer.runtimeType == DrawingLayerState)
                 {
+                  final DrawingLayerState drawingLayer = rasterLayer as DrawingLayerState;
                   if (selection.selection.isEmpty)
                   {
-                    if (drawParams.currentDrawingLayer!.getDataEntry(coord: coord) != null)
+                    if (drawingLayer.getDataEntry(coord: coord) != null)
                     {
                       refs[coord] = null;
                     }
@@ -79,22 +81,26 @@ class EraserPainter extends IToolPainter
                     selection.selection.deleteDirectly(coord: coord);
                   }
                 }
-                else if (drawParams.primaryDown && drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.hasCoord(coord: coord))
+                else if (drawParams.primaryDown && rasterLayer.runtimeType == ShadingLayerState)
                 {
-                  refs[coord] = null;
+                  final ShadingLayerState shadingLayer = rasterLayer as ShadingLayerState;
+                  if (shadingLayer.hasCoord(coord: coord))
+                  {
+                    refs[coord] = null;
+                  }
                 }
               }
               _hasErasedPixels = true;
             }
           }
-          if (drawParams.currentDrawingLayer != null)
+          if (rasterLayer is DrawingLayerState)
           {
-            drawParams.currentDrawingLayer!.setDataAll(list: refs);
+            rasterLayer.setDataAll(list: refs);
           }
-          else //Shading Layer
+          else if (rasterLayer is ShadingLayerState)
           {
-            drawParams.currentShadingLayer!.removeCoords(coords: refs.keys);
-            //TODO CHECK
+            rasterLayer.removeCoords(coords: refs.keys);
+            //TODO CHECK IF ERASING WORKS WITHOUT THIS
             //appState.rasterDrawingLayers();
           }
         }

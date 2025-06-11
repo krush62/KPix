@@ -83,10 +83,9 @@ class DrawingParameters
   final bool secondaryDown;
   final bool stylusButtonDown;
   final Offset primaryPressStart;
-  final DrawingLayerState? currentDrawingLayer;
   final ReferenceLayerState? currentReferenceLayer;
-  final ShadingLayerState? currentShadingLayer;
   final GridLayerState? currentGridLayer;
+  final RasterableLayerState? currentRasterLayer;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -106,9 +105,8 @@ class DrawingParameters
     drawingStart = CoordinateSetI(x: offset.dx > 0 ? 0 : -(offset.dx / pixelSize).ceil(), y: offset.dy > 0 ? 0 : -(offset.dy / pixelSize).ceil()),
     drawingEnd = CoordinateSetI(x: offset.dx + (canvasSize.x * pixelSize) < drawingSize.width ? canvasSize.x : canvasSize.x - ((offset.dx + (canvasSize.x * pixelSize) - drawingSize.width) / pixelSize).floor(),
                                 y: offset.dy + (canvasSize.y) * pixelSize < drawingSize.height ? canvasSize.y : canvasSize.y - ((offset.dy + (canvasSize.y * pixelSize) - drawingSize.height) / pixelSize).floor(),),
-    currentDrawingLayer = currentLayer.runtimeType == DrawingLayerState ? (currentLayer as DrawingLayerState) : null,
+    currentRasterLayer = currentLayer is RasterableLayerState ? currentLayer : null,
     currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
-    currentShadingLayer = currentLayer.runtimeType == ShadingLayerState ? (currentLayer as ShadingLayerState) : null,
     currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
 }
 
@@ -255,7 +253,7 @@ class KPixPainter extends CustomPainter
 
       _drawCheckerboard(drawParams: drawParams);
       _drawCanvasBorder(drawParams: drawParams);
-      if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
+      if (drawParams.currentRasterLayer != null)
       {
         toolPainter?.calculate(drawParams: drawParams);
       }
@@ -264,16 +262,16 @@ class KPixPainter extends CustomPainter
         _handleReferenceLayer(drawParams: drawParams, refLayer: drawParams.currentReferenceLayer!);
       }
       _drawLayers(drawParams: drawParams);
-      if (drawParams.currentDrawingLayer != null)
+      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer.runtimeType == DrawingLayerState)
       {
         _drawSelection(drawParams: drawParams);
       }
-      if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
+      if (drawParams.currentRasterLayer != null)
       {
         toolPainter?.drawExtras(drawParams: drawParams);
       }
       _drawCursor(drawParams: drawParams);
-      if (drawParams.currentDrawingLayer != null)
+      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer.runtimeType == DrawingLayerState)
       {
         toolPainter?.setStatusBarData(drawParams: drawParams);
       }
@@ -507,11 +505,11 @@ class KPixPainter extends CustomPainter
   bool _isForbidden({required final DrawingParameters drawParams})
   {
     final bool onCanvas = isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos);
-    final bool isDrawingLayer = drawParams.currentDrawingLayer != null;
-    final bool isShadingLayer = drawParams.currentShadingLayer != null;
-    final bool isHidden = (isDrawingLayer && drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.hidden) || (isShadingLayer && drawParams.currentShadingLayer!.visibilityState.value == LayerVisibilityState.hidden);
-    final bool isLocked = (isDrawingLayer && drawParams.currentDrawingLayer!.lockState.value == LayerLockState.locked) || (isShadingLayer && drawParams.currentShadingLayer!.lockState.value == LayerLockState.locked);
+    final bool isHidden = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.visibilityState.value == LayerVisibilityState.hidden;
+    final bool isLocked = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value == LayerLockState.locked;
     final bool forbiddenDrawingTool = toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter;
+    final bool isDrawingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.runtimeType == DrawingLayerState;
+    final bool isShadingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.runtimeType == ShadingLayerState;
 
 
     final bool isForbidden =
@@ -529,7 +527,7 @@ class KPixPainter extends CustomPainter
     if (_coords.value != null)
     {
 
-      if (!_isDragging.value && !drawParams.secondaryDown /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null || drawParams.currentGridLayer != null))
+      if (!_isDragging.value && !drawParams.secondaryDown /*&& isOnCanvas(drawParams: drawParams, testCoords: drawParams.cursorPos!)*/ && toolPainter != null && (drawParams.currentRasterLayer != null || drawParams.currentGridLayer != null))
       {
         if (_isForbidden(drawParams: drawParams))
         {

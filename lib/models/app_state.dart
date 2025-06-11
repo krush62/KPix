@@ -391,7 +391,7 @@ class AppState
       _selectedColor.value = rampDataList[0].references[0];
       _colorRamps.value = rampDataList;
       _layerCollection.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
-      _layerCollection.reRasterAllDrawingLayers();
+      rasterAllDrawingLayers();
       repaintNotifier.repaint();
       if (addToHistoryStack)
       {
@@ -415,7 +415,7 @@ class AppState
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       _layerCollection.remapLayers(newData: ramp, map: indexMap);
     }
-    _layerCollection.reRasterAllDrawingLayers();
+    rasterAllDrawingLayers();
     repaintNotifier.repaint();
     if (addToHistoryStack)
     {
@@ -718,7 +718,6 @@ class AppState
 
       _canvasSize.x = canvSize.x;
       _canvasSize.y = canvSize.y;
-
       rasterAllDrawingLayers();
     }
   }

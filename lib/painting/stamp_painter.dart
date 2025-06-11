@@ -20,6 +20,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -64,10 +66,10 @@ class StampPainter extends IToolPainter
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
     }
 
-    if (
-      (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-      (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
+    if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value != LayerLockState.locked && drawParams.currentRasterLayer!.visibilityState.value != LayerVisibilityState.hidden)
     {
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
+
       final bool shouldUpdate =
         _oldCursorPos != _cursorPosNorm ||
         _previousSize != _options.scale.value ||
@@ -103,12 +105,18 @@ class StampPainter extends IToolPainter
         }
         _previousSize = _options.scale.value;
 
-        final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
-          getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!, withShadingLayers: true) :
-          getStampPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, stampData: _stampData, shaderOptions: shaderOptions);
+        CoordinateColorMap cursorPixels = CoordinateColorMap();
+        if (rasterLayer is DrawingLayerState)
+        {
+          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!, withShadingLayers: true);
+        }
+        else if (rasterLayer is ShadingLayerState)
+        {
+          cursorPixels = getStampPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: _stampData, shaderOptions: shaderOptions);
+        }
 
-        final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
-        rasterizePixels(drawingPixels: cursorPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet) {
+
+        rasterizePixels(drawingPixels: cursorPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
           cursorRaster = rasterSet;
           hasAsyncUpdate = true;
         });
@@ -122,13 +130,13 @@ class StampPainter extends IToolPainter
       }
       else if (!drawParams.primaryDown && _down)
       {
-        if (drawParams.currentDrawingLayer != null)
+        if (rasterLayer is DrawingLayerState)
         {
-          _dump(canvasSize: drawParams.canvasSize, drawingLayer: drawParams.currentDrawingLayer!);
+          _dump(canvasSize: drawParams.canvasSize, drawingLayer: rasterLayer);
         }
-        else //SHADING LAYER
+        else if (rasterLayer is ShadingLayerState)
         {
-          dumpStampShading(shadingLayer: drawParams.currentShadingLayer!, stampData: _stampData, shaderOptions: shaderOptions);
+          dumpStampShading(shadingLayer: rasterLayer, stampData: _stampData, shaderOptions: shaderOptions);
         }
 
         _down = false;
@@ -189,7 +197,7 @@ class StampPainter extends IToolPainter
     drawParams.paint.color = Colors.white;
     drawParams.canvas.drawPath(path, drawParams.paint);
 
-    if (drawParams.currentDrawingLayer != null && _manager.selectedStamp.value != null)
+    if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is DrawingLayerState && _manager.selectedStamp.value != null)
     {
       final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
       final CoordinateSetD cursorPos = CoordinateSetD(

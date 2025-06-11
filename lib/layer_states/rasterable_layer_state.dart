@@ -32,7 +32,7 @@ abstract class RasterableLayerState extends LayerState
   ui.Image? previousRaster;
   bool doManualRaster = false;
   final LayerSettings layerSettings;
-  List<LayerState>? layerStack;
+  List<RasterableLayerState>? layerStack;
 
   RasterableLayerState({required this.layerSettings, this.layerStack});
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset});

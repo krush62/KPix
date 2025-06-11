@@ -22,6 +22,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
@@ -48,15 +50,14 @@ class SprayCanPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
+    if (drawParams.currentRasterLayer != null)
     {
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
       if (drawParams.cursorPos != null)
       {
         _cursorPoints = getRoundSquareContentPoints(shape: PencilShape.round, size: _options.radius.value * 2, position: drawParams.cursorPosNorm!);
         _lastCursorPosNorm = drawParams.cursorPosNorm;
-        if (!_waitingForDump && (
-            (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-            (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden)))
+        if (!_waitingForDump && (rasterLayer.lockState.value != LayerLockState.locked && rasterLayer.visibilityState.value != LayerVisibilityState.hidden))
         {
           if (drawParams.primaryDown)
           {
@@ -73,13 +74,16 @@ class SprayCanPainter extends IToolPainter
             if (_hasNewPositions)
             {
               _drawingPixels.clear();
-              _drawingPixels.addAll(
-              drawParams.currentDrawingLayer != null ?
-                getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-                getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
-              );
-              final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
-              rasterizePixels(drawingPixels: _drawingPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet)
+              if (rasterLayer is DrawingLayerState)
+              {
+                _drawingPixels.addAll(getPixelsToDraw(coords: _allPaintPositions, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              }
+              else if (rasterLayer is ShadingLayerState)
+              {
+                _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _allPaintPositions, shaderOptions: shaderOptions));
+              }
+
+              rasterizePixels(drawingPixels: _drawingPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet)
               {
                 if (rasterSet != null)
                 {
@@ -87,7 +91,7 @@ class SprayCanPainter extends IToolPainter
                 }
                 else
                 {
-                  resetContentRaster(currentLayer: drawParams.currentDrawingLayer ?? drawParams.currentShadingLayer!);
+                  resetContentRaster(currentLayer: rasterLayer);
                 }
 
                 hasAsyncUpdate = true;
@@ -99,20 +103,16 @@ class SprayCanPainter extends IToolPainter
           {
             timer.cancel();
             _drawingPixels.clear();
-            _drawingPixels.addAll(
-              drawParams.currentDrawingLayer != null ?
-              getPixelsToDraw(coords: _allPaintPositions, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-              getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _allPaintPositions, shaderOptions: shaderOptions),
-            );
-
-            if (drawParams.currentDrawingLayer != null)
+            if (rasterLayer is DrawingLayerState)
             {
-              _dumpDrawing(currentLayer: drawParams.currentDrawingLayer!);
+              _drawingPixels.addAll(getPixelsToDraw(coords: _allPaintPositions, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
-            else
+            else if (rasterLayer is ShadingLayerState)
             {
-              dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _allPaintPositions, shaderOptions: shaderOptions);
+              _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _allPaintPositions, shaderOptions: shaderOptions));
+              dumpShading(shadingLayer: rasterLayer, coordinates: _allPaintPositions, shaderOptions: shaderOptions);
               _drawingPixels.clear();
             }
 
@@ -120,7 +120,7 @@ class SprayCanPainter extends IToolPainter
             _isDown = false;
           }
         }
-        else if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForDump)
+        else if (rasterLayer is DrawingLayerState && rasterLayer.rasterQueue.isEmpty && rasterLayer.isRasterizing && _waitingForDump)
         {
           _drawingPixels.clear();
           _waitingForDump = false;

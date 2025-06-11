@@ -18,6 +18,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -49,8 +50,9 @@ class SelectionPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.currentDrawingLayer != null)
+    if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is DrawingLayerState)
     {
+      final DrawingLayerState drawingLayer = drawParams.currentRasterLayer! as DrawingLayerState;
       if (_lastStartPos != drawParams.primaryPressStart)
       {
         _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
@@ -65,7 +67,7 @@ class SelectionPainter extends IToolPainter
         _isStartOnCanvas = drawParams.primaryDown && drawParams.cursorPos != null;
         if (_isStartOnCanvas)
         {
-          _shouldMove = (drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) &&
+          _shouldMove = (drawingLayer.lockState.value != LayerLockState.locked && drawingLayer.visibilityState.value != LayerVisibilityState.hidden) &&
               (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
           if (_shouldMove)
           {

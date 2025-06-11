@@ -558,26 +558,15 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
-  void reRasterLayersAbove()
+  void reRasterAllDrawingLayers()
   {
-    final int layerIndex = getSelectedLayerIndex() - 1;
-    if (layerIndex >= 0)
+    for (int i = _layers.length - 1; i >= 0; i--)
     {
-      final LayerState layer = getLayer(index: layerIndex);
+      final LayerState layer = _layers[i];
       if (layer is RasterableLayerState)
       {
         layer.doManualRaster = true;
-      }
-    }
-  }
-
- void reRasterAllDrawingLayers()
-  {
-    for (final LayerState layer in _layers)
-    {
-      if (layer is RasterableLayerState)
-      {
-        layer.doManualRaster = true;
+        break;
       }
     }
   }

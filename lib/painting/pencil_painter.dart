@@ -21,6 +21,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -57,8 +59,9 @@ class PencilPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
-    if (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null)
+    if (drawParams.currentRasterLayer != null)
     {
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
       if (drawParams.cursorPosNorm != null) {
 
         _hasNewCursorPos =
@@ -84,8 +87,7 @@ class PencilPainter extends IToolPainter
       {
         if (drawParams.primaryDown)
         {
-          if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-              (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
+          if (rasterLayer.lockState.value != LayerLockState.locked && rasterLayer.visibilityState.value != LayerVisibilityState.hidden)
           {
             if (_hotkeyManager.shiftIsPressed)
             {
@@ -132,12 +134,18 @@ class PencilPainter extends IToolPainter
             {
               paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
             }
-            final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
-              getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-              getPixelsToDrawForShading(coords: paintPoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+            CoordinateColorMap pixelsToDraw = CoordinateColorMap();
+            if (rasterLayer is DrawingLayerState)
+            {
+              pixelsToDraw = getPixelsToDraw(coords: paintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            }
+            else if (rasterLayer is ShadingLayerState)
+            {
+              pixelsToDraw = getPixelsToDrawForShading(coords: paintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+            }
 
             _drawingPixels.addAll(pixelsToDraw);
-            if (drawParams.currentDrawingLayer != null)
+            if (rasterLayer is DrawingLayerState)
             {
               _paintPositions.removeRange(0, _paintPositions.length - min(3, _paintPositions.length));
             }
@@ -151,9 +159,16 @@ class PencilPainter extends IToolPainter
                 additionalPaintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
               }
 
-              final CoordinateColorMap additionalDrawingPixels = (drawParams.currentDrawingLayer != null) ?
-                getPixelsToDraw(coords: additionalPaintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-                getPixelsToDrawForShading(coords: additionalPaintPoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+              CoordinateColorMap additionalDrawingPixels = CoordinateColorMap();
+              if (rasterLayer is DrawingLayerState)
+              {
+                additionalDrawingPixels = getPixelsToDraw(coords: additionalPaintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              }
+              else if (rasterLayer is ShadingLayerState)
+              {
+                additionalDrawingPixels = getPixelsToDrawForShading(coords: additionalPaintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+              }
+
               addPixels = HashMap<CoordinateSetI, ColorReference>();
               addPixels.addAll(_drawingPixels);
               addPixels.addAll(additionalDrawingPixels);
@@ -162,15 +177,14 @@ class PencilPainter extends IToolPainter
             {
               addPixels = _drawingPixels;
             }
-            final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
-            rasterizePixels(drawingPixels: addPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet) {
+            rasterizePixels(drawingPixels: addPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
               if (rasterSet != null)
               {
                 setContentRasterData(content: rasterSet);
               }
               else
               {
-                resetContentRaster(currentLayer: drawParams.currentDrawingLayer ?? drawParams.currentShadingLayer!);
+                resetContentRaster(currentLayer: rasterLayer);
               }
               hasAsyncUpdate = true;
             });
@@ -190,15 +204,15 @@ class PencilPainter extends IToolPainter
               paintPoints.addAll(getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: pos));
             }
 
-            if (drawParams.currentDrawingLayer != null)
+            if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
-              _dumpDrawing(currentLayer: drawParams.currentDrawingLayer!);
+              _drawingPixels.addAll(getPixelsToDraw(coords: paintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
-            else //SHADING LAYER
+            else if (rasterLayer is ShadingLayerState)
             {
-               dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: paintPoints, shaderOptions: shaderOptions);
+               dumpShading(shadingLayer: rasterLayer, coordinates: paintPoints, shaderOptions: shaderOptions);
                _drawingPixels.clear();
             }
             _paintPositions.clear();
@@ -209,15 +223,15 @@ class PencilPainter extends IToolPainter
             final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
             getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
             getLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, shape: _options.shape.value);
-            if (drawParams.currentDrawingLayer != null)
+            if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
-              _dumpDrawing(currentLayer: drawParams.currentDrawingLayer!);
+              _drawingPixels.addAll(getPixelsToDraw(coords: linePoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
-            else //SHADING LAYER
+            else if (rasterLayer is ShadingLayerState)
             {
-              dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: linePoints, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: rasterLayer, coordinates: linePoints, shaderOptions: shaderOptions);
               _drawingPixels.clear();
             }
             _lastDrawingPosition = CoordinateSetI.from(other: linePoints.last);
@@ -225,7 +239,7 @@ class PencilPainter extends IToolPainter
           _isLineDrawing = false;
         }
       }
-      else if (drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.rasterQueue.isEmpty && !drawParams.currentDrawingLayer!.isRasterizing && _waitingForDump)
+      else if (rasterLayer is DrawingLayerState && rasterLayer.rasterQueue.isEmpty && !rasterLayer.isRasterizing && _waitingForDump)
       {
         _drawingPixels.clear();
         _waitingForDump = false;
@@ -234,27 +248,34 @@ class PencilPainter extends IToolPainter
       //CURSOR CONTENT
       if (_hasNewCursorPos)
       {
-        CoordinateColorMap cursorPixels;
+        CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (_hotkeyManager.shiftIsPressed && _lastDrawingPosition != null && _paintPositions.isEmpty && _allPaintPositions.isEmpty)
         {
           final Set<CoordinateSetI> linePoints = _hotkeyManager.controlIsPressed ?
           getIntegerRatioLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, angles: _lineOptions.angles, shape: _options.shape.value) :
           getLinePoints(startPos: _lastDrawingPosition!, endPos: drawParams.cursorPosNorm!, size: _options.size.value, shape: _options.shape.value);
 
-          final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
-            getPixelsToDraw(coords: linePoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-            getPixelsToDrawForShading(coords: linePoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
-          cursorPixels = pixelsToDraw;
+          if (rasterLayer is DrawingLayerState)
+          {
+            cursorPixels = getPixelsToDraw(coords: linePoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          }
+          else if (rasterLayer is ShadingLayerState)
+          {
+            cursorPixels = getPixelsToDrawForShading(coords: linePoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+          }
         }
         else
         {
-          final CoordinateColorMap pixelsToDraw = (drawParams.currentDrawingLayer != null) ?
-          getPixelsToDraw(coords: _contentPoints, currentLayer: drawParams.currentDrawingLayer!, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-          getPixelsToDrawForShading(coords: _contentPoints, currentLayer: drawParams.currentShadingLayer!, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
-          cursorPixels = pixelsToDraw;
+          if (rasterLayer is DrawingLayerState)
+          {
+            cursorPixels = getPixelsToDraw(coords: _contentPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+          }
+          else if (rasterLayer is ShadingLayerState)
+          {
+            cursorPixels = getPixelsToDrawForShading(coords: _contentPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+          }
         }
-        final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
-        rasterizePixels(drawingPixels: cursorPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet) {
+        rasterizePixels(drawingPixels: cursorPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
           cursorRaster = rasterSet;
           hasAsyncUpdate = true;
         });

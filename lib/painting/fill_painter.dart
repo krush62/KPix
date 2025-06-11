@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -97,34 +98,35 @@ class FillPainter extends IToolPainter
 
   @override
   void drawExtras({required final DrawingParameters drawParams}) {
-    if (drawParams.cursorPosNorm != null && _shouldDraw && (drawParams.currentDrawingLayer != null || drawParams.currentShadingLayer != null))
+    if (drawParams.cursorPosNorm != null && _shouldDraw && drawParams.currentRasterLayer != null)
     {
-      if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.visibilityState.value == LayerVisibilityState.visible && (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.unlocked || (drawParams.currentDrawingLayer!.lockState.value == LayerLockState.transparency && drawParams.currentDrawingLayer!.getDataEntry(coord: drawParams.cursorPosNorm!) != null))) ||
-        (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.visibilityState.value == LayerVisibilityState.visible && drawParams.currentShadingLayer!.lockState.value == LayerLockState.unlocked))
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
+      if ((rasterLayer is DrawingLayerState && rasterLayer.visibilityState.value == LayerVisibilityState.visible && (rasterLayer.lockState.value == LayerLockState.unlocked || (rasterLayer.lockState.value == LayerLockState.transparency && rasterLayer.getDataEntry(coord: drawParams.cursorPosNorm!) != null))) ||
+        (rasterLayer is ShadingLayerState && rasterLayer.visibilityState.value == LayerVisibilityState.visible && rasterLayer.lockState.value == LayerLockState.unlocked))
       {
         if (_options.fillAdjacent.value)
         {
-          if (drawParams.currentDrawingLayer != null)
+          if (rasterLayer is DrawingLayerState)
           {
-            _floodFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _floodFill(fillColor: appState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
-          else //SHADING LAYER
+          else if (rasterLayer is ShadingLayerState)
           {
-            _floodFillShading(layer: drawParams.currentShadingLayer!, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
-            //TODO CHECK
+            _floodFillShading(layer: rasterLayer, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
+            //TODO CHECK IF IT STILL DRAWS
             //appState.rasterDrawingLayers();
           }
         }
         else
         {
-          if (drawParams.currentDrawingLayer != null)
+          if (rasterLayer is DrawingLayerState)
           {
-            _wholeFill(fillColor: appState.selectedColor!, layer: drawParams.currentDrawingLayer!, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
+            _wholeFill(fillColor: appState.selectedColor!, layer: rasterLayer, start: drawParams.cursorPosNorm!, doShade: shaderOptions.isEnabled.value, shadeDirection: shaderOptions.shaderDirection.value, shadeCurrentRampOnly: shaderOptions.onlyCurrentRampEnabled.value, fillWholeRamp: _options.fillWholeRamp.value);
           }
-          else //SHADING LAYER
+          else if (rasterLayer is ShadingLayerState)
           {
-            _wholeFillShading(layer: drawParams.currentShadingLayer!, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
-            //TODO CHECK
+            _wholeFillShading(layer: rasterLayer, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
+            //TODO CHECK IF IT STILL DRAWS
             //appState.rasterDrawingLayers();
           }
 

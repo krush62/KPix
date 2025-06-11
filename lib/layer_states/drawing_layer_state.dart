@@ -85,11 +85,12 @@ class DrawingLayerState extends RasterableLayerState
     rasterPixels = _getContentWithSelection();
     settingsShadingPixels = settings.getOuterShadingPixels(data: rasterPixels);
     _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this);
-    GetIt.I.get<AppState>().rasterAllDrawingLayers();
+    //TODO CHECK IF IT WORKS WITHOUT
+    //GetIt.I.get<AppState>().rasterAllDrawingLayers();
   }
 
 
-  factory DrawingLayerState.from({required final DrawingLayerState other, final List<LayerState>? layerStack})
+  factory DrawingLayerState.from({required final DrawingLayerState other, final List<RasterableLayerState>? layerStack})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
     final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
@@ -217,7 +218,11 @@ class DrawingLayerState extends RasterableLayerState
       doManualRaster = false;
     }
 
-    GetIt.I.get<AppState>().newRasterData(layer: this);
+    if (layerStack == null)
+    {
+      GetIt.I.get<AppState>().newRasterData(layer: this);
+    }
+
 
   }
 

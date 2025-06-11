@@ -16,7 +16,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
@@ -108,15 +111,25 @@ class LinePainter extends IToolPainter
               _linePoints = widePoints;
             }
           }
-          final CoordinateColorMap cursorPixels = drawParams.currentDrawingLayer != null ?
-            getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions) :
-            getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentShadingLayer!, coords: _linePoints, shaderOptions: shaderOptions);
 
-          final LayerState currentLayer = (drawParams.currentDrawingLayer != null) ? drawParams.currentDrawingLayer! : drawParams.currentShadingLayer!;
-          rasterizePixels(drawingPixels: cursorPixels, currentLayer: currentLayer).then((final ContentRasterSet? rasterSet) {
-            cursorRaster = rasterSet;
-            hasAsyncUpdate = true;
-          });
+          CoordinateColorMap cursorPixels = CoordinateColorMap();
+          if (drawParams.currentRasterLayer != null)
+          {
+            final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
+            if (rasterLayer is DrawingLayerState)
+            {
+              cursorPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            }
+            else if (rasterLayer is ShadingLayerState)
+            {
+              cursorPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _linePoints, shaderOptions: shaderOptions);
+            }
+
+            rasterizePixels(drawingPixels: cursorPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
+              cursorRaster = rasterSet;
+              hasAsyncUpdate = true;
+            });
+          }
         }
 
         _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;
@@ -126,9 +139,9 @@ class LinePainter extends IToolPainter
       }
     }
 
-    if ((drawParams.currentDrawingLayer != null && drawParams.currentDrawingLayer!.lockState.value != LayerLockState.locked && drawParams.currentDrawingLayer!.visibilityState.value != LayerVisibilityState.hidden) ||
-        (drawParams.currentShadingLayer != null && drawParams.currentShadingLayer!.lockState.value != LayerLockState.locked && drawParams.currentShadingLayer!.visibilityState.value != LayerVisibilityState.hidden))
+    if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value != LayerLockState.locked && drawParams.currentRasterLayer!.visibilityState.value != LayerVisibilityState.hidden)
     {
+      final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
       if (drawParams.primaryDown)
       {
         if (!_isDown)
@@ -159,21 +172,21 @@ class LinePainter extends IToolPainter
         }
         else
         {
-          if (drawParams.currentDrawingLayer != null)
+          if (rasterLayer is DrawingLayerState)
           {
-            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: drawParams.currentDrawingLayer!, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             if (!appState.selectionState.selection.isEmpty)
             {
               appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
             }
             else
             {
-              drawParams.currentDrawingLayer!.setDataAll(list: drawingPixels);
+              rasterLayer.setDataAll(list: drawingPixels);
             }
           }
-          else //SHADING LAYER
+          else if (rasterLayer is ShadingLayerState)
           {
-            dumpShading(shadingLayer: drawParams.currentShadingLayer!, coordinates: _linePoints, shaderOptions: shaderOptions);
+            dumpShading(shadingLayer: rasterLayer, coordinates: _linePoints, shaderOptions: shaderOptions);
           }
 
           hasHistoryData = true;

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:kpix/layer_states/reference_layer_state.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 
 class HistoryReferenceLayer extends HistoryLayer

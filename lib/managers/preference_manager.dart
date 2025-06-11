@@ -16,9 +16,9 @@
 
 // ignore_for_file: constant_identifier_names
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/shading_layer_settings.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';

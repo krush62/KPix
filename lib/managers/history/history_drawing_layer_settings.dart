@@ -17,7 +17,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:kpix/layer_states/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';

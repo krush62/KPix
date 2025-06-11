@@ -14,11 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:kpix/layer_states/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer_state.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/reference_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer_state.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';

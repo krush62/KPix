@@ -16,7 +16,7 @@
 
 import 'dart:collection';
 
-import 'package:kpix/layer_states/drawing_layer_state.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer_settings.dart';

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:kpix/layer_states/shading_layer_settings.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 
 class HistoryShadingLayerSettings
 {

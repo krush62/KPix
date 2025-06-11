@@ -16,7 +16,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/layer_states/shading_layer_settings.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //UNDO STEPS

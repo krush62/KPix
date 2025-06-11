@@ -53,8 +53,7 @@ class ImportResult
 
   Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
   {
-
-    final ByteData? imageData = await importData.image.toByteData();
+    final ByteData? imageData = await importData.scaledImage.toByteData();
     if (imageData == null)
     {
       return ImportResult(message: "Could not convert image data!");
@@ -82,7 +81,7 @@ class ImportResult
           ramps.add(await _getParamsFromColorList(colors: interRamp));
         }
 
-        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.image.width, height: importData.image.height, ramps: ramps);
+        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
         await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
         if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
         {
@@ -100,16 +99,19 @@ class ImportResult
       else
       {
         ramps = currentRamps;
-        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.image.width, height: importData.image.height, ramps: ramps);
+        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
       }
 
       ReferenceLayerState? referenceLayer;
       if (importData.includeReference)
       {
         referenceLayer = await _getReferenceLayer(img: importData.image, imgPath: importData.filePath);
+        final double targetZoomHeight = importData.scaledImage.height.toDouble() / (importData.image.height.toDouble());
+        final double targetZoomWidth = importData.scaledImage.width.toDouble() / (importData.image.width.toDouble());
+        referenceLayer.setZoomSliderFromZoomFactor(factor: (targetZoomWidth + targetZoomHeight) / 2.0);
       }
 
-      final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.image.width, y: importData.image.height));
+      final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.scaledImage.width, y: importData.scaledImage.height));
       return ImportResult(message: "SUCCESS", data: importDataSet);
 
     }

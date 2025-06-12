@@ -853,7 +853,7 @@ class AppState
     {
       layerState.visibilityState.value = LayerVisibilityState.visible;
     }
-
+    newRasterData(layer: layerState);
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
   }
 
@@ -931,7 +931,6 @@ class AppState
   {
     if (_layerCollection.deleteLayer(deleteLayer: deleteLayer))
     {
-
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
@@ -941,6 +940,7 @@ class AppState
     {
       showMessage(text: "Cannot delete the layer!");
     }
+    rasterAllDrawingLayers();
   }
 
   void layerMerged({required final LayerState mergeLayer, final bool addToHistoryStack = true})
@@ -959,7 +959,7 @@ class AppState
     {
       showMessage(text: message);
     }
-
+    rasterAllDrawingLayers();
   }
 
   void layerDuplicated({required final LayerState duplicateLayer, final bool addToHistoryStack = true})
@@ -970,6 +970,7 @@ class AppState
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
     }
+    newRasterData(layer: duplicateLayer);
   }
 
   void layerRastered({required final LayerState rasterLayer, final bool addToHistoryStack = true})
@@ -986,7 +987,7 @@ class AppState
     _layerCollection.reRasterAllDrawingLayers();
   }
 
-  void newRasterData({required final RasterableLayerState layer})
+  void newRasterData({required final LayerState layer})
   {
     _layerCollection.layerRasterDone(layer: layer);
   }
@@ -1058,6 +1059,7 @@ class AppState
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasFlipV);
     }
+
   }
 
   void cropToSelection()
@@ -1082,6 +1084,7 @@ class AppState
     selectionState.deselect(addToHistoryStack: false, notify: false);
     _layerCollection.changeLayerSizes(newSize: newSize, offset: offset);
     _setCanvasDimensions(width: newSize.x, height: newSize.y);
+    rasterAllDrawingLayers();
   }
 
 

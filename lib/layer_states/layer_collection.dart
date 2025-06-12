@@ -436,7 +436,6 @@ class LayerCollection with ChangeNotifier
           final DrawingLayerState drawingLayer = layer as DrawingLayerState;
           drawingLayer.remapAllColors(rampMap: rampMap);
           drawingLayer.remapLayerEffectColors(rampMap: rampMap);
-          drawingLayer.doManualRaster = true;
         }
       }
     }
@@ -624,12 +623,6 @@ class LayerCollection with ChangeNotifier
       if (layer is RasterableLayerState)
       {
         layer.resizeLayer(newSize: newSize, offset: offset);
-        layer.doManualRaster = true;
-      }
-      else if (layer.runtimeType == GridLayerState)
-      {
-        final GridLayerState gridLayer = layer as GridLayerState;
-        gridLayer.manualRender();
       }
     }
   }

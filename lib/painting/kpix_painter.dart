@@ -655,13 +655,13 @@ class KPixPainter extends CustomPainter
     {
       getImageFromLayers(appState: _appState).then((final ui.Image img) {
         _backupImage = img;
-        final Iterable<DrawingLayerState> drawingLayers =_appState.visibleLayers.whereType<DrawingLayerState>();
+        final Iterable<RasterableLayerState> rasterLayers =_appState.visibleLayers.whereType<RasterableLayerState>();
         _previousRasterHashes.clear();
-        for (final DrawingLayerState drawingLayer in drawingLayers)
+        for (final RasterableLayerState rasterLayer in rasterLayers)
         {
-          if (drawingLayer.rasterImage.value != null)
+          if (rasterLayer.rasterImage.value != null)
           {
-            _previousRasterHashes.add(drawingLayer.rasterImage.value.hashCode);
+            _previousRasterHashes.add(rasterLayer.rasterImage.value.hashCode);
           }
         }
       });
@@ -672,10 +672,7 @@ class KPixPainter extends CustomPainter
   {
     final List<LayerState> visibleLayers = _appState.visibleLayers.toList();
     final double pxlSzDbl = drawParams.pixelSize.toDouble();
-
-    //TODO This should also take Shading Layers into account
-    final bool hasRasterizingLayers = visibleLayers.whereType<DrawingLayerState>().any((final DrawingLayerState drawingLayer) => drawingLayer.isRasterizing);
-
+    final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any((final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing);
     if (!hasRasterizingLayers || _backupImage == null)
     {
       for (int i = visibleLayers.length - 1; i >= 0; i--)

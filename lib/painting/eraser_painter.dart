@@ -100,8 +100,6 @@ class EraserPainter extends IToolPainter
           else if (rasterLayer is ShadingLayerState)
           {
             rasterLayer.removeCoords(coords: refs.keys);
-            //TODO CHECK IF ERASING WORKS WITHOUT THIS
-            //appState.rasterDrawingLayers();
           }
         }
         _previousCursorPosNorm.x = drawParams.cursorPosNorm!.x;

@@ -984,7 +984,7 @@ class AppState
     _layerCollection.reRasterAllDrawingLayers();
   }
 
-  void newRasterData({required final LayerState layer})
+  void newRasterData({required final RasterableLayerState layer})
   {
     _layerCollection.layerRasterDone(layer: layer);
   }

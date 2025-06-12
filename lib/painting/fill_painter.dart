@@ -113,8 +113,6 @@ class FillPainter extends IToolPainter
           else if (rasterLayer is ShadingLayerState)
           {
             _floodFillShading(layer: rasterLayer, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
-            //TODO CHECK IF IT STILL DRAWS
-            //appState.rasterDrawingLayers();
           }
         }
         else
@@ -126,8 +124,6 @@ class FillPainter extends IToolPainter
           else if (rasterLayer is ShadingLayerState)
           {
             _wholeFillShading(layer: rasterLayer, start: drawParams.cursorPosNorm!, shadeDirection: shaderOptions.shaderDirection.value);
-            //TODO CHECK IF IT STILL DRAWS
-            //appState.rasterDrawingLayers();
           }
 
         }

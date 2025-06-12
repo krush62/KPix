@@ -85,8 +85,7 @@ class DrawingLayerState extends RasterableLayerState
     rasterPixels = _getContentWithSelection();
     settingsShadingPixels = settings.getOuterShadingPixels(data: rasterPixels);
     _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this);
-    //TODO CHECK IF IT WORKS WITHOUT
-    //GetIt.I.get<AppState>().rasterAllDrawingLayers();
+    doManualRaster = true;
   }
 
 

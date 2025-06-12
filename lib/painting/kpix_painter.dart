@@ -134,6 +134,8 @@ class KPixPainter extends CustomPainter
   late int _latestContrast = 50;
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
+  ui.Image? _backupImage;
+
 
   // status for reference layer movements
   bool _referenceImgMovementStarted = false;
@@ -230,11 +232,12 @@ class KPixPainter extends CustomPainter
         _createCheckerboard();
       }
 
+      final Paint noFilterPainter = Paint()..filterQuality = FilterQuality.none..isAntiAlias = false;
       final DrawingParameters drawParams = DrawingParameters(
         stylusButtonDown: _stylusButton1Down.value,
         offset: _offset.value,
         canvas: canvas,
-        paint: Paint(),
+        paint: noFilterPainter,
         pixelSize: _appState.zoomFactor,
         canvasSize: _appState.canvasSize,
         drawingSize: size,
@@ -615,13 +618,13 @@ class KPixPainter extends CustomPainter
 
   bool _shouldCapture()
   {
-    final Iterable<DrawingLayerState> drawingLayers =_appState.visibleLayers.whereType<DrawingLayerState>();
-    if (drawingLayers.length != _previousRasterHashes.length)
+    final Iterable<RasterableLayerState> rasterLayers =_appState.visibleLayers.whereType<RasterableLayerState>();
+    if (rasterLayers.length != _previousRasterHashes.length)
     {
       return true;
     }
     final List<int> rasterHashes = <int>[];
-    for (final DrawingLayerState drawingLayer in drawingLayers)
+    for (final RasterableLayerState drawingLayer in rasterLayers)
     {
       if (drawingLayer.isRasterizing)
       {
@@ -647,7 +650,7 @@ class KPixPainter extends CustomPainter
     return false;
   }
 
-  ui.Image? _backupImage;
+
 
   void _captureTimeout()
   {
@@ -668,6 +671,46 @@ class KPixPainter extends CustomPainter
     }
   }
 
+  void _drawRasterImage({required final DrawingParameters drawParams, required final double pxlSzDbl, required final ui.Image displayImage})
+  {
+    final double rightDifference = (drawParams.offset.dx + drawParams.scaledCanvasSize.x) - latestSize.width;
+    final double bottomDifference = (drawParams.offset.dy + drawParams.scaledCanvasSize.y) - latestSize.height;
+    final double leftDifference = -drawParams.offset.dx;
+    final double topDifference = -drawParams.offset.dy;
+
+    final double rightExceed = rightDifference > 0 ? rightDifference : 0;
+    final double bottomExceed = bottomDifference > 0 ? bottomDifference : 0;
+    final double leftExceed = leftDifference > 0 ? leftDifference : 0;
+    final double topExceed = topDifference > 0 ? topDifference : 0;
+
+    final double horizontalExceedFactor = 1.0 - (leftExceed + rightExceed) / drawParams.scaledCanvasSize.x;
+    final double verticalExceedFactor = 1.0 - (topExceed + bottomExceed) / drawParams.scaledCanvasSize.y;
+
+    final double destX = drawParams.offset.dx < 0 ? 0.0 : drawParams.offset.dx;
+    final double destY = drawParams.offset.dy < 0 ? 0.0 : drawParams.offset.dy;
+
+    final ui.Rect destRect = ui.Rect.fromLTWH(
+      destX,
+      destY,
+      drawParams.scaledCanvasSize.x.toDouble() - leftExceed - rightExceed,
+      drawParams.scaledCanvasSize.y.toDouble() - topExceed - bottomExceed,
+    );
+
+    final ui.Rect srcRect = ui.Rect.fromLTWH(
+      leftExceed > 0 ? leftExceed / pxlSzDbl : 0,
+      topExceed > 0 ? topExceed / pxlSzDbl : 0,
+      drawParams.canvasSize.x.toDouble() * horizontalExceedFactor,
+      drawParams.canvasSize.y.toDouble() * verticalExceedFactor,
+    );
+
+    drawParams.canvas.drawImageRect(
+      displayImage,
+      srcRect,
+      destRect,
+      drawParams.paint,
+    );
+  }
+
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final List<LayerState> visibleLayers = _appState.visibleLayers.toList();
@@ -684,17 +727,7 @@ class KPixPainter extends CustomPainter
 
           if (displayImage != null)
           {
-            //TODO can we optimize this by not drawing the full raster image???
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                drawParams.scaledCanvasSize.x.toDouble(),
-                drawParams.scaledCanvasSize.y.toDouble(),),
-              image: displayImage,
-              scale: 1.0 / pxlSzDbl,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
+            _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: displayImage);
           }
         }
         else if (visibleLayers[i].runtimeType == ReferenceLayerState)
@@ -727,17 +760,7 @@ class KPixPainter extends CustomPainter
           final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
           if (gridLayer.raster != null)
           {
-            //TODO can we optimize this by not drawing the full raster image???
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-                drawParams.scaledCanvasSize.x.toDouble(),
-                drawParams.scaledCanvasSize.y.toDouble(),),
-              image: gridLayer.raster!,
-              scale: 1.0 / pxlSzDbl,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
+            _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: gridLayer.raster!);
           }
         }
       }
@@ -774,16 +797,7 @@ class KPixPainter extends CustomPainter
     }
     else
     {
-      paintImage(
-        canvas: drawParams.canvas,
-        rect: ui.Rect.fromLTWH(drawParams.offset.dx, drawParams.offset.dy,
-          drawParams.scaledCanvasSize.x.toDouble(),
-          drawParams.scaledCanvasSize.y.toDouble(),),
-        image: _backupImage!,
-        scale: 1.0 / pxlSzDbl,
-        fit: BoxFit.none,
-        alignment: Alignment.topLeft,
-        filterQuality: FilterQuality.none,);
+      _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
     }
   }
 

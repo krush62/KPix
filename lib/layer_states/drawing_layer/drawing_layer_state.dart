@@ -297,7 +297,6 @@ class DrawingLayerState extends RasterableLayerState
     }
     );
 
-
     return await completerImg.future;
   }
 

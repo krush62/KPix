@@ -30,8 +30,6 @@ class StatusBarState
   final ValueNotifier<String?> statusBarToolAspectRatioString = ValueNotifier<String?>(null);
   final ValueNotifier<String?> statusBarToolAngleString = ValueNotifier<String?>(null);
 
-  double devicePixelRatio = 1.0;
-
   void setStatusBarDimensions({required final int width, required final int height})
   {
     statusBarDimensionString.value = "$width,$height";
@@ -54,14 +52,7 @@ class StatusBarState
 
   void setStatusBarZoomFactor({required final int val})
   {
-    final int realVal = (val / devicePixelRatio).round();
-    String suffix = "";
-    if (realVal % 100 != 0)
-    {
-      suffix = " *";
-    }
-
-    statusBarZoomFactorString.value = "$val%$suffix";
+    statusBarZoomFactorString.value = "$val%";
   }
 
   void hideStatusBarZoomFactor()

@@ -356,11 +356,11 @@ class LinePainter extends IToolPainter
     final Path path = Path();
     if (pathPoints.isNotEmpty)
     {
-      path.moveTo((pathPoints.first.x * drawParams.pixelSize) + drawParams.offset.dx, (pathPoints.first.y * drawParams.pixelSize) + drawParams.offset.dy);
+      path.moveTo((pathPoints.first.x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints.first.y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
 
       for (final CoordinateSetI point in pathPoints.skip(1))
       {
-        path.lineTo((point.x * drawParams.pixelSize) + drawParams.offset.dx, (point.y * drawParams.pixelSize) + drawParams.offset.dy);
+        path.lineTo((point.x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (point.y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
       }
       path.close();
     }

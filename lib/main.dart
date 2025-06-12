@@ -227,14 +227,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
     final String exportDirString = await findExportDir();
     final String internalDirString = await findInternalDir();
-    final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString);
 
-    bool hasCorrectResolution = true;
     if (context.mounted)
     {
-      GetIt.I.registerSingleton<AppState>(appState);
       final BuildContext c = context;
-      appState.statusBarState.devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+      final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+      final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, devicePixelRatio: devicePixelRatio);
+      bool hasCorrectResolution = true;
+      GetIt.I.registerSingleton<AppState>(appState);
       final Size logicalSize = MediaQuery.of(c).size;
       if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
       {

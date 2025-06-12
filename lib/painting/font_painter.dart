@@ -51,8 +51,8 @@ class FontPainter extends IToolPainter
   {
     if (drawParams.cursorPosNorm != null)
     {
-      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x) * drawParams.pixelSize);
-      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y) * drawParams.pixelSize);
+      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x) * drawParams.pixelSize / drawParams.pixelRatio);
+      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y) * drawParams.pixelSize / drawParams.pixelRatio);
 
       final bool shouldUpdate =
           _currentText != _options.text.value ||
@@ -214,15 +214,21 @@ class FontPainter extends IToolPainter
       final int width = _getTextWidth(currentFont: currentFont);
 
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize,);
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize / drawParams.pixelRatio,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize / drawParams.pixelRatio,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(-(width * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.x, -(currentFont.height * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.y, (width * drawParams.pixelSize * _options.size.value).toDouble(), (currentFont.height * drawParams.pixelSize * _options.size.value).toDouble()), drawParams.paint);
+      final Rect strokeRect = Rect.fromLTWH(
+        -(width * drawParams.pixelSize.toDouble() / drawParams.pixelRatio * _options.size.value) + cursorPos.x,
+        -(currentFont.height * drawParams.pixelSize / drawParams.pixelRatio * _options.size.value) + cursorPos.y,
+        width * drawParams.pixelSize.toDouble() / drawParams.pixelRatio * _options.size.value,
+        currentFont.height * drawParams.pixelSize.toDouble() / drawParams.pixelRatio * _options.size.value,);
+
+      drawParams.canvas.drawRect(strokeRect, drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(-(width * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.x, -(currentFont.height * drawParams.pixelSize * _options.size.value).toDouble() + cursorPos.y, (width * drawParams.pixelSize * _options.size.value).toDouble(), (currentFont.height * drawParams.pixelSize * _options.size.value).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(strokeRect, drawParams.paint);
     }
   }
 

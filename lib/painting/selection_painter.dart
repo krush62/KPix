@@ -55,8 +55,8 @@ class SelectionPainter extends IToolPainter
       final DrawingLayerState drawingLayer = drawParams.currentRasterLayer! as DrawingLayerState;
       if (_lastStartPos != drawParams.primaryPressStart)
       {
-        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble());
-        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble());
+        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio);
+        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio);
         _lastStartPos = drawParams.primaryPressStart;
       }
       if (drawParams.cursorPosNorm != null)
@@ -193,14 +193,14 @@ class SelectionPainter extends IToolPainter
       {
         drawParams.paint.style = PaintingStyle.stroke;
         final CoordinateSetD cursorStartPos = CoordinateSetD(
-          x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize,
+          x: drawParams.offset.dx + selectionStart.x * drawParams.pixelSize / drawParams.pixelRatio,
           y: drawParams.offset.dy +
-              selectionStart.y * drawParams.pixelSize,);
+              selectionStart.y * drawParams.pixelSize / drawParams.pixelRatio,);
         final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
-              (selectionEnd.x + 1) * drawParams.pixelSize,
+              (selectionEnd.x + 1) * drawParams.pixelSize / drawParams.pixelRatio,
           y: drawParams.offset.dy +
-              (selectionEnd.y + 1) * drawParams.pixelSize,);
+              (selectionEnd.y + 1) * drawParams.pixelSize / drawParams.pixelRatio,);
 
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
         drawParams.paint.color = blackToolAlphaColor;
@@ -227,21 +227,21 @@ class SelectionPainter extends IToolPainter
       if (!drawParams.primaryDown && options.shape.value == SelectShape.rectangle || options.shape.value == SelectShape.ellipse)
       {
         final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize,);
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize / drawParams.pixelRatio,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize / drawParams.pixelRatio,);
         drawParams.paint.style = PaintingStyle.stroke;
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
         drawParams.paint.color = blackToolAlphaColor;
-        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize / drawParams.pixelRatio, cursorPos.y + drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
         drawParams.paint.color = whiteToolAlphaColor;
-        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize, cursorPos.y + drawParams.pixelSize), drawParams.paint);
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize / drawParams.pixelRatio, cursorPos.y + drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
       }
       else if (options.shape.value == SelectShape.polygon)
       {
         final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize,
-          y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize,);
+          x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize / drawParams.pixelRatio,
+          y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize / drawParams.pixelRatio,);
 
         final Path rhombusPath = Path();
         rhombusPath.moveTo(cursorPos.x - (1 * painterOptions.cursorSize), cursorPos.y);
@@ -296,16 +296,17 @@ class SelectionPainter extends IToolPainter
 
   @override
   void drawExtras({required final DrawingParameters drawParams}) {
+    final double effPxSize = drawParams.pixelSize.toDouble() / drawParams.pixelRatio;
     if (options.shape.value == SelectShape.polygon && polygonPoints.isNotEmpty)
     {
       final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
       CoordinateSetD(
           x: drawParams.offset.dx + IToolPainter.getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
-              pixelSize: drawParams.pixelSize.toDouble(),) * drawParams.pixelSize + (drawParams.pixelSize / 2),
+              pixelSize: effPxSize,) * effPxSize + (effPxSize / 2),
           y: drawParams.offset.dy + IToolPainter.getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
-              pixelSize: drawParams.pixelSize.toDouble(),) * drawParams.pixelSize + (drawParams.pixelSize / 2),)
+              pixelSize: effPxSize,) * effPxSize + (effPxSize / 2),)
           : null;
 
 
@@ -314,12 +315,12 @@ class SelectionPainter extends IToolPainter
       {
         if (i == 0)
         {
-          path.moveTo((polygonPoints[i].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[i].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy);
+          path.moveTo((polygonPoints[i].x * effPxSize + (effPxSize / 2)) + drawParams.offset.dx, (polygonPoints[i].y * effPxSize + (effPxSize / 2)) + drawParams.offset.dy);
         }
 
         if (i < polygonPoints.length - 1)
         {
-          path.lineTo((polygonPoints[i + 1].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[i + 1].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy);
+          path.lineTo((polygonPoints[i + 1].x * effPxSize + (effPxSize / 2)) + drawParams.offset.dx, (polygonPoints[i + 1].y * effPxSize + (effPxSize / 2)) + drawParams.offset.dy);
         }
         else if (cursorPos != null)
         {
@@ -330,12 +331,12 @@ class SelectionPainter extends IToolPainter
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
+      drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * effPxSize + (effPxSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * effPxSize + (effPxSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
       drawParams.canvas.drawPath(path, drawParams.paint);
 
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * drawParams.pixelSize + (drawParams.pixelSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
+      drawParams.canvas.drawCircle(Offset((polygonPoints[0].x * effPxSize + (effPxSize / 2)) + drawParams.offset.dx, (polygonPoints[0].y * effPxSize + (effPxSize / 2)) + drawParams.offset.dy), painterOptions.selectionPolygonCircleRadius, drawParams.paint);
       drawParams.canvas.drawPath(path, drawParams.paint);
     }
   }

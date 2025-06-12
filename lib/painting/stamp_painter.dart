@@ -56,14 +56,14 @@ class StampPainter extends IToolPainter
     {
       _cursorPosNorm.x = IToolPainter.getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble(),)
+          pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio,)
           ;
       _cursorPosNorm.y = IToolPainter.getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble(),)
+          pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio,)
           ;
-      _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * drawParams.pixelSize);
-      _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize);
+      _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * drawParams.pixelSize / drawParams.pixelRatio);
+      _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize / drawParams.pixelRatio);
     }
 
     if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value != LayerLockState.locked && drawParams.currentRasterLayer!.visibilityState.value != LayerVisibilityState.hidden)
@@ -201,15 +201,15 @@ class StampPainter extends IToolPainter
     {
       final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize,);
+          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize / drawParams.pixelRatio,
+          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize / drawParams.pixelRatio,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize * _options.scale.value).toDouble(), cursorPos.y - (currentStamp.height * drawParams.pixelSize * _options.scale.value).toDouble(), (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), cursorPos.y - (currentStamp.height * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), currentStamp.width * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio, currentStamp.height * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize * _options.scale.value).toDouble(), cursorPos.y - (currentStamp.height * drawParams.pixelSize * _options.scale.value).toDouble(), (currentStamp.width * _options.scale.value * drawParams.pixelSize).toDouble(), (currentStamp.height * _options.scale.value * drawParams.pixelSize).toDouble()), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), cursorPos.y - (currentStamp.height * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), currentStamp.width * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio, currentStamp.height * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
     }
   }
 

@@ -62,8 +62,8 @@ class FillPainter extends IToolPainter
     if (drawParams.cursorPosNorm != null)
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
-        x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize,
-        y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize,);
+        x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize / drawParams.pixelRatio,
+        y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize / drawParams.pixelRatio,);
       final Path outlinePath = Path();
       outlinePath.moveTo(cursorPos.x, cursorPos.y);
       outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));

@@ -233,8 +233,10 @@ class AppState
 
   static const Duration toolTipDuration = Duration(seconds: 1);
 
+  final double devicePixelRatio;
 
-  AppState({required final String exportDir, required final String internalDir}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _hasUpdate = ValueNotifier<bool>(false)
+
+  AppState({required final String exportDir, required final String internalDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _hasUpdate = ValueNotifier<bool>(false)
   {
     for (final ToolType toolType in toolList.keys)
     {

@@ -197,7 +197,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     int bestZoomLevel = AppState.zoomLevelMin;
     for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
     {
-      if (_appState.canvasSize.x * i < kPixPainter.latestSize.width && _appState.canvasSize.y * i < kPixPainter.latestSize.height)
+      if (_appState.canvasSize.x * i / _appState.devicePixelRatio < kPixPainter.latestSize.width && _appState.canvasSize.y * i / _appState.devicePixelRatio < kPixPainter.latestSize.height)
       {
         bestZoomLevel = i;
       }
@@ -207,7 +207,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       }
     }
     _appState.setZoomLevel(val: bestZoomLevel);
-    _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (_appState.canvasSize.x * _appState.zoomFactor)) / 2, (kPixPainter.latestSize.height - (_appState.canvasSize.y * _appState.zoomFactor)) / 2));
+    _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (_appState.canvasSize.x * _appState.zoomFactor / _appState.devicePixelRatio)) / 2, (kPixPainter.latestSize.height - (_appState.canvasSize.y * _appState.zoomFactor / _appState.devicePixelRatio)) / 2));
     _appState.repaintNotifier.repaint();
   }
 

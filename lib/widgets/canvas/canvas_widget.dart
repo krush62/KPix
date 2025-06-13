@@ -721,11 +721,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
           final CoordinateSetI normPos = CoordinateSetI(
             x: _getClosestPixel(
               value: _cursorPos.value!.x - _canvasOffset.value.dx,
-              pixelSize: _appState.zoomFactor.toDouble(),)
+              pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio,)
             ,
             y: _getClosestPixel(
               value: _cursorPos.value!.y - _canvasOffset.value.dy,
-              pixelSize: _appState.zoomFactor.toDouble(),)
+              pixelSize: _appState.zoomFactor.toDouble() / _appState.devicePixelRatio,)
             ,);
           final ColorReference? colRef = _appState.getColorFromImageAtPosition(normPos: normPos);
           if (colRef != null && colRef != _appState.selectedColor)

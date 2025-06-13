@@ -387,7 +387,7 @@ abstract class IToolPainter
       double shortestDist = double.maxFinite;
       final CoordinateSetI currentPos = CoordinateSetI.from(other: startPos);
       final Set<CoordinateSetI> lPoints = <CoordinateSetI>{};
-      lPoints.add(startPos);
+      lPoints.add(CoordinateSetI.from(other: startPos));
       bool firstRun = true;
       do
       {

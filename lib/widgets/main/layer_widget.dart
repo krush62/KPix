@@ -203,11 +203,11 @@ class _LayerWidgetState extends State<LayerWidget> {
                   ),
                   childWhenDragging: IconButton(
                     padding: EdgeInsets.only(right: _options.innerPadding),
-                    iconSize: _options.iconSize * 2,
+                    iconSize: _options.buttonSizeMin,
                     constraints: const BoxConstraints(),
                     icon: FaIcon(
                       color: Theme.of(context).indicatorColor,
-                      FontAwesomeIcons.gripLines,
+                      FontAwesomeIcons.gripVertical,
                     ),
                     onPressed: null,
                     style: IconButton.styleFrom(
@@ -216,13 +216,13 @@ class _LayerWidgetState extends State<LayerWidget> {
                   ),
                   child: IconButton(
                     padding: EdgeInsets.only(right: _options.innerPadding),
-                    iconSize: _options.iconSize * 2,
+                    iconSize: _options.buttonSizeMin,
                     constraints: BoxConstraints(
                       minHeight: _options.height,
                     ),
                     icon: FaIcon(
                       color: Theme.of(context).primaryColor,
-                      FontAwesomeIcons.gripLines,
+                      FontAwesomeIcons.gripVertical,
                     ),
                     onPressed: null,
                     style: IconButton.styleFrom(

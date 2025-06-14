@@ -129,7 +129,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
           constraints: const BoxConstraints(),
           icon: FaIcon(
             color: Theme.of(context).primaryColor,
-            FontAwesomeIcons.gripLines,
+            FontAwesomeIcons.gripVertical,
           ),
           onPressed: null,
           style: IconButton.styleFrom(

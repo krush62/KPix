@@ -64,73 +64,77 @@ class TextOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Font",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<PixelFontType?>(
-                valueListenable: textOptions.font,
-                builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
-                {
-                  return DropdownButton<PixelFontType>(
-                    value: font,
-                    dropdownColor: Theme.of(context).primaryColorDark,
-                    focusColor: Theme.of(context).primaryColor,
-                    isExpanded: true,
-                    onChanged: (final PixelFontType? type) {textOptions.font.value = type;},
-                    items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((final PixelFontType typeValue) {
-                      return DropdownMenuItem<PixelFontType>(
-                        value: typeValue,
-                        child: Text(FontManager.getFontName(type: typeValue), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
+        ExcludeFocus(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Scale",
+                    "Font",
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
+                ),
               ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: textOptions.size,
-                builder: (final BuildContext context, final int size, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: size.toDouble(),
-                    min: textOptions.sizeMin.toDouble(),
-                    max: textOptions.sizeMax.toDouble(),
-                    divisions: textOptions.sizeMax - textOptions.sizeMin,
-                    onChanged: (final double newVal) {textOptions.size.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+              Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: ValueListenableBuilder<PixelFontType?>(
+                  valueListenable: textOptions.font,
+                  builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
+                  {
+                    return DropdownButton<PixelFontType>(
+                      value: font,
+                      dropdownColor: Theme.of(context).primaryColorDark,
+                      focusColor: Theme.of(context).primaryColor,
+                      isExpanded: true,
+                      onChanged: (final PixelFontType? type) {textOptions.font.value = type;},
+                      items: textOptions.fontManager.kFontMap.keys.map<DropdownMenuItem<PixelFontType>>((final PixelFontType typeValue) {
+                        return DropdownMenuItem<PixelFontType>(
+                          value: typeValue,
+                          child: Text(FontManager.getFontName(type: typeValue), style: Theme.of(context).textTheme.bodyLarge?.apply(fontFamily: FontManager.getFontName(type: typeValue)),),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
               ),
-            ),
+            ],
+          ),
+        ),
+        ExcludeFocus(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Scale",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                ),
+              ),
+              Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: textOptions.size,
+                  builder: (final BuildContext context, final int size, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: size.toDouble(),
+                      min: textOptions.sizeMin.toDouble(),
+                      max: textOptions.sizeMax.toDouble(),
+                      divisions: textOptions.sizeMax - textOptions.sizeMin,
+                      onChanged: (final double newVal) {textOptions.size.value = newVal.round();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
+              ),
 
-          ],
+            ],
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

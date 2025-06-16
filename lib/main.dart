@@ -557,52 +557,55 @@ class MainWidget extends StatelessWidget
     return Column(
       children: <Widget>[
         //TOP BAR
-        ColoredBox(
-          color: Theme.of(context).primaryColor,
-          child: (isDesktop()) ?
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.centerLeft,
-                    children: <Widget>[
-                      WindowTitleBarBox(child: MoveWindow()),
-                      Padding(
-                        padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().mainLayoutOptions.titleBarPadding),
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: GetIt.I.get<AppState>().hasChanges,
-                            builder: (final BuildContext context, final bool __, final Widget? ___) {
-                              return ValueListenableBuilder<String?>(
-                                valueListenable: GetIt.I.get<AppState>().projectName,
-                                builder: (final BuildContext _, final String? ____, final Widget? _____) {
-                                  return Text(
-                                    GetIt.I.get<AppState>().getTitle(),
-                                    style: Theme.of(context).textTheme.bodyLarge,
-                                    textAlign: TextAlign.center,
-                                  );
-                                },
-                              );
-                            },
+        ExcludeFocus(
+          child: ColoredBox(
+            color: Theme.of(context).primaryColor,
+            child: (isDesktop()) ?
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      children: <Widget>[
+                        WindowTitleBarBox(child: MoveWindow()),
+                        Padding(
+                          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().mainLayoutOptions.titleBarPadding),
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: GetIt.I.get<AppState>().hasChanges,
+                              builder: (final BuildContext context, final bool __, final Widget? ___) {
+                                return ValueListenableBuilder<String?>(
+                                  valueListenable: GetIt.I.get<AppState>().projectName,
+                                  builder: (final BuildContext _, final String? ____, final Widget? _____) {
+                                    return Text(
+                                      GetIt.I.get<AppState>().getTitle(),
+                                      style: Theme.of(context).textTheme.bodyLarge,
+                                      textAlign: TextAlign.center,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: <Widget>[
+                        MinimizeWindowButton(colors: windowButtonColors),
+                        MaximizeWindowButton(colors: windowButtonColors),
+                        CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
                       ],
                     ),
-                  ),
-                  Row(
-                    children: <Widget>[
-                      MinimizeWindowButton(colors: windowButtonColors),
-                      MaximizeWindowButton(colors: windowButtonColors),
-                      CloseWindowButton(colors: windowButtonColors, onPressed: closePressed),
-                    ],
-                  ),
-                ],
-              )
-              : const SizedBox.shrink(),
-          ),
-          Expanded(
-            child: KPixSplitter(
-              left: const MainToolbarWidget(),
-              center: ValueListenableBuilder<bool>(
+                  ],
+                )
+                : const SizedBox.shrink(),
+            ),
+        ),
+        Expanded(
+          child: KPixSplitter(
+            left: const MainToolbarWidget(),
+            center: ExcludeFocus(
+              child: ValueListenableBuilder<bool>(
                 valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
                 builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                   return hasProject ? Column(
@@ -613,15 +616,16 @@ class MainWidget extends StatelessWidget
                   ) : Container(color: Theme.of(context).primaryColorDark);
                 },
               ),
-              right: const RightBarWidget(),
-              dividerWidth: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth, //8.0
-              ratioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault, //0.2
-              minRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin, //0.15
-              maxRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax, //0.25
-              ratioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault, //0.15
-              minRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin, //0.1
-              maxRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax, //0.2
             ),
+            right: const ExcludeFocus(child: RightBarWidget()),
+            dividerWidth: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth, //8.0
+            ratioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault, //0.2
+            minRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin, //0.15
+            maxRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax, //0.25
+            ratioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault, //0.15
+            minRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin, //0.1
+            maxRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax, //0.2
+          ),
         ),
       ],
     );

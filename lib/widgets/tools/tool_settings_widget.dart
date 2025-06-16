@@ -52,7 +52,8 @@ class ToolSettingsWidgetOptions
 
 class ToolSettingsWidget extends StatefulWidget
 {
-  const ToolSettingsWidget({super.key});
+  const
+  ToolSettingsWidget({super.key});
 
   @override
   State<StatefulWidget> createState() => _ToolSettingsWidgetState();
@@ -99,40 +100,52 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
         switch(type)
         {
           case ToolType.shape:
-            toolWidget = ShapeOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                shapeOptions: toolOptions.shapeOptions,);
+            toolWidget = ExcludeFocus(
+              child: ShapeOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  shapeOptions: toolOptions.shapeOptions,),
+            );
             //break;
           case ToolType.pencil:
-            toolWidget = PencilOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                pencilOptions: toolOptions.pencilOptions,);
+            toolWidget = ExcludeFocus(
+              child: PencilOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  pencilOptions: toolOptions.pencilOptions,),
+            );
             //break;
           case ToolType.fill:
-            toolWidget = FillOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                fillOptions: toolOptions.fillOptions,);
+            toolWidget = ExcludeFocus(
+              child: FillOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  fillOptions: toolOptions.fillOptions,),
+            );
             //break;
           case ToolType.select:
-            toolWidget = SelectOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                selectOptions: toolOptions.selectOptions,);
+            toolWidget = ExcludeFocus(
+              child: SelectOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  selectOptions: toolOptions.selectOptions,),
+            );
             //break;
           case ToolType.pick:
-            toolWidget = ColorPickOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                colorPickOptions: toolOptions.colorPickOptions,);
+            toolWidget = ExcludeFocus(
+              child: ColorPickOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  colorPickOptions: toolOptions.colorPickOptions,),
+            );
             //break;
           case ToolType.erase:
-            toolWidget = EraserOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                eraserOptions: toolOptions.eraserOptions,);
+            toolWidget = ExcludeFocus(
+              child: EraserOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  eraserOptions: toolOptions.eraserOptions,),
+            );
             //break;
           case ToolType.font:
             toolWidget = TextOptions.getWidget(
@@ -141,23 +154,29 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
                 textOptions: toolOptions.textOptions,);
             //break;
           case ToolType.spraycan:
-            toolWidget = SprayCanOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                sprayCanOptions: toolOptions.sprayCanOptions,);
+            toolWidget = ExcludeFocus(
+              child: SprayCanOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  sprayCanOptions: toolOptions.sprayCanOptions,),
+            );
             //break;
           case ToolType.line:
-            toolWidget = LineOptions.getWidget(
-                context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                lineOptions: toolOptions.lineOptions,);
+            toolWidget = ExcludeFocus(
+              child: LineOptions.getWidget(
+                  context: context,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  lineOptions: toolOptions.lineOptions,),
+            );
             //break;
           case ToolType.stamp:
-            toolWidget = StampOptions.getWidget(
-                context: context,
-                showStampManager: _showStampManagerDialog,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
-                stampOptions: toolOptions.stampOptions,);
+            toolWidget = ExcludeFocus(
+              child: StampOptions.getWidget(
+                  context: context,
+                  showStampManager: _showStampManagerDialog,
+                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
+                  stampOptions: toolOptions.stampOptions,),
+            );
             //break;
 
           //default: toolWidget = const SizedBox(width: double.infinity, child: Text("Not Implemented"));

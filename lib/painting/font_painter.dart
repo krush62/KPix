@@ -49,10 +49,11 @@ class FontPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPosNorm != null)
     {
-      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x) * drawParams.pixelSize / drawParams.pixelRatio);
-      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y) * drawParams.pixelSize / drawParams.pixelRatio);
+      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x) * effPxlSize);
+      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y) * effPxlSize);
 
       final bool shouldUpdate =
           _currentText != _options.text.value ||
@@ -197,7 +198,7 @@ class FontPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-
+    final double effPixelSize = drawParams.pixelSize / drawParams.pixelRatio;
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
     drawParams.paint.color = Colors.black;
@@ -214,16 +215,16 @@ class FontPainter extends IToolPainter
       final int width = _getTextWidth(currentFont: currentFont);
 
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize / drawParams.pixelRatio,
-          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize / drawParams.pixelRatio,);
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * effPixelSize,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * effPixelSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
       final Rect strokeRect = Rect.fromLTWH(
-        -(width * drawParams.pixelSize.toDouble() / drawParams.pixelRatio * _options.size.value) + cursorPos.x,
-        -(currentFont.height * drawParams.pixelSize / drawParams.pixelRatio * _options.size.value) + cursorPos.y,
-        width * drawParams.pixelSize.toDouble() / drawParams.pixelRatio * _options.size.value,
-        currentFont.height * drawParams.pixelSize.toDouble() / drawParams.pixelRatio * _options.size.value,);
+        -(width * effPixelSize * _options.size.value) + cursorPos.x,
+        -(currentFont.height * effPixelSize * _options.size.value) + cursorPos.y,
+        width * effPixelSize * _options.size.value,
+        currentFont.height * effPixelSize * _options.size.value,);
 
       drawParams.canvas.drawRect(strokeRect, drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;

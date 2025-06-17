@@ -52,18 +52,19 @@ class StampPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPos != null)
     {
       _cursorPosNorm.x = IToolPainter.getClosestPixel(
           value: drawParams.cursorPos!.x - drawParams.offset.dx,
-          pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio,)
+          pixelSize: effPxlSize,)
           ;
       _cursorPosNorm.y = IToolPainter.getClosestPixel(
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
-          pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio,)
+          pixelSize: effPxlSize,)
           ;
-      _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * drawParams.pixelSize / drawParams.pixelRatio);
-      _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * drawParams.pixelSize / drawParams.pixelRatio);
+      _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * effPxlSize);
+      _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * effPxlSize);
     }
 
     if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value != LayerLockState.locked && drawParams.currentRasterLayer!.visibilityState.value != LayerVisibilityState.hidden)
@@ -178,6 +179,7 @@ class StampPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     final Path path = Path();
     path.moveTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
     path.lineTo(_cursorStartPos.x + (5 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
@@ -201,15 +203,15 @@ class StampPainter extends IToolPainter
     {
       final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
       final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + _cursorPosNorm.x * drawParams.pixelSize / drawParams.pixelRatio,
-          y: drawParams.offset.dy + _cursorPosNorm.y * drawParams.pixelSize / drawParams.pixelRatio,);
+          x: drawParams.offset.dx + _cursorPosNorm.x * effPxlSize,
+          y: drawParams.offset.dy + _cursorPosNorm.y * effPxlSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), cursorPos.y - (currentStamp.height * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), currentStamp.width * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio, currentStamp.height * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * effPxlSize * _options.scale.value), cursorPos.y - (currentStamp.height * effPxlSize * _options.scale.value), currentStamp.width * _options.scale.value * effPxlSize, currentStamp.height * _options.scale.value * effPxlSize), drawParams.paint);
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
       drawParams.paint.color = whiteToolAlphaColor;
-      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), cursorPos.y - (currentStamp.height * drawParams.pixelSize / drawParams.pixelRatio * _options.scale.value), currentStamp.width * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio, currentStamp.height * _options.scale.value * drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
+      drawParams.canvas.drawRect(Rect.fromLTWH(cursorPos.x - (currentStamp.width * effPxlSize * _options.scale.value), cursorPos.y - (currentStamp.height * effPxlSize * _options.scale.value), currentStamp.width * _options.scale.value * effPxlSize, currentStamp.height * _options.scale.value * effPxlSize), drawParams.paint);
     }
   }
 

@@ -311,6 +311,7 @@ class PencilPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     //Surrounding
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: _contentPoints);
     final Path path = Path();
@@ -318,16 +319,16 @@ class PencilPainter extends IToolPainter
     {
       if (i == 0)
       {
-        path.moveTo((pathPoints[i].x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints[i].y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
+        path.moveTo((pathPoints[i].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i].y * effPxlSize) + drawParams.offset.dy);
       }
 
       if (i < pathPoints.length - 1)
       {
-        path.lineTo((pathPoints[i + 1].x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints[i + 1].y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
+        path.lineTo((pathPoints[i + 1].x * effPxlSize) + drawParams.offset.dx, (pathPoints[i + 1].y * effPxlSize) + drawParams.offset.dy);
       }
       else
       {
-        path.lineTo((pathPoints[0].x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints[0].y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
+        path.lineTo((pathPoints[0].x * effPxlSize) + drawParams.offset.dx, (pathPoints[0].y * effPxlSize) + drawParams.offset.dy);
       }
     }
 

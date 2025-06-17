@@ -124,8 +124,7 @@ class EraserPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPosNorm != null);
-
+    final double effPixelSize = drawParams.pixelSize / drawParams.pixelRatio;
     final Set<CoordinateSetI> contentPoints = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: drawParams.cursorPosNorm!);
     final List<CoordinateSetI> pathPoints = IToolPainter.getBoundaryPath(coords: contentPoints);
 
@@ -134,16 +133,16 @@ class EraserPainter extends IToolPainter
     {
       if (i == 0)
       {
-        path.moveTo((pathPoints[i].x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints[i].y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
+        path.moveTo((pathPoints[i].x * effPixelSize) + drawParams.offset.dx, (pathPoints[i].y * effPixelSize) + drawParams.offset.dy);
       }
 
       if (i < pathPoints.length - 1)
       {
-        path.lineTo((pathPoints[i + 1].x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints[i + 1].y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
+        path.lineTo((pathPoints[i + 1].x * effPixelSize) + drawParams.offset.dx, (pathPoints[i + 1].y * effPixelSize) + drawParams.offset.dy);
       }
       else
       {
-        path.lineTo((pathPoints[0].x * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dx, (pathPoints[0].y * drawParams.pixelSize / drawParams.pixelRatio) + drawParams.offset.dy);
+        path.lineTo((pathPoints[0].x * effPixelSize) + drawParams.offset.dx, (pathPoints[0].y * effPixelSize) + drawParams.offset.dy);
       }
     }
 

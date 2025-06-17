@@ -58,12 +58,12 @@ class FillPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
-    assert(drawParams.cursorPosNorm != null);
+    final double effPixelSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPosNorm != null)
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
-        x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize / drawParams.pixelRatio,
-        y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize / drawParams.pixelRatio,);
+        x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * effPixelSize,
+        y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * effPixelSize,);
       final Path outlinePath = Path();
       outlinePath.moveTo(cursorPos.x, cursorPos.y);
       outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));

@@ -53,14 +53,15 @@ class ShapePainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.currentRasterLayer != null && drawParams.cursorPosNorm != null)
     {
       final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
       bool selectionChanged = false;
       if (_lastStartPos.dx != drawParams.primaryPressStart.dx || _lastStartPos.dy != drawParams.primaryPressStart.dy)
       {
-        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio);
-        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: drawParams.pixelSize.toDouble() / drawParams.pixelRatio);
+        _normStartPos.x = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dx - drawParams.offset.dx, pixelSize: effPxlSize);
+        _normStartPos.y = IToolPainter.getClosestPixel(value: drawParams.primaryPressStart.dy - drawParams.offset.dy, pixelSize: effPxlSize);
         _lastStartPos = drawParams.primaryPressStart;
       }
 
@@ -219,20 +220,21 @@ class ShapePainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
+    final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPosNorm != null)
     {
       if (_isStarted)
       {
         drawParams.paint.style = PaintingStyle.stroke;
         final CoordinateSetD cursorStartPos = CoordinateSetD(
-          x: drawParams.offset.dx + _selectionStart.x * drawParams.pixelSize / drawParams.pixelRatio,
+          x: drawParams.offset.dx + _selectionStart.x * effPxlSize,
           y: drawParams.offset.dy +
-              _selectionStart.y * drawParams.pixelSize / drawParams.pixelRatio,);
+              _selectionStart.y * effPxlSize,);
         final CoordinateSetD cursorEndPos = CoordinateSetD(
           x: drawParams.offset.dx +
-              (_selectionEnd.x + 1) * drawParams.pixelSize / drawParams.pixelRatio,
+              (_selectionEnd.x + 1) * effPxlSize,
           y: drawParams.offset.dy +
-              (_selectionEnd.y + 1) * drawParams.pixelSize / drawParams.pixelRatio,);
+              (_selectionEnd.y + 1) * effPxlSize,);
 
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
         drawParams.paint.color = blackToolAlphaColor;
@@ -245,15 +247,15 @@ class ShapePainter extends IToolPainter
       if (!drawParams.primaryDown)
       {
         final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * drawParams.pixelSize / drawParams.pixelRatio,
-          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * drawParams.pixelSize / drawParams.pixelRatio,);
+          x: drawParams.offset.dx + drawParams.cursorPosNorm!.x * effPxlSize,
+          y: drawParams.offset.dy + drawParams.cursorPosNorm!.y * effPxlSize,);
         drawParams.paint.style = PaintingStyle.stroke;
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
         drawParams.paint.color = blackToolAlphaColor;
-        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize / drawParams.pixelRatio, cursorPos.y + drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + effPxlSize, cursorPos.y + effPxlSize), drawParams.paint);
         drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthSmall;
         drawParams.paint.color = whiteToolAlphaColor;
-        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + drawParams.pixelSize / drawParams.pixelRatio, cursorPos.y + drawParams.pixelSize / drawParams.pixelRatio), drawParams.paint);
+        drawParams.canvas.drawRect(Rect.fromLTRB(cursorPos.x, cursorPos.y, cursorPos.x + effPxlSize, cursorPos.y + effPxlSize), drawParams.paint);
       }
     }
   }

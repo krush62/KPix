@@ -31,10 +31,11 @@ class ColorPickPainter extends IToolPainter
   @override
   void calculate({required final DrawingParameters drawParams})
   {
+    final double effPixelSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPosNorm != null)
     {
-      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x + 0.5) * drawParams.pixelSize / drawParams.pixelRatio);
-      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y + 0.5) * drawParams.pixelSize / drawParams.pixelRatio);
+      _cursorStartPos.x = drawParams.offset.dx + ((drawParams.cursorPosNorm!.x + 0.5) * effPixelSize);
+      _cursorStartPos.y = drawParams.offset.dy + ((drawParams.cursorPosNorm!.y + 0.5) * effPixelSize);
 
       if (drawParams.secondaryDown || (drawParams.primaryDown && _oldCursorPos != drawParams.cursorPosNorm))
       {

@@ -100,26 +100,31 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
             return Expanded(
               child: Listener(
                 onPointerDown: _colorPressed,
-                child: Container(
-                  constraints: BoxConstraints(
-                    minHeight: _options.minSize,
-                    minWidth: _options.minSize,
-                    maxHeight: _options.maxSize,
-                    maxWidth: _options.maxSize,
-                  ),
-                  margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
-                      ? _options.selectedMargin
-                      : _options.unselectedMargin,),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
-                        ? Theme.of(context).primaryColorLight
-                        : Colors.transparent,
-                      width: _options.unselectedMargin -_options.selectedMargin,),
-                    color: value.color,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(
-                          _options.roundRadius,
+                child: Tooltip(
+                  message: value.getTooltipText(),
+                  waitDuration: AppState.toolTipDuration,
+                  textAlign: TextAlign.center,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      minHeight: _options.minSize,
+                      minWidth: _options.minSize,
+                      maxHeight: _options.maxSize,
+                      maxWidth: _options.maxSize,
+                    ),
+                    margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
+                        ? _options.selectedMargin
+                        : _options.unselectedMargin,),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
+                          ? Theme.of(context).primaryColorLight
+                          : Colors.transparent,
+                        width: _options.unselectedMargin -_options.selectedMargin,),
+                      color: value.color,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(
+                            _options.roundRadius,
+                        ),
                       ),
                     ),
                   ),

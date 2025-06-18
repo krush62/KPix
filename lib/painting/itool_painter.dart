@@ -661,7 +661,7 @@ abstract class IToolPainter
                   final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
                   if (col != null)
                   {
-                    currentColor = col.ramp.references[col.colorIndex];
+                    currentColor = col;
                   }
                 }
                 else if (currentColor != null && appState.getLayerAt(index: i) is ShadingLayerState)
@@ -669,7 +669,7 @@ abstract class IToolPainter
                   final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
                   if (shadingLayer.getDisplayValueAt(coord: coord) != null)
                   {
-                    final int newColorIndex = currentColor.colorIndex + shadingLayer.getDisplayValueAt(coord: coord)!;
+                    final int newColorIndex = (currentColor.colorIndex + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length - 1);
                     currentColor = currentColor.ramp.references[newColorIndex];
                   }
                 }

@@ -276,8 +276,7 @@ class DrawingLayerState extends RasterableLayerState
       //just to make sure
       if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < appState.canvasSize.x && entry.key.y < appState.canvasSize.y)
       {
-        final ColorReference colRef = entry.value.ramp.references[entry.value.colorIndex];
-        final Color originalColor = colRef.getIdColor().color;
+        final Color originalColor = entry.value.getIdColor().color;
         final int index = (entry.key.y * appState.canvasSize.x + entry.key.x) * 4;
         if (index >= 0 && index < byteDataImg.lengthInBytes)
         {

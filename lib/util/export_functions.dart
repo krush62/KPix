@@ -1172,9 +1172,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
                 imgBytes.add(colorMap[colAtPos]!);
                 imgBytes.add(255);
               }
-
             }
-
           }
           final List<int> encData = const ZLibEncoder().encode(imgBytes);
           tileList.add(encData);

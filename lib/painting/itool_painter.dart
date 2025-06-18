@@ -631,8 +631,7 @@ abstract class IToolPainter
     }
     if (colorShift != 0)
     {
-      //TODO why do we use new ColorReferences here?
-      retColor = ColorReference(colorIndex: colorShift, ramp: inputColor.ramp);
+      retColor = inputColor.ramp.references[colorShift];
     }
     return retColor;
   }
@@ -662,8 +661,7 @@ abstract class IToolPainter
                   final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
                   if (col != null)
                   {
-                    //TODO why do we use new ColorReferences here?
-                    currentColor = ColorReference(colorIndex: col.colorIndex, ramp: col.ramp);
+                    currentColor = col.ramp.references[col.colorIndex];
                   }
                 }
                 else if (currentColor != null && appState.getLayerAt(index: i) is ShadingLayerState)
@@ -672,8 +670,7 @@ abstract class IToolPainter
                   if (shadingLayer.getDisplayValueAt(coord: coord) != null)
                   {
                     final int newColorIndex = currentColor.colorIndex + shadingLayer.getDisplayValueAt(coord: coord)!;
-                    //TODO why do we use new ColorReferences here?
-                    currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                    currentColor = currentColor.ramp.references[newColorIndex];
                   }
                 }
               }
@@ -690,8 +687,7 @@ abstract class IToolPainter
               if (currentLayer.runtimeType == ShadingLayerState)
               {
                 final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
-                //TODO why do we use new ColorReferences here?
-                pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                pixelMap[coord] = currentColor.ramp.references[newColorIndex];
               }
               else if (currentLayer is DitherLayerState)
               {
@@ -700,8 +696,7 @@ abstract class IToolPainter
                 if (currentVal != ditherVal)
                 {
                   final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.shiftedColors.length - 1);
-                  //TODO why do we use new ColorReferences here?
-                  pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                  pixelMap[coord] = currentColor.ramp.references[newColorIndex];
                 }
               }
             }
@@ -811,8 +806,7 @@ abstract class IToolPainter
               if (shadingLayer.hasCoord(coord: coord))
               {
                 final int newColorIndex = (currentColor.colorIndex + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length -1);
-                //TODO why do we use new ColorReferences here?
-                currentColor = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                currentColor = currentColor.ramp.references[newColorIndex];
               }
             }
           }
@@ -823,8 +817,7 @@ abstract class IToolPainter
             if (currentLayer.runtimeType == ShadingLayerState)
             {
               final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
-              //TODO why do we use new ColorReferences here?
-              pixelMap[coord] = ColorReference(colorIndex: targetIndex, ramp: currentColor.ramp);
+              pixelMap[coord] = currentColor.ramp.references[targetIndex];
             }
             else if (currentLayer is DitherLayerState)
             {
@@ -833,8 +826,7 @@ abstract class IToolPainter
               if (currentVal != ditherVal)
               {
                 final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.shiftedColors.length - 1);
-                //TODO why do we use new ColorReferences here?
-                pixelMap[coord] = ColorReference(colorIndex: newColorIndex, ramp: currentColor.ramp);
+                pixelMap[coord] = currentColor.ramp.references[newColorIndex];
               }
             }
           }

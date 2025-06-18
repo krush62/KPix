@@ -564,9 +564,8 @@ class LayerCollection with ChangeNotifier
             final int ditherVal = shadingLayer.getDisplayValueAt(coord: entry.key) ?? 0;
             if (ditherVal != 0)
             {
-              final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.shiftedColors.length - 1);
-              //TODO why do we use new ColorReferences here?
-              shadeLayerMap[drawingLayer]![entry.key] = ColorReference(colorIndex: newColorIndex, ramp: curCol.ramp);
+              final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.references.length - 1);
+              shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[newColorIndex];
               break;
             }
           }

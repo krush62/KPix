@@ -510,7 +510,7 @@ class KPixPainter extends CustomPainter
     final bool isLocked = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.lockState.value == LayerLockState.locked;
     final bool forbiddenDrawingTool = toolPainter.runtimeType != SelectionPainter && toolPainter.runtimeType != ColorPickPainter;
     final bool isDrawingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.runtimeType == DrawingLayerState;
-    final bool isShadingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer!.runtimeType == ShadingLayerState;
+    final bool isShadingLayer = drawParams.currentRasterLayer != null && drawParams.currentRasterLayer! is ShadingLayerState;
 
 
     final bool isForbidden =

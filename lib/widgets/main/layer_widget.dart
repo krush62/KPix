@@ -19,6 +19,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -46,6 +47,7 @@ const Map<Type, IconData> layerIconMap = <Type, IconData>{
   ReferenceLayerState: FontAwesomeIcons.image,
   GridLayerState: FontAwesomeIcons.tableCells,
   ShadingLayerState: Icons.exposure,
+  DitherLayerState: Icons.gradient,
 };
 
 class _LayerWidgetState extends State<LayerWidget> {
@@ -131,7 +133,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _rasterPressed()
   {
-    _appState.layerRastered(rasterLayer: widget.layerState);
+    _appState.layerRasterPressed(rasterLayer: widget.layerState);
     _closeActionsMenus();
   }
 
@@ -147,7 +149,7 @@ class _LayerWidgetState extends State<LayerWidget> {
     final Type layerType = widget.layerState.runtimeType;
     if (layerType == DrawingLayerState) {
       actionsMenuDrawing.show(context: context);
-    } else if (layerType == GridLayerState || layerType == ShadingLayerState) {
+    } else if (layerType == GridLayerState || layerType == ShadingLayerState || layerType == DitherLayerState) {
       actionsMenuRaster.show(context: context);
     } else {
       actionsMenuReduced.show(context: context);
@@ -184,7 +186,7 @@ class _LayerWidgetState extends State<LayerWidget> {
           builder: (final BuildContext context, final bool isSelected,final Widget? child,)
           {
             return Row(
-              children: [
+              children: <Widget>[
                 Draggable<LayerState>(
                   data: widget.layerState,
                   feedback: Container(
@@ -311,16 +313,9 @@ class _LayerWidgetState extends State<LayerWidget> {
                                 ],
                               );
 
-                              if (widget.layerState.runtimeType ==
-                                      DrawingLayerState ||
-                                  widget.layerState.runtimeType ==
-                                      ShadingLayerState) {
+                              if (widget.layerState is RasterableLayerState) {
                                 final ValueNotifier<LayerLockState> layerLockState =
-                                    (widget.layerState.runtimeType ==
-                                            DrawingLayerState)
-                                        ? (widget.layerState as DrawingLayerState)
-                                            .lockState
-                                        : (widget.layerState as ShadingLayerState)
+                                         (widget.layerState as RasterableLayerState)
                                             .lockState;
                                 leftColumn.children
                                     .add(SizedBox(height: _options.innerPadding));

@@ -31,6 +31,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -113,6 +114,7 @@ const Map<int, Type> historyLayerValueMap =
   2: HistoryReferenceLayer,
   3: HistoryGridLayer,
   4: HistoryShadingLayer,
+  5: HistoryDitherLayer,
 };
 
 enum FileNameStatus
@@ -312,7 +314,6 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             kPalRampSettings.satCurve = SatCurve.noFlat;
             returnString.write("\n$msg");
           }
-
         }
         else
         {
@@ -320,8 +321,6 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         }
 
         kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
-
-
 
         // VALUE RANGE
         kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
@@ -339,7 +338,6 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             returnString.write("\n$msg");
           }
         }
-
 
         //COLOR SHIFTS
         final List<ShiftSet> shifts = <ShiftSet>[];
@@ -1077,7 +1075,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
           layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3));
         }
-        else if (historyLayerValueMap[layerType] == HistoryShadingLayer) //SHADING LAYER
+        else if (historyLayerValueMap[layerType] == HistoryShadingLayer || historyLayerValueMap[layerType] == HistoryDitherLayer) //SHADING/DITHER LAYER
         {
           // LOCK STATE
           final int lockStateVal = byteData.getUint8(offset++);
@@ -1134,7 +1132,6 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
           }
 
-
           final int dataCount = byteData.getUint32(offset);
           offset+=4;
           final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
@@ -1148,7 +1145,14 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
             data[CoordinateSetI(x: x, y: y)] = shading;
           }
 
-          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings));
+          if (historyLayerValueMap[layerType] == HistoryShadingLayer)
+          {
+            layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings));
+          }
+          else if (historyLayerValueMap[layerType] == HistoryDitherLayer)
+          {
+            layerList.add(HistoryDitherLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings));
+          }
         }
       }
       final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);

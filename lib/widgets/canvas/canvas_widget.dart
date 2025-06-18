@@ -288,7 +288,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      if (!_shaderOptions.isEnabled.value && !(_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
+      if (!_shaderOptions.isEnabled.value && !(_appState.currentLayer != null && _appState.currentLayer is ShadingLayerState))
       {
         _previousTool = _appState.selectedTool;
         _appState.setToolSelection(tool: ToolType.pick);
@@ -350,7 +350,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
+      if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer is ShadingLayerState))
       {
         final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
         if (currentDirection == ShaderDirection.left)
@@ -704,7 +704,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
       if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
       {
-        if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer.runtimeType == ShadingLayerState))
+        if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer is ShadingLayerState))
         {
           final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
           if (currentDirection == ShaderDirection.left)

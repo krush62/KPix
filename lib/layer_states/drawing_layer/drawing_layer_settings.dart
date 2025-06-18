@@ -691,8 +691,6 @@ class DrawingLayerSettings extends LayerSettings {
         break;
       }
     }
-
-
     if (currentIndex != -1)
     {
       for (int i = layers.length - 1; i > currentIndex; i--)
@@ -709,12 +707,12 @@ class DrawingLayerSettings extends LayerSettings {
             colorShift = 0;
           }
         }
-        else if (layer.runtimeType == ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+        else if (layer is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          final ShadingLayerState shadingLayer = layer as ShadingLayerState;
+          final ShadingLayerState shadingLayer = layer;
           if (shadingLayer.hasCoord(coord: coord))
           {
-            colorShift += shadingLayer.getValueAt(coord: coord)!;
+            colorShift += shadingLayer.getDisplayValueAt(coord: coord)!;
           }
         }
       }

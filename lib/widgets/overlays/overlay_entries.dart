@@ -781,6 +781,7 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
     required final Function() onNewReferenceLayer,
     required final Function() onNewGridLayer,
     required final Function() onNewShadingLayer,
+    required final Function() onNewDitherLayer,
     required final LayerLink layerLink,
   })
   {
@@ -792,7 +793,7 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          OverlayAddNewLayerMenu(layerLink: layerLink, onNewDrawingLayer: onNewDrawingLayer, onNewReferenceLayer: onNewReferenceLayer, onNewGridLayer: onNewGridLayer, onNewShadingLayer: onNewShadingLayer),
+          OverlayAddNewLayerMenu(layerLink: layerLink, onNewDrawingLayer: onNewDrawingLayer, onNewReferenceLayer: onNewReferenceLayer, onNewGridLayer: onNewGridLayer, onNewShadingLayer: onNewShadingLayer, onNewDitherLayer: onNewDitherLayer),
         ],
       ),
     ),);

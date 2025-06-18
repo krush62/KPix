@@ -431,7 +431,7 @@ enum PreferenceInt
   ShadingLayerConstraints_MinAmount(defaultValue: 0),
   ShadingLayerConstraints_DefaultAmountDarken(defaultValue: 4),
   ShadingLayerConstraints_DefaultAmountBrighten(defaultValue: 4),
-  ShadingLayerConstraints_MaxAmount(defaultValue: 8),
+  ShadingLayerConstraints_MaxAmount(defaultValue: 16),
 
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),

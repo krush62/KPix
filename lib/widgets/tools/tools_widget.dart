@@ -66,7 +66,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
 
   void currentLayerTypeChanged()
   {
-    if (_appState.currentLayer.runtimeType == ShadingLayerState &&
+    if (_appState.currentLayer is ShadingLayerState &&
         (_appState.selectedTool == ToolType.select || _appState.selectedTool == ToolType.pick))
     {
       _appState.setToolSelection(tool: ToolType.pencil);
@@ -82,7 +82,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
         valueListenable: _appState.currentLayerNotifier,
         builder: (final BuildContext context, final LayerState? currentLayer, final Widget? child)
         {
-          final bool isShadingLayer = currentLayer.runtimeType == ShadingLayerState;
+          final bool isShadingLayer = currentLayer is ShadingLayerState;
           return ValueListenableBuilder<ToolType>(
             valueListenable: _appState.selectedToolNotifier,
             builder: (final BuildContext context, final ToolType tool, final Widget? child) {

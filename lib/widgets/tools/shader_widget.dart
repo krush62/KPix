@@ -70,7 +70,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
           return ValueListenableBuilder<bool>(
             valueListenable: _shaderOptions.isEnabled,
             builder: (final BuildContext context, final bool isEnabledVal, final Widget? child){
-              final bool isShadingLayer = currentLayer != null && currentLayer.runtimeType == ShadingLayerState;
+              final bool isShadingLayer = currentLayer != null && currentLayer is ShadingLayerState;
               final bool shouldBeEnabled;
               if (isShadingLayer)
               {

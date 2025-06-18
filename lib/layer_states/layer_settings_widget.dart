@@ -14,7 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:flutter/cupertino.dart';
+
+import 'package:flutter/material.dart';
 
 abstract class LayerSettingsWidget extends StatefulWidget
 {

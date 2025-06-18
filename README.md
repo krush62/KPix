@@ -34,6 +34,7 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 - reference layers
 - grid/perspective aid layers
 - shading layers
+- dithering layers
 - non-destructive layer effects (outer/inner strokes, shadow, glow, ...)
 - image importing including automatic palette creation
 - multi-platform support (Windows, Linux, Android, Web)
@@ -71,6 +72,8 @@ Palettes can be saved using the kpal format which is also used by [KPal](https:/
 Add reference images to your project and put them anywhere in your layer stack. These layers support opacity, scaling, moving and stretching.
 #### Shading Layers
 Non-destructive shading for your image. Test different shading variants without changing the content.
+#### Shading Layers
+Special kind of shading layer for dithering (±16 steps). 
 #### Grid/Perspective Layers
 Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangular, isometric, brick) or perspective aid (1-point, 2-point, 3-point).
 

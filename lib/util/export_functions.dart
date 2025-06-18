@@ -28,6 +28,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
@@ -50,6 +51,7 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
     HistoryReferenceLayer: 2,
     HistoryGridLayer: 3,
     HistoryShadingLayer: 4,
+    HistoryDitherLayer: 5,
   };
 
   Map<GridType, int> gridTypeValueMap =
@@ -843,7 +845,7 @@ Future<ByteData> _getImageData({required final AppState appState, required final
         byteData.setFloat32(offset, gridLayer.vanishingPoint3);
         offset += 4;
       }
-      else if (saveData.layerList[i].runtimeType == HistoryShadingLayer)
+      else if (saveData.layerList[i] is HistoryShadingLayer)
       {
         final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
 
@@ -1047,10 +1049,10 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
             return 0;
           }
         }
-        else if (appState.getLayerAt(index: i).runtimeType == ShadingLayerState)
+        else if (appState.getLayerAt(index: i) is ShadingLayerState)
         {
           final ShadingLayerState shadingLayerState = appState.getLayerAt(index: i) as ShadingLayerState;
-          final int? shadingAt = shadingLayerState.getValueAt(coord: coord);
+          final int? shadingAt = shadingLayerState.getDisplayValueAt(coord: coord);
           if (shadingAt != null)
           {
             shade += shadingAt;
@@ -1764,7 +1766,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
         size += 4;
       }
-      else if (saveData.layerList[i].runtimeType == HistoryShadingLayer)
+      else if (saveData.layerList[i] is HistoryShadingLayer)
       {
         final HistoryShadingLayer shadingLayer = saveData.layerList[i] as HistoryShadingLayer;
         //lock type

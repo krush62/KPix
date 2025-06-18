@@ -81,10 +81,9 @@ class EraserPainter extends IToolPainter
                     selection.selection.deleteDirectly(coord: coord);
                   }
                 }
-                else if (drawParams.primaryDown && rasterLayer.runtimeType == ShadingLayerState)
+                else if (drawParams.primaryDown && rasterLayer is ShadingLayerState)
                 {
-                  final ShadingLayerState shadingLayer = rasterLayer as ShadingLayerState;
-                  if (shadingLayer.hasCoord(coord: coord))
+                  if (rasterLayer.hasCoord(coord: coord))
                   {
                     refs[coord] = null;
                   }

@@ -19,6 +19,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -29,6 +30,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
+import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
@@ -480,6 +482,16 @@ class AppState
     return newLayer;
   }
 
+  DitherLayerState addNewDitherLayer({final bool addToHistoryStack = true, final bool select = false})
+  {
+    final DitherLayerState newLayer = _layerCollection.addNewDitherLayer(select: select);
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDither);
+    }
+    return newLayer;
+  }
+
   GridLayerState addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     final GridLayerState newLayer = _layerCollection.addNewGridLayer(select: select);
@@ -684,6 +696,13 @@ class AppState
           layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: shadingLayerSettings);
           topMostShadingLayer ??= layerState;
         }
+        else if (historyLayer.runtimeType == HistoryDitherLayer)
+        {
+          final HistoryDitherLayer ditherLayer = historyLayer as HistoryDitherLayer;
+          final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: ditherLayer.settings.constraints, shadingLow: ditherLayer.settings.shadingLow, shadingHigh: ditherLayer.settings.shadingHigh,);
+          layerState = DitherLayerState.withData(data: ditherLayer.data, lState: ditherLayer.lockState, newSettings: shadingLayerSettings);
+          topMostShadingLayer ??= layerState;
+        }
 
         if (layerState != null)
         {
@@ -876,16 +895,15 @@ class AppState
       }
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
     }
-    else if (layerState.runtimeType == ShadingLayerState)
+    else if (layerState is ShadingLayerState)
     {
-      final ShadingLayerState shadingLayerState = layerState as ShadingLayerState;
-      if (shadingLayerState.lockState.value == LayerLockState.unlocked)
+      if (layerState.lockState.value == LayerLockState.unlocked)
       {
-        shadingLayerState.lockState.value = LayerLockState.locked;
+        layerState.lockState.value = LayerLockState.locked;
       }
-      else if (shadingLayerState.lockState.value == LayerLockState.locked)
+      else if (layerState.lockState.value == LayerLockState.locked)
       {
-        shadingLayerState.lockState.value = LayerLockState.unlocked;
+        layerState.lockState.value = LayerLockState.unlocked;
       }
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
     }
@@ -973,7 +991,7 @@ class AppState
     newRasterData(layer: duplicateLayer);
   }
 
-  void layerRastered({required final LayerState rasterLayer, final bool addToHistoryStack = true})
+  void layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true})
   {
     _layerCollection.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
     if (addToHistoryStack)

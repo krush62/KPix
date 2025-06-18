@@ -276,6 +276,7 @@ class DrawingLayerState extends RasterableLayerState
       //just to make sure
       if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < appState.canvasSize.x && entry.key.y < appState.canvasSize.y)
       {
+        //TODO why do we use new ColorReferences here?
         final ColorReference colRef = ColorReference(colorIndex: entry.value.colorIndex, ramp: entry.value.ramp);
         final Color originalColor = colRef.getIdColor().color;
         final int index = (entry.key.y * appState.canvasSize.x + entry.key.x) * 4;

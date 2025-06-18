@@ -19,6 +19,7 @@
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -149,6 +150,28 @@ class LayerCollection with ChangeNotifier
   ShadingLayerState addNewShadingLayer({final bool select = false})
   {
     final ShadingLayerState newLayer = ShadingLayerState();
+    final List<LayerState> layerList = <LayerState>[];
+    if (_layers.isEmpty)
+    {
+      newLayer.isSelected.value = true;
+      _currentLayer.value = newLayer;
+      layerList.add(newLayer);
+    }
+    else
+    {
+      _layers.insert(getSelectedLayerIndex(), newLayer);
+    }
+    if (select)
+    {
+      selectLayer(newLayer: newLayer);
+    }
+    notifyListeners();
+    return newLayer;
+  }
+
+  DitherLayerState addNewDitherLayer({final bool select = false})
+  {
+    final DitherLayerState newLayer = DitherLayerState();
     final List<LayerState> layerList = <LayerState>[];
     if (_layers.isEmpty)
     {
@@ -411,6 +434,11 @@ class LayerCollection with ChangeNotifier
       final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
       addLayer = ShadingLayerState.from(other: shadingLayer);
     }
+    else if (duplicateLayer.runtimeType == DitherLayerState)
+    {
+      final DitherLayerState ditherLayer = duplicateLayer as DitherLayerState;
+      addLayer = DitherLayerState.from(other: ditherLayer);
+    }
 
     if (addLayer != null)
     {
@@ -485,11 +513,10 @@ class LayerCollection with ChangeNotifier
         _replaceCurrentLayerWithDrawingLayer(data: data, originalLayer: rasterLayer, canvasSize: canvasSize, ramps: ramps);
       });
     }
-    else if (rasterLayer.runtimeType == ShadingLayerState)
+    else if (rasterLayer is ShadingLayerState)
     {
-      final ShadingLayerState shadingLayer = rasterLayer as ShadingLayerState;
-      _rasterShadingLayer(shadingLayer: shadingLayer).then((final void _) {
-        _shadingLayerRastered(shadingLayer: shadingLayer);
+      _rasterShadingLayer(shadingLayer: rasterLayer).then((final void _) {
+        _shadingLayerRastered(shadingLayer: rasterLayer);
       },);
     }
   }
@@ -526,9 +553,23 @@ class LayerCollection with ChangeNotifier
         final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key, withSettingsPixels: true);
         if (curCol != null)
         {
-          final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
-          shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
-          break;
+          if (shadingLayer.runtimeType == ShadingLayerState)
+          {
+            final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
+            shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
+            break;
+          }
+          else
+          {
+            final int ditherVal = shadingLayer.getDisplayValueAt(coord: entry.key) ?? 0;
+            if (ditherVal != 0)
+            {
+              final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.shiftedColors.length - 1);
+              //TODO why do we use new ColorReferences here?
+              shadeLayerMap[drawingLayer]![entry.key] = ColorReference(colorIndex: newColorIndex, ramp: curCol.ramp);
+              break;
+            }
+          }
         }
       }
     }
@@ -671,10 +712,9 @@ class LayerCollection with ChangeNotifier
     int shading = 0;
     for (final LayerState layer in _layers)
     {
-      if (!rawMode && layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == ShadingLayerState)
+      if (!rawMode && layer.visibilityState.value == LayerVisibilityState.visible && layer is ShadingLayerState)
       {
-        final ShadingLayerState shadingLayer = layer as ShadingLayerState;
-        final int valueAtCoord = shadingLayer.getValueAt(coord: normPos) ?? 0;
+        final int valueAtCoord = layer.getDisplayValueAt(coord: normPos) ?? 0;
         shading += valueAtCoord;
       }
       else if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)

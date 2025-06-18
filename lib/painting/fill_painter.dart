@@ -242,7 +242,7 @@ class FillPainter extends IToolPainter
     final int numRows = appState.canvasSize.y;
     final int numCols = appState.canvasSize.x;
     final List<List<bool>> visited = List<List<bool>>.generate(numCols, (final _) => List<bool>.filled(numRows, false));
-    final int? startValue = layer.getValueAt(coord: start);
+    final int? startValue = layer.getRawValueAt(coord: start);
     final StackCol<CoordinateSetI> stackPoints = StackCol<CoordinateSetI>();
     final HashMap<CoordinateSetI, int> addPixels = HashMap<CoordinateSetI, int>();
     final Set<CoordinateSetI> removePixels = <CoordinateSetI>{};
@@ -252,7 +252,7 @@ class FillPainter extends IToolPainter
     while(stackPoints.isNotEmpty)
     {
       final CoordinateSetI curCoord = stackPoints.pop();
-      final int? shadeAtPos = layer.getValueAt(coord: curCoord);
+      final int? shadeAtPos = layer.getRawValueAt(coord: curCoord);
       if (!visited[curCoord.x][curCoord.y] && shadeAtPos == startValue)
       {
         visited[curCoord.x][curCoord.y] = true;
@@ -392,7 +392,7 @@ class FillPainter extends IToolPainter
     required final ShaderDirection shadeDirection,
   })
   {
-    final int? startValue = layer.getValueAt(coord: start);
+    final int? startValue = layer.getRawValueAt(coord: start);
     final HashMap<CoordinateSetI, int> addPixels = HashMap<CoordinateSetI, int>();
     final Set<CoordinateSetI> removePixels = <CoordinateSetI>{};
     for (int x = 0; x < appState.canvasSize.x; x++)
@@ -400,7 +400,7 @@ class FillPainter extends IToolPainter
       for (int y = 0; y < appState.canvasSize.y; y++)
       {
         final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-        final int? shadeAtPos = layer.getValueAt(coord: curCoord);
+        final int? shadeAtPos = layer.getRawValueAt(coord: curCoord);
         if (shadeAtPos == startValue)
         {
           int shadeVal = shadeAtPos?? 0;

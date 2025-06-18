@@ -29,6 +29,7 @@ class OverlayAddNewLayerMenu extends StatefulWidget
   final Function() onNewReferenceLayer;
   final Function() onNewGridLayer;
   final Function() onNewShadingLayer;
+  final Function() onNewDitherLayer;
 
   const OverlayAddNewLayerMenu({
     super.key,
@@ -37,6 +38,7 @@ class OverlayAddNewLayerMenu extends StatefulWidget
     required this.onNewReferenceLayer,
     required this.onNewGridLayer,
     required this.onNewShadingLayer,
+    required this.onNewDitherLayer,
   });
 
 
@@ -122,6 +124,26 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       onPressed: () {widget.onNewShadingLayer();},
                       icon: FaIcon(
                         Icons.exposure,
+                        size: _options.buttonHeight,),
+                      color: Theme.of(context).primaryColorLight,
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: Theme.of(context).primaryColor,),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
+                  child: Tooltip(
+                    message: "Add New Dither Layer",
+                    preferBelow: false,
+                    waitDuration: AppState.toolTipDuration,
+                    child: IconButton.outlined(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.all(_options.buttonSpacing),
+                      onPressed: () {widget.onNewDitherLayer();},
+                      icon: FaIcon(
+                        Icons.gradient,
                         size: _options.buttonHeight,),
                       color: Theme.of(context).primaryColorLight,
                       style: IconButton.styleFrom(

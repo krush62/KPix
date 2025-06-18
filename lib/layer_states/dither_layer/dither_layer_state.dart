@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:typed_data';
@@ -21,44 +22,32 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_settings_widget.dart';
-import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
-class ShadingLayerState extends RasterableLayerState
+class DitherLayerState extends ShadingLayerState
 {
-  final ShadingLayerSettings settings;
-  @protected
-  final HashMap<int, int> thumbnailBrightnessMap = HashMap<int, int>();
-  @protected
-  final HashMap<CoordinateSetI, int> sData = HashMap<CoordinateSetI, int>();
+  static const int _shadingSteps = 16;
+  final HashMap<int, List<List<int>>> _ditherMap = HashMap<int, List<List<int>>>();
+  //final HashMap<CoordinateSetI, int> _ditherData = HashMap<CoordinateSetI, int>();
 
-  ShadingLayerState() : this._(settings: ShadingLayerSettings.defaultValue(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints));
+  DitherLayerState() : this._();
 
-  ShadingLayerState._({required this.settings}) : super(layerSettings: settings)
+  DitherLayerState._() : super()
   {
-    _init();
+    settings.shadingStepsMinus.value = _shadingSteps;
+    settings.shadingStepsPlus.value = _shadingSteps;
+    _createDitherMap();
+    update();
   }
 
-  ShadingLayerState.withData({required final HashMap<CoordinateSetI, int> data, required final LayerLockState lState, required final ShadingLayerSettings newSettings, super.layerStack}) :
-        settings = newSettings,
-        super(layerSettings: newSettings)
-  {
-    _init();
-    for (final MapEntry<CoordinateSetI, int> entry in data.entries)
-    {
-      sData[entry.key] = entry.value;
-    }
-    lockState.value = lState;
-  }
-
-  factory ShadingLayerState.from({required final ShadingLayerState other, final List<RasterableLayerState>? layerStack})
+  @override
+  factory DitherLayerState.from({required final DitherLayerState other, final List<RasterableLayerState>? layerStack})
   {
     final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
     for (final MapEntry<CoordinateSetI, int> entry in other.shadingData.entries)
@@ -67,102 +56,144 @@ class ShadingLayerState extends RasterableLayerState
     }
     final ShadingLayerSettings settings = ShadingLayerSettings.from(other: other.settings);
 
-    return ShadingLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
+    return DitherLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
   }
 
-  @protected
-  void update()
+  @override
+  DitherLayerState.withData({required super.data, required super.lState, required super.newSettings, super.layerStack})
+  : super.withData()
   {
-    int counter = 0;
-    final int brightnessStep = 255 ~/ (settings.shadingStepsMinus.value + settings.shadingStepsPlus.value + 1);
-    for (int i = -settings.shadingStepsMinus.value; i <= settings.shadingStepsPlus.value; i++)
-    {
-      thumbnailBrightnessMap[i] = counter * brightnessStep;
-      counter++;
-    }
-  }
-
-  void _init()
-  {
+    settings.shadingStepsMinus.value = _shadingSteps;
+    settings.shadingStepsPlus.value = _shadingSteps;
+    _createDitherMap();
     update();
-    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
-
-    settings.addListener(() {
-      _settingsChanged();
-    });
   }
 
-  void _settingsChanged()
+
+  void _createDitherMap()
   {
-    for (final MapEntry<CoordinateSetI, int> entry in sData.entries)
+    _ditherMap.clear();
+
+    _ditherMap[0] = <List<int>>[
+      <int>[0, 0, 0, 0],
+      <int>[0, 0, 0, 0],
+      <int>[0, 0, 0, 0],
+      <int>[0, 0, 0, 0],
+    ];
+    _ditherMap[1] = <List<int>>[
+      <int>[0, 0, 0, 0],
+      <int>[0, 1, 0, 0],
+      <int>[0, 0, 0, 0],
+      <int>[0, 0, 0, 0],
+    ];
+    _ditherMap[2] = <List<int>>[
+      <int>[0, 0, 0, 0],
+      <int>[0, 1, 0, 0],
+      <int>[0, 0, 0, 0],
+      <int>[0, 0, 0, 1],
+    ];
+    _ditherMap[3] = <List<int>>[
+      <int>[0, 0, 0, 0],
+      <int>[0, 1, 0, 1],
+      <int>[0, 0, 0, 0],
+      <int>[0, 0, 0, 1],
+    ];
+    _ditherMap[4] = <List<int>>[
+      <int>[0, 0, 0, 0],
+      <int>[0, 1, 0, 1],
+      <int>[0, 0, 0, 0],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[5] = <List<int>>[
+      <int>[1, 0, 0, 0],
+      <int>[0, 1, 0, 1],
+      <int>[0, 0, 0, 0],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[6] = <List<int>>[
+      <int>[1, 0, 0, 0],
+      <int>[0, 1, 0, 1],
+      <int>[0, 0, 1, 0],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[7] = <List<int>>[
+      <int>[1, 0, 1, 0],
+      <int>[0, 1, 0, 1],
+      <int>[0, 0, 1, 0],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[8] = <List<int>>[
+      <int>[1, 0, 1, 0],
+      <int>[0, 1, 0, 1],
+      <int>[1, 0, 1, 0],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[9] = <List<int>>[
+      <int>[1, 1, 1, 0],
+      <int>[0, 1, 0, 1],
+      <int>[1, 0, 1, 0],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[10] = <List<int>>[
+      <int>[1, 1, 1, 0],
+      <int>[0, 1, 0, 1],
+      <int>[1, 0, 1, 1],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[11] = <List<int>>[
+      <int>[1, 1, 1, 0],
+      <int>[0, 1, 0, 1],
+      <int>[1, 1, 1, 1],
+      <int>[0, 1, 0, 1],
+    ];
+    _ditherMap[12] = <List<int>>[
+      <int>[1, 1, 1, 0],
+      <int>[0, 1, 0, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 0, 1],
+    ];
+    _ditherMap[13] = <List<int>>[
+      <int>[1, 1, 1, 1],
+      <int>[0, 1, 0, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 0, 1],
+    ];
+    _ditherMap[14] = <List<int>>[
+      <int>[1, 1, 1, 1],
+      <int>[0, 1, 1, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 0, 1],
+    ];
+    _ditherMap[15] = <List<int>>[
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 0, 1],
+    ];
+    _ditherMap[16] = <List<int>>[
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 1, 1],
+      <int>[1, 1, 1, 1],
+    ];
+    final List<int> positiveKeys = _ditherMap.keys.toList();
+    for (final int pKey in positiveKeys)
     {
-      if (sData[entry.key] != null)
+      final List<List<int>> negativeList = <List<int>>[];
+      for (int i = 0; i < 4; i++)
       {
-        sData[entry.key] = sData[entry.key]!.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
-      }
-
-    }
-    doManualRaster = true;
-  }
-
-  HashMap<CoordinateSetI, int> get shadingData
-  {
-    return sData;
-  }
-
-  bool hasCoord({required final CoordinateSetI coord})
-  {
-    return sData.containsKey(coord);
-  }
-
-  int? getDisplayValueAt({required final CoordinateSetI coord, final int shift = 0})
-  {
-    if (hasCoord(coord: coord))
-    {
-      return sData[coord]! + shift;
-    }
-    else
-    {
-      return null;
-    }
-
-  }
-
-  int? getRawValueAt({required final CoordinateSetI coord})
-  {
-    return getDisplayValueAt(coord: coord);
-  }
-
-
-  void removeCoords({required final Iterable<CoordinateSetI> coords})
-  {
-    if (lockState.value == LayerLockState.unlocked)
-    {
-      for (final CoordinateSetI coord in coords)
-      {
-        if (sData.containsKey(coord))
+        final List<int> row = <int>[];
+        for (int j = 0; j < 4; j++)
         {
-          sData.remove(coord);
+          row.add(_ditherMap[pKey]![i][j] == 1 ? -1 : 0);
         }
+        negativeList.add(row);
       }
-      doManualRaster = true;
+      _ditherMap[-pKey] = negativeList;
     }
   }
 
-  void addCoords({required final HashMap<CoordinateSetI, int> coords})
-  {
-    if (lockState.value == LayerLockState.unlocked)
-    {
-      for (final MapEntry<CoordinateSetI, int> entry in coords.entries)
-      {
-        sData[entry.key] = entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
-      }
-      doManualRaster = true;
-    }
-  }
-
-  @protected
+  @override
   Future<(ui.Image, ui.Image)> createRasters() async
   {
     final AppState appState = GetIt.I.get<AppState>();
@@ -183,6 +214,7 @@ class ShadingLayerState extends RasterableLayerState
 
     if (currentIndex != -1)
     {
+      //_ditherData.clear();
       for (int x = 0; x < appState.canvasSize.x; x++)
       {
         for (int y = 0; y < appState.canvasSize.y; y++)
@@ -206,7 +238,8 @@ class ShadingLayerState extends RasterableLayerState
                 if (refCol != null)
                 {
                   final int currentColorIndex = refCol.colorIndex;
-                  final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+                  final int ditherVal = getDisplayValueAt(coord: coord);
+                  final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
                   allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
                   final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
                   final int index = (y * appState.canvasSize.x + x) * 4;
@@ -255,52 +288,50 @@ class ShadingLayerState extends RasterableLayerState
     return (rasterImg, thbImg);
   }
 
-  void _rasterCreated({required final ui.Image thb, required final ui.Image img})
+  /*@override
+  HashMap<CoordinateSetI, int> get shadingData
   {
-    thumbnail.value = thb;
-    previousRaster = rasterImage.value;
-    rasterImage.value = img;
-    isRasterizing = false;
-    doManualRaster = false;
-    if (layerStack == null)
-    {
-      GetIt.I.get<AppState>().newRasterData(layer: this);
-    }
+    return _ditherData;
+  }*/
 
-  }
-
-  void _updateTimerCallback({required final Timer timer})
+  @override
+  bool hasCoord({required final CoordinateSetI coord})
   {
-    if (doManualRaster && !isRasterizing)
-    {
-      isRasterizing = true;
-      createRasters().then((final (ui.Image, ui.Image) images)
-      {
-        _rasterCreated(img: images.$1, thb: images.$2);
-      });
-    }
+    return sData.containsKey(coord);
   }
 
   @override
-  void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})
+  int getDisplayValueAt({required final CoordinateSetI coord, final int shift = 0})
   {
-    final HashMap<CoordinateSetI, int> croppedContent = HashMap<CoordinateSetI, int>();
-    for (final MapEntry<CoordinateSetI, int> entry in sData.entries)
+    final int? valAt = getRawValueAt(coord: coord);
+    if (valAt != null)
     {
-      final CoordinateSetI newCoord = CoordinateSetI(x: entry.key.x + offset.x, y: entry.key.y + offset.y);
-      if (newCoord.x >= 0 && newCoord.x < newSize.x && newCoord.y >= 0 && newCoord.y < newSize.y)
+      final int shiftedVal = valAt + shift;
+      if (shiftedVal != 0 && _ditherMap.containsKey(shiftedVal))
       {
-        croppedContent[newCoord] = entry.value;
+        return _ditherMap[shiftedVal]![coord.y % 4][coord.x % 4];
+      }
+      else
+      {
+        return 0;
       }
     }
-
-    sData.clear();
-    sData.addAll(croppedContent);
+    else if (shift != 0)
+    {
+      return _ditherMap[shift]![coord.y % 4][coord.x % 4];
+    }
+    else
+    {
+      return 0;
+    }
   }
 
   @override
-  LayerSettingsWidget getSettingsWidget() {
-    return ShadingLayerSettingsWidget(settings: settings);
+  int? getRawValueAt({required final CoordinateSetI coord})
+  {
+    return sData[coord];
   }
+
+
 
 }

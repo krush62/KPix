@@ -99,14 +99,14 @@ class _KPalRampState extends State<KPalRamp>
     final List<RasterableLayerState> drawingLayers = <RasterableLayerState>[];
     for (final LayerState visibleLayer in originalLayers)
     {
-      if (visibleLayer.runtimeType == DrawingLayerState)
+      if (visibleLayer is DrawingLayerState)
       {
-        final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer as DrawingLayerState, layerStack: drawingLayers);
+        final DrawingLayerState drawingLayer = DrawingLayerState.from(other: visibleLayer, layerStack: drawingLayers);
         drawingLayers.add(drawingLayer);
       }
-      else if (visibleLayer.runtimeType == ShadingLayerState)
+      else if (visibleLayer is ShadingLayerState)
       {
-        final ShadingLayerState shadingLayer = ShadingLayerState.from(other: visibleLayer as ShadingLayerState, layerStack: drawingLayers);
+        final ShadingLayerState shadingLayer = ShadingLayerState.from(other: visibleLayer, layerStack: drawingLayers);
         drawingLayers.add(shadingLayer);
       }
     }

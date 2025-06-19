@@ -1016,7 +1016,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
               final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
               if (shade != 0)
               {
-                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
+                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
                 colAtPos = colAtPos.ramp.references[targetIndex];
               }
               imgBytes.add(colorMap[colAtPos]!);
@@ -1166,7 +1166,7 @@ int _packAlignments({required final HashMap<Alignment, bool> alignments})
                 final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
                 if (shade != 0)
                 {
-                  final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.shiftedColors.length - 1);
+                  final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
                   colAtPos = colAtPos.ramp.references[targetIndex];
                 }
                 imgBytes.add(colorMap[colAtPos]!);

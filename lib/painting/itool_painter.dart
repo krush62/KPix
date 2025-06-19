@@ -311,9 +311,23 @@ abstract class IToolPainter
             final int? shadingVal = currentLayer.shadingData[entry.key];
             if (shadingVal != null)
             {
-              final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
-              colRef = colRef.ramp.references[targetShading];
+              if (currentLayer.runtimeType == ShadingLayerState)
+              {
+                final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
+                colRef = colRef.ramp.references[targetShading];
+              }
+              else if (currentLayer is DitherLayerState)
+              {
+                final int currentVal = currentLayer.getDisplayValueAt(coord: entry.key);
+                if (currentVal != 0)
+                {
+                  final int newColorIndex = (colRef.colorIndex + currentVal).clamp(0, colRef.ramp.references.length - 1);
+                  colRef = colRef.ramp.references[newColorIndex];
+                }
+
+              }
             }
+
           }
         }
 
@@ -590,7 +604,7 @@ abstract class IToolPainter
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
-              if (layerRef.colorIndex + 1 < layerRef.ramp.shiftedColors.length)
+              if (layerRef.colorIndex + 1 < layerRef.ramp.references.length)
               {
                 pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex  + 1];
               }
@@ -624,7 +638,7 @@ abstract class IToolPainter
           final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
           if (shadingLayer.hasCoord(coord: coord))
           {
-            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.shiftedColors.length - 1);
+            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
           }
         }
       }
@@ -686,7 +700,7 @@ abstract class IToolPainter
               }
               if (currentLayer.runtimeType == ShadingLayerState)
               {
-                final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.shiftedColors.length - 1);
+                final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.references.length - 1);
                 pixelMap[coord] = currentColor.ramp.references[newColorIndex];
               }
               else if (currentLayer is DitherLayerState)
@@ -695,7 +709,7 @@ abstract class IToolPainter
                 final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shift);
                 if (currentVal != ditherVal)
                 {
-                  final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.shiftedColors.length - 1);
+                  final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
                   pixelMap[coord] = currentColor.ramp.references[newColorIndex];
                 }
               }
@@ -721,7 +735,7 @@ abstract class IToolPainter
       {
         if (!shaderOptions.isEnabled.value) //without shading
         {
-          final int index = (selectedColor.colorIndex + stampEntry.value).clamp(0, selectedColor.ramp.shiftedColors.length - 1);
+          final int index = (selectedColor.colorIndex + stampEntry.value).clamp(0, selectedColor.ramp.references.length - 1);
           final ColorReference drawColor = selectedColor.ramp.references[index];
           //if no selection and current pixel is different
           if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != drawColor) ||
@@ -746,12 +760,12 @@ abstract class IToolPainter
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
-              final int index = (layerRef.colorIndex + stampEntry.value + 1).clamp(0, layerRef.ramp.shiftedColors.length - 1);
+              final int index = (layerRef.colorIndex + stampEntry.value + 1).clamp(0, layerRef.ramp.references.length - 1);
               pixelMap[coord] = layerRef.ramp.references[index];
             }
             else
             {
-              final int index = (layerRef.colorIndex - stampEntry.value - 1).clamp(0, layerRef.ramp.shiftedColors.length - 1);
+              final int index = (layerRef.colorIndex - stampEntry.value - 1).clamp(0, layerRef.ramp.references.length - 1);
               pixelMap[coord] = layerRef.ramp.references[index];
             }
           }
@@ -825,7 +839,7 @@ abstract class IToolPainter
               final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shadingAmount);
               if (currentVal != ditherVal)
               {
-                final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.shiftedColors.length - 1);
+                final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
                 pixelMap[coord] = currentColor.ramp.references[newColorIndex];
               }
             }

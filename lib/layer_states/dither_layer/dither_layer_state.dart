@@ -32,16 +32,14 @@ import 'package:kpix/util/typedefs.dart';
 
 class DitherLayerState extends ShadingLayerState
 {
-  static const int _shadingSteps = 16;
   final HashMap<int, List<List<int>>> _ditherMap = HashMap<int, List<List<int>>>();
-  //final HashMap<CoordinateSetI, int> _ditherData = HashMap<CoordinateSetI, int>();
 
   DitherLayerState() : this._();
 
   DitherLayerState._() : super()
   {
-    settings.shadingStepsMinus.value = _shadingSteps;
-    settings.shadingStepsPlus.value = _shadingSteps;
+    settings.shadingStepsMinus.value = settings.constraints.ditherStepsMax;
+    settings.shadingStepsPlus.value = settings.constraints.ditherStepsMax;
     _createDitherMap();
     update();
   }
@@ -63,8 +61,8 @@ class DitherLayerState extends ShadingLayerState
   DitherLayerState.withData({required super.data, required super.lState, required super.newSettings, super.layerStack})
   : super.withData()
   {
-    settings.shadingStepsMinus.value = _shadingSteps;
-    settings.shadingStepsPlus.value = _shadingSteps;
+    settings.shadingStepsMinus.value = settings.constraints.ditherStepsMax;
+    settings.shadingStepsPlus.value = settings.constraints.ditherStepsMax;
     _createDitherMap();
     update();
   }

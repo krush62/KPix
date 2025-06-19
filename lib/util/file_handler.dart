@@ -1097,9 +1097,11 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           HistoryShadingLayerSettings shadingLayerSettings = HistoryShadingLayerSettings.defaultValue(constraints: shadingLayerSettingsConstraints);
           if (fVersion >= 2)
           {
+            final int topLimit = historyLayerValueMap[layerType] == HistoryDitherLayer ? shadingLayerSettingsConstraints.ditherStepsMax : shadingLayerSettingsConstraints.shadingStepsMax;
+
             // SHADING LIMIT LOW
             int shadingStepLimitLow = byteData.getUint8(offset++);
-            if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitLow > shadingLayerSettingsConstraints.shadingStepsMax)
+            if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitLow > topLimit)
             {
               final String msg = "Shading step limit low is out of range for layer $i: $shadingStepLimitLow";
               if (strict)
@@ -1115,7 +1117,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
             // SHADING LIMIT HIGH
             int shadingStepLimitHigh = byteData.getUint8(offset++);
-            if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitHigh > shadingLayerSettingsConstraints.shadingStepsMax)
+            if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitHigh > topLimit)
             {
               final String msg = "Shading step limit high is out of range for layer $i: $shadingStepLimitHigh";
               if (strict)

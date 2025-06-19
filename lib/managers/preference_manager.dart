@@ -431,7 +431,8 @@ enum PreferenceInt
   ShadingLayerConstraints_MinAmount(defaultValue: 0),
   ShadingLayerConstraints_DefaultAmountDarken(defaultValue: 4),
   ShadingLayerConstraints_DefaultAmountBrighten(defaultValue: 4),
-  ShadingLayerConstraints_MaxAmount(defaultValue: 16),
+  ShadingLayerConstraints_MaxAmount(defaultValue: 8),
+  ShadingLayerConstraints_MaxDither(defaultValue: 16),
 
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
@@ -887,7 +888,8 @@ class PreferenceManager
         shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
         shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
         shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
-        shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
+        shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
+        ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
@@ -1167,7 +1169,8 @@ class PreferenceManager
       shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
       shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
       shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
-      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),);
+      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
+      ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
 
     behaviorPreferenceContent = BehaviorPreferenceContent(
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),

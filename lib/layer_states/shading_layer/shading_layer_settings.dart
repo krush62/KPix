@@ -23,12 +23,14 @@ class ShadingLayerSettingsConstraints
   final int shadingStepsDefaultBrighten;
   final int shadingStepsDefaultDarken;
   final int shadingStepsMax;
+  final int ditherStepsMax;
 
   const ShadingLayerSettingsConstraints({
     required this.shadingStepsMin,
     required this.shadingStepsDefaultBrighten,
     required this.shadingStepsDefaultDarken,
     required this.shadingStepsMax,
+    required this.ditherStepsMax,
   });
 }
 

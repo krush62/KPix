@@ -240,15 +240,13 @@ class ColorSet
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.normal : _darkColors.light),
-          backgroundColor: WidgetStateProperty.all(_darkColors.normal),
-          overlayColor: WidgetStateProperty.all(_darkColors.light),
-          surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
-          padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-          side: WidgetStateProperty.all(BorderSide(
-              color: _darkColors.light,
-          ),
-        ),
+        foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.normal : (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light)),
+        backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal),
+        overlayColor: WidgetStateProperty.all(_darkColors.light),
+        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+        //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
+        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal,) : BorderSide(color: _darkColors.light,)),
       ),
     ),
 

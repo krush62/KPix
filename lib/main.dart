@@ -38,6 +38,7 @@ import 'package:kpix/widgets/controls/kpix_splitter.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/right_bar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
+import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -612,6 +613,7 @@ class MainWidget extends StatelessWidget
                     children: <Widget>[
                       const CanvasWidget(),
                       StatusBarWidget(),
+                      SymmetryWidget(state: SymmetryState(),)
                     ],
                   ) : Container(color: Theme.of(context).primaryColorDark);
                 },

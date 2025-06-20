@@ -61,7 +61,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
   final int animationDurationMs = 200;
   final double buttonWidth = 96.0;
   final double buttonHeight = 36;
-  final double expandIconSize = 16;
+  final double expandIconSize = 20;
 
   final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
   late AnimationController _animationController;
@@ -132,11 +132,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                             children: <Widget>[
                               const Spacer(),
                               Icon(Icons.border_inner, color: Theme.of(context).primaryColorLight, size: expandIconSize,),
-                              Text(
-                                !expanded ? '⯅' : '⯆',
-                                style: Theme.of(context).textTheme.titleSmall,
-                                textAlign: TextAlign.center,
-                              ),
+                              Icon(expanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, color: Theme.of(context).primaryColorLight, size: expandIconSize,),
                               const Spacer(),
                             ],
                           );

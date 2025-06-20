@@ -85,6 +85,8 @@ class DrawingParameters
   final GridLayerState? currentGridLayer;
   final RasterableLayerState? currentRasterLayer;
   final double pixelRatio;
+  final double? symmetryHorizontal;
+  final double? symmetryVertical;
   DrawingParameters({
     required this.offset,
     required this.canvas,
@@ -100,6 +102,8 @@ class DrawingParameters
     required this.primaryPressStart,
     required this.pixelRatio,
     required final LayerState currentLayer,
+    required this.symmetryHorizontal,
+    required this.symmetryVertical,
 }) :
     scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
     currentRasterLayer = currentLayer is RasterableLayerState ? currentLayer : null,
@@ -231,6 +235,8 @@ class KPixPainter extends CustomPainter
       final Paint noFilterPainter = Paint()..filterQuality = FilterQuality.none..isAntiAlias = false;
       final DrawingParameters drawParams = DrawingParameters(
         pixelRatio: _appState.devicePixelRatio,
+        symmetryHorizontal: _appState.symmetryState.horizontalActivated.value ? _appState.symmetryState.horizontalValue.value : null,
+        symmetryVertical: _appState.symmetryState.verticalActivated.value ? _appState.symmetryState.verticalValue.value : null,
         stylusButtonDown: _stylusButton1Down.value,
         offset: _offset.value,
         canvas: canvas,
@@ -275,7 +281,7 @@ class KPixPainter extends CustomPainter
       {
         toolPainter?.setStatusBarData(drawParams: drawParams);
       }
-      if (_appState.symmetryState.horizontalActivated.value || _appState.symmetryState.verticalActivated.value)
+      if (drawParams.symmetryHorizontal != null || drawParams.symmetryVertical != null)
       {
         _drawSymmetry(drawParams: drawParams);
       }
@@ -636,9 +642,9 @@ class KPixPainter extends CustomPainter
 
 
     //HORIZONTAL
-    if (_appState.symmetryState.horizontalActivated.value)
+    if (drawParams.symmetryHorizontal != null)
     {
-      final double horVal = drawParams.offset.dx + (_appState.symmetryState.horizontalValue.value * effPxSize);
+      final double horVal = drawParams.offset.dx + (drawParams.symmetryHorizontal! * effPxSize);
       final Offset start = Offset(horVal, drawParams.offset.dy - offset);
       final Offset end = Offset(horVal, drawParams.offset.dy + (drawParams.canvasSize.y * effPxSize) + offset);
 
@@ -647,9 +653,9 @@ class KPixPainter extends CustomPainter
     }
 
     //VERTICAL
-    if (_appState.symmetryState.verticalActivated.value)
+    if (drawParams.symmetryVertical != null)
     {
-      final double vertVal = drawParams.offset.dy + (_appState.symmetryState.verticalValue.value * effPxSize);
+      final double vertVal = drawParams.offset.dy + (drawParams.symmetryVertical! * effPxSize);
       final Offset start = Offset(drawParams.offset.dx - offset, vertVal);
       final Offset end = Offset(drawParams.offset.dx + (drawParams.canvasSize.x * effPxSize) + offset, vertVal);
 

@@ -15,16 +15,31 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
-// import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Not used in this animation example
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 class SymmetryState
 {
   final ValueNotifier<bool> horizontalActivated = ValueNotifier<bool>(false);
-  final ValueNotifier<double> horizontalValue = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> horizontalValue = ValueNotifier<double>(1.0);
   final ValueNotifier<bool> verticalActivated = ValueNotifier<bool>(false);
-  final ValueNotifier<double> verticalValue = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> verticalValue = ValueNotifier<double>(1.0);
+
+  void reset()
+  {
+    horizontalActivated.value = false;
+    horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
+    verticalActivated.value = false;
+    verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
+  }
+
+  void newCanvasDimensions({required final CoordinateSetI newSize})
+  {
+    horizontalValue.value = horizontalValue.value.clamp(1.0, newSize.x - 1).toDouble();
+    verticalValue.value = verticalValue.value.clamp(1.0, newSize.y - 1).toDouble();
+  }
 }
 
 
@@ -137,135 +152,147 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
               axisAlignment: -1.0,
               child: Padding(
                 padding: EdgeInsets.all(padding),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: <Widget>[
-                    Expanded(
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: widget.state.horizontalActivated,
-                        builder: (final BuildContext context, final bool horActivated, final Widget? child) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Row(
+                    Padding(
+                      padding: EdgeInsets.all(padding),
+                      child: Divider(
+                        color: Theme.of(context).primaryColorLight,
+                        thickness: dividerWidth,
+                        height: dividerWidth,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: widget.state.horizontalActivated,
+                            builder: (final BuildContext context, final bool horActivated, final Widget? child) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
-                                  Switch(
-                                    value: horActivated,
-                                    onChanged: (final bool value)
-                                    {widget.state.horizontalActivated.value = value;},
-                                  ),
-                                  SizedBox(
-                                    width: padding,
-                                  ),
-                                  const Spacer(),
-                                  Text("Horizontal", style: Theme.of(context).textTheme.titleLarge,),
-                                  const Spacer(),
-                                  Padding(
-                                    padding:  EdgeInsets.only(right: padding * 4),
-                                    child: SizedBox(
-                                      width: buttonWidth,
-                                      height: buttonHeight,
-                                      child: OutlinedButton(
-                                        onPressed: horActivated ? () {
-                                          //TODO: Implement button logic
-                                        } : null,
-                                        child: const Text("CENTER"),
+                                  Row(
+                                    children: <Widget>[
+                                      Switch(
+                                        value: horActivated,
+                                        onChanged: (final bool value)
+                                        {widget.state.horizontalActivated.value = value;},
                                       ),
+                                      SizedBox(
+                                        width: padding,
+                                      ),
+                                      const Spacer(),
+                                      Text("Horizontal", style: Theme.of(context).textTheme.titleLarge,),
+                                      const Spacer(),
+                                      Padding(
+                                        padding:  EdgeInsets.only(right: padding * 4),
+                                        child: SizedBox(
+                                          width: buttonWidth,
+                                          height: buttonHeight,
+                                          child: OutlinedButton(
+                                            onPressed: horActivated ? () {
+                                              widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
+                                            } : null,
+                                            child: const Text("CENTER"),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ) ,
+                                  Padding(
+                                    padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
+                                    child: ValueListenableBuilder<double>(
+                                      valueListenable: widget.state.horizontalValue,
+                                      builder: (final BuildContext context, final double horVal, final Widget? child) {
+                                        return KPixSlider(
+                                          min: 1.0,
+                                          value: horVal,
+                                          max: GetIt.I.get<AppState>().canvasSize.x - 1,
+                                          divisions: (GetIt.I.get<AppState>().canvasSize.x - 2) * 2,
+                                          label: horVal.toStringAsFixed(1),
+                                          onChanged: horActivated ? (final double value) {
+                                            widget.state.horizontalValue.value = value;
+                                          } : null,
+                                          textStyle: Theme.of(context).textTheme.bodyLarge!,);
+                                      },
                                     ),
                                   ),
                                 ],
-                              ) ,
-                              Padding(
-                                padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
-                                child: ValueListenableBuilder<double>(
-                                  valueListenable: widget.state.horizontalValue,
-                                  builder: (final BuildContext context, final double horVal, final Widget? child) {
-                                    return KPixSlider(
-                                      min: 0.0, //TODO
-                                      value: horVal,
-                                      max: 100, //TODO
-                                      divisions: 200, //TODO
-                                      label: horVal.toStringAsFixed(1),
-                                      onChanged: horActivated ? (final double value) {
-                                        widget.state.horizontalValue.value = value;
-                                      } : null,
-                                      textStyle: Theme.of(context).textTheme.bodyLarge!,);
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        }
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: LimitedBox(
-                        maxHeight: height,
-                        child: VerticalDivider(
-                          color: Theme.of(context).primaryColorLight,
-                          thickness: dividerWidth,
-                          width: dividerWidth,
+                              );
+                            }
+                          ),
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ValueListenableBuilder<bool>(
-                          valueListenable: widget.state.verticalActivated,
-                          builder: (final BuildContext context, final bool vertActivated, final Widget? child) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Row(
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: LimitedBox(
+                            maxHeight: height,
+                            child: VerticalDivider(
+                              color: Theme.of(context).primaryColorLight,
+                              thickness: dividerWidth,
+                              width: dividerWidth,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                              valueListenable: widget.state.verticalActivated,
+                              builder: (final BuildContext context, final bool vertActivated, final Widget? child) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
-                                    Switch(
-                                      value: vertActivated,
-                                      onChanged: (final bool value)
-                                      {widget.state.verticalActivated.value = value;},
-                                    ),
-                                    SizedBox(
-                                      width: padding,
-                                    ),
-                                    const Spacer(),
-                                    Text("Vertical", style: Theme.of(context).textTheme.titleLarge,),
-                                    const Spacer(),
-                                    Padding(
-                                      padding: EdgeInsets.only(right: padding * 4),
-                                      child: SizedBox(
-                                        width: buttonWidth,
-                                        height: buttonHeight,
-                                        child: OutlinedButton(
-                                          onPressed: vertActivated ? () {
-                                            //TODO: Implement button logic
-                                          } : null,
-                                          child: const Text("CENTER"),
+                                    Row(
+                                      children: <Widget>[
+                                        Switch(
+                                          value: vertActivated,
+                                          onChanged: (final bool value)
+                                          {widget.state.verticalActivated.value = value;},
                                         ),
+                                        SizedBox(
+                                          width: padding,
+                                        ),
+                                        const Spacer(),
+                                        Text("Vertical", style: Theme.of(context).textTheme.titleLarge,),
+                                        const Spacer(),
+                                        Padding(
+                                          padding: EdgeInsets.only(right: padding * 4),
+                                          child: SizedBox(
+                                            width: buttonWidth,
+                                            height: buttonHeight,
+                                            child: OutlinedButton(
+                                              onPressed: vertActivated ? () {
+                                                widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
+                                              } : null,
+                                              child: const Text("CENTER"),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ) ,
+                                    Padding(
+                                      padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
+                                      child: ValueListenableBuilder<double>(
+                                        valueListenable: widget.state.verticalValue,
+                                        builder: (final BuildContext context, final double horVal, final Widget? child) {
+                                          return KPixSlider(
+                                            min: 1.0,
+                                            value: horVal,
+                                            max: GetIt.I.get<AppState>().canvasSize.y - 1,
+                                            divisions: (GetIt.I.get<AppState>().canvasSize.y - 2) * 2,
+                                            label: horVal.toStringAsFixed(1),
+                                            onChanged: vertActivated ? (final double value) {
+                                              widget.state.verticalValue.value = value;
+                                            } : null,
+                                            textStyle: Theme.of(context).textTheme.bodyLarge!,);
+                                        },
                                       ),
                                     ),
                                   ],
-                                ) ,
-                                Padding(
-                                  padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
-                                  child: ValueListenableBuilder<double>(
-                                    valueListenable: widget.state.verticalValue,
-                                    builder: (final BuildContext context, final double horVal, final Widget? child) {
-                                      return KPixSlider(
-                                        min: 0.0, //TODO
-                                        value: horVal,
-                                        max: 100, //TODO
-                                        divisions: 200, //TODO
-                                        label: horVal.toStringAsFixed(1),
-                                        onChanged: vertActivated ? (final double value) {
-                                          widget.state.verticalValue.value = value;
-                                        } : null,
-                                        textStyle: Theme.of(context).textTheme.bodyLarge!,);
-                                    },
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-                      ),
+                                );
+                              }
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

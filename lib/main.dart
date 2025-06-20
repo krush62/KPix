@@ -613,7 +613,7 @@ class MainWidget extends StatelessWidget
                     children: <Widget>[
                       const CanvasWidget(),
                       StatusBarWidget(),
-                      SymmetryWidget(state: SymmetryState(),)
+                      SymmetryWidget(state: GetIt.I.get<AppState>().symmetryState,)
                     ],
                   ) : Container(color: Theme.of(context).primaryColorDark);
                 },

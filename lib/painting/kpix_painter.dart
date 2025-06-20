@@ -275,6 +275,10 @@ class KPixPainter extends CustomPainter
       {
         toolPainter?.setStatusBarData(drawParams: drawParams);
       }
+      if (_appState.symmetryState.horizontalActivated.value || _appState.symmetryState.verticalActivated.value)
+      {
+        _drawSymmetry(drawParams: drawParams);
+      }
     }
   }
 
@@ -609,6 +613,54 @@ class KPixPainter extends CustomPainter
         }
       }
     }
+  }
+
+  void _drawSymmetry({required final DrawingParameters drawParams})
+  {
+    const double offset = 32.0;
+    const double strokeWidthWhite = 3.0;
+    const double strokeWidthBlack = 1.0;
+    const int strokeAlphaWhite = 96;
+    const int strokeAlphaBlack = 192;
+
+    final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+    final Paint p1 = Paint();
+    p1.color = Colors.white.withAlpha(strokeAlphaWhite);
+    p1.style = PaintingStyle.stroke;
+    p1.strokeWidth = strokeWidthWhite;
+
+    final Paint p2 = Paint();
+    p2.color = Colors.black.withAlpha(strokeAlphaBlack);
+    p2.style = PaintingStyle.stroke;
+    p2.strokeWidth = strokeWidthBlack;
+
+
+    //HORIZONTAL
+    if (_appState.symmetryState.horizontalActivated.value)
+    {
+      final double horVal = drawParams.offset.dx + (_appState.symmetryState.horizontalValue.value * effPxSize);
+      final Offset start = Offset(horVal, drawParams.offset.dy - offset);
+      final Offset end = Offset(horVal, drawParams.offset.dy + (drawParams.canvasSize.y * effPxSize) + offset);
+
+      drawParams.canvas.drawLine(start, end, p1);
+      drawParams.canvas.drawLine(start, end, p2);
+    }
+
+    //VERTICAL
+    if (_appState.symmetryState.verticalActivated.value)
+    {
+      final double vertVal = drawParams.offset.dy + (_appState.symmetryState.verticalValue.value * effPxSize);
+      final Offset start = Offset(drawParams.offset.dx - offset, vertVal);
+      final Offset end = Offset(drawParams.offset.dx + (drawParams.canvasSize.x * effPxSize) + offset, vertVal);
+
+      drawParams.canvas.drawLine(start, end, p1);
+      drawParams.canvas.drawLine(start, end, p2);
+
+
+    }
+
+
+
   }
 
 

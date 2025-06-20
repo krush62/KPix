@@ -54,6 +54,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 
@@ -237,6 +238,8 @@ class AppState
 
   final double devicePixelRatio;
 
+  final SymmetryState symmetryState = SymmetryState();
+
 
   AppState({required final String exportDir, required final String internalDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _hasUpdate = ValueNotifier<bool>(false)
   {
@@ -295,6 +298,7 @@ class AppState
   void init({required final CoordinateSetI dimensions})
   {
     _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
+    symmetryState.reset();
     selectionState.deselect(addToHistoryStack: false, notify: false);
     _layerCollection.clear();
     _setDefaultPalette();
@@ -316,6 +320,7 @@ class AppState
     _canvasSize.x = width;
     _canvasSize.y = height;
     statusBarState.setStatusBarDimensions(width: width, height: height);
+    symmetryState.newCanvasDimensions(newSize: _canvasSize);
     if (addToHistoryStack)
     {
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.canvasSizeChange);
@@ -548,6 +553,7 @@ class AppState
         GetIt.I.get<HistoryManager>().clear();
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
         _setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
+        symmetryState.reset();
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
         if (loadFileSet.status.isNotEmpty)
         {

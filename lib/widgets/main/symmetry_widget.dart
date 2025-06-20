@@ -220,7 +220,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                   ),
                                 ],
                               );
-                            }
+                            },
                           ),
                         ),
                         Padding(
@@ -236,60 +236,60 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                         ),
                         Expanded(
                           child: ValueListenableBuilder<bool>(
-                              valueListenable: widget.state.verticalActivated,
-                              builder: (final BuildContext context, final bool vertActivated, final Widget? child) {
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Row(
-                                      children: <Widget>[
-                                        Switch(
-                                          value: vertActivated,
-                                          onChanged: (final bool value)
-                                          {widget.state.verticalActivated.value = value;},
-                                        ),
-                                        SizedBox(
-                                          width: padding,
-                                        ),
-                                        const Spacer(),
-                                        Text("Vertical", style: Theme.of(context).textTheme.titleLarge,),
-                                        const Spacer(),
-                                        Padding(
-                                          padding: EdgeInsets.only(right: padding * 4),
-                                          child: SizedBox(
-                                            width: buttonWidth,
-                                            height: buttonHeight,
-                                            child: OutlinedButton(
-                                              onPressed: vertActivated ? () {
-                                                widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
-                                              } : null,
-                                              child: const Text("CENTER"),
-                                            ),
+                            valueListenable: widget.state.verticalActivated,
+                            builder: (final BuildContext context, final bool vertActivated, final Widget? child) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Switch(
+                                        value: vertActivated,
+                                        onChanged: (final bool value)
+                                        {widget.state.verticalActivated.value = value;},
+                                      ),
+                                      SizedBox(
+                                        width: padding,
+                                      ),
+                                      const Spacer(),
+                                      Text("Vertical", style: Theme.of(context).textTheme.titleLarge,),
+                                      const Spacer(),
+                                      Padding(
+                                        padding: EdgeInsets.only(right: padding * 4),
+                                        child: SizedBox(
+                                          width: buttonWidth,
+                                          height: buttonHeight,
+                                          child: OutlinedButton(
+                                            onPressed: vertActivated ? () {
+                                              widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
+                                            } : null,
+                                            child: const Text("CENTER"),
                                           ),
                                         ),
-                                      ],
-                                    ) ,
-                                    Padding(
-                                      padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
-                                      child: ValueListenableBuilder<double>(
-                                        valueListenable: widget.state.verticalValue,
-                                        builder: (final BuildContext context, final double horVal, final Widget? child) {
-                                          return KPixSlider(
-                                            min: 1.0,
-                                            value: horVal,
-                                            max: GetIt.I.get<AppState>().canvasSize.y - 1,
-                                            divisions: (GetIt.I.get<AppState>().canvasSize.y - 2) * 2,
-                                            label: horVal.toStringAsFixed(1),
-                                            onChanged: vertActivated ? (final double value) {
-                                              widget.state.verticalValue.value = value;
-                                            } : null,
-                                            textStyle: Theme.of(context).textTheme.bodyLarge!,);
-                                        },
                                       ),
+                                    ],
+                                  ) ,
+                                  Padding(
+                                    padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
+                                    child: ValueListenableBuilder<double>(
+                                      valueListenable: widget.state.verticalValue,
+                                      builder: (final BuildContext context, final double horVal, final Widget? child) {
+                                        return KPixSlider(
+                                          min: 1.0,
+                                          value: horVal,
+                                          max: GetIt.I.get<AppState>().canvasSize.y - 1,
+                                          divisions: (GetIt.I.get<AppState>().canvasSize.y - 2) * 2,
+                                          label: horVal.toStringAsFixed(1),
+                                          onChanged: vertActivated ? (final double value) {
+                                            widget.state.verticalValue.value = value;
+                                          } : null,
+                                          textStyle: Theme.of(context).textTheme.bodyLarge!,);
+                                      },
                                     ),
-                                  ],
-                                );
-                              }
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ],

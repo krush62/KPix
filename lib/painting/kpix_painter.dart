@@ -655,12 +655,7 @@ class KPixPainter extends CustomPainter
 
       drawParams.canvas.drawLine(start, end, p1);
       drawParams.canvas.drawLine(start, end, p2);
-
-
     }
-
-
-
   }
 
 

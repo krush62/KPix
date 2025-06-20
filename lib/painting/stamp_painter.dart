@@ -106,14 +106,15 @@ class StampPainter extends IToolPainter
         }
         _previousSize = _options.scale.value;
 
+        final HashMap<CoordinateSetI, int> mirrorStamp = getStampMirrorPoints(stampData: _stampData, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
         CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (rasterLayer is DrawingLayerState)
         {
-          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!, withShadingLayers: true);
+          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!, withShadingLayers: true);
         }
         else if (rasterLayer is ShadingLayerState)
         {
-          cursorPixels = getStampPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: _stampData, shaderOptions: shaderOptions);
+          cursorPixels = getStampPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, shaderOptions: shaderOptions);
         }
 
 
@@ -131,13 +132,14 @@ class StampPainter extends IToolPainter
       }
       else if (!drawParams.primaryDown && _down)
       {
+        final HashMap<CoordinateSetI, int> mirrorStamp = getStampMirrorPoints(stampData: _stampData, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
         if (rasterLayer is DrawingLayerState)
         {
-          _dump(canvasSize: drawParams.canvasSize, drawingLayer: rasterLayer);
+          _dump(canvasSize: drawParams.canvasSize, drawingLayer: rasterLayer, stampData: mirrorStamp);
         }
         else if (rasterLayer is ShadingLayerState)
         {
-          dumpStampShading(shadingLayer: rasterLayer, stampData: _stampData, shaderOptions: shaderOptions);
+          dumpStampShading(shadingLayer: rasterLayer, stampData: mirrorStamp, shaderOptions: shaderOptions);
         }
 
         _down = false;
@@ -158,9 +160,9 @@ class StampPainter extends IToolPainter
 
   }
 
-  void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer})
+  void _dump({required final CoordinateSetI canvasSize, required final DrawingLayerState drawingLayer, required final HashMap<CoordinateSetI, int> stampData})
   {
-    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: _stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
+    final CoordinateColorMap drawingPixels = getStampPixelsToDraw(canvasSize: canvasSize, currentLayer: drawingLayer, stampData: stampData, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
     if (!appState.selectionState.selection.isEmpty)
     {
       appState.selectionState.selection.addDirectlyAll(list: drawingPixels);

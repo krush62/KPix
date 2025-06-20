@@ -922,4 +922,86 @@ abstract class IToolPainter
     hasHistoryData = true;
     resetContentRaster(currentLayer: shadingLayer);
   }
+
+
+  Set<CoordinateSetI> getMirrorPoints({required final Set<CoordinateSetI> coords, required final CoordinateSetI canvasSize, required final double? symmetryX, required final double? symmetryY})
+  {
+    if (symmetryX == null && symmetryY == null)
+    {
+      return coords;
+    }
+
+    final Set<CoordinateSetI> mirrorPoints = <CoordinateSetI>{};
+    mirrorPoints.addAll(coords);
+
+    for (final CoordinateSetI coord in coords)
+    {
+      if (symmetryX != null)
+      {
+        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - coord.x - 1).toInt(), y: coord.y);
+        if (m.x >= 0 && m.x < canvasSize.x)
+        {
+          mirrorPoints.add(m);
+        }
+      }
+      if (symmetryY != null)
+      {
+        final CoordinateSetI m = CoordinateSetI(x: coord.x, y: (symmetryY * 2 - coord.y - 1).toInt());
+        if (m.y >= 0 && m.y < canvasSize.y)
+        {
+          mirrorPoints.add(m);
+        }
+      }
+      if (symmetryX != null && symmetryY != null)
+      {
+        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - coord.x - 1).toInt(), y: (symmetryY * 2 - coord.y - 1).toInt());
+        if (m.x >= 0 && m.x < canvasSize.x && m.y >= 0 && m.y < canvasSize.y)
+        {
+          mirrorPoints.add(m);
+        }
+      }
+    }
+    return mirrorPoints;
+  }
+
+  HashMap<CoordinateSetI, int> getStampMirrorPoints({required final HashMap<CoordinateSetI, int> stampData, required final CoordinateSetI canvasSize, required final double? symmetryX, required final double? symmetryY})
+  {
+    if (symmetryX == null && symmetryY == null)
+    {
+      return stampData;
+    }
+
+    final HashMap<CoordinateSetI, int> mirrorPoints = HashMap<CoordinateSetI, int>();
+    mirrorPoints.addAll(stampData);
+
+    for (final MapEntry<CoordinateSetI, int> entry in stampData.entries)
+    {
+      if (symmetryX != null)
+      {
+        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - entry.key.x - 1).toInt(), y: entry.key.y);
+        if (m.x >= 0 && m.x < canvasSize.x)
+        {
+          mirrorPoints[m] = entry.value;
+        }
+      }
+      if (symmetryY != null)
+      {
+        final CoordinateSetI m = CoordinateSetI(x: entry.key.x, y: (symmetryY * 2 - entry.key.y - 1).toInt());
+        if (m.y >= 0 && m.y < canvasSize.y)
+        {
+          mirrorPoints[m] = entry.value;
+        }
+      }
+      if (symmetryX != null && symmetryY != null)
+      {
+        final CoordinateSetI m = CoordinateSetI(x: (symmetryX * 2 - entry.key.x - 1).toInt(), y: (symmetryY * 2 - entry.key.y - 1).toInt());
+        if (m.x >= 0 && m.x < canvasSize.x && m.y >= 0 && m.y < canvasSize.y)
+        {
+          mirrorPoints[m] = entry.value;
+        }
+      }
+    }
+    return mirrorPoints;
+  }
+
 }

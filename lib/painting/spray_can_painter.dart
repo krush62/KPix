@@ -73,14 +73,15 @@ class SprayCanPainter extends IToolPainter
             }
             if (_hasNewPositions)
             {
+              final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               _drawingPixels.clear();
               if (rasterLayer is DrawingLayerState)
               {
-                _drawingPixels.addAll(getPixelsToDraw(coords: _allPaintPositions, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+                _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
               }
               else if (rasterLayer is ShadingLayerState)
               {
-                _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _allPaintPositions, shaderOptions: shaderOptions));
+                _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions));
               }
 
               rasterizePixels(drawingPixels: _drawingPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet)
@@ -103,16 +104,17 @@ class SprayCanPainter extends IToolPainter
           {
             timer.cancel();
             _drawingPixels.clear();
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _allPaintPositions, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDraw(coords: _allPaintPositions, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
+              _drawingPixels.addAll(getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions));
               _dumpDrawing(currentLayer: rasterLayer);
               _waitingForDump = true;
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _allPaintPositions, shaderOptions: shaderOptions));
-              dumpShading(shadingLayer: rasterLayer, coordinates: _allPaintPositions, shaderOptions: shaderOptions);
+              _drawingPixels.addAll(getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions));
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
               _drawingPixels.clear();
             }
 

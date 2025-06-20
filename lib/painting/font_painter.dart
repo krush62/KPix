@@ -103,14 +103,15 @@ class FontPainter extends IToolPainter
         CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (drawParams.currentRasterLayer != null)
         {
+          final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _textContent, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
           final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
           if (rasterLayer is DrawingLayerState)
           {
-            cursorPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
           }
           else if (rasterLayer is ShadingLayerState)
           {
-            cursorPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _textContent, shaderOptions: shaderOptions);
+            cursorPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions);
           }
 
           rasterizePixels(drawingPixels: cursorPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
@@ -132,14 +133,15 @@ class FontPainter extends IToolPainter
         {
           if (_textContent.isNotEmpty)
           {
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _textContent, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _textContent, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
               _dumpDrawing(drawParams: drawParams, drawingPixels: drawingPixels);
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              dumpShading(shadingLayer: rasterLayer, coordinates: _textContent, shaderOptions: shaderOptions);
+              dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
             }
           }
           _down = false;

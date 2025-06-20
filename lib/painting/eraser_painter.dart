@@ -60,7 +60,10 @@ class EraserPainter extends IToolPainter
           {
             final Set<CoordinateSetI> content = getRoundSquareContentPoints(shape: _options.shape.value, size: _options.size.value, position: delCoord);
             final SelectionState selection = GetIt.I.get<AppState>().selectionState;
-            for (final CoordinateSetI coord in content)
+
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: content, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
+
+            for (final CoordinateSetI coord in mirrorPoints)
             {
               if (coord.x >= 0 && coord.y >= 0 &&
                   coord.x < drawParams.canvasSize.x &&

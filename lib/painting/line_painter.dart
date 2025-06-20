@@ -116,13 +116,15 @@ class LinePainter extends IToolPainter
           if (drawParams.currentRasterLayer != null)
           {
             final RasterableLayerState rasterLayer = drawParams.currentRasterLayer!;
+
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              cursorPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              cursorPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              cursorPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: _linePoints, shaderOptions: shaderOptions);
+              cursorPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions);
             }
 
             rasterizePixels(drawingPixels: cursorPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
@@ -172,9 +174,10 @@ class LinePainter extends IToolPainter
         }
         else
         {
+          final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: _linePoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
           if (rasterLayer is DrawingLayerState)
           {
-            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: _linePoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            final CoordinateColorMap drawingPixels = getPixelsToDraw(coords: mirrorPoints, canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             if (!appState.selectionState.selection.isEmpty)
             {
               appState.selectionState.selection.addDirectlyAll(list: drawingPixels);
@@ -186,7 +189,7 @@ class LinePainter extends IToolPainter
           }
           else if (rasterLayer is ShadingLayerState)
           {
-            dumpShading(shadingLayer: rasterLayer, coordinates: _linePoints, shaderOptions: shaderOptions);
+            dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
           }
 
           hasHistoryData = true;

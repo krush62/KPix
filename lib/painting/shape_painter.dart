@@ -152,13 +152,14 @@ class ShapePainter extends IToolPainter
           if (selectionChanged)
           {
             final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
+            final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
             if (rasterLayer is DrawingLayerState)
             {
-              _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+              _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             }
             else if (rasterLayer is ShadingLayerState)
             {
-              _drawingPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: contentPoints, shaderOptions: shaderOptions);
+              _drawingPixels = getPixelsToDrawForShading(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, coords: mirrorPoints, shaderOptions: shaderOptions);
             }
 
             rasterizePixels(drawingPixels: _drawingPixels, currentLayer: rasterLayer).then((final ContentRasterSet? rasterSet) {
@@ -170,15 +171,16 @@ class ShapePainter extends IToolPainter
         if (!drawParams.primaryDown && _drawingPixels.isNotEmpty) //DUMPING
         {
           final Set<CoordinateSetI> contentPoints = _calculateSelectionContent(options: _options, selectionStart: _selectionStart, selectionEnd: _selectionEnd);
+          final Set<CoordinateSetI> mirrorPoints = getMirrorPoints(coords: contentPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
           if (rasterLayer is DrawingLayerState)
           {
-            _drawingPixels = getPixelsToDraw(coords: contentPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+            _drawingPixels = getPixelsToDraw(coords: mirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
             _dumpDrawingLayer(layer: rasterLayer, canvasSize: drawParams.canvasSize);
             _waitingForRasterization = true;
           }
           else if (rasterLayer is ShadingLayerState)
           {
-            dumpShading(shadingLayer: rasterLayer, coordinates: contentPoints, shaderOptions: shaderOptions);
+            dumpShading(shadingLayer: rasterLayer, coordinates: mirrorPoints, shaderOptions: shaderOptions);
             _drawingPixels.clear();
           }
         }

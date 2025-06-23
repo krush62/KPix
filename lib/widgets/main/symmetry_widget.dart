@@ -15,7 +15,9 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -43,6 +45,33 @@ class SymmetryState
 }
 
 
+class SymmetryWidgetOptions
+{
+  final double dividerWidth;
+  final double padding;
+  final double height;
+  final int animationDurationMs;
+  final double buttonWidth;
+  final double buttonHeight;
+  final double expandIconSize;
+  final double verticalIconSize;
+  final double horizontalIconSize;
+  final double centerButtonIconSize;
+
+  const SymmetryWidgetOptions({
+    required this.dividerWidth,
+    required this.padding,
+    required this.height,
+    required this.animationDurationMs,
+    required this.buttonWidth,
+    required this.buttonHeight,
+    required this.expandIconSize,
+    required this.verticalIconSize,
+    required this.horizontalIconSize,
+    required this.centerButtonIconSize,
+  });
+}
+
 class SymmetryWidget extends StatefulWidget
 {
   final SymmetryState state;
@@ -54,25 +83,17 @@ class SymmetryWidget extends StatefulWidget
 
 class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProviderStateMixin
 {
-  //TODO add to preference manager
-  final double dividerWidth = 2.0;
-  final double padding = 2.0;
-  final double height = 72.0;
-  final int animationDurationMs = 200;
-  final double buttonWidth = 96.0;
-  final double buttonHeight = 36;
-  final double expandIconSize = 20;
-
   final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
   late AnimationController _animationController;
   late Animation<double> _animation;
+  final SymmetryWidgetOptions _options = GetIt.I.get<PreferenceManager>().symmetryWidgetOptions;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: animationDurationMs),
+      duration: Duration(milliseconds: _options.animationDurationMs),
     );
     _animation = CurvedAnimation(
       parent: _animationController,
@@ -107,7 +128,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
-        padding: EdgeInsets.only(top: padding),
+        padding: EdgeInsets.only(top: _options.padding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min, // Important for Column containing SizeTransition
@@ -122,7 +143,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                   child: ColoredBox(
                     color: Theme.of(context).primaryColor,
                     child: Padding(
-                      padding: EdgeInsets.all(padding),
+                      padding: EdgeInsets.all(_options.padding),
                       child: ValueListenableBuilder<bool>(
                         valueListenable: isExpanded,
                         builder: (final BuildContext context, final bool expanded, final Widget? child)
@@ -131,8 +152,8 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
                               const Spacer(),
-                              Icon(Icons.border_inner, color: Theme.of(context).primaryColorLight, size: expandIconSize,),
-                              Icon(expanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, color: Theme.of(context).primaryColorLight, size: expandIconSize,),
+                              Icon(Icons.border_inner, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
+                              Icon(expanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
                               const Spacer(),
                             ],
                           );
@@ -147,15 +168,15 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
               sizeFactor: _animation,
               axisAlignment: -1.0,
               child: Padding(
-                padding: EdgeInsets.all(padding),
+                padding: EdgeInsets.all(_options.padding),
                 child: Column(
                   children: <Widget>[
                     Padding(
-                      padding: EdgeInsets.all(padding),
+                      padding: EdgeInsets.all(_options.padding),
                       child: Divider(
                         color: Theme.of(context).primaryColorLight,
-                        thickness: dividerWidth,
-                        height: dividerWidth,
+                        thickness: _options.dividerWidth,
+                        height: _options.dividerWidth,
                       ),
                     ),
                     Row(
@@ -176,28 +197,38 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         {widget.state.horizontalActivated.value = value;},
                                       ),
                                       SizedBox(
-                                        width: padding,
+                                        width: _options.padding,
                                       ),
                                       const Spacer(),
-                                      Text("Horizontal", style: Theme.of(context).textTheme.titleLarge,),
+                                      Icon(FontAwesomeIcons.caretRight, size: _options.horizontalIconSize, color: Theme.of(context).primaryColorLight),
+                                      Container(
+                                        height: _options.horizontalIconSize,
+                                        width: _options.dividerWidth,
+                                        color: Theme.of(context).primaryColorLight,
+                                      ),
+                                      Icon(FontAwesomeIcons.caretLeft, size: _options.horizontalIconSize, color: Theme.of(context).primaryColorLight,),
                                       const Spacer(),
                                       Padding(
-                                        padding:  EdgeInsets.only(right: padding * 4),
-                                        child: SizedBox(
-                                          width: buttonWidth,
-                                          height: buttonHeight,
-                                          child: OutlinedButton(
-                                            onPressed: horActivated ? () {
-                                              widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
-                                            } : null,
-                                            child: const Text("CENTER"),
+                                        padding:  EdgeInsets.only(right: _options.padding * 4),
+                                        child: Tooltip(
+                                          message: "Center Horizontal Ruler",
+                                          waitDuration: AppState.toolTipDuration,
+                                          child: SizedBox(
+                                            width: _options.buttonWidth,
+                                            height: _options.buttonHeight,
+                                            child: OutlinedButton(
+                                              onPressed: horActivated ? () {
+                                                widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
+                                              } : null,
+                                              child: Icon(Icons.border_vertical, size: _options.centerButtonIconSize,),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ],
                                   ) ,
                                   Padding(
-                                    padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
+                                    padding: EdgeInsets.only(left: _options.padding * 4, right: _options.padding * 4),
                                     child: ValueListenableBuilder<double>(
                                       valueListenable: widget.state.horizontalValue,
                                       builder: (final BuildContext context, final double horVal, final Widget? child) {
@@ -220,13 +251,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: EdgeInsets.all(_options.padding * 4),
                           child: LimitedBox(
-                            maxHeight: height,
+                            maxHeight: _options.height,
                             child: VerticalDivider(
                               color: Theme.of(context).primaryColorLight,
-                              thickness: dividerWidth,
-                              width: dividerWidth,
+                              thickness: _options.dividerWidth,
+                              width: _options.dividerWidth,
                             ),
                           ),
                         ),
@@ -245,28 +276,42 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         {widget.state.verticalActivated.value = value;},
                                       ),
                                       SizedBox(
-                                        width: padding,
+                                        width: _options.padding,
                                       ),
                                       const Spacer(),
-                                      Text("Vertical", style: Theme.of(context).textTheme.titleLarge,),
+                                      Column(
+                                        children: <Widget>[
+                                          Icon(FontAwesomeIcons.caretDown, size: _options.verticalIconSize, color: Theme.of(context).primaryColorLight,),
+                                          Container(
+                                            height: _options.dividerWidth,
+                                            width: _options.verticalIconSize,
+                                            color: Theme.of(context).primaryColorLight,
+                                          ),
+                                          Icon(FontAwesomeIcons.caretUp, size: _options.verticalIconSize, color: Theme.of(context).primaryColorLight,),
+                                        ],
+                                      ),
                                       const Spacer(),
                                       Padding(
-                                        padding: EdgeInsets.only(right: padding * 4),
-                                        child: SizedBox(
-                                          width: buttonWidth,
-                                          height: buttonHeight,
-                                          child: OutlinedButton(
-                                            onPressed: vertActivated ? () {
-                                              widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
-                                            } : null,
-                                            child: const Text("CENTER"),
+                                        padding: EdgeInsets.only(right: _options.padding * 4),
+                                        child: Tooltip(
+                                          message: "Center Vertical Ruler",
+                                          waitDuration: AppState.toolTipDuration,
+                                          child: SizedBox(
+                                            width: _options.buttonWidth,
+                                            height: _options.buttonHeight,
+                                            child: OutlinedButton(
+                                              onPressed: vertActivated ? () {
+                                                widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
+                                              } : null,
+                                              child: Icon(Icons.border_horizontal, size: _options.centerButtonIconSize,),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ],
                                   ) ,
                                   Padding(
-                                    padding: EdgeInsets.only(left: padding * 4, right: padding * 4),
+                                    padding: EdgeInsets.only(left: _options.padding * 4, right: _options.padding * 4),
                                     child: ValueListenableBuilder<double>(
                                       valueListenable: widget.state.verticalValue,
                                       builder: (final BuildContext context, final double horVal, final Widget? child) {

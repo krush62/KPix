@@ -51,6 +51,7 @@ import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
+import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
@@ -231,6 +232,16 @@ enum PreferenceDouble
   TouchOptions_ZoomStepDistance(defaultValue: 25.0),
   TouchOptions_ZoomStepDistanceMin(defaultValue: 10.0),
   TouchOptions_ZoomStepDistanceMax(defaultValue: 100.0),
+
+  SymmetryWidget_DividerWidth(defaultValue: 2.0),
+  SymmetryWidget_Padding(defaultValue: 2.0),
+  SymmetryWidget_Height(defaultValue: 72.0),
+  SymmetryWidget_ButtonWidth(defaultValue: 96.0),
+  SymmetryWidget_ButtonHeight(defaultValue: 36.0),
+  SymmetryWidget_ExpandIconSize(defaultValue: 20.0),
+  SymmetryWidget_VerticalIconSize(defaultValue: 16.0),
+  SymmetryWidget_HorizontalIconSize(defaultValue: 20.0),
+  SymmetryWidget_CenterButtonIconSize(defaultValue: 24.0),
 
 
 
@@ -470,6 +481,8 @@ enum PreferenceInt
 
   DesktopOptions_CursorType(defaultValue: 1),
 
+  SymmetryWidget_AnimationDurationMs(defaultValue: 200),
+
   ;
 
 
@@ -650,6 +663,7 @@ class PreferenceManager
   late StampManagerOptions stampManagerOptions;
   late KPixPainterOptions kPixPainterOptions;
   late ColorRampRowWidgetOptions colorRampRowOptions;
+  late SymmetryWidgetOptions symmetryWidgetOptions;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
@@ -960,6 +974,19 @@ class PreferenceManager
       vanishingPoint2Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint2Default),
       vanishingPoint3Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint3Default),
       gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault),
+    );
+
+    symmetryWidgetOptions = SymmetryWidgetOptions(
+      dividerWidth: _getValueD(PreferenceDouble.SymmetryWidget_DividerWidth),
+      padding: _getValueD(PreferenceDouble.SymmetryWidget_Padding),
+      height: _getValueD(PreferenceDouble.SymmetryWidget_Height),
+      animationDurationMs: _getValueI(PreferenceInt.SymmetryWidget_AnimationDurationMs),
+      buttonWidth: _getValueD(PreferenceDouble.SymmetryWidget_ButtonWidth),
+      buttonHeight: _getValueD(PreferenceDouble.SymmetryWidget_ButtonHeight),
+      expandIconSize: _getValueD(PreferenceDouble.SymmetryWidget_ExpandIconSize),
+      verticalIconSize: _getValueD(PreferenceDouble.SymmetryWidget_VerticalIconSize),
+      horizontalIconSize: _getValueD(PreferenceDouble.SymmetryWidget_HorizontalIconSize),
+      centerButtonIconSize: _getValueD(PreferenceDouble.SymmetryWidget_CenterButtonIconSize),
     );
 
   }

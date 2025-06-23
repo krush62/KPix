@@ -1594,6 +1594,9 @@ HashMap<Alignment, bool> _unPackAlignments({required final int byte})
       case FileExportType.gimp:
         data = await getGimpData(exportData: exportData, appState: appState);
         //break;
+      case FileExportType.pixelorama:
+        data = await getPixeloramaData(exportData: exportData, appState: appState);
+        //break;
       case FileExportType.kpix:
         data = (await createKPixData(appState: appState)).buffer.asUint8List();
         //break;

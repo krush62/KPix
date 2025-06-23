@@ -33,6 +33,7 @@ enum FileExportType
   aseprite,
   //photoshop,
   gimp,
+  pixelorama,
   kpix
 }
 
@@ -46,7 +47,8 @@ enum PaletteExportType
   adobe,
   jasc,
   corel,
-  openOffice
+  openOffice,
+  //json
 }
 
 class PaletteExportData
@@ -72,6 +74,7 @@ const Map<PaletteExportType, PaletteExportData> paletteExportTypeMap =
   PaletteExportType.jasc:PaletteExportData(name: "JASC", extension: "pal"),
   PaletteExportType.corel:PaletteExportData(name: "COREL", extension: "xml"),
   PaletteExportType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc"),
+  //PaletteExportType.json:PaletteExportData(name: "PIXELORAMA", extension: "json"),
   PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: fileExtensionKpal),
 };
 
@@ -103,6 +106,7 @@ const Map<FileExportType, ExportData> fileExportTypeMap = <FileExportType, Expor
   FileExportType.aseprite : ExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
   //ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
   FileExportType.gimp : ExportData(name: "GIMP", extension: "xcf", scalable: false),
+  FileExportType.pixelorama : ExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
   FileExportType.kpix : ExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false),
 };
 

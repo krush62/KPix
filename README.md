@@ -27,31 +27,32 @@
 
 ## 🚀About
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
-- exclusive use of indexed colors
-- generative color ramps based on parameters
-- hsv based color representation
-- shading capabilities for all tools
-- reference layers
-- grid/perspective aid layers
-- shading layers
-- dithering layers
-- non-destructive layer effects (outer/inner strokes, shadow, glow, ...)
-- image importing including automatic palette creation
-- multi-platform support (Windows, Linux, Android, Web)
-- stylus and touch support
-- automatic light/dark theme
+
+⭐ exclusive use of indexed colors\
+⭐ generative color ramps based on parameters\
+⭐ hsv based color representation\
+⭐ shading capabilities for all tools\
+⭐ reference layers\
+⭐ grid/perspective aid layers\
+⭐ shading layers\
+⭐ dithering layers\
+⭐ non-destructive layer effects (outer/inner strokes, shadow, glow, ...)\
+⭐ image importing including automatic palette creation\
+⭐ multi-platform support (Windows, Linux, Android, Web)\
+⭐ stylus and touch support\
+⭐ automatic light/dark theme
 
 You might also want to read the [F.A.Q.](faq.md) or watch the [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
 ## 🔥Features
 ### Drawing Tools
-- Pen
-- Shape
-- Text
-- Fill
-- Stamp
-- Line / Bézier Curve
-- Spray Can
+🖌️ Pen\
+💠 Shape\
+🔠 Text\
+🪣 Fill\
+💮 Stamp\
+➖ Line / Bézier Curve\
+💦 Spray Can
 
 ### Shading
 The drawing tools work directly (using the selected color) or in shading mode. In shading mode, the affected colors on the canvas are brightened/darkened based on the current color ramp.
@@ -80,10 +81,10 @@ Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangu
 ### File Format Support
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 #### Export Formats
-##### Image Formats
+##### 🖼️ Image Formats
 Projects can be exported to uncompressed images including transparency. Integer scaling is supported.
 - png
-##### Application Formats
+##### 📱 Application Formats
 Projects can be exported for usage in other applications. Special Layers will be either omitted (reference, grid) or merged (shading, dither).
 
 | Application | Extension  | Mode    | Layers | Palette Inclusion |
@@ -92,7 +93,7 @@ Projects can be exported for usage in other applications. Special Layers will be
 | Gimp        | `xcf`      | indexed | ✅      | ✅                 |
 | Pixelorama  | `pxo`      | rgba    | ✅      | ❌                 |
 
-#### Palette Formats
+#### 🎨 Palette Formats
 Palettes can be exported for usage in other applications.
 - png
 - aseprite (Aseprite)
@@ -106,7 +107,7 @@ Palettes can be exported for usage in other applications.
 
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats always needs the creation of parameterized color ramps from the image's colors.
-Any import is an approximation and will never exactly match the colors given in the original image.\ 
+Any import is an approximation and will never exactly match the colors given in the original image.
 The following raster image formats are supported: bmp, jpg, gif (first frame) and png.
 
 ## 🎮Controls

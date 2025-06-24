@@ -301,6 +301,28 @@ Future<ByteData> _getImageData({required final AppState appState, required final
     return Uint8List.fromList(utf8.encode(str));
   }
 
+Future<Uint8List> getPaletteJsonData({required final List<KPalRampData> rampList}) async
+{
+  final List<ui.Color> colorList = _getColorList(ramps: rampList);
+  final StringBuffer stringBuffer = StringBuffer();
+  stringBuffer.writeln('{"colors": [');
+  for (int i = 0; i < colorList.length; i++)
+  {
+    stringBuffer.write('{"color": "(${colorList[i].r}, ${colorList[i].g}, ${colorList[i].b}, 1)", "index": $i}');
+    if (i < colorList.length - 1)
+    {
+      stringBuffer.writeln(',');
+    }
+    else
+    {
+      stringBuffer.writeln();
+    }
+  }
+  stringBuffer.write(']}');
+  final String str = stringBuffer.toString();
+  return Uint8List.fromList(utf8.encode(str));
+}
+
 
 
   Future<Uint8List> _createAsepriteData({required final List<ui.Color> colorList, required final List<Uint8List> layerNames, required final List<List<int>> layerEncBytes, required final CoordinateSetI canvasSize, final List<DrawingLayerState>? layerList}) async

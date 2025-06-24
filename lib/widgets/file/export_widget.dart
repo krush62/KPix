@@ -48,7 +48,7 @@ enum PaletteExportType
   jasc,
   corel,
   openOffice,
-  //json
+  json
 }
 
 class PaletteExportData
@@ -74,7 +74,7 @@ const Map<PaletteExportType, PaletteExportData> paletteExportTypeMap =
   PaletteExportType.jasc:PaletteExportData(name: "JASC", extension: "pal"),
   PaletteExportType.corel:PaletteExportData(name: "COREL", extension: "xml"),
   PaletteExportType.openOffice:PaletteExportData(name: "STAROFFICE", extension: "soc"),
-  //PaletteExportType.json:PaletteExportData(name: "PIXELORAMA", extension: "json"),
+  PaletteExportType.json:PaletteExportData(name: "PIXELORAMA", extension: "json"),
   PaletteExportType.kpal:PaletteExportData(name: "KPAL", extension: fileExtensionKpal),
 };
 

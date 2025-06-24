@@ -1466,6 +1466,9 @@ HashMap<Alignment, bool> _unPackAlignments({required final int byte})
       case PaletteExportType.openOffice:
         getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
         //break;
+      case PaletteExportType.json:
+        getPaletteJsonData(rampList: rampList).then((final Uint8List? data) {_savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension);});
+        //break;
     }
   }
 

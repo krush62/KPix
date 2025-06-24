@@ -1,7 +1,7 @@
 ![KPIX](imgs/kpix_icon_small_transparent.png)
 
 
-### *KPix: A pixel art creation tool.*
+## *KPix: A pixel art creation tool.*
 
 ![release](https://img.shields.io/github/v/release/krush62/KPix)
 ![release-date](https://img.shields.io/github/release-date/krush62/KPix)
@@ -14,7 +14,7 @@
 
 ![screenshot01](imgs/screenshot_01.png)
 
-## Contents
+# Contents
 
 - [About](#about)
 - [Features](#features)
@@ -25,7 +25,7 @@
 - [Feedback](#feedback)
 - [License](#license-and-privacy)
 
-## 🚀About
+# 🚀About
 KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
 
 ⭐ exclusive use of indexed colors\
@@ -44,8 +44,8 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 
 You might also want to read the [F.A.Q.](faq.md) or watch the [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
-## 🔥Features
-### Drawing Tools
+# 🔥Features
+## Drawing Tools
 🖌️ Pen\
 💠 Shape\
 🔠 Text\
@@ -54,10 +54,10 @@ You might also want to read the [F.A.Q.](faq.md) or watch the [feature overview 
 ➖ Line / Bézier Curve\
 💦 Spray Can
 
-### Shading
+## Shading
 The drawing tools work directly (using the selected color) or in shading mode. In shading mode, the affected colors on the canvas are brightened/darkened based on the current color ramp.
 
-### Generative Palette
+## Generative Palette
 A palette consists of multiple independent color ramps. Each ramp can have an arbitrary amount of shades (colors). These shades are controlled by parameters:
 - base hue (hue of the center shade)
 - base saturation (saturation of the center shade)
@@ -68,23 +68,23 @@ A palette consists of multiple independent color ramps. Each ramp can have an ar
 
 Palettes can be saved using the kpal format which is also used by [KPal](https://github.com/krush62/KPal). The file format documentation can be found [here](docs/kpal_file_format.md).
 
-### Special Layers
-#### Reference Layers
+## Special Layers
+### Reference Layers
 Add reference images to your project and put them anywhere in your layer stack. These layers support opacity, scaling, moving and stretching.
-#### Shading Layers
+### Shading Layers
 Non-destructive shading for your image. Test different shading variants without changing the content.
-#### Dither Layers
+### Dither Layers
 Special kind of shading layer for dithering (±16 steps). 
-#### Grid/Perspective Layers
+### Grid/Perspective Layers
 Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangular, isometric, brick) or perspective aid (1-point, 2-point, 3-point).
 
-### File Format Support
+## File Format Support
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
-#### Export Formats
-##### 🖼️ Image Formats
+### Export Formats
+#### 🖼️ Image Formats
 Projects can be exported to uncompressed images including transparency. Integer scaling is supported.
 - png
-##### 📱 Application Formats
+#### 📱 Application Formats
 Projects can be exported for usage in other applications. Special Layers will be either omitted (reference, grid) or merged (shading, dither).
 
 | Application | Extension  | Mode    | Layers | Palette Inclusion |
@@ -93,7 +93,7 @@ Projects can be exported for usage in other applications. Special Layers will be
 | Gimp        | `xcf`      | indexed | ✅      | ✅                 |
 | Pixelorama  | `pxo`      | rgba    | ✅      | ❌                 |
 
-#### 🎨 Palette Formats
+### 🎨 Palette Formats
 Palettes can be exported for usage in other applications.
 - png
 - aseprite (Aseprite)
@@ -105,16 +105,16 @@ Palettes can be exported for usage in other applications.
 - soc (Star/Open/Libre Office)
 - json (Pixelorama)
 
-#### Import Formats
+### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats always needs the creation of parameterized color ramps from the image's colors.
 Any import is an approximation and will never exactly match the colors given in the original image.
 The following raster image formats are supported: bmp, jpg, gif (first frame) and png.
 
-## 🎮Controls
+# 🎮Controls
 This application supports input by mouse/keyboard, touch screen and stylus.
 The complete control table can be found [here](docs/controls.md).
 
-### Quick Start
+## Quick Start
 | ACTION                                     | MOUSE               | TOUCH            | STYLUS                           |
 |--------------------------------------------|---------------------|------------------|----------------------------------|
 | use tool                                   | left click          | one finger       | down                             |
@@ -123,34 +123,34 @@ The complete control table can be found [here](docs/controls.md).
 | color pick / <br> switch shading direction | right click         | ---              | quick button down and up         |
 
 
-## 💾Installation
+# 💾Installation
 All release versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).
 
-### Windows
+## Windows
 There are two ways to run KPix on Windows:
-#### Installer
+### Installer
 Download and run the provided Windows installer. The application can be easily uninstalled and a file association is created.
-#### Package (zip)
+### Package (zip)
 This is a portable version. Extract the contents of the Windows Zip Package and run kpix.exe to start the application.
 
-### Linux
+## Linux
 Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.
 
-### Android
-#### Manual Installation
+## Android
+### Manual Installation
 Download the Android apk file and install it manually.\
 *Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
 
 [//]: # (### macOS)
 [//]: # (### iOS/iPadOS)
-### Web Version
+## Web Version
 A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)). The web version has some limitations:
 - General performance is lower compared to the native versions
 - No project manager (simple load and save via up/download)
 - No palette import
 - Limited stylus and keyboard shortcut support
 
-## 💻Build
+# 💻Build
 ![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?logo=dart&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=fff)
 - Clone the repository
@@ -158,13 +158,13 @@ A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)
 - Open the project in your configured IDE or use gradle directly to build your variant
 - you might use the scripts in the release_tools folder to create Linux/Windows/Android/Web versions
 
-## 🔜Roadmap
+# 🔜Roadmap
 A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53). Prioritizing of items will happen when alpha tests were performed.
 
-## 🤝Feedback
+# 🤝Feedback
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
-## 📃License and Privacy
+# 📃License and Privacy
 This project is licensed under [AGPLv3](LICENSE).\
 Please read the [privacy statement](PRIVACY.md).
 

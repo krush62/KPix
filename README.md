@@ -72,7 +72,7 @@ Palettes can be saved using the kpal format which is also used by [KPal](https:/
 Add reference images to your project and put them anywhere in your layer stack. These layers support opacity, scaling, moving and stretching.
 #### Shading Layers
 Non-destructive shading for your image. Test different shading variants without changing the content.
-#### Shading Layers
+#### Dither Layers
 Special kind of shading layer for dithering (±16 steps). 
 #### Grid/Perspective Layers
 Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangular, isometric, brick) or perspective aid (1-point, 2-point, 3-point).
@@ -84,10 +84,15 @@ KPix uses its own kpix format for storing project files. The file format documen
 Projects can be exported to uncompressed images including transparency. Integer scaling is supported.
 - png
 ##### Application Formats
-Projects can be exported for usage in other applications. Palettes and layers will be included.
-- aseprite (Aseprite)
-- xcf (Gimp)
+Projects can be exported for usage in other applications. Special Layers will be either omitted (reference, grid) or merged (shading, dither).
 
+| Application | Extension  | Mode    | Layers | Palette Inclusion |
+|-------------|------------|---------|--------|-------------------|
+| Aseprite    | `aseprite` | indexed | ✅      | ✅                 |
+| Gimp        | `xcf`      | indexed | ✅      | ✅                 |
+| Pixelorama  | `pxo`      | rgba    | ✅      | ❌                 |
+
+#### Palette Formats
 Palettes can be exported for usage in other applications.
 - png
 - aseprite (Aseprite)
@@ -97,6 +102,7 @@ Palettes can be exported for usage in other applications.
 - pal (JASC)
 - xml (Corel)
 - soc (Star/Open/Libre Office)
+- json (Pixelorama)
 
 #### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats always needs the creation of parameterized color ramps from the image's colors.

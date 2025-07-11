@@ -42,7 +42,7 @@ class _KPixNumberPickerWidgetState extends State<KPixNumberPickerWidget> {
       color: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: <Widget>[
           ValueListenableBuilder<int>(
             valueListenable: widget.valueNotifier,
             builder: (final BuildContext context, final int value, final Widget? child) {
@@ -67,7 +67,7 @@ class _KPixNumberPickerWidgetState extends State<KPixNumberPickerWidget> {
                 onPressed: (widget.valueNotifier.value > widget.minValue) ? () {
                   widget.valueNotifier.value--;
                 } : null,
-                icon: const Icon(FontAwesomeIcons.chevronDown)
+                icon: const Icon(FontAwesomeIcons.chevronDown),
               );
             },
           ),

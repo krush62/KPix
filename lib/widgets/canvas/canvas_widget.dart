@@ -873,22 +873,22 @@ class _CanvasWidgetState extends State<CanvasWidget> {
               valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
               builder: (final BuildContext contextS, final bool hasNoSelection, final Widget? childS) {
                 return ValueListenableBuilder<ToolType>(
-                    valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-                    builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
-                      return IgnorePointer(
-                        ignoring: toolType != ToolType.select && hasNoSelection,
-                        child: AnimatedSlide(
-                          duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                          offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
-                          curve: Curves.easeInOut,
-                          //opacity: toolType == ToolType.select ? 1.0 : 0.0,
-                          child: const Align(
-                              alignment: Alignment.bottomCenter,
-                              child: SelectionBarWidget(),
-                          ),
+                  valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+                  builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
+                    return IgnorePointer(
+                      ignoring: toolType != ToolType.select && hasNoSelection,
+                      child: AnimatedSlide(
+                        duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+                        offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
+                        curve: Curves.easeInOut,
+                        //opacity: toolType == ToolType.select ? 1.0 : 0.0,
+                        child: const Align(
+                            alignment: Alignment.bottomCenter,
+                            child: SelectionBarWidget(),
                         ),
-                      );
-                    },
+                      ),
+                    );
+                  },
                 );
               },
             ),

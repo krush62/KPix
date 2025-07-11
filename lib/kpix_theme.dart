@@ -142,7 +142,7 @@ class ColorSet
         surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
         padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
         //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
-        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _lightColors.normal, width: 1) : BorderSide(color: _lightColors.light, width: 1)),
+        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _lightColors.normal) : BorderSide(color: _lightColors.light)),
         shape: WidgetStateProperty.all(
           const RoundedRectangleBorder(
             borderRadius:
@@ -293,7 +293,7 @@ class ColorSet
         surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
         padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
         //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
-        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal, width: 1) : BorderSide(color: _darkColors.light, width: 1)),
+        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal) : BorderSide(color: _darkColors.light)),
         shape: WidgetStateProperty.all(
           const RoundedRectangleBorder(
             borderRadius:

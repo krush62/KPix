@@ -61,7 +61,7 @@ class _FrameTimeWidgetState extends State<FrameTimeWidget>
           children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+              children: <Widget>[
                 Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 6;}, child: const Text("6 fps"))),
                 const SizedBox(width: _padding,),
                 Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 10;}, child: const Text("10 fps"))),

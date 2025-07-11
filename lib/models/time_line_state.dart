@@ -56,7 +56,7 @@ class Timeline
   Timeline()
   {
     //TODO TEMP
-    final List<Frame> frameList = [];
+    final List<Frame> frameList = <Frame>[];
     final Random rand = Random();
     for (int i = 0; i < 1; i++)
     {
@@ -147,7 +147,7 @@ class Timeline
   {
     while(isPlaying.value)
     {
-      await Future.delayed(Duration(milliseconds: _selectedFrame!.frameTime));
+      await Future<void>.delayed(Duration(milliseconds: _selectedFrame!.frameTime));
       if (isPlaying.value)
       {
         selectNextFrame();
@@ -157,7 +157,7 @@ class Timeline
 
   void moveFrameLeft() {
     if (selectedFrameIndex.value > 0) {
-      final List<Frame> newFrames = [];
+      final List<Frame> newFrames = <Frame>[];
       newFrames.addAll(frames.value);
       final Frame f = newFrames[selectedFrameIndex.value];
       newFrames.removeAt(selectedFrameIndex.value);
@@ -171,7 +171,7 @@ class Timeline
   {
     if (selectedFrameIndex.value < frames.value.length - 1)
     {
-      final List<Frame> newFrames = [];
+      final List<Frame> newFrames = <Frame>[];
       newFrames.addAll(frames.value);
       final Frame f = newFrames[selectedFrameIndex.value];
       newFrames.removeAt(selectedFrameIndex.value);
@@ -240,7 +240,7 @@ class Timeline
       f.fps.value = 20;
       f.fps.addListener(() => calculateTotalFrameTime());
     }
-    final List<Frame> newFrames = [];
+    final List<Frame> newFrames = <Frame>[];
     newFrames.addAll(frames.value);
     if (right)
     {
@@ -273,7 +273,7 @@ class Timeline
 
   void deleteFrame()
   {
-    final List<Frame> newFrames = [];
+    final List<Frame> newFrames = <Frame>[];
     newFrames.addAll(frames.value);
     newFrames.removeAt(selectedFrameIndex.value);
 

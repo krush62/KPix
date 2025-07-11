@@ -95,7 +95,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
   Widget build(final BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      children: <Widget>[
         SizeTransition(
             sizeFactor: _animation,
             child: SizedBox(
@@ -103,14 +103,14 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
                 child: TimelineMaxiWidget(
                   timeline: widget.timeline,
                   ownHeight: widget.expandedHeight,
-                )
-            )
+                ),
+            ),
         ),
         SizedBox(
           height: widget.height,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+            children: <Widget>[
               Expanded(child: TimeLineMiniWidget(timeline: widget.timeline, buttonWidth: widget.height - widget.padding * 2, padding: widget.padding, framePadding: widget.framePadding,)),
               ColoredBox(
                 color: Theme.of(context).primaryColorDark,
@@ -125,17 +125,17 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
                             onPressed: () {
                               _toggleExpand();
                             },
-                            icon: FaIcon(isExpanded ? FontAwesomeIcons.chevronUp : FontAwesomeIcons.chevronDown, size: widget.height / 2,)
+                            icon: FaIcon(isExpanded ? FontAwesomeIcons.chevronUp : FontAwesomeIcons.chevronDown, size: widget.height / 2,),
                         ),
                       );
-                    }
+                    },
                   ),
                 ),
               ),
             ],
           ),
         ),
-        Divider(color: Theme.of(context).primaryColor, height: 1, thickness: 1)
+        Divider(color: Theme.of(context).primaryColor, height: 1, thickness: 1),
       ],
     );
   }
@@ -229,7 +229,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
       color: Theme.of(context).primaryColorDark,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           Padding(
             padding: EdgeInsets.all(widget.padding),
             child: ValueListenableBuilder<int>(
@@ -338,7 +338,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   List<Widget> _createMarkerWidgets({required final List<Frame> frames, required final int loopStart, required final int loopEnd})
   {
-    final List<Widget> markerWidgets = [];
+    final List<Widget> markerWidgets = <Widget>[];
     markerWidgets.add(const SizedBox(width: _borderWidth));
     for (int i = 0; i < frames.length; i++)
     {
@@ -379,11 +379,11 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    if (loopStart == i) Draggable<TimeLineMarker>(data: const TimeLineMarker(isStart: true), feedback: startIcon, childWhenDragging: SizedBox.shrink(), child: GestureDetector(onDoubleTap: () {widget.timeline.resetStartMarker();}, child: startIcon)) else Spacer(),
-                    if (loopEnd == i) Draggable<TimeLineMarker>(data: const TimeLineMarker(isStart: false), feedback: endIcon, childWhenDragging: SizedBox.shrink(), child: GestureDetector(onDoubleTap: () {widget.timeline.resetEndMarker();}, child: endIcon)) else Spacer(),
+                    if (loopStart == i) Draggable<TimeLineMarker>(data: const TimeLineMarker(isStart: true), feedback: startIcon, childWhenDragging: const SizedBox.shrink(), child: GestureDetector(onDoubleTap: () {widget.timeline.resetStartMarker();}, child: startIcon)) else const Spacer(),
+                    if (loopEnd == i) Draggable<TimeLineMarker>(data: const TimeLineMarker(isStart: false), feedback: endIcon, childWhenDragging: const SizedBox.shrink(), child: GestureDetector(onDoubleTap: () {widget.timeline.resetEndMarker();}, child: endIcon)) else const Spacer(),
                   ],
                 ),
-              ]
+              ],
           ),
         );
         markerWidgets.add(stack);
@@ -399,7 +399,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   List<Widget> _createHeaderWidgets({required final List<Frame> frames, required final Color borderColor})
   {
-    final List<Widget> headerWidgets = [];
+    final List<Widget> headerWidgets = <Widget>[];
     for (int i = 0; i < frames.length; i++)
     {
       final Frame currentFrame = frames[i];
@@ -447,7 +447,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   {
     final int highestLayerCount = frames.reduce((final Frame a, final Frame b) => a.layerList.value.length > b.layerList.value.length ? a : b).layerList.value.length;
     final double height = max(highestLayerCount * _cellHeight + _cellPadding, minHeight);
-    final List<Widget> layerWidgets = [];
+    final List<Widget> layerWidgets = <Widget>[];
     for (int i = 0; i < frames.length; i++)
     {
       if (i == 0)
@@ -473,7 +473,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                     return ValueListenableBuilder<List<LayerState>>(
                       valueListenable: frames[i].layerList,
                       builder: (final BuildContext context2, final List<LayerState> layerList, final Widget? child) {
-                        final List<Widget> layers = [];
+                        final List<Widget> layers = <Widget>[];
                         for (int j = 0; j < layerList.length; j++)
                         {
                           final bool layerIsSelected = (j == selectedLayerIndex);
@@ -526,7 +526,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   List<Widget> _createTimingWidgets({required final List<Frame> frames, required final Color borderColor})
   {
-    final List<Widget> timingWidgets = [];
+    final List<Widget> timingWidgets = <Widget>[];
     const double height = _cellHeight / 2 + _horizontalScrollHeight + _padding;
     for (int i = 0; i < frames.length; i++)
     {
@@ -550,7 +550,6 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                       widget.timeline.selectedFrameIndex.value = i;
                       if (!isPlaying)
                       {
-                        //TODO use KPixOverlay functionality
                         final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
                         _frameTimeOverlay = KPixOverlay(
                           entry: OverlayEntry(
@@ -788,7 +787,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                         icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
                                     ),
                                   );
-                                }
+                                },
                             ),
                           ),
                           const SizedBox(
@@ -919,7 +918,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
             ),
           ],
         ),
-      )
+      ),
     );
   }
 }

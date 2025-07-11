@@ -134,6 +134,24 @@ class ColorSet
       ),
     ),
 
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _lightColors.normal : (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light)),
+        backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _lightColors.dark : _lightColors.normal),
+        overlayColor: WidgetStateProperty.all(_lightColors.light),
+        surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+        //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
+        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _lightColors.normal, width: 1) : BorderSide(color: _lightColors.light, width: 1)),
+        shape: WidgetStateProperty.all(
+          const RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.all(Radius.circular(8)),
+          ),
+        ),
+      ),
+    ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         elevation: WidgetStateProperty.all(_lightColors.elevation),
@@ -262,6 +280,24 @@ class ColorSet
             side: BorderSide(color: _darkColors.light, width: 2),
             borderRadius:
             const BorderRadius.all(Radius.circular(4)),
+          ),
+        ),
+      ),
+    ),
+
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.normal : (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light)),
+        backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal),
+        overlayColor: WidgetStateProperty.all(_darkColors.light),
+        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
+        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+        //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
+        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal, width: 1) : BorderSide(color: _darkColors.light, width: 1)),
+        shape: WidgetStateProperty.all(
+          const RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.all(Radius.circular(8)),
           ),
         ),
       ),

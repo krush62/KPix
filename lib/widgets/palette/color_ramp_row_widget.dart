@@ -123,17 +123,11 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
             return Row(children: widgetList,);
           },
         ),
-        child: IconButton(
+        child: Padding(
           padding: EdgeInsets.all(_options.buttonPadding),
-          iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize * _options.buttonScaleFactor,
-          constraints: const BoxConstraints(),
-          icon: FaIcon(
+          child: FaIcon(
             color: Theme.of(context).primaryColor,
             FontAwesomeIcons.gripVertical,
-          ),
-          onPressed: null,
-          style: IconButton.styleFrom(
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
       ),
@@ -151,18 +145,15 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
       Tooltip(
         message: "Edit Color Ramp",
         waitDuration: AppState.toolTipDuration,
-        child: IconButton(
-          padding: EdgeInsets.all(_options.buttonPadding),
-          iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize * _options.buttonScaleFactor,
-          constraints: const BoxConstraints(),
-          icon: FaIcon(
-            color: Theme.of(context).primaryColor,
-            FontAwesomeIcons.sliders,
-          ),
-          onPressed: () {createKPal(ramp: widget.rampData);
-          },
-          style: IconButton.styleFrom(
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: _options.buttonPadding / 2),
+          child: IconButton(
+            padding: EdgeInsets.all(_options.buttonPadding),
+            iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize * _options.buttonScaleFactor,
+            constraints: const BoxConstraints(),
+            icon: const FaIcon(FontAwesomeIcons.sliders,),
+            onPressed: () {createKPal(ramp: widget.rampData);
+            },
           ),
         ),
       ),

@@ -30,6 +30,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
@@ -41,6 +42,7 @@ import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
+import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -611,7 +613,8 @@ class MainWidget extends StatelessWidget
                 builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                   return hasProject ? Column(
                     children: <Widget>[
-                      const CanvasWidget(),
+                      TimeLineWidget(timeline: Timeline(), expandedHeight: 280,),
+                      const Expanded(child: ClipRect(child: CanvasWidget())),
                       StatusBarWidget(),
                       SymmetryWidget(state: GetIt.I.get<AppState>().symmetryState,),
                     ],

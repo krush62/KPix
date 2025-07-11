@@ -842,61 +842,59 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   @override
   Widget build(final BuildContext context) {
-    return Expanded(
-      child: ValueListenableBuilder<MouseCursor>(
-        valueListenable: _mouseCursor,
-        builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
-        {
-          return Stack(
-            children: <Widget>[
-              MouseRegion(
-                onExit: (final PointerExitEvent pee) {_onMouseExit(pee: pee);},
-                cursor: cursor,
-                child: Listener(
-                  onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
-                  onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
-                  onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
-                  onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
-                  onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
-                  onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},
-                  onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_panZoomUpdate(event: event);},
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Theme.of(context).primaryColorDark,
-                    child: CustomPaint(
-                      painter: kPixPainter,
-                    ),
+    return ValueListenableBuilder<MouseCursor>(
+      valueListenable: _mouseCursor,
+      builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
+      {
+        return Stack(
+          children: <Widget>[
+            MouseRegion(
+              onExit: (final PointerExitEvent pee) {_onMouseExit(pee: pee);},
+              cursor: cursor,
+              child: Listener(
+                onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
+                onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
+                onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
+                onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
+                onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
+                onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},
+                onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_panZoomUpdate(event: event);},
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Theme.of(context).primaryColorDark,
+                  child: CustomPaint(
+                    painter: kPixPainter,
                   ),
                 ),
               ),
-              ValueListenableBuilder<bool>(
-                valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
-                builder: (final BuildContext contextS, final bool hasNoSelection, final Widget? childS) {
-                  return ValueListenableBuilder<ToolType>(
-                      valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-                      builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
-                        return IgnorePointer(
-                          ignoring: toolType != ToolType.select && hasNoSelection,
-                          child: AnimatedSlide(
-                            duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                            offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
-                            curve: Curves.easeInOut,
-                            //opacity: toolType == ToolType.select ? 1.0 : 0.0,
-                            child: const Align(
-                                alignment: Alignment.bottomCenter,
-                                child: SelectionBarWidget(),
-                            ),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
+              builder: (final BuildContext contextS, final bool hasNoSelection, final Widget? childS) {
+                return ValueListenableBuilder<ToolType>(
+                    valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+                    builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
+                      return IgnorePointer(
+                        ignoring: toolType != ToolType.select && hasNoSelection,
+                        child: AnimatedSlide(
+                          duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+                          offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
+                          curve: Curves.easeInOut,
+                          //opacity: toolType == ToolType.select ? 1.0 : 0.0,
+                          child: const Align(
+                              alignment: Alignment.bottomCenter,
+                              child: SelectionBarWidget(),
                           ),
-                        );
-                      },
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      ),
+                        ),
+                      );
+                    },
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

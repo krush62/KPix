@@ -185,6 +185,11 @@ class _LayerWidgetState extends State<LayerWidget> {
           valueListenable: widget.layerState.isSelected,
           builder: (final BuildContext context, final bool isSelected,final Widget? child,)
           {
+            final Widget iconButton = Padding(
+              padding: EdgeInsets.only(right: _options.innerPadding),
+              child: FaIcon(FontAwesomeIcons.gripVertical, color: Theme.of(context).primaryColor,),
+            );
+
             return Row(
               children: <Widget>[
                 Draggable<LayerState>(
@@ -203,34 +208,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                       ),
                     ),
                   ),
-                  childWhenDragging: IconButton(
-                    padding: EdgeInsets.only(right: _options.innerPadding),
-                    iconSize: _options.buttonSizeMin,
-                    constraints: const BoxConstraints(),
-                    icon: FaIcon(
-                      color: Theme.of(context).indicatorColor,
-                      FontAwesomeIcons.gripVertical,
-                    ),
-                    onPressed: null,
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                  child: IconButton(
-                    padding: EdgeInsets.only(right: _options.innerPadding),
-                    iconSize: _options.buttonSizeMin,
-                    constraints: BoxConstraints(
-                      minHeight: _options.height,
-                    ),
-                    icon: FaIcon(
-                      color: Theme.of(context).primaryColor,
-                      FontAwesomeIcons.gripVertical,
-                    ),
-                    onPressed: null,
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
+                  childWhenDragging: iconButton,
+                  child: iconButton,
                 ),
                 Expanded(
                   child: Container(

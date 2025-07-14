@@ -23,9 +23,10 @@ Future<Uint8List?> getPixeloramaData({required final ExportData exportData, requ
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
   for (int l = 0; l < appState.layerCount; l++)
   {
-    if (appState.getLayerAt(index: l).runtimeType == DrawingLayerState)
+    final LayerState? layerState = appState.getLayerAt(index: l);
+    if (layerState != null && layerState.runtimeType == DrawingLayerState)
     {
-      drawingLayers.add(appState.getLayerAt(index: l) as DrawingLayerState);
+      drawingLayers.add(layerState as DrawingLayerState);
     }
   }
 
@@ -89,54 +90,60 @@ Future<Uint8List?> getPixeloramaData({required final ExportData exportData, requ
 
   for (int l = 0; l < appState.layerCount; l++)
   {
-    if (appState.getLayerAt(index: l).runtimeType == DrawingLayerState)
+    final LayerState? layer = appState.getLayerAt(index: l);
+    if (layer != null)
     {
-      final ByteData layerData = ByteData(layerFileSize);
-      final ByteData indexData = ByteData(indexFileSize);
-      int byteOffsetLayer = 0;
-      int byteOffsetIndex = 0;
-
-      final DrawingLayerState layerState = appState.getLayerAt(index: l) as DrawingLayerState;
-      for (int y = 0; y < appState.canvasSize.y; y++)
+      if (layer.runtimeType == DrawingLayerState)
       {
-        for (int x = 0; x < appState.canvasSize.x; x++)
+        final ByteData layerData = ByteData(layerFileSize);
+        final ByteData indexData = ByteData(indexFileSize);
+        int byteOffsetLayer = 0;
+        int byteOffsetIndex = 0;
+
+        final DrawingLayerState layerState = layer as DrawingLayerState;
+        for (int y = 0; y < appState.canvasSize.y; y++)
         {
-          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          ColorReference? colAtPos;
-          if (appState.getSelectedLayer() == appState.getLayerAt(index: l))
+          for (int x = 0; x < appState.canvasSize.x; x++)
           {
-            colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
-          }
-          colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
-          if (colAtPos == null)
-          {
-            indexData.setUint8(byteOffsetIndex++, 0);
-            layerData.setUint8(byteOffsetLayer++, 0);//r
-            layerData.setUint8(byteOffsetLayer++, 0);//g
-            layerData.setUint8(byteOffsetLayer++, 0);//b
-            layerData.setUint8(byteOffsetLayer++, 0);//a
-          }
-          else
-          {
-            final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
-            if (shade != 0)
+            final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+            ColorReference? colAtPos;
+            if (appState.getSelectedLayer() == layer)
             {
-              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-              colAtPos = colAtPos.ramp.references[targetIndex];
+              colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
             }
-            indexData.setUint8(byteOffsetIndex++, colorMap[colAtPos]!);
-            layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.r * 255.0).round());//r
-            layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.g * 255.0).round());//g
-            layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.b * 255.0).round());//b
-            layerData.setUint8(byteOffsetLayer++, 255);//a
+            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
 
+            if (colAtPos == null)
+            {
+              indexData.setUint8(byteOffsetIndex++, 0);
+              layerData.setUint8(byteOffsetLayer++, 0);//r
+              layerData.setUint8(byteOffsetLayer++, 0);//g
+              layerData.setUint8(byteOffsetLayer++, 0);//b
+              layerData.setUint8(byteOffsetLayer++, 0);//a
+            }
+            else
+            {
+              final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
+              if (shade != 0)
+              {
+                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
+                colAtPos = colAtPos.ramp.references[targetIndex];
+              }
+              indexData.setUint8(byteOffsetIndex++, colorMap[colAtPos]!);
+              layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.r * 255.0).round());//r
+              layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.g * 255.0).round());//g
+              layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.b * 255.0).round());//b
+              layerData.setUint8(byteOffsetLayer++, 255);//a
+
+            }
           }
         }
+        layerList.add(layerData);
+        indexList.add(indexData);
       }
-      layerList.add(layerData);
-      indexList.add(indexData);
     }
+
+
   }
 
   final Archive zipFile = Archive();

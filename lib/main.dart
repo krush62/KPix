@@ -30,7 +30,6 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
@@ -606,14 +605,28 @@ class MainWidget extends StatelessWidget
         ),
         Expanded(
           child: KPixSplitter(
-            left: const MainToolbarWidget(),
+            left: ValueListenableBuilder<bool>(
+              valueListenable: GetIt.I.get<AppState>().timeline.isPlaying,
+              builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
+                final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+                return Stack(
+                  children: <Widget>[
+                    const MainToolbarWidget(),
+                    if (isPlaying) ModalBarrier(
+                      color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                      dismissible: false,) else const SizedBox.shrink(),
+                  ],
+                );
+              },
+            ),
             center: ExcludeFocus(
               child: ValueListenableBuilder<bool>(
                 valueListenable: GetIt.I.get<AppState>().hasProjectNotifier,
                 builder: (final BuildContext context, final bool hasProject, final Widget? child) {
                   return hasProject ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      TimeLineWidget(timeline: Timeline(), expandedHeight: 280,),
+                      TimeLineWidget(timeline: GetIt.I.get<AppState>().timeline, expandedHeight: 280,),
                       const Expanded(child: ClipRect(child: CanvasWidget())),
                       StatusBarWidget(),
                       SymmetryWidget(state: GetIt.I.get<AppState>().symmetryState,),
@@ -622,7 +635,22 @@ class MainWidget extends StatelessWidget
                 },
               ),
             ),
-            right: const ExcludeFocus(child: RightBarWidget()),
+            right: ExcludeFocus(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: GetIt.I.get<AppState>().timeline.isPlaying,
+                builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
+                  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+                  return Stack(
+                    children: <Widget>[
+                      const RightBarWidget(),
+                      if (isPlaying) ModalBarrier(
+                        color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                        dismissible: false,) else const SizedBox.shrink(),
+                    ],
+                  );
+                },
+              ),
+            ),
             dividerWidth: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth, //8.0
             ratioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault, //0.2
             minRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin, //0.15

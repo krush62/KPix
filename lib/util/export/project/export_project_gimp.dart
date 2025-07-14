@@ -87,58 +87,62 @@ Future<Uint8List?> getGimpData({required final ExportData exportData, required f
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
   for (int l = 0; l < appState.layerCount; l++)
   {
-    if (appState.getLayerAt(index: l).runtimeType == DrawingLayerState)
+    final LayerState? layer = appState.getLayerAt(index: l);
+    if (layer != null)
     {
-      final DrawingLayerState layerState = appState.getLayerAt(index: l) as DrawingLayerState;
-      int x = 0;
-      int y = 0;
-      final List<List<int>> tileList = <List<int>>[];
-      do //TILING
+      if (layer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState layerState = layer as DrawingLayerState;
+        int x = 0;
+        int y = 0;
+        final List<List<int>> tileList = <List<int>>[];
+        do //TILING
+            {
+          final List<int> imgBytes = <int>[];
+          final int endX = min(x + tileSize, appState.canvasSize.x);
+          final int endY = min(y + tileSize, appState.canvasSize.y);
+          for (int b = y; b < endY; b++)
           {
-        final List<int> imgBytes = <int>[];
-        final int endX = min(x + tileSize, appState.canvasSize.x);
-        final int endY = min(y + tileSize, appState.canvasSize.y);
-        for (int b = y; b < endY; b++)
-        {
-          for (int a = x; a < endX; a++)
-          {
-            final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
-            ColorReference? colAtPos;
-            if (appState.getSelectedLayer() == appState.getLayerAt(index: l))
+            for (int a = x; a < endX; a++)
             {
-              colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
-            }
-            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
-            if (colAtPos == null)
-            {
-              imgBytes.add(0);
-              imgBytes.add(0);
-            }
-            else
-            {
-              final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
-              if (shade != 0)
+              final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
+              ColorReference? colAtPos;
+              if (appState.getSelectedLayer() == layer)
               {
-                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-                colAtPos = colAtPos.ramp.references[targetIndex];
+                colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
               }
-              imgBytes.add(colorMap[colAtPos]!);
-              imgBytes.add(255);
+              colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
+
+              if (colAtPos == null)
+              {
+                imgBytes.add(0);
+                imgBytes.add(0);
+              }
+              else
+              {
+                final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
+                if (shade != 0)
+                {
+                  final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
+                  colAtPos = colAtPos.ramp.references[targetIndex];
+                }
+                imgBytes.add(colorMap[colAtPos]!);
+                imgBytes.add(255);
+              }
             }
           }
+          final List<int> encData = const ZLibEncoder().encode(imgBytes);
+          tileList.add(encData);
+
+          x = (endX >= appState.canvasSize.x) ? 0 : endX;
+          y = (endX >= appState.canvasSize.x) ? endY : y;
         }
-        final List<int> encData = const ZLibEncoder().encode(imgBytes);
-        tileList.add(encData);
+        while (y < appState.canvasSize.y);
 
-        x = (endX >= appState.canvasSize.x) ? 0 : endX;
-        y = (endX >= appState.canvasSize.x) ? endY : y;
+        layerNames.add(utf8.encode("Layer$l"));
+        layerEncBytes.add(tileList);
+        drawingLayers.add(layerState);
       }
-      while (y < appState.canvasSize.y);
-
-      layerNames.add(utf8.encode("Layer$l"));
-      layerEncBytes.add(tileList);
-      drawingLayers.add(layerState);
     }
   }
 

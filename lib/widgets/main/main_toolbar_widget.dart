@@ -96,48 +96,54 @@ class MainToolbarWidget extends StatelessWidget
               },
             ),
           ),
-          ValueListenableBuilder<LayerState?>
-          (
-            valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
-            builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
+          ValueListenableBuilder<int>(
+            valueListenable: GetIt.I.get<AppState>().timeline.selectedFrameIndex,
+            builder: (final BuildContext context1, final int selectedFrameIndex, final Widget? child1) {
+              return ValueListenableBuilder<LayerState?>(
+                valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
+                builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
+                  if (layer != null)
+                  {
+                    Widget contentWidget;
+                    if (layer.runtimeType == ReferenceLayerState)
+                    {
+                      contentWidget = ExcludeFocus(child: ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState));
+                    }
+                    else if (layer.runtimeType == GridLayerState)
+                    {
+                      contentWidget = ExcludeFocus(child: GridLayerOptionsWidget(gridState: layer as GridLayerState));
+                    }
+                    else if (layer is RasterableLayerState)
+                    {
+                      contentWidget = const Column(
+                        children: <Widget>[
+                          ExcludeFocus(child: ToolsWidget()),
+                          Expanded(child: ToolSettingsWidget()),
+                        ],
+                      );
+                    }
+                    else
+                    {
+                      return const SizedBox.shrink();
+                    }
 
-              if (layer != null)
-              {
-                Widget contentWidget;
-                if (layer.runtimeType == ReferenceLayerState)
-                {
-                  contentWidget = ExcludeFocus(child: ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState));
-                }
-                else if (layer.runtimeType == GridLayerState)
-                {
-                  contentWidget = ExcludeFocus(child: GridLayerOptionsWidget(gridState: layer as GridLayerState));
-                }
-                else if (layer is RasterableLayerState)
-                {
-                  contentWidget = const Column(
-                    children: <Widget>[
-                      ExcludeFocus(child: ToolsWidget()),
-                      Expanded(child: ToolSettingsWidget()),
-                    ],
-                  );
-                }
-                else
-                {
-                  return const SizedBox.shrink();
-                }
+                    return SizedBox(
+                      width: double.infinity,
+                      height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight.toDouble(),
+                      child: contentWidget,
 
-                return SizedBox(
-                  width: double.infinity,
-                  height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight.toDouble(),
-                  child: contentWidget,
-
-                );
-              }
-              else
-              {
-                return const SizedBox.shrink();
-              }
+                    );
+                  }
+                  else
+                  {
+                    return const SizedBox.shrink();
+                  }
+                },
+              );
             },
+
+
+
           ),
         ],
       ),

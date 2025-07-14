@@ -94,26 +94,31 @@ int _getShadeForCoord({required final AppState appState, required final int curr
   int shade = 0;
   for (int i = currentLayerIndex - 1; i >= 0; i--)
   {
-    if (appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
+    final LayerState? layer = appState.getLayerAt(index: i);
+    if (layer != null)
     {
-      if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
+      if (layer.visibilityState.value == LayerVisibilityState.visible)
       {
-        final DrawingLayerState drawingLayerState = appState.getLayerAt(index: i) as DrawingLayerState;
-        if (drawingLayerState.getDataEntry(coord: coord) != null)
+        if (layer.runtimeType == DrawingLayerState)
         {
-          return 0;
+          final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
+          if (drawingLayerState.getDataEntry(coord: coord) != null)
+          {
+            return 0;
+          }
         }
-      }
-      else if (appState.getLayerAt(index: i) is ShadingLayerState)
-      {
-        final ShadingLayerState shadingLayerState = appState.getLayerAt(index: i) as ShadingLayerState;
-        final int? shadingAt = shadingLayerState.getDisplayValueAt(coord: coord);
-        if (shadingAt != null)
+        else if (layer is ShadingLayerState)
         {
-          shade += shadingAt;
+          final int? shadingAt = layer.getDisplayValueAt(coord: coord);
+          if (shadingAt != null)
+          {
+            shade += shadingAt;
+          }
         }
       }
     }
+
+
   }
 
   return shade;

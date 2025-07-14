@@ -411,7 +411,7 @@ class LayerCollection with ChangeNotifier
     }
   }
 
-  void duplicateLayer({required final LayerState duplicateLayer})
+  LayerState? duplicateLayer({required final LayerState duplicateLayer, final bool insertAtEnd = false})
   {
     LayerState? addLayer;
     if (duplicateLayer.runtimeType == DrawingLayerState)
@@ -442,10 +442,19 @@ class LayerCollection with ChangeNotifier
 
     if (addLayer != null)
     {
-      final int currentIndex = getLayerPosition(state: duplicateLayer);
-      _layers.insert(currentIndex, addLayer);
+      if (insertAtEnd)
+      {
+        _layers.add(addLayer);
+      }
+      else
+      {
+        final int currentIndex = getLayerPosition(state: duplicateLayer);
+        _layers.insert(currentIndex, addLayer);
+      }
+
       notifyListeners();
     }
+    return addLayer;
   }
 
   void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior, required final List<KPalRampData> colorRamps})

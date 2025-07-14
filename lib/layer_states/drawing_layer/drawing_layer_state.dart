@@ -305,7 +305,11 @@ class DrawingLayerState extends RasterableLayerState
     final List<LayerState> layers = <LayerState>[];
     for (int i = 0; i < appState.layerCount; i++)
     {
-      layers.add(appState.getLayerAt(index: i));
+      final LayerState? layer = appState.getLayerAt(index: i);
+      if (layer != null)
+      {
+        layers.add(layer);
+      }
     }
     final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
     setDataAll(list: outerPixels);
@@ -318,7 +322,11 @@ class DrawingLayerState extends RasterableLayerState
     final List<LayerState> layers = <LayerState>[];
     for (int i = 0; i < appState.layerCount; i++)
     {
-      layers.add(appState.getLayerAt(index: i));
+      final LayerState? layer = appState.getLayerAt(index: i);
+      if (layer != null)
+      {
+        layers.add(layer);
+      }
     }
     final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
     setDataAll(list: innerPixels);
@@ -330,7 +338,11 @@ class DrawingLayerState extends RasterableLayerState
     final List<LayerState> layers = <LayerState>[];
     for (int i = 0; i < appState.layerCount; i++)
     {
-      layers.add(appState.getLayerAt(index: i));
+      final LayerState? layer = appState.getLayerAt(index: i);
+      if (layer != null)
+      {
+        layers.add(layer);
+      }
     }
     final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
     setDataAll(list: dropShadowPixels);

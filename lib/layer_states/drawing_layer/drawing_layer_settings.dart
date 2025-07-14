@@ -305,7 +305,11 @@ class DrawingLayerSettings extends LayerSettings {
       layers = <LayerState>[];
       for (int i = 0; i < appState.layerCount; i++)
       {
-        layers.add(appState.getLayerAt(index: i));
+        final LayerState? layer = appState.getLayerAt(index: i);
+        if (layer != null)
+        {
+          layers.add(layer);
+        }
       }
     }
 

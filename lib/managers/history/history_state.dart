@@ -62,42 +62,41 @@ class HistoryState
     HistoryLayer? selectLayer;
     for (int i = 0; i < appState.layerCount; i++)
     {
-      final LayerState layerState = appState.getLayerAt(index: i);
-      HistoryLayer? hLayer;
-      if (layerState.runtimeType == DrawingLayerState)
+      final LayerState? layerState = appState.getLayerAt(index: i);
+      if (layerState != null)
       {
-        hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
-      }
-      else if (layerState.runtimeType == ReferenceLayerState)
-      {
-        hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
-      }
-      else if (layerState.runtimeType == GridLayerState)
-      {
-        hLayer = HistoryGridLayer.fromGridLayer(gridState: layerState as GridLayerState);
-      }
-      else if (layerState.runtimeType == ShadingLayerState)
-      {
-        hLayer = HistoryShadingLayer.fromShadingLayerState(layerState: layerState as ShadingLayerState);
-      }
-      else if (layerState.runtimeType == DitherLayerState)
-      {
-        hLayer = HistoryDitherLayer.fromDitherLayerState(layerState: layerState as DitherLayerState);
-      }
-
-
-      if (hLayer != null)
-      {
-        layerList.add(hLayer);
-        if (layerState.isSelected.value)
+        HistoryLayer? hLayer;
+        if (layerState.runtimeType == DrawingLayerState)
         {
-          selectedLayerIndex = i;
+          hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
         }
-        if (layerState == appState.currentLayer)
+        else if (layerState.runtimeType == ReferenceLayerState)
         {
-          selectLayer = hLayer;
+          hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
+        }
+        else if (layerState.runtimeType == GridLayerState)
+        {
+          hLayer = HistoryGridLayer.fromGridLayer(gridState: layerState as GridLayerState);
+        }
+        else if (layerState.runtimeType == ShadingLayerState)
+        {
+          hLayer = HistoryShadingLayer.fromShadingLayerState(layerState: layerState as ShadingLayerState);
+        }
+        else if (layerState.runtimeType == DitherLayerState)
+        {
+          hLayer = HistoryDitherLayer.fromDitherLayerState(layerState: layerState as DitherLayerState);
+        }
+        if (hLayer != null) {
+          layerList.add(hLayer);
+          if (layerState.isSelected.value) {
+            selectedLayerIndex = i;
+          }
+          if (layerState == appState.currentLayer) {
+            selectLayer = hLayer;
+          }
         }
       }
+
     }
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);

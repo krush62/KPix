@@ -45,6 +45,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -110,66 +111,159 @@ class AppState
   }
   final Map<ToolType, bool> _toolMap = <ToolType, bool>{};
 
-  final LayerCollection _layerCollection = LayerCollection();
+  //final LayerCollection _layerCollection = LayerCollection();
+  final Timeline timeline = Timeline();
+
+  LayerCollection get _layerCollection
+  {
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value;
+    }
+    else
+    {
+      return LayerCollection();
+    }
+  }
 
   LayerState? get currentLayer
   {
-    return _layerCollection.currentLayer;
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.currentLayer;
+    }
+    else
+    {
+      return null;
+    }
   }
 
   ValueNotifier<LayerState?> get currentLayerNotifier
   {
-    return _layerCollection.currentLayerNotifier;
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.currentLayerNotifier;
+    }
+    else
+    {
+      return ValueNotifier<LayerState?>(null);
+    }
   }
 
   Iterable<LayerState> get visibleLayers
   {
-    return _layerCollection.getVisibleLayers();
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.getVisibleLayers();
+    }
+    else
+    {
+      return <LayerState>[];
+    }
   }
 
   Iterable<RasterableLayerState> get visibleRasterLayers
   {
-    return _layerCollection.getVisibleRasterLayers();
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.getVisibleRasterLayers();
+    }
+    else
+    {
+      return <RasterableLayerState>[];
+    }
   }
 
   ChangeNotifier get layerListChangeNotifier
   {
-    return _layerCollection;
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value;
+    }
+    else
+    {
+      return ChangeNotifier();
+    }
   }
 
-  LayerState getLayerAt({required final int index})
+  LayerState? getLayerAt({required final int index})
   {
-    return _layerCollection.getLayer(index: index);
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.getLayer(index: index);
+    }
+    else
+    {
+      return null;
+    }
   }
 
   int get layerCount
   {
-    return _layerCollection.length;
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.length;
+    }
+    else
+    {
+      return 0;
+    }
   }
 
   ValueNotifier<bool> get layerSettingsVisibleNotifier
   {
-    return _layerCollection.settingsVisible;
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.settingsVisible;
+    }
+    else
+    {
+      return ValueNotifier<bool>(false);
+    }
   }
 
   bool get layerSettingsVisible
   {
-    return _layerCollection.settingsVisible.value;
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.settingsVisible.value;
+    }
+    else
+    {
+      return false;
+    }
   }
 
   set layerSettingsVisible(final bool newVisibility)
   {
-    _layerCollection.settingsVisible.value = newVisibility;
+    if (timeline.selectedFrame != null)
+    {
+      timeline.selectedFrame!.layerList.value.settingsVisible.value = newVisibility;
+    }
   }
 
   ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
   {
-    return _layerCollection.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
+    }
+    else
+    {
+      return null;
+    }
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
   {
-    return _layerCollection.getPixelCountForRamp(ramp: ramp, includeInvisible: includeInvisible);
+    if (timeline.selectedFrame != null)
+    {
+      return timeline.selectedFrame!.layerList.value.getPixelCountForRamp(ramp: ramp, includeInvisible: includeInvisible);
+    }
+    else
+    {
+      return 0;
+    }
   }
 
   final RepaintNotifier repaintNotifier = RepaintNotifier();
@@ -300,9 +394,10 @@ class AppState
     _setCanvasDimensions(width: dimensions.x, height: dimensions.y, addToHistoryStack: false);
     symmetryState.reset();
     selectionState.deselect(addToHistoryStack: false, notify: false);
-    _layerCollection.clear();
+    //_layerCollection.clear();
     _setDefaultPalette();
-    addNewDrawingLayer(select: true, addToHistoryStack: false);
+    //addNewDrawingLayer(select: true, addToHistoryStack: false);
+    timeline.init(appState: this);
     GetIt.I.get<HistoryManager>().clear();
     GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);
     projectName.value = null;

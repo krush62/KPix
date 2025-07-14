@@ -288,7 +288,7 @@ abstract class IToolPainter
         ColorReference colRef = entry.value;
         for (int i = layerPosition - 1; i >= 0; i--)
         {
-          final LayerState currentLayer = appState.getLayerAt(index: i);
+          final LayerState? currentLayer = appState.getLayerAt(index: i);
           if (currentLayer is DrawingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
           {
             final int? shadingVal = currentLayer.settingsShadingPixels[entry.key];
@@ -633,12 +633,17 @@ abstract class IToolPainter
     {
       for (int i = currentIndex; i >= 0; i--)
       {
-        if (appState.getLayerAt(index: i) is ShadingLayerState && appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
+        final LayerState? layer = appState.getLayerAt(index: i);
+
+        if (layer != null)
         {
-          final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
-          if (shadingLayer.hasCoord(coord: coord))
+          if (appState.getLayerAt(index: i) is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
           {
-            colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
+            final ShadingLayerState shadingLayer = layer as ShadingLayerState;
+            if (shadingLayer.hasCoord(coord: coord))
+            {
+              colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
+            }
           }
         }
       }
@@ -667,24 +672,27 @@ abstract class IToolPainter
             ColorReference? currentColor;
             for (int i = appState.layerCount - 1; i >= 0; i--)
             {
-              if (appState.getLayerAt(index: i).visibilityState.value == LayerVisibilityState.visible)
+              final LayerState? layer = appState.getLayerAt(index: i);
+              if (layer != null)
               {
-                if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
+                if (layer.visibilityState.value == LayerVisibilityState.visible)
                 {
-                  final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
-                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
-                  if (col != null)
+                  if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
                   {
-                    currentColor = col;
+                    final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+                    final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
+                    if (col != null)
+                    {
+                      currentColor = col;
+                    }
                   }
-                }
-                else if (currentColor != null && appState.getLayerAt(index: i) is ShadingLayerState)
-                {
-                  final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
-                  if (shadingLayer.getDisplayValueAt(coord: coord) != null)
+                  else if (currentColor != null && layer is ShadingLayerState)
                   {
-                    final int newColorIndex = (currentColor.colorIndex + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length - 1);
-                    currentColor = currentColor.ramp.references[newColorIndex];
+                    if (layer.getDisplayValueAt(coord: coord) != null)
+                    {
+                      final int newColorIndex = (currentColor.colorIndex + layer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length - 1);
+                      currentColor = currentColor.ramp.references[newColorIndex];
+                    }
                   }
                 }
               }
@@ -805,22 +813,25 @@ abstract class IToolPainter
           ColorReference? currentColor;
           for (int i = appState.layerCount - 1; i >= currentLayerPos; i--)
           {
-            if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
+            final LayerState? layer = appState.getLayerAt(index: i);
+            if (layer != null)
             {
-              final DrawingLayerState drawingLayer = appState.getLayerAt(index: i) as DrawingLayerState;
-              final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
-              if (col != null)
+              if (layer.runtimeType == DrawingLayerState)
               {
-                currentColor = col;
+                final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+                final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
+                if (col != null)
+                {
+                  currentColor = col;
+                }
               }
-            }
-            else if (currentColor != null && appState.getLayerAt(index: i) is ShadingLayerState)
-            {
-              final ShadingLayerState shadingLayer = appState.getLayerAt(index: i) as ShadingLayerState;
-              if (shadingLayer.hasCoord(coord: coord))
+              else if (currentColor != null && layer is ShadingLayerState)
               {
-                final int newColorIndex = (currentColor.colorIndex + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length -1);
-                currentColor = currentColor.ramp.references[newColorIndex];
+                if (layer.hasCoord(coord: coord))
+                {
+                  final int newColorIndex = (currentColor.colorIndex + layer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length -1);
+                  currentColor = currentColor.ramp.references[newColorIndex];
+                }
               }
             }
           }

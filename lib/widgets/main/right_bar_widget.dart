@@ -33,12 +33,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
@@ -58,7 +60,6 @@ class RightBarWidget extends StatefulWidget
 
 class _RightBarWidgetState extends State<RightBarWidget>
 {
-  late List<Widget> _widgetList;
   final AppState _appState = GetIt.I.get<AppState>();
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
@@ -70,7 +71,6 @@ class _RightBarWidgetState extends State<RightBarWidget>
   void initState()
   {
     super.initState();
-    _createWidgetList();
     addLayerMenu = getAddLayerMenu(
       onDismiss: _closeLayerMenu,
       layerLink: _layerLink,
@@ -117,12 +117,12 @@ class _RightBarWidgetState extends State<RightBarWidget>
     _closeLayerMenu();
   }
 
-  void _createWidgetList()
+  List<Widget> _createWidgetList({required final LayerCollection layers})
   {
-    _widgetList = <Widget>[];
-    for (int i = 0; i < _appState.layerCount; i++)
+    final List<Widget> widgetList = <Widget>[];
+    for (int i = 0; i < layers.length; i++)
     {
-      _widgetList.add(DragTarget<LayerState>(
+      widgetList.add(DragTarget<LayerState>(
         builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
           return AnimatedContainer(
             height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
@@ -135,11 +135,16 @@ class _RightBarWidgetState extends State<RightBarWidget>
         },
       ),);
 
-      _widgetList.add(LayerWidget(
-        layerState: _appState.getLayerAt(index: i),
+
+
+      final LayerState layer = layers.getLayer(index: i);
+      widgetList.add(LayerWidget(
+        layerState: layer,
       ),);
+
+
     }
-    _widgetList.add(DragTarget<LayerState>(
+    widgetList.add(DragTarget<LayerState>(
       builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
         return Divider(
           height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
@@ -151,6 +156,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
         _appState.changeLayerOrder(state: details.data, newPosition: _appState.layerCount);
       },
     ),);
+
+    return widgetList;
   }
 
 
@@ -205,12 +212,24 @@ class _RightBarWidgetState extends State<RightBarWidget>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
-                                  ListenableBuilder(
-                                    listenable: _appState.layerListChangeNotifier,
-                                    builder: (final BuildContext context, final Widget? child)
-                                    {
-                                      _createWidgetList();
-                                      return Column(children: _widgetList);
+                                  ValueListenableBuilder<int>(
+                                    valueListenable: _appState.timeline.selectedFrameIndex,
+                                    builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
+                                      final Frame? currentFrame = _appState.timeline.selectedFrame;
+                                      if (currentFrame != null)
+                                      {
+                                        return ListenableBuilder(
+                                          listenable: _appState.layerListChangeNotifier,
+                                          builder: (final BuildContext context, final Widget? child)
+                                          {
+                                            return Column(children: _createWidgetList(layers: _appState.timeline.frames.value[frameIndex].layerList.value),);
+                                          },
+                                        );
+                                      }
+                                      else
+                                      {
+                                        return const Column();
+                                      }
                                     },
                                   ),
                                 ],

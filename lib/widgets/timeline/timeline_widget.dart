@@ -24,6 +24,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -332,7 +333,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   void _layerSelected({required final Frame frame, required final int layerIndex})
   {
-    frame.selectedLayerIndex.value = layerIndex;
+    final LayerState toSelect = frame.layerList.value.getLayer(index: layerIndex);
+    frame.layerList.value.selectLayer(newLayer: toSelect);
     widget.timeline.selectedFrameIndex.value = widget.timeline.frames.value.indexOf(frame);
   }
 
@@ -445,81 +447,88 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
   List<Widget> _createLayerWidgets({required final List<Frame> frames, required final double minHeight, required final Color borderColor})
   {
-    final int highestLayerCount = frames.reduce((final Frame a, final Frame b) => a.layerList.value.length > b.layerList.value.length ? a : b).layerList.value.length;
-    final double height = max(highestLayerCount * _cellHeight + _cellPadding, minHeight);
     final List<Widget> layerWidgets = <Widget>[];
-    for (int i = 0; i < frames.length; i++)
-    {
-      if (i == 0)
-      {
-        layerWidgets.add(Container(color: borderColor, width: _borderWidth, height: height,));
-      }
 
-      layerWidgets.add(
-        ListenableBuilder(
-          listenable: frames[i],
-          builder: (final BuildContext context, final Widget? child) {
-            final bool isSelected = (i == widget.timeline.selectedFrameIndex.value);
-            return InkWell(
-              onTap: () {
-                widget.timeline.selectedFrameIndex.value = i;
-              },
-              child: Container(
-                height: height,
-                color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: frames[i].selectedLayerIndex,
-                  builder: (final BuildContext context3, final int selectedLayerIndex, final Widget? child) {
-                    return ValueListenableBuilder<List<LayerState>>(
-                      valueListenable: frames[i].layerList,
-                      builder: (final BuildContext context2, final List<LayerState> layerList, final Widget? child) {
-                        final List<Widget> layers = <Widget>[];
-                        for (int j = 0; j < layerList.length; j++)
-                        {
-                          final bool layerIsSelected = (j == selectedLayerIndex);
-                          layers.add(
-                            Padding(
-                              padding: const EdgeInsets.only(top: _cellPadding, left: _cellPadding, right: _cellPadding),
-                              child: InkWell(
-                                onTap: () {
-                                  _layerSelected(frame: frames[i], layerIndex: j);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
-                                    border: Border.all(
-                                      color: isSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
-                                      width: _borderWidth,
+    if (frames.isNotEmpty)
+    {
+      final int highestLayerCount = frames.reduce((final Frame a, final Frame b) => a.layerList.value.length > b.layerList.value.length ? a : b).layerList.value.length;
+      final double height = max(highestLayerCount * _cellHeight + _cellPadding, minHeight);
+
+      for (int i = 0; i < frames.length; i++)
+      {
+        if (i == 0)
+        {
+          layerWidgets.add(Container(color: borderColor, width: _borderWidth, height: height,));
+        }
+
+        layerWidgets.add(
+          ListenableBuilder(
+            listenable: frames[i],
+            builder: (final BuildContext context, final Widget? child) {
+              final bool isSelected = (i == widget.timeline.selectedFrameIndex.value);
+              return InkWell(
+                onTap: () {
+                  widget.timeline.selectedFrameIndex.value = i;
+                },
+                child: Container(
+                  height: height,
+                  color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                  child: ListenableBuilder(
+                    listenable: frames[i].layerList.value,
+                    builder: (final BuildContext context4, final Widget? child4) {
+                      return ValueListenableBuilder<LayerCollection>(
+                        valueListenable: frames[i].layerList,
+                        builder: (final BuildContext context2, final LayerCollection layerCollection, final Widget? child) {
+                          final List<Widget> layers = <Widget>[];
+                          for (int j = 0; j < layerCollection.length; j++)
+                          {
+                            final bool layerIsSelected = (j == layerCollection.getSelectedLayerIndex());
+                            layers.add(
+                              Padding(
+                                padding: const EdgeInsets.only(top: _cellPadding, left: _cellPadding, right: _cellPadding),
+                                child: InkWell(
+                                  onTap: () {
+                                    _layerSelected(frame: frames[i], layerIndex: j);
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
+                                      border: Border.all(
+                                        color: isSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
+                                        width: _borderWidth,
+                                      ),
+                                      borderRadius: BorderRadius.circular(_borderRadius / 2),
                                     ),
-                                    borderRadius: BorderRadius.circular(_borderRadius / 2),
+                                    width: _cellWidth - (_cellPadding * 2),
+                                    height: _cellHeight - _cellPadding,
+                                    child: Center(child: FaIcon(layerIconMap[layerCollection.getLayer(index: j).runtimeType], size: _layerIconSize, color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
                                   ),
-                                  width: _cellWidth - (_cellPadding * 2),
-                                  height: _cellHeight - _cellPadding,
-                                  child: Center(child: FaIcon(layerIconMap[layerList[j].runtimeType], size: _layerIconSize, color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
                                 ),
                               ),
-                            ),
+                            );
+                          }
+
+                          return Column(
+                            children: layers,
                           );
-                        }
-
-                        return Column(
-                          children: layers,
-                        );
-                      },
-                    );
-                  },
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
-      );
+              );
+            },
+          ),
+        );
 
-      layerWidgets.add(Container(color: borderColor, width: _borderWidth, height: height,));
+        layerWidgets.add(Container(color: borderColor, width: _borderWidth, height: height,));
+      }
+      layerWidgets.add(const SizedBox(width: _horizontalScrollHeight + _padding,));
+
+
     }
-    layerWidgets.add(const SizedBox(width: _horizontalScrollHeight + _padding,));
-
     return layerWidgets;
+
   }
 
 

@@ -20,19 +20,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 
 class Frame with ChangeNotifier
 {
+  static const int defaultFps = 20;
   final ValueNotifier<int> fps = ValueNotifier<int>(0);
-  final ValueNotifier<List<LayerState>> layerList = ValueNotifier<List<LayerState>>(<LayerState>[]);
-  final ValueNotifier<int> selectedLayerIndex = ValueNotifier<int>(0);
+  final ValueNotifier<LayerCollection> layerList = ValueNotifier<LayerCollection>(LayerCollection());
 
   int get frameTime => (1000.0 / fps.value.toDouble()).toInt();
 
@@ -45,50 +41,41 @@ class Frame with ChangeNotifier
 class Timeline
 {
   Frame? _selectedFrame;
-  final ValueNotifier<int> selectedFrameIndex = ValueNotifier<int>(0);
+  final ValueNotifier<int> selectedFrameIndex = ValueNotifier<int>(-1);
   final ValueNotifier<List<Frame>> frames = ValueNotifier<List<Frame>>(<Frame>[]);
   final ValueNotifier<int> totalFrameTime = ValueNotifier<int>(0);
   final ValueNotifier<bool> isPlaying = ValueNotifier<bool>(false);
   final ValueNotifier<int> loopStartIndex = ValueNotifier<int>(0);
   final ValueNotifier<int> loopEndIndex = ValueNotifier<int>(0);
-  final AppState _appState = GetIt.I.get<AppState>();
 
-  Timeline()
+
+  void init({required final AppState appState})
   {
-    //TODO TEMP
     final List<Frame> frameList = <Frame>[];
-    final Random rand = Random();
-    for (int i = 0; i < 1; i++)
-    {
-      final Frame f = Frame();
-      final int layerCount = rand.nextInt(13) + 1;
-      for (int j = 0; j < layerCount; j++)
-      {
-        final int layerRand = rand.nextInt(4);
-        final LayerState ls = layerRand == 0 ? ShadingLayerState() : DrawingLayerState(size: _appState.canvasSize, ramps: _appState.colorRamps);
-        f.layerList.value.add(ls);
-      }
-      f.fps.value = rand.nextInt(60) + 1;
-      f.selectedLayerIndex.value = rand.nextInt(f.layerList.value.length);
-      f.fps.addListener(() => calculateTotalFrameTime());
-      frameList.add(f);
-    }
+    final Frame f = Frame();
+    f.layerList.value.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+    f.fps.value = Frame.defaultFps;
+    f.fps.addListener(() => calculateTotalFrameTime());
+    frameList.add(f);
+
     _selectedFrame = frameList[0];
     frames.value = frameList;
     calculateTotalFrameTime();
     selectedFrameIndex.addListener(() {
-      _selectedFrame?.selectionChanged();
+      _selectedFrame!.selectionChanged();
       _selectedFrame = frames.value[selectedFrameIndex.value];
-      _selectedFrame?.selectionChanged();
+      _selectedFrame!.selectionChanged();
     },);
+    selectedFrameIndex.value = 0;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
 
     isPlaying.addListener(() {
       _playChanged();
     },);
-
   }
+
+  Frame? get selectedFrame => _selectedFrame;
 
   void _playChanged()
   {
@@ -145,12 +132,15 @@ class Timeline
 
   Future<void> _play() async
   {
-    while(isPlaying.value)
+    if (_selectedFrame != null)
     {
-      await Future<void>.delayed(Duration(milliseconds: _selectedFrame!.frameTime));
-      if (isPlaying.value)
+      while(isPlaying.value)
       {
-        selectNextFrame();
+        await Future<void>.delayed(Duration(milliseconds: _selectedFrame!.frameTime));
+        if (isPlaying.value)
+        {
+          selectNextFrame();
+        }
       }
     }
   }
@@ -204,40 +194,39 @@ class Timeline
   void _addNewFrame({required final bool right, required final bool copy})
   {
     final Frame f = Frame();
+    final AppState appState = GetIt.I.get<AppState>();
+
     if (copy)
     {
       final Frame cf = frames.value[selectedFrameIndex.value];
-      for (final LayerState l in cf.layerList.value)
+      LayerState? layerToSelect;
+      for (int i = 0; i < cf.layerList.value.length; i++)
       {
-        if (l.runtimeType == DrawingLayerState)
+        final LayerState l = cf.layerList.value.getLayer(index: i);
+        final LayerState? addedLayer = f.layerList.value.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
+        if (l.isSelected.value)
         {
-          f.layerList.value.add(DrawingLayerState.from(other: l as DrawingLayerState));
-        }
-        else if (l.runtimeType == GridLayerState)
-        {
-          f.layerList.value.add(GridLayerState.from(other: l as GridLayerState));
-        }
-        else if (l.runtimeType == ShadingLayerState)
-        {
-          f.layerList.value.add(ShadingLayerState.from(other: l as ShadingLayerState));
-        }
-        else if (l.runtimeType == DitherLayerState)
-        {
-          f.layerList.value.add(DitherLayerState.from(other: l as DitherLayerState));
-        }
-        else if (l.runtimeType == ReferenceLayerState)
-        {
-          f.layerList.value.add(ReferenceLayerState.from(other: l as ReferenceLayerState));
+          layerToSelect = addedLayer;
         }
       }
+
+      if (layerToSelect != null)
+      {
+        f.layerList.value.selectLayer(newLayer: layerToSelect);
+      }
+      else
+      {
+        f.layerList.value.selectLayer(newLayer: f.layerList.value.getLayer(index: 0));
+      }
+
+
       f.fps.value = cf.fps.value;
       f.fps.addListener(() => calculateTotalFrameTime());
-      f.selectedLayerIndex.value = cf.selectedLayerIndex.value;
     }
     else
     {
-      f.layerList.value.add(DrawingLayerState(size: _appState.canvasSize, ramps: _appState.colorRamps));
-      f.fps.value = 20;
+      f.layerList.value.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+      f.fps.value = Frame.defaultFps;
       f.fps.addListener(() => calculateTotalFrameTime());
     }
     final List<Frame> newFrames = <Frame>[];

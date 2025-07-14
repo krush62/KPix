@@ -153,7 +153,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       final String newPath = await FileSaver.instance.saveFile(
         name: path,
         bytes: byteData.buffer.asUint8List(),
-        ext: fileExtensionKpix,
+        fileExtension: fileExtensionKpix,
       );
       return newPath;
     }
@@ -471,7 +471,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         final String newPath = await FileSaver.instance.saveFile(
           name: path,
           bytes: data,
-          ext: extension,
+          fileExtension: extension,
         );
         GetIt.I.get<AppState>().showMessage(text: "Palette saved at: $newPath/$pathWithExtension");
       }
@@ -533,7 +533,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         final String newPath = await FileSaver.instance.saveFile(
           name: path,
           bytes: data,
-          ext: exportData.extension,
+          fileExtension: exportData.extension,
         );
         returnPath = "$newPath/$path.${exportData.extension}";
       }

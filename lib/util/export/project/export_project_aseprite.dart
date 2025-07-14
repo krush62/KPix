@@ -41,43 +41,49 @@ Future<Uint8List?> getAsepriteData({required final ExportData exportData, requir
 
   for (int l = 0; l < appState.layerCount; l++)
   {
-    if (appState.getLayerAt(index: l).runtimeType == DrawingLayerState)
+    final LayerState? layer = appState.getLayerAt(index: l);
+    if (layer != null)
     {
-      final DrawingLayerState layerState = appState.getLayerAt(index: l) as DrawingLayerState;
-      final List<int> imgBytes = <int>[];
-      for (int y = 0; y < appState.canvasSize.y; y++)
+      if (layer.runtimeType == DrawingLayerState)
       {
-        for (int x = 0; x < appState.canvasSize.x; x++)
+        final DrawingLayerState layerState = layer as DrawingLayerState;
+        final List<int> imgBytes = <int>[];
+        for (int y = 0; y < appState.canvasSize.y; y++)
         {
-          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-          ColorReference? colAtPos;
-          if (appState.getSelectedLayer() == appState.getLayerAt(index: l))
+          for (int x = 0; x < appState.canvasSize.x; x++)
           {
-            colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
-          }
-          colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
-
-          if (colAtPos == null)
-          {
-            imgBytes.add(0);
-          }
-          else
-          {
-            final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
-            if (shade != 0)
+            final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+            ColorReference? colAtPos;
+            if (appState.getSelectedLayer() == layer)
             {
-              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-              colAtPos = colAtPos.ramp.references[targetIndex];
+              colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
             }
-            imgBytes.add(colorMap[colAtPos]!);
+            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
+
+            if (colAtPos == null)
+            {
+              imgBytes.add(0);
+            }
+            else
+            {
+              final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
+              if (shade != 0)
+              {
+                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
+                colAtPos = colAtPos.ramp.references[targetIndex];
+              }
+              imgBytes.add(colorMap[colAtPos]!);
+            }
           }
         }
+        final List<int> encData = const ZLibEncoder().encode(imgBytes);
+        layerEncBytes.add(encData);
+        layerNames.add(utf8.encode("Layer$l"));
+        drawingLayers.add(layerState);
       }
-      final List<int> encData = const ZLibEncoder().encode(imgBytes);
-      layerEncBytes.add(encData);
-      layerNames.add(utf8.encode("Layer$l"));
-      drawingLayers.add(layerState);
     }
+
+
   }
 
   return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);

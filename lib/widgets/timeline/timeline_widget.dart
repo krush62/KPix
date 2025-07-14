@@ -29,6 +29,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -183,10 +184,10 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
           child: ListenableBuilder(
             listenable: currentFrame,
             builder: (final BuildContext context, final Widget? child) {
-              final bool isSelected = (i == widget.timeline.selectedFrameIndex.value);
+              final bool isSelected = (i == widget.timeline.selectedFrameIndex);
               return InkWell(
                 onTap: () {
-                  widget.timeline.selectedFrameIndex.value = i;
+                  widget.timeline.selectFrame(index: i);
                 },
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -316,26 +317,19 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   void initState()
   {
     super.initState();
-    widget.timeline.selectedFrameIndex.addListener(() {
+    print("INIT");
+    widget.timeline.selectedFrameIndexNotifier.addListener(() {
       if (widget.timeline.isPlaying.value && _autoScroll.value)
       {
-        final double scrollFactor = widget.timeline.selectedFrameIndex.value / widget.timeline.frames.value.length;
+        final double scrollFactor = widget.timeline.selectedFrameIndex / widget.timeline.frames.value.length;
         final double scrollPosition = (_horizontalScrollController.position.maxScrollExtent * scrollFactor).clamp(0, _horizontalScrollController.position.maxScrollExtent);
         _horizontalScrollController.animateTo(
           scrollPosition,
-          duration: (widget.timeline.selectedFrameIndex.value == 0) ? const Duration(milliseconds: _scrollTimeMs) : Duration(milliseconds: widget.timeline.frames.value[widget.timeline.selectedFrameIndex.value].fps.value),
+          duration: (widget.timeline.selectedFrameIndex == 0) ? const Duration(milliseconds: _scrollTimeMs) : Duration(milliseconds: widget.timeline.frames.value[widget.timeline.selectedFrameIndex].fps.value),
           curve: Curves.linear,
         );
       }
     },);
-  }
-
-
-  void _layerSelected({required final Frame frame, required final int layerIndex})
-  {
-    final LayerState toSelect = frame.layerList.value.getLayer(index: layerIndex);
-    frame.layerList.value.selectLayer(newLayer: toSelect);
-    widget.timeline.selectedFrameIndex.value = widget.timeline.frames.value.indexOf(frame);
   }
 
   List<Widget> _createMarkerWidgets({required final List<Frame> frames, required final int loopStart, required final int loopEnd})
@@ -418,10 +412,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
         child: ListenableBuilder(
           listenable: currentFrame,
           builder: (final BuildContext context, final Widget? child) {
-            final bool isSelected = (i == widget.timeline.selectedFrameIndex.value);
+            final bool isSelected = (i == widget.timeline.selectedFrameIndex);
             return TextButton(
               onPressed: () {
-                widget.timeline.selectedFrameIndex.value = i;
+                widget.timeline.selectFrame(index: i);
               },
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(EdgeInsets.zero),
@@ -465,10 +459,10 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
           ListenableBuilder(
             listenable: frames[i],
             builder: (final BuildContext context, final Widget? child) {
-              final bool isSelected = (i == widget.timeline.selectedFrameIndex.value);
+              final bool isSelected = (i == widget.timeline.selectedFrameIndex);
               return InkWell(
                 onTap: () {
-                  widget.timeline.selectedFrameIndex.value = i;
+                  widget.timeline.selectFrame(index: i);
                 },
                 child: Container(
                   height: height,
@@ -488,7 +482,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 padding: const EdgeInsets.only(top: _cellPadding, left: _cellPadding, right: _cellPadding),
                                 child: InkWell(
                                   onTap: () {
-                                    _layerSelected(frame: frames[i], layerIndex: j);
+                                    widget.timeline.selectFrame(index: i, layerIndex: j);
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
@@ -550,13 +544,13 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
           return ListenableBuilder(
             listenable: currentFrame,
             builder: (final BuildContext context, final Widget? child) {
-              final bool isSelected = (i == widget.timeline.selectedFrameIndex.value);
+              final bool isSelected = (i == widget.timeline.selectedFrameIndex);
               return ValueListenableBuilder<bool>(
                 valueListenable: widget.timeline.isPlaying,
                 builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
                   return InkWell(
                     onTap: () {
-                      widget.timeline.selectedFrameIndex.value = i;
+                      widget.timeline.selectFrame(index: i);
                       if (!isPlaying)
                       {
                         final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -687,7 +681,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         children: <Widget>[
                           Expanded(
                             child: ValueListenableBuilder<int>(
-                              valueListenable: widget.timeline.selectedFrameIndex,
+                              valueListenable: widget.timeline.selectedFrameIndexNotifier,
                               builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
                                 return ValueListenableBuilder<List<Frame>>(
                                   valueListenable: widget.timeline.frames,
@@ -718,7 +712,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           ),
                           Expanded(
                             child: ValueListenableBuilder<int>(
-                              valueListenable: widget.timeline.selectedFrameIndex,
+                              valueListenable: widget.timeline.selectedFrameIndexNotifier,
                               builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
                                 return ValueListenableBuilder<List<Frame>>(
                                   valueListenable: widget.timeline.frames,

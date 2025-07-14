@@ -97,7 +97,7 @@ class MainToolbarWidget extends StatelessWidget
             ),
           ),
           ValueListenableBuilder<int>(
-            valueListenable: GetIt.I.get<AppState>().timeline.selectedFrameIndex,
+            valueListenable: GetIt.I.get<AppState>().timeline.selectedFrameIndexNotifier,
             builder: (final BuildContext context1, final int selectedFrameIndex, final Widget? child1) {
               return ValueListenableBuilder<LayerState?>(
                 valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,

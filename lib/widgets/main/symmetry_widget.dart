@@ -216,11 +216,11 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                           child: SizedBox(
                                             width: _options.buttonWidth,
                                             height: _options.buttonHeight,
-                                            child: OutlinedButton(
+                                            child: IconButton.outlined(
                                               onPressed: horActivated ? () {
                                                 widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
                                               } : null,
-                                              child: Icon(Icons.border_vertical, size: _options.centerButtonIconSize,),
+                                              icon: Icon(Icons.border_vertical, size: _options.centerButtonIconSize,),
                                             ),
                                           ),
                                         ),
@@ -299,11 +299,11 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                           child: SizedBox(
                                             width: _options.buttonWidth,
                                             height: _options.buttonHeight,
-                                            child: OutlinedButton(
+                                            child: IconButton.outlined(
                                               onPressed: vertActivated ? () {
                                                 widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
                                               } : null,
-                                              child: Icon(Icons.border_horizontal, size: _options.centerButtonIconSize,),
+                                              icon: Icon(Icons.border_horizontal, size: _options.centerButtonIconSize,),
                                             ),
                                           ),
                                         ),

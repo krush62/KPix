@@ -41,7 +41,7 @@ class Frame with ChangeNotifier
 class Timeline
 {
   Frame? _selectedFrame;
-  final ValueNotifier<int> selectedFrameIndex = ValueNotifier<int>(-1);
+  final ValueNotifier<int> _selectedFrameIndex = ValueNotifier<int>(-1);
   final ValueNotifier<List<Frame>> frames = ValueNotifier<List<Frame>>(<Frame>[]);
   final ValueNotifier<int> totalFrameTime = ValueNotifier<int>(0);
   final ValueNotifier<bool> isPlaying = ValueNotifier<bool>(false);
@@ -61,12 +61,12 @@ class Timeline
     _selectedFrame = frameList[0];
     frames.value = frameList;
     calculateTotalFrameTime();
-    selectedFrameIndex.addListener(() {
+    _selectedFrameIndex.addListener(() {
       _selectedFrame!.selectionChanged();
-      _selectedFrame = frames.value[selectedFrameIndex.value];
+      _selectedFrame = frames.value[_selectedFrameIndex.value];
       _selectedFrame!.selectionChanged();
     },);
-    selectedFrameIndex.value = 0;
+    _selectedFrameIndex.value = 0;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
 
@@ -75,7 +75,36 @@ class Timeline
     },);
   }
 
+  int get selectedFrameIndex => _selectedFrameIndex.value;
+
   Frame? get selectedFrame => _selectedFrame;
+
+  ValueNotifier<int> get selectedFrameIndexNotifier => _selectedFrameIndex;
+
+  void selectFrame({required final int index, final int? layerIndex})
+  {
+    if (index >= 0 && index < frames.value.length)
+    {
+      final LayerState? oldLayer = _selectedFrame!.layerList.value.getSelectedLayer();
+      _selectedFrameIndex.value = index;
+      LayerState? layerToSelect;
+      if (layerIndex != null)
+      {
+        layerToSelect = _selectedFrame!.layerList.value.getLayer(index: layerIndex);
+      }
+      else if (selectedFrame != null)
+      {
+        layerToSelect = _selectedFrame!.layerList.value.getSelectedLayer();
+
+      }
+
+      if (layerToSelect != null)
+      {
+        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer);
+      }
+
+    }
+  }
 
   void _playChanged()
   {
@@ -83,7 +112,7 @@ class Timeline
     {
       if (loopEndIndex.value - loopStartIndex.value > 0)
       {
-        selectedFrameIndex.value = loopStartIndex.value;
+        selectFrame(index: loopStartIndex.value);
         _play();
       }
       else
@@ -96,38 +125,38 @@ class Timeline
 
   void selectNextFrame()
   {
-    final int newIndex = selectedFrameIndex.value + 1;
+    final int newIndex = selectedFrameIndex + 1;
     if (newIndex > loopEndIndex.value)
     {
-      selectedFrameIndex.value = loopStartIndex.value;
+      selectFrame(index: loopStartIndex.value);
     }
     else
     {
-      selectedFrameIndex.value = newIndex;
+      selectFrame(index: newIndex);
     }
   }
 
   void selectPreviousFrame()
   {
-    final int newIndex = selectedFrameIndex.value - 1;
+    final int newIndex = selectedFrameIndex - 1;
     if (newIndex < 0)
     {
-      selectedFrameIndex.value = frames.value.length - 1;
+      selectFrame(index: frames.value.length - 1);
     }
     else
     {
-      selectedFrameIndex.value = newIndex;
+      selectFrame(index: newIndex);
     }
   }
 
   void selectFirstFrame()
   {
-    selectedFrameIndex.value = 0;
+    selectFrame(index: 0);
   }
 
   void selectLastFrame()
   {
-    selectedFrameIndex.value = frames.value.length - 1;
+    selectFrame(index: frames.value.length - 1);
   }
 
   Future<void> _play() async
@@ -146,28 +175,28 @@ class Timeline
   }
 
   void moveFrameLeft() {
-    if (selectedFrameIndex.value > 0) {
+    if (selectedFrameIndex > 0) {
       final List<Frame> newFrames = <Frame>[];
       newFrames.addAll(frames.value);
-      final Frame f = newFrames[selectedFrameIndex.value];
-      newFrames.removeAt(selectedFrameIndex.value);
-      newFrames.insert(selectedFrameIndex.value - 1, f);
+      final Frame f = newFrames[selectedFrameIndex];
+      newFrames.removeAt(selectedFrameIndex);
+      newFrames.insert(selectedFrameIndex - 1, f);
       frames.value = newFrames;
-      selectedFrameIndex.value--;
+      selectFrame(index: selectedFrameIndex - 1);
     }
   }
 
   void moveFrameRight()
   {
-    if (selectedFrameIndex.value < frames.value.length - 1)
+    if (selectedFrameIndex < frames.value.length - 1)
     {
       final List<Frame> newFrames = <Frame>[];
       newFrames.addAll(frames.value);
-      final Frame f = newFrames[selectedFrameIndex.value];
-      newFrames.removeAt(selectedFrameIndex.value);
-      newFrames.insert(selectedFrameIndex.value + 1, f);
+      final Frame f = newFrames[selectedFrameIndex];
+      newFrames.removeAt(selectedFrameIndex);
+      newFrames.insert(selectedFrameIndex + 1, f);
       frames.value = newFrames;
-      selectedFrameIndex.value++;
+      selectFrame(index: selectedFrameIndex + 1);
     }
   }
 
@@ -198,7 +227,7 @@ class Timeline
 
     if (copy)
     {
-      final Frame cf = frames.value[selectedFrameIndex.value];
+      final Frame cf = frames.value[selectedFrameIndex];
       LayerState? layerToSelect;
       for (int i = 0; i < cf.layerList.value.length; i++)
       {
@@ -233,18 +262,18 @@ class Timeline
     newFrames.addAll(frames.value);
     if (right)
     {
-      newFrames.insert(selectedFrameIndex.value + 1, f);
+      newFrames.insert(selectedFrameIndex + 1, f);
     }
     else
     {
-      newFrames.insert(selectedFrameIndex.value, f);
+      newFrames.insert(selectedFrameIndex, f);
     }
     frames.value = newFrames;
-    final int originalIndex = selectedFrameIndex.value;
-    selectedFrameIndex.value++;
+    final int originalIndex = selectedFrameIndex;
+    selectFrame(index: selectedFrameIndex + 1);
     if (!right)
     {
-      selectedFrameIndex.value--;
+      selectFrame(index: selectedFrameIndex - 1);
     }
 
     if (originalIndex <= loopEndIndex.value)
@@ -264,25 +293,25 @@ class Timeline
   {
     final List<Frame> newFrames = <Frame>[];
     newFrames.addAll(frames.value);
-    newFrames.removeAt(selectedFrameIndex.value);
+    newFrames.removeAt(selectedFrameIndex);
 
-    if (selectedFrameIndex.value <= loopStartIndex.value)
+    if (selectedFrameIndex <= loopStartIndex.value)
     {
       loopStartIndex.value = max(loopStartIndex.value - 1, 0);
     }
-    if (selectedFrameIndex.value <= loopEndIndex.value)
+    if (selectedFrameIndex <= loopEndIndex.value)
     {
       loopEndIndex.value = max(loopEndIndex.value - 1, loopStartIndex.value);
     }
 
-    if (selectedFrameIndex.value == 0)
+    if (selectedFrameIndex == 0)
     {
-      selectedFrameIndex.value = 1;
-      selectedFrameIndex.value = 0;
+      selectFrame(index: 1);
+      selectFrame(index: 0);
     }
     else
     {
-      selectedFrameIndex.value--;
+      selectFrame(index: selectedFrameIndex - 1);
     }
 
     frames.value = newFrames;

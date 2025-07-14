@@ -1032,9 +1032,10 @@ class AppState
   }
 
 
-  void selectLayer({required final LayerState newLayer, final bool addToHistoryStack = true})
+  void selectLayer({required final LayerState newLayer, LayerState? oldLayer, final bool addToHistoryStack = true})
   {
-    final LayerState oldLayer = _layerCollection.selectLayer(newLayer: newLayer);
+    final LayerState previousLayer = _layerCollection.selectLayer(newLayer: newLayer);
+    oldLayer ??= previousLayer;
     if (oldLayer != newLayer)
     {
       selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);

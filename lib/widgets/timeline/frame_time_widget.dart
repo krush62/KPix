@@ -23,7 +23,7 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_number_picker_widget.dart';
 
 const int _minFrameTime = 1;
-const int _maxFrameTime = 60;
+const int _maxFrameTime = 30;
 
 class FrameTimeWidget extends StatefulWidget
 {

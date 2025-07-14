@@ -213,7 +213,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
                                   ValueListenableBuilder<int>(
-                                    valueListenable: _appState.timeline.selectedFrameIndex,
+                                    valueListenable: _appState.timeline.selectedFrameIndexNotifier,
                                     builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
                                       final Frame? currentFrame = _appState.timeline.selectedFrame;
                                       if (currentFrame != null)

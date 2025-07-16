@@ -70,10 +70,10 @@
 | Duplicate                           | shift + d           |                  |                                      |                              |                           |
 | Delete                              | shift + del         |                  |                                      |                              |                           |
 | Merge Down                          | shift + m           |                  |                                      |                              |                           |
-| Move Layer Up                       | shift + ctrl + up   |                  | shift + ctrl + mouse wheel up        |                              |                           |
-| Move Layer Down                     | shift + ctrl + down |                  | shift + ctrl + mouse wheel down      |                              |                           |
-| Select Layer Above                  | shift + up          |                  | shift + mouse wheel up               |                              |                           |
-| Select Layer Below                  | shift + down        |                  | shift + mouse wheel down             |                              |                           |
+| Move Layer Up                       | shift + up          |                  | shift + ctrl + mouse wheel up        |                              |                           |
+| Move Layer Down                     | shift + down        |                  | shift + ctrl + mouse wheel down      |                              |                           |
+| Select Layer Above                  | up                  |                  | shift + mouse wheel up               |                              |                           |
+| Select Layer Below                  | down                |                  | shift + mouse wheel down             |                              |                           |
 |                                     |                     |                  |                                      |                              |                           |
 | <h3>Shading</h3>                    |                     |                  |                                      |                              |                           |
 | Toggle Shading                      | space               |                  |                                      |                              |                           |
@@ -85,18 +85,27 @@
 |                                     |                     |                  |                                      |                              |                           |
 | <h3>Pan & Zoom</h3>                 |                     |                  |                                      |                              |                           |
 | Pan                                 |                     |                  | middle down + hover                  | secondary down + hover       | two finger down + move    |
-| Zoom In                             | Numpad +            |                  | mouse wheel up                       | hold secondary + hover up    | two finger pinch increase |
-| Zoom Out                            | Numpad \-           |                  | mouse wheel down                     | hold secondary + hover down  | two finger pinch decrease |
-| Set Optimal Zoom                    | Numpad 0            |                  |                                      |                              |                           |
-| Set Zoom Level 100%                 | Numpad 1            |                  |                                      |                              |                           |
-| Set Zoom Level 200%                 | Numpad 2            |                  |                                      |                              |                           |
-| Set Zoom Level 400%                 | Numpad 3            |                  |                                      |                              |                           |
-| Set Zoom Level 800%                 | Numpad 4            |                  |                                      |                              |                           |
-| Set Zoom Level 1600%                | Numpad 5            |                  |                                      |                              |                           |
-| Set Zoom Level 3200%                | Numpad 6            |                  |                                      |                              |                           |
-| Set Zoom Level 4800%                | Numpad 7            |                  |                                      |                              |                           |
-| Set Zoom Level 6400%                | Numpad 8            |                  |                                      |                              |                           |
-| Set Zoom Level 8000%                | Numpad 9            |                  |                                      |                              |                           |
+| Zoom In                             | numpad +            |                  | mouse wheel up                       | hold secondary + hover up    | two finger pinch increase |
+| Zoom Out                            | numpad \-           |                  | mouse wheel down                     | hold secondary + hover down  | two finger pinch decrease |
+| Set Optimal Zoom                    | numpad 0            |                  |                                      |                              |                           |
+| Set Zoom Level 100%                 | numpad 1            |                  |                                      |                              |                           |
+| Set Zoom Level 200%                 | numpad 2            |                  |                                      |                              |                           |
+| Set Zoom Level 400%                 | numpad 3            |                  |                                      |                              |                           |
+| Set Zoom Level 800%                 | numpad 4            |                  |                                      |                              |                           |
+| Set Zoom Level 1600%                | numpad 5            |                  |                                      |                              |                           |
+| Set Zoom Level 3200%                | numpad 6            |                  |                                      |                              |                           |
+| Set Zoom Level 4800%                | numpad 7            |                  |                                      |                              |                           |
+| Set Zoom Level 6400%                | numpad 8            |                  |                                      |                              |                           |
+| Set Zoom Level 8000%                | numpad 9            |                  |                                      |                              |                           |
+|                                     |                     |                  |                                      |                              |                           |
+| <h3>Timeline</h3>                   |                     |                  |                                      |                              |                           |
+| Play/Pause                          | enter               |                  |                                      |                              |                           |
+| Select Next Frame                   | right               |                  |                                      |                              |                           |
+| Select Previous Frame               | left                |                  |                                      |                              |                           |
+| Move Frame Right                    | shift + right       |                  |                                      |                              |                           |
+| Move Frame Left                     | shift + left        |                  |                                      |                              |                           |
+
+
 
 
 [^1]: If shading is **not** enabled.

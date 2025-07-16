@@ -96,6 +96,13 @@ enum HotkeyAction
   panZoomSetZoom6400,
   panZoomSetZoom8000,
 
+  //TIMELINE
+  timelinePlay,
+  timelineNextFrame,
+  timelinePreviousFrame,
+  timelineMoveFrameLeft,
+  timelineMoveFrameRight,
+
 }
 
 class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners();}}
@@ -187,6 +194,32 @@ class HotkeyManager
       else if (evt.logicalKey == LogicalKeyboardKey.altLeft || evt.logicalKey == LogicalKeyboardKey.altRight || evt.logicalKey == LogicalKeyboardKey.alt)
       {
         _altIsPressed.value = evt is KeyDownEvent;
+      }
+
+      //ARROW KEY HANDLING
+      HotkeyAction? action;
+      if (evt is KeyUpEvent && !_altIsPressed.value && !_controlIsPressed.value && !_shiftIsPressed.value)
+      {
+        if (evt.logicalKey == LogicalKeyboardKey.arrowLeft)
+        {
+          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft)];
+        }
+        else if (evt.logicalKey == LogicalKeyboardKey.arrowRight)
+        {
+          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowRight)];
+        }
+        else if (evt.logicalKey == LogicalKeyboardKey.arrowUp)
+        {
+          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowUp)];
+        }
+        else if (evt.logicalKey == LogicalKeyboardKey.arrowDown)
+        {
+          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown)];
+        }
+        if (action != null)
+        {
+          triggerShortcut(action: action);
+        }
       }
     }
 
@@ -319,10 +352,10 @@ class HotkeyManager
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyD, shift: true)] = HotkeyAction.layersDuplicate;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.delete, shift: true)] = HotkeyAction.layersDelete;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.keyM, shift: true)] = HotkeyAction.layersMerge;
-    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowUp, shift: true, control: true)] = HotkeyAction.layersMoveUp;
-    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown, shift: true, control: true)] = HotkeyAction.layersMoveDown;
-    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowUp, shift: true)] = HotkeyAction.layersSelectAbove;
-    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown, shift: true)] = HotkeyAction.layersSelectBelow;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowUp, shift: true)] = HotkeyAction.layersMoveUp;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown, shift: true)] = HotkeyAction.layersMoveDown;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowUp)] = HotkeyAction.layersSelectAbove;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown)] = HotkeyAction.layersSelectBelow;
 
     //SHADING
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.space)] = HotkeyAction.shadingToggle;
@@ -342,6 +375,14 @@ class HotkeyManager
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.numpad7)] = HotkeyAction.panZoomSetZoom4800;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.numpad8)] = HotkeyAction.panZoomSetZoom6400;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.numpad9)] = HotkeyAction.panZoomSetZoom8000;
+
+    //TIMELINE
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.enter)] = HotkeyAction.timelinePlay;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowRight)] = HotkeyAction.timelineNextFrame;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft)] = HotkeyAction.timelinePreviousFrame;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft, shift: true)] = HotkeyAction.timelineMoveFrameLeft;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowRight, shift: true)] = HotkeyAction.timelineMoveFrameRight;
+
 
   }
 

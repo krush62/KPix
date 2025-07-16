@@ -973,6 +973,7 @@ class AppState
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
       }
+      timeline.layerChangeNotifier.reportChange();
       rasterLayersFrame();
     }
   }

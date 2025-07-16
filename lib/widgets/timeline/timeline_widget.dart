@@ -27,6 +27,7 @@ import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -57,6 +58,7 @@ class TimeLineWidget extends StatefulWidget {
 
 class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProviderStateMixin
 {
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -76,6 +78,12 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
     if (isExpanded.value) {
       _animationController.forward();
     }
+
+    _hotkeyManager.addListener(func: () {if (widget.timeline.loopStartIndex.value != widget.timeline.loopEndIndex.value) widget.timeline.isPlaying.value = !widget.timeline.isPlaying.value;}, action: HotkeyAction.timelinePlay);
+    _hotkeyManager.addListener(func: () {widget.timeline.selectNextFrame();}, action: HotkeyAction.timelineNextFrame);
+    _hotkeyManager.addListener(func: () {widget.timeline.selectPreviousFrame();}, action: HotkeyAction.timelinePreviousFrame);
+    _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex > 0) widget.timeline.moveFrameLeft();}, action: HotkeyAction.timelineMoveFrameLeft);
+    _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex < widget.timeline.frames.value.length - 1) widget.timeline.moveFrameRight();}, action: HotkeyAction.timelineMoveFrameRight);
   }
 
   void _toggleExpand()
@@ -159,7 +167,7 @@ class TimeLineMiniWidget extends StatefulWidget {
 
 class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
 {
-
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   List<Widget> _createRowWidgets() {
     final List<Frame> frames = widget.timeline.frames.value;
     final List<Widget> rowWidgets = <Widget>[];
@@ -246,7 +254,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                       valueListenable: widget.timeline.isPlaying,
                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                         return Tooltip(
-                          message: isPlaying ? "Pause" : "Play",
+                          message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
                           waitDuration: AppState.toolTipDuration,
                           child: SizedBox(
                             width: widget.buttonWidth,
@@ -318,6 +326,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   final ScrollController _verticalScrollController = ScrollController();
   final ValueNotifier<bool> _autoScroll = ValueNotifier<bool>(true);
   static late KPixOverlay _frameTimeOverlay;
+
+  final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override
   void initState()
@@ -670,7 +680,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 valueListenable: widget.timeline.isPlaying,
                                 builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                   return Tooltip(
-                                    message: isPlaying ? "Pause" : "Play",
+                                    message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
                                     waitDuration: AppState.toolTipDuration,
                                     child: SizedBox(
                                       height: _cellHeight,
@@ -702,7 +712,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                       valueListenable: widget.timeline.isPlaying,
                                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                         return Tooltip(
-                                          message: "Move Frame Left",
+                                          message: "Move Frame Left${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft)}",
                                           waitDuration: AppState.toolTipDuration,
                                           child: SizedBox(
                                             height: _cellHeight,
@@ -745,7 +755,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                       valueListenable: widget.timeline.isPlaying,
                                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                                         return Tooltip(
-                                          message: "Move Frame Right",
+                                          message: "Move Frame Right${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight)}",
                                           waitDuration: AppState.toolTipDuration,
                                           child: SizedBox(
                                             height: _cellHeight,

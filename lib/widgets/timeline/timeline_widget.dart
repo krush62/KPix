@@ -28,6 +28,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -119,13 +120,17 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
                   child: ValueListenableBuilder<bool>(
                     valueListenable: isExpanded,
                     builder: (final BuildContext context, final bool isExpanded, final Widget? child) {
-                      return SizedBox(
-                        width: widget.height - widget.padding * 2,
-                        child: IconButton(
-                            onPressed: () {
-                              _toggleExpand();
-                            },
-                            icon: FaIcon(isExpanded ? FontAwesomeIcons.chevronUp : FontAwesomeIcons.chevronDown, size: widget.height / 2,),
+                      return Tooltip(
+                        message: isExpanded ? "Collapse Timeline" : "Expand Timeline",
+                        waitDuration: AppState.toolTipDuration,
+                        child: SizedBox(
+                          width: widget.height - widget.padding * 2,
+                          child: IconButton(
+                              onPressed: () {
+                                _toggleExpand();
+                              },
+                              icon: FaIcon(isExpanded ? FontAwesomeIcons.chevronUp : FontAwesomeIcons.chevronDown, size: widget.height / 3,),
+                          ),
                         ),
                       );
                     },
@@ -240,13 +245,17 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                     return ValueListenableBuilder<bool>(
                       valueListenable: widget.timeline.isPlaying,
                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                        return SizedBox(
-                          width: widget.buttonWidth,
-                          child: IconButton(
-                            onPressed: (loopEndIndex == loopStartIndex) ? null : () {
-                              widget.timeline.isPlaying.value = !isPlaying;
-                            },
-                            icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: widget.buttonWidth / 2,),
+                        return Tooltip(
+                          message: isPlaying ? "Pause" : "Play",
+                          waitDuration: AppState.toolTipDuration,
+                          child: SizedBox(
+                            width: widget.buttonWidth,
+                            child: IconButton(
+                              onPressed: (loopEndIndex == loopStartIndex) ? null : () {
+                                widget.timeline.isPlaying.value = !isPlaying;
+                              },
+                              icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: widget.buttonWidth / 2,),
+                            ),
                           ),
                         );
                       },
@@ -359,8 +368,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
       if (loopStart == i || loopEnd == i)
       {
-        final FaIcon startIcon = FaIcon(FontAwesomeIcons.caretRight, color: Theme.of(context).primaryColorLight,);
-        final FaIcon endIcon = FaIcon(FontAwesomeIcons.caretLeft, color: Theme.of(context).primaryColorLight,);
+        final Widget startIcon = Tooltip(message: "Loop Start Marker", waitDuration: AppState.toolTipDuration, child: FaIcon(FontAwesomeIcons.caretRight, color: Theme.of(context).primaryColorLight,));
+        final Widget endIcon = Tooltip(message: "Loop End Marker", waitDuration: AppState.toolTipDuration, child: FaIcon(FontAwesomeIcons.caretLeft, color: Theme.of(context).primaryColorLight,));
 
         final SizedBox stack = SizedBox(
           width: _cellWidth,
@@ -543,45 +552,49 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
               return ValueListenableBuilder<bool>(
                 valueListenable: widget.timeline.isPlaying,
                 builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
-                  return InkWell(
-                    onTap: () {
-                      widget.timeline.selectFrame(index: i);
-                      if (!isPlaying)
-                      {
-                        final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-                        _frameTimeOverlay = KPixOverlay(
-                          entry: OverlayEntry(
-                            builder: (final BuildContext context) => Stack(
-                              children: <Widget>[
-                                ModalBarrier(
-                                  color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                                ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.all(options.padding),
-                                      child: FrameTimeWidget(frame: currentFrame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                  return Tooltip(
+                    message: "Change Duration",
+                    waitDuration: AppState.toolTipDuration,
+                    child: InkWell(
+                      onTap: () {
+                        widget.timeline.selectFrame(index: i);
+                        if (!isPlaying)
+                        {
+                          final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+                          _frameTimeOverlay = KPixOverlay(
+                            entry: OverlayEntry(
+                              builder: (final BuildContext context) => Stack(
+                                children: <Widget>[
+                                  ModalBarrier(
+                                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.all(options.padding),
+                                        child: FrameTimeWidget(frame: currentFrame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
+                          );
+                          _frameTimeOverlay.show(context: context);
+                        }
+                      },
+                      child: Container(
+                        height: height,
+                        width: _cellWidth,
+                        color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                        child: Center(
+                          child: Text(
+                            "1/$fps",
+                            textAlign: TextAlign.center,
+                            style: isSelected ? Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold) : Theme.of(context).textTheme.titleSmall,
                           ),
-                        );
-                        _frameTimeOverlay.show(context: context);
-                      }
-                    },
-                    child: Container(
-                      height: height,
-                      width: _cellWidth,
-                      color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
-                      child: Center(
-                        child: Text(
-                          "1/$fps",
-                          textAlign: TextAlign.center,
-                          style: isSelected ? Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold) : Theme.of(context).textTheme.titleSmall,
                         ),
                       ),
                     ),
@@ -656,13 +669,17 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             return ValueListenableBuilder<bool>(
                                 valueListenable: widget.timeline.isPlaying,
                                 builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                  return SizedBox(
-                                    height: _cellHeight,
-                                    child: IconButton.outlined(
-                                        onPressed: loopStart == loopEnd ? null : () {
-                                          widget.timeline.isPlaying.value = !isPlaying;
-                                        },
-                                        icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: _transportIconSize,),
+                                  return Tooltip(
+                                    message: isPlaying ? "Pause" : "Play",
+                                    waitDuration: AppState.toolTipDuration,
+                                    child: SizedBox(
+                                      height: _cellHeight,
+                                      child: IconButton.outlined(
+                                          onPressed: loopStart == loopEnd ? null : () {
+                                            widget.timeline.isPlaying.value = !isPlaying;
+                                          },
+                                          icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: _transportIconSize,),
+                                      ),
                                     ),
                                   );
                                 },
@@ -684,11 +701,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     return ValueListenableBuilder<bool>(
                                       valueListenable: widget.timeline.isPlaying,
                                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                        return SizedBox(
-                                          height: _cellHeight,
-                                          child: IconButton.outlined(
-                                              onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex <= 0) ? null : () {widget.timeline.moveFrameLeft();},
-                                              icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                        return Tooltip(
+                                          message: "Move Frame Left",
+                                          waitDuration: AppState.toolTipDuration,
+                                          child: SizedBox(
+                                            height: _cellHeight,
+                                            child: IconButton.outlined(
+                                                onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex <= 0) ? null : () {widget.timeline.moveFrameLeft();},
+                                                icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                            ),
                                           ),
                                         );
                                       },
@@ -701,7 +722,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           const SizedBox(
                             width: _padding / 2,
                           ),
-                          FaIcon(FontAwesomeIcons.leftRight, size: _layerIconSize, color: Theme.of(context).primaryColorLight,),
+                          Tooltip(
+                            message: "Move Frame",
+                            waitDuration: AppState.toolTipDuration,
+                            child: FaIcon(
+                              FontAwesomeIcons.leftRight,
+                              size: _layerIconSize,
+                              color: Theme.of(context).primaryColorLight,
+                            ),
+                          ),
                           const SizedBox(
                             width: _padding / 2,
                           ),
@@ -715,11 +744,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     return ValueListenableBuilder<bool>(
                                       valueListenable: widget.timeline.isPlaying,
                                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                        return SizedBox(
-                                          height: _cellHeight,
-                                          child: IconButton.outlined(
-                                              onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex >= frames.length - 1) ? null : () {widget.timeline.moveFrameRight();},
-                                              icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                        return Tooltip(
+                                          message: "Move Frame Right",
+                                          waitDuration: AppState.toolTipDuration,
+                                          child: SizedBox(
+                                            height: _cellHeight,
+                                            child: IconButton.outlined(
+                                                onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex >= frames.length - 1) ? null : () {widget.timeline.moveFrameRight();},
+                                                icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                            ),
                                           ),
                                         );
                                       },
@@ -738,11 +771,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             child: ValueListenableBuilder<bool>(
                               valueListenable: widget.timeline.isPlaying,
                               builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return SizedBox(
-                                  height: _cellHeight,
-                                  child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.addNewFrameLeft();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                return Tooltip(
+                                  message: "Add Frame Left",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: SizedBox(
+                                    height: _cellHeight,
+                                    child: IconButton.outlined(
+                                      onPressed: isPlaying ? null : () {widget.timeline.addNewFrameLeft();},
+                                      icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                    ),
                                   ),
                                 );
                               },
@@ -751,7 +788,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           const SizedBox(
                             width: _padding / 2,
                           ),
-                          FaIcon(FontAwesomeIcons.file, size: _layerIconSize, color: Theme.of(context).primaryColorLight,),
+                          Tooltip(
+                            message: "Add Frame",
+                            waitDuration: AppState.toolTipDuration,
+                            child: FaIcon(
+                              FontAwesomeIcons.file,
+                              size: _layerIconSize,
+                              color: Theme.of(context).primaryColorLight,
+                            ),
+                          ),
                           const SizedBox(
                             width: _padding / 2,
                           ),
@@ -759,11 +804,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             child: ValueListenableBuilder<bool>(
                               valueListenable: widget.timeline.isPlaying,
                               builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return SizedBox(
-                                  height: _cellHeight,
-                                  child: IconButton.outlined(
-                                    onPressed: isPlaying ? null : () {widget.timeline.addNewFrameRight();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                return Tooltip(
+                                  message: "Add Frame Right",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: SizedBox(
+                                    height: _cellHeight,
+                                    child: IconButton.outlined(
+                                      onPressed: isPlaying ? null : () {widget.timeline.addNewFrameRight();},
+                                      icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                    ),
                                   ),
                                 );
                               },
@@ -778,11 +827,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             child: ValueListenableBuilder<bool>(
                                 valueListenable: widget.timeline.isPlaying,
                                 builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                  return SizedBox(
-                                    height: _cellHeight,
-                                    child: IconButton.outlined(
-                                        onPressed: isPlaying ? null : () {widget.timeline.copyFrameLeft();},
-                                        icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                  return Tooltip(
+                                    message: "Copy Frame Left",
+                                    waitDuration: AppState.toolTipDuration,
+                                    child: SizedBox(
+                                      height: _cellHeight,
+                                      child: IconButton.outlined(
+                                          onPressed: isPlaying ? null : () {widget.timeline.copyFrameLeft();},
+                                          icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                      ),
                                     ),
                                   );
                                 },
@@ -791,7 +844,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           const SizedBox(
                             width: _padding / 2,
                           ),
-                          FaIcon(FontAwesomeIcons.copy, size: _layerIconSize, color: Theme.of(context).primaryColorLight,),
+                          Tooltip(
+                            message: "Copy Frame",
+                            waitDuration: AppState.toolTipDuration,
+                            child: FaIcon(
+                              FontAwesomeIcons.copy,
+                              size: _layerIconSize,
+                              color: Theme.of(context).primaryColorLight,
+                            ),
+                          ),
                           const SizedBox(
                             width: _padding / 2,
                           ),
@@ -799,11 +860,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             child: ValueListenableBuilder<bool>(
                               valueListenable: widget.timeline.isPlaying,
                               builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return SizedBox(
-                                  height: _cellHeight,
-                                  child: IconButton.outlined(
-                                      onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
-                                      icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                return Tooltip(
+                                  message: "Copy Frame Right",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: SizedBox(
+                                    height: _cellHeight,
+                                    child: IconButton.outlined(
+                                        onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
+                                        icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                    ),
                                   ),
                                 );
                               },
@@ -818,11 +883,15 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           return ValueListenableBuilder<bool>(
                             valueListenable: widget.timeline.isPlaying,
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                              return SizedBox(
-                                height: _cellHeight,
-                                child: IconButton.outlined(
-                                    onPressed: isPlaying || frames.length <= 1 ? null : () { widget.timeline.deleteFrame(); },
-                                    icon: const FaIcon(FontAwesomeIcons.trash, size: _transportIconSize),
+                              return Tooltip(
+                                message: "Delete Frame",
+                                waitDuration: AppState.toolTipDuration,
+                                child: SizedBox(
+                                  height: _cellHeight,
+                                  child: IconButton.outlined(
+                                      onPressed: isPlaying || frames.length <= 1 ? null : () { widget.timeline.deleteFrame(); },
+                                      icon: const FaIcon(FontAwesomeIcons.trash, size: _transportIconSize),
+                                  ),
                                 ),
                               );
                             },

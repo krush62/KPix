@@ -18,6 +18,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_number_picker_widget.dart';
@@ -98,11 +99,11 @@ class _FrameTimeWidgetState extends State<FrameTimeWidget>
             const SizedBox(height: _padding,),
             Row(
               children: <Widget>[
-                Expanded(child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.xmark),)),
+                Expanded(child: Tooltip(message: "Cancel", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.xmark),))),
                 const SizedBox(width: _padding,),
-                Expanded(child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.checkDouble))),
+                Expanded(child: Tooltip(message: "Apply to All Frames", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.checkDouble)))),
                 const SizedBox(width: _padding,),
-                Expanded(child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.check))),
+                Expanded(child: Tooltip(message: "Apply to Current Frame", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.check)))),
               ],
             ),
           ],

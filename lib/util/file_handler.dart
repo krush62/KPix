@@ -34,6 +34,7 @@ import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
+import 'package:kpix/managers/history/history_frame.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
@@ -44,8 +45,10 @@ import 'package:kpix/managers/history/history_shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
+import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/helper.dart';
@@ -126,7 +129,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 };
 
 
-  const int fileVersion = 2;
+  const int fileVersion = 3;
   const String magicNumber = "4B504958";
   const String fileExtensionKpix = "kpix";
   const String fileExtensionKpal = "kpal";

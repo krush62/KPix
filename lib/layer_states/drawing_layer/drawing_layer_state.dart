@@ -229,7 +229,7 @@ class DrawingLayerState extends RasterableLayerState
   {
     final CoordinateColorMap allColorPixels = CoordinateColorMap();
     final AppState appState = GetIt.I.get<AppState>();
-    bool hasSelection = appState.currentLayer == this && appState.selectionState.selection.hasValues();
+    bool hasSelection = appState.timeline.getCurrentLayer() == this && appState.selectionState.selection.hasValues();
     if (layerStack != null)
     {
       hasSelection = false;
@@ -318,7 +318,7 @@ class DrawingLayerState extends RasterableLayerState
   void rasterInline()
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final SelectionList? selectionList = appState.getSelectedLayer() == this ? appState.selectionState.selection : null;
+    final SelectionList? selectionList = appState.timeline.getCurrentLayer() == this ? appState.selectionState.selection : null;
     final List<LayerState> layers = <LayerState>[];
     for (int i = 0; i < appState.layerCount; i++)
     {

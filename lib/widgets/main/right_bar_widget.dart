@@ -219,7 +219,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                       if (currentFrame != null)
                                       {
                                         return ListenableBuilder(
-                                          listenable: _appState.layerListChangeNotifier,
+                                          listenable: _appState.timeline.layerChangeNotifier,
                                           builder: (final BuildContext context, final Widget? child)
                                           {
                                             return Column(children: _createWidgetList(layers: _appState.timeline.frames.value[frameIndex].layerList.value),);
@@ -256,7 +256,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                 valueListenable: _appState.layerSettingsVisibleNotifier,
                 builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
                   Widget settingsWidget = const SizedBox.shrink();
-                  final LayerState? currentLayer = _appState.getSelectedLayer();
+                  final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
                   if (currentLayer != null && currentLayer is RasterableLayerState)
                   {
                     currentLayer.layerSettings.editStarted = true;

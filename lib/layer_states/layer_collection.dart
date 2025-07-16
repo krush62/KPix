@@ -27,6 +27,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -70,24 +71,17 @@ class LayerCollection with ChangeNotifier
     return _layers.first;
   }
 
-  LayerState getLayer({required final int index})
+  LayerCollection({required final List<LayerState> layers, final LayerState? selectedLayer})
   {
-    return _layers[index];
+    _addLayers(layers: layers, selectedLayer: selectedLayer);
   }
 
-  void clear({final bool notify = true})
-  {
-    _layers.clear();
-    _currentLayer.value = null;
-    if (notify)
-    {
-      notifyListeners();
-    }
-  }
+  LayerCollection.empty();
 
-  void replaceLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
+
+
+  void _addLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
   {
-    clear(notify: false);
     for (final LayerState layer in layers)
     {
       _layers.add(layer);
@@ -103,6 +97,35 @@ class LayerCollection with ChangeNotifier
         selectLayer(newLayer: _layers.first);
       }
     }
+  }
+
+  bool contains({required final LayerState layer})
+  {
+    return _layers.contains(layer);
+  }
+
+
+  LayerState getLayer({required final int index})
+  {
+    return _layers[index];
+  }
+
+  void clear({final bool notify = true})
+  {
+    _layers.clear();
+    _currentLayer.value = null;
+    if (notify)
+    {
+      notifyListeners();
+    }
+  }
+
+
+
+  void replaceLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
+  {
+    clear(notify: false);
+    _addLayers(layers: layers, selectedLayer: selectedLayer);
     notifyListeners();
   }
 
@@ -606,6 +629,22 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
+  int getFrameIndex()
+  {
+    int index = -1;
+    final AppState appState = GetIt.I.get<AppState>();
+    for (int i = 0; i < appState.timeline.frames.value.length; i++)
+    {
+      if (appState.timeline.frames.value[i].layerList.value == this)
+      {
+        index = i;
+        break;
+      }
+    }
+
+    return index;
+  }
+
   void reRasterAllDrawingLayers()
   {
     for (int i = _layers.length - 1; i >= 0; i--)
@@ -622,20 +661,14 @@ class LayerCollection with ChangeNotifier
   //RASTER LAYER ABOVE
   void layerRasterDone({required final LayerState layer})
   {
-    LayerState? nextLayerState;
     for (int i = getLayerPosition(state: layer) - 1; i >= 0; i--)
     {
       final LayerState ls = getLayer(index: i);
       if (ls is RasterableLayerState)
       {
-        nextLayerState = ls;
+        ls.doManualRaster = true;
         break;
       }
-    }
-
-    if (nextLayerState != null && nextLayerState is RasterableLayerState)
-    {
-      nextLayerState.doManualRaster = true;
     }
   }
 

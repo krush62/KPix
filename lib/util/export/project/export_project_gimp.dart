@@ -107,7 +107,7 @@ Future<Uint8List?> getGimpData({required final ExportData exportData, required f
             {
               final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
               ColorReference? colAtPos;
-              if (appState.getSelectedLayer() == layer)
+              if (appState.timeline.getCurrentLayer() == layer)
               {
                 colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
               }

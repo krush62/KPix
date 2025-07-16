@@ -24,15 +24,22 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 
-class Frame with ChangeNotifier
+class Frame
 {
   static const int defaultFps = 20;
-  final ValueNotifier<int> fps = ValueNotifier<int>(0);
-  final ValueNotifier<LayerCollection> layerList = ValueNotifier<LayerCollection>(LayerCollection());
+  final ValueNotifier<int> fps;
+  final ValueNotifier<LayerCollection> layerList;
 
   int get frameTime => (1000.0 / fps.value.toDouble()).toInt();
 
-  void selectionChanged()
+  Frame({required final LayerCollection layerList, required final int fps}) : layerList = ValueNotifier<LayerCollection>(layerList), fps = ValueNotifier<int>(fps);
+
+  Frame.empty() : layerList = ValueNotifier<LayerCollection>(LayerCollection.empty()), fps = ValueNotifier<int>(defaultFps);
+}
+
+class LayerChangeNotifier with ChangeNotifier
+{
+  void reportChange()
   {
     notifyListeners();
   }
@@ -40,32 +47,62 @@ class Frame with ChangeNotifier
 
 class Timeline
 {
-  Frame? _selectedFrame;
-  final ValueNotifier<int> _selectedFrameIndex = ValueNotifier<int>(-1);
-  final ValueNotifier<List<Frame>> frames = ValueNotifier<List<Frame>>(<Frame>[]);
-  final ValueNotifier<int> totalFrameTime = ValueNotifier<int>(0);
-  final ValueNotifier<bool> isPlaying = ValueNotifier<bool>(false);
-  final ValueNotifier<int> loopStartIndex = ValueNotifier<int>(0);
-  final ValueNotifier<int> loopEndIndex = ValueNotifier<int>(0);
+  final ValueNotifier<int> _selectedFrameIndex;
+  final ValueNotifier<List<Frame>> frames;
+  final ValueNotifier<int> totalFrameTime;
+  final ValueNotifier<bool> isPlaying;
+  final ValueNotifier<int> loopStartIndex;
+  final ValueNotifier<int> loopEndIndex;
+  final LayerChangeNotifier layerChangeNotifier = LayerChangeNotifier();
 
+  Timeline({required final int selectedFrameIndex, required final List<Frame> frames, required final int loopStartIndex, required final int loopEndIndex})
+  : frames = ValueNotifier<List<Frame>>(frames),
+    _selectedFrameIndex = ValueNotifier<int>(selectedFrameIndex),
+    loopStartIndex = ValueNotifier<int>(loopStartIndex),
+    loopEndIndex = ValueNotifier<int>(loopEndIndex),
+    isPlaying = ValueNotifier<bool>(false),
+    totalFrameTime = ValueNotifier<int>(0)
+  {
+
+    isPlaying.addListener(() {
+      _playChanged();
+    },);
+  }
+
+  Timeline.empty()
+  : frames = ValueNotifier<List<Frame>>(<Frame>[]),
+    _selectedFrameIndex = ValueNotifier<int>(-1),
+    loopStartIndex = ValueNotifier<int>(-1),
+    loopEndIndex = ValueNotifier<int>(-1),
+    isPlaying = ValueNotifier<bool>(false),
+    totalFrameTime = ValueNotifier<int>(0)
+  {
+
+
+    isPlaying.addListener(() {
+      _playChanged();
+    },);
+  }
+
+  void setData({required final int selectedFrameIndex, required final List<Frame> frames, required final int loopStartIndex, required final int loopEndIndex})
+  {
+    this.frames.value = frames;
+    this.loopStartIndex.value = loopStartIndex;
+    this.loopEndIndex.value = loopEndIndex;
+    _selectedFrameIndex.value = selectedFrameIndex;
+  }
 
   void init({required final AppState appState})
   {
     final List<Frame> frameList = <Frame>[];
-    final Frame f = Frame();
+    final Frame f = Frame.empty();
     f.layerList.value.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
     f.fps.value = Frame.defaultFps;
     f.fps.addListener(() => calculateTotalFrameTime());
     frameList.add(f);
 
-    _selectedFrame = frameList[0];
     frames.value = frameList;
     calculateTotalFrameTime();
-    _selectedFrameIndex.addListener(() {
-      _selectedFrame!.selectionChanged();
-      _selectedFrame = frames.value[_selectedFrameIndex.value];
-      _selectedFrame!.selectionChanged();
-    },);
     _selectedFrameIndex.value = 0;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
@@ -77,24 +114,39 @@ class Timeline
 
   int get selectedFrameIndex => _selectedFrameIndex.value;
 
-  Frame? get selectedFrame => _selectedFrame;
+  Frame? get selectedFrame
+  {
+    if (_selectedFrameIndex.value >= 0 && _selectedFrameIndex.value < frames.value.length)
+    {
+      return frames.value[_selectedFrameIndex.value];
+    }
+    else
+    {
+      return null;
+    }
+  }
 
   ValueNotifier<int> get selectedFrameIndexNotifier => _selectedFrameIndex;
+
+  LayerState? getCurrentLayer()
+  {
+    return selectedFrame?.layerList.value.currentLayer;
+  }
 
   void selectFrame({required final int index, final int? layerIndex})
   {
     if (index >= 0 && index < frames.value.length)
     {
-      final LayerState? oldLayer = _selectedFrame!.layerList.value.getSelectedLayer();
+      final LayerState? oldLayer = selectedFrame?.layerList.value.getSelectedLayer();
       _selectedFrameIndex.value = index;
       LayerState? layerToSelect;
       if (layerIndex != null)
       {
-        layerToSelect = _selectedFrame!.layerList.value.getLayer(index: layerIndex);
+        layerToSelect = frames.value[index].layerList.value.getLayer(index: layerIndex);
       }
-      else if (selectedFrame != null)
+      else
       {
-        layerToSelect = _selectedFrame!.layerList.value.getSelectedLayer();
+        layerToSelect = frames.value[index].layerList.value.getSelectedLayer();
 
       }
 
@@ -102,9 +154,10 @@ class Timeline
       {
         GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer);
       }
-
+      layerChangeNotifier.reportChange();
     }
   }
+
 
   void _playChanged()
   {
@@ -119,7 +172,6 @@ class Timeline
       {
         isPlaying.value = false;
       }
-
     }
   }
 
@@ -161,11 +213,11 @@ class Timeline
 
   Future<void> _play() async
   {
-    if (_selectedFrame != null)
+    if (selectedFrame != null)
     {
       while(isPlaying.value)
       {
-        await Future<void>.delayed(Duration(milliseconds: _selectedFrame!.frameTime));
+        await Future<void>.delayed(Duration(milliseconds: selectedFrame!.frameTime));
         if (isPlaying.value)
         {
           selectNextFrame();
@@ -222,7 +274,7 @@ class Timeline
 
   void _addNewFrame({required final bool right, required final bool copy})
   {
-    final Frame f = Frame();
+    final Frame f = Frame.empty();
     final AppState appState = GetIt.I.get<AppState>();
 
     if (copy)
@@ -326,6 +378,23 @@ class Timeline
   void resetEndMarker()
   {
     loopEndIndex.value = frames.value.length - 1;
+  }
+
+  List<LayerCollection> findCollectionsForLayer({required final LayerState? layer})
+  {
+    final List<LayerCollection> list = <LayerCollection>[];
+    if (layer != null)
+    {
+      for (final Frame f in frames.value)
+      {
+        if (f.layerList.value.contains(layer: layer))
+        {
+          list.add(f.layerList.value);
+          break;
+        }
+      }
+    }
+    return list;
   }
 
 

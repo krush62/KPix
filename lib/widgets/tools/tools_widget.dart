@@ -54,19 +54,19 @@ class _ToolsWidgetState extends State<ToolsWidget>
   void initState()
   {
     super.initState();
-    _appState.currentLayerNotifier.addListener(currentLayerTypeChanged);
+    _appState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);    
   }
 
   @override
   void dispose()
   {
-    _appState.currentLayerNotifier.removeListener(currentLayerTypeChanged);
+    _appState.timeline.layerChangeNotifier.removeListener(currentLayerTypeChanged);
     super.dispose();
   }
 
   void currentLayerTypeChanged()
   {
-    if (_appState.currentLayer is ShadingLayerState &&
+    if (_appState.timeline.getCurrentLayer() is ShadingLayerState &&
         (_appState.selectedTool == ToolType.select || _appState.selectedTool == ToolType.pick))
     {
       _appState.setToolSelection(tool: ToolType.pencil);
@@ -78,10 +78,11 @@ class _ToolsWidgetState extends State<ToolsWidget>
   {
     return Padding(
       padding: EdgeInsets.all(_toolsWidgetOptions.padding),
-      child: ValueListenableBuilder<LayerState?>(
-        valueListenable: _appState.currentLayerNotifier,
-        builder: (final BuildContext context, final LayerState? currentLayer, final Widget? child)
+      child: ListenableBuilder(
+        listenable: _appState.timeline.layerChangeNotifier,
+        builder: (final BuildContext context, final Widget? child)
         {
+          final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
           final bool isShadingLayer = currentLayer is ShadingLayerState;
           return ValueListenableBuilder<ToolType>(
             valueListenable: _appState.selectedToolNotifier,

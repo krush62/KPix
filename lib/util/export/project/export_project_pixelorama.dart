@@ -107,7 +107,7 @@ Future<Uint8List?> getPixeloramaData({required final ExportData exportData, requ
           {
             final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
             ColorReference? colAtPos;
-            if (appState.getSelectedLayer() == layer)
+            if (appState.timeline.getCurrentLayer() == layer)
             {
               colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
             }

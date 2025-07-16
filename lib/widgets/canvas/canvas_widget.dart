@@ -288,7 +288,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (details.buttons == kSecondaryButton && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = true;
-      if (!_shaderOptions.isEnabled.value && !(_appState.currentLayer != null && _appState.currentLayer is ShadingLayerState))
+      if (!_shaderOptions.isEnabled.value && !(_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
       {
         _previousTool = _appState.selectedTool;
         _appState.setToolSelection(tool: ToolType.pick);
@@ -350,7 +350,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     else if (_secondaryIsDown.value && details.kind == PointerDeviceKind.mouse)
     {
       _secondaryIsDown.value = false;
-      if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer is ShadingLayerState))
+      if (_shaderOptions.isEnabled.value || (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
       {
         final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
         if (currentDirection == ShaderDirection.left)
@@ -466,15 +466,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
         }
       }
 
-      if (_stylusLongMoveHorizontal.value && _appState.currentLayer != null)
+      if (_stylusLongMoveHorizontal.value && _appState.timeline.getCurrentLayer() != null)
       {
-        if (_appState.currentLayer is RasterableLayerState)
+        if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
         {
           _appState.setToolSize(-toolSizeSteps, _stylusToolStartSize);
         }
-        else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+        else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
         {
-           final ReferenceLayerState refLayer = _appState.currentLayer! as ReferenceLayerState;
+           final ReferenceLayerState refLayer = _appState.timeline.getCurrentLayer()! as ReferenceLayerState;
            refLayer.setZoomSliderValue(newVal: -toolSizeSteps + _stylusToolStartSize);
         }
 
@@ -603,30 +603,30 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          if (_appState.currentLayer != null)
+          if (_appState.timeline.getCurrentLayer() != null)
           {
-            if (_appState.currentLayer is RasterableLayerState)
+            if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
             {
               _appState.setToolSize(1, _appState.getCurrentToolSize());
             }
-            else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+            else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
             {
-              final ReferenceLayerState refLayer = _appState.currentLayer! as ReferenceLayerState;
+              final ReferenceLayerState refLayer = _appState.timeline.getCurrentLayer()! as ReferenceLayerState;
               refLayer.increaseZoom();
             }
           }
         }
         else
         {
-          if (_appState.currentLayer != null)
+          if (_appState.timeline.getCurrentLayer() != null)
           {
-            if (_appState.currentLayer is RasterableLayerState)
+            if (_appState.timeline.getCurrentLayer() is RasterableLayerState)
             {
               _appState.setToolSize(-1, _appState.getCurrentToolSize());
             }
-            else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+            else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
             {
-              final ReferenceLayerState refLayer = _appState.currentLayer! as ReferenceLayerState;
+              final ReferenceLayerState refLayer = _appState.timeline.getCurrentLayer()! as ReferenceLayerState;
               refLayer.decreaseZoom();
             }
           }
@@ -650,11 +650,11 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       {
         if (ev.scrollDelta.dy < 0.0)
         {
-          _appState.moveUpLayer(state: _appState.currentLayer!);
+          _appState.moveUpLayer(layerState: _appState.timeline.getCurrentLayer());
         }
         else
         {
-          _appState.moveDownLayer(state: _appState.currentLayer!);
+          _appState.moveDownLayer(layerState: _appState.timeline.getCurrentLayer());
         }
       }
       //CHANGE COLOR SELECTION
@@ -704,7 +704,7 @@ class _CanvasWidgetState extends State<CanvasWidget> {
       //if (!_stylusLongMoveStarted.value && !_isDragging.value && _cursorPos.value != null)
       if (diffMs <= _stylusPrefs.stylusPickMaxDuration.value && _cursorPos.value != null)
       {
-        if (_shaderOptions.isEnabled.value || (_appState.currentLayer != null && _appState.currentLayer is ShadingLayerState))
+        if (_shaderOptions.isEnabled.value || (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer() is ShadingLayerState))
         {
           final ShaderDirection currentDirection = _shaderOptions.shaderDirection.value;
           if (currentDirection == ShaderDirection.left)
@@ -784,13 +784,13 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _timerStylusRunning = false;
     _stylusLongMoveStarted.value = true;
     _stylusZoomStartLevel = _appState.zoomFactor;
-    if (_appState.currentLayer.runtimeType == DrawingLayerState)
+    if (_appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
     {
       _stylusToolStartSize = _appState.getCurrentToolSize();
     }
-    else if (_appState.currentLayer.runtimeType == ReferenceLayerState)
+    else if (_appState.timeline.getCurrentLayer().runtimeType == ReferenceLayerState)
     {
-      _stylusToolStartSize = (_appState.currentLayer! as ReferenceLayerState).zoomSliderValue;
+      _stylusToolStartSize = (_appState.timeline.getCurrentLayer()! as ReferenceLayerState).zoomSliderValue;
     }
 
   }

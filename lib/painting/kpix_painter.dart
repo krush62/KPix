@@ -215,7 +215,7 @@ class KPixPainter extends CustomPainter
   @override
   void paint(final Canvas canvas, final Size size)
   {
-    if (_appState.getSelectedLayer() != null)
+    if (_appState.timeline.getCurrentLayer() != null)
     {
       final IToolPainter? currentToolPainter = toolPainterMap[_appState.selectedTool];
       if (currentToolPainter != toolPainter)
@@ -251,7 +251,7 @@ class KPixPainter extends CustomPainter
         primaryDown: _primaryDown.value,
         secondaryDown: _secondaryDown.value,
         primaryPressStart: _primaryPressStart.value,
-        currentLayer: _appState.getSelectedLayer()!,
+        currentLayer: _appState.timeline.getCurrentLayer()!,
         isPlaying: _appState.timeline.isPlaying.value,
       );
 

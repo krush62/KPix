@@ -38,6 +38,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
@@ -96,54 +97,47 @@ class MainToolbarWidget extends StatelessWidget
               },
             ),
           ),
-          ValueListenableBuilder<int>(
-            valueListenable: GetIt.I.get<AppState>().timeline.selectedFrameIndexNotifier,
-            builder: (final BuildContext context1, final int selectedFrameIndex, final Widget? child1) {
-              return ValueListenableBuilder<LayerState?>(
-                valueListenable: GetIt.I.get<AppState>().currentLayerNotifier,
-                builder: (final BuildContext context, final LayerState? layer, final Widget? child) {
-                  if (layer != null)
-                  {
-                    Widget contentWidget;
-                    if (layer.runtimeType == ReferenceLayerState)
-                    {
-                      contentWidget = ExcludeFocus(child: ReferenceLayerOptionsWidget(referenceState: layer as ReferenceLayerState));
-                    }
-                    else if (layer.runtimeType == GridLayerState)
-                    {
-                      contentWidget = ExcludeFocus(child: GridLayerOptionsWidget(gridState: layer as GridLayerState));
-                    }
-                    else if (layer is RasterableLayerState)
-                    {
-                      contentWidget = const Column(
-                        children: <Widget>[
-                          ExcludeFocus(child: ToolsWidget()),
-                          Expanded(child: ToolSettingsWidget()),
-                        ],
-                      );
-                    }
-                    else
-                    {
-                      return const SizedBox.shrink();
-                    }
+          ValueListenableBuilder<List<Frame>>(
+            valueListenable: GetIt.I.get<AppState>().timeline.frames,
+            builder: (final BuildContext context, final List<Frame> frames, final Widget? child) {
+              final LayerState? currentLayer = GetIt.I.get<AppState>().timeline.getCurrentLayer();
+              if (frames.isNotEmpty && currentLayer != null)
+              {
+                Widget contentWidget;
+                if (currentLayer.runtimeType == ReferenceLayerState)
+                {
+                  contentWidget = ExcludeFocus(child: ReferenceLayerOptionsWidget(referenceState: currentLayer as ReferenceLayerState));
+                }
+                else if (currentLayer.runtimeType == GridLayerState)
+                {
+                  contentWidget = ExcludeFocus(child: GridLayerOptionsWidget(gridState: currentLayer as GridLayerState));
+                }
+                else if (currentLayer is RasterableLayerState)
+                {
+                  contentWidget = const Column(
+                    children: <Widget>[
+                      ExcludeFocus(child: ToolsWidget()),
+                      Expanded(child: ToolSettingsWidget()),
+                    ],
+                  );
+                }
+                else
+                {
+                  return const SizedBox.shrink();
+                }
 
-                    return SizedBox(
-                      width: double.infinity,
-                      height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight.toDouble(),
-                      child: contentWidget,
+                return SizedBox(
+                  width: double.infinity,
+                  height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight.toDouble(),
+                  child: contentWidget,
 
-                    );
-                  }
-                  else
-                  {
-                    return const SizedBox.shrink();
-                  }
-                },
-              );
+                );
+              }
+              else
+              {
+                return const SizedBox.shrink();
+              }
             },
-
-
-
           ),
         ],
       ),

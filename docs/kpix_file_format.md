@@ -35,7 +35,7 @@ The kpix file format consists of the following three consecutive sections:
 
 ### Header
 * magic_number ``ubyte (4)`` //``4B 50 49 58``
-* file_format_version ``ubyte (1)`` // currently: ``02``
+* file_format_version ``ubyte (1)`` // currently: ``03``
 
 ### Palette
 * ramp_count ``ubyte (1)`` // how many color ramps in the palette
@@ -58,7 +58,7 @@ The kpix file format consists of the following three consecutive sections:
 ### Image 
 * columns ``ushort (1)`` // width of image
 * rows ``ushort (1)`` // height of image
-* layer_count ``ubyte (1)`` // how many layers
+* layer_count ``ushort (1)`` // how many layers
 * Layers ``(layer_count)``
   * type ``ubyte (1)`` // ``01``= drawing layer, ``02``= reference layer, ``03``= grid layer, ``04``= shading layer, ``05``= dither layer
   * visibility ``ubyte (1)`` // ``00``= visible, ``01`` = hidden
@@ -113,7 +113,7 @@ The kpix file format consists of the following three consecutive sections:
   * vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
   * vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
 
-  // data for type ``04`` (shading layer/dither layer)
+  // data for type ``04`` and ``05`` (shading layer/dither layer)
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``02`` = locked
   * shading_step_limit_low ``ubyte (1)`` // 1...16
   * shading_step_limit_high ``ubyte (1)`` // 1...16
@@ -123,6 +123,14 @@ The kpix file format consists of the following three consecutive sections:
     * y ``ushort (1)`` // y position
     * shading ``byte (1)`` // how many shading steps -5...5
     
-  
+  ### Timeline
+* frames_count ``ubyte (1)`` // how many frames in the timeline
+* start_frame ``ubyte (1)`` // first loop frame
+* end_frame ``ubyte (1)`` // last loop frame
+* frames ``(frames_count)``
+  * fps ``ubyte (1)`` // frames per second
+  * frame_layer_count ``ubyte (1)`` // how many layers in the frame
+  * Frame Layers ``(frame_layer_count)``
+    * layer_index ``ubyte (1)`` // index of the layer (see layer list in image section)
   
   

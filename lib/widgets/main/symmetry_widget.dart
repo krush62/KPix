@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -235,8 +237,8 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         return KPixSlider(
                                           min: 1.0,
                                           value: horVal,
-                                          max: GetIt.I.get<AppState>().canvasSize.x - 1,
-                                          divisions: (GetIt.I.get<AppState>().canvasSize.x - 2) * 2,
+                                          max: max(GetIt.I.get<AppState>().canvasSize.x - 1, 1.0),
+                                          divisions: max((GetIt.I.get<AppState>().canvasSize.x - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: horActivated ? (final double value) {
                                             widget.state.horizontalValue.value = value;
@@ -318,8 +320,8 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         return KPixSlider(
                                           min: 1.0,
                                           value: horVal,
-                                          max: GetIt.I.get<AppState>().canvasSize.y - 1,
-                                          divisions: (GetIt.I.get<AppState>().canvasSize.y - 2) * 2,
+                                          max: max(GetIt.I.get<AppState>().canvasSize.y - 1, 1.0),
+                                          divisions: max((GetIt.I.get<AppState>().canvasSize.y - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: vertActivated ? (final double value) {
                                             widget.state.verticalValue.value = value;

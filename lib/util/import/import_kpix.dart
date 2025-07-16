@@ -264,7 +264,16 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     final int height = byteData.getUint16(offset);
     offset+=2;
     final CoordinateSetI canvasSize = CoordinateSetI(x: width, y: height);
-    final int layerCount = byteData.getUint8(offset++);
+    int layerCount = 0;
+    if (fVersion >= 3)
+    {
+      layerCount = byteData.getUint16(offset);
+      offset+=2;
+    }
+    else
+    {
+      layerCount = byteData.getUint8(offset++);
+    }
     if (layerCount < 1) return LoadFileSet(status: "No layer found");
     final List<HistoryLayer> layerList = <HistoryLayer>[];
     for (int i = 0; i < layerCount; i++)
@@ -1020,8 +1029,37 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
       }
     }
+
+    HistoryTimeline hTimeline;
+    if (fVersion < 3)
+    {
+      final HistoryFrame hFrame = HistoryFrame(fps: Frame.defaultFps, layers: layerList, selectedLayerIndex: 0);
+      hTimeline = HistoryTimeline(frames: <HistoryFrame>[hFrame], loopStart: 0, loopEnd: 0, selectedFrameIndex: 0);
+    }
+    else
+    {
+      final int framesCount = byteData.getUint8(offset++);
+      final int startFrame = byteData.getUint8(offset++);
+      final int endFrame = byteData.getUint8(offset++);
+
+      final List<HistoryFrame> hFrames = <HistoryFrame>[];
+      for (int i = 0; i < framesCount; i++)
+      {
+        final List<HistoryLayer> hLayers = <HistoryLayer>[];
+        final int fps = byteData.getUint8(offset++);
+        final int layerCount = byteData.getUint8(offset++);
+        for (int j = 0; j < layerCount; j++)
+        {
+          final int layerIndex = byteData.getUint8(offset++);
+          hLayers.add(layerList[layerIndex]);
+        }
+        hFrames.add(HistoryFrame(fps: fps, layers: hLayers, selectedLayerIndex: 0));
+      }
+      hTimeline = HistoryTimeline(frames: hFrames, loopStart: startFrame, loopEnd: endFrame, selectedFrameIndex: 0);
+    }
+
     final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList[0]);
-    final HistoryState historyState = HistoryState(layerList: layerList, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, selectedLayerIndex: 0, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
+    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);
   }

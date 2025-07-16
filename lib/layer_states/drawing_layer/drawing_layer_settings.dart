@@ -293,7 +293,7 @@ class DrawingLayerSettings extends LayerSettings {
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final SelectionList? selectionList = appState.getSelectedLayer() == layerState ? appState.selectionState.selection : null;
+    final SelectionList? selectionList = appState.timeline.getCurrentLayer() == layerState ? appState.selectionState.selection : null;
 
     List<LayerState> layers;
     if (layerState.layerStack != null)

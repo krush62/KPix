@@ -29,6 +29,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/models/app_state.dart';
@@ -536,7 +537,7 @@ class StackCol<T> {
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          if (appState.selectionState.selection.hasValues() && i == appState.getSelectedLayerIndex() && layerStack == null)
+          if (appState.selectionState.selection.hasValues() && i == appState.timeline.selectedFrame!.layerList.value.getSelectedLayerIndex() && layerStack == null)
           {
             final Paint paint = Paint();
             for (final MapEntry<CoordinateSetI, ColorReference?> entry in appState.selectionState.selection.selectedPixels.entries)
@@ -559,6 +560,8 @@ class StackCol<T> {
     return recorder.endRecording().toImage(appState.canvasSize.x * scalingFactor, appState.canvasSize.y * scalingFactor);
   }
 
+
+  //TODO this definitely needs some work
   Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
   {
     if (loadFileSet.historyState != null)
@@ -574,11 +577,14 @@ class StackCol<T> {
 
       final ui.PictureRecorder recorder = ui.PictureRecorder();
       final Canvas canvas = Canvas(recorder);
-      for (int i = state.layerList.length - 1; i >= 0; i--)
+
+      final List<HistoryLayer> layerList = state.timeline.frames[0].layers;
+
+      for (int i = layerList.length - 1; i >= 0; i--)
       {
-        if (state.layerList[i].visibilityState == LayerVisibilityState.visible && state.layerList[i].runtimeType == HistoryDrawingLayer)
+        if (layerList[i].visibilityState == LayerVisibilityState.visible && layerList[i].runtimeType == HistoryDrawingLayer)
         {
-          final HistoryDrawingLayer historyDrawingLayer = state.layerList[i] as HistoryDrawingLayer;
+          final HistoryDrawingLayer historyDrawingLayer = layerList[i] as HistoryDrawingLayer;
           final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
           for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
           {

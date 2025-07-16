@@ -54,7 +54,7 @@ Future<Uint8List?> getAsepriteData({required final ExportData exportData, requir
           {
             final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
             ColorReference? colAtPos;
-            if (appState.getSelectedLayer() == layer)
+            if (appState.timeline.getCurrentLayer() == layer)
             {
               colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
             }

@@ -18,12 +18,12 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getGimpData({required final ImageExportData exportData, required final AppState appState}) async
+Future<Uint8List?> getGimpData({required final ImageExportData exportData, required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
   final List<Color> colorList = <ui.Color>[];
   final Map<ColorReference, int> colorMap = <ColorReference, int>{};
   int index = 0;
-  for (final KPalRampData kPalRampData in appState.colorRamps)
+  for (final KPalRampData kPalRampData in colorRamps)
   {
     for (int i = 0; i < kPalRampData.shiftedColors.length; i++)
     {
@@ -41,7 +41,7 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
       12 + //tattoo
       12 + //unit
       8 + //prop end
-      8 + (appState.layerCount * 8) + //layer addresses
+      8 + (layerCollection.length * 8) + //layer addresses
       8; //channel addresses
 
   //LAYER (without name and active layer prop)
@@ -85,66 +85,63 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
   final List<Uint8List> layerNames = <Uint8List>[];
   const int tileSize = 64;
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
-  for (int l = 0; l < appState.layerCount; l++)
+  for (int l = 0; l < layerCollection.length; l++)
   {
-    final LayerState? layer = appState.getLayerAt(index: l);
-    if (layer != null)
+    final LayerState layer = layerCollection.getLayer(index: l);
+    if (layer.runtimeType == DrawingLayerState)
     {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState layerState = layer as DrawingLayerState;
-        int x = 0;
-        int y = 0;
-        final List<List<int>> tileList = <List<int>>[];
-        do //TILING
-            {
-          final List<int> imgBytes = <int>[];
-          final int endX = min(x + tileSize, appState.canvasSize.x);
-          final int endY = min(y + tileSize, appState.canvasSize.y);
-          for (int b = y; b < endY; b++)
+      final DrawingLayerState layerState = layer as DrawingLayerState;
+      int x = 0;
+      int y = 0;
+      final List<List<int>> tileList = <List<int>>[];
+      do //TILING
           {
-            for (int a = x; a < endX; a++)
+        final List<int> imgBytes = <int>[];
+        final int endX = min(x + tileSize, canvasSize.x);
+        final int endY = min(y + tileSize, canvasSize.y);
+        for (int b = y; b < endY; b++)
+        {
+          for (int a = x; a < endX; a++)
+          {
+            final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
+            ColorReference? colAtPos;
+            if (layer.isSelected.value)
             {
-              final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
-              ColorReference? colAtPos;
-              if (appState.timeline.getCurrentLayer() == layer)
-              {
-                colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
-              }
-              colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
+              colAtPos = selection.getColorReference(coord: curCoord);
+            }
+            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
 
-              if (colAtPos == null)
+            if (colAtPos == null)
+            {
+              imgBytes.add(0);
+              imgBytes.add(0);
+            }
+            else
+            {
+              final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: l, coord: curCoord);
+              if (shade != 0)
               {
-                imgBytes.add(0);
-                imgBytes.add(0);
+                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
+                colAtPos = colAtPos.ramp.references[targetIndex];
               }
-              else
-              {
-                final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
-                if (shade != 0)
-                {
-                  final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-                  colAtPos = colAtPos.ramp.references[targetIndex];
-                }
-                imgBytes.add(colorMap[colAtPos]!);
-                imgBytes.add(255);
-              }
+              imgBytes.add(colorMap[colAtPos]!);
+              imgBytes.add(255);
             }
           }
-          final List<int> encData = const ZLibEncoder().encode(imgBytes);
-          tileList.add(encData);
-
-          x = (endX >= appState.canvasSize.x) ? 0 : endX;
-          y = (endX >= appState.canvasSize.x) ? endY : y;
         }
-        while (y < appState.canvasSize.y);
+        final List<int> encData = const ZLibEncoder().encode(imgBytes);
+        tileList.add(encData);
 
-        layerNames.add(utf8.encode("Layer$l"));
-        layerEncBytes.add(tileList);
-        drawingLayers.add(layerState);
+        x = (endX >= canvasSize.x) ? 0 : endX;
+        y = (endX >= canvasSize.x) ? endY : y;
       }
+      while (y < canvasSize.y);
+
+      layerNames.add(utf8.encode("Layer$l"));
+      layerEncBytes.add(tileList);
+      drawingLayers.add(layerState);
     }
-  }
+    }
 
   //CALCULATING SIZE
   bool activeLayerSet = false;
@@ -202,9 +199,9 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
 
   outBytes.setUint8(offset, 0);
   offset++;
-  outBytes.setUint32(offset, appState.canvasSize.x); //width;
+  outBytes.setUint32(offset, canvasSize.x); //width;
   offset+=4;
-  outBytes.setUint32(offset, appState.canvasSize.y); //height
+  outBytes.setUint32(offset, canvasSize.y); //height
   offset+=4;
   outBytes.setUint32(offset, 2); //base type (2=indexed)
   offset+=4;
@@ -291,9 +288,9 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
     setUint64(bytes: outBytes, offset: layerOffsetsInsertPositions[i], value: offset);
 
     final DrawingLayerState currentLayer = drawingLayers[i];
-    outBytes.setUint32(offset, appState.canvasSize.x);
+    outBytes.setUint32(offset, canvasSize.x);
     offset+=4;
-    outBytes.setUint32(offset, appState.canvasSize.y);
+    outBytes.setUint32(offset, canvasSize.y);
     offset+=4;
     outBytes.setUint32(offset, 5);
     offset+=4;
@@ -471,9 +468,9 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
 
     //HIERARCHY
     setUint64(bytes: outBytes, offset: hierarchyOffsetInsertPosition, value: offset);
-    outBytes.setUint32(offset, appState.canvasSize.x);
+    outBytes.setUint32(offset, canvasSize.x);
     offset+=4;
-    outBytes.setUint32(offset, appState.canvasSize.y);
+    outBytes.setUint32(offset, canvasSize.y);
     offset+=4;
     outBytes.setUint32(offset, 2);
     offset+=4;
@@ -491,9 +488,9 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
 
     //LEVEL1
     setUint64(bytes: outBytes, offset: pointerInsertToLevel1, value: offset);
-    outBytes.setUint32(offset, appState.canvasSize.x);
+    outBytes.setUint32(offset, canvasSize.x);
     offset+=4;
-    outBytes.setUint32(offset, appState.canvasSize.y);
+    outBytes.setUint32(offset, canvasSize.y);
     offset+=4;
     final List<int> tileOffsetsLv1 = <int>[];
     final List<List<int>> currentTiles = layerEncBytes[i];
@@ -520,17 +517,17 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
 
     //LEVEL2
     setUint64(bytes: outBytes, offset: pointerInsertToLevel2, value: offset);
-    outBytes.setUint32(offset, appState.canvasSize.x ~/ 2);
+    outBytes.setUint32(offset, canvasSize.x ~/ 2);
     offset+=4;
-    outBytes.setUint32(offset, appState.canvasSize.y ~/ 2);
+    outBytes.setUint32(offset, canvasSize.y ~/ 2);
     offset+=4;
     outBytes.setUint32(offset, 0);
     offset+=4;
     //LEVEL3
     setUint64(bytes: outBytes, offset: pointerInsertToLevel3, value: offset);
-    outBytes.setUint32(offset, appState.canvasSize.x ~/ 4);
+    outBytes.setUint32(offset, canvasSize.x ~/ 4);
     offset+=4;
-    outBytes.setUint32(offset, appState.canvasSize.y ~/ 4);
+    outBytes.setUint32(offset, canvasSize.y ~/ 4);
     offset+=4;
     outBytes.setUint32(offset, 0);
     offset+=4;

@@ -18,13 +18,13 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getAsepriteData({required final ImageExportData exportData, required final AppState appState}) async
+Future<Uint8List?> getAsepriteData({required final ImageExportData exportData, required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
   final List<ui.Color> colorList = <ui.Color>[];
   final Map<ColorReference, int> colorMap = <ColorReference, int>{};
   colorList.add(Colors.black);
   int index = 1;
-  for (final KPalRampData kPalRampData in appState.colorRamps)
+  for (final KPalRampData kPalRampData in colorRamps)
   {
     for (int i = 0; i < kPalRampData.shiftedColors.length; i++)
     {
@@ -39,52 +39,49 @@ Future<Uint8List?> getAsepriteData({required final ImageExportData exportData, r
   final List<Uint8List> layerNames = <Uint8List>[];
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
 
-  for (int l = 0; l < appState.layerCount; l++)
+  for (int l = 0; l < layerCollection.length; l++)
   {
-    final LayerState? layer = appState.getLayerAt(index: l);
-    if (layer != null)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState layerState = layer as DrawingLayerState;
-        final List<int> imgBytes = <int>[];
-        for (int y = 0; y < appState.canvasSize.y; y++)
-        {
-          for (int x = 0; x < appState.canvasSize.x; x++)
-          {
-            final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-            ColorReference? colAtPos;
-            if (appState.timeline.getCurrentLayer() == layer)
-            {
-              colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
-            }
-            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
+    final LayerState layer = layerCollection.getLayer(index: l);
 
-            if (colAtPos == null)
+    if (layer.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState layerState = layer as DrawingLayerState;
+      final List<int> imgBytes = <int>[];
+      for (int y = 0; y < canvasSize.y; y++)
+      {
+        for (int x = 0; x < canvasSize.x; x++)
+        {
+          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+          ColorReference? colAtPos;
+          if (layer.isSelected.value)
+          {
+            colAtPos = selection.getColorReference(coord: curCoord);
+          }
+          colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
+
+          if (colAtPos == null)
+          {
+            imgBytes.add(0);
+          }
+          else
+          {
+            final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: l, coord: curCoord);
+            if (shade != 0)
             {
-              imgBytes.add(0);
+              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
+              colAtPos = colAtPos.ramp.references[targetIndex];
             }
-            else
-            {
-              final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
-              if (shade != 0)
-              {
-                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-                colAtPos = colAtPos.ramp.references[targetIndex];
-              }
-              imgBytes.add(colorMap[colAtPos]!);
-            }
+            imgBytes.add(colorMap[colAtPos]!);
           }
         }
-        final List<int> encData = const ZLibEncoder().encode(imgBytes);
-        layerEncBytes.add(encData);
-        layerNames.add(utf8.encode("Layer$l"));
-        drawingLayers.add(layerState);
       }
+      final List<int> encData = const ZLibEncoder().encode(imgBytes);
+      layerEncBytes.add(encData);
+      layerNames.add(utf8.encode("Layer$l"));
+      drawingLayers.add(layerState);
     }
-
 
   }
 
-  return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: appState.canvasSize, layerList: drawingLayers);
+  return _createAsepriteData(colorList: colorList, layerNames: layerNames, layerEncBytes: layerEncBytes, canvasSize: canvasSize, layerList: drawingLayers);
 }

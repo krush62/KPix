@@ -96,37 +96,32 @@ part 'export/project/export_project_zipped_png.dart';
     return colorList;
   }
 
-int _getShadeForCoord({required final AppState appState, required final int currentLayerIndex, required final CoordinateSetI coord})
+int _getShadeForCoord({required final int currentLayerIndex, required final CoordinateSetI coord, required final LayerCollection layerCollection})
 {
-  assert(currentLayerIndex < appState.layerCount);
+  assert(currentLayerIndex < layerCollection.length);
   int shade = 0;
   for (int i = currentLayerIndex - 1; i >= 0; i--)
   {
-    final LayerState? layer = appState.getLayerAt(index: i);
-    if (layer != null)
+    final LayerState layer = layerCollection.getLayer(index: i);
+    if (layer.visibilityState.value == LayerVisibilityState.visible)
     {
-      if (layer.visibilityState.value == LayerVisibilityState.visible)
+      if (layer.runtimeType == DrawingLayerState)
       {
-        if (layer.runtimeType == DrawingLayerState)
+        final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
+        if (drawingLayerState.getDataEntry(coord: coord) != null)
         {
-          final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
-          if (drawingLayerState.getDataEntry(coord: coord) != null)
-          {
-            return 0;
-          }
+          return 0;
         }
-        else if (layer is ShadingLayerState)
+      }
+      else if (layer is ShadingLayerState)
+      {
+        final int? shadingAt = layer.getDisplayValueAt(coord: coord);
+        if (shadingAt != null)
         {
-          final int? shadingAt = layer.getDisplayValueAt(coord: coord);
-          if (shadingAt != null)
-          {
-            shade += shadingAt;
-          }
+          shade += shadingAt;
         }
       }
     }
-
-
   }
 
   return shade;

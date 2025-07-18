@@ -503,6 +503,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
     final CoordinateSetI canvasSize = appState.canvasSize;
     final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
     final SelectionList selection = appState.selectionState.selection;
+    final List<KPalRampData> colorRamps = appState.colorRamps;
 
     Uint8List? data;
 
@@ -512,16 +513,16 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         data = await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList);
         //break;
       case ImageExportType.aseprite:
-        data = await getAsepriteData(exportData: exportData, appState: appState);
+        data = await getAsepriteData(exportData: exportData, canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
       //case ExportType.photoshop:
       // TODO: Handle this case.
       //  break;
       case ImageExportType.gimp:
-        data = await getGimpData(exportData: exportData, appState: appState);
+        data = await getGimpData(exportData: exportData, canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
       case ImageExportType.pixelorama:
-        data = await getPixeloramaData(exportData: exportData, appState: appState);
+        data = await getPixeloramaData(exportData: exportData, canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
       case ImageExportType.kpix:
         data = (await createKPixData(appState: appState)).buffer.asUint8List();

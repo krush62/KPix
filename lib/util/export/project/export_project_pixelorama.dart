@@ -18,13 +18,13 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData, required final AppState appState}) async
+Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData, required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
-  for (int l = 0; l < appState.layerCount; l++)
+  for (int l = 0; l < layerCollection.length; l++)
   {
-    final LayerState? layerState = appState.getLayerAt(index: l);
-    if (layerState != null && layerState.runtimeType == DrawingLayerState)
+    final LayerState layerState = layerCollection.getLayer(index: l);
+    if (layerState.runtimeType == DrawingLayerState)
     {
       drawingLayers.add(layerState as DrawingLayerState);
     }
@@ -62,9 +62,9 @@ Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData,
   }
   dataBuffer.write('],');
   dataBuffer.write('"size_x": ');
-  dataBuffer.write(appState.canvasSize.x);
+  dataBuffer.write(canvasSize.x);
   dataBuffer.write(',"size_y": ');
-  dataBuffer.write(appState.canvasSize.y);
+  dataBuffer.write(canvasSize.y);
   dataBuffer.write('}');
 
   final List<ByteData> layerList = <ByteData>[];
@@ -75,7 +75,7 @@ Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData,
   final Map<ColorReference, int> colorMap = <ColorReference, int>{};
   colorList.add(Colors.black);
   int index = 1;
-  for (final KPalRampData kPalRampData in appState.colorRamps)
+  for (final KPalRampData kPalRampData in colorRamps)
   {
     for (int i = 0; i < kPalRampData.shiftedColors.length; i++)
     {
@@ -85,62 +85,59 @@ Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData,
     }
   }
 
-  final int layerFileSize = appState.canvasSize.x * appState.canvasSize.y * 4;
-  final int indexFileSize = appState.canvasSize.x * appState.canvasSize.y;
+  final int layerFileSize = canvasSize.x * canvasSize.y * 4;
+  final int indexFileSize = canvasSize.x * canvasSize.y;
 
-  for (int l = 0; l < appState.layerCount; l++)
+  for (int l = 0; l < layerCollection.length; l++)
   {
-    final LayerState? layer = appState.getLayerAt(index: l);
-    if (layer != null)
+    final LayerState layer = layerCollection.getLayer(index: l);
+    if (layer.runtimeType == DrawingLayerState)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      final ByteData layerData = ByteData(layerFileSize);
+      final ByteData indexData = ByteData(indexFileSize);
+      int byteOffsetLayer = 0;
+      int byteOffsetIndex = 0;
+
+      final DrawingLayerState layerState = layer as DrawingLayerState;
+      for (int y = 0; y < canvasSize.y; y++)
       {
-        final ByteData layerData = ByteData(layerFileSize);
-        final ByteData indexData = ByteData(indexFileSize);
-        int byteOffsetLayer = 0;
-        int byteOffsetIndex = 0;
-
-        final DrawingLayerState layerState = layer as DrawingLayerState;
-        for (int y = 0; y < appState.canvasSize.y; y++)
+        for (int x = 0; x < canvasSize.x; x++)
         {
-          for (int x = 0; x < appState.canvasSize.x; x++)
+          final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
+          ColorReference? colAtPos;
+          if (layer.isSelected.value)
           {
-            final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
-            ColorReference? colAtPos;
-            if (appState.timeline.getCurrentLayer() == layer)
-            {
-              colAtPos = appState.selectionState.selection.getColorReference(coord: curCoord);
-            }
-            colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
+            colAtPos = selection.getColorReference(coord: curCoord);
+          }
+          colAtPos ??= layerState.getDataEntry(coord: curCoord, withSettingsPixels: true);
 
-            if (colAtPos == null)
+          if (colAtPos == null)
+          {
+            indexData.setUint8(byteOffsetIndex++, 0);
+            layerData.setUint8(byteOffsetLayer++, 0);//r
+            layerData.setUint8(byteOffsetLayer++, 0);//g
+            layerData.setUint8(byteOffsetLayer++, 0);//b
+            layerData.setUint8(byteOffsetLayer++, 0);//a
+          }
+          else
+          {
+            final int shade = _getShadeForCoord(layerCollection: layerCollection, currentLayerIndex: l, coord: curCoord);
+            if (shade != 0)
             {
-              indexData.setUint8(byteOffsetIndex++, 0);
-              layerData.setUint8(byteOffsetLayer++, 0);//r
-              layerData.setUint8(byteOffsetLayer++, 0);//g
-              layerData.setUint8(byteOffsetLayer++, 0);//b
-              layerData.setUint8(byteOffsetLayer++, 0);//a
+              final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
+              colAtPos = colAtPos.ramp.references[targetIndex];
             }
-            else
-            {
-              final int shade = _getShadeForCoord(appState: appState, currentLayerIndex: l, coord: curCoord);
-              if (shade != 0)
-              {
-                final int targetIndex = (colAtPos.colorIndex + shade).clamp(0, colAtPos.ramp.references.length - 1);
-                colAtPos = colAtPos.ramp.references[targetIndex];
-              }
-              indexData.setUint8(byteOffsetIndex++, colorMap[colAtPos]!);
-              layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.r * 255.0).round());//r
-              layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.g * 255.0).round());//g
-              layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.b * 255.0).round());//b
-              layerData.setUint8(byteOffsetLayer++, 255);//a
+            indexData.setUint8(byteOffsetIndex++, colorMap[colAtPos]!);
+            layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.r * 255.0).round());//r
+            layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.g * 255.0).round());//g
+            layerData.setUint8(byteOffsetLayer++, (colAtPos.getIdColor().color.b * 255.0).round());//b
+            layerData.setUint8(byteOffsetLayer++, 255);//a
 
-            }
           }
         }
-        layerList.add(layerData);
-        indexList.add(indexData);
       }
+      layerList.add(layerData);
+      indexList.add(indexData);
     }
 
 

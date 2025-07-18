@@ -119,7 +119,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value;
+      return timeline.selectedFrame!.layerList;
     }
     else
     {
@@ -131,7 +131,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.getVisibleLayers();
+      return timeline.selectedFrame!.layerList.getVisibleLayers();
     }
     else
     {
@@ -143,7 +143,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.getVisibleRasterLayers();
+      return timeline.selectedFrame!.layerList.getVisibleRasterLayers();
     }
     else
     {
@@ -156,7 +156,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.getLayer(index: index);
+      return timeline.selectedFrame!.layerList.getLayer(index: index);
     }
     else
     {
@@ -168,7 +168,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.length;
+      return timeline.selectedFrame!.layerList.length;
     }
     else
     {
@@ -176,43 +176,24 @@ class AppState
     }
   }
 
-  ValueNotifier<bool> get layerSettingsVisibleNotifier
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.value.settingsVisible;
-    }
-    else
-    {
-      return ValueNotifier<bool>(false);
-    }
-  }
+  final ValueNotifier<bool> layerSettingsVisibleNotifier = ValueNotifier<bool>(false);
+
 
   bool get layerSettingsVisible
   {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.value.settingsVisible.value;
-    }
-    else
-    {
-      return false;
-    }
+      return layerSettingsVisibleNotifier.value;
   }
 
   set layerSettingsVisible(final bool newVisibility)
   {
-    if (timeline.selectedFrame != null)
-    {
-      timeline.selectedFrame!.layerList.value.settingsVisible.value = newVisibility;
-    }
+    layerSettingsVisibleNotifier.value = newVisibility;
   }
 
   ColorReference? getColorFromImageAtPosition({required final CoordinateSetI normPos})
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
+      return timeline.selectedFrame!.layerList.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
     }
     else
     {
@@ -224,7 +205,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.getPixelCountForRamp(ramp: ramp, includeInvisible: includeInvisible);
+      return timeline.selectedFrame!.layerList.getPixelCountForRamp(ramp: ramp, includeInvisible: includeInvisible);
     }
     else
     {
@@ -309,6 +290,7 @@ class AppState
     }
     setToolSelection(tool: ToolType.pencil, forceSetting: true);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
+    timeline.layerChangeNotifier.addListener((){layerSettingsVisible = false;});
     _setHotkeys();
   }
 
@@ -462,7 +444,7 @@ class AppState
       _colorRamps.value = rampDataList;
       for (final Frame f in timeline.frames.value)
       {
-        f.layerList.value.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
+        f.layerList.deleteRampFromLayers(ramp: ramp, backupColor: rampDataList[0].references[0]);
       }
       rasterLayersAll();
       repaintNotifier.repaint();
@@ -488,7 +470,7 @@ class AppState
       _selectedColor.value = ramp.references[indexMap[_selectedColor.value!.colorIndex]!];
       for (final Frame f in timeline.frames.value)
       {
-        f.layerList.value.remapLayers(newData: ramp, map: indexMap);
+        f.layerList.remapLayers(newData: ramp, map: indexMap);
       }
 
     }
@@ -539,7 +521,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final ReferenceLayerState newLayer = timeline.selectedFrame!.layerList.value.addNewReferenceLayer(select: select);
+      final ReferenceLayerState newLayer = timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
@@ -557,7 +539,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final ShadingLayerState newLayer = timeline.selectedFrame!.layerList.value.addNewShadingLayer(select: select);
+      final ShadingLayerState newLayer = timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewShading);
@@ -575,7 +557,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final DitherLayerState newLayer = timeline.selectedFrame!.layerList.value.addNewDitherLayer(select: select);
+      final DitherLayerState newLayer = timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDither);
@@ -594,7 +576,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final GridLayerState newLayer = timeline.selectedFrame!.layerList.value.addNewGridLayer(select: select);
+      final GridLayerState newLayer = timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
@@ -612,8 +594,8 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final bool setSelectionStateLayer = timeline.selectedFrame!.layerList.value.isEmpty;
-      final DrawingLayerState newLayer = timeline.selectedFrame!.layerList.value.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
+      final bool setSelectionStateLayer = timeline.selectedFrame!.layerList.isEmpty;
+      final DrawingLayerState newLayer = timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
       if (setSelectionStateLayer)
       {
         selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
@@ -682,7 +664,7 @@ class AppState
     {
       for (final Frame f in timeline.frames.value)
       {
-        f.layerList.value.replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior, colorRamps: _colorRamps.value);
+        f.layerList.replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior, colorRamps: _colorRamps.value);
       }
       _selectedColor.value = loadPaletteSet.rampData![0].references[0];
       _colorRamps.value = loadPaletteSet.rampData!;
@@ -873,7 +855,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.value.getLayerPosition(state: state);
+      return timeline.selectedFrame!.layerList.getLayerPosition(state: state);
     }
     else
     {
@@ -898,7 +880,7 @@ class AppState
     if (layerState != null && timeline.selectedFrame != null)
     {
       final int sourcePosition = getLayerPosition(state: layerState);
-      if (sourcePosition < (timeline.selectedFrame!.layerList.value.length - 1))
+      if (sourcePosition < (timeline.selectedFrame!.layerList.length - 1))
       {
         changeLayerOrder(state: layerState, newPosition: sourcePosition + 2);
       }
@@ -968,7 +950,7 @@ class AppState
   {
     if (state != null && timeline.selectedFrame != null)
     {
-      timeline.selectedFrame!.layerList.value.changeLayerOrder(state: state, newPosition: newPosition);
+      timeline.selectedFrame!.layerList.changeLayerOrder(state: state, newPosition: newPosition);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
@@ -1063,7 +1045,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      timeline.selectedFrame!.layerList.value.selectLayerAbove();
+      timeline.selectedFrame!.layerList.selectLayerAbove();
     }
   }
 
@@ -1071,7 +1053,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      timeline.selectedFrame!.layerList.value.selectLayerBelow();
+      timeline.selectedFrame!.layerList.selectLayerBelow();
     }
   }
 
@@ -1080,7 +1062,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final LayerState previousLayer = timeline.selectedFrame!.layerList.value.selectLayer(newLayer: newLayer);
+      final LayerState previousLayer = timeline.selectedFrame!.layerList.selectLayer(newLayer: newLayer);
       timeline.layerChangeNotifier.reportChange();
       oldLayer ??= previousLayer;
       if (oldLayer != newLayer)
@@ -1098,7 +1080,7 @@ class AppState
   {
     if (deleteLayer != null && timeline.selectedFrame != null)
     {
-      if (timeline.selectedFrame!.layerList.value.deleteLayer(deleteLayer: deleteLayer))
+      if (timeline.selectedFrame!.layerList.deleteLayer(deleteLayer: deleteLayer))
       {
         if (addToHistoryStack)
         {
@@ -1109,6 +1091,7 @@ class AppState
       {
         showMessage(text: "Cannot delete the layer!");
       }
+      timeline.layerChangeNotifier.reportChange();
       rasterLayersAll();
     }
   }
@@ -1117,11 +1100,11 @@ class AppState
   {
     if (mergeLayer != null && timeline.selectedFrame != null)
     {
-      final String? message = timeline.selectedFrame!.layerList.value.layerIsMergeable(mergeLayer: mergeLayer);
+      final String? message = timeline.selectedFrame!.layerList.layerIsMergeable(mergeLayer: mergeLayer);
       if (message == null)
       {
         selectionState.deselect(addToHistoryStack: false);
-        timeline.selectedFrame!.layerList.value.mergeLayer(mergeLayer: mergeLayer, canvasSize: _canvasSize);
+        timeline.selectedFrame!.layerList.mergeLayer(mergeLayer: mergeLayer, canvasSize: _canvasSize);
         if (addToHistoryStack)
         {
           GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge);
@@ -1141,7 +1124,7 @@ class AppState
     if (duplicateLayer != null && timeline.selectedFrame != null)
     {
       selectionState.deselect(addToHistoryStack: false);
-      timeline.selectedFrame!.layerList.value.duplicateLayer(duplicateLayer: duplicateLayer);
+      timeline.selectedFrame!.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
@@ -1154,7 +1137,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      timeline.selectedFrame!.layerList.value.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
+      timeline.selectedFrame!.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster);
@@ -1164,7 +1147,7 @@ class AppState
 
   void rasterLayersFrame()
   {
-      timeline.selectedFrame?.layerList.value.reRasterAllDrawingLayers();
+      timeline.selectedFrame?.layerList.reRasterAllDrawingLayers();
 
   }
 
@@ -1179,7 +1162,7 @@ class AppState
       {
         if (i != currentIndex)
         {
-          timeline.frames.value[i].layerList.value.reRasterAllDrawingLayers();
+          timeline.frames.value[i].layerList.reRasterAllDrawingLayers();
         }
       }
     }
@@ -1252,7 +1235,7 @@ class AppState
     selectionState.deselect(addToHistoryStack: false, notify: false);
     for (final Frame f in timeline.frames.value)
     {
-      f.layerList.value.transformLayers(transformation: transformation, oldSize: canvasSize);
+      f.layerList.transformLayers(transformation: transformation, oldSize: canvasSize);
     }
     if (transformation == CanvasTransformation.rotate)
     {
@@ -1292,7 +1275,7 @@ class AppState
     selectionState.deselect(addToHistoryStack: false, notify: false);
     for (final Frame f in timeline.frames.value)
     {
-      f.layerList.value.changeLayerSizes(newSize: newSize, offset: offset);
+      f.layerList.changeLayerSizes(newSize: newSize, offset: offset);
     }
     _setCanvasDimensions(width: newSize.x, height: newSize.y);
     rasterLayersAll();

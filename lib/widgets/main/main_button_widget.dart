@@ -153,7 +153,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
-  void _exportFilePressed({required final ExportData exportData, required final FileExportType exportType})
+  void _exportFilePressed({required final ImageExportData exportData, required final ImageExportType exportType})
   {
     exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }

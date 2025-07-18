@@ -40,7 +40,6 @@ class LayerCollection with ChangeNotifier
 {
   final List<LayerState> _layers = <LayerState>[];
   final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
-  final ValueNotifier<bool> settingsVisible = ValueNotifier<bool>(false);
 
   LayerState? get currentLayer
   {
@@ -635,7 +634,7 @@ class LayerCollection with ChangeNotifier
     final AppState appState = GetIt.I.get<AppState>();
     for (int i = 0; i < appState.timeline.frames.value.length; i++)
     {
-      if (appState.timeline.frames.value[i].layerList.value == this)
+      if (appState.timeline.frames.value[i].layerList == this)
       {
         index = i;
         break;

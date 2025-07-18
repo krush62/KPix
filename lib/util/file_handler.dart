@@ -494,7 +494,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
     return await FilePicker.platform.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir);
   }
 
-  Future<String?> exportFile({required final ExportData exportData, required final FileExportType exportType}) async
+  Future<String?> exportFile({required final ImageExportData exportData, required final ImageExportType exportType}) async
   {
     final String path = !kIsWeb ? p.join(exportData.directory, "${exportData.fileName}.${exportData.extension}") : exportData.fileName;
     final AppState appState = GetIt.I.get<AppState>();
@@ -503,22 +503,22 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
     switch (exportType)
     {
-      case FileExportType.png:
+      case ImageExportType.png:
         data = await exportPNG(exportData: exportData, appState: appState);
         //break;
-      case FileExportType.aseprite:
+      case ImageExportType.aseprite:
         data = await getAsepriteData(exportData: exportData, appState: appState);
         //break;
       //case ExportType.photoshop:
       // TODO: Handle this case.
       //  break;
-      case FileExportType.gimp:
+      case ImageExportType.gimp:
         data = await getGimpData(exportData: exportData, appState: appState);
         //break;
-      case FileExportType.pixelorama:
+      case ImageExportType.pixelorama:
         data = await getPixeloramaData(exportData: exportData, appState: appState);
         //break;
-      case FileExportType.kpix:
+      case ImageExportType.kpix:
         data = (await createKPixData(appState: appState)).buffer.asUint8List();
         //break;
     }

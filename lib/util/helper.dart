@@ -537,7 +537,7 @@ class StackCol<T> {
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          if (appState.selectionState.selection.hasValues() && i == appState.timeline.selectedFrame!.layerList.value.getSelectedLayerIndex() && layerStack == null)
+          if (appState.selectionState.selection.hasValues() && i == appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() && layerStack == null)
           {
             final Paint paint = Paint();
             for (final MapEntry<CoordinateSetI, ColorReference?> entry in appState.selectionState.selection.selectedPixels.entries)

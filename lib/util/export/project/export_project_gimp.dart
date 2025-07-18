@@ -18,7 +18,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getGimpData({required final ExportData exportData, required final AppState appState}) async
+Future<Uint8List?> getGimpData({required final ImageExportData exportData, required final AppState appState}) async
 {
   final List<Color> colorList = <ui.Color>[];
   final Map<ColorReference, int> colorMap = <ColorReference, int>{};

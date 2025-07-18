@@ -18,7 +18,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> exportPNG({required final ExportData exportData, required final AppState appState}) async
+Future<Uint8List?> exportPNG({required final ImageExportData exportData, required final AppState appState}) async
 {
   final ByteData byteData = await _getImageData(
     scaling: exportData.scaling,
@@ -36,7 +36,7 @@ Future<Uint8List?> exportPNG({required final ExportData exportData, required fin
     c.complete(convertedImage);
   }
   );
-  final ui. Image img = await c.future;
+  final ui.Image img = await c.future;
 
   final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
 

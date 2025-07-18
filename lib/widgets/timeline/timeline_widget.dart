@@ -459,7 +459,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
     if (frames.isNotEmpty)
     {
-      final int highestLayerCount = frames.reduce((final Frame a, final Frame b) => a.layerList.value.length > b.layerList.value.length ? a : b).layerList.value.length;
+      final int highestLayerCount = frames.reduce((final Frame a, final Frame b) => a.layerList.length > b.layerList.length ? a : b).layerList.length;
       final double height = max(highestLayerCount * _cellHeight + _cellPadding, minHeight);
 
       for (int i = 0; i < frames.length; i++)
@@ -482,44 +482,39 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                   height: height,
                   color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
                   child: ListenableBuilder(
-                    listenable: frames[i].layerList.value,
+                    listenable: frames[i].layerList,
                     builder: (final BuildContext context4, final Widget? child4) {
-                      return ValueListenableBuilder<LayerCollection>(
-                        valueListenable: frames[i].layerList,
-                        builder: (final BuildContext context2, final LayerCollection layerCollection, final Widget? child) {
-                          final List<Widget> layers = <Widget>[];
-                          for (int j = 0; j < layerCollection.length; j++)
-                          {
-                            final bool layerIsSelected = (j == layerCollection.getSelectedLayerIndex());
-                            layers.add(
-                              Padding(
-                                padding: const EdgeInsets.only(top: _cellPadding, left: _cellPadding, right: _cellPadding),
-                                child: InkWell(
-                                  onTap: () {
-                                    widget.timeline.selectFrame(index: i, layerIndex: j);
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
-                                      border: Border.all(
-                                        color: isSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
-                                        width: _borderWidth,
-                                      ),
-                                      borderRadius: BorderRadius.circular(_borderRadius / 2),
-                                    ),
-                                    width: _cellWidth - (_cellPadding * 2),
-                                    height: _cellHeight - _cellPadding,
-                                    child: Center(child: FaIcon(layerIconMap[layerCollection.getLayer(index: j).runtimeType], size: _layerIconSize, color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
+                      final LayerCollection layerCollection = frames[i].layerList;
+                      final List<Widget> layers = <Widget>[];
+                      for (int j = 0; j < layerCollection.length; j++)
+                      {
+                        final bool layerIsSelected = (j == layerCollection.getSelectedLayerIndex());
+                        layers.add(
+                          Padding(
+                            padding: const EdgeInsets.only(top: _cellPadding, left: _cellPadding, right: _cellPadding),
+                            child: InkWell(
+                              onTap: () {
+                                widget.timeline.selectFrame(index: i, layerIndex: j);
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
+                                  border: Border.all(
+                                    color: isSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
+                                    width: _borderWidth,
                                   ),
+                                  borderRadius: BorderRadius.circular(_borderRadius / 2),
                                 ),
+                                width: _cellWidth - (_cellPadding * 2),
+                                height: _cellHeight - _cellPadding,
+                                child: Center(child: FaIcon(layerIconMap[layerCollection.getLayer(index: j).runtimeType], size: _layerIconSize, color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
                               ),
-                            );
-                          }
-
-                          return Column(
-                            children: layers,
-                          );
-                        },
+                            ),
+                          ),
+                        );
+                      }
+                      return Column(
+                        children: layers,
                       );
                     },
                   ),

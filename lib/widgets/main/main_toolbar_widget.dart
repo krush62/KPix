@@ -38,7 +38,6 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
@@ -97,11 +96,11 @@ class MainToolbarWidget extends StatelessWidget
               },
             ),
           ),
-          ValueListenableBuilder<List<Frame>>(
-            valueListenable: GetIt.I.get<AppState>().timeline.frames,
-            builder: (final BuildContext context, final List<Frame> frames, final Widget? child) {
+          ListenableBuilder(
+            listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
+            builder: (final BuildContext context, final Widget? child) {
               final LayerState? currentLayer = GetIt.I.get<AppState>().timeline.getCurrentLayer();
-              if (frames.isNotEmpty && currentLayer != null)
+              if (currentLayer != null)
               {
                 Widget contentWidget;
                 if (currentLayer.runtimeType == ReferenceLayerState)

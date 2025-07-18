@@ -69,7 +69,7 @@ class HistoryState
     HistoryLayer? selectLayer;
     for (final Frame frame in frameList)
     {
-      final LayerCollection layers = frame.layerList.value;
+      final LayerCollection layers = frame.layerList;
       final List<HistoryLayer> hLayers = <HistoryLayer>[];
       for (int i = 0; i < layers.length; i++)
       {
@@ -98,7 +98,7 @@ class HistoryState
         }
         if (hLayer != null)
         {
-          if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.value.getSelectedLayerIndex() == i)
+          if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() == i)
           {
             selectLayer = hLayer;
           }
@@ -106,7 +106,7 @@ class HistoryState
           hLayers.add(hLayer);
         }
       }
-      historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.value.getSelectedLayerIndex()));
+      historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.getSelectedLayerIndex()));
     }
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex);
 

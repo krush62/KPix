@@ -222,7 +222,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                           listenable: _appState.timeline.layerChangeNotifier,
                                           builder: (final BuildContext context, final Widget? child)
                                           {
-                                            return Column(children: _createWidgetList(layers: _appState.timeline.frames.value[frameIndex].layerList.value),);
+                                            return Column(children: _createWidgetList(layers: _appState.timeline.frames.value[frameIndex].layerList),);
                                           },
                                         );
                                       }
@@ -252,82 +252,93 @@ class _RightBarWidgetState extends State<RightBarWidget>
           ValueListenableBuilder<bool>(
             valueListenable: _appState.hasProjectNotifier,
             builder: (final BuildContext context, final bool hasProject, final Widget? child) {
-              return hasProject ? ValueListenableBuilder<bool>(
-                valueListenable: _appState.layerSettingsVisibleNotifier,
-                builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
-                  Widget settingsWidget = const SizedBox.shrink();
-                  final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
-                  if (currentLayer != null && currentLayer is RasterableLayerState)
-                  {
-                    currentLayer.layerSettings.editStarted = true;
-                    currentLayer.layerSettings.hasChanges = false;
-                    settingsWidget = currentLayer.getSettingsWidget();
+              if (hasProject) {
+                return ValueListenableBuilder<int>(
+                  valueListenable: _appState.timeline.selectedFrameIndexNotifier,
+                  builder: (final BuildContext context1, final int frameIndex, final Widget? child1) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: _appState.layerSettingsVisibleNotifier,
+                      builder: (final BuildContext contextS, final bool showLayerOptions, final Widget? childS) {
+                        Widget settingsWidget = const SizedBox.shrink();
+                        final LayerState? currentLayer = _appState.timeline.getCurrentLayer();
+                        if (currentLayer != null && currentLayer is RasterableLayerState)
+                        {
+                          currentLayer.layerSettings.editStarted = true;
+                          currentLayer.layerSettings.hasChanges = false;
+                          settingsWidget = currentLayer.getSettingsWidget();
+                        }
+
+                        return IgnorePointer(
+                          ignoring: !showLayerOptions,
+                          child: AnimatedSlide(
+                            duration: const Duration(milliseconds: 100),
+                            curve: Curves.easeInOut,
+                            offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  border: Border(
+                                    left: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+                                    bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+                                    top: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+
+                                  ),
+                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
+                                ),
+
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        child: settingsWidget,
+                                      ),
+                                    ),
+                                    Tooltip(
+                                      waitDuration: AppState.toolTipDuration,
+                                      message: "Close",
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: IconButton.outlined(
+                                          onPressed: () {
+                                            _appState.layerSettingsVisible = false;
+                                            if (currentLayer != null && currentLayer is RasterableLayerState)
+                                            {
+                                              currentLayer.layerSettings.editStarted = false;
+                                              if (currentLayer.layerSettings.hasChanges)
+                                              {
+                                                GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
+                                                currentLayer.layerSettings.hasChanges = false;
+                                              }
+                                            }
+                                          },
+                                          icon: const FaIcon(FontAwesomeIcons.arrowRightLong,),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
                   }
 
-                  return IgnorePointer(
-                    ignoring: !showLayerOptions,
-                    child: AnimatedSlide(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      offset: !showLayerOptions ? const Offset(1.0, 0.0) : Offset.zero,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            border: Border(
-                              left: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
-                              bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
-                              top: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
 
-                            ),
-                            borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
-                          ),
-
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text("LAYER SETTINGS", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
-                              ),
-                              const SizedBox(height: 8.0),
-                              Divider(height: 2.0, thickness: 2.0, color: Theme.of(context).primaryColorLight,),
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: settingsWidget,
-                                ),
-                              ),
-                              Tooltip(
-                                waitDuration: AppState.toolTipDuration,
-                                message: "Close",
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: IconButton.outlined(
-                                    onPressed: () {
-                                      _appState.layerSettingsVisible = false;
-                                      if (currentLayer != null && currentLayer is RasterableLayerState)
-                                      {
-                                        currentLayer.layerSettings.editStarted = false;
-                                        if (currentLayer.layerSettings.hasChanges)
-                                        {
-                                          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange);
-                                          currentLayer.layerSettings.hasChanges = false;
-                                        }
-                                      }
-                                    },
-                                    icon: const FaIcon(FontAwesomeIcons.arrowRightLong,),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ) : const SizedBox.shrink();
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
             },
           ),
         ],

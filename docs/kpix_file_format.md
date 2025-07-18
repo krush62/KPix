@@ -1,4 +1,4 @@
-# kpix File Format Description
+# kpix File Format Description v3
 
 This document describes the structure of the kpix file format which is used to save/load project files for the KPix software.
 

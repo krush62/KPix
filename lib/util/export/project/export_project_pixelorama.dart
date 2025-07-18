@@ -18,7 +18,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getPixeloramaData({required final ExportData exportData, required final AppState appState}) async
+Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData, required final AppState appState}) async
 {
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
   for (int l = 0; l < appState.layerCount; l++)

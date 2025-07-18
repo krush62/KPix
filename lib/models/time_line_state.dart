@@ -28,13 +28,13 @@ class Frame
 {
   static const int defaultFps = 20;
   final ValueNotifier<int> fps;
-  final ValueNotifier<LayerCollection> layerList;
+  final LayerCollection layerList;
 
   int get frameTime => (1000.0 / fps.value.toDouble()).toInt();
 
-  Frame({required final LayerCollection layerList, required final int fps}) : layerList = ValueNotifier<LayerCollection>(layerList), fps = ValueNotifier<int>(fps);
+  Frame({required this.layerList, required final int fps}) : fps = ValueNotifier<int>(fps);
 
-  Frame.empty() : layerList = ValueNotifier<LayerCollection>(LayerCollection.empty()), fps = ValueNotifier<int>(defaultFps);
+  Frame.empty() : layerList = LayerCollection.empty(), fps = ValueNotifier<int>(defaultFps);
 }
 
 class LayerChangeNotifier with ChangeNotifier
@@ -49,7 +49,6 @@ class Timeline
 {
   final ValueNotifier<int> _selectedFrameIndex;
   final ValueNotifier<List<Frame>> frames;
-  final ValueNotifier<int> totalFrameTime;
   final ValueNotifier<bool> isPlaying;
   final ValueNotifier<int> loopStartIndex;
   final ValueNotifier<int> loopEndIndex;
@@ -60,8 +59,7 @@ class Timeline
     _selectedFrameIndex = ValueNotifier<int>(selectedFrameIndex),
     loopStartIndex = ValueNotifier<int>(loopStartIndex),
     loopEndIndex = ValueNotifier<int>(loopEndIndex),
-    isPlaying = ValueNotifier<bool>(false),
-    totalFrameTime = ValueNotifier<int>(0)
+    isPlaying = ValueNotifier<bool>(false)
   {
 
     isPlaying.addListener(() {
@@ -74,8 +72,7 @@ class Timeline
     _selectedFrameIndex = ValueNotifier<int>(-1),
     loopStartIndex = ValueNotifier<int>(-1),
     loopEndIndex = ValueNotifier<int>(-1),
-    isPlaying = ValueNotifier<bool>(false),
-    totalFrameTime = ValueNotifier<int>(0)
+    isPlaying = ValueNotifier<bool>(false)
   {
 
 
@@ -96,13 +93,10 @@ class Timeline
   {
     final List<Frame> frameList = <Frame>[];
     final Frame f = Frame.empty();
-    f.layerList.value.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+    f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
     f.fps.value = Frame.defaultFps;
-    f.fps.addListener(() => calculateTotalFrameTime());
     frameList.add(f);
-
     frames.value = frameList;
-    calculateTotalFrameTime();
     _selectedFrameIndex.value = 0;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
@@ -130,23 +124,23 @@ class Timeline
 
   LayerState? getCurrentLayer()
   {
-    return selectedFrame?.layerList.value.currentLayer;
+    return selectedFrame?.layerList.currentLayer;
   }
 
   void selectFrame({required final int index, final int? layerIndex})
   {
     if (index >= 0 && index < frames.value.length)
     {
-      final LayerState? oldLayer = selectedFrame?.layerList.value.getSelectedLayer();
+      final LayerState? oldLayer = selectedFrame?.layerList.getSelectedLayer();
       _selectedFrameIndex.value = index;
       LayerState? layerToSelect;
       if (layerIndex != null)
       {
-        layerToSelect = frames.value[index].layerList.value.getLayer(index: layerIndex);
+        layerToSelect = frames.value[index].layerList.getLayer(index: layerIndex);
       }
       else
       {
-        layerToSelect = frames.value[index].layerList.value.getSelectedLayer();
+        layerToSelect = frames.value[index].layerList.getSelectedLayer();
 
       }
 
@@ -281,10 +275,10 @@ class Timeline
     {
       final Frame cf = frames.value[selectedFrameIndex];
       LayerState? layerToSelect;
-      for (int i = 0; i < cf.layerList.value.length; i++)
+      for (int i = 0; i < cf.layerList.length; i++)
       {
-        final LayerState l = cf.layerList.value.getLayer(index: i);
-        final LayerState? addedLayer = f.layerList.value.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
+        final LayerState l = cf.layerList.getLayer(index: i);
+        final LayerState? addedLayer = f.layerList.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
         if (l.isSelected.value)
         {
           layerToSelect = addedLayer;
@@ -293,22 +287,20 @@ class Timeline
 
       if (layerToSelect != null)
       {
-        f.layerList.value.selectLayer(newLayer: layerToSelect);
+        f.layerList.selectLayer(newLayer: layerToSelect);
       }
       else
       {
-        f.layerList.value.selectLayer(newLayer: f.layerList.value.getLayer(index: 0));
+        f.layerList.selectLayer(newLayer: f.layerList.getLayer(index: 0));
       }
 
 
       f.fps.value = cf.fps.value;
-      f.fps.addListener(() => calculateTotalFrameTime());
     }
     else
     {
-      f.layerList.value.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+      f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
       f.fps.value = Frame.defaultFps;
-      f.fps.addListener(() => calculateTotalFrameTime());
     }
     final List<Frame> newFrames = <Frame>[];
     newFrames.addAll(frames.value);
@@ -387,9 +379,9 @@ class Timeline
     {
       for (final Frame f in frames.value)
       {
-        if (f.layerList.value.contains(layer: layer))
+        if (f.layerList.contains(layer: layer))
         {
-          list.add(f.layerList.value);
+          list.add(f.layerList);
           break;
         }
       }
@@ -398,13 +390,18 @@ class Timeline
   }
 
 
-  void calculateTotalFrameTime()
+  int calculateTotalFrameTime({required final bool sectionOnly})
   {
     int totalTime = 0;
+    int index = 0;
     for (final Frame f in frames.value)
     {
-      totalTime += f.frameTime;
+      if (!sectionOnly || index >= loopStartIndex.value && index <= loopEndIndex.value)
+      {
+        totalTime += f.frameTime;
+      }
+      index++;
     }
-    totalFrameTime.value = totalTime;
+    return totalTime;
   }
 }

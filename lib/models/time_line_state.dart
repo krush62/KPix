@@ -323,18 +323,6 @@ class Timeline
     }
   }
 
-  Frame? getFrameForLayer({required final LayerState layer})
-  {
-    for (final Frame f in frames.value)
-    {
-      if (f.layerList.contains(layer: layer))
-      {
-        return f;
-      }
-    }
-    return null;
-  }
-
   void deleteFrame()
   {
     final List<Frame> newFrames = <Frame>[];
@@ -372,6 +360,18 @@ class Timeline
   void resetEndMarker()
   {
     loopEndIndex.value = frames.value.length - 1;
+  }
+
+  Frame? getFrameForLayer({required final LayerState layer})
+  {
+    for (final Frame f in frames.value)
+    {
+      if (f.layerList.contains(layer: layer))
+      {
+        return f;
+      }
+    }
+    return null;
   }
 
   List<LayerCollection> findCollectionsForLayer({required final LayerState? layer})

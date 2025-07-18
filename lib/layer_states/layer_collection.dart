@@ -15,8 +15,8 @@
  */
 
 
-
 import 'dart:collection';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
@@ -40,6 +40,9 @@ class LayerCollection with ChangeNotifier
 {
   final List<LayerState> _layers = <LayerState>[];
   final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
+  ui.Image? _rasterImage;
+
+  ui.Image? get rasterImage => _rasterImage;
 
   LayerState? get currentLayer
   {
@@ -661,14 +664,23 @@ class LayerCollection with ChangeNotifier
   void layerRasterDone({required final LayerState layer})
   {
     final int layerPosition = getLayerPosition(state: layer);
+    bool foundNextLayer = false;
     for (int i = layerPosition - 1; i >= 0; i--)
     {
       final LayerState ls = getLayer(index: i);
       if (ls is RasterableLayerState)
       {
         ls.doManualRaster = true;
+        foundNextLayer = true;
         break;
       }
+    }
+    if (!foundNextLayer)
+    {
+      final AppState appState = GetIt.I.get<AppState>();
+      getImageFromLayers(layerCollection: this, canvasSize: appState.canvasSize, selection: appState.selectionState.selection).then((final ui.Image img) {
+        _rasterImage = img;
+      },);
     }
   }
 

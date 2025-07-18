@@ -787,103 +787,111 @@ class KPixPainter extends CustomPainter
   void _drawLayers({required final DrawingParameters drawParams})
   {
     final Frame? frame = _appState.timeline.selectedFrame;
+    final double pxlSzDbl = drawParams.pixelSize.toDouble();
+
     if (frame != null)
     {
-      final List<LayerState> visibleLayers = frame.layerList.getVisibleLayers().toList();
-      final double pxlSzDbl = drawParams.pixelSize.toDouble();
-      final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
-      final CoordinateSetD effCanvasSize = CoordinateSetD(
-        x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
-        y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
-      final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any((final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing);
-      if (!hasRasterizingLayers || _backupImage == null)
+      if (drawParams.isPlaying && frame.layerList.rasterImage != null)
       {
-        for (int i = visibleLayers.length - 1; i >= 0; i--)
-        {
-          final LayerState vLayer = visibleLayers[i];
-          if (vLayer is RasterableLayerState)
-          {
-            final ui.Image? displayImage = (vLayer.rasterImage.value != null && !vLayer.isRasterizing) ? vLayer.rasterImage.value : vLayer.previousRaster;
-
-            if (displayImage != null)
-            {
-              _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: displayImage);
-            }
-          }
-          else if (visibleLayers[i].runtimeType == ReferenceLayerState)
-          {
-            final ReferenceLayerState refLayer = visibleLayers[i] as ReferenceLayerState;
-            if (refLayer.image != null)
-            {
-
-              final ui.Image image = refLayer.image!.image;
-
-              final ui.Rect srcRect = ui.Rect.fromLTWH(
-                -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-                -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-                drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-                drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-              );
-
-              final ui.Rect targetRect = ui.Rect.fromLTWH(
-                drawParams.offset.dx,
-                drawParams.offset.dy,
-                effCanvasSize.x,
-                effCanvasSize.y,
-              );
-
-              final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
-              drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
-            }
-          }
-          else if (visibleLayers[i].runtimeType == GridLayerState)
-          {
-            final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
-            if (gridLayer.raster != null)
-            {
-              _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: gridLayer.raster!);
-            }
-          }
-        }
-
-        if (!drawParams.isPlaying)
-        {
-          final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
-          if (cursorRasterSet != null)
-          {
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * effPxSize),
-                cursorRasterSet.size.x * effPxSize,
-                cursorRasterSet.size.y * effPxSize,),
-              image: cursorRasterSet.image,
-              scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
-          }
-
-          final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
-          if (contentRasterSet != null)
-          {
-            paintImage(
-              canvas: drawParams.canvas,
-              rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (contentRasterSet.offset.y * effPxSize),
-                contentRasterSet.size.x * drawParams.pixelSize * _appState.devicePixelRatio,
-                contentRasterSet.size.y * drawParams.pixelSize * _appState.devicePixelRatio,),
-              image: contentRasterSet.image,
-              scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
-              fit: BoxFit.none,
-              alignment: Alignment.topLeft,
-              filterQuality: FilterQuality.none,);
-          }
-        }
+        _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: frame.layerList.rasterImage!);
       }
       else
       {
-        _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
+        final List<LayerState> visibleLayers = frame.layerList.getVisibleLayers().toList();
+        final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+        final CoordinateSetD effCanvasSize = CoordinateSetD(
+          x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
+          y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
+        final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any((final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing);
+        if (!hasRasterizingLayers || _backupImage == null)
+        {
+          for (int i = visibleLayers.length - 1; i >= 0; i--)
+          {
+            final LayerState vLayer = visibleLayers[i];
+            if (vLayer is RasterableLayerState)
+            {
+              final ui.Image? displayImage = (vLayer.rasterImage.value != null && !vLayer.isRasterizing) ? vLayer.rasterImage.value : vLayer.previousRaster;
+
+              if (displayImage != null)
+              {
+                _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: displayImage);
+              }
+            }
+            else if (visibleLayers[i].runtimeType == ReferenceLayerState)
+            {
+              final ReferenceLayerState refLayer = visibleLayers[i] as ReferenceLayerState;
+              if (refLayer.image != null)
+              {
+
+                final ui.Image image = refLayer.image!.image;
+
+                final ui.Rect srcRect = ui.Rect.fromLTWH(
+                  -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                  -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+                  drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                  drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+                );
+
+                final ui.Rect targetRect = ui.Rect.fromLTWH(
+                  drawParams.offset.dx,
+                  drawParams.offset.dy,
+                  effCanvasSize.x,
+                  effCanvasSize.y,
+                );
+
+                final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
+                drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
+              }
+            }
+            else if (visibleLayers[i].runtimeType == GridLayerState)
+            {
+              final GridLayerState gridLayer = visibleLayers[i] as GridLayerState;
+              if (gridLayer.raster != null)
+              {
+                _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: gridLayer.raster!);
+              }
+            }
+          }
+
+          if (!drawParams.isPlaying)
+          {
+            final ContentRasterSet? cursorRasterSet = toolPainter?.cursorRaster;
+            if (cursorRasterSet != null)
+            {
+              paintImage(
+                canvas: drawParams.canvas,
+                rect: ui.Rect.fromLTWH(drawParams.offset.dx + (cursorRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (cursorRasterSet.offset.y * effPxSize),
+                  cursorRasterSet.size.x * effPxSize,
+                  cursorRasterSet.size.y * effPxSize,),
+                image: cursorRasterSet.image,
+                scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
+                fit: BoxFit.none,
+                alignment: Alignment.topLeft,
+                filterQuality: FilterQuality.none,);
+            }
+
+            final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
+            if (contentRasterSet != null)
+            {
+              paintImage(
+                canvas: drawParams.canvas,
+                rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (contentRasterSet.offset.y * effPxSize),
+                  contentRasterSet.size.x * drawParams.pixelSize * _appState.devicePixelRatio,
+                  contentRasterSet.size.y * drawParams.pixelSize * _appState.devicePixelRatio,),
+                image: contentRasterSet.image,
+                scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
+                fit: BoxFit.none,
+                alignment: Alignment.topLeft,
+                filterQuality: FilterQuality.none,);
+            }
+          }
+        }
+        else
+        {
+          _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
+        }
       }
-    }
+      }
   }
 
   (ui.Color, ui.Color) getCheckerBoardColors(final int contrast)

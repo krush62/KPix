@@ -31,6 +31,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
@@ -274,21 +275,22 @@ abstract class IToolPainter
 
   Future<ContentRasterSet?> rasterizePixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
   {
-    if (drawingPixels.isNotEmpty)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
+    if (drawingPixels.isNotEmpty && frame != null)
     {
       final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
       final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
       final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
       final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
       final ByteData byteDataImg = ByteData(size.x * size.y * 4);
-      final int layerPosition = appState.getLayerPosition(state: currentLayer);
+      final int layerPosition = frame.layerList.getLayerPosition(state: currentLayer);
 
       for (final CoordinateColor entry in drawingPixels.entries)
       {
         ColorReference colRef = entry.value;
         for (int i = layerPosition - 1; i >= 0; i--)
         {
-          final LayerState? currentLayer = appState.getLayerAt(index: i);
+          final LayerState currentLayer = frame.layerList.getLayer(index: i);
           if (currentLayer is DrawingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
           {
             final int? shadingVal = currentLayer.settingsShadingPixels[entry.key];
@@ -627,38 +629,37 @@ abstract class IToolPainter
   ColorReference _getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor, required final LayerState currentLayer})
   {
     ColorReference retColor = inputColor;
-    int colorShift = 0;
-    final int currentIndex = appState.getLayerPosition(state: currentLayer);
-    if (currentIndex != -1)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
+    if (frame != null)
     {
+      int colorShift = 0;
+      final int currentIndex = frame.layerList.getLayerPosition(state: currentLayer);
       for (int i = currentIndex; i >= 0; i--)
       {
-        final LayerState? layer = appState.getLayerAt(index: i);
-
-        if (layer != null)
+        final LayerState layer = frame.layerList.getLayer(index: i);
+        if (layer is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          if (appState.getLayerAt(index: i) is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+          if (layer.hasCoord(coord: coord))
           {
-            final ShadingLayerState shadingLayer = layer as ShadingLayerState;
-            if (shadingLayer.hasCoord(coord: coord))
-            {
-              colorShift = (inputColor.colorIndex + colorShift + shadingLayer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
-            }
+            colorShift = (inputColor.colorIndex + colorShift + layer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
           }
         }
       }
+
+      if (colorShift != 0)
+      {
+        retColor = inputColor.ramp.references[colorShift];
+      }
     }
-    if (colorShift != 0)
-    {
-      retColor = inputColor.ramp.references[colorShift];
-    }
+
     return retColor;
   }
 
   CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
-    if (currentLayer.lockState.value == LayerLockState.unlocked)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
+    if (currentLayer.lockState.value == LayerLockState.unlocked && frame != null)
     {
       for (final CoordinateSetI coord in coords)
       {
@@ -666,33 +667,30 @@ abstract class IToolPainter
             coord.x < canvasSize.x &&
             coord.y < canvasSize.y)
         {
-          final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
+          final int currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
           if (currentLayerPos >= 0)
           {
             ColorReference? currentColor;
-            for (int i = appState.layerCount - 1; i >= 0; i--)
+            for (int i = frame.layerList.length - 1; i >= 0; i--)
             {
-              final LayerState? layer = appState.getLayerAt(index: i);
-              if (layer != null)
+              final LayerState layer = frame.layerList.getLayer(index: i);
+              if (layer.visibilityState.value == LayerVisibilityState.visible)
               {
-                if (layer.visibilityState.value == LayerVisibilityState.visible)
+                if (layer.runtimeType == DrawingLayerState)
                 {
-                  if (appState.getLayerAt(index: i).runtimeType == DrawingLayerState)
+                  final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
+                  if (col != null)
                   {
-                    final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-                    final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
-                    if (col != null)
-                    {
-                      currentColor = col;
-                    }
+                    currentColor = col;
                   }
-                  else if (currentColor != null && layer is ShadingLayerState)
+                }
+                else if (currentColor != null && layer is ShadingLayerState)
+                {
+                  if (layer.getDisplayValueAt(coord: coord) != null)
                   {
-                    if (layer.getDisplayValueAt(coord: coord) != null)
-                    {
-                      final int newColorIndex = (currentColor.colorIndex + layer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length - 1);
-                      currentColor = currentColor.ramp.references[newColorIndex];
-                    }
+                    final int newColorIndex = (currentColor.colorIndex + layer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length - 1);
+                    currentColor = currentColor.ramp.references[newColorIndex];
                   }
                 }
               }
@@ -799,23 +797,24 @@ abstract class IToolPainter
   CoordinateColorMap getStampPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final ShaderOptions shaderOptions, final bool withShadingLayers = false})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
-    for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
+    if (frame != null)
     {
-      final CoordinateSetI coord = stampEntry.key;
-
-      if (coord.x >= 0 && coord.y >= 0 &&
-          coord.x < canvasSize.x &&
-          coord.y < canvasSize.y)
+      for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
       {
-        final int currentLayerPos = appState.getLayerPosition(state: currentLayer);
-        if (currentLayerPos >= 0)
+        final CoordinateSetI coord = stampEntry.key;
+
+        if (coord.x >= 0 && coord.y >= 0 &&
+            coord.x < canvasSize.x &&
+            coord.y < canvasSize.y)
         {
-          ColorReference? currentColor;
-          for (int i = appState.layerCount - 1; i >= currentLayerPos; i--)
+          final int currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
+          if (currentLayerPos >= 0)
           {
-            final LayerState? layer = appState.getLayerAt(index: i);
-            if (layer != null)
+            ColorReference? currentColor;
+            for (int i = frame.layerList.length - 1; i >= currentLayerPos; i--)
             {
+              final LayerState layer = frame.layerList.getLayer(index: i);
               if (layer.runtimeType == DrawingLayerState)
               {
                 final DrawingLayerState drawingLayer = layer as DrawingLayerState;
@@ -834,30 +833,32 @@ abstract class IToolPainter
                 }
               }
             }
-          }
-          if (currentColor != null)
-          {
-            final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-            final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value);
-            if (currentLayer.runtimeType == ShadingLayerState)
+            if (currentColor != null)
             {
-              final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
-              pixelMap[coord] = currentColor.ramp.references[targetIndex];
-            }
-            else if (currentLayer is DitherLayerState)
-            {
-              final int currentVal = currentLayer.getDisplayValueAt(coord: coord);
-              final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shadingAmount);
-              if (currentVal != ditherVal)
+              final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+              final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value);
+              if (currentLayer.runtimeType == ShadingLayerState)
               {
-                final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
-                pixelMap[coord] = currentColor.ramp.references[newColorIndex];
+                final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
+                pixelMap[coord] = currentColor.ramp.references[targetIndex];
+              }
+              else if (currentLayer is DitherLayerState)
+              {
+                final int currentVal = currentLayer.getDisplayValueAt(coord: coord);
+                final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shadingAmount);
+                if (currentVal != ditherVal)
+                {
+                  final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
+                  pixelMap[coord] = currentColor.ramp.references[newColorIndex];
+                }
               }
             }
           }
         }
       }
     }
+
+
 
     if (withShadingLayers)
     {

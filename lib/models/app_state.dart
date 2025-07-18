@@ -25,7 +25,6 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -113,55 +112,6 @@ class AppState
   final Map<ToolType, bool> _toolMap = <ToolType, bool>{};
 
   final Timeline timeline = Timeline.empty();
-
-  Iterable<LayerState> get visibleLayers
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.getVisibleLayers();
-    }
-    else
-    {
-      return <LayerState>[];
-    }
-  }
-
-  Iterable<RasterableLayerState> get visibleRasterLayers
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.getVisibleRasterLayers();
-    }
-    else
-    {
-      return <RasterableLayerState>[];
-    }
-  }
-
-
-  LayerState? getLayerAt({required final int index})
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.getLayer(index: index);
-    }
-    else
-    {
-      return null;
-    }
-  }
-
-  int get layerCount
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.length;
-    }
-    else
-    {
-      return 0;
-    }
-  }
 
   final ValueNotifier<bool> layerSettingsVisibleNotifier = ValueNotifier<bool>(false);
 
@@ -602,7 +552,7 @@ class AppState
 
   void undoPressed()
   {
-    if (GetIt.I.get<HistoryManager>().hasUndo.value)
+    if (GetIt.I.get<HistoryManager>().hasUndo.value && !timeline.isPlaying.value)
     {
       showMessage(text: "Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
       _restoreState(historyState: GetIt.I.get<HistoryManager>().undo());
@@ -611,7 +561,7 @@ class AppState
 
   void redoPressed()
   {
-    if (GetIt.I.get<HistoryManager>().hasRedo.value)
+    if (GetIt.I.get<HistoryManager>().hasRedo.value && !timeline.isPlaying.value)
     {
       _restoreState(historyState: GetIt.I.get<HistoryManager>().redo());
       showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
@@ -838,38 +788,36 @@ class AppState
     }
   }
 
-  int getLayerPosition({required final LayerState state})
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList.getLayerPosition(state: state);
-    }
-    else
-    {
-      return -1;
-    }
-  }
+
 
   void moveUpLayer({required final LayerState? layerState})
   {
     if (layerState != null)
     {
-      final int sourcePosition = getLayerPosition(state: layerState);
-      if (sourcePosition > 0)
+      final Frame? frame = timeline.getFrameForLayer(layer: layerState);
+      if (frame != null)
       {
-        changeLayerOrder(state: layerState, newPosition: sourcePosition - 1);
+        final int sourcePosition = frame.layerList.getLayerPosition(state: layerState);
+        if (sourcePosition > 0)
+        {
+          changeLayerOrder(state: layerState, newPosition: sourcePosition - 1);
+        }
       }
     }
   }
 
   void moveDownLayer({required final LayerState? layerState})
   {
-    if (layerState != null && timeline.selectedFrame != null)
+    if (layerState != null)
     {
-      final int sourcePosition = getLayerPosition(state: layerState);
-      if (sourcePosition < (timeline.selectedFrame!.layerList.length - 1))
+      final Frame? frame = timeline.getFrameForLayer(layer: layerState);
+      if (frame != null)
       {
-        changeLayerOrder(state: layerState, newPosition: sourcePosition + 2);
+        final int sourcePosition = frame.layerList.getLayerPosition(state: layerState);
+        if (sourcePosition < (timeline.selectedFrame!.layerList.length - 1))
+        {
+          changeLayerOrder(state: layerState, newPosition: sourcePosition + 2);
+        }
       }
     }
   }

@@ -28,6 +28,7 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
@@ -302,50 +303,51 @@ class DrawingLayerState extends RasterableLayerState
   void rasterOutline()
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final List<LayerState> layers = <LayerState>[];
-    for (int i = 0; i < appState.layerCount; i++)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
+    if (frame != null)
     {
-      final LayerState? layer = appState.getLayerAt(index: i);
-      if (layer != null)
+      final List<LayerState> layers = <LayerState>[];
+      for (int i = 0; i < frame.layerList.length; i++)
       {
-        layers.add(layer);
+        layers.add(frame.layerList.getLayer(index: i));
       }
+      final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
+      setDataAll(list: outerPixels);
     }
-    final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
-    setDataAll(list: outerPixels);
   }
 
   void rasterInline()
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final SelectionList? selectionList = appState.timeline.getCurrentLayer() == this ? appState.selectionState.selection : null;
-    final List<LayerState> layers = <LayerState>[];
-    for (int i = 0; i < appState.layerCount; i++)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
+    if (frame != null)
     {
-      final LayerState? layer = appState.getLayerAt(index: i);
-      if (layer != null)
+      final SelectionList? selectionList = isSelected.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
+      final List<LayerState> layers = <LayerState>[];
+      for (int i = 0; i < frame.layerList.length; i++)
       {
-        layers.add(layer);
+        layers.add(frame.layerList.getLayer(index: i));
       }
+      final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
+      setDataAll(list: innerPixels);
     }
-    final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
-    setDataAll(list: innerPixels);
   }
 
   void rasterDropShadow()
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final List<LayerState> layers = <LayerState>[];
-    for (int i = 0; i < appState.layerCount; i++)
+    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
+    if (frame != null)
     {
-      final LayerState? layer = appState.getLayerAt(index: i);
-      if (layer != null)
+      final List<LayerState> layers = <LayerState>[];
+      for (int i = 0; i < frame.layerList.length; i++)
       {
-        layers.add(layer);
+        layers.add(frame.layerList.getLayer(index: i));
       }
+      final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
+      setDataAll(list: dropShadowPixels);
     }
-    final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
-    setDataAll(list: dropShadowPixels);
+
   }
 
 

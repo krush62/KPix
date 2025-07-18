@@ -81,7 +81,7 @@ class _KPalRampState extends State<KPalRamp>
   {
     super.initState();
     _createColorCards();
-    _drawingLayers = _copyLayers(originalLayers: _appState.visibleRasterLayers);
+    _drawingLayers = _copyLayers(originalLayers: _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
     _hasRenderChanges = true;
     _renderTimer = Timer.periodic(Duration(milliseconds: _options.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
     for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
@@ -160,7 +160,7 @@ class _KPalRampState extends State<KPalRamp>
       widget.rampData._updateColors(colorCountChanged: colorCountChanged);
       if (colorCountChanged)
       {
-        _drawingLayers = _copyLayers(originalLayers: _appState.visibleRasterLayers);
+        _drawingLayers = _copyLayers(originalLayers: _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final LayerState layerState in _drawingLayers)
         {

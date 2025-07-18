@@ -660,7 +660,8 @@ class LayerCollection with ChangeNotifier
   //RASTER LAYER ABOVE
   void layerRasterDone({required final LayerState layer})
   {
-    for (int i = getLayerPosition(state: layer) - 1; i >= 0; i--)
+    final int layerPosition = getLayerPosition(state: layer);
+    for (int i = layerPosition - 1; i >= 0; i--)
     {
       final LayerState ls = getLayer(index: i);
       if (ls is RasterableLayerState)

@@ -61,7 +61,6 @@ class Timeline
     loopEndIndex = ValueNotifier<int>(loopEndIndex),
     isPlaying = ValueNotifier<bool>(false)
   {
-
     isPlaying.addListener(() {
       _playChanged();
     },);
@@ -74,8 +73,6 @@ class Timeline
     loopEndIndex = ValueNotifier<int>(-1),
     isPlaying = ValueNotifier<bool>(false)
   {
-
-
     isPlaying.addListener(() {
       _playChanged();
     },);
@@ -100,10 +97,6 @@ class Timeline
     _selectedFrameIndex.value = 0;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
-
-    isPlaying.addListener(() {
-      _playChanged();
-    },);
   }
 
   int get selectedFrameIndex => _selectedFrameIndex.value;
@@ -156,10 +149,9 @@ class Timeline
   {
     if (isPlaying.value)
     {
-      if (loopEndIndex.value - loopStartIndex.value > 0)
+      if (loopEndIndex.value != loopStartIndex.value)
       {
-        selectFrame(index: loopStartIndex.value);
-        _play();
+        _play(startIndex: loopStartIndex.value);
       }
       else
       {
@@ -204,7 +196,7 @@ class Timeline
     selectFrame(index: frames.value.length - 1);
   }
 
-  Future<void> _play() async
+  Future<void> _play({required final int startIndex}) async
   {
     if (selectedFrame != null)
     {
@@ -329,7 +321,18 @@ class Timeline
     {
       loopStartIndex.value++;
     }
+  }
 
+  Frame? getFrameForLayer({required final LayerState layer})
+  {
+    for (final Frame f in frames.value)
+    {
+      if (f.layerList.contains(layer: layer))
+      {
+        return f;
+      }
+    }
+    return null;
   }
 
   void deleteFrame()

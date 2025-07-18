@@ -26,6 +26,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -610,59 +611,63 @@ class SelectionState with ChangeNotifier
 
   void copyMerged({final bool notify = true, final bool keepSelection = false})
   {
-    final CoordinateColorMapNullable tempCB = HashMap<CoordinateSetI, ColorReference?>();
-    final Iterable<LayerState> visibleLayers = _appState.visibleLayers;
-    final Iterable<CoordinateSetI> coords = selection.getCoordinates();
-    bool hasValues = false;
-
-    for (final CoordinateSetI coord in coords)
+    final Frame? frame = _appState.timeline.selectedFrame;
+    if (frame != null)
     {
-      bool pixelFound = false;
-      for (final LayerState layer in visibleLayers)
+      final CoordinateColorMapNullable tempCB = HashMap<CoordinateSetI, ColorReference?>();
+      final Iterable<LayerState> visibleLayers = frame.layerList.getVisibleLayers();
+      final Iterable<CoordinateSetI> coords = selection.getCoordinates();
+      bool hasValues = false;
+
+      for (final CoordinateSetI coord in coords)
       {
-        if (layer.runtimeType == DrawingLayerState)
+        bool pixelFound = false;
+        for (final LayerState layer in visibleLayers)
         {
-          final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-          ColorReference? colRef = drawingLayer.getDataEntry(coord: coord);
-          if (drawingLayer == _appState.timeline.getCurrentLayer())
+          if (layer.runtimeType == DrawingLayerState)
           {
-            final ColorReference? selColRef = selection.getColorReference(coord: coord);
-            if (selColRef != null)
+            final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+            ColorReference? colRef = drawingLayer.getDataEntry(coord: coord);
+            if (drawingLayer == _appState.timeline.getCurrentLayer())
             {
-              colRef = selColRef;
+              final ColorReference? selColRef = selection.getColorReference(coord: coord);
+              if (selColRef != null)
+              {
+                colRef = selColRef;
+              }
+            }
+            if (colRef != null)
+            {
+              hasValues = true;
+              tempCB[coord] = colRef;
+              pixelFound = true;
+              break;
             }
           }
-          if (colRef != null)
-          {
-            hasValues = true;
-            tempCB[coord] = colRef;
-            pixelFound = true;
-            break;
-          }
+        }
+        if (!pixelFound)
+        {
+          tempCB[coord] = null;
         }
       }
-      if (!pixelFound)
-      {
-        tempCB[coord] = null;
-      }
-    }
 
-    if (hasValues)
-    {
-      clipboard = tempCB;
-      if (!keepSelection)
+      if (hasValues)
       {
-        deselect(notify: false, addToHistoryStack: false);
-      }
+        clipboard = tempCB;
+        if (!keepSelection)
+        {
+          deselect(notify: false, addToHistoryStack: false);
+        }
 
-      if (notify)
-      {
-        notifyRepaint();
+        if (notify)
+        {
+          notifyRepaint();
+        }
       }
-    }
-    else
-    {
-      _appState.showMessage(text: "Nothing to copy!");
+      else
+      {
+        _appState.showMessage(text: "Nothing to copy!");
+      }
     }
   }
 

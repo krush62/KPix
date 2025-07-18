@@ -100,21 +100,24 @@ class HistoryManager
 
   void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true})
   {
-    _removeFutureEntries();
-    _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier));
-    _curPos++;
-    final int entriesLeft = _maxEntries - _states.length;
-
-    if (entriesLeft < 0)
+    if (!appState.timeline.isPlaying.value)
     {
-      for (int i = 0; i < -entriesLeft; i++)
+      _removeFutureEntries();
+      _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier));
+      _curPos++;
+      final int entriesLeft = _maxEntries - _states.length;
+
+      if (entriesLeft < 0)
       {
-        _states.removeFirst();
-        _curPos--;
+        for (int i = 0; i < -entriesLeft; i++)
+        {
+          _states.removeFirst();
+          _curPos--;
+        }
       }
+      _compressHistory();
+      _updateNotifiers();
     }
-    _compressHistory();
-    _updateNotifiers();
     appState.hasChanges.value = setHasChanges;
   }
 

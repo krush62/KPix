@@ -153,7 +153,11 @@ class _RightBarWidgetState extends State<RightBarWidget>
         );
       },
       onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
-        _appState.changeLayerOrder(state: details.data, newPosition: _appState.layerCount);
+        final Frame? frame = _appState.timeline.selectedFrame;
+        if (frame != null)
+        {
+          _appState.changeLayerOrder(state: details.data, newPosition: frame.layerList.length);
+        }
       },
     ),);
 

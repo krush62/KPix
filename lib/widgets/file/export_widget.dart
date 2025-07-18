@@ -126,11 +126,10 @@ class ImageExportData extends ExportData
 class AnimationExportData extends ImageExportData
 {
   final bool loopOnly;
-  final int repetitions;
-  const AnimationExportData({required super.name, required super.extension, required super.scalable, super.scaling = 1, super.fileName = "", super.directory = "", this.loopOnly = false, this.repetitions = 0});
-  factory AnimationExportData.fromWithConcreteData({required final AnimationExportData other, required final int scaling, required final String fileName, required final String directory})
+  const AnimationExportData({required super.name, required super.extension, required super.scalable, super.scaling = 1, super.fileName = "", super.directory = "", this.loopOnly = false});
+  factory AnimationExportData.fromWithConcreteData({required final AnimationExportData other, required final int scaling, required final String fileName, required final String directory, required final bool loopOnly})
   {
-    return AnimationExportData(name: other.name, extension: other.extension, scalable: other.scalable, loopOnly: other.loopOnly, repetitions: other.repetitions, scaling: scaling, directory: directory, fileName: fileName);
+    return AnimationExportData(name: other.name, extension: other.extension, scalable: other.scalable, loopOnly: loopOnly, scaling: scaling, directory: directory, fileName: fileName);
   }
   static const Map<AnimationExportType, AnimationExportData> exportTypeMap = <AnimationExportType, AnimationExportData>{
     AnimationExportType.gif : AnimationExportData(name: "GIF", extension: "gif", scalable: true, ),
@@ -147,14 +146,16 @@ class AnimationExportData extends ImageExportData
 class ExportWidget extends StatefulWidget
 {
   final Function() dismiss;
-  final ExportDataFn acceptFile;
-  final PaletteDataFn acceptPalette;
+  final ImageExportDataFn acceptFile;
+  final PaletteExportDataFn acceptPalette;
+  final AnimationExportDataFn acceptAnimation;
 
   const ExportWidget({
     super.key,
     required this.dismiss,
     required this.acceptFile,
     required this.acceptPalette,
+    required this.acceptAnimation,
   });
 
   @override
@@ -344,7 +345,6 @@ class _ExportWidgetState extends State<ExportWidget>
                                         showSelectedIcon: false,
                                         onSelectionChanged: (final Set<PaletteExportType> types) {_paletteExportType.value = types.first; _updateFileNameStatus();},
                                         segments: PaletteExportType.values.map((final PaletteExportType x) => ButtonSegment<PaletteExportType>(value: x, label: Text(PaletteExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
-
                                       );
                                     },
                                   ),
@@ -445,7 +445,8 @@ class _ExportWidgetState extends State<ExportWidget>
                                 valueListenable: _animationSectionOnly,
                                 builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
                                   final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
-                                  final String animationLength = "${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s";
+                                  final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
+                                  final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
                                   return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
                                 },
                               ),
@@ -621,7 +622,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                     }
                                     else if (selSection == ExportSectionType.animation)
                                     {
-                                      //TODO
+                                      widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
                                     }
 
                                   } : null,

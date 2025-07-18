@@ -499,8 +499,9 @@ KPixOverlay getSingleButtonDialog({
 
   KPixOverlay getExportDialog({
     required final Function() onDismiss,
-    required final ExportDataFn onAcceptFile,
-    required final PaletteDataFn onAcceptPalette,
+    required final ImageExportDataFn onAcceptImage,
+    required final PaletteExportDataFn onAcceptPalette,
+    required final AnimationExportDataFn onAcceptAnimation,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -512,7 +513,7 @@ KPixOverlay getSingleButtonDialog({
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
             Center(
-              child: ExportWidget(acceptFile: onAcceptFile, acceptPalette: onAcceptPalette, dismiss: onDismiss),
+              child: ExportWidget(acceptFile: onAcceptImage, acceptPalette: onAcceptPalette, acceptAnimation: onAcceptAnimation, dismiss: onDismiss),
             ),
           ],
         ),
@@ -544,7 +545,7 @@ KPixOverlay getSingleButtonDialog({
 
   KPixOverlay getPaletteSaveDialog({
     required final Function() onDismiss,
-    required final PaletteDataFn onAccept,
+    required final PaletteExportDataFn onAccept,
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;

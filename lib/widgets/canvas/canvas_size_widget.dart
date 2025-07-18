@@ -72,7 +72,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
   {
     super.initState();
     _setSize(newSize: _appState.canvasSize);
-    getImageFromLayers(appState: _appState).then((final ui.Image img){_image.value = img;});
+    getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection).then((final ui.Image img){_image.value = img;});
 
   }
 

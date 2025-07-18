@@ -25,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -32,7 +33,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_state.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
@@ -503,7 +504,9 @@ class StackCol<T> {
   }
 
   Future<ui.Image> getImageFromLayers({
-    required final AppState appState,
+    required final LayerCollection layerCollection,
+    required final CoordinateSetI canvasSize,
+    required final SelectionList selection,
     final List<RasterableLayerState>? layerStack,
     final int scalingFactor = 1,}) async
   {
@@ -515,7 +518,7 @@ class StackCol<T> {
     else
     {
       layerList = List<RasterableLayerState>.empty(growable: true);
-      layerList.addAll(appState.visibleRasterLayers);
+      layerList.addAll(layerCollection.getVisibleRasterLayers());
     }
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
@@ -530,17 +533,17 @@ class StackCol<T> {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
-                  appState.canvasSize.x.toDouble() * scalingFactor,
-                  appState.canvasSize.y.toDouble() * scalingFactor,),
+                  canvasSize.x.toDouble() * scalingFactor,
+                  canvasSize.y.toDouble() * scalingFactor,),
               image: cLayer.rasterImage.value!,
               fit: BoxFit.none,
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          if (appState.selectionState.selection.hasValues() && i == appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() && layerStack == null)
+          if (layerStack != null && selection.hasValues() && i == layerCollection.getSelectedLayerIndex())
           {
             final Paint paint = Paint();
-            for (final MapEntry<CoordinateSetI, ColorReference?> entry in appState.selectionState.selection.selectedPixels.entries)
+            for (final MapEntry<CoordinateSetI, ColorReference?> entry in selection.selectedPixels.entries)
             {
               if (entry.value != null)
               {
@@ -557,7 +560,7 @@ class StackCol<T> {
         }
       }
     }
-    return recorder.endRecording().toImage(appState.canvasSize.x * scalingFactor, appState.canvasSize.y * scalingFactor);
+    return recorder.endRecording().toImage(canvasSize.x * scalingFactor, canvasSize.y * scalingFactor);
   }
 
 

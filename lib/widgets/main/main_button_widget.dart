@@ -116,7 +116,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     );
     _exportDialog = getExportDialog(
       onDismiss: _closeAllMenus,
-      onAcceptFile: _exportFilePressed,
+      onAcceptImage: _exportImagePressed,
+      onAcceptAnimation: _exportAnimationPressed,
       onAcceptPalette: _paletteSavePressed,);
     _aboutDialog = getAboutDialog(
       onDismiss: _closeAllMenus,
@@ -153,9 +154,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   }
 
-  void _exportFilePressed({required final ImageExportData exportData, required final ImageExportType exportType})
+  void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType})
   {
-    exportFile(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
+    exportImage(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
+  }
+
+  void _exportAnimationPressed({required final AnimationExportData exportData, required final AnimationExportType exportType})
+  {
+    exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
 
   void _exportFinished({required final String? fileName})

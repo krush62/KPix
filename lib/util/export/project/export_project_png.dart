@@ -18,19 +18,20 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> exportPNG({required final ImageExportData exportData, required final AppState appState}) async
+Future<Uint8List?> exportPNG({required final ImageExportData exportData, required final CoordinateSetI canvasSize, required final LayerCollection layerList, required final SelectionList selection}) async
 {
   final ByteData byteData = await _getImageData(
     scaling: exportData.scaling,
-    appState: appState,
+    canvasSize: canvasSize,
+    layerList: layerList,
+    selection: selection,
   );
-
 
   final Completer<ui.Image> c = Completer<ui.Image>();
   ui.decodeImageFromPixels(
       byteData.buffer.asUint8List(),
-      appState.canvasSize.x * exportData.scaling,
-      appState.canvasSize.y * exportData.scaling,
+      canvasSize.x * exportData.scaling,
+      canvasSize.y * exportData.scaling,
       ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
   {
     c.complete(convertedImage);
@@ -43,8 +44,8 @@ Future<Uint8List?> exportPNG({required final ImageExportData exportData, require
   return pngBytes!.buffer.asUint8List();
 }
 
-Future<ByteData> _getImageData({required final AppState appState, required final int scaling}) async
+Future<ByteData> _getImageData({required final CoordinateSetI canvasSize, required final LayerCollection layerList, required final SelectionList selection, required final int scaling}) async
 {
-  final ui.Image i = await getImageFromLayers(appState: appState, scalingFactor: scaling);
+  final ui.Image i = await getImageFromLayers(canvasSize: canvasSize, layerCollection: layerList, selection: selection, scalingFactor: scaling);
   return (await i.toByteData())!;
 }

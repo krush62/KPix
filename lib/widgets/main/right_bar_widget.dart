@@ -332,9 +332,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                         );
                       },
                     );
-                  }
-
-
+                  },
                 );
               } else {
                 return const SizedBox.shrink();

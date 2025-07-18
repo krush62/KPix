@@ -28,6 +28,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -48,6 +49,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
@@ -343,7 +345,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
       if (pngPath != null)
       {
-        final ui.Image img = await getImageFromLayers(appState: appState);
+        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layerCollection: appState.timeline.selectedFrame!.layerList, selection: appState.selectionState.selection);
         final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
         await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
       }
@@ -494,17 +496,20 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
     return await FilePicker.platform.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir);
   }
 
-  Future<String?> exportFile({required final ImageExportData exportData, required final ImageExportType exportType}) async
+  Future<String?> exportImage({required final ImageExportData exportData, required final ImageExportType exportType}) async
   {
     final String path = !kIsWeb ? p.join(exportData.directory, "${exportData.fileName}.${exportData.extension}") : exportData.fileName;
     final AppState appState = GetIt.I.get<AppState>();
+    final CoordinateSetI canvasSize = appState.canvasSize;
+    final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
+    final SelectionList selection = appState.selectionState.selection;
 
     Uint8List? data;
 
     switch (exportType)
     {
       case ImageExportType.png:
-        data = await exportPNG(exportData: exportData, appState: appState);
+        data = await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList);
         //break;
       case ImageExportType.aseprite:
         data = await getAsepriteData(exportData: exportData, appState: appState);
@@ -544,6 +549,58 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 
     return returnPath;
   }
+
+Future<String?> exportAnimation({required final AnimationExportData exportData, required final AnimationExportType exportType}) async
+{
+  final String path = !kIsWeb ? p.join(exportData.directory, "${exportData.fileName}.${exportData.extension}") : exportData.fileName;
+  final AppState appState = GetIt.I.get<AppState>();
+
+  Uint8List? data;
+
+  switch (exportType)
+  {
+    case AnimationExportType.apng:
+      data = await exportAPNG(exportData: exportData, appState: appState);
+      //break;
+    case AnimationExportType.gif:
+      data = await exportGIF(exportData: exportData, appState: appState);
+      //break;
+    case AnimationExportType.zippedPng:
+      data = await exportZippedPng(exportData: exportData, appState: appState);
+      //break;
+    //case ExportType.aseprite:
+    // TODO: Handle this case.
+    //  break;
+    //case ExportType.pixelorama:
+    // TODO: Handle this case.
+    //  break;
+
+  }
+
+  String? returnPath;
+  if (data != null)
+  {
+    if (!kIsWeb)
+    {
+      await File(path).writeAsBytes(data);
+      returnPath = path;
+    }
+    else
+    {
+      final String newPath = await FileSaver.instance.saveFile(
+        name: path,
+        bytes: data,
+        fileExtension: exportData.extension,
+      );
+      returnPath = "$newPath/$path.${exportData.extension}";
+    }
+  }
+
+  return returnPath;
+}
+
+
+
 
   FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true})
   {

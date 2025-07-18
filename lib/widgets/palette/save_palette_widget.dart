@@ -30,7 +30,7 @@ import 'package:path/path.dart' as p;
 class SavePaletteWidget extends StatefulWidget
 {
   final Function() dismiss;
-  final PaletteDataFn accept;
+  final PaletteExportDataFn accept;
   
   const SavePaletteWidget({super.key, required this.dismiss, required this.accept});
 

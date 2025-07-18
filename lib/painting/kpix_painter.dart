@@ -715,7 +715,7 @@ class KPixPainter extends CustomPainter
   {
     if (_shouldCapture())
     {
-      getImageFromLayers(appState: _appState).then((final ui.Image img) {
+      getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection).then((final ui.Image img) {
         _backupImage = img;
         final Iterable<RasterableLayerState> rasterLayers =_appState.visibleLayers.whereType<RasterableLayerState>();
         _previousRasterHashes.clear();

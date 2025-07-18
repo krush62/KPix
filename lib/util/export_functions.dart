@@ -23,8 +23,10 @@ import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -38,6 +40,7 @@ import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
@@ -46,21 +49,24 @@ import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
-part 'export/palette/export_palette_png.dart';
-part 'export/palette/export_palette_aseprite.dart';
-part 'export/palette/export_palette_gimp.dart';
-part 'export/palette/export_palette_paint_net.dart';
 part 'export/palette/export_palette_adobe.dart';
-part 'export/palette/export_palette_jasc.dart';
+part 'export/palette/export_palette_aseprite.dart';
 part 'export/palette/export_palette_corel.dart';
-part 'export/palette/export_palette_open_office.dart';
-part 'export/palette/export_palette_pixelorama.dart';
+part 'export/palette/export_palette_gimp.dart';
+part 'export/palette/export_palette_jasc.dart';
 part 'export/palette/export_palette_kpal.dart';
-part 'export/project/export_project_png.dart';
-part 'export/project/export_project_kpix.dart';
+part 'export/palette/export_palette_open_office.dart';
+part 'export/palette/export_palette_paint_net.dart';
+part 'export/palette/export_palette_pixelorama.dart';
+part 'export/palette/export_palette_png.dart';
+part 'export/project/export_project_apng.dart';
 part 'export/project/export_project_aseprite.dart';
+part 'export/project/export_project_gif.dart';
 part 'export/project/export_project_gimp.dart';
+part 'export/project/export_project_kpix.dart';
 part 'export/project/export_project_pixelorama.dart';
+part 'export/project/export_project_png.dart';
+part 'export/project/export_project_zipped_png.dart';
 
 
 

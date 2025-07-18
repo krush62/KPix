@@ -148,7 +148,6 @@ class Timeline
       {
         GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer);
       }
-      layerChangeNotifier.reportChange();
     }
   }
 

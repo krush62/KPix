@@ -73,6 +73,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _projectManagerDialog;
   late KPixOverlay _importDialog;
   late KPixOverlay _importLoadingDialog;
+  late KPixOverlay _exportLoadingDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -139,6 +140,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     );
 
     _importLoadingDialog = getLoadingDialog(message: "Importing Image...");
+    _exportLoadingDialog = getLoadingDialog(message: "Exporting Image...");
 
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
@@ -156,11 +158,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _exportImagePressed({required final ImageExportData exportData, required final ImageExportType exportType})
   {
+    _exportLoadingDialog.show(context: context);
     exportImage(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
 
   void _exportAnimationPressed({required final AnimationExportData exportData, required final AnimationExportType exportType})
   {
+    _exportLoadingDialog.show(context: context);
     exportAnimation(exportData: exportData, exportType: exportType).then((final String? fName) {_exportFinished(fileName: fName);});
   }
 
@@ -194,6 +198,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _saveImportWarningDialog.hide();
     _importDialog.hide();
     _importLoadingDialog.hide();
+    _exportLoadingDialog.hide();
   }
 
   void _newFile()

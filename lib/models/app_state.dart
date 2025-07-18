@@ -112,22 +112,9 @@ class AppState
   }
   final Map<ToolType, bool> _toolMap = <ToolType, bool>{};
 
-  //final LayerCollection _layerCollection = LayerCollection();
   final Timeline timeline = Timeline.empty();
 
-  /*LayerCollection get _layerCollection
-  {
-    if (timeline.selectedFrame != null)
-    {
-      return timeline.selectedFrame!.layerList;
-    }
-    else
-    {
-      return LayerCollection.empty();
-    }
-  }*/
-
-    Iterable<LayerState> get visibleLayers
+  Iterable<LayerState> get visibleLayers
   {
     if (timeline.selectedFrame != null)
     {
@@ -1058,7 +1045,7 @@ class AppState
   }
 
 
-  void selectLayer({required final LayerState newLayer, LayerState? oldLayer, final bool addToHistoryStack = true})
+  void selectLayer({required final LayerState newLayer, LayerState? oldLayer, final bool addToHistoryStack = false})
   {
     if (timeline.selectedFrame != null)
     {
@@ -1073,6 +1060,7 @@ class AppState
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
       }
+
     }
   }
 

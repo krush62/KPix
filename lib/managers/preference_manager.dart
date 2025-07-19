@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
@@ -445,6 +446,10 @@ enum PreferenceInt
   ShadingLayerConstraints_MaxAmount(defaultValue: 8),
   ShadingLayerConstraints_MaxDither(defaultValue: 16),
 
+  FrameConstraints_MinFps(defaultValue: 1),
+  FrameConstraints_MaxFps(defaultValue: 30),
+  FrameConstraints_DefaultFps(defaultValue: 12),
+
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
 
@@ -664,6 +669,7 @@ class PreferenceManager
   late KPixPainterOptions kPixPainterOptions;
   late ColorRampRowWidgetOptions colorRampRowOptions;
   late SymmetryWidgetOptions symmetryWidgetOptions;
+  late FrameConstraints frameConstraints;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
@@ -904,6 +910,11 @@ class PreferenceManager
         shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
         shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
         ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
+    frameConstraints = FrameConstraints(
+      minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
+      maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
+      defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),
+    );
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
@@ -1199,12 +1210,19 @@ class PreferenceManager
       shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
       ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
 
+    frameConstraints = FrameConstraints(
+      minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
+      maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
+      defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),
+    );
+
     behaviorPreferenceContent = BehaviorPreferenceContent(
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
       selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
       selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
       undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
       undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
+      frameConstraints: frameConstraints,
       shadingConstraints: shadingLayerSettingsConstraints,
     );
 
@@ -1272,6 +1290,8 @@ class PreferenceManager
 
     _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken]!.value = behaviorPreferenceContent.shadingStepsMinus.value;
     _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten]!.value = behaviorPreferenceContent.shadingStepsPlus.value;
+
+    _intMap[PreferenceInt.FrameConstraints_DefaultFps]!.value = behaviorPreferenceContent.fps.value;
 
 
     //STYLUS PREFERENCES

@@ -1274,7 +1274,8 @@ class AppState
       {
         layerList.add(referenceLayer);
       }
-      final Frame f = Frame(layerList: LayerCollection(layers: layerList, selectedLayer: drawingLayer), fps: Frame.defaultFps);
+      final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
+      final Frame f = Frame(layerList: LayerCollection(layers: layerList, selectedLayer: drawingLayer), fps: constraints.defaultFps);
       timeline.setData(selectedFrameIndex: 0, frames: <Frame>[f], loopStartIndex: 0, loopEndIndex: 0);
       GetIt.I.get<HistoryManager>().clear();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);

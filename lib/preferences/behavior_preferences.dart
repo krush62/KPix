@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //UNDO STEPS
@@ -33,13 +34,17 @@ class BehaviorPreferenceContent
   final int undoStepsMax;
   final int undoStepsMin;
   final ShadingLayerSettingsConstraints shadingConstraints;
+  final FrameConstraints frameConstraints;
+  final ValueNotifier<int> fps;
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints})
+  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints})
   {
       return BehaviorPreferenceContent._(
         undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
         selectShapeAfterInsert: ValueNotifier<bool>(selectAfterInsert),
         selectLayerAfterInsert: ValueNotifier<bool>(selectLayerAfterInsert),
+        frameConstraints: frameConstraints,
+        fps: ValueNotifier<int>(frameConstraints.defaultFps),
         shadingStepsMinus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultDarken),
         shadingStepsPlus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultBrighten),
         shadingConstraints: shadingConstraints,
@@ -47,7 +52,7 @@ class BehaviorPreferenceContent
         undoStepsMin: undoStepsMin,);
   }
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints});
 
 }
 
@@ -138,57 +143,76 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
             Expanded(child: Text("Default Shading Layer Settings", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
-              child: ValueListenableBuilder<bool>(
-                valueListenable: widget.prefs.selectLayerAfterInsert,
-                builder: (final BuildContext context, final bool select, final Widget? child)
-                {
-                  return Column(
+              child: Column(
+                children: <Widget>[
+                  Row(
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          const Expanded(child: Text("Max Darken")),
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: widget.prefs.shadingStepsMinus,
-                              builder: (final BuildContext context1, final int shadingLow, final Widget? child1)
-                              {
-                                return KPixSlider(
-                                  value: shadingLow.toDouble(),
-                                  min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
-                                  max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
-                                  onChanged: (final double value) {
-                                    widget.prefs.shadingStepsMinus.value = value.round();
-                                  },
-                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                );
+                      const Expanded(child: Text("Max Darken")),
+                      Expanded(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.prefs.shadingStepsMinus,
+                          builder: (final BuildContext context1, final int shadingLow, final Widget? child1)
+                          {
+                            return KPixSlider(
+                              value: shadingLow.toDouble(),
+                              min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
+                              max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
+                              onChanged: (final double value) {
+                                widget.prefs.shadingStepsMinus.value = value.round();
                               },
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: <Widget>[
-                          const Expanded(child: Text("Max Brighten")),
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: widget.prefs.shadingStepsPlus,
-                              builder: (final BuildContext context1, final int shadingHigh, final Widget? child1)
-                              {
-                                return KPixSlider(
-                                  value: shadingHigh.toDouble(),
-                                  min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
-                                  max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
-                                  onChanged: (final double value) {
-                                    widget.prefs.shadingStepsPlus.value = value.round();
-                                  },
-                                  textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                              textStyle: Theme.of(context).textTheme.bodyMedium!,
+                            );
+                          },
+                        ),
                       ),
                     ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      const Expanded(child: Text("Max Brighten")),
+                      Expanded(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.prefs.shadingStepsPlus,
+                          builder: (final BuildContext context1, final int shadingHigh, final Widget? child1)
+                          {
+                            return KPixSlider(
+                              value: shadingHigh.toDouble(),
+                              min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
+                              max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
+                              onChanged: (final double value) {
+                                widget.prefs.shadingStepsPlus.value = value.round();
+                              },
+                              textStyle: Theme.of(context).textTheme.bodyMedium!,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Expanded(child: Text("Default Frame Time", style: Theme.of(context).textTheme.titleSmall)),
+            Expanded(
+              flex: 2,
+              child: ValueListenableBuilder<int>(
+                valueListenable: widget.prefs.fps,
+                builder: (final BuildContext context, final int fps, final Widget? child)
+                {
+                  return KPixSlider(
+                    value: fps.toDouble(),
+                    min: widget.prefs.frameConstraints.minFps.toDouble(),
+                    max: widget.prefs.frameConstraints.maxFps.toDouble(),
+                    onChanged: (final double value) {
+                      widget.prefs.fps.value = value.round();
+                    },
+                    label: "$fps fps",
+                    textStyle: Theme.of(context).textTheme.bodyMedium!,
                   );
                 },
               ),

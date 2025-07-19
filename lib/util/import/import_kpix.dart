@@ -1033,7 +1033,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     HistoryTimeline hTimeline;
     if (fVersion < 3)
     {
-      final HistoryFrame hFrame = HistoryFrame(fps: Frame.defaultFps, layers: layerList, selectedLayerIndex: 0);
+      final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
+      final HistoryFrame hFrame = HistoryFrame(fps: constraints.defaultFps, layers: layerList, selectedLayerIndex: 0);
       hTimeline = HistoryTimeline(frames: <HistoryFrame>[hFrame], loopStart: 0, loopEnd: 0, selectedFrameIndex: 0);
     }
     else

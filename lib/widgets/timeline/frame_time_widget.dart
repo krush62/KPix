@@ -18,16 +18,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_number_picker_widget.dart';
 
-const int _minFrameTime = 1;
-const int _maxFrameTime = 30;
-
 class FrameTimeWidget extends StatefulWidget
 {
+  final FrameConstraints frameConstraints = GetIt.I.get<PreferenceManager>().frameConstraints;
   final Frame frame;
   final ValueNotifier<int> valueNotifier;
   final Function()? onDismiss;
@@ -35,7 +35,7 @@ class FrameTimeWidget extends StatefulWidget
   final Function({required int value})? onConfirmAll;
   FrameTimeWidget({super.key, required this.frame, this.onDismiss, this.onConfirmSingle, this.onConfirmAll}) : valueNotifier = ValueNotifier<int>(frame.fps.value)
   {
-    assert(valueNotifier.value >= _minFrameTime && valueNotifier.value <= _maxFrameTime);
+    assert(valueNotifier.value >= frameConstraints.minFps && valueNotifier.value <= frameConstraints.maxFps);
   }
 
 
@@ -85,8 +85,8 @@ class _FrameTimeWidgetState extends State<FrameTimeWidget>
                   children: <Widget>[
                     KPixNumberPickerWidget(
                       value: value,
-                      minValue: _minFrameTime,
-                      maxValue: _maxFrameTime,
+                      minValue: widget.frameConstraints.minFps,
+                      maxValue: widget.frameConstraints.maxFps,
                       onValueChanged: (final int newValue) {
                         widget.valueNotifier.value = newValue;
                       },

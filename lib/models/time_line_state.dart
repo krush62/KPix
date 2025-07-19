@@ -22,11 +22,19 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+
+class FrameConstraints
+{
+  final int minFps;
+  final int maxFps;
+  final int defaultFps;
+  const FrameConstraints({required this.minFps, required this.maxFps, required this.defaultFps});
+}
 
 class Frame
 {
-  static const int defaultFps = 20;
   final ValueNotifier<int> fps;
   final LayerCollection layerList;
 
@@ -34,7 +42,7 @@ class Frame
 
   Frame({required this.layerList, required final int fps}) : fps = ValueNotifier<int>(fps);
 
-  Frame.empty() : layerList = LayerCollection.empty(), fps = ValueNotifier<int>(defaultFps);
+  Frame.empty({required final int fps}) : layerList = LayerCollection.empty(), fps = ValueNotifier<int>(fps);
 }
 
 class LayerChangeNotifier with ChangeNotifier
@@ -88,10 +96,11 @@ class Timeline
 
   void init({required final AppState appState})
   {
+    final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
     final List<Frame> frameList = <Frame>[];
-    final Frame f = Frame.empty();
+    final Frame f = Frame.empty(fps: constraints.defaultFps);
     f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-    f.fps.value = Frame.defaultFps;
+    f.fps.value = constraints.defaultFps;
     frameList.add(f);
     frames.value = frameList;
     _selectedFrameIndex.value = 0;
@@ -259,7 +268,8 @@ class Timeline
 
   void _addNewFrame({required final bool right, required final bool copy})
   {
-    final Frame f = Frame.empty();
+    final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
+    final Frame f = Frame.empty(fps: constraints.defaultFps);
     final AppState appState = GetIt.I.get<AppState>();
 
     if (copy)
@@ -291,7 +301,7 @@ class Timeline
     else
     {
       f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-      f.fps.value = Frame.defaultFps;
+      f.fps.value = constraints.defaultFps;
     }
     final List<Frame> newFrames = <Frame>[];
     newFrames.addAll(frames.value);

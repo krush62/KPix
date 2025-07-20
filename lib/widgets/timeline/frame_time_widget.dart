@@ -46,69 +46,74 @@ class FrameTimeWidget extends StatefulWidget
 class _FrameTimeWidgetState extends State<FrameTimeWidget>
 {
   static const double _padding = 8.0;
-  static const double _width = 400.0;
-  static const double _height = 240.0;
+  static const double _width = 500.0;
 
   @override
   Widget build(final BuildContext context)
   {
-    return KPixAnimationWidget(
-      constraints: const BoxConstraints(maxWidth: _width, maxHeight: _height),
-      child: Padding(
-        padding: const EdgeInsets.all(_padding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
+      children: <Widget>[
+        KPixAnimationWidget(
+          constraints: const BoxConstraints(maxWidth: _width),
+          child: Padding(
+            padding: const EdgeInsets.all(_padding),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 6;}, child: const Text("6 fps"))),
-                const SizedBox(width: _padding,),
-                Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 10;}, child: const Text("10 fps"))),
-                const SizedBox(width: _padding,),
-                Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 12;}, child: const Text("12 fps"))),
-                const SizedBox(width: _padding,),
-                Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 16;}, child: const Text("16 fps"))),
-                const SizedBox(width: _padding,),
-                Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 24;}, child: const Text("24 fps"))),
-                const SizedBox(width: _padding,),
-                Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 30;}, child: const Text("30 fps"))),
-              ],
-            ),
-            const SizedBox(height: _padding,),
-            ValueListenableBuilder<int>(
-              valueListenable: widget.valueNotifier,
-              builder: (final BuildContext context, final int value, final Widget? child) {
-                final double msValue = 1000.0 / value.toDouble();
-                return Row(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    KPixNumberPickerWidget(
-                      value: value,
-                      minValue: widget.frameConstraints.minFps,
-                      maxValue: widget.frameConstraints.maxFps,
-                      onValueChanged: (final int newValue) {
-                        widget.valueNotifier.value = newValue;
-                      },
-                    ),
-                    Text(" fps (${msValue.toStringAsFixed(2)} ms)", style: Theme.of(context).textTheme.titleLarge,),
+                    Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 6;}, child: const Text("6 fps"))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 10;}, child: const Text("10 fps"))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 12;}, child: const Text("12 fps"))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 16;}, child: const Text("16 fps"))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 24;}, child: const Text("24 fps"))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: OutlinedButton(onPressed: () {widget.valueNotifier.value = 30;}, child: const Text("30 fps"))),
                   ],
-                );
-              },
-            ),
-            const SizedBox(height: _padding,),
-            Row(
-              children: <Widget>[
-                Expanded(child: Tooltip(message: "Cancel", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.xmark),))),
-                const SizedBox(width: _padding,),
-                Expanded(child: Tooltip(message: "Apply to All Frames", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.checkDouble)))),
-                const SizedBox(width: _padding,),
-                Expanded(child: Tooltip(message: "Apply to Current Frame", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.check)))),
+                ),
+                const SizedBox(height: _padding,),
+                ValueListenableBuilder<int>(
+                  valueListenable: widget.valueNotifier,
+                  builder: (final BuildContext context, final int value, final Widget? child) {
+                    final double msValue = 1000.0 / value.toDouble();
+                    return Row(
+                      children: <Widget>[
+                        KPixNumberPickerWidget(
+                          value: value,
+                          minValue: widget.frameConstraints.minFps,
+                          maxValue: widget.frameConstraints.maxFps,
+                          onValueChanged: (final int newValue) {
+                            widget.valueNotifier.value = newValue;
+                          },
+                        ),
+                        Text(" fps (${msValue.toStringAsFixed(2)} ms)", style: Theme.of(context).textTheme.titleLarge,),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: _padding,),
+                Row(
+                  children: <Widget>[
+                    Expanded(child: Tooltip(message: "Cancel", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.xmark),))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: Tooltip(message: "Apply to All Frames", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.checkDouble)))),
+                    const SizedBox(width: _padding,),
+                    Expanded(child: Tooltip(message: "Apply to Current Frame", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.check)))),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+        const Spacer(),
+      ],
     );
   }
 }

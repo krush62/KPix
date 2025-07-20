@@ -103,9 +103,9 @@ class Timeline
     f.fps.value = constraints.defaultFps;
     frameList.add(f);
     frames.value = frameList;
-    _selectedFrameIndex.value = 0;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
+    selectFrame(index: 0);
   }
 
   int get selectedFrameIndex => _selectedFrameIndex.value;

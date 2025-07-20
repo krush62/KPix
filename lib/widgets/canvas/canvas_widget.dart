@@ -899,7 +899,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
                     }
                     return IgnorePointer(
                       ignoring: !shouldShow,
-
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: SizeTransition(
@@ -917,7 +916,4 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       },
     );
   }
-
-
-
 }

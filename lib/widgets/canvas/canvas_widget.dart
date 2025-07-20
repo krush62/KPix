@@ -90,7 +90,8 @@ class CanvasWidget extends StatefulWidget {
   State<CanvasWidget> createState() => _CanvasWidgetState();
 }
 
-class _CanvasWidgetState extends State<CanvasWidget> {
+class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderStateMixin
+{
   final CanvasOptions _options = GetIt.I.get<PreferenceManager>().canvasWidgetOptions;
   final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
@@ -151,6 +152,9 @@ class _CanvasWidgetState extends State<CanvasWidget> {
 
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
+  late AnimationController _selectionBarAnimationController;
+  late Animation<double> _selectionBarAnimation;
+
   void _setDefaultCursor()
   {
     _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
@@ -185,6 +189,15 @@ class _CanvasWidgetState extends State<CanvasWidget> {
     _shaderOptions.onlyCurrentRampEnabled.addListener(_updateFromChange);
     _shaderOptions.shaderDirection.addListener(_updateFromChange);
     _appState.selectedColorNotifier.addListener(_updateFromChange);
+
+    _selectionBarAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+    );
+    _selectionBarAnimation = CurvedAnimation(
+      parent: _selectionBarAnimationController,
+      curve: Curves.easeInOut,
+    );
   }
 
   void _updateFromChange()
@@ -869,22 +882,29 @@ class _CanvasWidgetState extends State<CanvasWidget> {
                 ),
               ),
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
-              builder: (final BuildContext contextS, final bool hasNoSelection, final Widget? childS) {
-                return ValueListenableBuilder<ToolType>(
-                  valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-                  builder: (final BuildContext contextT, final ToolType toolType, final Widget? childT) {
+            ValueListenableBuilder<ToolType>(
+              valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+              builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
+                  builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
+                    final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
+                    if (shouldShow)
+                    {
+                      _selectionBarAnimationController.forward();
+                    }
+                    else
+                    {
+                      _selectionBarAnimationController.reverse();
+                    }
                     return IgnorePointer(
-                      ignoring: toolType != ToolType.select && hasNoSelection,
-                      child: AnimatedSlide(
-                        duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
-                        offset: (toolType == ToolType.select || !hasNoSelection) ? Offset.zero : const Offset(0.0, 0.1), //TODO MAGIC NUMBER
-                        curve: Curves.easeInOut,
-                        //opacity: toolType == ToolType.select ? 1.0 : 0.0,
-                        child: const Align(
-                            alignment: Alignment.bottomCenter,
-                            child: SelectionBarWidget(),
+                      ignoring: !shouldShow,
+
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SizeTransition(
+                          sizeFactor: _selectionBarAnimation,
+                          child: const SelectionBarWidget(),
                         ),
                       ),
                     );

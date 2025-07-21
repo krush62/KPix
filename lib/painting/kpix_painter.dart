@@ -903,16 +903,13 @@ class KPixPainter extends CustomPainter
     }
   }
 
-
-
-
-
   void _drawFrameBlending({required final DrawingParameters drawParams, required final double pxlSzDbl})
   {
     final int currentFrameIndex = _appState.timeline.selectedFrameIndex;
     final List<Frame> frameList = _appState.timeline.frames.value;
-
-    final Map<Frame, double> frameOpacityMap = <Frame, double>{};
+    final List<Frame> framesToBlend = <Frame>[];
+    final Color beforeTintColor = _frameBlendingOptions.tinting.value ? Colors.red : Colors.white;
+    final Color afterTintColor = _frameBlendingOptions.tinting.value ? Colors.green : Colors.white;
 
     //AFTER FRAMES
     for (int i = 0; i < _frameBlendingOptions.framesAfter.value; i++)
@@ -932,22 +929,30 @@ class KPixPainter extends CustomPainter
         break;
       }
 
-      if (nextFrame == _appState.timeline.selectedFrame || frameOpacityMap.containsKey(nextFrame))
+      if (nextFrame == _appState.timeline.selectedFrame || framesToBlend.contains(nextFrame))
       {
         break;
       }
       else
       {
+        double opacity = _frameBlendingOptions.opacity.value;
         if (_frameBlendingOptions.gradualOpacity.value && i > 0)
         {
           final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesAfter.value;
-          final double opacity = _frameBlendingOptions.opacity.value - (i * step);
-          frameOpacityMap[nextFrame] = opacity;
+          opacity = _frameBlendingOptions.opacity.value - (i * step);
+
         }
-        else
+        final int alpha = (opacity * 255).round().clamp(0, 255);
+        final Paint paint = Paint()
+          ..colorFilter = ColorFilter.mode(
+            afterTintColor.withAlpha(alpha),
+            BlendMode.modulate,
+          );
+        if (nextFrame.layerList.rasterImage != null)
         {
-          frameOpacityMap[nextFrame] = _frameBlendingOptions.opacity.value;
+          _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: nextFrame.layerList.rasterImage!, painter: paint);
         }
+        framesToBlend.add(nextFrame);
       }
     }
 
@@ -969,38 +974,30 @@ class KPixPainter extends CustomPainter
       {
         break;
       }
-      if (prevFrame == _appState.timeline.selectedFrame || frameOpacityMap.containsKey(prevFrame))
+      if (prevFrame == _appState.timeline.selectedFrame || framesToBlend.contains(prevFrame))
       {
         break;
       }
       else
       {
+        double opacity = _frameBlendingOptions.opacity.value;
         if (_frameBlendingOptions.gradualOpacity.value && i > 0)
         {
-          final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesBefore.value;
-          final double opacity = _frameBlendingOptions.opacity.value - (i * step);
-          frameOpacityMap[prevFrame] = opacity;
-        }
-        else
-        {
-          frameOpacityMap[prevFrame] = _frameBlendingOptions.opacity.value;
-        }
-      }
-    }
+          final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesAfter.value;
+          opacity = _frameBlendingOptions.opacity.value - (i * step);
 
-    for (final MapEntry<Frame, double> entry in frameOpacityMap.entries)
-    {
-      final Frame frame = entry.key;
-      final double opacity = entry.value;
-      final int alpha = (opacity * 255).round().clamp(0, 255);
-      final Paint paint = Paint()
-        ..colorFilter = ColorFilter.mode(
-          Colors.white.withAlpha(alpha),
-          BlendMode.modulate,
-        );
-      if (frame.layerList.rasterImage != null)
-      {
-        _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: frame.layerList.rasterImage!, painter: paint);
+        }
+        final int alpha = (opacity * 255).round().clamp(0, 255);
+        final Paint paint = Paint()
+          ..colorFilter = ColorFilter.mode(
+            beforeTintColor.withAlpha(alpha),
+            BlendMode.modulate,
+          );
+        if (prevFrame.layerList.rasterImage != null)
+        {
+          _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: prevFrame.layerList.rasterImage!, painter: paint);
+        }
+        framesToBlend.add(prevFrame);
       }
     }
   }

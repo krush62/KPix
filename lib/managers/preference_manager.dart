@@ -534,6 +534,7 @@ enum PreferenceBool
   FrameBlendingOptions_WrapBefore(defaultValue: true),
   FrameBlendingOptions_WrapAfter(defaultValue: true),
   FrameBlendingOptions_GradualOpacity(defaultValue: true),
+  FrameBlendingOptions_Tinting(defaultValue: true),
 
 
   ;
@@ -1015,18 +1016,19 @@ class PreferenceManager
     );
 
     frameBlendingOptions = FrameBlendingOptions(
-        enabled: _getValueB(PreferenceBool.FrameBlendingOptions_Enabled),
-        framesBefore: _getValueI(PreferenceInt.FrameBlendingOptions_FramesBefore),
-        framesAfter: _getValueI(PreferenceInt.FrameBlendingOptions_FramesAfter),
-        opacity: _getValueD(PreferenceDouble.FrameBlendingOptions_Opacity),
-        gradualOpacity: _getValueB(PreferenceBool.FrameBlendingOptions_GradualOpacity),
-        wrapAroundBefore: _getValueB(PreferenceBool.FrameBlendingOptions_WrapBefore),
-        wrapAroundAfter: _getValueB(PreferenceBool.FrameBlendingOptions_WrapAfter),
-        frameMin: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMin),
-        frameMax: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMax),
-        opacityMin: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMin),
-        opacityMax: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMax),
-        opacityStep: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityStep),
+      enabled: _getValueB(PreferenceBool.FrameBlendingOptions_Enabled),
+      framesBefore: _getValueI(PreferenceInt.FrameBlendingOptions_FramesBefore),
+      framesAfter: _getValueI(PreferenceInt.FrameBlendingOptions_FramesAfter),
+      opacity: _getValueD(PreferenceDouble.FrameBlendingOptions_Opacity),
+      gradualOpacity: _getValueB(PreferenceBool.FrameBlendingOptions_GradualOpacity),
+      wrapAroundBefore: _getValueB(PreferenceBool.FrameBlendingOptions_WrapBefore),
+      wrapAroundAfter: _getValueB(PreferenceBool.FrameBlendingOptions_WrapAfter),
+      frameMin: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMin),
+      frameMax: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMax),
+      opacityMin: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMin),
+      opacityMax: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMax),
+      opacityStep: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityStep),
+      tinting: _getValueB(PreferenceBool.FrameBlendingOptions_Tinting),
     );
 
   }

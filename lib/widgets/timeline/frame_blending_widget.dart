@@ -16,24 +16,6 @@
  *
  */
 
-/*
- *
- *  * KPix
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU Affero General Public License as published by
- *  * the Free Software Foundation, either version 3 of the License, or
- *  * (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  * GNU Affero General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU Affero General Public License
- *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -50,6 +32,7 @@ class FrameBlendingOptions
   final ValueNotifier<bool> wrapAroundAfter;
   final ValueNotifier<double> opacity;
   final ValueNotifier<bool> gradualOpacity;
+  final ValueNotifier<bool> tinting;
   final int frameMax;
   final int frameMin;
   final double opacityMin;
@@ -64,6 +47,7 @@ class FrameBlendingOptions
     required final bool gradualOpacity,
     required final bool wrapAroundBefore,
     required final bool wrapAroundAfter,
+    required final bool tinting,
     required this.frameMin,
     required this.frameMax,
     required this.opacityMin,
@@ -76,7 +60,8 @@ class FrameBlendingOptions
     framesAfter = ValueNotifier<int>(framesAfter),
     wrapAroundAfter = ValueNotifier<bool>(wrapAroundAfter),
     opacity = ValueNotifier<double>(opacity),
-    gradualOpacity = ValueNotifier<bool>(gradualOpacity);
+    gradualOpacity = ValueNotifier<bool>(gradualOpacity),
+    tinting = ValueNotifier<bool>(tinting);
 
 }
 
@@ -402,8 +387,54 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                     ),
                   ],
                 ),
+
+
+                //Tinting
+                Row(
+                  children: <Widget>[
+
+                    const Spacer(
+                      // ignore: avoid_redundant_argument_values
+                      flex: _expansion1,
+                    ),
+                    const Expanded(
+                      flex: _expansion2,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: _padding / 2.0),
+                          child: Text("Tinting"),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      // ignore: avoid_redundant_argument_values
+                      flex: _expansion3 + _expansion4 + _expansion5,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: widget.options.enabled,
+                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
+                          return ValueListenableBuilder<bool>(
+                            valueListenable: widget.options.tinting,
+                            builder: (final BuildContext context, final bool tinting, final Widget? child) {
+                              return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Switch(
+                                  value: tinting,
+                                  onChanged: enabled ? (final bool newTintingValue) {
+                                    widget.options.tinting.value = newTintingValue;
+                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                  } : null,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: _padding,),
-                Tooltip(message: "Apply to Current Frame", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.check))),
+                Tooltip(message: "Close", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.check))),
               ],
             ),
           ),

@@ -43,6 +43,7 @@ import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 
 class KPixPainterOptions
 {
@@ -129,6 +130,7 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<Offset> _primaryPressStart;
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
   final GuiPreferenceContent _guiOptions = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
+  final FrameBlendingOptions _frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
   late Color _blackSelectionAlphaColor;
   late Color _whiteSelectionAlphaColor;
   late Color _blackBorderAlphaColor;
@@ -740,8 +742,10 @@ class KPixPainter extends CustomPainter
     }
   }
 
-  void _drawRasterImage({required final DrawingParameters drawParams, required final double pxlSzDbl, required final ui.Image displayImage})
+  void _drawRasterImage({required final DrawingParameters drawParams, required final double pxlSzDbl, required final ui.Image displayImage, Paint? painter})
   {
+    painter ??= drawParams.paint;
+
     final CoordinateSetD effCanvasSize = CoordinateSetD(
         x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
         y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
@@ -780,7 +784,7 @@ class KPixPainter extends CustomPainter
       displayImage,
       srcRect,
       destRect,
-      drawParams.paint,
+      painter,
     );
   }
 
@@ -890,8 +894,115 @@ class KPixPainter extends CustomPainter
         {
           _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
         }
+
+        if (_frameBlendingOptions.enabled.value && _frameBlendingOptions.framesAfter.value + _frameBlendingOptions.framesBefore.value > 0)
+        {
+          _drawFrameBlending(drawParams: drawParams, pxlSzDbl: pxlSzDbl);
+        }
       }
+    }
+  }
+
+
+
+
+
+  void _drawFrameBlending({required final DrawingParameters drawParams, required final double pxlSzDbl})
+  {
+    final int currentFrameIndex = _appState.timeline.selectedFrameIndex;
+    final List<Frame> frameList = _appState.timeline.frames.value;
+
+    final Map<Frame, double> frameOpacityMap = <Frame, double>{};
+
+    //AFTER FRAMES
+    for (int i = 0; i < _frameBlendingOptions.framesAfter.value; i++)
+    {
+      final int nextFrameIndex = currentFrameIndex + i + 1;
+      Frame? nextFrame;
+      if (nextFrameIndex < frameList.length)
+      {
+        nextFrame = frameList[nextFrameIndex];
       }
+      else if (_frameBlendingOptions.wrapAroundAfter.value)
+      {
+        nextFrame = frameList[nextFrameIndex % frameList.length];
+      }
+      else
+      {
+        break;
+      }
+
+      if (nextFrame == _appState.timeline.selectedFrame || frameOpacityMap.containsKey(nextFrame))
+      {
+        break;
+      }
+      else
+      {
+        if (_frameBlendingOptions.gradualOpacity.value && i > 0)
+        {
+          final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesAfter.value;
+          final double opacity = _frameBlendingOptions.opacity.value - (i * step);
+          frameOpacityMap[nextFrame] = opacity;
+        }
+        else
+        {
+          frameOpacityMap[nextFrame] = _frameBlendingOptions.opacity.value;
+        }
+      }
+    }
+
+
+    //BEFORE FRAMES
+    for (int i = 0; i < _frameBlendingOptions.framesBefore.value; i++)
+    {
+      final int prevFrameIndex = currentFrameIndex - i - 1;
+      Frame? prevFrame;
+      if (prevFrameIndex >= 0)
+      {
+        prevFrame = frameList[prevFrameIndex];
+      }
+      else if (_frameBlendingOptions.wrapAroundBefore.value)
+      {
+        prevFrame = frameList[frameList.length - 1 + prevFrameIndex];
+      }
+      else
+      {
+        break;
+      }
+      if (prevFrame == _appState.timeline.selectedFrame || frameOpacityMap.containsKey(prevFrame))
+      {
+        break;
+      }
+      else
+      {
+        if (_frameBlendingOptions.gradualOpacity.value && i > 0)
+        {
+          final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesBefore.value;
+          final double opacity = _frameBlendingOptions.opacity.value - (i * step);
+          frameOpacityMap[prevFrame] = opacity;
+        }
+        else
+        {
+          frameOpacityMap[prevFrame] = _frameBlendingOptions.opacity.value;
+        }
+      }
+    }
+
+    for (final MapEntry<Frame, double> entry in frameOpacityMap.entries)
+    {
+      final Frame frame = entry.key;
+      final double opacity = entry.value;
+      final int alpha = (opacity * 255).round().clamp(0, 255);
+      final Paint paint = Paint()
+        ..colorFilter = ColorFilter.mode(
+          Colors.white.withAlpha(alpha),
+          BlendMode.modulate,
+        );
+      if (frame.layerList.rasterImage != null)
+      {
+        _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: frame.layerList.rasterImage!, painter: paint);
+      }
+    }
   }
 
   (ui.Color, ui.Color) getCheckerBoardColors(final int contrast)

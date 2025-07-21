@@ -33,6 +33,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 
 const Map<Type, IconData> layerIconMap = <Type, IconData>{
@@ -326,6 +327,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   final ScrollController _verticalScrollController = ScrollController();
   final ValueNotifier<bool> _autoScroll = ValueNotifier<bool>(true);
   static late KPixOverlay _frameTimeOverlay;
+  static late KPixOverlay _frameBlendingOverlay;
 
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
@@ -566,7 +568,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         if (!isPlaying)
                         {
                           final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-                          _frameTimeOverlay = KPixOverlay(
+
+                          /*_frameTimeOverlay = KPixOverlay(
                             entry: OverlayEntry(
                               builder: (final BuildContext context) => Stack(
                                 children: <Widget>[
@@ -587,7 +590,31 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                               ),
                             ),
                           );
-                          _frameTimeOverlay.show(context: context);
+                          _frameTimeOverlay.show(context: context);*/
+
+                          final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
+                          _frameBlendingOverlay = KPixOverlay(
+                            entry: OverlayEntry(
+                              builder: (final BuildContext context) => Stack(
+                                children: <Widget>[
+                                  ModalBarrier(
+                                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.all(options.padding),
+                                        child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: frameBlendingOptions,),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                          _frameBlendingOverlay.show(context: context);
                         }
                       },
                       child: Container(
@@ -635,6 +662,11 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     {
       f.fps.value = value;
     }
+  }
+
+  void _frameBlendingOverlayDismiss()
+  {
+    _frameBlendingOverlay.hide();
   }
 
 

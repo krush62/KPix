@@ -61,6 +61,7 @@ import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
+import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
@@ -244,9 +245,10 @@ enum PreferenceDouble
   SymmetryWidget_HorizontalIconSize(defaultValue: 20.0),
   SymmetryWidget_CenterButtonIconSize(defaultValue: 24.0),
 
-
-
-
+  FrameBlendingOptions_Opacity(defaultValue: 0.5),
+  FrameBlendingOptions_OpacityMin(defaultValue: 0.2),
+  FrameBlendingOptions_OpacityMax(defaultValue: 0.8),
+  FrameBlendingOptions_OpacityStep(defaultValue: 0.1),
   ;
 
   const PreferenceDouble({
@@ -488,6 +490,11 @@ enum PreferenceInt
 
   SymmetryWidget_AnimationDurationMs(defaultValue: 200),
 
+  FrameBlendingOptions_FramesBefore(defaultValue: 1),
+  FrameBlendingOptions_FramesAfter(defaultValue: 1),
+  FrameBlendingOptions_FramesMax(defaultValue: 4),
+  FrameBlendingOptions_FramesMin(defaultValue: 0),
+
   ;
 
 
@@ -522,6 +529,13 @@ enum PreferenceBool
   SelectLayerAfterInsert(defaultValue: true),
 
   DrawingLayerConstraints_DefaultGlowRecursive(defaultValue: true),
+
+  FrameBlendingOptions_Enabled(defaultValue: false),
+  FrameBlendingOptions_WrapBefore(defaultValue: true),
+  FrameBlendingOptions_WrapAfter(defaultValue: true),
+  FrameBlendingOptions_GradualOpacity(defaultValue: true),
+
+
   ;
   const PreferenceBool({
     required this.defaultValue,
@@ -670,6 +684,7 @@ class PreferenceManager
   late ColorRampRowWidgetOptions colorRampRowOptions;
   late SymmetryWidgetOptions symmetryWidgetOptions;
   late FrameConstraints frameConstraints;
+  late FrameBlendingOptions frameBlendingOptions;
 
   late ToolOptions toolOptions;
   late ShaderOptions shaderOptions;
@@ -913,8 +928,7 @@ class PreferenceManager
     frameConstraints = FrameConstraints(
       minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
       maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
-      defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),
-    );
+      defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),);
     selectionBarWidgetOptions = SelectionBarWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
         padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
@@ -998,6 +1012,21 @@ class PreferenceManager
       verticalIconSize: _getValueD(PreferenceDouble.SymmetryWidget_VerticalIconSize),
       horizontalIconSize: _getValueD(PreferenceDouble.SymmetryWidget_HorizontalIconSize),
       centerButtonIconSize: _getValueD(PreferenceDouble.SymmetryWidget_CenterButtonIconSize),
+    );
+
+    frameBlendingOptions = FrameBlendingOptions(
+        enabled: _getValueB(PreferenceBool.FrameBlendingOptions_Enabled),
+        framesBefore: _getValueI(PreferenceInt.FrameBlendingOptions_FramesBefore),
+        framesAfter: _getValueI(PreferenceInt.FrameBlendingOptions_FramesAfter),
+        opacity: _getValueD(PreferenceDouble.FrameBlendingOptions_Opacity),
+        gradualOpacity: _getValueB(PreferenceBool.FrameBlendingOptions_GradualOpacity),
+        wrapAroundBefore: _getValueB(PreferenceBool.FrameBlendingOptions_WrapBefore),
+        wrapAroundAfter: _getValueB(PreferenceBool.FrameBlendingOptions_WrapAfter),
+        frameMin: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMin),
+        frameMax: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMax),
+        opacityMin: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMin),
+        opacityMax: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMax),
+        opacityStep: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityStep),
     );
 
   }

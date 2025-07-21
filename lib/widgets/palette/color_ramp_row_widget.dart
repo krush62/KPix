@@ -124,7 +124,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
           },
         ),
         child: Padding(
-          padding: EdgeInsets.all(_options.buttonPadding),
+          padding: EdgeInsets.only(left: _options.buttonPadding, right: _options.buttonPadding,),
           child: FaIcon(
             color: Theme.of(context).primaryColor,
             FontAwesomeIcons.gripVertical,
@@ -167,12 +167,12 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
     return ValueListenableBuilder<ColorReference?>(
       valueListenable: _appState.selectedColorNotifier,
       builder: (final BuildContext context, final ColorReference? selectedColor, final Widget? child) {
+        final bool isSelected = selectedColor?.ramp == widget.rampData;
         return DecoratedBox(
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColorDark,
             borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
             border: Border.all(
-              color: selectedColor?.ramp == widget.rampData
+              color: isSelected
                   ? Theme.of(context).primaryColor
                   : Theme.of(context).primaryColorDark,
               width: _options.borderWidth,

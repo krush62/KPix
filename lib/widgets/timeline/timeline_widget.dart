@@ -568,8 +568,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         if (!isPlaying)
                         {
                           final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-
-                          /*_frameTimeOverlay = KPixOverlay(
+                          _frameTimeOverlay = KPixOverlay(
                             entry: OverlayEntry(
                               builder: (final BuildContext context) => Stack(
                                 children: <Widget>[
@@ -590,31 +589,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                               ),
                             ),
                           );
-                          _frameTimeOverlay.show(context: context);*/
-
-                          final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
-                          _frameBlendingOverlay = KPixOverlay(
-                            entry: OverlayEntry(
-                              builder: (final BuildContext context) => Stack(
-                                children: <Widget>[
-                                  ModalBarrier(
-                                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                                  ),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: EdgeInsets.all(options.padding),
-                                        child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: frameBlendingOptions,),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                          _frameBlendingOverlay.show(context: context);
+                          _frameTimeOverlay.show(context: context);
                         }
                       },
                       child: Container(
@@ -704,238 +679,281 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           valueListenable: widget.timeline.loopStartIndex,
                           builder: (final BuildContext context1, final int loopStart, final Widget? child1) {
                             return ValueListenableBuilder<bool>(
-                                valueListenable: widget.timeline.isPlaying,
-                                builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                  return Tooltip(
-                                    message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
-                                    waitDuration: AppState.toolTipDuration,
-                                    child: SizedBox(
-                                      height: _cellHeight,
-                                      child: IconButton.outlined(
-                                          onPressed: loopStart == loopEnd ? null : () {
-                                            widget.timeline.isPlaying.value = !isPlaying;
-                                          },
-                                          icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: _transportIconSize,),
-                                      ),
+                              valueListenable: widget.timeline.isPlaying,
+                              builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                                return Tooltip(
+                                  message: "${isPlaying ? "Pause" : "Play"}${_hotkeyManager.getShortcutString(action: HotkeyAction.timelinePlay)}",
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: SizedBox(
+                                    height: _cellHeight,
+                                    child: IconButton.outlined(
+                                        onPressed: loopStart == loopEnd ? null : () {
+                                          widget.timeline.isPlaying.value = !isPlaying;
+                                        },
+                                        icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: _transportIconSize,),
                                     ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    const Spacer(),
+                    Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: widget.timeline.selectedFrameIndexNotifier,
+                            builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
+                              return ValueListenableBuilder<List<Frame>>(
+                                valueListenable: widget.timeline.frames,
+                                builder: (final BuildContext context1, final List<Frame> frames, final Widget? child1) {
+                                  return ValueListenableBuilder<bool>(
+                                    valueListenable: widget.timeline.isPlaying,
+                                    builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                                      return Tooltip(
+                                        message: "Move Frame Left${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft)}",
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: SizedBox(
+                                          height: _cellHeight,
+                                          child: IconButton.outlined(
+                                              onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex <= 0) ? null : () {widget.timeline.moveFrameLeft();},
+                                              icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                               );
                             },
-                          );
-                        },
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: widget.timeline.selectedFrameIndexNotifier,
-                              builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
-                                return ValueListenableBuilder<List<Frame>>(
-                                  valueListenable: widget.timeline.frames,
-                                  builder: (final BuildContext context1, final List<Frame> frames, final Widget? child1) {
-                                    return ValueListenableBuilder<bool>(
-                                      valueListenable: widget.timeline.isPlaying,
-                                      builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                        return Tooltip(
-                                          message: "Move Frame Left${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameLeft)}",
-                                          waitDuration: AppState.toolTipDuration,
-                                          child: SizedBox(
-                                            height: _cellHeight,
-                                            child: IconButton.outlined(
-                                                onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex <= 0) ? null : () {widget.timeline.moveFrameLeft();},
-                                                icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
-                                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Tooltip(
+                          message: "Move Frame",
+                          waitDuration: AppState.toolTipDuration,
+                          child: FaIcon(
+                            FontAwesomeIcons.leftRight,
+                            size: _layerIconSize,
+                            color: Theme.of(context).primaryColorLight,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Expanded(
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: widget.timeline.selectedFrameIndexNotifier,
+                            builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
+                              return ValueListenableBuilder<List<Frame>>(
+                                valueListenable: widget.timeline.frames,
+                                builder: (final BuildContext context1, final List<Frame> frames, final Widget? child1) {
+                                  return ValueListenableBuilder<bool>(
+                                    valueListenable: widget.timeline.isPlaying,
+                                    builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                                      return Tooltip(
+                                        message: "Move Frame Right${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight)}",
+                                        waitDuration: AppState.toolTipDuration,
+                                        child: SizedBox(
+                                          height: _cellHeight,
+                                          child: IconButton.outlined(
+                                              onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex >= frames.length - 1) ? null : () {widget.timeline.moveFrameRight();},
+                                              icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
                                           ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(
-                            width: _padding / 2,
-                          ),
-                          Tooltip(
-                            message: "Move Frame",
-                            waitDuration: AppState.toolTipDuration,
-                            child: FaIcon(
-                              FontAwesomeIcons.leftRight,
-                              size: _layerIconSize,
-                              color: Theme.of(context).primaryColorLight,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: _padding / 2,
-                          ),
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: widget.timeline.selectedFrameIndexNotifier,
-                              builder: (final BuildContext context2, final int selectedFrameIndex, final Widget? child2) {
-                                return ValueListenableBuilder<List<Frame>>(
-                                  valueListenable: widget.timeline.frames,
-                                  builder: (final BuildContext context1, final List<Frame> frames, final Widget? child1) {
-                                    return ValueListenableBuilder<bool>(
-                                      valueListenable: widget.timeline.isPlaying,
-                                      builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                        return Tooltip(
-                                          message: "Move Frame Right${_hotkeyManager.getShortcutString(action: HotkeyAction.timelineMoveFrameRight)}",
-                                          waitDuration: AppState.toolTipDuration,
-                                          child: SizedBox(
-                                            height: _cellHeight,
-                                            child: IconButton.outlined(
-                                                onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex >= frames.length - 1) ? null : () {widget.timeline.moveFrameRight();},
-                                                icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: _padding),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: widget.timeline.isPlaying,
-                              builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return Tooltip(
-                                  message: "Add Frame Left",
-                                  waitDuration: AppState.toolTipDuration,
-                                  child: SizedBox(
-                                    height: _cellHeight,
-                                    child: IconButton.outlined(
-                                      onPressed: isPlaying ? null : () {widget.timeline.addNewFrameLeft();},
-                                      icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(
-                            width: _padding / 2,
-                          ),
-                          Tooltip(
-                            message: "Add Frame",
-                            waitDuration: AppState.toolTipDuration,
-                            child: FaIcon(
-                              FontAwesomeIcons.file,
-                              size: _layerIconSize,
-                              color: Theme.of(context).primaryColorLight,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: _padding / 2,
-                          ),
-                          Expanded(
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: widget.timeline.isPlaying,
-                              builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return Tooltip(
-                                  message: "Add Frame Right",
-                                  waitDuration: AppState.toolTipDuration,
-                                  child: SizedBox(
-                                    height: _cellHeight,
-                                    child: IconButton.outlined(
-                                      onPressed: isPlaying ? null : () {widget.timeline.addNewFrameRight();},
-                                      icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: _padding),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: ValueListenableBuilder<bool>(
-                                valueListenable: widget.timeline.isPlaying,
-                                builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                  return Tooltip(
-                                    message: "Copy Frame Left",
-                                    waitDuration: AppState.toolTipDuration,
-                                    child: SizedBox(
-                                      height: _cellHeight,
-                                      child: IconButton.outlined(
-                                          onPressed: isPlaying ? null : () {widget.timeline.copyFrameLeft();},
-                                          icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
-                            ),
+                              );
+                            },
                           ),
-                          const SizedBox(
-                            width: _padding / 2,
-                          ),
-                          Tooltip(
-                            message: "Copy Frame",
-                            waitDuration: AppState.toolTipDuration,
-                            child: FaIcon(
-                              FontAwesomeIcons.copy,
-                              size: _layerIconSize,
-                              color: Theme.of(context).primaryColorLight,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: _padding / 2,
-                          ),
-                          Expanded(
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: widget.timeline.isPlaying,
-                              builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                                return Tooltip(
-                                  message: "Copy Frame Right",
-                                  waitDuration: AppState.toolTipDuration,
-                                  child: SizedBox(
-                                    height: _cellHeight,
-                                    child: IconButton.outlined(
-                                        onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
-                                        icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: _padding),
-                      ValueListenableBuilder<List<Frame>>(
-                        valueListenable: widget.timeline.frames,
-                        builder: (final BuildContext context1, final List<Frame> frames, final Widget? child) {
-                          return ValueListenableBuilder<bool>(
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: _padding),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
                             valueListenable: widget.timeline.isPlaying,
                             builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                               return Tooltip(
-                                message: "Delete Frame",
+                                message: "Add Frame Left",
                                 waitDuration: AppState.toolTipDuration,
                                 child: SizedBox(
                                   height: _cellHeight,
                                   child: IconButton.outlined(
-                                      onPressed: isPlaying || frames.length <= 1 ? null : () { widget.timeline.deleteFrame(); },
-                                      icon: const FaIcon(FontAwesomeIcons.trash, size: _transportIconSize),
+                                    onPressed: isPlaying ? null : () {widget.timeline.addNewFrameLeft();},
+                                    icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
                                   ),
                                 ),
                               );
                             },
-                          );
-                        },
-                      ),
-                      const Spacer(),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Tooltip(
+                          message: "Add Frame",
+                          waitDuration: AppState.toolTipDuration,
+                          child: FaIcon(
+                            FontAwesomeIcons.file,
+                            size: _layerIconSize,
+                            color: Theme.of(context).primaryColorLight,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: widget.timeline.isPlaying,
+                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                              return Tooltip(
+                                message: "Add Frame Right",
+                                waitDuration: AppState.toolTipDuration,
+                                child: SizedBox(
+                                  height: _cellHeight,
+                                  child: IconButton.outlined(
+                                    onPressed: isPlaying ? null : () {widget.timeline.addNewFrameRight();},
+                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: _padding),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: widget.timeline.isPlaying,
+                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                              return Tooltip(
+                                message: "Copy Frame Left",
+                                waitDuration: AppState.toolTipDuration,
+                                child: SizedBox(
+                                  height: _cellHeight,
+                                  child: IconButton.outlined(
+                                      onPressed: isPlaying ? null : () {widget.timeline.copyFrameLeft();},
+                                      icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Tooltip(
+                          message: "Copy Frame",
+                          waitDuration: AppState.toolTipDuration,
+                          child: FaIcon(
+                            FontAwesomeIcons.copy,
+                            size: _layerIconSize,
+                            color: Theme.of(context).primaryColorLight,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: widget.timeline.isPlaying,
+                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                              return Tooltip(
+                                message: "Copy Frame Right",
+                                waitDuration: AppState.toolTipDuration,
+                                child: SizedBox(
+                                  height: _cellHeight,
+                                  child: IconButton.outlined(
+                                    onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
+                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: _padding),
+                    ValueListenableBuilder<List<Frame>>(
+                      valueListenable: widget.timeline.frames,
+                      builder: (final BuildContext context1, final List<Frame> frames, final Widget? child) {
+                        return ValueListenableBuilder<bool>(
+                          valueListenable: widget.timeline.isPlaying,
+                          builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                            return Tooltip(
+                              message: "Delete Frame",
+                              waitDuration: AppState.toolTipDuration,
+                              child: SizedBox(
+                                height: _cellHeight,
+                                child: IconButton.outlined(
+                                    onPressed: isPlaying || frames.length <= 1 ? null : () { widget.timeline.deleteFrame(); },
+                                    icon: const FaIcon(FontAwesomeIcons.trash, size: _transportIconSize),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
+                    const Spacer(),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: widget.timeline.isPlaying,
+                      builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                        return Tooltip(
+                          message: "Frame Blending",
+                          waitDuration: AppState.toolTipDuration,
+                          child: SizedBox(
+                            height: _cellHeight,
+                            child: IconButton.outlined(
+                              onPressed: isPlaying ? null : () {
+                                final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+                                final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
+                                _frameBlendingOverlay = KPixOverlay(
+                                  entry: OverlayEntry(
+                                    builder: (final BuildContext context) => Stack(
+                                      children: <Widget>[
+                                        ModalBarrier(
+                                          color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                        ),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.all(options.padding),
+                                              child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: frameBlendingOptions,),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                                _frameBlendingOverlay.show(context: context);
+                              },
+                              icon: const FaIcon(FontAwesomeIcons.blender, size: _transportIconSize),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import 'dart:collection';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -38,6 +37,7 @@ import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 
 class LayerCollection with ChangeNotifier
 {
+  static const int maxLayers = 5;
   final List<LayerState> _layers = <LayerState>[];
   final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
   ui.Image? _rasterImage;
@@ -84,9 +84,18 @@ class LayerCollection with ChangeNotifier
 
   void _addLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
   {
+    bool couldAddAllLayers = true;
     for (final LayerState layer in layers)
     {
-      _layers.add(layer);
+      if (_layers.length >= maxLayers)
+      {
+        couldAddAllLayers = false;
+        break;
+      }
+      else
+      {
+        _layers.add(layer);
+      }
     }
     if (_layers.isNotEmpty)
     {
@@ -98,6 +107,10 @@ class LayerCollection with ChangeNotifier
       {
         selectLayer(newLayer: _layers.first);
       }
+    }
+    if (!couldAddAllLayers)
+    {
+      GetIt.I.get<AppState>().showMessage(text: "Could not add all layers.");
     }
   }
 
@@ -121,8 +134,6 @@ class LayerCollection with ChangeNotifier
       notifyListeners();
     }
   }
-
-
 
   void replaceLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
   {
@@ -149,126 +160,166 @@ class LayerCollection with ChangeNotifier
   }
 
 
-  ReferenceLayerState addNewReferenceLayer({final bool select = false})
+  ReferenceLayerState? addNewReferenceLayer({final bool select = false})
   {
-    final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
-    final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
-    if (_layers.isEmpty)
+    if (_layers.length >= maxLayers)
     {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      _layers.add(newLayer);
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return null;
     }
     else
     {
-      _layers.insert(getSelectedLayerIndex(), newLayer);
-    }
+      final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+      final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
+      if (_layers.isEmpty)
+      {
+        newLayer.isSelected.value = true;
+        _currentLayer.value = newLayer;
+        _layers.add(newLayer);
+      }
+      else
+      {
+        _layers.insert(getSelectedLayerIndex(), newLayer);
+      }
 
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
+      if (select)
+      {
+        selectLayer(newLayer: newLayer);
+      }
+      notifyListeners();
+      return newLayer;
     }
-    notifyListeners();
-    return newLayer;
   }
 
-  ShadingLayerState addNewShadingLayer({final bool select = false})
+  ShadingLayerState? addNewShadingLayer({final bool select = false})
   {
-    final ShadingLayerState newLayer = ShadingLayerState();
-    final List<LayerState> layerList = <LayerState>[];
-    if (_layers.isEmpty)
+    if (_layers.length >= maxLayers)
     {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      layerList.add(newLayer);
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return null;
     }
     else
     {
-      _layers.insert(getSelectedLayerIndex(), newLayer);
+      final ShadingLayerState newLayer = ShadingLayerState();
+      final List<LayerState> layerList = <LayerState>[];
+      if (_layers.isEmpty)
+      {
+        newLayer.isSelected.value = true;
+        _currentLayer.value = newLayer;
+        layerList.add(newLayer);
+      }
+      else
+      {
+        _layers.insert(getSelectedLayerIndex(), newLayer);
+      }
+      if (select)
+      {
+        selectLayer(newLayer: newLayer);
+      }
+      notifyListeners();
+      return newLayer;
     }
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
-    notifyListeners();
-    return newLayer;
   }
 
-  DitherLayerState addNewDitherLayer({final bool select = false})
+  DitherLayerState? addNewDitherLayer({final bool select = false})
   {
-    final DitherLayerState newLayer = DitherLayerState();
-    final List<LayerState> layerList = <LayerState>[];
-    if (_layers.isEmpty)
+    if (_layers.length >= maxLayers)
     {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      layerList.add(newLayer);
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return null;
     }
     else
     {
-      _layers.insert(getSelectedLayerIndex(), newLayer);
+      final DitherLayerState newLayer = DitherLayerState();
+      final List<LayerState> layerList = <LayerState>[];
+      if (_layers.isEmpty)
+      {
+        newLayer.isSelected.value = true;
+        _currentLayer.value = newLayer;
+        layerList.add(newLayer);
+      }
+      else
+      {
+        _layers.insert(getSelectedLayerIndex(), newLayer);
+      }
+      if (select)
+      {
+        selectLayer(newLayer: newLayer);
+      }
+      notifyListeners();
+      return newLayer;
     }
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
-    notifyListeners();
-    return newLayer;
   }
 
-  GridLayerState addNewGridLayer({final bool select = false})
+  GridLayerState? addNewGridLayer({final bool select = false})
   {
-    final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
-    final List<LayerState> layerList = <LayerState>[];
-    final GridLayerState newLayer = GridLayerState(
-      brightness: gridSettings.brightnessDefault,
-      gridType: gridSettings.gridTypeDefault,
-      intervalX: gridSettings.intervalXDefault,
-      intervalY: gridSettings.intervalYDefault,
-      opacity: gridSettings.opacityDefault,
-      horizonPosition: gridSettings.horizonDefault,
-      vanishingPoint1: gridSettings.vanishingPoint1Default,
-      vanishingPoint2: gridSettings.vanishingPoint2Default,
-      vanishingPoint3: gridSettings.vanishingPoint3Default,
-    );
-    if (_layers.isEmpty)
+    if (_layers.length >= maxLayers)
     {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      layerList.add(newLayer);
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return null;
     }
     else
     {
-      _layers.insert(getSelectedLayerIndex(), newLayer);
+      final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
+      final List<LayerState> layerList = <LayerState>[];
+      final GridLayerState newLayer = GridLayerState(
+        brightness: gridSettings.brightnessDefault,
+        gridType: gridSettings.gridTypeDefault,
+        intervalX: gridSettings.intervalXDefault,
+        intervalY: gridSettings.intervalYDefault,
+        opacity: gridSettings.opacityDefault,
+        horizonPosition: gridSettings.horizonDefault,
+        vanishingPoint1: gridSettings.vanishingPoint1Default,
+        vanishingPoint2: gridSettings.vanishingPoint2Default,
+        vanishingPoint3: gridSettings.vanishingPoint3Default,
+      );
+      if (_layers.isEmpty)
+      {
+        newLayer.isSelected.value = true;
+        _currentLayer.value = newLayer;
+        layerList.add(newLayer);
+      }
+      else
+      {
+        _layers.insert(getSelectedLayerIndex(), newLayer);
+      }
+      if (select)
+      {
+        selectLayer(newLayer: newLayer);
+      }
+      notifyListeners();
+      return newLayer;
     }
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
-    notifyListeners();
-    return newLayer;
   }
 
-  DrawingLayerState addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
+  DrawingLayerState? addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
   {
-    final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content, ramps: ramps);
-    if (_layers.isEmpty)
+    if (_layers.length >= maxLayers)
     {
-      newLayer.isSelected.value = true;
-      _currentLayer.value = newLayer;
-      _layers.add(newLayer);
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return null;
     }
     else
     {
-      final int currentLayerIndex = getSelectedLayerIndex();
-      _layers.insert(currentLayerIndex, newLayer);
+      final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content, ramps: ramps);
+      if (_layers.isEmpty)
+      {
+        newLayer.isSelected.value = true;
+        _currentLayer.value = newLayer;
+        _layers.add(newLayer);
+      }
+      else
+      {
+        final int currentLayerIndex = getSelectedLayerIndex();
+        _layers.insert(currentLayerIndex, newLayer);
+      }
+      if (select)
+      {
+        selectLayer(newLayer: newLayer);
+      }
+      notifyListeners();
+      return newLayer;
     }
-    if (select)
-    {
-      selectLayer(newLayer: newLayer);
-    }
-    notifyListeners();
-    return newLayer;
   }
 
   //returns previous layer
@@ -438,48 +489,56 @@ class LayerCollection with ChangeNotifier
 
   LayerState? duplicateLayer({required final LayerState duplicateLayer, final bool insertAtEnd = false})
   {
-    LayerState? addLayer;
-    if (duplicateLayer.runtimeType == DrawingLayerState)
+    if (_layers.length >= maxLayers)
     {
-      final DrawingLayerState drawingLayer = duplicateLayer as DrawingLayerState;
-      addLayer = DrawingLayerState.from(other: drawingLayer);
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return null;
     }
-    else if (duplicateLayer.runtimeType == ReferenceLayerState)
+    else
     {
-      final ReferenceLayerState referenceLayer = duplicateLayer as ReferenceLayerState;
-      addLayer = ReferenceLayerState.from(other: referenceLayer);
-    }
-    else if (duplicateLayer.runtimeType == GridLayerState)
-    {
-      final GridLayerState gridLayer = duplicateLayer as GridLayerState;
-      addLayer = GridLayerState.from(other: gridLayer);
-    }
-    else if (duplicateLayer.runtimeType == ShadingLayerState)
-    {
-      final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
-      addLayer = ShadingLayerState.from(other: shadingLayer);
-    }
-    else if (duplicateLayer.runtimeType == DitherLayerState)
-    {
-      final DitherLayerState ditherLayer = duplicateLayer as DitherLayerState;
-      addLayer = DitherLayerState.from(other: ditherLayer);
-    }
-
-    if (addLayer != null)
-    {
-      if (insertAtEnd)
+      LayerState? addLayer;
+      if (duplicateLayer.runtimeType == DrawingLayerState)
       {
-        _layers.add(addLayer);
+        final DrawingLayerState drawingLayer = duplicateLayer as DrawingLayerState;
+        addLayer = DrawingLayerState.from(other: drawingLayer);
       }
-      else
+      else if (duplicateLayer.runtimeType == ReferenceLayerState)
       {
-        final int currentIndex = getLayerPosition(state: duplicateLayer);
-        _layers.insert(currentIndex, addLayer);
+        final ReferenceLayerState referenceLayer = duplicateLayer as ReferenceLayerState;
+        addLayer = ReferenceLayerState.from(other: referenceLayer);
+      }
+      else if (duplicateLayer.runtimeType == GridLayerState)
+      {
+        final GridLayerState gridLayer = duplicateLayer as GridLayerState;
+        addLayer = GridLayerState.from(other: gridLayer);
+      }
+      else if (duplicateLayer.runtimeType == ShadingLayerState)
+      {
+        final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
+        addLayer = ShadingLayerState.from(other: shadingLayer);
+      }
+      else if (duplicateLayer.runtimeType == DitherLayerState)
+      {
+        final DitherLayerState ditherLayer = duplicateLayer as DitherLayerState;
+        addLayer = DitherLayerState.from(other: ditherLayer);
       }
 
-      notifyListeners();
+      if (addLayer != null)
+      {
+        if (insertAtEnd)
+        {
+          _layers.add(addLayer);
+        }
+        else
+        {
+          final int currentIndex = getLayerPosition(state: duplicateLayer);
+          _layers.insert(currentIndex, addLayer);
+        }
+
+        notifyListeners();
+      }
+      return addLayer;
     }
-    return addLayer;
   }
 
   void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior, required final List<KPalRampData> colorRamps})

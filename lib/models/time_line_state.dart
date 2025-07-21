@@ -55,6 +55,7 @@ class LayerChangeNotifier with ChangeNotifier
 
 class Timeline
 {
+  static const int maxFrames = 256;
   final ValueNotifier<int> _selectedFrameIndex;
   final ValueNotifier<List<Frame>> frames;
   final ValueNotifier<bool> isPlaying;
@@ -268,68 +269,75 @@ class Timeline
 
   void _addNewFrame({required final bool right, required final bool copy})
   {
-    final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
-    final Frame f = Frame.empty(fps: constraints.defaultFps);
     final AppState appState = GetIt.I.get<AppState>();
-
-    if (copy)
+    if (frames.value.length >= maxFrames)
     {
-      final Frame cf = frames.value[selectedFrameIndex];
-      LayerState? layerToSelect;
-      for (int i = 0; i < cf.layerList.length; i++)
+      appState.showMessage(text: "Cannot add more frames.");
+      return;
+    }
+    else
+    {
+      final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
+      final Frame f = Frame.empty(fps: constraints.defaultFps);
+      if (copy)
       {
-        final LayerState l = cf.layerList.getLayer(index: i);
-        final LayerState? addedLayer = f.layerList.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
-        if (l.isSelected.value)
+        final Frame cf = frames.value[selectedFrameIndex];
+        LayerState? layerToSelect;
+        for (int i = 0; i < cf.layerList.length; i++)
         {
-          layerToSelect = addedLayer;
+          final LayerState l = cf.layerList.getLayer(index: i);
+          final LayerState? addedLayer = f.layerList.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
+          if (l.isSelected.value)
+          {
+            layerToSelect = addedLayer;
+          }
         }
-      }
 
-      if (layerToSelect != null)
-      {
-        f.layerList.selectLayer(newLayer: layerToSelect);
+        if (layerToSelect != null)
+        {
+          f.layerList.selectLayer(newLayer: layerToSelect);
+        }
+        else
+        {
+          f.layerList.selectLayer(newLayer: f.layerList.getLayer(index: 0));
+        }
+
+
+        f.fps.value = cf.fps.value;
       }
       else
       {
-        f.layerList.selectLayer(newLayer: f.layerList.getLayer(index: 0));
+        f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+        f.fps.value = constraints.defaultFps;
+      }
+      final List<Frame> newFrames = <Frame>[];
+      newFrames.addAll(frames.value);
+      if (right)
+      {
+        newFrames.insert(selectedFrameIndex + 1, f);
+      }
+      else
+      {
+        newFrames.insert(selectedFrameIndex, f);
+      }
+      frames.value = newFrames;
+      final int originalIndex = selectedFrameIndex;
+      selectFrame(index: selectedFrameIndex + 1);
+      if (!right)
+      {
+        selectFrame(index: selectedFrameIndex - 1);
       }
 
+      if (originalIndex <= loopEndIndex.value)
+      {
+        loopEndIndex.value++;
 
-      f.fps.value = cf.fps.value;
-    }
-    else
-    {
-      f.layerList.addNewDrawingLayer(canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-      f.fps.value = constraints.defaultFps;
-    }
-    final List<Frame> newFrames = <Frame>[];
-    newFrames.addAll(frames.value);
-    if (right)
-    {
-      newFrames.insert(selectedFrameIndex + 1, f);
-    }
-    else
-    {
-      newFrames.insert(selectedFrameIndex, f);
-    }
-    frames.value = newFrames;
-    final int originalIndex = selectedFrameIndex;
-    selectFrame(index: selectedFrameIndex + 1);
-    if (!right)
-    {
-      selectFrame(index: selectedFrameIndex - 1);
-    }
+      }
 
-    if (originalIndex <= loopEndIndex.value)
-    {
-      loopEndIndex.value++;
-
-    }
-
-    if (originalIndex < loopStartIndex.value)
-    {
-      loopStartIndex.value++;
+      if (originalIndex < loopStartIndex.value)
+      {
+        loopStartIndex.value++;
+      }
     }
   }
 

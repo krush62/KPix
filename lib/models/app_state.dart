@@ -458,13 +458,21 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final ReferenceLayerState newLayer = timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
-      if (addToHistoryStack)
+      final ReferenceLayerState? newLayer = timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
+      if (newLayer != null)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
+        }
+        timeline.layerChangeNotifier.reportChange();
+        return newLayer;
       }
-      timeline.layerChangeNotifier.reportChange();
-      return newLayer;
+      else
+      {
+        return null;
+      }
+
     }
     else
     {
@@ -476,13 +484,20 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final ShadingLayerState newLayer = timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
-      if (addToHistoryStack)
+      final ShadingLayerState? newLayer = timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
+      if (newLayer != null)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewShading);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewShading);
+        }
+        timeline.layerChangeNotifier.reportChange();
+        return newLayer;
       }
-      timeline.layerChangeNotifier.reportChange();
-      return newLayer;
+      else
+      {
+        return null;
+      }
     }
     else
     {
@@ -494,32 +509,45 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final DitherLayerState newLayer = timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
-      if (addToHistoryStack)
+      final DitherLayerState? newLayer = timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
+      if (newLayer != null)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDither);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDither);
+        }
+        timeline.layerChangeNotifier.reportChange();
+        return newLayer;
       }
-      timeline.layerChangeNotifier.reportChange();
-      return newLayer;
+      else
+      {
+        return null;
+      }
     }
     else
     {
       return null;
     }
-
   }
 
   GridLayerState? addNewGridLayer({final bool addToHistoryStack = true, final bool select = false})
   {
     if (timeline.selectedFrame != null)
     {
-      final GridLayerState newLayer = timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
-      if (addToHistoryStack)
+      final GridLayerState? newLayer = timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
+      if (newLayer != null)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
+        }
+        timeline.layerChangeNotifier.reportChange();
+        return newLayer;
       }
-      timeline.layerChangeNotifier.reportChange();
-      return newLayer;
+      else
+      {
+        return null;
+      }
     }
     else
     {
@@ -532,17 +560,24 @@ class AppState
     if (timeline.selectedFrame != null)
     {
       final bool setSelectionStateLayer = timeline.selectedFrame!.layerList.isEmpty;
-      final DrawingLayerState newLayer = timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
-      if (setSelectionStateLayer)
+      final DrawingLayerState? newLayer = timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
+      if (newLayer != null)
       {
-        selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+        if (setSelectionStateLayer)
+        {
+          selectionState.selection.changeLayer(oldLayer: null, newLayer: newLayer);
+        }
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDrawing);
+        }
+        timeline.layerChangeNotifier.reportChange();
+        return newLayer;
       }
-      if (addToHistoryStack)
+      else
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDrawing);
+        return null;
       }
-      timeline.layerChangeNotifier.reportChange();
-      return newLayer;
     }
     else
     {

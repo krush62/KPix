@@ -33,6 +33,7 @@ class FrameBlendingOptions
   final ValueNotifier<double> opacity;
   final ValueNotifier<bool> gradualOpacity;
   final ValueNotifier<bool> tinting;
+  final ValueNotifier<bool> activeLayerOnly;
   final int frameMax;
   final int frameMin;
   final double opacityMin;
@@ -48,6 +49,7 @@ class FrameBlendingOptions
     required final bool wrapAroundBefore,
     required final bool wrapAroundAfter,
     required final bool tinting,
+    required final bool activeLayerOnly,
     required this.frameMin,
     required this.frameMax,
     required this.opacityMin,
@@ -61,7 +63,8 @@ class FrameBlendingOptions
     wrapAroundAfter = ValueNotifier<bool>(wrapAroundAfter),
     opacity = ValueNotifier<double>(opacity),
     gradualOpacity = ValueNotifier<bool>(gradualOpacity),
-    tinting = ValueNotifier<bool>(tinting);
+    tinting = ValueNotifier<bool>(tinting),
+    activeLayerOnly = ValueNotifier<bool>(activeLayerOnly);
 
 }
 
@@ -392,7 +395,6 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                 //Tinting
                 Row(
                   children: <Widget>[
-
                     const Spacer(
                       // ignore: avoid_redundant_argument_values
                       flex: _expansion1,
@@ -422,6 +424,50 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   value: tinting,
                                   onChanged: enabled ? (final bool newTintingValue) {
                                     widget.options.tinting.value = newTintingValue;
+                                    GetIt.I.get<AppState>().repaintNotifier.repaint();
+                                  } : null,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                //Active Layer Only
+                Row(
+                  children: <Widget>[
+                    const Spacer(
+                      // ignore: avoid_redundant_argument_values
+                      flex: _expansion1,
+                    ),
+                    const Expanded(
+                      flex: _expansion2,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: _padding / 2.0),
+                          child: Text("Active Layer Only"),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      // ignore: avoid_redundant_argument_values
+                      flex: _expansion3 + _expansion4 + _expansion5,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: widget.options.enabled,
+                        builder: (final BuildContext context2, final bool enabled, final Widget? child2) {
+                          return ValueListenableBuilder<bool>(
+                            valueListenable: widget.options.activeLayerOnly,
+                            builder: (final BuildContext context, final bool activeLayerOnly, final Widget? child) {
+                              return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Switch(
+                                  value: activeLayerOnly,
+                                  onChanged: enabled ? (final bool newActiveLayerOnly) {
+                                    widget.options.activeLayerOnly.value = newActiveLayerOnly;
                                     GetIt.I.get<AppState>().repaintNotifier.repaint();
                                   } : null,
                                 ),

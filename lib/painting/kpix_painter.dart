@@ -895,7 +895,7 @@ class KPixPainter extends CustomPainter
           _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
         }
 
-        if (_frameBlendingOptions.enabled.value && _frameBlendingOptions.framesAfter.value + _frameBlendingOptions.framesBefore.value > 0)
+        if (_frameBlendingOptions.enabled.value && _frameBlendingOptions.framesAfter.value + _frameBlendingOptions.framesBefore.value > 0 && _appState.timeline.frames.value.length > 1)
         {
           _drawFrameBlending(drawParams: drawParams, pxlSzDbl: pxlSzDbl);
         }
@@ -911,95 +911,100 @@ class KPixPainter extends CustomPainter
     final Color beforeTintColor = _frameBlendingOptions.tinting.value ? Colors.red : Colors.white;
     final Color afterTintColor = _frameBlendingOptions.tinting.value ? Colors.green : Colors.white;
 
-    //AFTER FRAMES
-    for (int i = 0; i < _frameBlendingOptions.framesAfter.value; i++)
+    void processFrames(
+        final int frameCount,
+        final Color tintColor,
+        final bool wrapAround,
+        final bool directionAfter,
+        )
     {
-      final int nextFrameIndex = currentFrameIndex + i + 1;
-      Frame? nextFrame;
-      if (nextFrameIndex < frameList.length)
+      for (int i = 0; i < frameCount; i++)
       {
-        nextFrame = frameList[nextFrameIndex];
-      }
-      else if (_frameBlendingOptions.wrapAroundAfter.value)
-      {
-        nextFrame = frameList[nextFrameIndex % frameList.length];
-      }
-      else
-      {
-        break;
-      }
+        final int frameIndexOffset = directionAfter ? i + 1 : -(i + 1);
+        final int targetFrameIndex = currentFrameIndex + frameIndexOffset;
+        Frame? frameToProcess;
 
-      if (nextFrame == _appState.timeline.selectedFrame || framesToBlend.contains(nextFrame))
-      {
-        break;
-      }
-      else
-      {
-        double opacity = _frameBlendingOptions.opacity.value;
-        if (_frameBlendingOptions.gradualOpacity.value && i > 0)
+        if (directionAfter)
         {
-          final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesAfter.value;
-          opacity = _frameBlendingOptions.opacity.value - (i * step);
+          if (targetFrameIndex < frameList.length)
+          {
+            frameToProcess = frameList[targetFrameIndex];
+          }
+          else if (wrapAround)
+          {
+            frameToProcess = frameList[targetFrameIndex % frameList.length];
+          }
+        }
+        else
+        {
+          if (targetFrameIndex >= 0)
+          {
+            frameToProcess = frameList[targetFrameIndex];
+          }
+          else if (wrapAround)
+          {
+            final int positiveIndex = (frameList.length + (targetFrameIndex % frameList.length)) % frameList.length;
+            frameToProcess = frameList[positiveIndex];
+          }
+        }
 
-        }
-        final int alpha = (opacity * 255).round().clamp(0, 255);
-        final Paint paint = Paint()
-          ..colorFilter = ColorFilter.mode(
-            afterTintColor.withAlpha(alpha),
-            BlendMode.modulate,
-          );
-        if (nextFrame.layerList.rasterImage != null)
+        if (frameToProcess == null || frameToProcess == _appState.timeline.selectedFrame || framesToBlend.contains(frameToProcess))
         {
-          _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: nextFrame.layerList.rasterImage!, painter: paint);
+          break;
         }
-        framesToBlend.add(nextFrame);
+        else
+        {
+          double opacity = _frameBlendingOptions.opacity.value;
+          if (_frameBlendingOptions.gradualOpacity.value && i > 0)
+          {
+            final double step = _frameBlendingOptions.opacity.value / frameCount;
+            opacity = _frameBlendingOptions.opacity.value - (i * step);
+          }
+          final int alpha = (opacity * 255).round().clamp(0, 255);
+          final Paint paint = Paint()
+            ..colorFilter = ColorFilter.mode(
+              tintColor.withAlpha(alpha),
+              BlendMode.modulate,
+            );
+
+          ui.Image? img;
+          if (_frameBlendingOptions.activeLayerOnly.value)
+          {
+            final LayerState? activeLayer = frameToProcess.layerList.currentLayer;
+            if (activeLayer != null && activeLayer is RasterableLayerState)
+            {
+              img = activeLayer.rasterImage.value;
+            }
+          }
+          else
+          {
+            img = frameToProcess.layerList.rasterImage;
+          }
+
+          if (img != null)
+          {
+            _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: img, painter: paint);
+          }
+          framesToBlend.add(frameToProcess);
+        }
       }
     }
 
+    //AFTER FRAMES
+    processFrames(
+      _frameBlendingOptions.framesAfter.value,
+      afterTintColor,
+      _frameBlendingOptions.wrapAroundAfter.value,
+      true,
+    );
 
     //BEFORE FRAMES
-    for (int i = 0; i < _frameBlendingOptions.framesBefore.value; i++)
-    {
-      final int prevFrameIndex = currentFrameIndex - i - 1;
-      Frame? prevFrame;
-      if (prevFrameIndex >= 0)
-      {
-        prevFrame = frameList[prevFrameIndex];
-      }
-      else if (_frameBlendingOptions.wrapAroundBefore.value)
-      {
-        prevFrame = frameList[frameList.length - 1 + prevFrameIndex];
-      }
-      else
-      {
-        break;
-      }
-      if (prevFrame == _appState.timeline.selectedFrame || framesToBlend.contains(prevFrame))
-      {
-        break;
-      }
-      else
-      {
-        double opacity = _frameBlendingOptions.opacity.value;
-        if (_frameBlendingOptions.gradualOpacity.value && i > 0)
-        {
-          final double step = _frameBlendingOptions.opacity.value / _frameBlendingOptions.framesAfter.value;
-          opacity = _frameBlendingOptions.opacity.value - (i * step);
-
-        }
-        final int alpha = (opacity * 255).round().clamp(0, 255);
-        final Paint paint = Paint()
-          ..colorFilter = ColorFilter.mode(
-            beforeTintColor.withAlpha(alpha),
-            BlendMode.modulate,
-          );
-        if (prevFrame.layerList.rasterImage != null)
-        {
-          _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: prevFrame.layerList.rasterImage!, painter: paint);
-        }
-        framesToBlend.add(prevFrame);
-      }
-    }
+    processFrames(
+      _frameBlendingOptions.framesBefore.value,
+      beforeTintColor,
+      _frameBlendingOptions.wrapAroundBefore.value,
+      false,
+    );
   }
 
   (ui.Color, ui.Color) getCheckerBoardColors(final int contrast)

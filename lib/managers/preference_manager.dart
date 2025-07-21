@@ -245,9 +245,9 @@ enum PreferenceDouble
   SymmetryWidget_HorizontalIconSize(defaultValue: 20.0),
   SymmetryWidget_CenterButtonIconSize(defaultValue: 24.0),
 
-  FrameBlendingOptions_Opacity(defaultValue: 0.5),
-  FrameBlendingOptions_OpacityMin(defaultValue: 0.2),
-  FrameBlendingOptions_OpacityMax(defaultValue: 0.8),
+  FrameBlendingOptions_Opacity(defaultValue: 0.4),
+  FrameBlendingOptions_OpacityMin(defaultValue: 0.1),
+  FrameBlendingOptions_OpacityMax(defaultValue: 0.9),
   FrameBlendingOptions_OpacityStep(defaultValue: 0.1),
   ;
 
@@ -534,7 +534,8 @@ enum PreferenceBool
   FrameBlendingOptions_WrapBefore(defaultValue: true),
   FrameBlendingOptions_WrapAfter(defaultValue: true),
   FrameBlendingOptions_GradualOpacity(defaultValue: true),
-  FrameBlendingOptions_Tinting(defaultValue: true),
+  FrameBlendingOptions_Tinting(defaultValue: false),
+  FrameBlendingOptions_ActiveLayerOnly(defaultValue: false),
 
 
   ;
@@ -1029,6 +1030,7 @@ class PreferenceManager
       opacityMax: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMax),
       opacityStep: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityStep),
       tinting: _getValueB(PreferenceBool.FrameBlendingOptions_Tinting),
+      activeLayerOnly: _getValueB(PreferenceBool.FrameBlendingOptions_ActiveLayerOnly),
     );
 
   }

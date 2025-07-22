@@ -31,8 +31,6 @@
  */
 
 import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -292,7 +290,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
         _mouseCursor.value = SystemMouseCursors.move;
       }
     }
-
 
     if (details.buttons == kPrimaryButton && _touchPointers.isEmpty)
     {
@@ -813,13 +810,12 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   void _setOffset({required final Offset newOffset})
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
-    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _appState.zoomFactor, y: _appState.canvasSize.y.toDouble() * _appState.zoomFactor);
+    final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio);
     final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * _options.minVisibilityFactor, y: kPixPainter.latestSize.height * _options.minVisibilityFactor);
 
-    coords.x = max(coords.x, -scaledCanvas.x + minVisibility.x);
-    coords.y = max(coords.y, -scaledCanvas.y + minVisibility.y);
-    coords.x = min(coords.x, kPixPainter.latestSize.width - minVisibility.x);
-    coords.y = min(coords.y, kPixPainter.latestSize.height - minVisibility.y);
+    coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, kPixPainter.latestSize.width - minVisibility.x);
+    coords.y = coords.y.clamp(-scaledCanvas.y + minVisibility.y, kPixPainter.latestSize.height - minVisibility.y);
+
     _canvasOffset.value = Offset(coords.x, coords.y);
   }
 

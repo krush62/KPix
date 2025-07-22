@@ -1120,14 +1120,14 @@ class AppState
         {
           GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge);
         }
+        rasterLayersFrame();
+        timeline.layerChangeNotifier.reportChange();
       }
       else
       {
         showMessage(text: message);
       }
-      rasterLayersFrame();
     }
-
   }
 
   void layerDuplicated({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
@@ -1141,6 +1141,7 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
       }
       newRasterData(layer: duplicateLayer);
+      timeline.layerChangeNotifier.reportChange();
     }
   }
 
@@ -1153,13 +1154,13 @@ class AppState
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster);
       }
+      timeline.layerChangeNotifier.reportChange();
     }
   }
 
   void rasterLayersFrame()
   {
       timeline.selectedFrame?.layerList.reRasterAllDrawingLayers();
-
   }
 
   void rasterLayersAll()
@@ -1177,10 +1178,7 @@ class AppState
         }
       }
     }
-
   }
-
-
 
   void newRasterData({required final LayerState layer})
   {

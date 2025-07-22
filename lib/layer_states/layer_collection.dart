@@ -37,7 +37,7 @@ import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 
 class LayerCollection with ChangeNotifier
 {
-  static const int maxLayers = 5;
+  static const int maxLayers = 256;
   final List<LayerState> _layers = <LayerState>[];
   final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
   ui.Image? _rasterImage;

@@ -104,6 +104,7 @@
 | Select Previous Frame               | left                |                  |                                      |                              |                           |
 | Move Frame Right                    | shift + right       |                  |                                      |                              |                           |
 | Move Frame Left                     | shift + left        |                  |                                      |                              |                           |
+| Toggle Frame Blending               | tab                 |                  |                                      |                              |                           |
 
 
 

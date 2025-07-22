@@ -102,6 +102,7 @@ enum HotkeyAction
   timelinePreviousFrame,
   timelineMoveFrameLeft,
   timelineMoveFrameRight,
+  timelineToggleFrameBlending,
 
 }
 
@@ -196,10 +197,10 @@ class HotkeyManager
         _altIsPressed.value = evt is KeyDownEvent;
       }
 
-      //ARROW KEY HANDLING
-      HotkeyAction? action;
+      //ARROW KEY AND TAB HANDLING
       if (evt is KeyUpEvent && !_altIsPressed.value && !_controlIsPressed.value && !_shiftIsPressed.value)
       {
+        HotkeyAction? action;
         if (evt.logicalKey == LogicalKeyboardKey.arrowLeft)
         {
           action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft)];
@@ -215,6 +216,10 @@ class HotkeyManager
         else if (evt.logicalKey == LogicalKeyboardKey.arrowDown)
         {
           action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown)];
+        }
+        else if (evt.logicalKey == LogicalKeyboardKey.tab)
+        {
+          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.tab)];
         }
         if (action != null)
         {
@@ -382,6 +387,7 @@ class HotkeyManager
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft)] = HotkeyAction.timelinePreviousFrame;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft, shift: true)] = HotkeyAction.timelineMoveFrameLeft;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowRight, shift: true)] = HotkeyAction.timelineMoveFrameRight;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.tab)] = HotkeyAction.timelineToggleFrameBlending;
 
 
   }

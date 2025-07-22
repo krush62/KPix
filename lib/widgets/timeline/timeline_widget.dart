@@ -59,6 +59,7 @@ class TimeLineWidget extends StatefulWidget {
 
 class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProviderStateMixin
 {
+  final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
   late AnimationController _animationController;
@@ -85,6 +86,8 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
     _hotkeyManager.addListener(func: () {widget.timeline.selectPreviousFrame();}, action: HotkeyAction.timelinePreviousFrame);
     _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex > 0) widget.timeline.moveFrameLeft();}, action: HotkeyAction.timelineMoveFrameLeft);
     _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex < widget.timeline.frames.value.length - 1) widget.timeline.moveFrameRight();}, action: HotkeyAction.timelineMoveFrameRight);
+    _hotkeyManager.addListener(func: () {_toggleFrameBlending();}, action: HotkeyAction.timelineToggleFrameBlending);
+
   }
 
   void _toggleExpand()
@@ -100,6 +103,12 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
     }
   }
 
+  void _toggleFrameBlending()
+  {
+    frameBlendingOptions.enabled.value = !frameBlendingOptions.enabled.value;
+    GetIt.I.get<AppState>().repaintNotifier.repaint();
+  }
+
 
   @override
   Widget build(final BuildContext context) {
@@ -113,6 +122,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
                 child: TimelineMaxiWidget(
                   timeline: widget.timeline,
                   ownHeight: widget.expandedHeight,
+                  frameBlendingOptions: frameBlendingOptions,
                 ),
             ),
         ),
@@ -300,9 +310,10 @@ class TimeLineMarker
 
 
 class TimelineMaxiWidget extends StatefulWidget {
+  final FrameBlendingOptions frameBlendingOptions;
   final Timeline timeline;
   final double ownHeight;
-  const TimelineMaxiWidget({super.key, required this.timeline, required this.ownHeight});
+  const TimelineMaxiWidget({super.key, required this.timeline, required this.ownHeight, required this.frameBlendingOptions});
 
 
   @override
@@ -917,14 +928,13 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                       valueListenable: widget.timeline.isPlaying,
                       builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
                         return Tooltip(
-                          message: "Frame Blending",
+                          message: "Frame Blending\nToggle: ${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false)}",
                           waitDuration: AppState.toolTipDuration,
                           child: SizedBox(
                             height: _cellHeight,
                             child: IconButton.outlined(
                               onPressed: isPlaying ? null : () {
                                 final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-                                final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
                                 _frameBlendingOverlay = KPixOverlay(
                                   entry: OverlayEntry(
                                     builder: (final BuildContext context) => Stack(
@@ -938,7 +948,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                           children: <Widget>[
                                             Padding(
                                               padding: EdgeInsets.all(options.padding),
-                                              child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: frameBlendingOptions,),
+                                              child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: widget.frameBlendingOptions,),
                                             ),
                                           ],
                                         ),

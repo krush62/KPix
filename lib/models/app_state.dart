@@ -585,6 +585,46 @@ class AppState
     }
   }
 
+  void newFrameAdded({final bool addToHistoryStack = true})
+  {
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.timelineFrameAdd);
+    }
+  }
+
+  void frameDeleted({final bool addToHistoryStack = true})
+  {
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.timelineFrameDelete);
+    }
+  }
+
+  void frameMoved({final bool addToHistoryStack = true})
+  {
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.timelineFrameMove);
+    }
+  }
+
+  void frameTimingChanged({final bool addToHistoryStack = true})
+  {
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange);
+    }
+  }
+
+  void loopMarkerChanged({final bool addToHistoryStack = true})
+  {
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange);
+    }
+  }
+
   void undoPressed()
   {
     if (GetIt.I.get<HistoryManager>().hasUndo.value && !timeline.isPlaying.value)

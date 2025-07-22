@@ -81,7 +81,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
       _animationController.forward();
     }
 
-    _hotkeyManager.addListener(func: () {if (widget.timeline.loopStartIndex.value != widget.timeline.loopEndIndex.value) widget.timeline.isPlaying.value = !widget.timeline.isPlaying.value;}, action: HotkeyAction.timelinePlay);
+    _hotkeyManager.addListener(func: () {widget.timeline.togglePlaying();}, action: HotkeyAction.timelinePlay);
     _hotkeyManager.addListener(func: () {widget.timeline.selectNextFrame();}, action: HotkeyAction.timelineNextFrame);
     _hotkeyManager.addListener(func: () {widget.timeline.selectPreviousFrame();}, action: HotkeyAction.timelinePreviousFrame);
     _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex > 0) widget.timeline.moveFrameLeft();}, action: HotkeyAction.timelineMoveFrameLeft);
@@ -271,7 +271,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                             width: widget.buttonWidth,
                             child: IconButton(
                               onPressed: (loopEndIndex == loopStartIndex) ? null : () {
-                                widget.timeline.isPlaying.value = !isPlaying;
+                                widget.timeline.togglePlaying();
                               },
                               icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: widget.buttonWidth / 2,),
                             ),
@@ -379,11 +379,11 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
           onAcceptWithDetails: (final DragTargetDetails<TimeLineMarker> marker) {
             if (marker.data.isStart && i <= loopEnd)
             {
-              widget.timeline.loopStartIndex.value = i;
+              widget.timeline.setLoopStartMarker(index: i);
             }
             else if (!marker.data.isStart && i >= loopStart)
             {
-              widget.timeline.loopEndIndex.value = i;
+              widget.timeline.setLoopEndMarker(index: i);
             }
           },
         ),
@@ -638,16 +638,14 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   void _frameTimeOverlayConfirmSingle({required final Frame frame, required final int value})
   {
     _frameTimeOverlayDismiss();
+    widget.timeline.setFrameTimingSingle(frame: frame, fps: value);
     frame.fps.value = value;
   }
 
   void _frameTimeOverlayConfirmAll({required final int value})
   {
     _frameTimeOverlayDismiss();
-    for (final Frame f in widget.timeline.frames.value)
-    {
-      f.fps.value = value;
-    }
+    widget.timeline.setFrameTimingAll(fps: value);    
   }
 
   void _frameBlendingOverlayDismiss()
@@ -699,7 +697,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     height: _cellHeight,
                                     child: IconButton.outlined(
                                         onPressed: loopStart == loopEnd ? null : () {
-                                          widget.timeline.isPlaying.value = !isPlaying;
+                                          widget.timeline.togglePlaying();
                                         },
                                         icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: _transportIconSize,),
                                     ),

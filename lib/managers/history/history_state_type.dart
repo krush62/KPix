@@ -73,6 +73,12 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalPaletteReplace, description: "replace palette", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.kPalAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.kPalAdd, description: "add new ramp", compressionBehavior: HistoryStateCompressionBehavior.leave),
 
+  HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameAdd, description: "add frame", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameDelete, description: "delete frame", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameMove: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameMove, description: "move frame", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineFrameTimeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineFrameTimeChange, description: "change frame time", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.timelineLoopMarkerChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.timelineLoopMarkerChange, description: "change loop marker", compressionBehavior: HistoryStateCompressionBehavior.leave),
+
 };
 
 
@@ -133,6 +139,12 @@ enum HistoryStateTypeIdentifier
   kPalChange,
   kPalPaletteReplace,
   kPalAdd,
+
+  timelineFrameAdd,
+  timelineFrameDelete,
+  timelineFrameMove,
+  timelineFrameTimeChange,
+  timelineLoopMarkerChange,
 }
 
 enum HistoryStateCompressionBehavior

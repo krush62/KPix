@@ -154,6 +154,14 @@ class Timeline
     }
   }
 
+  void togglePlaying()
+  {
+    if (loopStartIndex.value != loopEndIndex.value || isPlaying.value)
+    {
+      isPlaying.value = !isPlaying.value;
+    }
+  }
+
 
   void _playChanged()
   {
@@ -230,6 +238,7 @@ class Timeline
       newFrames.insert(selectedFrameIndex - 1, f);
       frames.value = newFrames;
       selectFrame(index: selectedFrameIndex - 1);
+      GetIt.I.get<AppState>().frameMoved();
     }
   }
 
@@ -244,6 +253,7 @@ class Timeline
       newFrames.insert(selectedFrameIndex + 1, f);
       frames.value = newFrames;
       selectFrame(index: selectedFrameIndex + 1);
+      GetIt.I.get<AppState>().frameMoved();
     }
   }
 
@@ -338,6 +348,7 @@ class Timeline
       {
         loopStartIndex.value++;
       }
+      GetIt.I.get<AppState>().newFrameAdded();
     }
   }
 
@@ -368,16 +379,75 @@ class Timeline
 
     frames.value = newFrames;
 
+    GetIt.I.get<AppState>().frameDeleted();
   }
 
   void resetStartMarker()
   {
-    loopStartIndex.value = 0;
+    if (loopStartIndex.value != 0)
+    {
+      loopStartIndex.value = 0;
+      GetIt.I.get<AppState>().loopMarkerChanged();
+    }
   }
 
   void resetEndMarker()
   {
-    loopEndIndex.value = frames.value.length - 1;
+    final int lastPosition = frames.value.length - 1;
+    if (loopEndIndex.value != lastPosition)
+    {
+      loopEndIndex.value = frames.value.length - 1;
+      GetIt.I.get<AppState>().loopMarkerChanged();
+    }
+  }
+
+  void setLoopStartMarker({required final int index})
+  {
+    if (index >= 0 && index < frames.value.length)
+    {
+      loopStartIndex.value = index;
+      GetIt.I.get<AppState>().loopMarkerChanged();
+    }
+  }
+
+  void setLoopEndMarker({required final int index})
+  {
+    if (index >= 0 && index < frames.value.length)
+    {
+      loopEndIndex.value = index;
+      GetIt.I.get<AppState>().loopMarkerChanged();
+    }
+  }
+
+  void setFrameTimingSingle({required final Frame frame, required final int fps})
+  {
+    final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
+    if (frame.fps.value != fps && fps >= constraints.minFps && fps <= constraints.maxFps)
+    {
+      frame.fps.value = fps;
+      GetIt.I.get<AppState>().frameTimingChanged();
+    }
+  }
+
+  void setFrameTimingAll({required final int fps})
+  {
+    final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
+    if (fps >= constraints.minFps && fps <= constraints.maxFps)
+    {
+      bool hasChanges = false;
+      for (final Frame f in frames.value)
+      {
+        if (f.fps.value != fps)
+        {
+          f.fps.value = fps;
+          hasChanges = true;
+        }
+      }
+      if (hasChanges)
+      {
+        GetIt.I.get<AppState>().frameTimingChanged();
+      }
+    }
   }
 
   Frame? getFrameForLayer({required final LayerState layer})

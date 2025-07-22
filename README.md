@@ -26,7 +26,7 @@
 - [License](#license-and-privacy)
 
 # 🚀About
-KPix is a pixel art editor for still images with a focus on generative color ramps and shading. The key aspects are:
+KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading. The key aspects are:
 
 ⭐ exclusive use of indexed colors\
 ⭐ generative color ramps based on parameters\
@@ -38,9 +38,11 @@ KPix is a pixel art editor for still images with a focus on generative color ram
 ⭐ dithering layers\
 ⭐ non-destructive layer effects (outer/inner strokes, shadow, glow, ...)\
 ⭐ image importing including automatic palette creation\
+⭐ extensive animation capabilities\
 ⭐ multi-platform support (Windows, Linux, Android, Web)\
 ⭐ stylus and touch support\
 ⭐ automatic light/dark theme
+
 
 You might also want to read the [F.A.Q.](faq.md) or watch the [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
@@ -78,6 +80,10 @@ Special kind of shading layer for dithering (±16 steps).
 ### Grid/Perspective Layers
 Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangular, isometric, brick) or perspective aid (1-point, 2-point, 3-point).
 
+## Animation
+- Individual frame times (1-30 fps per frame)
+- Highly customizable frame blending (Onion Skinning)
+
 ## File Format Support
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 ### Export Formats
@@ -104,6 +110,12 @@ Palettes can be exported for usage in other applications.
 - xml (Corel)
 - soc (Star/Open/Libre Office)
 - json (Pixelorama)
+
+### 🎥 Animation Formats
+Animation projects can be exported to the following formats
+- apng
+- gif
+- zipped png images
 
 ### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats always needs the creation of parameterized color ramps from the image's colors.

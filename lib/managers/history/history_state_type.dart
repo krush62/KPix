@@ -39,7 +39,6 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsChange, description: "layer settings change", compressionBehavior: HistoryStateCompressionBehavior.merge),
   HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerSettingsRaster, description: "layer settings raster", compressionBehavior: HistoryStateCompressionBehavior.merge),
 
-  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasSizeChange, description: "change canvas size", compressionBehavior: HistoryStateCompressionBehavior.leave),
 
   HistoryStateTypeIdentifier.selectionNew: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionNew, description: "new selection", compressionBehavior: HistoryStateCompressionBehavior.delete),
   HistoryStateTypeIdentifier.selectionDeselect: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDeselect, description: "deselect", compressionBehavior: HistoryStateCompressionBehavior.delete),
@@ -53,6 +52,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.selectionPaste: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionPaste, description: "paste selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.selectionDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDelete, description: "delete selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
 
+  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasSizeChange, description: "change canvas size", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.canvasFlipH: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasFlipH, description: "flip canvas horizontally", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.canvasFlipV: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasFlipV, description: "flip canvas vertically", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.canvasRotate: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasRotate, description: "rotate canvas", compressionBehavior: HistoryStateCompressionBehavior.leave),
@@ -139,6 +139,7 @@ enum HistoryStateTypeIdentifier
   kPalChange,
   kPalPaletteReplace,
   kPalAdd,
+  kPalOrderChange,
 
   timelineFrameAdd,
   timelineFrameDelete,
@@ -154,14 +155,99 @@ enum HistoryStateCompressionBehavior
   delete
 }
 
+enum HistoryStateTypeGroup
+{
+  full,
+  frame,
+  layer,
+  colorSelect,
+  layerSelect
+}
+
+const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap = <HistoryStateTypeIdentifier, HistoryStateTypeGroup>
+{
+  HistoryStateTypeIdentifier.initial: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.generic: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.saveData: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.loadData: HistoryStateTypeGroup.full,
+
+  HistoryStateTypeIdentifier.layerChange: HistoryStateTypeGroup.layerSelect,
+  HistoryStateTypeIdentifier.layerDelete: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerMerge: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerDuplicate: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerNewReference: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerNewGrid: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerNewShading: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerNewDither: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerOrderChange: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerVisibilityChange: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.layerLockChange: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.layerChangeReferenceImage: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.layerRaster: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateTypeGroup.frame,
+
+  HistoryStateTypeIdentifier.selectionNew: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionDeselect: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionSelectAll: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionInverse: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionCut: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionFlipH: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionFlipV: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionRotate: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionMove: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionPaste: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionDelete: HistoryStateTypeGroup.layer,
+
+  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.canvasFlipH: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.canvasFlipV: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.canvasRotate: HistoryStateTypeGroup.full,
+
+  HistoryStateTypeIdentifier.toolPen: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolStamp: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolEraser: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolText: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolShape: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolLine: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolSprayCan: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolFill: HistoryStateTypeGroup.layer,
+
+  HistoryStateTypeIdentifier.colorChange: HistoryStateTypeGroup.colorSelect,
+
+  HistoryStateTypeIdentifier.kPalDelete: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.kPalChange: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.kPalAdd: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.kPalOrderChange: HistoryStateTypeGroup.full,
+
+  HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.timelineFrameMove: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.timelineFrameTimeChange: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.timelineLoopMarkerChange: HistoryStateTypeGroup.full,
+};
+
+
 
 class HistoryStateType
 {
   final String description;
   final HistoryStateCompressionBehavior compressionBehavior;
   final HistoryStateTypeIdentifier identifier;
-
   const HistoryStateType({required this.description, required this.compressionBehavior, required this.identifier});
 
-
+  @override
+  String toString()
+  {
+    return description;
+  }
+  bool get isLeaveCompression => compressionBehavior == HistoryStateCompressionBehavior.leave;
+  bool get isMergeCompression => compressionBehavior == HistoryStateCompressionBehavior.merge;
+  bool get isDeleteCompression => compressionBehavior == HistoryStateCompressionBehavior.delete;
+  HistoryStateTypeGroup get group => _stateTypeGroupMap[identifier] ?? HistoryStateTypeGroup.full;
 }
+
+
+

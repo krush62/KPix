@@ -339,9 +339,9 @@ class LayerCollection with ChangeNotifier
     return oldLayer?? newLayer;
   }
 
-  int getLayerPosition({required final LayerState state})
+  int? getLayerPosition({required final LayerState state})
   {
-    int sourcePosition = -1;
+    int? sourcePosition;
     for (int i = 0; i < _layers.length; i++)
     {
       if (_layers[i] == state)
@@ -380,8 +380,8 @@ class LayerCollection with ChangeNotifier
 
   void selectLayerAbove()
   {
-    final int index = getLayerPosition(state: currentLayer!);
-    if (index > 0)
+    final int? index = getLayerPosition(state: currentLayer!);
+    if (index != null && index > 0)
     {
       selectLayer(newLayer: _layers[index - 1]);
     }
@@ -390,8 +390,8 @@ class LayerCollection with ChangeNotifier
 
   void selectLayerBelow()
   {
-    final int index = getLayerPosition(state: currentLayer!);
-    if (index < _layers.length - 1)
+    final int? index = getLayerPosition(state: currentLayer!);
+    if (index != null && index < _layers.length - 1)
     {
       selectLayer(newLayer: _layers[index + 1]);
     }
@@ -403,8 +403,8 @@ class LayerCollection with ChangeNotifier
     if (_layers.length > 1)
     {
       _layers.remove(deleteLayer);
-      final int deleteLayerIndex = getLayerPosition(state: deleteLayer);
-      if (deleteLayerIndex > 0)
+      final int? deleteLayerIndex = getLayerPosition(state: deleteLayer);
+      if (deleteLayerIndex != null && deleteLayerIndex > 0)
       {
         selectLayer(newLayer: _layers[deleteLayerIndex - 1]);
       }
@@ -531,8 +531,11 @@ class LayerCollection with ChangeNotifier
         }
         else
         {
-          final int currentIndex = getLayerPosition(state: duplicateLayer);
-          _layers.insert(currentIndex, addLayer);
+          final int? currentIndex = getLayerPosition(state: duplicateLayer);
+          if (currentIndex != null)
+          {
+            _layers.insert(currentIndex, addLayer);
+          }
         }
 
         notifyListeners();
@@ -579,10 +582,11 @@ class LayerCollection with ChangeNotifier
     }
   }
 
-  void changeLayerOrder({required final LayerState state, required final int newPosition})
+  bool changeLayerOrder({required final LayerState state, required final int newPosition})
   {
-    final int sourcePosition = getLayerPosition(state: state);
-    if (sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
+    bool orderChanged = false;
+    final int? sourcePosition = getLayerPosition(state: state);
+    if (sourcePosition != null && sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
       _layers.removeAt(sourcePosition);
       if (newPosition > sourcePosition)
@@ -593,8 +597,10 @@ class LayerCollection with ChangeNotifier
       {
         _layers.insert(newPosition, state);
       }
+      orderChanged = true;
     }
     notifyListeners();
+    return orderChanged;
   }
 
   void rasterLayer({required final LayerState rasterLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
@@ -622,56 +628,58 @@ class LayerCollection with ChangeNotifier
 
   Future<void> _rasterShadingLayer({required final ShadingLayerState shadingLayer}) async
   {
-    final int layerIndex = getLayerPosition(state: shadingLayer);
-    assert(layerIndex >= 0 && layerIndex < _layers.length);
-    final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
-    final HashMap<DrawingLayerState, CoordinateColorMapNullable> shadeLayerMap = HashMap<DrawingLayerState, CoordinateColorMapNullable>();
-
-    //getting all relevant drawing layers
-    for (int i = layerIndex; i < _layers.length; i++)
+    final int? layerIndex = getLayerPosition(state: shadingLayer);
+    if (layerIndex != null && layerIndex >= 0 && layerIndex < _layers.length)
     {
-      if (_layers[i].runtimeType == DrawingLayerState && _layers[i].visibilityState.value == LayerVisibilityState.visible)
-      {
-        final DrawingLayerState drawingLayer = _layers[i] as DrawingLayerState;
-        drawingLayers.add(drawingLayer);
-        shadeLayerMap[drawingLayer] = HashMap<CoordinateSetI, ColorReference?>();
-      }
-    }
+      final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
+      final HashMap<DrawingLayerState, CoordinateColorMapNullable> shadeLayerMap = HashMap<DrawingLayerState, CoordinateColorMapNullable>();
 
-    //finding and sorting pixels that need to be shaded
-    for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.shadingData.entries)
-    {
-      for (final DrawingLayerState drawingLayer in drawingLayers)
+      //getting all relevant drawing layers
+      for (int i = layerIndex; i < _layers.length; i++)
       {
-        final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key, withSettingsPixels: true);
-        if (curCol != null)
+        if (_layers[i].runtimeType == DrawingLayerState && _layers[i].visibilityState.value == LayerVisibilityState.visible)
         {
-          if (shadingLayer.runtimeType == ShadingLayerState)
+          final DrawingLayerState drawingLayer = _layers[i] as DrawingLayerState;
+          drawingLayers.add(drawingLayer);
+          shadeLayerMap[drawingLayer] = HashMap<CoordinateSetI, ColorReference?>();
+        }
+      }
+
+      //finding and sorting pixels that need to be shaded
+      for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.shadingData.entries)
+      {
+        for (final DrawingLayerState drawingLayer in drawingLayers)
+        {
+          final ColorReference? curCol = drawingLayer.getDataEntry(coord: entry.key, withSettingsPixels: true);
+          if (curCol != null)
           {
-            final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
-            shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
-            break;
-          }
-          else
-          {
-            final int ditherVal = shadingLayer.getDisplayValueAt(coord: entry.key) ?? 0;
-            if (ditherVal != 0)
+            if (shadingLayer.runtimeType == ShadingLayerState)
             {
-              final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.references.length - 1);
-              shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[newColorIndex];
+              final int targetIndex = (curCol.colorIndex + entry.value).clamp(0, curCol.ramp.references.length - 1);
+              shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[targetIndex];
               break;
+            }
+            else
+            {
+              final int ditherVal = shadingLayer.getDisplayValueAt(coord: entry.key) ?? 0;
+              if (ditherVal != 0)
+              {
+                final int newColorIndex = (curCol.colorIndex + ditherVal).clamp(0, curCol.ramp.references.length - 1);
+                shadeLayerMap[drawingLayer]![entry.key] = curCol.ramp.references[newColorIndex];
+                break;
+              }
             }
           }
         }
       }
-    }
 
-    //applying shading
-    for (final MapEntry<DrawingLayerState, CoordinateColorMapNullable> entry in shadeLayerMap.entries)
-    {
-      if (entry.value.isNotEmpty)
+      //applying shading
+      for (final MapEntry<DrawingLayerState, CoordinateColorMapNullable> entry in shadeLayerMap.entries)
       {
-        entry.key.setDataAll(list: entry.value);
+        if (entry.value.isNotEmpty)
+        {
+          entry.key.setDataAll(list: entry.value);
+        }
       }
     }
   }
@@ -679,15 +687,18 @@ class LayerCollection with ChangeNotifier
   void _replaceCurrentLayerWithDrawingLayer({required final CoordinateColorMap data, required final LayerState originalLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
   {
     final DrawingLayerState drawingLayer = DrawingLayerState(size: canvasSize, content: data, ramps: ramps);
-    final int insertIndex = getLayerPosition(state: originalLayer);
-    _layers.remove(originalLayer);
-    _layers.insert(insertIndex, drawingLayer);
-    if (originalLayer.isSelected.value)
+    final int? insertIndex = getLayerPosition(state: originalLayer);
+    if (insertIndex != null)
     {
-      selectLayer(newLayer: drawingLayer);
+      _layers.remove(originalLayer);
+      _layers.insert(insertIndex, drawingLayer);
+      if (originalLayer.isSelected.value)
+      {
+        selectLayer(newLayer: drawingLayer);
+      }
+      drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
+      notifyListeners();
     }
-    drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
-    notifyListeners();
   }
 
   int getFrameIndex()
@@ -722,24 +733,27 @@ class LayerCollection with ChangeNotifier
   //RASTER LAYER ABOVE
   void layerRasterDone({required final LayerState layer})
   {
-    final int layerPosition = getLayerPosition(state: layer);
-    bool foundNextLayer = false;
-    for (int i = layerPosition - 1; i >= 0; i--)
+    final int? layerPosition = getLayerPosition(state: layer);
+    if (layerPosition != null)
     {
-      final LayerState ls = getLayer(index: i);
-      if (ls is RasterableLayerState)
+      bool foundNextLayer = false;
+      for (int i = layerPosition - 1; i >= 0; i--)
       {
-        ls.doManualRaster = true;
-        foundNextLayer = true;
-        break;
+        final LayerState ls = getLayer(index: i);
+        if (ls is RasterableLayerState)
+        {
+          ls.doManualRaster = true;
+          foundNextLayer = true;
+          break;
+        }
       }
-    }
-    if (!foundNextLayer)
-    {
-      final AppState appState = GetIt.I.get<AppState>();
-      getImageFromLayers(layerCollection: this, canvasSize: appState.canvasSize, selection: appState.selectionState.selection).then((final ui.Image img) {
-        _rasterImage = img;
-      },);
+      if (!foundNextLayer)
+      {
+        final AppState appState = GetIt.I.get<AppState>();
+        getImageFromLayers(layerCollection: this, canvasSize: appState.canvasSize, selection: appState.selectionState.selection).then((final ui.Image img) {
+          _rasterImage = img;
+        },);
+      }
     }
   }
 

@@ -49,71 +49,142 @@ class HistoryState
 
   HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type});
 
-  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier})
+  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final Frame? frame, final int? layerIndex, final HistoryState? previousState})
   {
     //TYPE
     final HistoryStateType type = allStateTypeMap[identifier] ?? const HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
 
-    //RAMP
-    final List<HistoryRampData> rampList = <HistoryRampData>[];
-    for (final KPalRampData rampData in appState.colorRamps)
+    HistoryStateTypeGroup typeGroup = HistoryStateTypeGroup.full;
+    if (type.group == HistoryStateTypeGroup.colorSelect || type.group == HistoryStateTypeGroup.layerSelect)
     {
-      rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid, notifierShifts: rampData.shifts));
+      typeGroup = type.group;
     }
-    final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
-    final HistoryColorReference selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
+    else if (frame != null && (type.group == HistoryStateTypeGroup.frame || type.group == HistoryStateTypeGroup.layer))
+    {
+      typeGroup = HistoryStateTypeGroup.frame;
+      if (type.group == HistoryStateTypeGroup.layer && layerIndex != null && layerIndex < frame.layerList.length && layerIndex >= 0)
+      {
+        typeGroup = HistoryStateTypeGroup.layer;
+      }
+    }
+
+    //RAMP
+    List<HistoryRampData> rampList = <HistoryRampData>[];
+    HistoryColorReference selectedColor;
+    if (typeGroup == HistoryStateTypeGroup.full || previousState == null)
+    {
+      rampList = <HistoryRampData>[];
+      for (final KPalRampData rampData in appState.colorRamps)
+      {
+        rampList.add(HistoryRampData(otherSettings: rampData.settings, uuid: rampData.uuid, notifierShifts: rampData.shifts));
+      }
+      final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
+      selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
+    }
+    else
+    {
+      rampList = previousState.rampList;
+      if (typeGroup == HistoryStateTypeGroup.colorSelect)
+      {
+        final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
+        selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
+      }
+      else
+      {
+        selectedColor = previousState.selectedColor;
+      }
+    }
 
     //TIMELINE
-    final List<Frame> frameList = appState.timeline.frames.value;
-    final List<HistoryFrame> historyFrameList = <HistoryFrame>[];
+    List<HistoryFrame> historyFrameList;
     HistoryLayer? selectLayer;
-    for (final Frame frame in frameList)
+    if (typeGroup == HistoryStateTypeGroup.colorSelect && previousState != null)
     {
-      final LayerCollection layers = frame.layerList;
-      final List<HistoryLayer> hLayers = <HistoryLayer>[];
-      for (int i = 0; i < layers.length; i++)
+      historyFrameList = previousState.timeline.frames;
+    }
+    else
+    {
+      historyFrameList = <HistoryFrame>[];
+      final List<Frame> frameList = appState.timeline.frames.value;
+      for (final Frame frame in frameList)
       {
-        final LayerState layerState = layers.getLayer(index: i);
-
-        HistoryLayer? hLayer;
-        if (layerState.runtimeType == DrawingLayerState)
+        if (previousState == null || (typeGroup != HistoryStateTypeGroup.layerSelect && (typeGroup == HistoryStateTypeGroup.full || frame == appState.timeline.selectedFrame)))
         {
-          hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
-        }
-        else if (layerState.runtimeType == ReferenceLayerState)
-        {
-          hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
-        }
-        else if (layerState.runtimeType == GridLayerState)
-        {
-          hLayer = HistoryGridLayer.fromGridLayer(gridState: layerState as GridLayerState);
-        }
-        else if (layerState.runtimeType == ShadingLayerState)
-        {
-          hLayer = HistoryShadingLayer.fromShadingLayerState(layerState: layerState as ShadingLayerState);
-        }
-        else if (layerState.runtimeType == DitherLayerState)
-        {
-          hLayer = HistoryDitherLayer.fromDitherLayerState(layerState: layerState as DitherLayerState);
-        }
-        if (hLayer != null)
-        {
-          if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() == i)
+          final LayerCollection layers = frame.layerList;
+          final List<HistoryLayer> hLayers = <HistoryLayer>[];
+          for (int i = 0; i < layers.length; i++)
           {
-            selectLayer = hLayer;
-          }
+            HistoryLayer? hLayer;
+            final LayerState layerState = layers.getLayer(index: i);
+            if (typeGroup == HistoryStateTypeGroup.layer && i != layerIndex)
+            {
+              hLayer = previousState!.timeline.frames[frameList.indexOf(frame)].layers[i];
+            }
+            else
+            {
+              hLayer = _createHistoryLayer(layerState: layerState, rampList: rampList);
+            }
+            if (hLayer != null)
+            {
+              if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() == i)
+              {
+                selectLayer = hLayer;
+              }
 
-          hLayers.add(hLayer);
+              hLayers.add(hLayer);
+            }
+          }
+          historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.getSelectedLayerIndex()));
+        }
+        else
+        {
+          final HistoryFrame hf = previousState.timeline.frames[frameList.indexOf(frame)];
+          historyFrameList.add(hf);
+          for (int i = 0; i < frame.layerList.length; i++)
+          {
+            if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() == i)
+            {
+              selectLayer = hf.layers[i];
+            }
+          }
         }
       }
-      historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.getSelectedLayerIndex()));
     }
-    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex);
 
+    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
     final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectLayer);
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type);
+  }
+
+
+
+  static HistoryLayer? _createHistoryLayer({required final LayerState layerState, required final List<HistoryRampData> rampList})
+  {
+    HistoryLayer? hLayer;
+    if (layerState.runtimeType == DrawingLayerState)
+    {
+      hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
+    }
+    else if (layerState.runtimeType == ReferenceLayerState)
+    {
+      hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
+    }
+    else if (layerState.runtimeType == GridLayerState)
+    {
+      hLayer = HistoryGridLayer.fromGridLayer(gridState: layerState as GridLayerState);
+    }
+    else if (layerState.runtimeType == ShadingLayerState)
+    {
+      hLayer = HistoryShadingLayer.fromShadingLayerState(layerState: layerState as ShadingLayerState);
+    }
+    else if (layerState.runtimeType == DitherLayerState)
+    {
+      hLayer = HistoryDitherLayer.fromDitherLayerState(layerState: layerState as DitherLayerState);
+
+    }
+    return hLayer;
   }
 }

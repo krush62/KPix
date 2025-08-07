@@ -38,6 +38,7 @@ import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 
 
 class HistoryManager
@@ -98,12 +99,12 @@ class HistoryManager
     }
   }
 
-  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true})
+  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final Frame? frame, final int? layerIndex})
   {
     if (!appState.timeline.isPlaying.value)
     {
       _removeFutureEntries();
-      _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier));
+      _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier, frame: frame, layerIndex: layerIndex, previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState()));
       _curPos++;
       final int entriesLeft = _maxEntries - _states.length;
 
@@ -168,7 +169,7 @@ class HistoryManager
     {
       if (index <= maxIndex)
       {
-        if (state.type.compressionBehavior == HistoryStateCompressionBehavior.merge)
+        if (state.type.isMergeCompression)
         {
           if (previousMergeState != null && previousMergeState.type.identifier == state.type.identifier)
           {
@@ -179,7 +180,7 @@ class HistoryManager
         else
         {
           previousMergeState = null;
-          if (state.type.compressionBehavior == HistoryStateCompressionBehavior.delete)
+          if (state.type.isDeleteCompression)
           {
             deleteStates.add(state);
           }

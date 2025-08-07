@@ -463,7 +463,7 @@ class AppState
       {
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference);
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewReference, frame: timeline.selectedFrame);
         }
         timeline.layerChangeNotifier.reportChange();
         return newLayer;
@@ -472,7 +472,6 @@ class AppState
       {
         return null;
       }
-
     }
     else
     {
@@ -489,7 +488,7 @@ class AppState
       {
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewShading);
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewShading, frame: timeline.selectedFrame);
         }
         timeline.layerChangeNotifier.reportChange();
         return newLayer;
@@ -514,7 +513,7 @@ class AppState
       {
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDither);
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDither, frame: timeline.selectedFrame);
         }
         timeline.layerChangeNotifier.reportChange();
         return newLayer;
@@ -539,7 +538,7 @@ class AppState
       {
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid);
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewGrid, frame: timeline.selectedFrame);
         }
         timeline.layerChangeNotifier.reportChange();
         return newLayer;
@@ -569,7 +568,7 @@ class AppState
         }
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDrawing);
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerNewDrawing, frame: timeline.selectedFrame);
         }
         timeline.layerChangeNotifier.reportChange();
         return newLayer;
@@ -872,8 +871,8 @@ class AppState
       final Frame? frame = timeline.getFrameForLayer(layer: layerState);
       if (frame != null)
       {
-        final int sourcePosition = frame.layerList.getLayerPosition(state: layerState);
-        if (sourcePosition > 0)
+        final int? sourcePosition = frame.layerList.getLayerPosition(state: layerState);
+        if (sourcePosition != null && sourcePosition > 0)
         {
           changeLayerOrder(state: layerState, newPosition: sourcePosition - 1);
         }
@@ -888,8 +887,8 @@ class AppState
       final Frame? frame = timeline.getFrameForLayer(layer: layerState);
       if (frame != null)
       {
-        final int sourcePosition = frame.layerList.getLayerPosition(state: layerState);
-        if (sourcePosition < (timeline.selectedFrame!.layerList.length - 1))
+        final int? sourcePosition = frame.layerList.getLayerPosition(state: layerState);
+        if (sourcePosition != null && sourcePosition < (timeline.selectedFrame!.layerList.length - 1))
         {
           changeLayerOrder(state: layerState, newPosition: sourcePosition + 2);
         }
@@ -958,15 +957,19 @@ class AppState
 
   void changeLayerOrder({required final LayerState? state, required final int newPosition, final bool addToHistoryStack = true})
   {
-    if (state != null && timeline.selectedFrame != null)
+    final Frame? frame = timeline.selectedFrame;
+    if (state != null && frame != null)
     {
-      timeline.selectedFrame!.layerList.changeLayerOrder(state: state, newPosition: newPosition);
-      if (addToHistoryStack)
+      final bool orderChanged = frame.layerList.changeLayerOrder(state: state, newPosition: newPosition);
+      if (orderChanged)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange, frame: frame);
+        }
+        timeline.layerChangeNotifier.reportChange();
+        rasterLayersFrame();
       }
-      timeline.layerChangeNotifier.reportChange();
-      rasterLayersFrame();
     }
   }
 
@@ -992,7 +995,7 @@ class AppState
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.kPalOrderChange);
     }
   }
 
@@ -1009,7 +1012,9 @@ class AppState
         layerState.visibilityState.value = LayerVisibilityState.visible;
       }
       newRasterData(layer: layerState);
-      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange);
+      final Frame? frame = timeline.selectedFrame;
+      final int? layerIndex = frame?.layerList.getLayerPosition(state: layerState);
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange, frame: frame, layerIndex: layerIndex);
     }
   }
 
@@ -1017,6 +1022,7 @@ class AppState
   {
     if (layerState != null)
     {
+      bool lockStateChanged = false;
       if (layerState.runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayerState = layerState as DrawingLayerState;
@@ -1032,7 +1038,7 @@ class AppState
         {
           drawingLayerState.lockState.value = LayerLockState.unlocked;
         }
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
+        lockStateChanged = true;
       }
       else if (layerState is ShadingLayerState)
       {
@@ -1044,10 +1050,16 @@ class AppState
         {
           layerState.lockState.value = LayerLockState.unlocked;
         }
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange);
+        lockStateChanged = true;
+
+      }
+      if (lockStateChanged)
+      {
+        final Frame? frame = timeline.selectedFrame;
+        final int? layerIndex = frame?.layerList.getLayerPosition(state: layerState);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerLockChange, frame: frame, layerIndex: layerIndex);
       }
     }
-
   }
 
 
@@ -1068,7 +1080,7 @@ class AppState
   }
 
 
-  void selectLayer({required final LayerState newLayer, LayerState? oldLayer, final bool addToHistoryStack = false})
+  void selectLayer({required final LayerState newLayer, LayerState? oldLayer, final bool addToHistoryStack = true})
   {
     if (timeline.selectedFrame != null)
     {
@@ -1081,9 +1093,10 @@ class AppState
       }
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
+        final Frame? frame = timeline.selectedFrame;
+        final int? layerIndex = frame?.layerList.getLayerPosition(state: oldLayer);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange, frame: frame, layerIndex: layerIndex);
       }
-
     }
   }
 
@@ -1095,7 +1108,8 @@ class AppState
       {
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete);
+          final Frame? frame = timeline.selectedFrame;
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDelete, frame: frame);
         }
       }
       else
@@ -1109,16 +1123,17 @@ class AppState
 
   void layerMerged({required final LayerState? mergeLayer, final bool addToHistoryStack = true})
   {
-    if (mergeLayer != null && timeline.selectedFrame != null)
+    final Frame? frame = timeline.selectedFrame;
+    if (mergeLayer != null && frame != null)
     {
-      final String? message = timeline.selectedFrame!.layerList.layerIsMergeable(mergeLayer: mergeLayer);
+      final String? message = frame.layerList.layerIsMergeable(mergeLayer: mergeLayer);
       if (message == null)
       {
         selectionState.deselect(addToHistoryStack: false);
-        timeline.selectedFrame!.layerList.mergeLayer(mergeLayer: mergeLayer, canvasSize: _canvasSize);
+        frame.layerList.mergeLayer(mergeLayer: mergeLayer, canvasSize: _canvasSize);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge);
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerMerge, frame: frame);
         }
         rasterLayersFrame();
         timeline.layerChangeNotifier.reportChange();
@@ -1132,13 +1147,14 @@ class AppState
 
   void layerDuplicated({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
   {
-    if (duplicateLayer != null && timeline.selectedFrame != null)
+    final Frame? frame = timeline.selectedFrame;
+    if (duplicateLayer != null && frame != null)
     {
       selectionState.deselect(addToHistoryStack: false);
-      timeline.selectedFrame!.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
+      frame.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate, frame: frame);
       }
       newRasterData(layer: duplicateLayer);
       timeline.layerChangeNotifier.reportChange();
@@ -1147,12 +1163,13 @@ class AppState
 
   void layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true})
   {
-    if (timeline.selectedFrame != null)
+    final Frame? frame = timeline.selectedFrame;
+    if (frame != null)
     {
-      timeline.selectedFrame!.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
+      frame.layerList.rasterLayer(rasterLayer: rasterLayer, canvasSize: canvasSize, ramps: colorRamps);
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerRaster, frame: frame);
       }
       timeline.layerChangeNotifier.reportChange();
     }

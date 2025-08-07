@@ -169,7 +169,9 @@ class SelectionState with ChangeNotifier
     }
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew);
+      final Frame? frame = _appState.timeline.selectedFrame;
+      final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew, frame: frame, layerIndex: layerIndex);
     }
 
     if (notify)
@@ -202,7 +204,9 @@ class SelectionState with ChangeNotifier
       }
       if (addToHistoryStack)
       {
-        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew);
+        final Frame? frame = _appState.timeline.selectedFrame;
+        final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+        GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew, frame: frame, layerIndex: layerIndex);
       }
     }
   }
@@ -470,7 +474,9 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionInverse);
+      final Frame? frame = _appState.timeline.selectedFrame;
+      final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionInverse, frame: frame, layerIndex: layerIndex);
     }
     if (notify)
     {
@@ -485,7 +491,9 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDeselect);
+      final Frame? frame = _appState.timeline.selectedFrame;
+      final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDeselect, frame: frame, layerIndex: layerIndex);
     }
     if (notify)
     {
@@ -511,7 +519,9 @@ class SelectionState with ChangeNotifier
     createSelectionLines();
     if (addToHistoryStack)
     {
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionSelectAll);
+      final Frame? frame = _appState.timeline.selectedFrame;
+      final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionSelectAll, frame: frame, layerIndex: layerIndex);
     }
     if (notify)
     {
@@ -537,7 +547,9 @@ class SelectionState with ChangeNotifier
         selection.delete(keepSelection: keepSelection);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDelete);
+          final Frame? frame = _appState.timeline.selectedFrame;
+          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionDelete, frame: frame, layerIndex: layerIndex);
         }
         if (!keepSelection)
         {
@@ -570,7 +582,9 @@ class SelectionState with ChangeNotifier
         delete(notify: false);
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionCut);
+          final Frame? frame = _appState.timeline.selectedFrame;
+          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionCut, frame: frame, layerIndex: layerIndex);
         }
         if (notify)
         {
@@ -691,7 +705,9 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionPaste);
+          final Frame? frame = _appState.timeline.selectedFrame;
+          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionPaste, frame: frame, layerIndex: layerIndex);
         }
 
         if (notify)
@@ -722,7 +738,9 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipH);
+          final Frame? frame = _appState.timeline.selectedFrame;
+          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipH, frame: frame, layerIndex: layerIndex);
         }
 
         if (notify)
@@ -753,7 +771,9 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipV);
+          final Frame? frame = _appState.timeline.selectedFrame;
+          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionFlipV, frame: frame, layerIndex: layerIndex);
         }
 
         if (notify)
@@ -784,7 +804,9 @@ class SelectionState with ChangeNotifier
         createSelectionLines();
         if (addToHistoryStack)
         {
-          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionRotate);
+          final Frame? frame = _appState.timeline.selectedFrame;
+          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionRotate, frame: frame, layerIndex: layerIndex);
         }
 
         if (notify)
@@ -811,7 +833,9 @@ class SelectionState with ChangeNotifier
   void finishMovement()
   {
     selection.resetLastOffset();
-    GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove);
+    final Frame? frame = _appState.timeline.selectedFrame;
+    final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+    GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove, frame: frame, layerIndex: layerIndex);
     if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
     {
       final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;

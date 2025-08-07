@@ -26,6 +26,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -381,7 +382,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       onPressed: (outerStrokeStyle == OuterStrokeStyle.solid || outerStrokeStyle == OuterStrokeStyle.relative) ? () {
                         widget.layer.rasterOutline();
                         widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
-                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                        final Frame? frame = GetIt.I.get<AppState>().timeline.getFrameForLayer(layer: widget.layer);
+                        final int? layerIndex = frame?.layerList.getLayerPosition(state: widget.layer);
+                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
                     );
@@ -637,7 +640,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       onPressed: (innerStrokeStyle != InnerStrokeStyle.off) ? () {
                         widget.layer.rasterInline();
                         widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
-                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                        final Frame? frame = GetIt.I.get<AppState>().timeline.getFrameForLayer(layer: widget.layer);
+                        final int? layerIndex = frame?.layerList.getLayerPosition(state: widget.layer);
+                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
                     );
@@ -841,7 +846,9 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       onPressed: (dropShadowStyle == DropShadowStyle.solid) ? () {
                         widget.layer.rasterDropShadow();
                         widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
-                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster);
+                        final Frame? frame = GetIt.I.get<AppState>().timeline.getFrameForLayer(layer: widget.layer);
+                        final int? layerIndex = frame?.layerList.getLayerPosition(state: widget.layer);
+                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
                     );

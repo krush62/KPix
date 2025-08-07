@@ -148,9 +148,16 @@ class HistoryManager
     return hState;
   }
 
-  HistoryState getCurrentState()
+  HistoryState? getCurrentState()
   {
-    return _states.elementAt(_curPos);
+    if (_curPos >= 0 && _curPos < _states.length)
+    {
+      return _states.elementAt(_curPos);
+    }
+    else
+    {
+      return null;
+    }
   }
 
   void _updateNotifiers()

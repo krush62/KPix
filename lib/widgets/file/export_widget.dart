@@ -205,7 +205,16 @@ class _ExportWidgetState extends State<ExportWidget>
 
   void _updateFileNameStatus()
   {
-    final String extension = _selectedSection.value == ExportSectionType.image ? ImageExportData.exportTypeMap[_fileExportType.value]!.extension : PaletteExportData.exportTypeMap[_paletteExportType.value]!.extension;
+    String extension;
+    switch(_selectedSection.value)
+    {
+      case ExportSectionType.image:
+        extension = ImageExportData.exportTypeMap[_fileExportType.value]!.extension;
+      case ExportSectionType.palette:
+        extension = PaletteExportData.exportTypeMap[_paletteExportType.value]!.extension;
+      case ExportSectionType.animation:
+        extension = AnimationExportData.exportTypeMap[_animationExportType.value]!.extension;
+    }
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
   }
 

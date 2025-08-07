@@ -140,7 +140,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     );
 
     _importLoadingDialog = getLoadingDialog(message: "Importing Image...");
-    _exportLoadingDialog = getLoadingDialog(message: "Exporting Image...");
+    _exportLoadingDialog = getLoadingDialog(message: "Exporting...");
 
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);

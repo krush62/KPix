@@ -845,13 +845,11 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionH()
   {
-    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
-    final CoordinateSetI? topLeft = boundingBox.$1;
-    final CoordinateSetI? bottomRight = boundingBox.$2;
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
-      final int newX = _appState.canvasSize.x ~/ 2 - width ~/ 2 - 1;
+      final int newX = (_appState.canvasSize.x / 2 - width / 2).floor();
       if (newX != topLeft.x)
       {
         final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
@@ -862,13 +860,11 @@ class SelectionState with ChangeNotifier
 
   void centerSelectionV()
   {
-    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
-    final CoordinateSetI? topLeft = boundingBox.$1;
-    final CoordinateSetI? bottomRight = boundingBox.$2;
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.y - topLeft.y;
-      final int newY = _appState.canvasSize.y ~/ 2 - height ~/ 2 - 1;
+      final int newY = (_appState.canvasSize.y / 2 - height / 2).floor();
       if (newY != topLeft.y)
       {
         final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
@@ -879,8 +875,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionLeft()
   {
-    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
-    final CoordinateSetI? topLeft = boundingBox.$1;
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
     if (topLeft != null && topLeft.x != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: -topLeft.x, y: 0);
@@ -890,9 +885,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionRight()
   {
-    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
-    final CoordinateSetI? topLeft = boundingBox.$1;
-    final CoordinateSetI? bottomRight = boundingBox.$2;
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int width = bottomRight.x - topLeft.x;
@@ -907,8 +900,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionTop()
   {
-    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
-    final CoordinateSetI? topLeft = boundingBox.$1;
+    final (CoordinateSetI? topLeft, CoordinateSetI? _) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
     if (topLeft != null && topLeft.y != 0)
     {
       final CoordinateSetI offset = CoordinateSetI(x: 0, y: -topLeft.y);
@@ -918,9 +910,7 @@ class SelectionState with ChangeNotifier
 
   void alignSelectionBottom()
   {
-    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
-    final CoordinateSetI? topLeft = boundingBox.$1;
-    final CoordinateSetI? bottomRight = boundingBox.$2;
+    final (CoordinateSetI? topLeft, CoordinateSetI? bottomRight) = selection.getBoundingBox(canvasSize: _appState.canvasSize);
     if (topLeft != null && bottomRight != null)
     {
       final int height = bottomRight.x - topLeft.x;

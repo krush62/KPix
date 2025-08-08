@@ -192,11 +192,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     }
     else if (order == ProjectViewOrder.nameAsc)
     {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.name.compareTo(b.entryData.name));
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.name.toLowerCase().compareTo(b.entryData.name.toLowerCase()));
     }
     else if (order == ProjectViewOrder.nameDesc)
     {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.name.compareTo(a.entryData.name));
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.name.toLowerCase().compareTo(a.entryData.name.toLowerCase()));
     }
   }
 

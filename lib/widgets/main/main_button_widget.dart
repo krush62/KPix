@@ -386,99 +386,90 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: _options.padding / 2.0),
-                  child: CompositedTransformTarget(
-                    link: _loadMenuLayerLink,
-                    child: Tooltip(
-                      message: "New/Open...",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.folder,
-                          size: _options.menuIconSize,
-                        ),
-                        onPressed: _newOpenPressed,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(left: _options.padding / 2.0, right: _options.padding / 2.0),
-                  child: CompositedTransformTarget(
-                    link: _saveMenuLayerLink,
-                    child: Tooltip(
-                      message: "Save...",
-                      waitDuration: AppState.toolTipDuration,
-                      child: IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
-                        icon:  FaIcon(
-                          FontAwesomeIcons.floppyDisk,
-                          size: _options.menuIconSize,
-                        ),
-                        onPressed: _savePressed,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                child: CompositedTransformTarget(
+                  link: _loadMenuLayerLink,
                   child: Tooltip(
-                    message: "Preferences",
+                    message: "New/Open...",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
                       color: Theme.of(context).primaryColorLight,
                       icon:  FaIcon(
-                        FontAwesomeIcons.gear,
+                        FontAwesomeIcons.folder,
                         size: _options.menuIconSize,
                       ),
-                      onPressed: _settingsPressed,
+                      onPressed: _newOpenPressed,
                     ),
                   ),
                 ),
               ),
+              SizedBox(width: _options.padding,),
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                child: CompositedTransformTarget(
+                  link: _saveMenuLayerLink,
                   child: Tooltip(
-                    message: "About",
+                    message: "Save...",
                     waitDuration: AppState.toolTipDuration,
-                    child: Stack(
-                      alignment: Alignment.topCenter,
-                      fit: StackFit.passthrough,
-                      children: <Widget>[
-                        IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
-                          icon:  FaIcon(
-                            FontAwesomeIcons.question,
-                            size: _options.menuIconSize,
-                          ),
-                          onPressed: _questionPressed,
-                        ),
-                        ValueListenableBuilder<bool>(
-                          valueListenable: _appState.hasUpdateNotifier,
-                          builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
-                          {
-                            if (hasUpdate)
-                            {
-                              return Align(
-                                alignment: Alignment.topRight,
-                                child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen)),
-                              );
-                            }
-                            else
-                            {
-                              return const SizedBox.shrink();
-                            }
-                          },
-                        ),
-                      ],
+                    child: IconButton.outlined(
+                      color: Theme.of(context).primaryColorLight,
+                      icon:  FaIcon(
+                        FontAwesomeIcons.floppyDisk,
+                        size: _options.menuIconSize,
+                      ),
+                      onPressed: _savePressed,
                     ),
+                  ),
+                ),
+              ),
+              SizedBox(width: _options.padding,),
+              Expanded(
+                child: Tooltip(
+                  message: "Preferences",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    color: Theme.of(context).primaryColorLight,
+                    icon:  FaIcon(
+                      FontAwesomeIcons.gear,
+                      size: _options.menuIconSize,
+                    ),
+                    onPressed: _settingsPressed,
+                  ),
+                ),
+              ),
+              SizedBox(width: _options.padding,),
+              Expanded(
+                child: Tooltip(
+                  message: "About",
+                  waitDuration: AppState.toolTipDuration,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    fit: StackFit.passthrough,
+                    children: <Widget>[
+                      IconButton.outlined(
+                        color: Theme.of(context).primaryColorLight,
+                        icon:  FaIcon(
+                          FontAwesomeIcons.question,
+                          size: _options.menuIconSize,
+                        ),
+                        onPressed: _questionPressed,
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _appState.hasUpdateNotifier,
+                        builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
+                        {
+                          if (hasUpdate)
+                          {
+                            return Align(
+                              alignment: Alignment.topRight,
+                              child: Text("⬤", textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall!.apply(color: notificationGreen)),
+                            );
+                          }
+                          else
+                          {
+                            return const SizedBox.shrink();
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),

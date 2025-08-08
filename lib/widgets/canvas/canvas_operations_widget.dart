@@ -25,9 +25,10 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 class CanvasOperationsWidgetOptions
 {
   final double iconHeight;
+  final double buttonHeight;
   final double padding;
 
-  CanvasOperationsWidgetOptions({required this.iconHeight, required this.padding});
+  CanvasOperationsWidgetOptions({required this.iconHeight, required this.padding, required this.buttonHeight});
 }
 
 enum CanvasTransformation
@@ -94,111 +95,88 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
   {
     return Material(
       color: Theme.of(context).primaryColor,
-      child: Padding(
-        padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding, left: _options.padding / 2, right: _options.padding / 2),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: _options.padding / 2, right: _options.padding / 2),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Tooltip(
-                    message: transformationDescriptions[CanvasTransformation.rotate],
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
-                      icon: FaIcon(
-                        FontAwesomeIcons.rotate,
-                        size: _options.iconHeight,
-                      ),
+      child: SizedBox(
+        height: _options.buttonHeight,
+        child: Padding(
+          padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding, right: _options.padding * 2, left: _options.padding * 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Expanded(
+                child: Tooltip(
+                  message: transformationDescriptions[CanvasTransformation.rotate],
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
+                    icon: FaIcon(
+                      FontAwesomeIcons.rotate,
+                      size: _options.iconHeight,
                     ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: _options.padding / 2, right: _options.padding / 2),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Tooltip(
-                    message: transformationDescriptions[CanvasTransformation.flipH],
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
-                      icon: FaIcon(
-                        FontAwesomeIcons.arrowsLeftRight,
-                        size: _options.iconHeight,
-                      ),
+              SizedBox(width: _options.padding),
+              Expanded(
+                child: Tooltip(
+                  message: transformationDescriptions[CanvasTransformation.flipH],
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
+                    icon: FaIcon(
+                      FontAwesomeIcons.arrowsLeftRight,
+                      size: _options.iconHeight,
                     ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: _options.padding / 2, right: _options.padding / 2),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Tooltip(
-                    message: transformationDescriptions[CanvasTransformation.flipV],
-                    child: IconButton.outlined(
-                      onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
-                      icon: FaIcon(
-                        FontAwesomeIcons.arrowsUpDown,
-                        size: _options.iconHeight,
-                      ),
+              SizedBox(width: _options.padding),
+              Expanded(
+                child: Tooltip(
+                  message: transformationDescriptions[CanvasTransformation.flipV],
+                  child: IconButton.outlined(
+                    onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
+                    icon: FaIcon(
+                      FontAwesomeIcons.arrowsUpDown,
+                      size: _options.iconHeight,
                     ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: _options.padding / 2, right: _options.padding / 2),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: ListenableBuilder(
-                    listenable: _appState.selectionState,
-                    builder: (final BuildContext context, final Widget? child) {
-                      return Tooltip(
-                        message: "Crop To Selection",
-                        waitDuration: AppState.toolTipDuration,
-                        child: IconButton.outlined(
-                          onPressed: _appState.selectionState.selection.isEmpty ? null : _crop,
-                          icon: FaIcon(
-                            FontAwesomeIcons.cropSimple,
-                            size: _options.iconHeight,
-                          ),
+              SizedBox(width: _options.padding),
+              Expanded(
+                child: ListenableBuilder(
+                  listenable: _appState.selectionState,
+                  builder: (final BuildContext context, final Widget? child) {
+                    return Tooltip(
+                      message: "Crop To Selection",
+                      waitDuration: AppState.toolTipDuration,
+                      child: IconButton.outlined(
+                        onPressed: _appState.selectionState.selection.isEmpty ? null : _crop,
+                        icon: FaIcon(
+                          FontAwesomeIcons.cropSimple,
+                          size: _options.iconHeight,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: _options.padding / 2, right: _options.padding / 2),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Tooltip(
-                    message: "Set Size",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      onPressed: _setSize,
-                      icon: FaIcon(
-                        FontAwesomeIcons.rulerCombined,
-                        size: _options.iconHeight,
-                      ),
+              SizedBox(width: _options.padding),
+              Expanded(
+                child: Tooltip(
+                  message: "Set Size",
+                  waitDuration: AppState.toolTipDuration,
+                  child: IconButton.outlined(
+                    onPressed: _setSize,
+                    icon: FaIcon(
+                      FontAwesomeIcons.rulerCombined,
+                      size: _options.iconHeight,
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

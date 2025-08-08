@@ -92,7 +92,7 @@ enum PreferenceDouble
   Layout_Palette_BorderRadius(defaultValue: 8.0),
   Layout_Palette_DropTargetHeight(defaultValue: 32.0),
 
-  Layout_ColorRampRow_BorderRadius(defaultValue: 8.0),
+  Layout_ColorRampRow_BorderRadius(defaultValue: 10.0),
   Layout_ColorRampRow_BorderWidth(defaultValue: 2.0),
   Layout_ColorRampRow_ButtonPadding(defaultValue: 8.0),
   Layout_ColorRampRow_ButtonScaleFactor(defaultValue: 0.8),
@@ -158,6 +158,7 @@ enum PreferenceDouble
   Layout_SelectionBar_Padding(defaultValue: 4.0),
 
   Layout_CanvasOperations_IconHeight(defaultValue: 12.0),
+  Layout_CanvasOperations_ButtonHeight(defaultValue: 36.0),
   Layout_CanvasOperations_Padding(defaultValue: 4.0),
 
   Layout_PaletteManagerEntry_BorderWidth(defaultValue: 2.0),
@@ -937,6 +938,7 @@ class PreferenceManager
         opacityDuration: _getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration),);
     canvasOperationsWidgetOptions = CanvasOperationsWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_IconHeight),
+        buttonHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_ButtonHeight),
         padding: _getValueD(PreferenceDouble.Layout_CanvasOperations_Padding),);
     canvasSizeOptions = CanvasSizeOptions(
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),

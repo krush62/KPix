@@ -146,12 +146,13 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
         message: "Edit Color Ramp",
         waitDuration: AppState.toolTipDuration,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: _options.buttonPadding / 2),
+          padding: EdgeInsets.only(left: _options.buttonPadding / 2, right: _options.borderWidth) ,
           child: IconButton(
+            style: Theme.of(context).iconButtonTheme.style!.copyWith(tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.all(_options.buttonPadding))),
             padding: EdgeInsets.all(_options.buttonPadding),
-            iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize * _options.buttonScaleFactor,
+            iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize - _options.buttonPadding,
             constraints: const BoxConstraints(),
-            icon: const FaIcon(FontAwesomeIcons.sliders,),
+            icon: const FaIcon(FontAwesomeIcons.sliders),
             onPressed: () {createKPal(ramp: widget.rampData);
             },
           ),

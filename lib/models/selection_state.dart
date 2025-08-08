@@ -842,6 +842,97 @@ class SelectionState with ChangeNotifier
       drawingLayer.doManualRaster = true;
     }
   }
+
+  void centerSelectionH()
+  {
+    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final CoordinateSetI? topLeft = boundingBox.$1;
+    final CoordinateSetI? bottomRight = boundingBox.$2;
+    if (topLeft != null && bottomRight != null)
+    {
+      final int width = bottomRight.x - topLeft.x;
+      final int newX = _appState.canvasSize.x ~/ 2 - width ~/ 2 - 1;
+      if (newX != topLeft.x)
+      {
+        final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
+        _moveSelection(offset: offset, withContent: true);
+      }
+    }
+  }
+
+  void centerSelectionV()
+  {
+    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final CoordinateSetI? topLeft = boundingBox.$1;
+    final CoordinateSetI? bottomRight = boundingBox.$2;
+    if (topLeft != null && bottomRight != null)
+    {
+      final int height = bottomRight.y - topLeft.y;
+      final int newY = _appState.canvasSize.y ~/ 2 - height ~/ 2 - 1;
+      if (newY != topLeft.y)
+      {
+        final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
+        _moveSelection(offset: offset, withContent: true);
+      }
+    }
+  }
+
+  void alignSelectionLeft()
+  {
+    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final CoordinateSetI? topLeft = boundingBox.$1;
+    if (topLeft != null && topLeft.x != 0)
+    {
+      final CoordinateSetI offset = CoordinateSetI(x: -topLeft.x, y: 0);
+      _moveSelection(offset: offset, withContent: true);
+    }
+  }
+
+  void alignSelectionRight()
+  {
+    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final CoordinateSetI? topLeft = boundingBox.$1;
+    final CoordinateSetI? bottomRight = boundingBox.$2;
+    if (topLeft != null && bottomRight != null)
+    {
+      final int width = bottomRight.x - topLeft.x;
+      final int newX = _appState.canvasSize.x - width - 1;
+      if (newX != topLeft.x)
+      {
+        final CoordinateSetI offset = CoordinateSetI(x: newX - topLeft.x, y: 0);
+        _moveSelection(offset: offset, withContent: true);
+      }
+    }
+  }
+
+  void alignSelectionTop()
+  {
+    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final CoordinateSetI? topLeft = boundingBox.$1;
+    if (topLeft != null && topLeft.y != 0)
+    {
+      final CoordinateSetI offset = CoordinateSetI(x: 0, y: -topLeft.y);
+      _moveSelection(offset: offset, withContent: true);
+    }
+  }
+
+  void alignSelectionBottom()
+  {
+    final (CoordinateSetI?, CoordinateSetI?) boundingBox = selection.getBoundingBox(canvasSize: _appState.canvasSize);
+    final CoordinateSetI? topLeft = boundingBox.$1;
+    final CoordinateSetI? bottomRight = boundingBox.$2;
+    if (topLeft != null && bottomRight != null)
+    {
+      final int height = bottomRight.x - topLeft.x;
+      final int newY = _appState.canvasSize.y - height - 1;
+      if (newY != topLeft.y)
+      {
+        final CoordinateSetI offset = CoordinateSetI(x: 0, y: newY - topLeft.y);
+        _moveSelection(offset: offset, withContent: true);
+      }
+    }
+  }
+
 }
 
 class SelectionList

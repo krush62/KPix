@@ -22,6 +22,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class SelectionBarWidgetOptions
 {
@@ -50,6 +51,70 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   final SelectionState _selectionState = GetIt.I.get<AppState>().selectionState;
   final AppState _appState = GetIt.I.get<AppState>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
+  final LayerLink _layerLink = LayerLink();
+  late KPixOverlay _alignmentMenu;
+
+  @override
+  void initState()
+  {
+    super.initState();
+    _alignmentMenu = getSelectionAlignMenu(
+      layerLink: _layerLink,
+      onDismiss: _alignDismiss,
+      onAlignCenterH: _alignCenterHPressed,
+      onAlignCenterV: _alignCenterVPressed,
+      onAlignLeft: _alignLeftPressed,
+      onAlignRight: _alignRightPressed,
+      onAlignTop: _alignTopPressed,
+      onAlignBottom: _alignBottomPressed,
+    );
+  }
+
+  void _showAlignmentMenu()
+  {
+    _alignmentMenu.show(context: context);
+  }
+
+  void _alignDismiss()
+  {
+    _alignmentMenu.hide();
+  }
+
+  void _alignCenterHPressed()
+  {
+    _selectionState.centerSelectionH();
+    _alignmentMenu.hide();
+  }
+
+  void _alignCenterVPressed()
+  {
+    _selectionState.centerSelectionV();
+    _alignmentMenu.hide();
+  }
+
+  void _alignLeftPressed()
+  {
+    _selectionState.alignSelectionLeft();
+    _alignmentMenu.hide();
+  }
+
+  void _alignRightPressed()
+  {
+    _selectionState.alignSelectionRight();
+    _alignmentMenu.hide();
+  }
+
+  void _alignTopPressed()
+  {
+    _selectionState.alignSelectionTop();
+    _alignmentMenu.hide();
+  }
+
+  void _alignBottomPressed()
+  {
+    _selectionState.alignSelectionBottom();
+    _alignmentMenu.hide();
+  }
 
 
   void _pasteNewPressed()
@@ -217,6 +282,22 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     icon: FaIcon(
                       FontAwesomeIcons.rotateRight,
                       size: _options.iconHeight,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(_options.padding),
+                child: CompositedTransformTarget(
+                  link: _layerLink,
+                  child: Tooltip(
+                    message: "Align...",
+                    waitDuration: AppState.toolTipDuration,
+                    child: IconButton.outlined(
+                      onPressed: _selectionState.selection.isEmpty ? null : _showAlignmentMenu,
+                      icon: const Icon(
+                        Icons.settings_overscan_outlined,
+                      ),
                     ),
                   ),
                 ),

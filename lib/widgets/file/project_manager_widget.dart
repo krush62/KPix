@@ -219,7 +219,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
           _importFileCompleted(success: success);
         },
       );
-      //
     });
   }
 

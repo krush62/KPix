@@ -248,6 +248,3 @@ class HistoryStateType
   bool get isDeleteCompression => compressionBehavior == HistoryStateCompressionBehavior.delete;
   HistoryStateTypeGroup get group => _stateTypeGroupMap[identifier] ?? HistoryStateTypeGroup.full;
 }
-
-
-

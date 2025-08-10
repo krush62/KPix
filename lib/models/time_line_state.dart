@@ -130,7 +130,7 @@ class Timeline
     return selectedFrame?.layerList.currentLayer;
   }
 
-  void selectFrame({required final int index, final int? layerIndex})
+  void selectFrame({required final int index, final int? layerIndex, final bool addLayerSelectionToHistory = true})
   {
     if (index >= 0 && index < frames.value.length)
     {
@@ -149,7 +149,7 @@ class Timeline
 
       if (layerToSelect != null)
       {
-        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer);
+        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory);
       }
     }
   }
@@ -332,10 +332,10 @@ class Timeline
       }
       frames.value = newFrames;
       final int originalIndex = selectedFrameIndex;
-      selectFrame(index: selectedFrameIndex + 1);
+      selectFrame(index: selectedFrameIndex + 1, addLayerSelectionToHistory: false);
       if (!right)
       {
-        selectFrame(index: selectedFrameIndex - 1);
+        selectFrame(index: selectedFrameIndex - 1, addLayerSelectionToHistory: false);
       }
 
       if (originalIndex <= loopEndIndex.value)

@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -35,6 +36,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
+import 'package:kpix/widgets/timeline/timeline_drag_target_widget.dart';
 
 const Map<Type, IconData> layerIconMap = <Type, IconData>{
   ReferenceLayerState: FontAwesomeIcons.image,
@@ -43,6 +45,13 @@ const Map<Type, IconData> layerIconMap = <Type, IconData>{
   DitherLayerState: Icons.gradient,
   DrawingLayerState: Icons.brush,
 };
+
+class LayerFrameDragData
+{
+  final LayerState layer;
+  final Frame frame;
+  const LayerFrameDragData({required this.layer, required this.frame});
+}
 
 class TimeLineWidget extends StatefulWidget {
   const TimeLineWidget({super.key, required this.timeline, this.height = 36, this.expandedHeight = 400, this.animationDuration = const Duration(milliseconds: 200), this.padding = 8.0, this.framePadding = 2.0});
@@ -333,6 +342,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   static const double _transportIconSize = _cellHeight / 2;
   static const int _scrollTimeMs = 50;
   static const double _horizontalScrollHeight = 12;
+  static const int _dragTargetDelayMs = 100;
 
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
@@ -400,6 +410,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
               alignment: Alignment.center,
               children: <Widget>[
                 dragTarget,
+                dragTarget,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -466,6 +477,113 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     return headerWidgets;
   }
 
+
+
+  /*DragTarget<LayerFrameDragData> _createLayerDragTarget({required final int index, required final Frame frame})
+  {
+    bool hasSubButtons = false;
+    return DragTarget<LayerFrameDragData>(
+      builder: (final BuildContext context, final List<LayerFrameDragData?> candidateItems, final List<dynamic> rejectedItems) {
+
+        Widget containerChild;
+        if (candidateItems.isNotEmpty && candidateItems[0] != null && candidateItems[0]!.frame != frame)
+        {
+          hasSubButtons = true;
+          bool showLink = false;
+          final LayerFrameDragData dragData = candidateItems[0]!;
+          final LayerState layer = dragData.layer;
+          if (!frame.layerList.contains(layer: layer))
+          {
+            showLink = true;
+          }
+          final List<Widget> rowEntries = <Widget>[];
+
+          rowEntries.add(
+            Expanded(
+              child: DragTarget<LayerFrameDragData>(
+                onWillAcceptWithDetails: (DragTargetDetails<LayerFrameDragData> details) {
+                  return true;
+                },
+                onLeave: (LayerFrameDragData? data) {
+                },
+                builder: (BuildContext context, List<LayerFrameDragData?> candidateData, List<dynamic> rejectedData) {
+                  return Icon(
+                    FontAwesomeIcons.copy,
+                    size: _cellHeight / 2,
+                  );
+                },
+              ),
+            ),
+          );
+          if (showLink)
+          {
+            rowEntries.add(const SizedBox(width: 4));
+            rowEntries.add(
+              Expanded(
+                child: DragTarget<LayerFrameDragData>(
+                  onWillAcceptWithDetails: (DragTargetDetails<LayerFrameDragData> details) {
+                    print("ENTER LINK");
+                    return true;
+                  },
+                  onLeave: (LayerFrameDragData? data) {
+                    print("LEAVE LINK");
+                  },
+                  builder: (BuildContext context, List<LayerFrameDragData?> candidateData, List<dynamic> rejectedData) {
+                    return Icon(
+                      FontAwesomeIcons.link,
+                      size: _cellHeight / 2,
+                    );
+                  },
+                ),
+              ),
+            );
+          }
+          containerChild = Row(
+            children: rowEntries,
+          );
+        }
+        else
+        {
+          containerChild = const SizedBox.shrink();
+        }
+
+        return AnimatedContainer(
+          height: candidateItems.isNotEmpty ? _cellHeight : _cellPadding,
+          width: _cellWidth,
+          color: candidateItems.isEmpty || hasSubButtons ? Colors.transparent : Theme.of(context).primaryColorLight,
+          duration: const Duration(milliseconds: _dragTargetDelayMs),
+          child: containerChild,
+
+        );
+      },
+      onAcceptWithDetails: (final DragTargetDetails<LayerFrameDragData> details) {
+        final Frame sourceFrame = details.data.frame;
+        if (sourceFrame == frame && !hasSubButtons)
+        {
+          final LayerState layer = details.data.layer;
+          GetIt.I.get<AppState>().changeLayerOrder(state: layer, newPosition: index);
+        }
+      },
+    );
+  }*/
+
+  Container _createLayerContainer({required final LayerState layer, required final bool frameIsSelected, required final bool layerIsSelected})
+  {
+    return Container(
+      decoration: BoxDecoration(
+        color: frameIsSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
+        border: Border.all(
+          color: frameIsSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
+          width: _borderWidth,
+        ),
+        borderRadius: BorderRadius.circular(_borderRadius / 2),
+      ),
+      width: _cellWidth - (_cellPadding * 2),
+      height: _cellHeight - _cellPadding,
+      child: Center(child: FaIcon(layerIconMap[layer.runtimeType], size: _layerIconSize, color: frameIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
+    );
+  }
+
   List<Widget> _createLayerWidgets({required final List<Frame> frames, required final double minHeight, required final Color borderColor})
   {
     final List<Widget> layerWidgets = <Widget>[];
@@ -486,14 +604,14 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
           ValueListenableBuilder<int>(
             valueListenable: widget.timeline.selectedFrameIndexNotifier,
             builder: (final BuildContext context, final int selectedFrameIndex, final Widget? child) {
-              final bool isSelected = (i == selectedFrameIndex);
+              final bool frameIsSelected = (i == selectedFrameIndex);
               return InkWell(
                 onTap: () {
                   widget.timeline.selectFrame(index: i);
                 },
                 child: Container(
                   height: height,
-                  color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                  color: frameIsSelected ? Theme.of(context).primaryColor : Colors.transparent,
                   child: ListenableBuilder(
                     listenable: frames[i].layerList,
                     builder: (final BuildContext context4, final Widget? child4) {
@@ -501,31 +619,69 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                       final List<Widget> layers = <Widget>[];
                       for (int j = 0; j < layerCollection.length; j++)
                       {
+                        //layers.add(_createLayerDragTarget(index: j, frame: frames[i]));
+                        layers.add(
+                          TimeLineDragTargetWidget(
+                            cellHeight: _cellHeight,
+                            cellWidth: _cellWidth,
+                            collapsedHeight: _cellPadding,
+                            delayMs: _dragTargetDelayMs,
+                            layerIndex: j,
+                            frame: frames[i],
+                            changeLayerOrderFn: _changeLayerOrder,
+                            copyLayerToOtherFrameFn: _copyLayerToOtherFrame,
+                            linkLayerToOtherFrameFn: _linkLayerToOtherFrame,
+                          ),
+                        );
                         final bool layerIsSelected = (j == layerCollection.getSelectedLayerIndex());
                         layers.add(
                           Padding(
-                            padding: const EdgeInsets.only(top: _cellPadding, left: _cellPadding, right: _cellPadding),
+                            padding: const EdgeInsets.symmetric(horizontal: _cellPadding),
                             child: InkWell(
                               onTap: () {
                                 widget.timeline.selectFrame(index: i, layerIndex: j);
                               },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
-                                  border: Border.all(
-                                    color: isSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
-                                    width: _borderWidth,
+                              child: Draggable<LayerFrameDragData>(
+                                dragAnchorStrategy: pointerDragAnchorStrategy,
+                                data: LayerFrameDragData(frame: frames[i], layer: layerCollection.getLayer(index: j)),
+                                onDragStarted: () {
+                                  widget.timeline.selectFrame(index: i);
+                                },
+                                feedback: Container(
+                                  width: _cellWidth - (_cellPadding * 2),
+                                  height: _cellHeight - _cellPadding,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).primaryColor.withAlpha(100),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(_borderRadius),
+                                    ),
+                                    border: Border.all(
+                                      color: Theme.of(context).primaryColorDark,
+                                      width: _borderWidth,
+                                    ),
                                   ),
-                                  borderRadius: BorderRadius.circular(_borderRadius / 2),
                                 ),
-                                width: _cellWidth - (_cellPadding * 2),
-                                height: _cellHeight - _cellPadding,
-                                child: Center(child: FaIcon(layerIconMap[layerCollection.getLayer(index: j).runtimeType], size: _layerIconSize, color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
+                                child: _createLayerContainer(layer: layerCollection.getLayer(index: j), frameIsSelected: frameIsSelected, layerIsSelected: layerIsSelected),
                               ),
                             ),
                           ),
                         );
                       }
+                      //layers.add(_createLayerDragTarget(index: layerCollection.length, frame: frames[i]));
+                      layers.add(
+                        TimeLineDragTargetWidget(
+                          cellHeight: _cellHeight,
+                          cellWidth: _cellWidth,
+                          collapsedHeight: _cellPadding,
+                          delayMs: _dragTargetDelayMs,
+                          layerIndex: layerCollection.length,
+                          frame: frames[i],
+                          changeLayerOrderFn: _changeLayerOrder,
+                          copyLayerToOtherFrameFn: _copyLayerToOtherFrame,
+                          linkLayerToOtherFrameFn: _linkLayerToOtherFrame,
+                        ),
+                      );
+
                       return Column(
                         children: layers,
                       );
@@ -651,6 +807,25 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   void _frameBlendingOverlayDismiss()
   {
     _frameBlendingOverlay.hide();
+  }
+
+  void _changeLayerOrder(final LayerState layer, final int newPosition)
+  {
+    GetIt.I.get<AppState>().changeLayerOrder(state: layer, newPosition: newPosition);
+  }
+
+  void _copyLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer)
+  {
+    //TODO
+    print("COPY LAYER TO OTHER FRAME");
+    //GetIt.I.get<AppState>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer);
+  }
+
+  void _linkLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer)
+  {
+    //TODO
+    print("LINK LAYER TO OTHER FRAME");
+    //GetIt.I.get<AppState>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer);
   }
 
 

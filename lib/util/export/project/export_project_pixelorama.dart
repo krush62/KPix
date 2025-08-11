@@ -105,7 +105,7 @@ Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData,
         {
           final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
           ColorReference? colAtPos;
-          if (layer.isSelected.value)
+          if (l == layerCollection.selectedLayerIndex)
           {
             colAtPos = selection.getColorReference(coord: curCoord);
           }

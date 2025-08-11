@@ -262,8 +262,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
         identifier = HistoryStateTypeIdentifier.toolFill;
       }
       final Frame? frame = _appState.timeline.selectedFrame;
-      final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, frame: frame, layerIndex: layerIndex);
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, frame: frame, layerIndex: frame?.layerList.selectedLayerIndex);
       kPixPainter.toolPainter!.hasHistoryData = false;
     }
   }

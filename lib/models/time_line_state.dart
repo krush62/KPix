@@ -106,7 +106,7 @@ class Timeline
     frames.value = frameList;
     loopStartIndex.value = 0;
     loopEndIndex.value = frames.value.length - 1;
-    selectFrame(index: 0);
+    selectFrameByIndex(index: 0);
   }
 
   int get selectedFrameIndex => _selectedFrameIndex.value;
@@ -127,10 +127,20 @@ class Timeline
 
   LayerState? getCurrentLayer()
   {
-    return selectedFrame?.layerList.currentLayer;
+    return selectedFrame?.layerList.getSelectedLayer();
   }
 
-  void selectFrame({required final int index, final int? layerIndex, final bool addLayerSelectionToHistory = true})
+  void selectFrame({required final Frame frame, final int? layerIndex})
+  {
+    if (frames.value.contains(frame))
+    {
+      final int frameIndex =  frames.value.indexOf(frame);
+      selectFrameByIndex(index: frameIndex, layerIndex: layerIndex, addLayerSelectionToHistory: false);
+    }
+  }
+
+
+  void selectFrameByIndex({required final int index, final int? layerIndex, final bool addLayerSelectionToHistory = true})
   {
     if (index >= 0 && index < frames.value.length)
     {
@@ -146,7 +156,6 @@ class Timeline
         layerToSelect = frames.value[index].layerList.getSelectedLayer();
 
       }
-
       if (layerToSelect != null)
       {
         GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory);
@@ -183,11 +192,11 @@ class Timeline
     final int newIndex = selectedFrameIndex + 1;
     if (newIndex > loopEndIndex.value)
     {
-      selectFrame(index: loopStartIndex.value);
+      selectFrameByIndex(index: loopStartIndex.value);
     }
     else
     {
-      selectFrame(index: newIndex);
+      selectFrameByIndex(index: newIndex);
     }
   }
 
@@ -196,22 +205,22 @@ class Timeline
     final int newIndex = selectedFrameIndex - 1;
     if (newIndex < 0)
     {
-      selectFrame(index: frames.value.length - 1);
+      selectFrameByIndex(index: frames.value.length - 1);
     }
     else
     {
-      selectFrame(index: newIndex);
+      selectFrameByIndex(index: newIndex);
     }
   }
 
   void selectFirstFrame()
   {
-    selectFrame(index: 0);
+    selectFrameByIndex(index: 0);
   }
 
   void selectLastFrame()
   {
-    selectFrame(index: frames.value.length - 1);
+    selectFrameByIndex(index: frames.value.length - 1);
   }
 
   Future<void> _play({required final int startIndex}) async
@@ -237,7 +246,7 @@ class Timeline
       newFrames.removeAt(selectedFrameIndex);
       newFrames.insert(selectedFrameIndex - 1, f);
       frames.value = newFrames;
-      selectFrame(index: selectedFrameIndex - 1);
+      selectFrameByIndex(index: selectedFrameIndex - 1);
       GetIt.I.get<AppState>().frameMoved();
     }
   }
@@ -252,7 +261,7 @@ class Timeline
       newFrames.removeAt(selectedFrameIndex);
       newFrames.insert(selectedFrameIndex + 1, f);
       frames.value = newFrames;
-      selectFrame(index: selectedFrameIndex + 1);
+      selectFrameByIndex(index: selectedFrameIndex + 1);
       GetIt.I.get<AppState>().frameMoved();
     }
   }
@@ -297,7 +306,7 @@ class Timeline
         {
           final LayerState l = cf.layerList.getLayer(index: i);
           final LayerState? addedLayer = f.layerList.duplicateLayer(duplicateLayer: l, insertAtEnd: true);
-          if (l.isSelected.value)
+          if (i == cf.layerList.selectedLayerIndex)
           {
             layerToSelect = addedLayer;
           }
@@ -332,10 +341,10 @@ class Timeline
       }
       frames.value = newFrames;
       final int originalIndex = selectedFrameIndex;
-      selectFrame(index: selectedFrameIndex + 1, addLayerSelectionToHistory: false);
+      selectFrameByIndex(index: selectedFrameIndex + 1, addLayerSelectionToHistory: false);
       if (!right)
       {
-        selectFrame(index: selectedFrameIndex - 1, addLayerSelectionToHistory: false);
+        selectFrameByIndex(index: selectedFrameIndex - 1, addLayerSelectionToHistory: false);
       }
 
       if (originalIndex <= loopEndIndex.value)
@@ -369,12 +378,12 @@ class Timeline
 
     if (selectedFrameIndex == 0)
     {
-      selectFrame(index: 1);
-      selectFrame(index: 0);
+      selectFrameByIndex(index: 1);
+      selectFrameByIndex(index: 0);
     }
     else
     {
-      selectFrame(index: selectedFrameIndex - 1);
+      selectFrameByIndex(index: selectedFrameIndex - 1);
     }
 
     frames.value = newFrames;
@@ -493,5 +502,22 @@ class Timeline
       index++;
     }
     return totalTime;
+  }
+
+  bool isLayerLinked({required final LayerState layer})
+  {
+    int occurrences = 0;
+    for (final Frame f in frames.value)
+    {
+      if (f.layerList.contains(layer: layer))
+      {
+        occurrences++;
+        if (occurrences > 1)
+        {
+          break;
+        }
+      }
+    }
+    return occurrences > 1;
   }
 }

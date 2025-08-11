@@ -39,19 +39,11 @@ class LayerCollection with ChangeNotifier
 {
   static const int maxLayers = 256;
   final List<LayerState> _layers = <LayerState>[];
-  final ValueNotifier<LayerState?> _currentLayer = ValueNotifier<LayerState?>(null);
   ui.Image? _rasterImage;
+
 
   ui.Image? get rasterImage => _rasterImage;
 
-  LayerState? get currentLayer
-  {
-    return _currentLayer.value;
-  }
-  ValueNotifier<LayerState?> get currentLayerNotifier
-  {
-    return _currentLayer;
-  }
 
   bool get isEmpty
   {
@@ -73,16 +65,45 @@ class LayerCollection with ChangeNotifier
     return _layers.first;
   }
 
-  LayerCollection({required final List<LayerState> layers, final LayerState? selectedLayer})
+  final ValueNotifier<int?> _selectedLayerIndexNotifier = ValueNotifier<int?>(null);
+  int? get selectedLayerIndex
   {
-    _addLayers(layers: layers, selectedLayer: selectedLayer);
+    return _selectedLayerIndexNotifier.value;
   }
 
-  LayerCollection.empty();
+
+
+  LayerCollection({required final List<LayerState> layers, required final int selLayerIdx})
+  {
+    _selectedLayerIndexNotifier.addListener(_layerSelectionChanged);
+    _addLayers(layers: layers);
+    if (selLayerIdx >= 0 && selLayerIdx < layers.length)
+    {
+      _selectedLayerIndexNotifier.value = selLayerIdx;
+    }
+  }
+
+  LayerCollection.empty()
+  {
+    _selectedLayerIndexNotifier.addListener(_layerSelectionChanged);
+  }
+
+
+  void _layerSelectionChanged()
+  {
+    for (int i = 0; i < _layers.length; i++)
+    {
+      final bool shouldBeSelected = i == selectedLayerIndex;
+      if (shouldBeSelected != _layers[i].selectionNotifier.value)
+      {
+        _layers[i].selectionNotifier.value = shouldBeSelected;
+      }
+    }
+  }
 
 
 
-  void _addLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
+  void _addLayers({required final List<LayerState> layers})
   {
     bool couldAddAllLayers = true;
     for (final LayerState layer in layers)
@@ -95,17 +116,6 @@ class LayerCollection with ChangeNotifier
       else
       {
         _layers.add(layer);
-      }
-    }
-    if (_layers.isNotEmpty)
-    {
-      if (selectedLayer != null && _layers.contains(selectedLayer))
-      {
-        selectLayer(newLayer: selectedLayer);
-      }
-      else
-      {
-        selectLayer(newLayer: _layers.first);
       }
     }
     if (!couldAddAllLayers)
@@ -128,18 +138,11 @@ class LayerCollection with ChangeNotifier
   void clear({final bool notify = true})
   {
     _layers.clear();
-    _currentLayer.value = null;
+    _selectedLayerIndexNotifier.value = null;
     if (notify)
     {
       notifyListeners();
     }
-  }
-
-  void replaceLayers({required final List<LayerState> layers, final LayerState? selectedLayer})
-  {
-    clear(notify: false);
-    _addLayers(layers: layers, selectedLayer: selectedLayer);
-    notifyListeners();
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
@@ -159,110 +162,101 @@ class LayerCollection with ChangeNotifier
     return pixelCount;
   }
 
-
-  ReferenceLayerState? addNewReferenceLayer({final bool select = false})
+  LayerState? addLayerWithData({required final LayerState layer, required final int position})
   {
     if (_layers.length >= maxLayers)
     {
       GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
       return null;
     }
+    else if (position < 0 || position > _layers.length)
+    {
+      GetIt.I.get<AppState>().showMessage(text: "Invalid layer insert index.");
+      return null;
+    }
     else
     {
-      final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
-      final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
-      if (_layers.isEmpty)
+      final LayerState? addLayer = _createDuplicateLayer(layerToDuplicate: layer);
+      if (addLayer != null)
       {
-        newLayer.isSelected.value = true;
-        _currentLayer.value = newLayer;
-        _layers.add(newLayer);
+        _layers.insert(position, addLayer);
+        notifyListeners();
+        return addLayer;
       }
       else
       {
-        _layers.insert(getSelectedLayerIndex(), newLayer);
+        GetIt.I.get<AppState>().showMessage(text: "Could not add layer.");
+        return null;
       }
+    }
+  }
 
-      if (select)
-      {
-        selectLayer(newLayer: newLayer);
-      }
+  void addLinkLayer({required final LayerState layer, required final int position})
+  {
+    if (_layers.length >= maxLayers)
+    {
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+    }
+    else if (position < 0 || position > _layers.length)
+    {
+      GetIt.I.get<AppState>().showMessage(text: "Invalid layer insert index.");
+    }
+    else if(_layers.contains(layer))
+    {
+      GetIt.I.get<AppState>().showMessage(text: "Layer already exists on that frame.");
+    }
+    else
+    {
+      _layers.insert(position, layer);
       notifyListeners();
+    }
+  }
+
+
+  ReferenceLayerState? addNewReferenceLayer({final bool select = false})
+  {
+    final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+    final ReferenceLayerState newLayer = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
+    if (_addNewLayer(newLayer: newLayer, select: select))
+    {
       return newLayer;
+    }
+    else
+    {
+      return null;
     }
   }
 
   ShadingLayerState? addNewShadingLayer({final bool select = false})
   {
-    if (_layers.length >= maxLayers)
+    final ShadingLayerState newLayer = ShadingLayerState();
+    if (_addNewLayer(newLayer: newLayer, select: select))
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
-      return null;
+      return newLayer;
     }
     else
     {
-      final ShadingLayerState newLayer = ShadingLayerState();
-      final List<LayerState> layerList = <LayerState>[];
-      if (_layers.isEmpty)
-      {
-        newLayer.isSelected.value = true;
-        _currentLayer.value = newLayer;
-        layerList.add(newLayer);
-      }
-      else
-      {
-        _layers.insert(getSelectedLayerIndex(), newLayer);
-      }
-      if (select)
-      {
-        selectLayer(newLayer: newLayer);
-      }
-      notifyListeners();
-      return newLayer;
+      return null;
     }
   }
 
   DitherLayerState? addNewDitherLayer({final bool select = false})
   {
-    if (_layers.length >= maxLayers)
+    final DitherLayerState newLayer = DitherLayerState();
+    if (_addNewLayer(newLayer: newLayer, select: select))
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
-      return null;
+      return newLayer;
     }
     else
     {
-      final DitherLayerState newLayer = DitherLayerState();
-      final List<LayerState> layerList = <LayerState>[];
-      if (_layers.isEmpty)
-      {
-        newLayer.isSelected.value = true;
-        _currentLayer.value = newLayer;
-        layerList.add(newLayer);
-      }
-      else
-      {
-        _layers.insert(getSelectedLayerIndex(), newLayer);
-      }
-      if (select)
-      {
-        selectLayer(newLayer: newLayer);
-      }
-      notifyListeners();
-      return newLayer;
+      return null;
     }
   }
 
   GridLayerState? addNewGridLayer({final bool select = false})
   {
-    if (_layers.length >= maxLayers)
-    {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
-      return null;
-    }
-    else
-    {
-      final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
-      final List<LayerState> layerList = <LayerState>[];
-      final GridLayerState newLayer = GridLayerState(
+    final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
+    final GridLayerState newLayer = GridLayerState(
         brightness: gridSettings.brightnessDefault,
         gridType: gridSettings.gridTypeDefault,
         intervalX: gridSettings.intervalXDefault,
@@ -272,146 +266,133 @@ class LayerCollection with ChangeNotifier
         vanishingPoint1: gridSettings.vanishingPoint1Default,
         vanishingPoint2: gridSettings.vanishingPoint2Default,
         vanishingPoint3: gridSettings.vanishingPoint3Default,
-      );
-      if (_layers.isEmpty)
-      {
-        newLayer.isSelected.value = true;
-        _currentLayer.value = newLayer;
-        layerList.add(newLayer);
-      }
-      else
-      {
-        _layers.insert(getSelectedLayerIndex(), newLayer);
-      }
-      if (select)
-      {
-        selectLayer(newLayer: newLayer);
-      }
-      notifyListeners();
+    );
+
+    if (_addNewLayer(newLayer: newLayer, select: select))
+    {
       return newLayer;
+    }
+    else
+    {
+      return null;
     }
   }
 
   DrawingLayerState? addNewDrawingLayer({final bool select = false, final CoordinateColorMapNullable? content, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps})
   {
-    if (_layers.length >= maxLayers)
+    final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content, ramps: ramps);
+    if (_addNewLayer(newLayer: newLayer, select: select))
     {
-      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
-      return null;
+      return newLayer;
     }
     else
     {
-      final DrawingLayerState newLayer = DrawingLayerState(size: canvasSize, content: content, ramps: ramps);
-      if (_layers.isEmpty)
+      return null;
+    }
+  }
+
+  bool _addNewLayer({required final LayerState newLayer, required final bool select})
+  {
+    if (_layers.length >= maxLayers)
+    {
+      GetIt.I.get<AppState>().showMessage(text: "Could not add more layers.");
+      return false;
+    }
+    else
+    {
+      if (_layers.isEmpty || selectedLayerIndex == null)
       {
-        newLayer.isSelected.value = true;
-        _currentLayer.value = newLayer;
         _layers.add(newLayer);
+        _selectedLayerIndexNotifier.value = 0;
       }
       else
       {
-        final int currentLayerIndex = getSelectedLayerIndex();
-        _layers.insert(currentLayerIndex, newLayer);
+        _layers.insert(selectedLayerIndex!, newLayer);
+        _selectedLayerIndexNotifier.value = _selectedLayerIndexNotifier.value! + 1;
       }
       if (select)
       {
         selectLayer(newLayer: newLayer);
       }
       notifyListeners();
-      return newLayer;
+      return true;
     }
   }
 
   //returns previous layer
-  LayerState selectLayer({required final LayerState newLayer})
+  LayerState? selectLayer({required final LayerState newLayer})
   {
-    final LayerState? oldLayer = getSelectedLayer();
-    if (_currentLayer.value != newLayer || !newLayer.isSelected.value)
+    if (_layers.contains(newLayer))
     {
-      newLayer.isSelected.value = true;
-      if (oldLayer != newLayer)
+      LayerState? previousLayer;
+      if (selectedLayerIndex != null)
       {
-        oldLayer?.isSelected.value = false;
+        previousLayer = _layers[selectedLayerIndex!];
       }
-      _currentLayer.value = newLayer;
+      if (previousLayer != newLayer)
+      {
+        _selectedLayerIndexNotifier.value = _layers.indexOf(newLayer);
+        notifyListeners();
+      }
+
+      return previousLayer?? newLayer;
     }
-    notifyListeners();
-    return oldLayer?? newLayer;
+    else
+    {
+      return null;
+    }
   }
 
   int? getLayerPosition({required final LayerState state})
   {
-    int? sourcePosition;
-    for (int i = 0; i < _layers.length; i++)
-    {
-      if (_layers[i] == state)
-      {
-        sourcePosition = i;
-        break;
-      }
-    }
-    return sourcePosition;
+    final int sourcePosition = _layers.indexOf(state);
+    return sourcePosition == -1 ? null : sourcePosition;
   }
 
   LayerState? getSelectedLayer()
   {
-    for (final LayerState state in _layers)
+    if (selectedLayerIndex != null && selectedLayerIndex! >= 0 && selectedLayerIndex! < _layers.length)
     {
-      if (state.isSelected.value)
-      {
-        return state;
-      }
-    }
-    return null;
-  }
-
-
-  int getSelectedLayerIndex()
-  {
-    if (currentLayer != null)
-    {
-      return _layers.indexOf(currentLayer!);
+      return _layers[selectedLayerIndex!];
     }
     else
     {
-      return -1;
+      return null;
     }
   }
 
   void selectLayerAbove()
   {
-    final int? index = getLayerPosition(state: currentLayer!);
-    if (index != null && index > 0)
+    if (selectedLayerIndex != null && selectedLayerIndex! > 0)
     {
-      selectLayer(newLayer: _layers[index - 1]);
+      selectLayer(newLayer: _layers[selectedLayerIndex! - 1]);
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void selectLayerBelow()
   {
-    final int? index = getLayerPosition(state: currentLayer!);
-    if (index != null && index < _layers.length - 1)
+    if (selectedLayerIndex != null && selectedLayerIndex! < _layers.length - 1)
     {
-      selectLayer(newLayer: _layers[index + 1]);
+      selectLayer(newLayer: _layers[selectedLayerIndex! + 1]);
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   bool deleteLayer({required final LayerState deleteLayer})
   {
     if (_layers.length > 1)
     {
-      _layers.remove(deleteLayer);
+
       final int? deleteLayerIndex = getLayerPosition(state: deleteLayer);
-      if (deleteLayerIndex != null && deleteLayerIndex > 0)
+      if (deleteLayerIndex == 0)
       {
-        selectLayer(newLayer: _layers[deleteLayerIndex - 1]);
+        _selectedLayerIndexNotifier.value = 1;
       }
-      else
-      {
-        selectLayer(newLayer: _layers.first);
-      }
+      _layers.remove(deleteLayer);
+      _selectedLayerIndexNotifier.value = 0;
+
+
       notifyListeners();
       return true;
     }
@@ -425,11 +406,16 @@ class LayerCollection with ChangeNotifier
   {
     String? message;
     if (mergeLayer.runtimeType == DrawingLayerState) {
+      final AppState appState = GetIt.I.get<AppState>();
       final DrawingLayerState drawingMergeLayer = mergeLayer as DrawingLayerState;
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
       if (mergeLayerIndex == _layers.length - 1)
       {
         message = "No layer below!";
+      }
+      else if (appState.timeline.isLayerLinked(layer: drawingMergeLayer))
+      {
+        message = "Cannot merge a linked layer!";
       }
       else if (drawingMergeLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
@@ -447,12 +433,18 @@ class LayerCollection with ChangeNotifier
       {
         message = "Cannot merge with a locked layer!";
       }
-      else if (_layers[mergeLayerIndex + 1].runtimeType != DrawingLayerState) {
+      else if (_layers[mergeLayerIndex + 1].runtimeType != DrawingLayerState)
+      {
         message = "Can only merge with drawing layers!";
+      }
+      else if (appState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1]))
+      {
+        message = "Cannot merge with a linked layer!";
       }
     }
     else
     {
+      //SHOULD NEVER HAPPEN
       message = "Can only merge Drawing Layers!";
     }
     return message;
@@ -487,6 +479,39 @@ class LayerCollection with ChangeNotifier
     }
   }
 
+  LayerState? _createDuplicateLayer({required final LayerState layerToDuplicate})
+  {
+    if (layerToDuplicate.runtimeType == DrawingLayerState)
+    {
+      final DrawingLayerState drawingLayer = layerToDuplicate as DrawingLayerState;
+      return DrawingLayerState.from(other: drawingLayer);
+    }
+    else if (layerToDuplicate.runtimeType == ReferenceLayerState)
+    {
+      final ReferenceLayerState referenceLayer = layerToDuplicate as ReferenceLayerState;
+      return ReferenceLayerState.from(other: referenceLayer);
+    }
+    else if (layerToDuplicate.runtimeType == GridLayerState)
+    {
+      final GridLayerState gridLayer = layerToDuplicate as GridLayerState;
+      return GridLayerState.from(other: gridLayer);
+    }
+    else if (layerToDuplicate.runtimeType == ShadingLayerState)
+    {
+      final ShadingLayerState shadingLayer = layerToDuplicate as ShadingLayerState;
+      return ShadingLayerState.from(other: shadingLayer);
+    }
+    else if (layerToDuplicate.runtimeType == DitherLayerState)
+    {
+      final DitherLayerState ditherLayer = layerToDuplicate as DitherLayerState;
+      return DitherLayerState.from(other: ditherLayer);
+    }
+    else
+    {
+      return null;
+    }
+  }
+
   LayerState? duplicateLayer({required final LayerState duplicateLayer, final bool insertAtEnd = false})
   {
     if (_layers.length >= maxLayers)
@@ -496,32 +521,7 @@ class LayerCollection with ChangeNotifier
     }
     else
     {
-      LayerState? addLayer;
-      if (duplicateLayer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = duplicateLayer as DrawingLayerState;
-        addLayer = DrawingLayerState.from(other: drawingLayer);
-      }
-      else if (duplicateLayer.runtimeType == ReferenceLayerState)
-      {
-        final ReferenceLayerState referenceLayer = duplicateLayer as ReferenceLayerState;
-        addLayer = ReferenceLayerState.from(other: referenceLayer);
-      }
-      else if (duplicateLayer.runtimeType == GridLayerState)
-      {
-        final GridLayerState gridLayer = duplicateLayer as GridLayerState;
-        addLayer = GridLayerState.from(other: gridLayer);
-      }
-      else if (duplicateLayer.runtimeType == ShadingLayerState)
-      {
-        final ShadingLayerState shadingLayer = duplicateLayer as ShadingLayerState;
-        addLayer = ShadingLayerState.from(other: shadingLayer);
-      }
-      else if (duplicateLayer.runtimeType == DitherLayerState)
-      {
-        final DitherLayerState ditherLayer = duplicateLayer as DitherLayerState;
-        addLayer = DitherLayerState.from(other: ditherLayer);
-      }
+      final LayerState? addLayer = _createDuplicateLayer(layerToDuplicate: duplicateLayer);
 
       if (addLayer != null)
       {
@@ -588,15 +588,31 @@ class LayerCollection with ChangeNotifier
     final int? sourcePosition = getLayerPosition(state: state);
     if (sourcePosition != null && sourcePosition != newPosition && (sourcePosition + 1) != newPosition)
     {
+      final bool movingSelectedLayer = selectedLayerIndex != null && selectedLayerIndex == sourcePosition;
       _layers.removeAt(sourcePosition);
       if (newPosition > sourcePosition)
       {
         _layers.insert(newPosition - 1, state);
+        if (movingSelectedLayer)
+        {
+          _selectedLayerIndexNotifier.value = newPosition - 1;
+        }
       }
       else
       {
         _layers.insert(newPosition, state);
+        if (movingSelectedLayer)
+        {
+          _selectedLayerIndexNotifier.value = newPosition;
+        }
       }
+
+      if (!movingSelectedLayer && newPosition <= selectedLayerIndex! && sourcePosition > selectedLayerIndex!)
+      {
+        _selectedLayerIndexNotifier.value = selectedLayerIndex! + 1;
+      }
+
+
       orderChanged = true;
     }
     notifyListeners();
@@ -692,10 +708,6 @@ class LayerCollection with ChangeNotifier
     {
       _layers.remove(originalLayer);
       _layers.insert(insertIndex, drawingLayer);
-      if (originalLayer.isSelected.value)
-      {
-        selectLayer(newLayer: drawingLayer);
-      }
       drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
       notifyListeners();
     }
@@ -846,7 +858,7 @@ class LayerCollection with ChangeNotifier
       else if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)
       {
         final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        if (currentLayer == drawingLayer && selectionReference != null)
+        if (selectedLayerIndex != null && _layers[selectedLayerIndex!] == drawingLayer && selectionReference != null)
         {
           colRef = selectionReference;
           if (!rawMode && drawingLayer.getSettingsPixel(coord: normPos) != null)

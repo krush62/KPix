@@ -22,7 +22,8 @@ import 'package:kpix/widgets/controls/kpix_slider.dart';
 class ShadingLayerSettingsWidget extends LayerSettingsWidget
 {
   final ShadingLayerSettings settings;
-  const ShadingLayerSettingsWidget({super.key, required this.settings});
+  final bool isForDithering;
+  const ShadingLayerSettingsWidget({super.key, required this.settings, required this.isForDithering});
 
   @override
   State<ShadingLayerSettingsWidget> createState() => _ShadingLayerSettingsWidgetState();
@@ -55,7 +56,7 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
                     return KPixSlider(
                       value: shadingLow.toDouble(),
                       min: widget.settings.constraints.shadingStepsMin.toDouble(),
-                      max: widget.settings.constraints.shadingStepsMax.toDouble(),
+                      max: widget.isForDithering ? widget.settings.constraints.ditherStepsMax.toDouble() : widget.settings.constraints.shadingStepsMax.toDouble(),
                       onChanged: (final double value) {
                         widget.settings.shadingStepsMinus.value = value.round();
                       },
@@ -77,7 +78,7 @@ class _ShadingLayerSettingsWidgetState extends State<ShadingLayerSettingsWidget>
                     return KPixSlider(
                       value: shadingHigh.toDouble(),
                       min: widget.settings.constraints.shadingStepsMin.toDouble(),
-                      max: widget.settings.constraints.shadingStepsMax.toDouble(),
+                      max: widget.isForDithering ? widget.settings.constraints.ditherStepsMax.toDouble() : widget.settings.constraints.shadingStepsMax.toDouble(),
                       onChanged: (final double value) {
                         widget.settings.shadingStepsPlus.value = value.round();
                       },

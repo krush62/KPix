@@ -105,7 +105,7 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
           {
             final CoordinateSetI curCoord = CoordinateSetI(x: a, y: b);
             ColorReference? colAtPos;
-            if (layer.isSelected.value)
+            if (l == layerCollection.selectedLayerIndex)
             {
               colAtPos = selection.getColorReference(coord: curCoord);
             }

@@ -30,8 +30,8 @@ class TimeLineDragTargetWidget extends StatefulWidget
   final int layerIndex;
 
   final Function(LayerState layer, int newPosition) changeLayerOrderFn;
-  final Function(Frame targetFrame, LayerState sourceLayer) copyLayerToOtherFrameFn;
-  final Function(Frame targetFrame, LayerState sourceLayer) linkLayerToOtherFrameFn;
+  final Function(Frame targetFrame, LayerState sourceLayer, int position) copyLayerToOtherFrameFn;
+  final Function(Frame targetFrame, LayerState sourceLayer, int position) linkLayerToOtherFrameFn;
   const TimeLineDragTargetWidget({
     super.key,
     required this.cellHeight,
@@ -118,7 +118,7 @@ class _TimeLineDragTargetWidgetState extends State<TimeLineDragTargetWidget>
 
             if (dragTypeValue == DragType.copyOnly)
             {
-              widget.copyLayerToOtherFrameFn(widget.frame, details.data.layer);
+              widget.copyLayerToOtherFrameFn(widget.frame, details.data.layer, widget.layerIndex);
             }
             else if (dragTypeValue == DragType.copyAndLink && localOffset != null)
             {
@@ -126,11 +126,11 @@ class _TimeLineDragTargetWidgetState extends State<TimeLineDragTargetWidget>
               final double width = box?.size.width ?? 0;
               if (localOffset.dx < width / 2)
               {
-                widget.copyLayerToOtherFrameFn(widget.frame, details.data.layer);
+                widget.copyLayerToOtherFrameFn(widget.frame, details.data.layer, widget.layerIndex);
               }
               else
               {
-                widget.linkLayerToOtherFrameFn(widget.frame, details.data.layer);
+                widget.linkLayerToOtherFrameFn(widget.frame, details.data.layer, widget.layerIndex);
               }
             } else
             {

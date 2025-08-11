@@ -217,7 +217,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
               final bool isSelected = (i == frameIndex);
               return InkWell(
                 onTap: () {
-                  widget.timeline.selectFrame(index: i);
+                  widget.timeline.selectFrameByIndex(index: i);
                 },
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -453,7 +453,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
             final bool isSelected = (i == selectedFrameIndex);
             return TextButton(
               onPressed: () {
-                widget.timeline.selectFrame(index: i);
+                widget.timeline.selectFrameByIndex(index: i);
               },
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(EdgeInsets.zero),
@@ -477,101 +477,21 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     return headerWidgets;
   }
 
-
-
-  /*DragTarget<LayerFrameDragData> _createLayerDragTarget({required final int index, required final Frame frame})
+  Container _createLayerContainer({required final LayerState layer, required final bool frameIsSelected, required final bool layerIsSelected, required final bool isLinkedLayer})
   {
-    bool hasSubButtons = false;
-    return DragTarget<LayerFrameDragData>(
-      builder: (final BuildContext context, final List<LayerFrameDragData?> candidateItems, final List<dynamic> rejectedItems) {
+    Color bgColor;
+    if (isLinkedLayer)
+    {
+      bgColor = getColorFromHash(hash: layer.hashCode, context: context, selected: frameIsSelected);
+    }
+    else
+    {
+      bgColor = frameIsSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark;
+    }
 
-        Widget containerChild;
-        if (candidateItems.isNotEmpty && candidateItems[0] != null && candidateItems[0]!.frame != frame)
-        {
-          hasSubButtons = true;
-          bool showLink = false;
-          final LayerFrameDragData dragData = candidateItems[0]!;
-          final LayerState layer = dragData.layer;
-          if (!frame.layerList.contains(layer: layer))
-          {
-            showLink = true;
-          }
-          final List<Widget> rowEntries = <Widget>[];
-
-          rowEntries.add(
-            Expanded(
-              child: DragTarget<LayerFrameDragData>(
-                onWillAcceptWithDetails: (DragTargetDetails<LayerFrameDragData> details) {
-                  return true;
-                },
-                onLeave: (LayerFrameDragData? data) {
-                },
-                builder: (BuildContext context, List<LayerFrameDragData?> candidateData, List<dynamic> rejectedData) {
-                  return Icon(
-                    FontAwesomeIcons.copy,
-                    size: _cellHeight / 2,
-                  );
-                },
-              ),
-            ),
-          );
-          if (showLink)
-          {
-            rowEntries.add(const SizedBox(width: 4));
-            rowEntries.add(
-              Expanded(
-                child: DragTarget<LayerFrameDragData>(
-                  onWillAcceptWithDetails: (DragTargetDetails<LayerFrameDragData> details) {
-                    print("ENTER LINK");
-                    return true;
-                  },
-                  onLeave: (LayerFrameDragData? data) {
-                    print("LEAVE LINK");
-                  },
-                  builder: (BuildContext context, List<LayerFrameDragData?> candidateData, List<dynamic> rejectedData) {
-                    return Icon(
-                      FontAwesomeIcons.link,
-                      size: _cellHeight / 2,
-                    );
-                  },
-                ),
-              ),
-            );
-          }
-          containerChild = Row(
-            children: rowEntries,
-          );
-        }
-        else
-        {
-          containerChild = const SizedBox.shrink();
-        }
-
-        return AnimatedContainer(
-          height: candidateItems.isNotEmpty ? _cellHeight : _cellPadding,
-          width: _cellWidth,
-          color: candidateItems.isEmpty || hasSubButtons ? Colors.transparent : Theme.of(context).primaryColorLight,
-          duration: const Duration(milliseconds: _dragTargetDelayMs),
-          child: containerChild,
-
-        );
-      },
-      onAcceptWithDetails: (final DragTargetDetails<LayerFrameDragData> details) {
-        final Frame sourceFrame = details.data.frame;
-        if (sourceFrame == frame && !hasSubButtons)
-        {
-          final LayerState layer = details.data.layer;
-          GetIt.I.get<AppState>().changeLayerOrder(state: layer, newPosition: index);
-        }
-      },
-    );
-  }*/
-
-  Container _createLayerContainer({required final LayerState layer, required final bool frameIsSelected, required final bool layerIsSelected})
-  {
     return Container(
       decoration: BoxDecoration(
-        color: frameIsSelected ? Theme.of(context).primaryColor : Theme.of(context).primaryColorDark,
+        color: bgColor,
         border: Border.all(
           color: frameIsSelected ? (layerIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColorDark) : (layerIsSelected ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorDark),
           width: _borderWidth,
@@ -591,7 +511,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     if (frames.isNotEmpty)
     {
       final int highestLayerCount = frames.reduce((final Frame a, final Frame b) => a.layerList.length > b.layerList.length ? a : b).layerList.length;
-      final double height = max(highestLayerCount * _cellHeight + _cellPadding, minHeight);
+      final double height = max((highestLayerCount + 1) * _cellHeight + _cellPadding, minHeight);
 
       for (int i = 0; i < frames.length; i++)
       {
@@ -607,7 +527,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
               final bool frameIsSelected = (i == selectedFrameIndex);
               return InkWell(
                 onTap: () {
-                  widget.timeline.selectFrame(index: i);
+                  widget.timeline.selectFrameByIndex(index: i);
                 },
                 child: Container(
                   height: height,
@@ -617,9 +537,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                     builder: (final BuildContext context4, final Widget? child4) {
                       final LayerCollection layerCollection = frames[i].layerList;
                       final List<Widget> layers = <Widget>[];
+
                       for (int j = 0; j < layerCollection.length; j++)
                       {
-                        //layers.add(_createLayerDragTarget(index: j, frame: frames[i]));
                         layers.add(
                           TimeLineDragTargetWidget(
                             cellHeight: _cellHeight,
@@ -633,19 +553,21 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                             linkLayerToOtherFrameFn: _linkLayerToOtherFrame,
                           ),
                         );
-                        final bool layerIsSelected = (j == layerCollection.getSelectedLayerIndex());
+                        final LayerState currentLayer = layerCollection.getLayer(index: j);
+                        final bool layerIsSelected = (j == layerCollection.selectedLayerIndex);
+                        final bool isLinkLayer = widget.timeline.isLayerLinked(layer: currentLayer);
                         layers.add(
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: _cellPadding),
                             child: InkWell(
                               onTap: () {
-                                widget.timeline.selectFrame(index: i, layerIndex: j);
+                                widget.timeline.selectFrameByIndex(index: i, layerIndex: j);
                               },
                               child: Draggable<LayerFrameDragData>(
                                 dragAnchorStrategy: pointerDragAnchorStrategy,
-                                data: LayerFrameDragData(frame: frames[i], layer: layerCollection.getLayer(index: j)),
+                                data: LayerFrameDragData(frame: frames[i], layer: currentLayer),
                                 onDragStarted: () {
-                                  widget.timeline.selectFrame(index: i);
+                                  widget.timeline.selectFrameByIndex(index: i);
                                 },
                                 feedback: Container(
                                   width: _cellWidth - (_cellPadding * 2),
@@ -661,13 +583,12 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     ),
                                   ),
                                 ),
-                                child: _createLayerContainer(layer: layerCollection.getLayer(index: j), frameIsSelected: frameIsSelected, layerIsSelected: layerIsSelected),
+                                child: _createLayerContainer(layer: currentLayer, frameIsSelected: frameIsSelected, layerIsSelected: layerIsSelected, isLinkedLayer: isLinkLayer),
                               ),
                             ),
                           ),
                         );
                       }
-                      //layers.add(_createLayerDragTarget(index: layerCollection.length, frame: frames[i]));
                       layers.add(
                         TimeLineDragTargetWidget(
                           cellHeight: _cellHeight,
@@ -731,7 +652,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                     waitDuration: AppState.toolTipDuration,
                     child: InkWell(
                       onTap: () {
-                        widget.timeline.selectFrame(index: i);
+                        widget.timeline.selectFrameByIndex(index: i);
                         if (!isPlaying)
                         {
                           final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -814,18 +735,14 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     GetIt.I.get<AppState>().changeLayerOrder(state: layer, newPosition: newPosition);
   }
 
-  void _copyLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer)
+  void _copyLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    //TODO
-    print("COPY LAYER TO OTHER FRAME");
-    //GetIt.I.get<AppState>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer);
+    GetIt.I.get<AppState>().copyLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
   }
 
-  void _linkLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer)
+  void _linkLayerToOtherFrame(final Frame targetFrame, final LayerState sourceLayer, final int position)
   {
-    //TODO
-    print("LINK LAYER TO OTHER FRAME");
-    //GetIt.I.get<AppState>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer);
+    GetIt.I.get<AppState>().linkLayerToOtherFrame(targetFrame: targetFrame, sourceLayer: sourceLayer, position: position);
   }
 
 
@@ -1189,19 +1106,24 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                           Container(height: _borderWidth, color: borderColor, width: dividerWidth,),
 
                           Expanded(
-                            child: LayoutBuilder(
-                              builder: (final BuildContext context4, final BoxConstraints constraints) {
-                                return Scrollbar(
-                                  controller: _verticalScrollController,
-                                  thickness: _horizontalScrollHeight,
-                                  thumbVisibility: true,
-                                  child: SingleChildScrollView(
-                                    controller: _verticalScrollController,
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: _createLayerWidgets(frames: frames, minHeight: constraints.maxHeight, borderColor: borderColor),
-                                    ),
-                                  ),
+                            child: ListenableBuilder(
+                              listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
+                              builder: (final BuildContext context, final Widget? child) {
+                                return LayoutBuilder(
+                                  builder: (final BuildContext context4, final BoxConstraints constraints) {
+                                    return Scrollbar(
+                                      controller: _verticalScrollController,
+                                      thickness: _horizontalScrollHeight,
+                                      thumbVisibility: true,
+                                      child: SingleChildScrollView(
+                                        controller: _verticalScrollController,
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: _createLayerWidgets(frames: frames, minHeight: constraints.maxHeight, borderColor: borderColor),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             ),

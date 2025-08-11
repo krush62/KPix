@@ -322,7 +322,7 @@ class DrawingLayerState extends RasterableLayerState
     final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
     if (frame != null)
     {
-      final SelectionList? selectionList = isSelected.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
+      final SelectionList? selectionList = selectionNotifier.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
       final List<LayerState> layers = <LayerState>[];
       for (int i = 0; i < frame.layerList.length; i++)
       {

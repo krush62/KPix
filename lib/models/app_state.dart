@@ -744,8 +744,6 @@ class AppState
       for (final HistoryFrame hFrame in historyState.timeline.frames)
       {
         final List<LayerState> layerList = <LayerState>[];
-        LayerState? curSelLayer;
-        int layerIndex = 0;
         for (final HistoryLayer hLayer in hFrame.layers)
         {
           LayerState? layerState;
@@ -818,18 +816,11 @@ class AppState
           if (layerState != null)
           {
             layerState.visibilityState.value = hLayer.visibilityState;
-            final bool currentLayerIsSelected = (layerIndex == hFrame.selectedLayerIndex);
-            layerState.isSelected.value = currentLayerIsSelected;
             layerList.add(layerState);
-            if (hLayer == historyState.selectionState.currentLayer)
-            {
-              curSelLayer = layerState;
-            }
-            layerIndex++;
           }
         } //end layer loop
 
-        final LayerCollection layerCollection = LayerCollection(layers: layerList, selectedLayer: curSelLayer);
+        final LayerCollection layerCollection = LayerCollection(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
         final Frame frame = Frame(layerList: layerCollection, fps: hFrame.fps);
         frames.add(frame);
       } //end frame loop
@@ -973,6 +964,36 @@ class AppState
     }
   }
 
+  void copyLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
+  {
+      selectionState.deselect(addToHistoryStack: false);
+      final LayerState? addLayer = targetFrame.layerList.addLayerWithData(layer: sourceLayer, position: position);
+      if (addLayer != null)
+      {
+        if (addToHistoryStack)
+        {
+          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate, frame: targetFrame);
+        }
+        newRasterData(layer: addLayer);
+        timeline.layerChangeNotifier.reportChange();
+        timeline.selectFrame(frame: targetFrame, layerIndex: position);
+      }
+  }
+
+  void linkLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
+  {
+    selectionState.deselect(addToHistoryStack: false);
+    targetFrame.layerList.addLinkLayer(layer: sourceLayer, position: position);
+
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate, frame: targetFrame);
+    }
+    newRasterData(layer: sourceLayer);
+    timeline.layerChangeNotifier.reportChange();
+    timeline.selectFrame(frame: targetFrame, layerIndex: position);
+  }
+
 
   void changeColorOrder({required final KPalRampData ramp, required final int newPosition, final bool addToHistoryStack = true})
   {
@@ -1084,14 +1105,14 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      final LayerState previousLayer = timeline.selectedFrame!.layerList.selectLayer(newLayer: newLayer);
+      final LayerState? previousLayer = timeline.selectedFrame!.layerList.selectLayer(newLayer: newLayer);
       timeline.layerChangeNotifier.reportChange();
       oldLayer ??= previousLayer;
       if (oldLayer != newLayer)
       {
         selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
       }
-      if (addToHistoryStack)
+      if (addToHistoryStack && oldLayer != null)
       {
         final Frame? frame = timeline.selectedFrame;
         final int? layerIndex = frame?.layerList.getLayerPosition(state: oldLayer);
@@ -1357,7 +1378,6 @@ class AppState
       _setCanvasDimensions(width: importResult.data!.canvasSize.x, height: importResult.data!.canvasSize.y, addToHistoryStack: false);
       _colorRamps.value = importResult.data!.rampDataList;
       _selectedColor.value = _colorRamps.value[0].references[0];
-      drawingLayer.isSelected.value = true;
       final List<LayerState> layerList = <LayerState>[];
       layerList.add(drawingLayer);
       if (referenceLayer != null)
@@ -1365,7 +1385,7 @@ class AppState
         layerList.add(referenceLayer);
       }
       final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
-      final Frame f = Frame(layerList: LayerCollection(layers: layerList, selectedLayer: drawingLayer), fps: constraints.defaultFps);
+      final Frame f = Frame(layerList: LayerCollection(layers: layerList, selLayerIdx: 0), fps: constraints.defaultFps);
       timeline.setData(selectedFrameIndex: 0, frames: <Frame>[f], loopStartIndex: 0, loopEndIndex: 0);
       GetIt.I.get<HistoryManager>().clear();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: false);

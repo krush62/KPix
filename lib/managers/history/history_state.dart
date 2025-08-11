@@ -97,7 +97,7 @@ class HistoryState
 
     //TIMELINE
     List<HistoryFrame> historyFrameList;
-    HistoryLayer? selectLayer;
+    HistoryLayer? selectionLayer;
     if (typeGroup == HistoryStateTypeGroup.colorSelect && previousState != null)
     {
       historyFrameList = previousState.timeline.frames;
@@ -126,15 +126,14 @@ class HistoryState
             }
             if (hLayer != null)
             {
-              if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() == i)
+              if (appState.timeline.selectedFrame == frame && frame.layerList.selectedLayerIndex == i)
               {
-                selectLayer = hLayer;
+                selectionLayer = hLayer;
               }
-
               hLayers.add(hLayer);
             }
           }
-          historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.getSelectedLayerIndex()));
+          historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.selectedLayerIndex ?? 0));
         }
         else
         {
@@ -142,9 +141,10 @@ class HistoryState
           historyFrameList.add(hf);
           for (int i = 0; i < frame.layerList.length; i++)
           {
-            if (appState.timeline.selectedFrame == frame && appState.timeline.selectedFrame!.layerList.getSelectedLayerIndex() == i)
+            if (appState.timeline.selectedFrame == frame && frame.layerList.selectedLayerIndex == i)
             {
-              selectLayer = hf.layers[i];
+              //TODO THIS LINE CAUSES A LOT OF EXCEPTIONS, FIND OUT WHY!!!!
+              selectionLayer = hf.layers[i];
             }
           }
         }
@@ -154,7 +154,7 @@ class HistoryState
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
-    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectLayer);
+    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectionLayer);
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type);
   }

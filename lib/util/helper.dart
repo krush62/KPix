@@ -226,6 +226,11 @@ class StackCol<T> {
         '${(c.b * 255).toInt()}';
   }
 
+  Color getColorFromHash({required final int hash, required final BuildContext context, required final bool selected})
+  {
+    return HSVColor.fromAHSV(1.0, (hash.abs() % 360).toDouble(), 0.3, selected ? HSVColor.fromColor(Theme.of(context).primaryColor).value : HSVColor.fromColor(Theme.of(context).primaryColorDark).value).toColor();
+  }
+
   bool isDesktop({final bool includingWeb = false})
   {
     if (kIsWeb && !includingWeb)
@@ -259,8 +264,6 @@ class StackCol<T> {
     final double angleInDegrees = angle * (180.0 / pi);
     return angleInDegrees;
   }
-
-
 
   LabColor rgb2lab({required final double r, required final double g, required final double b})
   {
@@ -540,7 +543,7 @@ class StackCol<T> {
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,
               filterQuality: FilterQuality.none,);
-          if (layerStack != null && selection.hasValues() && i == layerCollection.getSelectedLayerIndex())
+          if (layerStack != null && selection.hasValues() && i == layerCollection.selectedLayerIndex)
           {
             final Paint paint = Paint();
             for (final MapEntry<CoordinateSetI, ColorReference?> entry in selection.selectedPixels.entries)

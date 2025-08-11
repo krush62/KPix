@@ -970,7 +970,7 @@ class KPixPainter extends CustomPainter
           ui.Image? img;
           if (_frameBlendingOptions.activeLayerOnly.value)
           {
-            final LayerState? activeLayer = frameToProcess.layerList.currentLayer;
+            final LayerState? activeLayer = frameToProcess.layerList.getSelectedLayer();
             if (activeLayer != null && activeLayer is RasterableLayerState)
             {
               img = activeLayer.rasterImage.value;

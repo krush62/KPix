@@ -22,9 +22,11 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_settings_widget.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -337,6 +339,10 @@ class DitherLayerState extends ShadingLayerState
     return sData[coord];
   }
 
+  @override
+  LayerSettingsWidget getSettingsWidget() {
+    return ShadingLayerSettingsWidget(settings: settings, isForDithering: true);
+  }
 
 
 }

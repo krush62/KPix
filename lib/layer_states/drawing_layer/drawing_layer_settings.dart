@@ -298,7 +298,7 @@ class DrawingLayerSettings extends LayerSettings {
     final Frame? frame = appState.timeline.getFrameForLayer(layer: layerState);
     if (frame != null || layerState.layerStack != null)
     {
-      final SelectionList? selectionList = layerState.isSelected.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
+      final SelectionList? selectionList = layerState.selectionNotifier.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
       List<LayerState> layers;
       if (layerState.layerStack != null)
       {

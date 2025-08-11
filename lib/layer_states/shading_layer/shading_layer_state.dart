@@ -309,7 +309,7 @@ class ShadingLayerState extends RasterableLayerState
 
   @override
   LayerSettingsWidget getSettingsWidget() {
-    return ShadingLayerSettingsWidget(settings: settings);
+    return ShadingLayerSettingsWidget(settings: settings, isForDithering: false);
   }
 
 }

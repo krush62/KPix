@@ -105,7 +105,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
             GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
           }
           final Frame? frame = GetIt.I.get<AppState>().timeline.selectedFrame;
-          final int? layerIndex = frame?.layerList.getSelectedLayerIndex();
+          final int? layerIndex = frame?.layerList.selectedLayerIndex;
           GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, frame: frame, layerIndex: layerIndex);
         }
         else

@@ -29,6 +29,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class LayerWidget extends StatefulWidget {
@@ -182,7 +183,7 @@ class _LayerWidgetState extends State<LayerWidget> {
       child: SizedBox(
         height: _options.height,
         child: ValueListenableBuilder<bool>(
-          valueListenable: widget.layerState.isSelected,
+          valueListenable: widget.layerState.selectionNotifier,
           builder: (final BuildContext context, final bool isSelected,final Widget? child,)
           {
             final Widget iconButton = Padding(
@@ -215,7 +216,9 @@ class _LayerWidgetState extends State<LayerWidget> {
                   child: Container(
                     padding: EdgeInsets.all(_options.innerPadding),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
+                      color: _appState.timeline.isLayerLinked(layer: widget.layerState) ?
+                        getColorFromHash(hash: widget.layerState.hashCode, context: context, selected: true):
+                        Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.all(
                         Radius.circular(_options.borderRadius),
                       ),

@@ -41,6 +41,7 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final int _buttonCount = 3;
+  final double _buttonToIconRatio = 1.7;
   late double _width;
   late double _height;
   late AnimationController _controller;
@@ -49,8 +50,8 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
   void initState()
   {
     super.initState();
-    _width = (_options.buttonHeight + (_options.buttonSpacing * 2)) * _buttonCount;
-    _height = _options.buttonHeight + 2 * _options.buttonSpacing;
+    _width = ((_options.buttonHeight * _buttonToIconRatio) + (_options.buttonSpacing / 2)) * _buttonCount;
+    _height = _options.buttonHeight * _buttonToIconRatio;
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: _options.animationLengthMs),
@@ -89,50 +90,59 @@ class _OverlayDrawingLayerMenuState extends State<OverlayDrawingLayerMenu> with 
                 Tooltip(
                   message: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
                   waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.all(
-                      _options.buttonSpacing,),
-                    onPressed: () {widget.onDelete();},
-                    icon: FaIcon(
-                      FontAwesomeIcons.trashCan,
-                      size: _options.buttonHeight,),
-                    color: Theme.of(context).primaryColorLight,
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      backgroundColor: Theme.of(context).primaryColor,),
+                  child: SizedBox(
+                    width: _options.buttonHeight * _buttonToIconRatio,
+                    height: _options.buttonHeight * _buttonToIconRatio,
+                    child: IconButton.outlined(
+                      padding: EdgeInsets.all(
+                        _options.buttonSpacing,),
+                      onPressed: () {widget.onDelete();},
+                      icon: FaIcon(
+                        FontAwesomeIcons.trashCan,
+                        size: _options.buttonHeight,),
+                      color: Theme.of(context).primaryColorLight,
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: Theme.of(context).primaryColor,),
+                    ),
                   ),
                 ),
                 Tooltip(
                   message: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
                   waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.all(_options.buttonSpacing),
-                    onPressed: () {widget.onDuplicate();},
-                    icon: FaIcon(
-                      FontAwesomeIcons.clone,
-                      size: _options.buttonHeight,),
-                    color: Theme.of(context).primaryColorLight,
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      backgroundColor: Theme.of(context).primaryColor,),
+                  child: SizedBox(
+                    width: _options.buttonHeight * _buttonToIconRatio,
+                    height: _options.buttonHeight * _buttonToIconRatio,
+                    child: IconButton.outlined(
+                      padding: EdgeInsets.all(_options.buttonSpacing),
+                      onPressed: () {widget.onDuplicate();},
+                      icon: FaIcon(
+                        FontAwesomeIcons.clone,
+                        size: _options.buttonHeight,),
+                      color: Theme.of(context).primaryColorLight,
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: Theme.of(context).primaryColor,),
+                    ),
                   ),
                 ),
                 Tooltip(
                   message: "Merge Down Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersMerge)}",
                   waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.all(_options.buttonSpacing),
-                    onPressed: () {widget.onMergeDown();},
-                    icon: FaIcon(
-                      FontAwesomeIcons.turnDown,
-                      size: _options.buttonHeight,),
-                    color: Theme.of(context).primaryColorLight,
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      backgroundColor: Theme.of(context).primaryColor,),
+                  child: SizedBox(
+                    width: _options.buttonHeight * _buttonToIconRatio,
+                    height: _options.buttonHeight * _buttonToIconRatio,
+                    child: IconButton.outlined(
+                      padding: EdgeInsets.all(_options.buttonSpacing),
+                      onPressed: () {widget.onMergeDown();},
+                      icon: FaIcon(
+                        FontAwesomeIcons.turnDown,
+                        size: _options.buttonHeight,),
+                      color: Theme.of(context).primaryColorLight,
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: Theme.of(context).primaryColor,),
+                    ),
                   ),
                 ),
               ],

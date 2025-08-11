@@ -35,6 +35,7 @@ import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu_linked.dart';
 import 'package:kpix/widgets/overlays/overlay_load_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_raster_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_reduced_layer_menu.dart';
@@ -194,6 +195,30 @@ class OverlayEntryAlertDialogOptions
       ),
     );
   }
+
+KPixOverlay getDrawingLayerMenuLinked({
+  required final Function() onDismiss,
+  required final Function() onDelete,
+  required final Function() onUnlink,
+  required final Function() onDuplicate,
+  required final LayerLink layerLink,
+})
+{
+  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            onDismiss: () {onDismiss();},
+          ),
+          OverlayDrawingLayerMenuLinked(onDelete: onDelete, onUnlink: onUnlink, onDuplicate: onDuplicate, layerLink: layerLink),
+        ],
+      ),
+    ),
+  );
+}
 
   KPixOverlay getReducedLayerMenu({
     required final Function() onDismiss,

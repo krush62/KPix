@@ -85,8 +85,10 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   final LayerLink actionsLink = LayerLink();
   late KPixOverlay actionsMenuDrawing;
+  late KPixOverlay actionsMenuDrawingLinked;
   late KPixOverlay actionsMenuReduced;
   late KPixOverlay actionsMenuRaster;
+
 
   @override
   void initState()
@@ -97,6 +99,13 @@ class _LayerWidgetState extends State<LayerWidget> {
       layerLink: actionsLink,
       onDelete: _deletePressed,
       onMergeDown: _mergeDownPressed,
+      onDuplicate: _duplicatePressed,
+    );
+    actionsMenuDrawingLinked = getDrawingLayerMenuLinked(
+      onDismiss: _closeActionsMenus,
+      layerLink: actionsLink,
+      onDelete: _deletePressed,
+      onUnlink: _unlinkPressed,
       onDuplicate: _duplicatePressed,
     );
     actionsMenuReduced = getReducedLayerMenu(
@@ -132,6 +141,13 @@ class _LayerWidgetState extends State<LayerWidget> {
     _closeActionsMenus();
   }
 
+  void _unlinkPressed()
+  {
+    //TODO implement unlink
+    //SHOULD ONLY BE DUPLICATE AND THEN DELETE THE ORIGINAL
+    _closeActionsMenus();
+  }
+
   void _rasterPressed()
   {
     _appState.layerRasterPressed(rasterLayer: widget.layerState);
@@ -141,6 +157,7 @@ class _LayerWidgetState extends State<LayerWidget> {
   void _closeActionsMenus()
   {
     actionsMenuDrawing.hide();
+    actionsMenuDrawingLinked.hide();
     actionsMenuReduced.hide();
     actionsMenuRaster.hide();
   }
@@ -148,12 +165,40 @@ class _LayerWidgetState extends State<LayerWidget> {
   void _actionsButtonPressed()
   {
     final Type layerType = widget.layerState.runtimeType;
-    if (layerType == DrawingLayerState) {
-      actionsMenuDrawing.show(context: context);
-    } else if (layerType == GridLayerState || layerType == ShadingLayerState || layerType == DitherLayerState) {
-      actionsMenuRaster.show(context: context);
-    } else {
-      actionsMenuReduced.show(context: context);
+    final bool isLinked = _appState.timeline.isLayerLinked(layer: widget.layerState);
+    if (layerType == DrawingLayerState)
+    {
+      if (isLinked)
+      {
+        actionsMenuDrawingLinked.show(context: context);
+      }
+      else
+      {
+        actionsMenuDrawing.show(context: context);
+      }
+    }
+    else if (layerType == GridLayerState || layerType == ShadingLayerState || layerType == DitherLayerState)
+    {
+      if (isLinked)
+      {
+        actionsMenuDrawingLinked.show(context: context);
+      }
+      else
+      {
+        actionsMenuRaster.show(context: context);
+      }
+    }
+    else //Reference Layers
+    {
+      if (isLinked)
+      {
+        actionsMenuDrawingLinked.show(context: context);
+      }
+      else
+      {
+        actionsMenuReduced.show(context: context);
+      }
+
     }
   }
 

@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
+
 import 'package:kpix/managers/history/history_frame.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 
@@ -23,25 +25,34 @@ class HistoryTimeline
   final int loopStart;
   final int loopEnd;
   final int selectedFrameIndex;
-  const HistoryTimeline({required this.frames, required this.loopStart, required this.loopEnd, required this.selectedFrameIndex});
+  final LinkedHashSet<HistoryLayer> allLayers;
+  const HistoryTimeline({required this.frames, required this.loopStart, required this.loopEnd, required this.selectedFrameIndex, required this.allLayers});
 
-  int getTotalLayerCount()
+  LinkedHashSet<HistoryLayer> getLayersForFrameIndex({required final int frameIndex})
   {
-    int totalLayerCount = 0;
-    for (final HistoryFrame frame in frames)
+    if (frameIndex < frames.length && frameIndex >= 0)
     {
-      totalLayerCount += frame.layers.length;
+      final HistoryFrame frame = frames[frameIndex];
+      return getLayersForFrame(frame: frame);
     }
-    return totalLayerCount;
+    else
+    {
+      return LinkedHashSet<HistoryLayer>();
+    }
+
   }
 
-  List<HistoryLayer> getAllLayers()
+  LinkedHashSet<HistoryLayer> getLayersForFrame({required final HistoryFrame frame})
   {
-    final List<HistoryLayer> layers = <HistoryLayer>[];
-    for (final HistoryFrame frame in frames)
+    final LinkedHashSet<HistoryLayer> layerSet = LinkedHashSet<HistoryLayer>();
+    if (frames.contains(frame))
     {
-      layers.addAll(frame.layers);
+      for (final int layerIndex in frame.layerIndices)
+      {
+        layerSet.add(allLayers.elementAt(layerIndex));
+      }
     }
-    return layers;
+    return layerSet;
   }
+
 }

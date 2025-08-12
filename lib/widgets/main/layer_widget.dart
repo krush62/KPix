@@ -29,7 +29,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class LayerWidget extends StatefulWidget {
@@ -125,7 +125,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _deletePressed()
   {
-    _appState.layerDeleted(deleteLayer: widget.layerState);
+    _appState.layerDeletedSelected(deleteLayer: widget.layerState);
     _closeActionsMenus();
   }
 
@@ -137,14 +137,19 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _duplicatePressed()
   {
-    _appState.layerDuplicated(duplicateLayer: widget.layerState);
+    _appState.layerDuplicatSelected(duplicateLayer: widget.layerState);
     _closeActionsMenus();
   }
 
   void _unlinkPressed()
   {
-    //TODO implement unlink
-    //SHOULD ONLY BE DUPLICATE AND THEN DELETE THE ORIGINAL
+    final LayerState? duplicatedLayer = _appState.layerDuplicatSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
+    if (duplicatedLayer != null)
+    {
+      _appState.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);
+      _appState.selectLayer(newLayer: duplicatedLayer);
+      _appState.timeline.layerChangeNotifier.reportChange();
+    }
     _closeActionsMenus();
   }
 
@@ -262,7 +267,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                     padding: EdgeInsets.all(_options.innerPadding),
                     decoration: BoxDecoration(
                       color: _appState.timeline.isLayerLinked(layer: widget.layerState) ?
-                        getColorFromHash(hash: widget.layerState.hashCode, context: context, selected: true):
+                        getColorForLayer(hashCode: widget.layerState.hashCode, context: context, selected: true):
                         Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.all(
                         Radius.circular(_options.borderRadius),

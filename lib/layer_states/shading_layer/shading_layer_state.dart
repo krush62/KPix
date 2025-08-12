@@ -32,6 +32,21 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
+class RasterImagePair
+{
+  final ui.Image thumbnail;
+  final ui.Image raster;
+  RasterImagePair({required this.thumbnail, required this.raster});
+}
+
+class DualRasterResult
+{
+  final Map<Frame, RasterImagePair> rasterImages;
+  final RasterImagePair? externalStackImages;
+  DualRasterResult({required this.rasterImages, this.externalStackImages});
+}
+
+
 class ShadingLayerState extends RasterableLayerState
 {
   final ShadingLayerSettings settings;
@@ -164,83 +179,109 @@ class ShadingLayerState extends RasterableLayerState
   }
 
   @protected
-  Future<(ui.Image, ui.Image)> createRasters() async
+  Future<DualRasterResult> createRasters() async
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final ByteData byteDataThb = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
-    final ByteData byteDataImg = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
-    final CoordinateColorMap allColorPixels = CoordinateColorMap();
-
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
-    if (frame != null || layerStack != null)
+    final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
+    int? currentIndex;
+    if (layerStack != null)
     {
-      final List<RasterableLayerState> rasterLayers = layerStack != null ? layerStack! : frame!.layerList.getVisibleRasterLayers().toList(growable: false);
-      int currentIndex = -1;
-      for (int i = 0; i < rasterLayers.length; i++)
+      for (int i = 0; i < layerStack!.length; i++)
       {
-        if (rasterLayers[i] == this)
+        if (layerStack![i] == this)
         {
           currentIndex = i;
           break;
         }
       }
-
-      if (currentIndex != -1)
+      if (currentIndex != null)
       {
-        for (int x = 0; x < appState.canvasSize.x; x++)
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex);
+        return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
+      }
+      else
+      {
+        return DualRasterResult(rasterImages: rasterImages);
+      }
+    }
+    else
+    {
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      for (final Frame frame in frames)
+      {
+        final List<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers().toList(growable: false);
+        for (int i = 0; i < rasterLayers.length; i++)
         {
-          for (int y = 0; y < appState.canvasSize.y; y++)
+          if (rasterLayers[i] == this)
           {
-            final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-            final int? valAt = sData[coord];
-            int brightVal = thumbnailBrightnessMap[0]!;
-            if (valAt != null)
-            {
-              brightVal = thumbnailBrightnessMap[valAt]?? 0;
-              if (currentIndex != -1)
-              {
-                for (int i = currentIndex + 1; i < rasterLayers.length; i++)
-                {
-                  final RasterableLayerState layer = rasterLayers[i];
-                  ColorReference? refCol;
-                  if (layer.visibilityState.value == LayerVisibilityState.visible)
-                  {
-                    refCol = layer.rasterPixels[coord];
-                  }
-                  if (refCol != null)
-                  {
-                    final int currentColorIndex = refCol.colorIndex;
-                    final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-                    allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
-                    final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
-                    final int index = (y * appState.canvasSize.x + x) * 4;
-                    if (index >= 0 && index < byteDataImg.lengthInBytes)
-                    {
-                      byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-            final int pixelIndex = (y * appState.canvasSize.x + x) * 4;
-            byteDataThb.setUint8(pixelIndex + 0, brightVal);
-            byteDataThb.setUint8(pixelIndex + 1, brightVal);
-            byteDataThb.setUint8(pixelIndex + 2, brightVal);
-            byteDataThb.setUint8(pixelIndex + 3, 255);
+            currentIndex = i;
+            break;
           }
         }
-        rasterPixels = allColorPixels;
+        if (currentIndex != null)
+        {
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: currentIndex);
+          rasterImages[frame] = rasterImagePair;
+        }
       }
-
-
+      return DualRasterResult(rasterImages: rasterImages);
     }
+  }
+
+  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex}) async
+  {
+    final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
+    final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
+    final CoordinateColorMap allColorPixels = CoordinateColorMap();
+
+      for (int x = 0; x < canvasSize.x; x++)
+      {
+        for (int y = 0; y < canvasSize.y; y++)
+        {
+          final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+          final int? valAt = sData[coord];
+          int brightVal = thumbnailBrightnessMap[0]!;
+          if (valAt != null)
+          {
+            brightVal = thumbnailBrightnessMap[valAt]?? 0;
+            for (int i = currentIndex + 1; i < rasterLayers.length; i++)
+            {
+              final RasterableLayerState layer = rasterLayers[i];
+              ColorReference? refCol;
+              if (layer.visibilityState.value == LayerVisibilityState.visible)
+              {
+                refCol = layer.rasterPixels[coord];
+              }
+              if (refCol != null)
+              {
+                final int currentColorIndex = refCol.colorIndex;
+                final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+                allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
+                final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
+                final int index = (y * canvasSize.x + x) * 4;
+                if (index >= 0 && index < byteDataImg.lengthInBytes)
+                {
+                  byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+                }
+                break;
+              }
+            }
+          }
+          final int pixelIndex = (y * canvasSize.x + x) * 4;
+          byteDataThb.setUint8(pixelIndex + 0, brightVal);
+          byteDataThb.setUint8(pixelIndex + 1, brightVal);
+          byteDataThb.setUint8(pixelIndex + 2, brightVal);
+          byteDataThb.setUint8(pixelIndex + 3, 255);
+        }
+      }
+      rasterPixels = allColorPixels;
+
 
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
     ui.decodeImageFromPixels(
         byteDataThb.buffer.asUint8List(),
-        appState.canvasSize.x,
-        appState.canvasSize.y,
+        canvasSize.x,
+        canvasSize.y,
         ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
     {
       completerThb.complete(convertedImage);
@@ -251,24 +292,26 @@ class ShadingLayerState extends RasterableLayerState
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
         byteDataImg.buffer.asUint8List(),
-        appState.canvasSize.x,
-        appState.canvasSize.y,
+        canvasSize.x,
+        canvasSize.y,
         ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
     {
       completerImg.complete(convertedImage);
     }
     );
-
-
     final ui.Image rasterImg = await completerImg.future;
-    return (rasterImg, thbImg);
+    return RasterImagePair(raster: rasterImg, thumbnail: thbImg);
   }
 
-  void _rasterCreated({required final ui.Image thb, required final ui.Image img})
+
+
+
+  void _rasterCreated({required final DualRasterResult rasterResult})
   {
-    thumbnail.value = thb;
+    thumbnail.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.thumbnail : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
     previousRaster = rasterImage.value;
-    rasterImage.value = img;
+    rasterImage.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.raster : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
+    rasterImageMap.value = rasterResult.rasterImages;
     isRasterizing = false;
     doManualRaster = false;
     if (layerStack == null)
@@ -283,9 +326,9 @@ class ShadingLayerState extends RasterableLayerState
     if (doManualRaster && !isRasterizing)
     {
       isRasterizing = true;
-      createRasters().then((final (ui.Image, ui.Image) images)
+      createRasters().then((final DualRasterResult rasterResult)
       {
-        _rasterCreated(img: images.$1, thb: images.$2);
+        _rasterCreated(rasterResult: rasterResult);
       });
     }
   }

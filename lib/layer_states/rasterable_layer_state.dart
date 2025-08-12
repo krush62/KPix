@@ -20,6 +20,8 @@ import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
@@ -29,6 +31,7 @@ abstract class RasterableLayerState extends LayerState
   bool isRasterizing = false;
   CoordinateColorMap rasterPixels = CoordinateColorMap();
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
+  final ValueNotifier<Map<Frame, RasterImagePair>> rasterImageMap = ValueNotifier<Map<Frame, RasterImagePair>>(<Frame, RasterImagePair>{});
   ui.Image? previousRaster;
   bool doManualRaster = false;
   final LayerSettings layerSettings;

@@ -53,6 +53,20 @@ class LayerChangeNotifier with ChangeNotifier
   }
 }
 
+enum _FrameCreationMethod
+{
+  empty,
+  copy,
+  link
+}
+
+enum _FrameCreationPosition
+{
+  left,
+  right
+
+}
+
 class Timeline
 {
   static const int maxFrames = 256;
@@ -268,25 +282,35 @@ class Timeline
 
   void addNewFrameLeft()
   {
-    _addNewFrame(right: false, copy: false);
+    _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.empty);
   }
 
   void addNewFrameRight()
   {
-    _addNewFrame(right: true, copy: false);
+    _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.empty);
   }
 
   void copyFrameLeft()
   {
-    _addNewFrame(right: false, copy: true);
+    _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.copy);
   }
 
   void copyFrameRight()
   {
-    _addNewFrame(right: true, copy: true);
+    _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.copy);
   }
 
-  void _addNewFrame({required final bool right, required final bool copy})
+  void linkFrameLeft()
+  {
+    _addNewFrame(position: _FrameCreationPosition.left, method: _FrameCreationMethod.link);
+  }
+
+  void linkFrameRight()
+  {
+    _addNewFrame(position: _FrameCreationPosition.right, method: _FrameCreationMethod.link);
+  }
+
+  void _addNewFrame({required final _FrameCreationPosition position, required final _FrameCreationMethod method})
   {
     final AppState appState = GetIt.I.get<AppState>();
     if (frames.value.length >= maxFrames)
@@ -298,7 +322,7 @@ class Timeline
     {
       final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
       final Frame f = Frame.empty(fps: constraints.defaultFps);
-      if (copy)
+      if (method == _FrameCreationMethod.copy)
       {
         final Frame cf = frames.value[selectedFrameIndex];
         LayerState? layerToSelect;
@@ -320,8 +344,30 @@ class Timeline
         {
           f.layerList.selectLayer(newLayer: f.layerList.getLayer(index: 0));
         }
+        f.fps.value = cf.fps.value;
+      }
+      else if (method == _FrameCreationMethod.link)
+      {
+        final Frame cf = frames.value[selectedFrameIndex];
+        LayerState? layerToSelect;
+        for (int i = 0; i < cf.layerList.length; i++)
+        {
+          final LayerState l = cf.layerList.getLayer(index: i);
+          f.layerList.addLinkLayer(layer: l, position: i);
+          if (i == cf.layerList.selectedLayerIndex)
+          {
+            layerToSelect = l;
+          }
+        }
 
-
+        if (layerToSelect != null)
+        {
+          f.layerList.selectLayer(newLayer: layerToSelect);
+        }
+        else
+        {
+          f.layerList.selectLayer(newLayer: f.layerList.getLayer(index: 0));
+        }
         f.fps.value = cf.fps.value;
       }
       else
@@ -331,7 +377,7 @@ class Timeline
       }
       final List<Frame> newFrames = <Frame>[];
       newFrames.addAll(frames.value);
-      if (right)
+      if (position == _FrameCreationPosition.right)
       {
         newFrames.insert(selectedFrameIndex + 1, f);
       }
@@ -342,7 +388,7 @@ class Timeline
       frames.value = newFrames;
       final int originalIndex = selectedFrameIndex;
       selectFrameByIndex(index: selectedFrameIndex + 1, addLayerSelectionToHistory: false);
-      if (!right)
+      if (position == _FrameCreationPosition.left)
       {
         selectFrameByIndex(index: selectedFrameIndex - 1, addLayerSelectionToHistory: false);
       }
@@ -459,28 +505,16 @@ class Timeline
     }
   }
 
-  Frame? getFrameForLayer({required final LayerState layer})
+  List<Frame> findFramesForLayer({required final LayerState? layer})
   {
-    for (final Frame f in frames.value)
-    {
-      if (f.layerList.contains(layer: layer))
-      {
-        return f;
-      }
-    }
-    return null;
-  }
-
-  List<LayerCollection> findCollectionsForLayer({required final LayerState? layer})
-  {
-    final List<LayerCollection> list = <LayerCollection>[];
+    final List<Frame> list = <Frame>[];
     if (layer != null)
     {
       for (final Frame f in frames.value)
       {
         if (f.layerList.contains(layer: layer))
         {
-          list.add(f.layerList);
+          list.add(f);
           break;
         }
       }

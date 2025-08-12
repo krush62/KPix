@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:collection';
+
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
@@ -97,61 +99,53 @@ class HistoryState
 
     //TIMELINE
     List<HistoryFrame> historyFrameList;
+    LinkedHashSet<HistoryLayer> allHLayers;
     HistoryLayer? selectionLayer;
     if (typeGroup == HistoryStateTypeGroup.colorSelect && previousState != null)
     {
       historyFrameList = previousState.timeline.frames;
+      allHLayers = previousState.timeline.allLayers;
     }
     else
     {
       historyFrameList = <HistoryFrame>[];
-      final List<Frame> frameList = appState.timeline.frames.value;
-      for (final Frame frame in frameList)
+      final List<Frame> originalFrameList = appState.timeline.frames.value;
+
+      //COLLECT ORIGINAL LAYERS
+      final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
+      for (final Frame frame in originalFrameList)
       {
-        if (previousState == null || (typeGroup != HistoryStateTypeGroup.layerSelect && (typeGroup == HistoryStateTypeGroup.full || frame == appState.timeline.selectedFrame)))
+        final LayerCollection layers = frame.layerList;
+        for (int i = 0; i < layers.length; i++)
         {
-          final LayerCollection layers = frame.layerList;
-          final List<HistoryLayer> hLayers = <HistoryLayer>[];
-          for (int i = 0; i < layers.length; i++)
-          {
-            HistoryLayer? hLayer;
-            final LayerState layerState = layers.getLayer(index: i);
-            if (typeGroup == HistoryStateTypeGroup.layer && i != layerIndex)
-            {
-              hLayer = previousState!.timeline.frames[frameList.indexOf(frame)].layers[i];
-            }
-            else
-            {
-              hLayer = _createHistoryLayer(layerState: layerState, rampList: rampList);
-            }
-            if (hLayer != null)
-            {
-              if (appState.timeline.selectedFrame == frame && frame.layerList.selectedLayerIndex == i)
-              {
-                selectionLayer = hLayer;
-              }
-              hLayers.add(hLayer);
-            }
-          }
-          historyFrameList.add(HistoryFrame(fps: frame.fps.value, layers: hLayers, selectedLayerIndex: frame.layerList.selectedLayerIndex ?? 0));
+          collectedLayers.add(layers.getLayer(index: i));
         }
-        else
+      }
+
+      //CREATE HISTORY LAYERS
+      allHLayers = LinkedHashSet<HistoryLayer>();
+      for (final LayerState l in collectedLayers)
+      {
+        //TODO HERE NEEDS TO BE THE LOGIC TO REDUCE MEMORY CONSUMPTION
+        final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList)!;
+        allHLayers.add(hLayer);
+      }
+
+      //CREATING HISTORY FRAMES
+      for (final Frame frame in originalFrameList)
+      {
+        final LayerCollection layers = frame.layerList;
+        final LinkedHashSet<int> layerIndices = LinkedHashSet<int>();
+        for (int i = 0; i < layers.length; i++)
         {
-          final HistoryFrame hf = previousState.timeline.frames[frameList.indexOf(frame)];
-          historyFrameList.add(hf);
-          for (int i = 0; i < frame.layerList.length; i++)
-          {
-            if (appState.timeline.selectedFrame == frame && frame.layerList.selectedLayerIndex == i)
-            {
-              //TODO THIS LINE CAUSES A LOT OF EXCEPTIONS, FIND OUT WHY!!!!
-              selectionLayer = hf.layers[i];
-            }
-          }
+          final int index = collectedLayers.toList().indexOf(layers.getLayer(index: i));
+          layerIndices.add(index);
         }
+        historyFrameList.add(HistoryFrame(fps: frame.fps.value, layerIndices: layerIndices, selectedLayerIndex: layers.selectedLayerIndex ?? 0));
       }
     }
 
-    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex);
+    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: allHLayers);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
     final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectionLayer);

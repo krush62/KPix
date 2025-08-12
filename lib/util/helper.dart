@@ -226,10 +226,10 @@ class StackCol<T> {
         '${(c.b * 255).toInt()}';
   }
 
-  Color getColorFromHash({required final int hash, required final BuildContext context, required final bool selected})
+  /*Color getColorFromHash({required final int hash, required final BuildContext context, required final bool selected})
   {
     return HSVColor.fromAHSV(1.0, (hash.abs() % 360).toDouble(), 0.3, selected ? HSVColor.fromColor(Theme.of(context).primaryColor).value : HSVColor.fromColor(Theme.of(context).primaryColorDark).value).toColor();
-  }
+  }*/
 
   bool isDesktop({final bool includingWeb = false})
   {
@@ -584,13 +584,14 @@ class StackCol<T> {
       final ui.PictureRecorder recorder = ui.PictureRecorder();
       final Canvas canvas = Canvas(recorder);
 
-      final List<HistoryLayer> layerList = state.timeline.frames[0].layers;
+      final LinkedHashSet<HistoryLayer> layerList = state.timeline.getLayersForFrameIndex(frameIndex: 0);
 
       for (int i = layerList.length - 1; i >= 0; i--)
       {
-        if (layerList[i].visibilityState == LayerVisibilityState.visible && layerList[i].runtimeType == HistoryDrawingLayer)
+        final HistoryLayer cLayer = layerList.elementAt(i);
+        if (cLayer.visibilityState == LayerVisibilityState.visible && cLayer.runtimeType == HistoryDrawingLayer)
         {
-          final HistoryDrawingLayer historyDrawingLayer = layerList[i] as HistoryDrawingLayer;
+          final HistoryDrawingLayer historyDrawingLayer = cLayer as HistoryDrawingLayer;
           final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
           for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
           {

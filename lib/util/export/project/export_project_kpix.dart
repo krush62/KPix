@@ -106,144 +106,158 @@ Future<ByteData> createKPixData({required final AppState appState}) async
   offset+=2;
 
   //layer count
-  byteData.setUint16(offset, saveData.timeline.getTotalLayerCount());
+  byteData.setUint16(offset, saveData.timeline.allLayers.length);
   offset+=2;
 
-
-
-
-
   //LAYERS
+  final LinkedHashSet<HistoryLayer> allHLayers = saveData.timeline.allLayers;
 
-  int frameIndex = 0;
-  int totalLayerIndex = 0;
-  final Map<HistoryLayer, int> layerIndexMap = <HistoryLayer, int>{};
+  final HistoryFrame currentlySelectedFrame = saveData.timeline.frames[saveData.timeline.selectedFrameIndex];
+  final HistoryLayer currentlySelectedLayer = allHLayers.elementAt(currentlySelectedFrame.layerIndices.elementAt(currentlySelectedFrame.selectedLayerIndex));
 
-  //frames
-  for (final HistoryFrame frame in saveData.timeline.frames)
+  for (int i = 0; i < allHLayers.length; i++)
   {
-    final List<HistoryLayer> layerList = frame.layers;
-    //layers
-    for (int i = 0; i < layerList.length; i++)
-    {
-      //layer type
-      byteData.setUint8(offset++, historyLayerValueMap[layerList[i].runtimeType]!);
+    final HistoryLayer cLayer = allHLayers.elementAt(i);
+    //layer type
+    byteData.setUint8(offset++, historyLayerValueMap[cLayer.runtimeType]!);
 
-      //visibility
-      int visVal = 0;
-      for (int j = 0; j < layerVisibilityStateValueMap.length; j++)
+    //visibility
+    int visVal = 0;
+    for (int j = 0; j < layerVisibilityStateValueMap.length; j++)
+    {
+      if (layerVisibilityStateValueMap[j] == cLayer.visibilityState)
       {
-        if (layerVisibilityStateValueMap[j] == layerList[i].visibilityState)
+        visVal = j;
+        break;
+      }
+    }
+    byteData.setUint8(offset++, visVal);
+
+
+    if (cLayer.runtimeType == HistoryDrawingLayer)
+    {
+      final HistoryDrawingLayer drawingLayer = cLayer as HistoryDrawingLayer;
+      //lock type
+      int lockVal = 0;
+      for (int j = 0; j < layerLockStateValueMap.length; j++)
+      {
+        if (layerLockStateValueMap[j] == drawingLayer.lockState)
         {
-          visVal = j;
+          lockVal = j;
           break;
         }
       }
-      byteData.setUint8(offset++, visVal);
+      byteData.setUint8(offset++, lockVal);
 
-
-      if (layerList[i].runtimeType == HistoryDrawingLayer)
+      if (fileVersion >= 2)
       {
-        final HistoryDrawingLayer drawingLayer = layerList[i] as HistoryDrawingLayer;
-        //lock type
-        int lockVal = 0;
-        for (int j = 0; j < layerLockStateValueMap.length; j++)
+        //* outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
+        int outerStrokeStyleVal = 0;
+        for (int j = 0; j < outerStrokeStyleValueMap.length; j++)
         {
-          if (layerLockStateValueMap[j] == drawingLayer.lockState)
+          if (outerStrokeStyleValueMap[j] == drawingLayer.settings.outerStrokeStyle)
           {
-            lockVal = j;
+            outerStrokeStyleVal = j;
             break;
           }
         }
-        byteData.setUint8(offset++, lockVal);
+        byteData.setUint8(offset++, outerStrokeStyleVal);
+        //* outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+        byteData.setUint8(offset++, _packAlignments(alignments: drawingLayer.settings.outerSelectionMap));
+        //* outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+        byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.rampIndex);
+        //* outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+        byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.colorIndex);
+        //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
+        byteData.setInt8(offset++, drawingLayer.settings.outerDarkenBrighten);
+        //* outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
+        byteData.setInt8(offset++, drawingLayer.settings.outerGlowDepth);
+        //* outer_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
+        byteData.setInt8(offset++, drawingLayer.settings.outerGlowRecursive ? 1 : 0);
+        //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
+        int innerStrokeStyleVal = 0;
+        for (int j = 0; j < innerStrokeStyleValueMap.length; j++)
+        {
+          if (innerStrokeStyleValueMap[j] == drawingLayer.settings.innerStrokeStyle)
+          {
+            innerStrokeStyleVal = j;
+            break;
+          }
+        }
+        byteData.setUint8(offset++, innerStrokeStyleVal);
+        //* inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+        byteData.setUint8(offset++, _packAlignments(alignments: drawingLayer.settings.innerSelectionMap));
+        //* inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+        byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.rampIndex);
+        //* inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+        byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.colorIndex);
+        //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+        byteData.setInt8(offset++, drawingLayer.settings.innerDarkenBrighten);
+        //* inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...6
+        byteData.setInt8(offset++, drawingLayer.settings.innerGlowDepth);
+        //* inner_stroke_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
+        byteData.setUint8(offset++, drawingLayer.settings.innerGlowRecursive ? 1 : 0);
+        //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
+        byteData.setUint8(offset++, drawingLayer.settings.bevelDistance);
+        //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
+        byteData.setUint8(offset++, drawingLayer.settings.bevelStrength);
+        //* drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
+        int dropShadowStyleVal = 0;
+        for (int j = 0; j < dropShadowStyleValueMap.length; j++)
+        {
+          if (dropShadowStyleValueMap[j] == drawingLayer.settings.dropShadowStyle)
+          {
+            dropShadowStyleVal = j;
+            break;
+          }
+        }
+        byteData.setUint8(offset++, dropShadowStyleVal);
+        //* drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+        byteData.setUint8(offset++, drawingLayer.settings.dropShadowColorReference.rampIndex);
+        //* drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
+        byteData.setUint8(offset++, drawingLayer.settings.dropShadowColorReference.colorIndex);
+        //* drop_shadow_offset_x ``byte (1)`` // -16...16
+        byteData.setInt8(offset++, drawingLayer.settings.dropShadowOffset.x);
+        //* drop_shadow_offset_y ``byte (1)`` // -16...16
+        byteData.setInt8(offset++, drawingLayer.settings.dropShadowOffset.y);
+        //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+        byteData.setInt8(offset++, drawingLayer.settings.dropShadowDarkenBrighten);
+      }
+      //data count
+      int dataLength = drawingLayer.data.length;
+      if (currentlySelectedLayer == cLayer)
+      {
+        dataLength += saveData.selectionState.content.values.whereType<HistoryColorReference>().length;
+      }
+      byteData.setUint32(offset, dataLength);
+      offset+=4;
+      //image data
+      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
+      {
 
-        if (fileVersion >= 2)
+
+        final HistoryColorReference? selectionReference = (currentlySelectedLayer == cLayer) ? saveData.selectionState.content[entry.key] : null;
+        if (selectionReference == null)
         {
-          //* outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
-          int outerStrokeStyleVal = 0;
-          for (int j = 0; j < outerStrokeStyleValueMap.length; j++)
-          {
-            if (outerStrokeStyleValueMap[j] == drawingLayer.settings.outerStrokeStyle)
-            {
-              outerStrokeStyleVal = j;
-              break;
-            }
-          }
-          byteData.setUint8(offset++, outerStrokeStyleVal);
-          //* outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
-          byteData.setUint8(offset++, _packAlignments(alignments: drawingLayer.settings.outerSelectionMap));
-          //* outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
-          byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.rampIndex);
-          //* outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
-          byteData.setUint8(offset++, drawingLayer.settings.outerColorReference.colorIndex);
-          //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
-          byteData.setInt8(offset++, drawingLayer.settings.outerDarkenBrighten);
-          //* outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
-          byteData.setInt8(offset++, drawingLayer.settings.outerGlowDepth);
-          //* outer_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
-          byteData.setInt8(offset++, drawingLayer.settings.outerGlowRecursive ? 1 : 0);
-          //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
-          int innerStrokeStyleVal = 0;
-          for (int j = 0; j < innerStrokeStyleValueMap.length; j++)
-          {
-            if (innerStrokeStyleValueMap[j] == drawingLayer.settings.innerStrokeStyle)
-            {
-              innerStrokeStyleVal = j;
-              break;
-            }
-          }
-          byteData.setUint8(offset++, innerStrokeStyleVal);
-          //* inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
-          byteData.setUint8(offset++, _packAlignments(alignments: drawingLayer.settings.innerSelectionMap));
-          //* inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
-          byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.rampIndex);
-          //* inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
-          byteData.setUint8(offset++, drawingLayer.settings.innerColorReference.colorIndex);
-          //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
-          byteData.setInt8(offset++, drawingLayer.settings.innerDarkenBrighten);
-          //* inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...6
-          byteData.setInt8(offset++, drawingLayer.settings.innerGlowDepth);
-          //* inner_stroke_glow_recursive ``ubyte (1)`` // ``00`` = false, ``01`` = true
-          byteData.setUint8(offset++, drawingLayer.settings.innerGlowRecursive ? 1 : 0);
-          //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
-          byteData.setUint8(offset++, drawingLayer.settings.bevelDistance);
-          //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
-          byteData.setUint8(offset++, drawingLayer.settings.bevelStrength);
-          //* drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
-          int dropShadowStyleVal = 0;
-          for (int j = 0; j < dropShadowStyleValueMap.length; j++)
-          {
-            if (dropShadowStyleValueMap[j] == drawingLayer.settings.dropShadowStyle)
-            {
-              dropShadowStyleVal = j;
-              break;
-            }
-          }
-          byteData.setUint8(offset++, dropShadowStyleVal);
-          //* drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
-          byteData.setUint8(offset++, drawingLayer.settings.dropShadowColorReference.rampIndex);
-          //* drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
-          byteData.setUint8(offset++, drawingLayer.settings.dropShadowColorReference.colorIndex);
-          //* drop_shadow_offset_x ``byte (1)`` // -16...16
-          byteData.setInt8(offset++, drawingLayer.settings.dropShadowOffset.x);
-          //* drop_shadow_offset_y ``byte (1)`` // -16...16
-          byteData.setInt8(offset++, drawingLayer.settings.dropShadowOffset.y);
-          //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
-          byteData.setInt8(offset++, drawingLayer.settings.dropShadowDarkenBrighten);
+          //x
+          byteData.setUint16(offset, entry.key.x);
+          offset+=2;
+          //y
+          byteData.setUint16(offset, entry.key.y);
+          offset+=2;
+
+          //ramp index
+          byteData.setUint8(offset++, entry.value.rampIndex);
+
+          //color index
+          byteData.setUint8(offset++, entry.value.colorIndex);
         }
-        //data count
-        int dataLength = drawingLayer.data.length;
-        if (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex)
+      }
+      if (currentlySelectedLayer == cLayer) //draw selected pixels
+          {
+        for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
         {
-          dataLength += saveData.selectionState.content.values.whereType<HistoryColorReference>().length;
-        }
-        byteData.setUint32(offset, dataLength);
-        offset+=4;
-        //image data
-        for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
-        {
-          final HistoryColorReference? selectionReference = (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) ? saveData.selectionState.content[entry.key] : null;
-          if (selectionReference == null)
+          if (entry.value != null)
           {
             //x
             byteData.setUint16(offset, entry.key.x);
@@ -253,133 +267,110 @@ Future<ByteData> createKPixData({required final AppState appState}) async
             offset+=2;
 
             //ramp index
-            byteData.setUint8(offset++, entry.value.rampIndex);
+            byteData.setUint8(offset++, entry.value!.rampIndex);
 
             //color index
-            byteData.setUint8(offset++, entry.value.colorIndex);
-          }
-        }
-        if (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) //draw selected pixels
-            {
-          for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
-          {
-            if (entry.value != null)
-            {
-              //x
-              byteData.setUint16(offset, entry.key.x);
-              offset+=2;
-              //y
-              byteData.setUint16(offset, entry.key.y);
-              offset+=2;
-
-              //ramp index
-              byteData.setUint8(offset++, entry.value!.rampIndex);
-
-              //color index
-              byteData.setUint8(offset++, entry.value!.colorIndex);
-            }
+            byteData.setUint8(offset++, entry.value!.colorIndex);
           }
         }
       }
-      else if (layerList[i].runtimeType == HistoryReferenceLayer)
-      {
-        final HistoryReferenceLayer referenceLayer = layerList[i] as HistoryReferenceLayer;
-
-        //path (string)
-        final Uint8List encodedPath = utf8.encode(referenceLayer.path);
-        byteData.setUint16(offset, encodedPath.length);
-        offset += 2;
-        for (int i = 0; i < encodedPath.length; i++)
-        {
-          byteData.setUint8(offset++, encodedPath[i]);
-        }
-
-        //opacity ``ubyte (1)`` // 0...100
-        byteData.setUint8(offset++, referenceLayer.opacity);
-        //offset_x ``float (1)``
-        byteData.setFloat32(offset, referenceLayer.offsetX);
-        offset += 4;
-        //offset_y ``float (1)``
-        byteData.setFloat32(offset, referenceLayer.offsetY);
-        offset += 4;
-        //zoom ``ushort (1)``
-        byteData.setUint16(offset, referenceLayer.zoom);
-        offset+=2;
-        //aspect_ratio ``float (1)``
-        byteData.setFloat32(offset, referenceLayer.aspectRatio);
-        offset += 4;
-      }
-      else if (layerList[i].runtimeType == HistoryGridLayer)
-      {
-        final HistoryGridLayer gridLayer = layerList[i] as HistoryGridLayer;
-        //opacity ``ubyte (1)`` // 0...100
-        byteData.setUint8(offset++, gridLayer.opacity);
-        //brightness ``ubyte (1)`` // 0...100
-        byteData.setUint8(offset++, gridLayer.brightness);
-        //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
-        byteData.setUint8(offset++, gridTypeValueMap[gridLayer.gridType]!);
-        //interval_x ``ubyte (1)`` // 2...64
-        byteData.setUint8(offset++, gridLayer.intervalX);
-        //interval_x ``ubyte (1)`` // 2...64
-        byteData.setUint8(offset++, gridLayer.intervalY);
-        //horizon_position ``float (1)``// 0...1 (vertical horizon position)
-        byteData.setFloat32(offset, gridLayer.horizonPosition);
-        offset += 4;
-        //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-        byteData.setFloat32(offset, gridLayer.vanishingPoint1);
-        offset += 4;
-        //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-        byteData.setFloat32(offset, gridLayer.vanishingPoint2);
-        offset += 4;
-        //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-        byteData.setFloat32(offset, gridLayer.vanishingPoint3);
-        offset += 4;
-      }
-      else if (layerList[i] is HistoryShadingLayer) //SHADING AND DITHERING
-      {
-        final HistoryShadingLayer shadingLayer = layerList[i] as HistoryShadingLayer;
-
-        //lock type
-        int lockVal = 0;
-        for (int j = 0; j < layerLockStateValueMap.length; j++)
-        {
-          if (layerLockStateValueMap[j] == shadingLayer.lockState)
-          {
-            lockVal = j;
-            break;
-          }
-        }
-        byteData.setUint8(offset++, lockVal);
-
-        if (fileVersion >= 2)
-        {
-          //* shading_step_limit_low ``ubyte (1)`` // 1...6
-          byteData.setUint8(offset++, shadingLayer.settings.shadingLow);
-          //* shading_step_limit_high ``ubyte (1)`` // 1...6
-          byteData.setUint8(offset++, shadingLayer.settings.shadingHigh);
-        }
-
-        //data count
-        final int dataLength = shadingLayer.data.length;
-        byteData.setUint32(offset, dataLength);
-        offset+=4;
-
-        for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)
-        {
-          //x
-          byteData.setUint16(offset, entry.key.x);
-          offset+=2;
-          //y
-          byteData.setUint16(offset, entry.key.y);
-          offset+=2;
-          //shading
-          byteData.setInt8(offset++, entry.value);
-        }
-      }
-      layerIndexMap[layerList[i]] = totalLayerIndex++;
     }
-    frameIndex++;
+    else if (cLayer.runtimeType == HistoryReferenceLayer)
+    {
+      final HistoryReferenceLayer referenceLayer = cLayer as HistoryReferenceLayer;
+
+      //path (string)
+      final Uint8List encodedPath = utf8.encode(referenceLayer.path);
+      byteData.setUint16(offset, encodedPath.length);
+      offset += 2;
+      for (int i = 0; i < encodedPath.length; i++)
+      {
+        byteData.setUint8(offset++, encodedPath[i]);
+      }
+
+      //opacity ``ubyte (1)`` // 0...100
+      byteData.setUint8(offset++, referenceLayer.opacity);
+      //offset_x ``float (1)``
+      byteData.setFloat32(offset, referenceLayer.offsetX);
+      offset += 4;
+      //offset_y ``float (1)``
+      byteData.setFloat32(offset, referenceLayer.offsetY);
+      offset += 4;
+      //zoom ``ushort (1)``
+      byteData.setUint16(offset, referenceLayer.zoom);
+      offset+=2;
+      //aspect_ratio ``float (1)``
+      byteData.setFloat32(offset, referenceLayer.aspectRatio);
+      offset += 4;
+    }
+    else if (cLayer.runtimeType == HistoryGridLayer)
+    {
+      final HistoryGridLayer gridLayer = cLayer as HistoryGridLayer;
+      //opacity ``ubyte (1)`` // 0...100
+      byteData.setUint8(offset++, gridLayer.opacity);
+      //brightness ``ubyte (1)`` // 0...100
+      byteData.setUint8(offset++, gridLayer.brightness);
+      //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+      byteData.setUint8(offset++, gridTypeValueMap[gridLayer.gridType]!);
+      //interval_x ``ubyte (1)`` // 2...64
+      byteData.setUint8(offset++, gridLayer.intervalX);
+      //interval_x ``ubyte (1)`` // 2...64
+      byteData.setUint8(offset++, gridLayer.intervalY);
+      //horizon_position ``float (1)``// 0...1 (vertical horizon position)
+      byteData.setFloat32(offset, gridLayer.horizonPosition);
+      offset += 4;
+      //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
+      byteData.setFloat32(offset, gridLayer.vanishingPoint1);
+      offset += 4;
+      //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
+      byteData.setFloat32(offset, gridLayer.vanishingPoint2);
+      offset += 4;
+      //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+      byteData.setFloat32(offset, gridLayer.vanishingPoint3);
+      offset += 4;
+    }
+    else if (cLayer is HistoryShadingLayer) //SHADING AND DITHERING
+        {
+      //lock type
+      int lockVal = 0;
+      for (int j = 0; j < layerLockStateValueMap.length; j++)
+      {
+        if (layerLockStateValueMap[j] == cLayer.lockState)
+        {
+          lockVal = j;
+          break;
+        }
+      }
+      byteData.setUint8(offset++, lockVal);
+
+      if (fileVersion >= 2)
+      {
+        //* shading_step_limit_low ``ubyte (1)`` // 1...6
+        byteData.setUint8(offset++, cLayer.settings.shadingLow);
+        //* shading_step_limit_high ``ubyte (1)`` // 1...6
+        byteData.setUint8(offset++, cLayer.settings.shadingHigh);
+      }
+
+      //data count
+      final int dataLength = cLayer.data.length;
+      byteData.setUint32(offset, dataLength);
+      offset+=4;
+
+      for (final MapEntry<CoordinateSetI, int> entry in cLayer.data.entries)
+      {
+        //x
+        byteData.setUint16(offset, entry.key.x);
+        offset+=2;
+        //y
+        byteData.setUint16(offset, entry.key.y);
+        offset+=2;
+        //shading
+        byteData.setInt8(offset++, entry.value);
+      }
+    }
   }
+
+
 
 
   //TIMELINE
@@ -399,12 +390,12 @@ Future<ByteData> createKPixData({required final AppState appState}) async
     byteData.setInt8(offset++, frame.fps);
 
     //frame_layer_count ``ubyte (1)``
-    byteData.setInt8(offset++, frame.layers.length);
+    byteData.setInt8(offset++, frame.layerIndices.length);
 
-    for (int i = 0; i < frame.layers.length; i++)
+    for (int i = 0; i < frame.layerIndices.length; i++)
     {
       //layer_index ``ubyte (1)``
-      byteData.setInt8(offset++, layerIndexMap[frame.layers[i]]!);
+      byteData.setInt8(offset++, frame.layerIndices.elementAt(i));
     }
   }
 
@@ -487,16 +478,17 @@ int _calculateKPixFileSize({required final HistoryState saveData})
     int frameIndex = 0;
    for (final HistoryFrame frame in saveData.timeline.frames)
    {
-     final List<HistoryLayer> layerList = frame.layers;
+     final LinkedHashSet<HistoryLayer> layerList = saveData.timeline.getLayersForFrame(frame: frame);
+     final HistoryLayer cLayer = layerList.elementAt(0);
      for (int i = 0; i < layerList.length; i++)
      {
        //type
        size += 1;
        //visibility
        size += 1;
-       if (layerList[i].runtimeType == HistoryDrawingLayer)
+       if (cLayer.runtimeType == HistoryDrawingLayer)
        {
-         final HistoryDrawingLayer drawingLayer = layerList[i] as HistoryDrawingLayer;
+         final HistoryDrawingLayer drawingLayer = cLayer as HistoryDrawingLayer;
          //lock type
          size += 1;
 
@@ -582,9 +574,9 @@ int _calculateKPixFileSize({required final HistoryState saveData})
            }
          }
        }
-       else if (layerList[i].runtimeType == HistoryReferenceLayer)
+       else if (cLayer.runtimeType == HistoryReferenceLayer)
        {
-         final HistoryReferenceLayer referenceLayer = layerList[i] as HistoryReferenceLayer;
+         final HistoryReferenceLayer referenceLayer = cLayer as HistoryReferenceLayer;
          //path (string)
          size += 2;
          size += utf8.encode(referenceLayer.path).length;
@@ -599,7 +591,7 @@ int _calculateKPixFileSize({required final HistoryState saveData})
          //aspect_ratio ``float (1)``
          size += 4;
        }
-       else if (layerList[i].runtimeType == HistoryGridLayer)
+       else if (cLayer.runtimeType == HistoryGridLayer)
        {
          //opacity ``ubyte (1)`` // 0...100
          size += 1;
@@ -620,9 +612,8 @@ int _calculateKPixFileSize({required final HistoryState saveData})
          //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
          size += 4;
        }
-       else if (layerList[i] is HistoryShadingLayer)
+       else if (cLayer is HistoryShadingLayer)
        {
-         final HistoryShadingLayer shadingLayer = layerList[i] as HistoryShadingLayer;
          //lock type
          size += 1;
          if (fileVersion >= 2)
@@ -635,7 +626,7 @@ int _calculateKPixFileSize({required final HistoryState saveData})
 
          //data count
          size += 4;
-         for (final MapEntry<CoordinateSetI, int> entry in shadingLayer.data.entries)
+         for (final MapEntry<CoordinateSetI, int> entry in cLayer.data.entries)
          {
            final HistoryColorReference? selectionReference = (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) ? saveData.selectionState.content[entry.key] : null;
            if (selectionReference == null)
@@ -689,7 +680,7 @@ int _calculateKPixFileSize({required final HistoryState saveData})
     //frame_layer_count ``ubyte (1)``
     size += 1;
 
-    for (int i = 0; i < frame.layers.length; i++)
+    for (int i = 0; i < frame.layerIndices.length; i++)
     {
       //layer_index ``ubyte (1)``
       size += 1;

@@ -33,6 +33,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
@@ -482,7 +483,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
     Color bgColor;
     if (isLinkedLayer)
     {
-      bgColor = getColorFromHash(hash: layer.hashCode, context: context, selected: frameIsSelected);
+      bgColor = getColorForLayer(hashCode: layer.hashCode, context: context, selected: frameIsSelected);
     }
     else
     {
@@ -981,6 +982,62 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                     onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
+                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: _padding),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: widget.timeline.isPlaying,
+                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                              return Tooltip(
+                                message: "Create Linked Frame Left",
+                                waitDuration: AppState.toolTipDuration,
+                                child: SizedBox(
+                                  height: _cellHeight,
+                                  child: IconButton.outlined(
+                                    onPressed: isPlaying ? null : () {widget.timeline.linkFrameLeft();},
+                                    icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Tooltip(
+                          message: "Create Linked Frame",
+                          waitDuration: AppState.toolTipDuration,
+                          child: FaIcon(
+                            FontAwesomeIcons.link,
+                            size: _layerIconSize,
+                            color: Theme.of(context).primaryColorLight,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: _padding / 2,
+                        ),
+                        Expanded(
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: widget.timeline.isPlaying,
+                            builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                              return Tooltip(
+                                message: "Create Linked Frame Right",
+                                waitDuration: AppState.toolTipDuration,
+                                child: SizedBox(
+                                  height: _cellHeight,
+                                  child: IconButton.outlined(
+                                    onPressed: isPlaying ? null : () {widget.timeline.linkFrameRight();},
                                     icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
                                   ),
                                 ),

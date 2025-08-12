@@ -275,8 +275,8 @@ abstract class IToolPainter
 
   Future<ContentRasterSet?> rasterizePixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async
   {
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
-    if (drawingPixels.isNotEmpty && frame != null)
+    final Frame? frame = appState.timeline.selectedFrame;
+    if (drawingPixels.isNotEmpty && frame != null && frame.layerList.contains(layer: currentLayer))
     {
       final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
       final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
@@ -632,8 +632,8 @@ abstract class IToolPainter
   ColorReference _getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor, required final LayerState currentLayer})
   {
     ColorReference retColor = inputColor;
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
-    if (frame != null)
+    final Frame? frame = appState.timeline.selectedFrame;
+    if (frame != null && frame.layerList.contains(layer: currentLayer))
     {
       int colorShift = 0;
       final int? currentIndex = frame.layerList.getLayerPosition(state: currentLayer);
@@ -663,8 +663,8 @@ abstract class IToolPainter
   CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
-    if (currentLayer.lockState.value == LayerLockState.unlocked && frame != null)
+    final Frame? frame = appState.timeline.selectedFrame;
+    if (currentLayer.lockState.value == LayerLockState.unlocked && frame != null && frame.layerList.contains(layer: currentLayer))
     {
       for (final CoordinateSetI coord in coords)
       {
@@ -802,8 +802,8 @@ abstract class IToolPainter
   CoordinateColorMap getStampPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final ShaderOptions shaderOptions, final bool withShadingLayers = false})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: currentLayer);
-    if (frame != null)
+    final Frame? frame = appState.timeline.selectedFrame;
+    if (frame != null && frame.layerList.contains(layer: currentLayer))
     {
       for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
       {

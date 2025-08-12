@@ -14,12 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:kpix/managers/history/history_layer.dart';
+import 'dart:collection';
 
 class HistoryFrame
 {
   final int fps;
-  final List<HistoryLayer> layers;
+  final LinkedHashSet<int> layerIndices;
   final int selectedLayerIndex;
-  const HistoryFrame({required this.fps, required this.layers, required this.selectedLayerIndex});
+  const HistoryFrame({required this.fps, required this.layerIndices, required this.selectedLayerIndex});
 }

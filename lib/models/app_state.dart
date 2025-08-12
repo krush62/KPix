@@ -51,6 +51,7 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/image_importer.dart';
+import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
@@ -227,7 +228,10 @@ class AppState
     }
     setToolSelection(tool: ToolType.pencil, forceSetting: true);
     statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
-    timeline.layerChangeNotifier.addListener((){layerSettingsVisible = false;});
+    timeline.layerChangeNotifier.addListener((){
+      layerSettingsVisible = false;
+      resetColorSupplier();
+    });
     _setHotkeys();
   }
 
@@ -251,8 +255,8 @@ class AppState
     hotkeyManager.addListener(func: addNewReferenceLayer, action: HotkeyAction.layersNewReference);
     hotkeyManager.addListener(func: addNewShadingLayer, action: HotkeyAction.layersNewShading);
     hotkeyManager.addListener(func: addNewGridLayer, action: HotkeyAction.layersNewGrid);
-    hotkeyManager.addListener(func: () {layerDuplicated(duplicateLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDuplicate);
-    hotkeyManager.addListener(func: () {layerDeleted(deleteLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDelete);
+    hotkeyManager.addListener(func: () {layerDuplicatSelected(duplicateLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDuplicate);
+    hotkeyManager.addListener(func: () {layerDeletedSelected(deleteLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDelete);
     hotkeyManager.addListener(func: () {layerMerged(mergeLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersMerge);
     hotkeyManager.addListener(func: () {moveUpLayer(layerState: timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveUp);
     hotkeyManager.addListener(func: () {moveDownLayer(layerState: timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveDown);
@@ -269,9 +273,6 @@ class AppState
     hotkeyManager.addListener(func: () {setZoomLevel(val: 48);}, action: HotkeyAction.panZoomSetZoom4800);
     hotkeyManager.addListener(func: () {setZoomLevel(val: 64);}, action: HotkeyAction.panZoomSetZoom6400);
     hotkeyManager.addListener(func: () {setZoomLevel(val: 80);}, action: HotkeyAction.panZoomSetZoom8000);
-
-
-
   }
 
   void init({required final CoordinateSetI dimensions})
@@ -738,88 +739,94 @@ class AppState
         _selectedColor.value = selCol;
       }
 
+      //RESTORE ALL LAYERS
+      final LinkedHashSet<HistoryLayer> allHistoryLayers = historyState.timeline.allLayers;
+      final List<LayerState> allLayers = <LayerState>[];
+      for (final HistoryLayer hLayer in allHistoryLayers)
+      {
+        LayerState? layerState;
+        if (hLayer is HistoryDrawingLayer)
+        {
+          final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
+          for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in hLayer.data.entries)
+          {
+            KPalRampData? ramp;
+            for (int i = 0; i < colorRamps.length; i++)
+            {
+              if (colorRamps[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
+              {
+                ramp = colorRamps[i];
+                break;
+              }
+            }
+            if (ramp != null)
+            {
+              content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
+            }
+          }
+          final DrawingLayerSettings drawingLayerSettings = DrawingLayerSettings(
+            constraints: hLayer.settings.constraints,
+            outerStrokeStyle: hLayer.settings.outerStrokeStyle,
+            outerSelectionMap: hLayer.settings.outerSelectionMap,
+            outerColorReference: _colorRamps.value[hLayer.settings.outerColorReference.rampIndex].references[hLayer.settings.outerColorReference.colorIndex],
+            outerDarkenBrighten: hLayer.settings.outerDarkenBrighten,
+            outerGlowDepth: hLayer.settings.outerGlowDepth,
+            outerGlowRecursive: hLayer.settings.outerGlowRecursive,
+            innerStrokeStyle: hLayer.settings.innerStrokeStyle,
+            innerSelectionMap: hLayer.settings.innerSelectionMap,
+            innerColorReference: _colorRamps.value[hLayer.settings.innerColorReference.rampIndex].references[hLayer.settings.innerColorReference.colorIndex],
+            innerDarkenBrighten: hLayer.settings.innerDarkenBrighten,
+            innerGlowDepth: hLayer.settings.innerGlowDepth,
+            innerGlowRecursive: hLayer.settings.innerGlowRecursive,
+            bevelDistance: hLayer.settings.bevelDistance,
+            bevelStrength: hLayer.settings.bevelStrength,
+            dropShadowStyle: hLayer.settings.dropShadowStyle,
+            dropShadowColorReference: _colorRamps.value[hLayer.settings.dropShadowColorReference.rampIndex].references[hLayer.settings.dropShadowColorReference.colorIndex],
+            dropShadowOffset: hLayer.settings.dropShadowOffset,
+            dropShadowDarkenBrighten: hLayer.settings.dropShadowDarkenBrighten,);
+          final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content, drawingLayerSettings: drawingLayerSettings, ramps: colorRamps);
+          drawingLayer.lockState.value = hLayer.lockState;
+          layerState = drawingLayer;
+        }
+        else if (hLayer.runtimeType == HistoryReferenceLayer)
+        {
+          final HistoryReferenceLayer referenceLayer = hLayer as HistoryReferenceLayer;
+          layerState = ReferenceLayerState(zoom: referenceLayer.zoom, opacity: referenceLayer.opacity, offsetX: referenceLayer.offsetX, offsetY: referenceLayer.offsetY, image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path), aspectRatio: referenceLayer.aspectRatio);
+        }
+        else if (hLayer.runtimeType == HistoryGridLayer)
+        {
+          final HistoryGridLayer gridLayer = hLayer as HistoryGridLayer;
+          layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY, horizonPosition: gridLayer.horizonPosition, vanishingPoint1: gridLayer.vanishingPoint1, vanishingPoint2: gridLayer.vanishingPoint2, vanishingPoint3: gridLayer.vanishingPoint3 );
+        }
+        else if (hLayer.runtimeType == HistoryShadingLayer)
+        {
+          final HistoryShadingLayer shadingLayer = hLayer as HistoryShadingLayer;
+          final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: shadingLayer.settings.constraints, shadingLow: shadingLayer.settings.shadingLow, shadingHigh: shadingLayer.settings.shadingHigh,);
+          layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: shadingLayerSettings);
+        }
+        else if (hLayer.runtimeType == HistoryDitherLayer)
+        {
+          final HistoryDitherLayer ditherLayer = hLayer as HistoryDitherLayer;
+          final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: ditherLayer.settings.constraints, shadingLow: ditherLayer.settings.shadingLow, shadingHigh: ditherLayer.settings.shadingHigh,);
+          layerState = DitherLayerState.withData(data: ditherLayer.data, lState: ditherLayer.lockState, newSettings: shadingLayerSettings);
+        }
+
+        if (layerState != null)
+        {
+          layerState.visibilityState.value = hLayer.visibilityState;
+          allLayers.add(layerState);
+        }
+      }
 
 
       final List<Frame> frames = <Frame>[];
       for (final HistoryFrame hFrame in historyState.timeline.frames)
       {
         final List<LayerState> layerList = <LayerState>[];
-        for (final HistoryLayer hLayer in hFrame.layers)
+        for (final int hLayerIndex in hFrame.layerIndices)
         {
-          LayerState? layerState;
-          if (hLayer is HistoryDrawingLayer)
-          {
-            final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
-            for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in hLayer.data.entries)
-            {
-              KPalRampData? ramp;
-              for (int i = 0; i < colorRamps.length; i++)
-              {
-                if (colorRamps[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
-                {
-                  ramp = colorRamps[i];
-                  break;
-                }
-              }
-              if (ramp != null)
-              {
-                content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
-              }
-            }
-            final DrawingLayerSettings drawingLayerSettings = DrawingLayerSettings(
-              constraints: hLayer.settings.constraints,
-              outerStrokeStyle: hLayer.settings.outerStrokeStyle,
-              outerSelectionMap: hLayer.settings.outerSelectionMap,
-              outerColorReference: _colorRamps.value[hLayer.settings.outerColorReference.rampIndex].references[hLayer.settings.outerColorReference.colorIndex],
-              outerDarkenBrighten: hLayer.settings.outerDarkenBrighten,
-              outerGlowDepth: hLayer.settings.outerGlowDepth,
-              outerGlowRecursive: hLayer.settings.outerGlowRecursive,
-              innerStrokeStyle: hLayer.settings.innerStrokeStyle,
-              innerSelectionMap: hLayer.settings.innerSelectionMap,
-              innerColorReference: _colorRamps.value[hLayer.settings.innerColorReference.rampIndex].references[hLayer.settings.innerColorReference.colorIndex],
-              innerDarkenBrighten: hLayer.settings.innerDarkenBrighten,
-              innerGlowDepth: hLayer.settings.innerGlowDepth,
-              innerGlowRecursive: hLayer.settings.innerGlowRecursive,
-              bevelDistance: hLayer.settings.bevelDistance,
-              bevelStrength: hLayer.settings.bevelStrength,
-              dropShadowStyle: hLayer.settings.dropShadowStyle,
-              dropShadowColorReference: _colorRamps.value[hLayer.settings.dropShadowColorReference.rampIndex].references[hLayer.settings.dropShadowColorReference.colorIndex],
-              dropShadowOffset: hLayer.settings.dropShadowOffset,
-              dropShadowDarkenBrighten: hLayer.settings.dropShadowDarkenBrighten,);
-            final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content, drawingLayerSettings: drawingLayerSettings, ramps: colorRamps);
-            drawingLayer.lockState.value = hLayer.lockState;
-            layerState = drawingLayer;
-          }
-          else if (hLayer.runtimeType == HistoryReferenceLayer)
-          {
-            final HistoryReferenceLayer referenceLayer = hLayer as HistoryReferenceLayer;
-            layerState = ReferenceLayerState(zoom: referenceLayer.zoom, opacity: referenceLayer.opacity, offsetX: referenceLayer.offsetX, offsetY: referenceLayer.offsetY, image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path), aspectRatio: referenceLayer.aspectRatio);
-          }
-          else if (hLayer.runtimeType == HistoryGridLayer)
-          {
-            final HistoryGridLayer gridLayer = hLayer as HistoryGridLayer;
-            layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY, horizonPosition: gridLayer.horizonPosition, vanishingPoint1: gridLayer.vanishingPoint1, vanishingPoint2: gridLayer.vanishingPoint2, vanishingPoint3: gridLayer.vanishingPoint3 );
-          }
-          else if (hLayer.runtimeType == HistoryShadingLayer)
-          {
-            final HistoryShadingLayer shadingLayer = hLayer as HistoryShadingLayer;
-            final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: shadingLayer.settings.constraints, shadingLow: shadingLayer.settings.shadingLow, shadingHigh: shadingLayer.settings.shadingHigh,);
-            layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: shadingLayerSettings);
-          }
-          else if (hLayer.runtimeType == HistoryDitherLayer)
-          {
-            final HistoryDitherLayer ditherLayer = hLayer as HistoryDitherLayer;
-            final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: ditherLayer.settings.constraints, shadingLow: ditherLayer.settings.shadingLow, shadingHigh: ditherLayer.settings.shadingHigh,);
-            layerState = DitherLayerState.withData(data: ditherLayer.data, lState: ditherLayer.lockState, newSettings: shadingLayerSettings);
-          }
-
-          if (layerState != null)
-          {
-            layerState.visibilityState.value = hLayer.visibilityState;
-            layerList.add(layerState);
-          }
-        } //end layer loop
-
+          layerList.add(allLayers[hLayerIndex]);
+        }
         final LayerCollection layerCollection = LayerCollection(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
         final Frame frame = Frame(layerList: layerCollection, fps: hFrame.fps);
         frames.add(frame);
@@ -859,8 +866,8 @@ class AppState
   {
     if (layerState != null)
     {
-      final Frame? frame = timeline.getFrameForLayer(layer: layerState);
-      if (frame != null)
+      final Frame? frame = timeline.selectedFrame;
+      if (frame != null && frame.layerList.contains(layer: layerState))
       {
         final int? sourcePosition = frame.layerList.getLayerPosition(state: layerState);
         if (sourcePosition != null && sourcePosition > 0)
@@ -875,8 +882,8 @@ class AppState
   {
     if (layerState != null)
     {
-      final Frame? frame = timeline.getFrameForLayer(layer: layerState);
-      if (frame != null)
+      final Frame? frame = timeline.selectedFrame;
+      if (frame != null && frame.layerList.contains(layer: layerState))
       {
         final int? sourcePosition = frame.layerList.getLayerPosition(state: layerState);
         if (sourcePosition != null && sourcePosition < (timeline.selectedFrame!.layerList.length - 1))
@@ -1121,7 +1128,7 @@ class AppState
     }
   }
 
-  void layerDeleted({required final LayerState? deleteLayer, final bool addToHistoryStack = true})
+  void layerDeletedSelected({required final LayerState? deleteLayer, final bool addToHistoryStack = true})
   {
     if (deleteLayer != null && timeline.selectedFrame != null)
     {
@@ -1166,13 +1173,14 @@ class AppState
     }
   }
 
-  void layerDuplicated({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
+  LayerState? layerDuplicatSelected({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
   {
+    LayerState? generatedLayer;
     final Frame? frame = timeline.selectedFrame;
     if (duplicateLayer != null && frame != null)
     {
       selectionState.deselect(addToHistoryStack: false);
-      frame.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
+      generatedLayer = frame.layerList.duplicateLayer(duplicateLayer: duplicateLayer);
       if (addToHistoryStack)
       {
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate, frame: frame);
@@ -1180,6 +1188,7 @@ class AppState
       newRasterData(layer: duplicateLayer);
       timeline.layerChangeNotifier.reportChange();
     }
+    return generatedLayer;
   }
 
   void layerRasterPressed({required final LayerState rasterLayer, final bool addToHistoryStack = true})
@@ -1220,10 +1229,10 @@ class AppState
 
   void newRasterData({required final LayerState layer})
   {
-    final List<LayerCollection> layerCollections = timeline.findCollectionsForLayer(layer: layer);
-    for (final LayerCollection layerCollection in layerCollections)
+    final List<Frame> frames = timeline.findFramesForLayer(layer: layer);
+    for (final Frame frame in frames)
     {
-      layerCollection.layerRasterDone(layer: layer);
+      frame.layerList.layerRasterDone(layer: layer);
     }
   }
 

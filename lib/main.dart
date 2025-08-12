@@ -626,7 +626,7 @@ class MainWidget extends StatelessWidget
                   return hasProject ? Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      TimeLineWidget(timeline: GetIt.I.get<AppState>().timeline, expandedHeight: 280,),
+                      TimeLineWidget(timeline: GetIt.I.get<AppState>().timeline, expandedHeight: 320,),
                       const Expanded(child: ClipRect(child: CanvasWidget())),
                       StatusBarWidget(),
                       SymmetryWidget(state: GetIt.I.get<AppState>().symmetryState,),

@@ -42,7 +42,7 @@ class DrawingLayerState extends RasterableLayerState
   final Map<CoordinateSetI, ColorReference?> rasterQueue = <CoordinateSetI, ColorReference?>{};
 
   final DrawingLayerSettings settings;
-  HashMap<CoordinateSetI, int> settingsShadingPixels = HashMap<CoordinateSetI, int>();
+  Map<Frame, HashMap<CoordinateSetI, int>> settingsShadingPixels = <Frame, HashMap<CoordinateSetI, int>>{};
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {
@@ -69,7 +69,7 @@ class DrawingLayerState extends RasterableLayerState
         super(layerSettings: settings)
   {
     isRasterizing = true;
-    _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: false));
+    _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result, startedFromManual: false));
     lockState.value = lState;
     visibilityState.value = vState;
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
@@ -83,9 +83,10 @@ class DrawingLayerState extends RasterableLayerState
 
   void _settingsChanged()
   {
-    rasterPixels = _getContentWithSelection();
+    //TODO can this stay commented out?
+    /*rasterPixels = _getContentWithSelection();
     settingsShadingPixels = settings.getOuterShadingPixels(data: rasterPixels);
-    _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this);
+    _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this);*/
     doManualRaster = true;
   }
 
@@ -118,7 +119,7 @@ class DrawingLayerState extends RasterableLayerState
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
       isRasterizing = true;
-      _createRaster().then((final ui.Image image) => _rasterizingDone(image: image, startedFromManual: doManualRaster));
+      _createRaster().then((final DualRasterResult rasterResult) => _rasterizingDone(rasterResult: rasterResult, startedFromManual: doManualRaster));
     }
   }
 
@@ -207,12 +208,13 @@ class DrawingLayerState extends RasterableLayerState
   }
 
 
-  void _rasterizingDone({required final ui.Image image,required final bool startedFromManual})
+  void _rasterizingDone({required final DualRasterResult rasterResult, required final bool startedFromManual})
   {
     isRasterizing = false;
     previousRaster = rasterImage.value;
-    rasterImage.value = image;
-    thumbnail.value = image;
+    rasterImage.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.raster : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
+    thumbnail.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.thumbnail : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
+    rasterImageMap.value = rasterResult.rasterImages;
     if (startedFromManual)
     {
       doManualRaster = false;
@@ -249,9 +251,10 @@ class DrawingLayerState extends RasterableLayerState
   }
 
 
-  Future<ui.Image> _createRaster() async
+  Future<DualRasterResult> _createRaster() async
   {
     final AppState appState = GetIt.I.get<AppState>();
+    final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
     for (final CoordinateColorNullable entry in rasterQueue.entries)
     {
       if (entry.value == null)
@@ -265,20 +268,46 @@ class DrawingLayerState extends RasterableLayerState
     }
     rasterQueue.clear();
 
-    final ByteData byteDataImg = ByteData(appState.canvasSize.x * appState.canvasSize.y * 4);
+    settingsShadingPixels.clear();
 
+    if (layerStack != null)
+    {
+      final ui.Image layerStackImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, layers: layerStack!, frameIsSelected: false);
+      return DualRasterResult(rasterImages: rasterImages, externalStackImages: RasterImagePair(thumbnail: layerStackImage, raster: layerStackImage));
+    }
+    else
+    {
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      for (final Frame frame in frames)
+      {
+        final ui.Image rasterImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, frame: frame, frameIsSelected: frame == appState.timeline.selectedFrame, layers: frame.layerList.getAllLayers());
+        rasterImages[frame] = RasterImagePair(thumbnail: rasterImage, raster: rasterImage);
+      }
+      return DualRasterResult(rasterImages: rasterImages);
+    }
+  }
+
+  Future<ui.Image> _createRasterFromLayers({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers}) async
+  {
+    final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
+    //NORMAL OPAQUE PIXELS
     rasterPixels = _getContentWithSelection();
-    settingsShadingPixels = settings.getOuterShadingPixels(data: rasterPixels);
-    _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this);
+    //LAYER EFFECT PIXELS OUTSIDE THE CONTENT
+    if (frame != null)
+    {
+      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: rasterPixels);
+    }
+    //LAYER EFFECT PIXELS INSIDE THE CONTENT
+    _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
     rasterPixels.addAll(_settingsPixels);
 
     for (final CoordinateColor entry in rasterPixels.entries)
     {
       //just to make sure
-      if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < appState.canvasSize.x && entry.key.y < appState.canvasSize.y)
+      if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasSize.x && entry.key.y < canvasSize.y)
       {
         final Color originalColor = entry.value.getIdColor().color;
-        final int index = (entry.key.y * appState.canvasSize.x + entry.key.x) * 4;
+        final int index = (entry.key.y * canvasSize.x + entry.key.x) * 4;
         if (index >= 0 && index < byteDataImg.lengthInBytes)
         {
           byteDataImg.setUint32(index, argbToRgba(argb: originalColor.toARGB32()));
@@ -289,8 +318,8 @@ class DrawingLayerState extends RasterableLayerState
     final Completer<ui.Image> completerImg = Completer<ui.Image>();
     ui.decodeImageFromPixels(
         byteDataImg.buffer.asUint8List(),
-        appState.canvasSize.x,
-        appState.canvasSize.y,
+        canvasSize.x,
+        canvasSize.y,
         ui.PixelFormat.rgba8888, (final ui.Image convertedImage)
     {
       completerImg.complete(convertedImage);
@@ -300,54 +329,26 @@ class DrawingLayerState extends RasterableLayerState
     return await completerImg.future;
   }
 
-  void rasterOutline()
+  void rasterOutline({required final List<LayerState> layers})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
-    if (frame != null)
-    {
-      final List<LayerState> layers = <LayerState>[];
-      for (int i = 0; i < frame.layerList.length; i++)
-      {
-        layers.add(frame.layerList.getLayer(index: i));
-      }
-      final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
-      setDataAll(list: outerPixels);
-    }
+    final CoordinateColorMap outerPixels = settings.getOuterStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
+    setDataAll(list: outerPixels);
   }
 
-  void rasterInline()
+  void rasterInline({required final List<LayerState> layers, required final bool frameIsSelected})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
-    if (frame != null)
-    {
-      final SelectionList? selectionList = selectionNotifier.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
-      final List<LayerState> layers = <LayerState>[];
-      for (int i = 0; i < frame.layerList.length; i++)
-      {
-        layers.add(frame.layerList.getLayer(index: i));
-      }
-      final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
-      setDataAll(list: innerPixels);
-    }
+    final SelectionList? selectionList = selectionNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
+    final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
+    setDataAll(list: innerPixels);
   }
 
-  void rasterDropShadow()
+  void rasterDropShadow({required final List<LayerState> layers})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: this);
-    if (frame != null)
-    {
-      final List<LayerState> layers = <LayerState>[];
-      for (int i = 0; i < frame.layerList.length; i++)
-      {
-        layers.add(frame.layerList.getLayer(index: i));
-      }
-      final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
-      setDataAll(list: dropShadowPixels);
-    }
-
+    final CoordinateColorMap dropShadowPixels = settings.getDropShadowPixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers);
+    setDataAll(list: dropShadowPixels);
   }
 
 

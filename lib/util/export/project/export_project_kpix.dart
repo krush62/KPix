@@ -475,191 +475,188 @@ int _calculateKPixFileSize({required final HistoryState saveData})
 
   //LAYERS
 
-    int frameIndex = 0;
-   for (final HistoryFrame frame in saveData.timeline.frames)
-   {
-     final LinkedHashSet<HistoryLayer> layerList = saveData.timeline.getLayersForFrame(frame: frame);
-     final HistoryLayer cLayer = layerList.elementAt(0);
-     for (int i = 0; i < layerList.length; i++)
-     {
-       //type
-       size += 1;
-       //visibility
-       size += 1;
-       if (cLayer.runtimeType == HistoryDrawingLayer)
-       {
-         final HistoryDrawingLayer drawingLayer = cLayer as HistoryDrawingLayer;
-         //lock type
-         size += 1;
+  final LinkedHashSet<HistoryLayer> allLayers = saveData.timeline.allLayers;
+  final HistoryFrame currentlySelectedFrame = saveData.timeline.frames[saveData.timeline.selectedFrameIndex];
+  final HistoryLayer currentlySelectedLayer = allLayers.elementAt(currentlySelectedFrame.layerIndices.elementAt(currentlySelectedFrame.selectedLayerIndex));
+  for (final HistoryLayer cLayer in allLayers)
+  {
+    //type
+    size += 1;
+    //visibility
+    size += 1;
+    if (cLayer.runtimeType == HistoryDrawingLayer)
+    {
+      final HistoryDrawingLayer drawingLayer = cLayer as HistoryDrawingLayer;
+      //lock type
+      size += 1;
 
-         if (fileVersion >= 2)
-         {
-           //* outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
-           size += 1;
-           //* outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
-           size += 1;
-           //* outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
-           size += 1;
-           //* outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
-           size += 1;
-           //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
-           size += 1;
-           //* outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
-           size += 1;
-           //* outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
-           size += 1;
-           //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
-           size += 1;
-           //* inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
-           size += 1;
-           //* inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
-           size += 1;
-           //* inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
-           size += 1;
-           //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
-           size += 1;
-           //* inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
-           size += 1;
-           //* inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
-           size += 1;
-           //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
-           size += 1;
-           //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
-           size += 1;
-           //* drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
-           size += 1;
-           //* drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
-           size += 1;
-           //* drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
-           size += 1;
-           //* drop_shadow_offset_x ``byte (1)`` // -16...16
-           size += 1;
-           //* drop_shadow_offset_y ``byte (1)`` // -16...16
-           size += 1;
-           //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
-           size += 1;
-         }
-         //data count
-         size += 4;
-         for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
-         {
-           final HistoryColorReference? selectionReference = (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) ? saveData.selectionState.content[entry.key] : null;
-           if (selectionReference == null)
-           {
-             //x
-             size += 2;
-             //y
-             size += 2;
-             //color ramp index
-             size += 1;
-             //color index
-             size += 1;
-           }
-         }
-         if (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) //draw selected pixels
-             {
-           for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
-           {
-             if (entry.value != null)
-             {
-               //x
-               size += 2;
-               //y
-               size += 2;
-               //color ramp index
-               size += 1;
-               //color index
-               size += 1;
-             }
-           }
-         }
-       }
-       else if (cLayer.runtimeType == HistoryReferenceLayer)
-       {
-         final HistoryReferenceLayer referenceLayer = cLayer as HistoryReferenceLayer;
-         //path (string)
-         size += 2;
-         size += utf8.encode(referenceLayer.path).length;
-         //opacity ``ubyte (1)`` // 0...100
-         size += 1;
-         //offset_x ``float (1)``
-         size += 4;
-         //offset_y ``float (1)``
-         size += 4;
-         //zoom ``ushort (1)``
-         size += 2;
-         //aspect_ratio ``float (1)``
-         size += 4;
-       }
-       else if (cLayer.runtimeType == HistoryGridLayer)
-       {
-         //opacity ``ubyte (1)`` // 0...100
-         size += 1;
-         //brightness ``ubyte (1)`` // 0...100
-         size += 1;
-         //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
-         size += 1;
-         //interval_x ``ubyte (1)`` // 2...64
-         size += 1;
-         //interval_x ``ubyte (1)`` // 2...64
-         size += 1;
-         //horizon_position ``float (1)``// 0...1 (vertical horizon position)
-         size += 4;
-         //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-         size += 4;
-         //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-         size += 4;
-         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-         size += 4;
-       }
-       else if (cLayer is HistoryShadingLayer)
-       {
-         //lock type
-         size += 1;
-         if (fileVersion >= 2)
-         {
-           //* shading_step_limit_low ``ubyte (1)`` // 1...6
-           size += 1;
-           //* shading_step_limit_high ``ubyte (1)`` // 1...6
-           size += 1;
-         }
+      if (fileVersion >= 2)
+      {
+        //* outer_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = relative, ``03`` = glow, ``04`` = shade
+        size += 1;
+        //* outer_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+        size += 1;
+        //* outer_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+        size += 1;
+        //* outer_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+        size += 1;
+        //* outer_stroke_darken_brighten ``byte (1)`` // shading amount for relative/shade -5...5
+        size += 1;
+        //* outer_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
+        size += 1;
+        //* outer_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+        size += 1;
+        //* inner_stroke_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = bevel, ``03`` = glow, ``04`` = shade
+        size += 1;
+        //* inner_stroke_directions ``ubyte (1)`` // bitmask of directions: ``00`` = top left, ``01`` = center top, ``02`` = top right, ``03`` = center right, ``04`` = bottom right, ``05`` = center bottom, ``06`` = bottom left, ``07`` = center left
+        size += 1;
+        //* inner_stroke_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+        size += 1;
+        //* inner_stroke_solid_color_index ``ubyte (1)`` // index in color ramp
+        size += 1;
+        //* inner_stroke_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+        size += 1;
+        //* inner_stroke_glow_depth ``byte (1)`` // amount of glow depth -6...+6
+        size += 1;
+        //* inner_stroke_glow_direction ``ubyte (1)`` // ``00`` = darken, ``01`` = brighten
+        size += 1;
+        //* inner_stroke_bevel_distance ``ubyte (1)`` // border distance of bevel 1...8
+        size += 1;
+        //* inner_stroke_bevel_strength ``ubyte (1)`` // shading strength of bevel 1...8
+        size += 1;
+        //* drop_shadow_style ``ubyte (1)`` // ``00`` = off, ``01`` = solid, ``02`` = shade
+        size += 1;
+        //* drop_shadow_solid_color_ramp_index ``ubyte (1)`` // color ramp index
+        size += 1;
+        //* drop_shadow_solid_color_index ``ubyte (1)`` // index in color ramp
+        size += 1;
+        //* drop_shadow_offset_x ``byte (1)`` // -16...16
+        size += 1;
+        //* drop_shadow_offset_y ``byte (1)`` // -16...16
+        size += 1;
+        //* drop_shadow_darken_brighten ``byte (1)`` // shading amount for shade -5...5
+        size += 1;
+      }
+      //data count
+      size += 4;
+      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
+      {
+        final HistoryColorReference? selectionReference = (currentlySelectedLayer == cLayer) ? saveData.selectionState.content[entry.key] : null;
+        if (selectionReference == null)
+        {
+          //x
+          size += 2;
+          //y
+          size += 2;
+          //color ramp index
+          size += 1;
+          //color index
+          size += 1;
+        }
+      }
+      if (currentlySelectedLayer == cLayer)//draw selected pixels
+          {
+        for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
+        {
+          if (entry.value != null)
+          {
+            //x
+            size += 2;
+            //y
+            size += 2;
+            //color ramp index
+            size += 1;
+            //color index
+            size += 1;
+          }
+        }
+      }
+    }
+    else if (cLayer.runtimeType == HistoryReferenceLayer)
+    {
+      final HistoryReferenceLayer referenceLayer = cLayer as HistoryReferenceLayer;
+      //path (string)
+      size += 2;
+      size += utf8.encode(referenceLayer.path).length;
+      //opacity ``ubyte (1)`` // 0...100
+      size += 1;
+      //offset_x ``float (1)``
+      size += 4;
+      //offset_y ``float (1)``
+      size += 4;
+      //zoom ``ushort (1)``
+      size += 2;
+      //aspect_ratio ``float (1)``
+      size += 4;
+    }
+    else if (cLayer.runtimeType == HistoryGridLayer)
+    {
+      //opacity ``ubyte (1)`` // 0...100
+      size += 1;
+      //brightness ``ubyte (1)`` // 0...100
+      size += 1;
+      //grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric
+      size += 1;
+      //interval_x ``ubyte (1)`` // 2...64
+      size += 1;
+      //interval_x ``ubyte (1)`` // 2...64
+      size += 1;
+      //horizon_position ``float (1)``// 0...1 (vertical horizon position)
+      size += 4;
+      //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
+      size += 4;
+      //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
+      size += 4;
+      //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+      size += 4;
+    }
+    else if (cLayer is HistoryShadingLayer)
+    {
+      //lock type
+      size += 1;
+      if (fileVersion >= 2)
+      {
+        //* shading_step_limit_low ``ubyte (1)`` // 1...6
+        size += 1;
+        //* shading_step_limit_high ``ubyte (1)`` // 1...6
+        size += 1;
+      }
 
-         //data count
-         size += 4;
-         for (final MapEntry<CoordinateSetI, int> entry in cLayer.data.entries)
-         {
-           final HistoryColorReference? selectionReference = (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) ? saveData.selectionState.content[entry.key] : null;
-           if (selectionReference == null)
-           {
-             //x
-             size += 2;
-             //y
-             size += 2;
-             //shading
-             size += 1;
-           }
-         }
-         if (i == frame.selectedLayerIndex && saveData.timeline.selectedFrameIndex == frameIndex) //draw selected pixels
-             {
-           for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
-           {
-             if (entry.value != null)
-             {
-               //x
-               size += 2;
-               //y
-               size += 2;
-               //color ramp index
-               size += 1;
-               //color index
-               size += 1;
-             }
-           }
-         }
-       }
-     } //end layer loop
-     frameIndex++;
-   } //end frame loop
+      //data count
+      size += 4;
+      for (final MapEntry<CoordinateSetI, int> entry in cLayer.data.entries)
+      {
+        final HistoryColorReference? selectionReference = (currentlySelectedLayer == cLayer) ? saveData.selectionState.content[entry.key] : null;
+        if (selectionReference == null)
+        {
+          //x
+          size += 2;
+          //y
+          size += 2;
+          //shading
+          size += 1;
+        }
+      }
+      if (currentlySelectedLayer == cLayer) //draw selected pixels
+          {
+        for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
+        {
+          if (entry.value != null)
+          {
+            //x
+            size += 2;
+            //y
+            size += 2;
+            //color ramp index
+            size += 1;
+            //color index
+            size += 1;
+          }
+        }
+      }
+    }
+  }
+
 
   //TIMELINE/FRAMES
 

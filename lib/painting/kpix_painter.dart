@@ -814,7 +814,10 @@ class KPixPainter extends CustomPainter
             final LayerState vLayer = visibleLayers[i];
             if (vLayer is RasterableLayerState)
             {
-              final ui.Image? displayImage = (vLayer.rasterImage.value != null && !vLayer.isRasterizing) ? vLayer.rasterImage.value : vLayer.previousRaster;
+              final ui.Image? mapImage = vLayer.rasterImageMap.value[frame]?.raster;
+              final ui.Image? rasterImage = vLayer.rasterImage.value;
+              final ui.Image? previousRaster = vLayer.previousRaster;
+              final ui.Image? displayImage = vLayer.isRasterizing ? previousRaster : (mapImage ?? rasterImage);
 
               if (displayImage != null)
               {

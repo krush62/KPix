@@ -25,6 +25,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
@@ -855,8 +856,27 @@ class AppState
 
       _canvasSize.x = canvSize.x;
       _canvasSize.y = canvSize.y;
-      rasterLayersAll();
+      bool aLayerIsRastering = false;
+      do
+      {
+        aLayerIsRastering = false;
+        for (final LayerState layer in allLayers)
+        {
+          if (layer is RasterableLayerState)
+          {
+            if (layer.isRasterizing)
+            {
+              aLayerIsRastering = true;
+              break;
+            }
+          }
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      while (aLayerIsRastering);
+
       timeline.layerChangeNotifier.reportChange();
+      rasterLayersAll();
     }
   }
 
@@ -1207,7 +1227,7 @@ class AppState
 
   void rasterLayersFrame()
   {
-      timeline.selectedFrame?.layerList.reRasterAllDrawingLayers();
+    timeline.selectedFrame?.layerList.reRasterAllDrawingLayers();
   }
 
   void rasterLayersAll()

@@ -515,7 +515,6 @@ class Timeline
         if (f.layerList.contains(layer: layer))
         {
           list.add(f);
-          break;
         }
       }
     }

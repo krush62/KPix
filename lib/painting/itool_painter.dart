@@ -295,7 +295,7 @@ abstract class IToolPainter
             final LayerState currentLayer = frame.layerList.getLayer(index: i);
             if (currentLayer is DrawingLayerState && currentLayer.visibilityState.value == LayerVisibilityState.visible)
             {
-              final int? shadingVal = currentLayer.settingsShadingPixels[entry.key];
+              final int? shadingVal = currentLayer.settingsShadingPixels[frame]?[entry.key];
               if (shadingVal != null)
               {
                 final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);

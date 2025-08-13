@@ -25,7 +25,6 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
@@ -291,42 +290,17 @@ class DrawingLayerSettings extends LayerSettings {
   }
 
 
-  CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState})
+  CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final List<LayerState> layerList, required final bool frameIsSelected})
   {
     final AppState appState = GetIt.I.get<AppState>();
+    final SelectionList? selectionList = layerState.selectionNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
+    final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
+    final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
+    final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize, selectionList: selectionList);
 
-    final Frame? frame = appState.timeline.getFrameForLayer(layer: layerState);
-    if (frame != null || layerState.layerStack != null)
-    {
-      final SelectionList? selectionList = layerState.selectionNotifier.value && frame == appState.timeline.selectedFrame ? appState.selectionState.selection : null;
-      List<LayerState> layers;
-      if (layerState.layerStack != null)
-      {
-        layers = layerState.layerStack!;
-      }
-      else
-      {
-        layers = <LayerState>[];
-        for (int i = 0; i < frame!.layerList.length; i++)
-        {
-          layers.add(frame.layerList.getLayer(index: i));
-        }
-      }
-
-      final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layers, data: data, canvasSize: appState.canvasSize);
-      final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layers, data: data, canvasSize: appState.canvasSize);
-      final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layers, data: data, canvasSize: appState.canvasSize, selectionList: selectionList);
-
-      shadowPixels.addAll(outerPixels);
-      shadowPixels.addAll(innerPixels);
-      return shadowPixels;
-    }
-    else
-    {
-      return CoordinateColorMap();
-    }
-
-
+    shadowPixels.addAll(outerPixels);
+    shadowPixels.addAll(innerPixels);
+    return shadowPixels;
   }
 
   HashMap<CoordinateSetI, int> getOuterShadingPixels({required final CoordinateColorMap data})

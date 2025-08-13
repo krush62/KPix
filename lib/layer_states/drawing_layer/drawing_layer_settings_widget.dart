@@ -380,11 +380,14 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       padding: EdgeInsets.zero,
                       iconSize: _iconSize,
                       onPressed: (outerStrokeStyle == OuterStrokeStyle.solid || outerStrokeStyle == OuterStrokeStyle.relative) ? () {
-                        widget.layer.rasterOutline();
-                        widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
-                        final Frame? frame = GetIt.I.get<AppState>().timeline.getFrameForLayer(layer: widget.layer);
-                        final int? layerIndex = frame?.layerList.getLayerPosition(state: widget.layer);
-                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                        final Frame? frame = GetIt.I.get<AppState>().timeline.selectedFrame;
+                        if (frame != null)
+                        {
+                          widget.layer.rasterOutline(layers: frame.layerList.getAllLayers());
+                          widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
+                          final int? layerIndex = frame.layerList.getLayerPosition(state: widget.layer);
+                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                        }
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
                     );
@@ -638,11 +641,14 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       padding: EdgeInsets.zero,
                       iconSize: _iconSize,
                       onPressed: (innerStrokeStyle != InnerStrokeStyle.off) ? () {
-                        widget.layer.rasterInline();
-                        widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
-                        final Frame? frame = GetIt.I.get<AppState>().timeline.getFrameForLayer(layer: widget.layer);
-                        final int? layerIndex = frame?.layerList.getLayerPosition(state: widget.layer);
-                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                        final Frame? frame = GetIt.I.get<AppState>().timeline.selectedFrame;
+                        if (frame != null)
+                        {
+                          widget.layer.rasterInline(layers: frame.layerList.getAllLayers(), frameIsSelected: true);
+                          widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
+                          final int? layerIndex = frame.layerList.getLayerPosition(state: widget.layer);
+                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                        }
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
                     );
@@ -844,11 +850,14 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       padding: EdgeInsets.zero,
                       iconSize: _iconSize,
                       onPressed: (dropShadowStyle == DropShadowStyle.solid) ? () {
-                        widget.layer.rasterDropShadow();
-                        widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
-                        final Frame? frame = GetIt.I.get<AppState>().timeline.getFrameForLayer(layer: widget.layer);
-                        final int? layerIndex = frame?.layerList.getLayerPosition(state: widget.layer);
-                        GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                        final Frame? frame = GetIt.I.get<AppState>().timeline.selectedFrame;
+                        if (frame != null)
+                        {
+                          widget.layer.rasterDropShadow(layers: frame.layerList.getAllLayers());
+                          widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
+                          final int? layerIndex = frame.layerList.getLayerPosition(state: widget.layer);
+                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                        }
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
                     );

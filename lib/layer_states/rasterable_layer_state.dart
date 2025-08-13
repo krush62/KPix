@@ -20,10 +20,23 @@ import 'package:flutter/material.dart';
 import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+
+class RasterImagePair
+{
+  final ui.Image thumbnail;
+  final ui.Image raster;
+  RasterImagePair({required this.thumbnail, required this.raster});
+}
+
+class DualRasterResult
+{
+  final Map<Frame, RasterImagePair> rasterImages;
+  final RasterImagePair? externalStackImages;
+  DualRasterResult({required this.rasterImages, this.externalStackImages});
+}
 
 abstract class RasterableLayerState extends LayerState
 {

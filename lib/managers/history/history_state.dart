@@ -48,32 +48,27 @@ class HistoryState
   final CoordinateSetI canvasSize;
   final HistorySelectionState selectionState;
   final HistoryTimeline timeline;
+  final int? restoreLayerIndex;
 
-  HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type});
+  HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, this.restoreLayerIndex});
 
-  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final Frame? frame, final int? layerIndex, final HistoryState? previousState})
+
+  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final HistoryState? previousState})
   {
+    int? restoreLayerIndex;
+
     //TYPE
     final HistoryStateType type = allStateTypeMap[identifier] ?? const HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
 
-    HistoryStateTypeGroup typeGroup = HistoryStateTypeGroup.full;
-    if (type.group == HistoryStateTypeGroup.colorSelect || type.group == HistoryStateTypeGroup.layerSelect)
+    if (originLayer == null && type.group == HistoryStateTypeGroup.layerFull)
     {
-      typeGroup = type.group;
-    }
-    else if (frame != null && (type.group == HistoryStateTypeGroup.frame || type.group == HistoryStateTypeGroup.layer))
-    {
-      typeGroup = HistoryStateTypeGroup.frame;
-      if (type.group == HistoryStateTypeGroup.layer && layerIndex != null && layerIndex < frame.layerList.length && layerIndex >= 0)
-      {
-        typeGroup = HistoryStateTypeGroup.layer;
-      }
+      throw Exception("LAYER STATE ADDED TO HISTORY, BUT NO LAYER SUPPLIED!!!");
     }
 
     //RAMP
     List<HistoryRampData> rampList = <HistoryRampData>[];
     HistoryColorReference selectedColor;
-    if (typeGroup == HistoryStateTypeGroup.full || previousState == null)
+    if (type.group == HistoryStateTypeGroup.full || previousState == null)
     {
       rampList = <HistoryRampData>[];
       for (final KPalRampData rampData in appState.colorRamps)
@@ -86,7 +81,7 @@ class HistoryState
     else
     {
       rampList = previousState.rampList;
-      if (typeGroup == HistoryStateTypeGroup.colorSelect)
+      if (type.group == HistoryStateTypeGroup.colorSelect)
       {
         final int? selectedColorRampIndex = getRampIndex(uuid: appState.selectedColor!.ramp.uuid, ramps: rampList);
         selectedColor = HistoryColorReference(colorIndex: appState.selectedColor!.colorIndex, rampIndex: selectedColorRampIndex!);
@@ -99,12 +94,12 @@ class HistoryState
 
     //TIMELINE
     List<HistoryFrame> historyFrameList;
-    LinkedHashSet<HistoryLayer> allHLayers;
+    LinkedHashSet<HistoryLayer> historyLayerSet;
     HistoryLayer? selectionLayer;
-    if (typeGroup == HistoryStateTypeGroup.colorSelect && previousState != null)
+    if (type.group == HistoryStateTypeGroup.colorSelect && previousState != null)
     {
       historyFrameList = previousState.timeline.frames;
-      allHLayers = previousState.timeline.allLayers;
+      historyLayerSet = previousState.timeline.allLayers;
     }
     else
     {
@@ -112,45 +107,68 @@ class HistoryState
       final List<Frame> originalFrameList = appState.timeline.frames.value;
 
       //COLLECT ORIGINAL LAYERS
-      final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
-      for (final Frame frame in originalFrameList)
+      final LinkedHashSet<LayerState> originalLayerSet = LinkedHashSet<LayerState>();
+      for (final Frame f in originalFrameList)
       {
-        final LayerCollection layers = frame.layerList;
+        final LayerCollection layers = f.layerList;
         for (int i = 0; i < layers.length; i++)
         {
-          collectedLayers.add(layers.getLayer(index: i));
+          final LayerState l = layers.getLayer(index: i);
+          final bool wasAdded = originalLayerSet.add(l);
+          if (wasAdded && l == originLayer)
+          {
+            restoreLayerIndex = originalLayerSet.length - 1;
+          }
         }
       }
 
       //CREATE HISTORY LAYERS
-      allHLayers = LinkedHashSet<HistoryLayer>();
-      for (final LayerState l in collectedLayers)
+      historyLayerSet = LinkedHashSet<HistoryLayer>();
+
+      for (int i = 0; i < originalLayerSet.length; i++)
       {
-        //TODO HERE NEEDS TO BE THE LOGIC TO REDUCE MEMORY CONSUMPTION
-        final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList)!;
-        allHLayers.add(hLayer);
+        final LayerState l = originalLayerSet.elementAt(i);
+        final bool hasPrevious = (previousState != null);
+
+        //WHEN TO CREATE A COPY
+        final bool option1 = !hasPrevious;
+        final bool option2 = hasPrevious && previousState.timeline.allLayers.length != originalLayerSet.length;
+        final bool option3 = type.group == HistoryStateTypeGroup.full;
+        final bool option4 = type.group == HistoryStateTypeGroup.layerFull &&  l == originLayer;
+
+        if (option1 || option2 || option3 || option4)
+        {
+          final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList)!;
+          historyLayerSet.add(hLayer);
+        }
+        else //USE PREVIOUS LAYER
+        {
+          final HistoryLayer hLayer = previousState.timeline.allLayers.elementAt(i);
+          historyLayerSet.add(hLayer);
+        }
       }
 
       //CREATING HISTORY FRAMES
+      final List<LayerState> originalLayerList = originalLayerSet.toList();
       for (final Frame frame in originalFrameList)
       {
         final LayerCollection layers = frame.layerList;
         final LinkedHashSet<int> layerIndices = LinkedHashSet<int>();
         for (int i = 0; i < layers.length; i++)
         {
-          final int index = collectedLayers.toList().indexOf(layers.getLayer(index: i));
+          final int index = originalLayerList.indexOf(layers.getLayer(index: i));
           layerIndices.add(index);
         }
         historyFrameList.add(HistoryFrame(fps: frame.fps.value, layerIndices: layerIndices, selectedLayerIndex: layers.selectedLayerIndex ?? 0));
       }
     }
 
-    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: allHLayers);
+    final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
     final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectionLayer);
 
-    return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type);
+    return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
   }
 
 

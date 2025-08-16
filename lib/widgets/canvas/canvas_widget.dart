@@ -45,7 +45,6 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
@@ -261,8 +260,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       {
         identifier = HistoryStateTypeIdentifier.toolFill;
       }
-      final Frame? frame = _appState.timeline.selectedFrame;
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, frame: frame, layerIndex: frame?.layerList.selectedLayerIndex);
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, originLayer: _appState.timeline.getCurrentLayer());
       kPixPainter.toolPainter!.hasHistoryData = false;
     }
   }

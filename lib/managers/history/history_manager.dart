@@ -34,11 +34,11 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 
 
 class HistoryManager
@@ -99,12 +99,12 @@ class HistoryManager
     }
   }
 
-  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final Frame? frame, final int? layerIndex})
+  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final LayerState? originLayer})
   {
     if (!appState.timeline.isPlaying.value)
     {
       _removeFutureEntries();
-      _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier, frame: frame, layerIndex: layerIndex, previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState()));
+      _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier, originLayer: originLayer, previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState()));
       _curPos++;
       final int entriesLeft = _maxEntries - _states.length;
 

@@ -24,7 +24,6 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -104,9 +103,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           if (oldImage != null) {
             GetIt.I.get<ReferenceImageManager>().removeImage(refImage: oldImage);
           }
-          final Frame? frame = GetIt.I.get<AppState>().timeline.selectedFrame;
-          final int? layerIndex = frame?.layerList.selectedLayerIndex;
-          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, frame: frame, layerIndex: layerIndex);
+          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerChangeReferenceImage, originLayer: GetIt.I.get<AppState>().timeline.getCurrentLayer());
         }
         else
         {

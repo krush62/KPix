@@ -320,7 +320,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                               if (currentLayer.layerSettings.hasChanges)
                                               {
                                                 final Frame? frame = _appState.timeline.selectedFrame;
-                                                GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange, frame: frame, layerIndex: frame?.layerList.selectedLayerIndex);
+                                                GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: frame?.layerList.getSelectedLayer());
                                                 currentLayer.layerSettings.hasChanges = false;
                                               }
                                             }

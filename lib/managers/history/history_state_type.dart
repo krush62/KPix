@@ -158,10 +158,9 @@ enum HistoryStateCompressionBehavior
 enum HistoryStateTypeGroup
 {
   full,
-  frame,
-  layer,
+  layerFull,
   colorSelect,
-  layerSelect
+  layerSelect,
 }
 
 const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap = <HistoryStateTypeIdentifier, HistoryStateTypeGroup>
@@ -171,62 +170,63 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
   HistoryStateTypeIdentifier.saveData: HistoryStateTypeGroup.full,
   HistoryStateTypeIdentifier.loadData: HistoryStateTypeGroup.full,
 
-  HistoryStateTypeIdentifier.layerChange: HistoryStateTypeGroup.layerSelect,
-  HistoryStateTypeIdentifier.layerDelete: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerMerge: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerDuplicate: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerNewReference: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerNewGrid: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerNewShading: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerNewDither: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerOrderChange: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerVisibilityChange: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.layerLockChange: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.layerChangeReferenceImage: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.layerRaster: HistoryStateTypeGroup.frame,
-  HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateTypeGroup.frame,
+  HistoryStateTypeIdentifier.layerChange: HistoryStateTypeGroup.layerSelect, //layer select
+  
+  HistoryStateTypeIdentifier.layerDelete: HistoryStateTypeGroup.full, //layer delete
+  HistoryStateTypeIdentifier.layerMerge: HistoryStateTypeGroup.full, //layer merge
+  HistoryStateTypeIdentifier.layerDuplicate: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerNewDrawing: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerNewReference: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerNewGrid: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerNewShading: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerNewDither: HistoryStateTypeGroup.full, //layer new
+  HistoryStateTypeIdentifier.layerOrderChange: HistoryStateTypeGroup.full, //frame meta
+  HistoryStateTypeIdentifier.layerVisibilityChange: HistoryStateTypeGroup.layerFull, //layer meta
+  HistoryStateTypeIdentifier.layerLockChange: HistoryStateTypeGroup.layerFull, //layer meta
+  HistoryStateTypeIdentifier.layerChangeReferenceImage: HistoryStateTypeGroup.layerFull, //layer meta
+  HistoryStateTypeIdentifier.layerRaster: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.layerSettingsChange: HistoryStateTypeGroup.layerFull, //layer meta
+  HistoryStateTypeIdentifier.layerSettingsRaster: HistoryStateTypeGroup.full,
 
-  HistoryStateTypeIdentifier.selectionNew: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionDeselect: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionSelectAll: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionInverse: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionCut: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionFlipH: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionFlipV: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionRotate: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionMove: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionPaste: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.selectionDelete: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.selectionNew: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionDeselect: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionSelectAll: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionInverse: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionCut: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionFlipH: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionFlipV: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionRotate: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionMove: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionPaste: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionDelete: HistoryStateTypeGroup.layerFull, //layer full
 
-  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.canvasFlipH: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.canvasFlipV: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.canvasRotate: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.canvasFlipH: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.canvasFlipV: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.canvasRotate: HistoryStateTypeGroup.full, //full
 
-  HistoryStateTypeIdentifier.toolPen: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolStamp: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolEraser: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolText: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolShape: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolLine: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolSprayCan: HistoryStateTypeGroup.layer,
-  HistoryStateTypeIdentifier.toolFill: HistoryStateTypeGroup.layer,
+  HistoryStateTypeIdentifier.toolPen: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolStamp: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolEraser: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolText: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolShape: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolLine: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolSprayCan: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.toolFill: HistoryStateTypeGroup.layerFull, //layer full
 
-  HistoryStateTypeIdentifier.colorChange: HistoryStateTypeGroup.colorSelect,
+  HistoryStateTypeIdentifier.colorChange: HistoryStateTypeGroup.colorSelect, //color select
 
-  HistoryStateTypeIdentifier.kPalDelete: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.kPalChange: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.kPalAdd: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.kPalOrderChange: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.kPalDelete: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.kPalChange: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.kPalPaletteReplace: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.kPalAdd: HistoryStateTypeGroup.full, //full
+  HistoryStateTypeIdentifier.kPalOrderChange: HistoryStateTypeGroup.full, //full
 
-  HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.timelineFrameMove: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.timelineFrameTimeChange: HistoryStateTypeGroup.full,
-  HistoryStateTypeIdentifier.timelineLoopMarkerChange: HistoryStateTypeGroup.full,
+  HistoryStateTypeIdentifier.timelineFrameAdd: HistoryStateTypeGroup.full, //frame add
+  HistoryStateTypeIdentifier.timelineFrameDelete: HistoryStateTypeGroup.full, //frame delete
+  HistoryStateTypeIdentifier.timelineFrameMove: HistoryStateTypeGroup.full, //timeline
+  HistoryStateTypeIdentifier.timelineFrameTimeChange: HistoryStateTypeGroup.full, //timeline
+  HistoryStateTypeIdentifier.timelineLoopMarkerChange: HistoryStateTypeGroup.full, //timeline
 };
 
 

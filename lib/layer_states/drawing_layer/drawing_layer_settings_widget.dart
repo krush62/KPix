@@ -385,8 +385,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         {
                           widget.layer.rasterOutline(layers: frame.layerList.getAllLayers());
                           widget.layer.settings.outerStrokeStyle.value = OuterStrokeStyle.off;
-                          final int? layerIndex = frame.layerList.getLayerPosition(state: widget.layer);
-                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                         }
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
@@ -646,8 +645,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         {
                           widget.layer.rasterInline(layers: frame.layerList.getAllLayers(), frameIsSelected: true);
                           widget.layer.settings.innerStrokeStyle.value = InnerStrokeStyle.off;
-                          final int? layerIndex = frame.layerList.getLayerPosition(state: widget.layer);
-                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                         }
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),
@@ -855,8 +853,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                         {
                           widget.layer.rasterDropShadow(layers: frame.layerList.getAllLayers());
                           widget.layer.settings.dropShadowStyle.value = DropShadowStyle.off;
-                          final int? layerIndex = frame.layerList.getLayerPosition(state: widget.layer);
-                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, frame: frame, layerIndex: layerIndex);
+                          GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                         }
                       } : null,
                       icon: const FaIcon(FontAwesomeIcons.paintbrush),

@@ -123,15 +123,15 @@ class ColorSet
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: _generalButtonStyle
+      style: _generalButtonStyle,
     ),
 
     filledButtonTheme: FilledButtonThemeData(
-      style: _generalButtonStyle
+      style: _generalButtonStyle,
     ),
 
     iconButtonTheme: IconButtonThemeData(
-      style: _generalButtonStyle
+      style: _generalButtonStyle,
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(

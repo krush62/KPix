@@ -123,7 +123,7 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                         Icons.exposure,
                         size: _options.buttonHeight,
                       ),
-                    )
+                    ),
                   ),
                 ),
                 Padding(

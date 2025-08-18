@@ -88,7 +88,6 @@ class LayerCollection with ChangeNotifier
     _selectedLayerIndexNotifier.addListener(_layerSelectionChanged);
   }
 
-
   void _layerSelectionChanged()
   {
     for (int i = 0; i < _layers.length; i++)
@@ -122,6 +121,7 @@ class LayerCollection with ChangeNotifier
     {
       GetIt.I.get<AppState>().showMessage(text: "Could not add all layers.");
     }
+    _layerSelectionChanged();
   }
 
   bool contains({required final LayerState layer})
@@ -143,6 +143,7 @@ class LayerCollection with ChangeNotifier
     {
       notifyListeners();
     }
+    _layerSelectionChanged();
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
@@ -181,6 +182,7 @@ class LayerCollection with ChangeNotifier
       {
         _layers.insert(position, addLayer);
         notifyListeners();
+        _layerSelectionChanged();
         return addLayer;
       }
       else
@@ -209,6 +211,7 @@ class LayerCollection with ChangeNotifier
     {
       _layers.insert(position, layer);
       notifyListeners();
+      _layerSelectionChanged();
     }
   }
 
@@ -314,6 +317,7 @@ class LayerCollection with ChangeNotifier
       {
         selectLayer(newLayer: newLayer);
       }
+      _layerSelectionChanged();
       notifyListeners();
       return true;
     }
@@ -333,6 +337,7 @@ class LayerCollection with ChangeNotifier
       {
         _selectedLayerIndexNotifier.value = _layers.indexOf(newLayer);
         notifyListeners();
+        _layerSelectionChanged();
       }
 
       return previousLayer?? newLayer;
@@ -391,6 +396,7 @@ class LayerCollection with ChangeNotifier
       }
       _layers.remove(deleteLayer);
       _selectedLayerIndexNotifier.value = 0;
+      _layerSelectionChanged();
 
 
       notifyListeners();
@@ -537,7 +543,7 @@ class LayerCollection with ChangeNotifier
             _layers.insert(currentIndex, addLayer);
           }
         }
-
+        _layerSelectionChanged();
         notifyListeners();
       }
       return addLayer;
@@ -615,6 +621,7 @@ class LayerCollection with ChangeNotifier
 
       orderChanged = true;
     }
+    _layerSelectionChanged();
     notifyListeners();
     return orderChanged;
   }

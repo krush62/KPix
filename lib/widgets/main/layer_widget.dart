@@ -137,13 +137,13 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _duplicatePressed()
   {
-    _appState.layerDuplicatSelected(duplicateLayer: widget.layerState);
+    _appState.layerDuplicateSelected(duplicateLayer: widget.layerState);
     _closeActionsMenus();
   }
 
   void _unlinkPressed()
   {
-    final LayerState? duplicatedLayer = _appState.layerDuplicatSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
+    final LayerState? duplicatedLayer = _appState.layerDuplicateSelected(duplicateLayer: widget.layerState, addToHistoryStack: false);
     if (duplicatedLayer != null)
     {
       _appState.layerDeletedSelected(deleteLayer: widget.layerState, addToHistoryStack: false);

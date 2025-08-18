@@ -256,7 +256,7 @@ class AppState
     hotkeyManager.addListener(func: addNewReferenceLayer, action: HotkeyAction.layersNewReference);
     hotkeyManager.addListener(func: addNewShadingLayer, action: HotkeyAction.layersNewShading);
     hotkeyManager.addListener(func: addNewGridLayer, action: HotkeyAction.layersNewGrid);
-    hotkeyManager.addListener(func: () {layerDuplicatSelected(duplicateLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDuplicate);
+    hotkeyManager.addListener(func: () {layerDuplicateSelected(duplicateLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDuplicate);
     hotkeyManager.addListener(func: () {layerDeletedSelected(deleteLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersDelete);
     hotkeyManager.addListener(func: () {layerMerged(mergeLayer: timeline.getCurrentLayer());}, action: HotkeyAction.layersMerge);
     hotkeyManager.addListener(func: () {moveUpLayer(layerState: timeline.getCurrentLayer());}, action: HotkeyAction.layersMoveUp);
@@ -929,7 +929,7 @@ class AppState
       }
       else if (typeGroup == HistoryStateTypeGroup.layerSelect)
       {
-        timeline.selectFrameByIndex(index: historyState.timeline.selectedFrameIndex, layerIndex: historyState.timeline.frames[historyState.timeline.selectedFrameIndex].selectedLayerIndex);
+        timeline.selectFrameByIndex(index: historyState.timeline.selectedFrameIndex, layerIndex: historyState.timeline.frames[historyState.timeline.selectedFrameIndex].selectedLayerIndex, addLayerSelectionToHistory: false);
       }
     }
   }
@@ -1241,7 +1241,7 @@ class AppState
     }
   }
 
-  LayerState? layerDuplicatSelected({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
+  LayerState? layerDuplicateSelected({required final LayerState? duplicateLayer, final bool addToHistoryStack = true})
   {
     LayerState? generatedLayer;
     final Frame? frame = timeline.selectedFrame;

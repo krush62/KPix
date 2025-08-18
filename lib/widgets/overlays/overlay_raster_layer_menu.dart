@@ -99,11 +99,8 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
                       onPressed: () {widget.onDelete();},
                       icon: FaIcon(
                         FontAwesomeIcons.trashCan,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -118,11 +115,8 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
                       onPressed: () {widget.onDuplicate();},
                       icon: FaIcon(
                         FontAwesomeIcons.clone,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -137,11 +131,8 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
                       onPressed: () {widget.onRaster();},
                       icon: FaIcon(
                         FontAwesomeIcons.paintbrush,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),

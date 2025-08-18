@@ -23,12 +23,14 @@ class ColorSet
   final Color light;
   final Color dark;
   final int alphaB;
+  final int overlayAlpha;
   final double elevation;
 
   const ColorSet({
     required this.normal,
     required this.light,
     required this.dark,
+    this.overlayAlpha = 32,
     this.alphaB = 100,
     this.elevation = 16.0,
   });
@@ -37,6 +39,24 @@ class ColorSet
 
   const Color notificationGreen = Color.fromARGB(200, 50, 200, 50);
   ColorSet _lightColors = ColorSet(normal: Colors.grey[400]!, light: Colors.grey[700]!, dark: Colors.grey[350]!);
+
+  ButtonStyle _generalButtonStyle = ButtonStyle(
+    foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light)),
+    backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _lightColors.dark : _lightColors.normal),
+    overlayColor: WidgetStateProperty.all(_lightColors.light.withAlpha(_lightColors.overlayAlpha)),
+    surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
+    padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _lightColors.normal) : BorderSide(color: _lightColors.light)),
+    shape: WidgetStateProperty.all(
+      const RoundedRectangleBorder(
+        borderRadius:
+        BorderRadius.all(Radius.circular(8)),
+      ),
+    ),
+  );
+
+
   ThemeData monochromeTheme = ThemeData(
 
     primaryColor: _lightColors.normal,
@@ -103,53 +123,15 @@ class ColorSet
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: ButtonStyle(
-          foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.light : _darkColors.normal),
-          backgroundColor: WidgetStateProperty.all(_lightColors.normal),
-          overlayColor: WidgetStateProperty.all(_lightColors.light),
-          surfaceTintColor: WidgetStateProperty.all(_lightColors.normal),
-        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-          side: WidgetStateProperty.all(
-              BorderSide(
-                  color: _lightColors.light,
-              ),
-          ),
-      ),
+      style: _generalButtonStyle
     ),
 
     filledButtonTheme: FilledButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(_lightColors.light),
-        overlayColor: WidgetStateProperty.all(_lightColors.light),
-        surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            side: BorderSide(color: _lightColors.light),
-            borderRadius:
-            const BorderRadius.all(Radius.circular(4)),
-          ),
-        ),
-      ),
+      style: _generalButtonStyle
     ),
 
     iconButtonTheme: IconButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _lightColors.normal : (states.contains(WidgetState.disabled) ? _lightColors.normal : _lightColors.light)),
-        backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _lightColors.dark : _lightColors.normal),
-        overlayColor: WidgetStateProperty.all(_lightColors.light),
-        surfaceTintColor: WidgetStateProperty.all(_lightColors.light),
-        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-        //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
-        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _lightColors.normal) : BorderSide(color: _lightColors.light)),
-        shape: WidgetStateProperty.all(
-          const RoundedRectangleBorder(
-            borderRadius:
-            BorderRadius.all(Radius.circular(8)),
-          ),
-        ),
-      ),
+      style: _generalButtonStyle
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -185,6 +167,21 @@ class ColorSet
 
 
   ColorSet _darkColors = ColorSet(normal: Colors.grey[800]!, light: Colors.grey[400]!, dark: Colors.grey[900]!);
+  ButtonStyle _generalButtonStyleDark = ButtonStyle(
+    foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light)),
+    backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal),
+    overlayColor: WidgetStateProperty.all(_darkColors.light.withAlpha(_darkColors.overlayAlpha)),
+    surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
+    padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal) : BorderSide(color: _darkColors.light)),
+    shape: WidgetStateProperty.all(
+      const RoundedRectangleBorder(
+        borderRadius:
+        BorderRadius.all(Radius.circular(8)),
+      ),
+    ),
+  );
   ThemeData monochromeThemeDark = ThemeData(
 
     primaryColor: _darkColors.normal,
@@ -256,51 +253,17 @@ class ColorSet
         ),
       ),
     ),
+
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.normal : (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light)),
-        backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal),
-        overlayColor: WidgetStateProperty.all(_darkColors.light),
-        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
-        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-        //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
-        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal,) : BorderSide(color: _darkColors.light,)),
-      ),
+      style: _generalButtonStyleDark,
     ),
 
     filledButtonTheme: FilledButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(_darkColors.light),
-        overlayColor: WidgetStateProperty.all(_darkColors.light),
-        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            side: BorderSide(color: _darkColors.light, width: 2),
-            borderRadius:
-            const BorderRadius.all(Radius.circular(4)),
-          ),
-        ),
-      ),
+      style: _generalButtonStyleDark,
     ),
 
     iconButtonTheme: IconButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.hovered) ? _darkColors.normal : (states.contains(WidgetState.disabled) ? _darkColors.normal : _darkColors.light)),
-        backgroundColor: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? _darkColors.dark : _darkColors.normal),
-        overlayColor: WidgetStateProperty.all(_darkColors.light),
-        surfaceTintColor: WidgetStateProperty.all(_darkColors.light),
-        padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
-        //side: WidgetStateProperty.all(BorderSide(color: _darkColors.light,),),
-        side: WidgetStateProperty.resolveWith((final Set<WidgetState> states) => states.contains(WidgetState.disabled) ? BorderSide(color: _darkColors.normal) : BorderSide(color: _darkColors.light)),
-        shape: WidgetStateProperty.all(
-          const RoundedRectangleBorder(
-            borderRadius:
-            BorderRadius.all(Radius.circular(8)),
-          ),
-        ),
-      ),
+      style: _generalButtonStyleDark,
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(

@@ -38,7 +38,6 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
@@ -76,11 +75,6 @@ class MainToolbarWidget extends StatelessWidget
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          if (isDesktop()) Divider(
-            color: Theme.of(context).primaryColorDark,
-            thickness: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-            height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.dividerHeight,
-          ) else const SizedBox.shrink(),
           ExcludeFocus(
             child: ShaderWidget(
               titleStyle: Theme.of(context).textTheme.titleLarge,

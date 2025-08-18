@@ -115,11 +115,8 @@ class _OverlayDrawingLayerMenuLinkedState extends State<OverlayDrawingLayerMenuL
                       onPressed: () {widget.onDelete();},
                       icon: FaIcon(
                         FontAwesomeIcons.trashCan,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -134,11 +131,8 @@ class _OverlayDrawingLayerMenuLinkedState extends State<OverlayDrawingLayerMenuL
                       onPressed: () {widget.onDuplicate();},
                       icon: FaIcon(
                         FontAwesomeIcons.clone,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -153,11 +147,8 @@ class _OverlayDrawingLayerMenuLinkedState extends State<OverlayDrawingLayerMenuL
                       onPressed: () {widget.onUnlink();},
                       icon: FaIcon(
                         FontAwesomeIcons.linkSlash,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),

@@ -265,11 +265,6 @@ class _ImportWidgetState extends State<ImportWidget>
                                   FontAwesomeIcons.folderOpen,
                                   size: _options.iconSize / 2,
                                 ),
-                                color: Theme.of(context).primaryColorLight,
-                                style: IconButton.styleFrom(
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  backgroundColor: Theme.of(context).primaryColor,
-                                ),
                               ),
                             ),
                           ),

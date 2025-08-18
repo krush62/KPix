@@ -104,11 +104,8 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       onPressed: () {widget.onNewDrawingLayer();},
                       icon: FaIcon(
                         FontAwesomeIcons.paintbrush,
-                        size: _options.buttonHeight,) ,
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ) ,
                     ),
                   ),
                 ),
@@ -124,12 +121,9 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       onPressed: () {widget.onNewShadingLayer();},
                       icon: FaIcon(
                         Icons.exposure,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
-                    ),
+                        size: _options.buttonHeight,
+                      ),
+                    )
                   ),
                 ),
                 Padding(
@@ -144,11 +138,8 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       onPressed: () {widget.onNewDitherLayer();},
                       icon: FaIcon(
                         Icons.gradient,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -164,11 +155,8 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       onPressed: () {widget.onNewReferenceLayer();},
                       icon: FaIcon(
                         FontAwesomeIcons.image,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -183,11 +171,8 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       onPressed: () {widget.onNewGridLayer();},
                       icon: FaIcon(
                         FontAwesomeIcons.tableCells,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),

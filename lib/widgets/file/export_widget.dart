@@ -492,11 +492,6 @@ class _ExportWidgetState extends State<ExportWidget>
                                     FontAwesomeIcons.file,
                                     size: _options.iconSize / 2,
                                 ),
-                                color: Theme.of(context).primaryColorLight,
-                                style: IconButton.styleFrom(
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    backgroundColor: Theme.of(context).primaryColor,
-                                ),
                               ),
                             ),
                           ),

@@ -76,8 +76,8 @@ class KPixDirectionWidget extends StatelessWidget
         child: AspectRatio(
           aspectRatio: 1,
           child: FilledButton(
-            style: !isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(
-              backgroundColor: WidgetStateProperty.all(Colors.transparent),
+            style: isSelected ? Theme.of(context).filledButtonTheme.style!.copyWith(
+              backgroundColor: WidgetStateProperty.all(Theme.of(context).primaryColorLight),
             ) : null,
             onPressed: () {_buttonPressed(alignment: alignment);},
             child: const SizedBox.shrink(),

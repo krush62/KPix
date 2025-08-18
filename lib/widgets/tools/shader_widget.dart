@@ -65,7 +65,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
   Widget build(final BuildContext context)
   {
     return Padding (
-      padding: EdgeInsets.all(_shaderWidgetOptions.outSidePadding),
+      padding: EdgeInsets.only(left: _shaderWidgetOptions.outSidePadding, right: _shaderWidgetOptions.outSidePadding, bottom: _shaderWidgetOptions.outSidePadding),
       child: ListenableBuilder(
         listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
         builder: (final BuildContext context0, final Widget? child0) {

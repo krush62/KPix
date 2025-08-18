@@ -392,7 +392,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     message: "New/Open...",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
-                      color: Theme.of(context).primaryColorLight,
                       icon:  FaIcon(
                         FontAwesomeIcons.folder,
                         size: _options.menuIconSize,
@@ -410,7 +409,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     message: "Save...",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
-                      color: Theme.of(context).primaryColorLight,
                       icon:  FaIcon(
                         FontAwesomeIcons.floppyDisk,
                         size: _options.menuIconSize,
@@ -426,7 +424,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   message: "Preferences",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    color: Theme.of(context).primaryColorLight,
                     icon:  FaIcon(
                       FontAwesomeIcons.gear,
                       size: _options.menuIconSize,
@@ -445,7 +442,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     fit: StackFit.passthrough,
                     children: <Widget>[
                       IconButton.outlined(
-                        color: Theme.of(context).primaryColorLight,
                         icon:  FaIcon(
                           FontAwesomeIcons.question,
                           size: _options.menuIconSize,
@@ -496,7 +492,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                         message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
                             FontAwesomeIcons.rotateLeft,
                             size: _options.menuIconSize,
@@ -518,7 +513,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                         message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
-                          color: Theme.of(context).primaryColorLight,
                           icon:  FaIcon(
                             FontAwesomeIcons.rotateRight,
                             size: _options.menuIconSize,

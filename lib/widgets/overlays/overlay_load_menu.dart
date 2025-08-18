@@ -91,11 +91,8 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
                       onPressed: () {widget.onNewFile();},
                       icon: FaIcon(
                         FontAwesomeIcons.file,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -111,11 +108,8 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
                       onPressed: () {widget.onLoadFile();},
                       icon: FaIcon(
                         FontAwesomeIcons.folderOpen,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -131,11 +125,8 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
                       onPressed: () {widget.onImportFile();},
                       icon: FaIcon(
                         FontAwesomeIcons.fileImport,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),

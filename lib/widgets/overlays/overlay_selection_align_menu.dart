@@ -85,7 +85,6 @@ class OverlaySelectionAlignMenu extends StatefulWidget
            padding: EdgeInsets.all(_options.buttonSpacing),
            onPressed: onPressed,
            icon: Icon(icon),
-           color: Theme.of(context).primaryColorLight,
          ),
        ),
      );

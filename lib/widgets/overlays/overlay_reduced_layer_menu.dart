@@ -98,11 +98,8 @@ class _OverlayReducedLayerMenuState extends State<OverlayReducedLayerMenu> with 
                       onPressed: () {widget.onDelete();},
                       icon: FaIcon(
                         FontAwesomeIcons.trashCan,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -117,11 +114,8 @@ class _OverlayReducedLayerMenuState extends State<OverlayReducedLayerMenu> with 
                       onPressed: () {widget.onDuplicate();},
                       icon: FaIcon(
                         FontAwesomeIcons.clone,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),

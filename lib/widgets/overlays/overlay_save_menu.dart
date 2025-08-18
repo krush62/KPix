@@ -96,11 +96,8 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
                       onPressed: () {widget.onSaveFile();},
                       icon: FaIcon(
                         Icons.save,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -115,11 +112,8 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
                       onPressed: () {widget.onSaveAsFile();},
                       icon: FaIcon(
                         Icons.save_as,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),
@@ -134,11 +128,8 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
                       onPressed: () {widget.onExportFile();},
                       icon: FaIcon(
                         Icons.share,
-                        size: _options.buttonHeight,),
-                      color: Theme.of(context).primaryColorLight,
-                      style: IconButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: Theme.of(context).primaryColor,),
+                        size: _options.buttonHeight,
+                      ),
                     ),
                   ),
                 ),

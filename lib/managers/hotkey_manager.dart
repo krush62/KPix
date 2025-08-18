@@ -103,6 +103,8 @@ enum HotkeyAction
   timelineMoveFrameLeft,
   timelineMoveFrameRight,
   timelineToggleFrameBlending,
+  timelineExpand,
+  timelineCollapse
 
 }
 
@@ -388,6 +390,8 @@ class HotkeyManager
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft, shift: true)] = HotkeyAction.timelineMoveFrameLeft;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowRight, shift: true)] = HotkeyAction.timelineMoveFrameRight;
     _shortCutMap[const SingleActivator(LogicalKeyboardKey.tab)] = HotkeyAction.timelineToggleFrameBlending;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.pageDown)] = HotkeyAction.timelineExpand;
+    _shortCutMap[const SingleActivator(LogicalKeyboardKey.pageUp)] = HotkeyAction.timelineCollapse;
 
 
   }

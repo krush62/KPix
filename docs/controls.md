@@ -105,6 +105,8 @@
 | Move Frame Right                    | shift + right       |                  |                                      |                              |                           |
 | Move Frame Left                     | shift + left        |                  |                                      |                              |                           |
 | Toggle Frame Blending               | tab                 |                  |                                      |                              |                           |
+| Expand Timeline View                | page down           |                  |                                      |                              |                           |
+| Collapse Timeline View              | page up             |                  |                                      |                              |                           |
 
 
 

@@ -97,7 +97,28 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
     _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex > 0) widget.timeline.moveFrameLeft();}, action: HotkeyAction.timelineMoveFrameLeft);
     _hotkeyManager.addListener(func: () {if (!widget.timeline.isPlaying.value && widget.timeline.frames.value.length > 1 && widget.timeline.selectedFrameIndex < widget.timeline.frames.value.length - 1) widget.timeline.moveFrameRight();}, action: HotkeyAction.timelineMoveFrameRight);
     _hotkeyManager.addListener(func: () {_toggleFrameBlending();}, action: HotkeyAction.timelineToggleFrameBlending);
+    _hotkeyManager.addListener(func: () {_expandView();}, action: HotkeyAction.timelineExpand);
+    _hotkeyManager.addListener(func: () {_collapseView();}, action: HotkeyAction.timelineCollapse);
 
+
+  }
+
+  void _expandView()
+  {
+    if (!isExpanded.value)
+    {
+      isExpanded.value = true;
+      _animationController.forward();
+    }
+  }
+
+  void _collapseView()
+  {
+    if (isExpanded.value)
+    {
+      isExpanded.value = false;
+      _animationController.reverse();
+    }
   }
 
   void _toggleExpand()

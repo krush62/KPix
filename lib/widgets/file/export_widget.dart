@@ -64,7 +64,8 @@ enum ExportSectionType
 {
   image,
   animation,
-  palette
+  palette,
+  kpix
 }
 
 abstract class ExportData
@@ -117,6 +118,7 @@ class ImageExportData extends ExportData
     //ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
     ImageExportType.gimp : ImageExportData(name: "GIMP", extension: "xcf", scalable: false),
     ImageExportType.pixelorama : ImageExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
+    //NOT USED:
     ImageExportType.kpix : ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false),
   };
 }
@@ -214,6 +216,8 @@ class _ExportWidgetState extends State<ExportWidget>
         extension = PaletteExportData.exportTypeMap[_paletteExportType.value]!.extension;
       case ExportSectionType.animation:
         extension = AnimationExportData.exportTypeMap[_animationExportType.value]!.extension;
+      case ExportSectionType.kpix:
+        extension = fileExtensionKpix;
     }
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
   }
@@ -262,11 +266,21 @@ class _ExportWidgetState extends State<ExportWidget>
                     const ButtonSegment<ExportSectionType>(
                       value: ExportSectionType.palette,
                       label: Tooltip(
-                          message: "Palette",
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                              FontAwesomeIcons.palette,
-                          ),
+                        message: "Palette",
+                        waitDuration: AppState.toolTipDuration,
+                        child: Icon(
+                          FontAwesomeIcons.palette,
+                        ),
+                      ),
+                    ),
+                    const ButtonSegment<ExportSectionType>(
+                      value: ExportSectionType.kpix,
+                      label: Tooltip(
+                        message: "KPix project",
+                        waitDuration: AppState.toolTipDuration,
+                        child:  Icon(
+                          FontAwesomeIcons.fileExport,
+                        ),
                       ),
                     ),
                   ],
@@ -300,279 +314,292 @@ class _ExportWidgetState extends State<ExportWidget>
                 {
                   title += " ANIMATION";
                 }
-                  return Column(
-                    children: <Widget>[
-                      Text(title, style: Theme.of(context).textTheme.titleLarge),
-                      SizedBox(height: _options.padding),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Expanded(
+                else if (section == ExportSectionType.kpix)
+                {
+                  title += " PROJECT";
+                }
+                return Column(
+                  children: <Widget>[
+                    Text(title, style: Theme.of(context).textTheme.titleLarge),
+                    SizedBox(height: _options.padding),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                          child: Visibility(
+                            visible: section != ExportSectionType.kpix,
                             child: Text("Format", style: Theme.of(context).textTheme.titleMedium),
                           ),
-                          Expanded(
-                            flex: 6,
-                            child: Stack(
-                              fit: StackFit.passthrough,
-                              children: <Widget>[
-                                Visibility(
-                                  visible: section == ExportSectionType.image,
-                                  child: ValueListenableBuilder<ImageExportType>(
-                                    valueListenable: _fileExportType,
-                                    builder: (final BuildContext context, final ImageExportType exportTypeEnum, final Widget? child) {
-                                      return SegmentedButton<ImageExportType>(
-                                        selected: <ImageExportType>{exportTypeEnum},
-                                        showSelectedIcon: false,
-                                        onSelectionChanged: (final Set<ImageExportType> types) {_fileExportType.value = types.first; _updateFileNameStatus();},
-                                        segments: ImageExportType.values.map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, label: Text(ImageExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
-                                      );
-                                    },
-                                  ),
+                        ),
+                        Expanded(
+                          flex: 6,
+                          child: Stack(
+                            fit: StackFit.passthrough,
+                            children: <Widget>[
+                              Visibility(
+                                visible: section == ExportSectionType.image,
+                                child: ValueListenableBuilder<ImageExportType>(
+                                  valueListenable: _fileExportType,
+                                  builder: (final BuildContext context, final ImageExportType exportTypeEnum, final Widget? child) {
+                                    return SegmentedButton<ImageExportType>(
+                                      selected: <ImageExportType>{exportTypeEnum},
+                                      showSelectedIcon: false,
+                                      onSelectionChanged: (final Set<ImageExportType> types) {_fileExportType.value = types.first; _updateFileNameStatus();},
+                                      segments: ImageExportType.values
+                                        .where((final ImageExportType type) => type != ImageExportType.kpix)
+                                        .map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, label: Text(ImageExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                    );
+                                  },
                                 ),
-                                Visibility(
-                                  visible: section == ExportSectionType.animation,
-                                  child: ValueListenableBuilder<AnimationExportType>(
-                                    valueListenable: _animationExportType,
-                                    builder: (final BuildContext context, final AnimationExportType exportTypeEnum, final Widget? child) {
-                                      return SegmentedButton<AnimationExportType>(
-                                        selected: <AnimationExportType>{exportTypeEnum},
-                                        showSelectedIcon: false,
-                                        onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
-                                        segments: AnimationExportType.values.map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
-                                      );
-                                    },
-                                  ),
+                              ),
+                              Visibility(
+                                visible: section == ExportSectionType.animation,
+                                child: ValueListenableBuilder<AnimationExportType>(
+                                  valueListenable: _animationExportType,
+                                  builder: (final BuildContext context, final AnimationExportType exportTypeEnum, final Widget? child) {
+                                    return SegmentedButton<AnimationExportType>(
+                                      selected: <AnimationExportType>{exportTypeEnum},
+                                      showSelectedIcon: false,
+                                      onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
+                                      segments: AnimationExportType.values.map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                    );
+                                  },
                                 ),
-                                Visibility(
-                                  visible: section == ExportSectionType.palette,
-                                  child: ValueListenableBuilder<PaletteExportType>(
-                                    valueListenable: _paletteExportType,
-                                    builder: (final BuildContext context, final PaletteExportType exportType, final Widget? child) {
-                                      return SegmentedButton<PaletteExportType>(
-                                        selected: <PaletteExportType>{exportType},
-                                        showSelectedIcon: false,
-                                        onSelectionChanged: (final Set<PaletteExportType> types) {_paletteExportType.value = types.first; _updateFileNameStatus();},
-                                        segments: PaletteExportType.values.map((final PaletteExportType x) => ButtonSegment<PaletteExportType>(value: x, label: Text(PaletteExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
-                                      );
-                                    },
-                                  ),
+                              ),
+                              Visibility(
+                                visible: section == ExportSectionType.palette,
+                                child: ValueListenableBuilder<PaletteExportType>(
+                                  valueListenable: _paletteExportType,
+                                  builder: (final BuildContext context, final PaletteExportType exportType, final Widget? child) {
+                                    return SegmentedButton<PaletteExportType>(
+                                      selected: <PaletteExportType>{exportType},
+                                      showSelectedIcon: false,
+                                      onSelectionChanged: (final Set<PaletteExportType> types) {_paletteExportType.value = types.first; _updateFileNameStatus();},
+                                      segments: PaletteExportType.values.map((final PaletteExportType x) => ButtonSegment<PaletteExportType>(value: x, label: Text(PaletteExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                    );
+                                  },
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      Opacity(
-                        opacity: (section == ExportSectionType.image || section == ExportSectionType.animation) ? 1.0 : 0.0,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Expanded(
-                              child: Text("Scaling", style: Theme.of(context).textTheme.titleMedium),
-                            ),
-                            Expanded(
-                              flex: 4,
-                              child: ValueListenableBuilder<AnimationExportType>(
-                                valueListenable: _animationExportType,
-                                builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
-                                  return ValueListenableBuilder<ImageExportType>(
-                                    valueListenable: _fileExportType,
-                                    builder: (final BuildContext context1, final ImageExportType imageType, final Widget? child1) {
-                                      return ValueListenableBuilder<int>(
-                                        valueListenable: _scalingIndex,
-                                        builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
-                                          final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
-                                          return KPixSlider(
-                                            value: isScalable? scalingIndexVal.toDouble() : 0,
-                                            max: exportScalingValues.length.toDouble() - 1,
-                                            divisions: exportScalingValues.length,
-                                            label: "${exportScalingValues[scalingIndexVal]}:1",
-                                            onChanged: isScalable ? (final double newVal){_scalingIndex.value = newVal.round();} : null,
-                                            textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                          );
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: ValueListenableBuilder<AnimationExportType>(
-                                valueListenable: _animationExportType,
-                                builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
-                                  return ValueListenableBuilder<ImageExportType>(
-                                    valueListenable: _fileExportType,
-                                    builder: (final BuildContext context1, final ImageExportType imageType, final Widget? child) {
-                                      return ValueListenableBuilder<int>(
-                                        valueListenable: _scalingIndex,
-                                        builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
-                                          final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
-                                          return Text(isScalable ?
-                                          "${_appState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_appState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_appState.canvasSize.x} x ${_appState.canvasSize.y}",
-                                            textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
-                                          );
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                      Opacity(
-                        opacity: (section == ExportSectionType.animation) ? 1.0 : 0.0,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Expanded(
-                              child: Text("Selection Only", style: Theme.of(context).textTheme.titleMedium),
-                            ),
-                            Expanded(
-                              flex: 4,
-                              child: ValueListenableBuilder<bool>(
-                                valueListenable: _animationSectionOnly,
-                                builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                  final bool moreThanOneFrame = _appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value;
-                                  final bool sectionIsNotWhole = _appState.timeline.loopStartIndex.value > 0 || _appState.timeline.loopEndIndex.value < _appState.timeline.frames.value.length - 1;
-                                  return Switch(
-                                    value: animationSectionOnly,
-                                    onChanged: (moreThanOneFrame && sectionIsNotWhole) ? (final bool newValue) {_animationSectionOnly.value = newValue;} : null,
-                                  );
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: ValueListenableBuilder<bool>(
-                                valueListenable: _animationSectionOnly,
-                                builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                  final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
-                                  final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
-                                  final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
-                                  return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
+                      ],
+                    ),
+                    Opacity(
+                      opacity: (section == ExportSectionType.image || section == ExportSectionType.animation) ? 1.0 : 0.0,
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           Expanded(
-                            child: Text("Directory", style: Theme.of(context).textTheme.titleMedium),
+                            child: Text("Scaling", style: Theme.of(context).textTheme.titleMedium),
                           ),
                           Expanded(
                             flex: 4,
-                            child: ValueListenableBuilder<String>(
-                              valueListenable: _appState.exportDirNotifier,
-                              builder: (final BuildContext context, final String expDir, final Widget? child) {
-                                return Text(expDir, textAlign: TextAlign.center);
+                            child: ValueListenableBuilder<AnimationExportType>(
+                              valueListenable: _animationExportType,
+                              builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
+                                return ValueListenableBuilder<ImageExportType>(
+                                  valueListenable: _fileExportType,
+                                  builder: (final BuildContext context1, final ImageExportType imageType, final Widget? child1) {
+                                    return ValueListenableBuilder<int>(
+                                      valueListenable: _scalingIndex,
+                                      builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
+                                        final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
+                                        return KPixSlider(
+                                          value: isScalable? scalingIndexVal.toDouble() : 0,
+                                          max: exportScalingValues.length.toDouble() - 1,
+                                          divisions: exportScalingValues.length,
+                                          label: "${exportScalingValues[scalingIndexVal]}:1",
+                                          onChanged: isScalable ? (final double newVal){_scalingIndex.value = newVal.round();} : null,
+                                          textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
                               },
                             ),
                           ),
                           Expanded(
                             flex: 2,
-                            child: Tooltip(
-                              message: "Change Directory",
-                              waitDuration: AppState.toolTipDuration,
-                              child: IconButton.outlined(
-                                constraints: const BoxConstraints(),
-                                padding: EdgeInsets.all(_options.padding),
-                                onPressed: _changeDirectoryPressed,
-                                icon: FaIcon(
-                                    FontAwesomeIcons.file,
-                                    size: _options.iconSize / 2,
-                                ),
-                              ),
+                            child: ValueListenableBuilder<AnimationExportType>(
+                              valueListenable: _animationExportType,
+                              builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
+                                return ValueListenableBuilder<ImageExportType>(
+                                  valueListenable: _fileExportType,
+                                  builder: (final BuildContext context1, final ImageExportType imageType, final Widget? child) {
+                                    return ValueListenableBuilder<int>(
+                                      valueListenable: _scalingIndex,
+                                      builder: (final BuildContext context2, final int scalingIndexVal, final Widget? child2) {
+                                        final bool isScalable = (section == ExportSectionType.image && ImageExportData.exportTypeMap[imageType]!.scalable) || (section == ExportSectionType.animation && AnimationExportData.exportTypeMap[animationType]!.scalable);
+                                        return Text(isScalable ?
+                                        "${_appState.canvasSize.x *  exportScalingValues[scalingIndexVal]} x ${_appState.canvasSize.y *  exportScalingValues[scalingIndexVal]}" : "${_appState.canvasSize.x} x ${_appState.canvasSize.y}",
+                                          textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium,
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ),
                         ],
                       ),
-                      Row(
+                    ),
+                    Opacity(
+                      opacity: (section == ExportSectionType.animation) ? 1.0 : 0.0,
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           Expanded(
-                              child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                            child: Text("Selection Only", style: Theme.of(context).textTheme.titleMedium),
                           ),
                           Expanded(
-                              flex: 3,
-                              child: ValueListenableBuilder<String?>(
-                                valueListenable: _fileName,
-                                builder: (final BuildContext context, final String? filePath, final Widget? child) {
-                                  final TextEditingController controller = TextEditingController(text: filePath);
-                                  controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                  return TextField(
-                                    textAlign: TextAlign.end,
-                                    focusNode: _hotkeyManager.exportFileNameTextFocus,
-                                    controller: controller,
-                                    onChanged: (final String value) {
-                                      _fileName.value = value;
-                                      _updateFileNameStatus();
-                                    },
-                                  );
-                                },
-                              ),
+                            flex: 4,
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: _animationSectionOnly,
+                              builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
+                                final bool moreThanOneFrame = _appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value;
+                                final bool sectionIsNotWhole = _appState.timeline.loopStartIndex.value > 0 || _appState.timeline.loopEndIndex.value < _appState.timeline.frames.value.length - 1;
+                                return Switch(
+                                  value: animationSectionOnly,
+                                  onChanged: (moreThanOneFrame && sectionIsNotWhole) ? (final bool newValue) {_animationSectionOnly.value = newValue;} : null,
+                                );
+                              },
                             ),
-                            Expanded(
-                              child: ValueListenableBuilder<AnimationExportType>(
-                                valueListenable: _animationExportType,
-                                builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
-                                  return ValueListenableBuilder<PaletteExportType>(
-                                    valueListenable: _paletteExportType,
-                                    builder: (final BuildContext context, final PaletteExportType paletteExportType, final Widget? child) {
-                                      return ValueListenableBuilder<ImageExportType>(
-                                        valueListenable: _fileExportType,
-                                        builder: (final BuildContext context, final ImageExportType imageExportType, final Widget? child) {
-                                          String extension = "";
-                                          if (section == ExportSectionType.image)
-                                          {
-                                            extension = ImageExportData.exportTypeMap[imageExportType]!.extension;
-                                          }
-                                          else if (section == ExportSectionType.palette)
-                                          {
-                                            extension = PaletteExportData.exportTypeMap[paletteExportType]!.extension;
-                                          }
-                                          else if (section == ExportSectionType.animation)
-                                          {
-                                            extension = AnimationExportData.exportTypeMap[animationType]!.extension;
-                                          }
-                                          return Text(".$extension");
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: _animationSectionOnly,
+                              builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
+                                final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
+                                final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
+                                final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
+                                return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
+                              },
                             ),
-                            Expanded(
-                              child: ValueListenableBuilder<FileNameStatus>(
-                                valueListenable: _fileNameStatus,
-                                builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
-                                  return Tooltip(
-                                    message: fileNameStatusTextMap[status],
-                                    waitDuration: AppState.toolTipDuration,
-                                    child: FaIcon(
-                                      fileNameStatusIconMap[status],
-                                      size: _options.iconSize / 2,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                         ],
+                          ),
+                        ],
                       ),
-                    ],
-                  );
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                          child: Text("Directory", style: Theme.of(context).textTheme.titleMedium),
+                        ),
+                        Expanded(
+                          flex: 4,
+                          child: ValueListenableBuilder<String>(
+                            valueListenable: _appState.exportDirNotifier,
+                            builder: (final BuildContext context, final String expDir, final Widget? child) {
+                              return Text(expDir, textAlign: TextAlign.center);
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Tooltip(
+                            message: "Change Directory",
+                            waitDuration: AppState.toolTipDuration,
+                            child: IconButton.outlined(
+                              constraints: const BoxConstraints(),
+                              padding: EdgeInsets.all(_options.padding),
+                              onPressed: _changeDirectoryPressed,
+                              icon: FaIcon(
+                                  FontAwesomeIcons.file,
+                                  size: _options.iconSize / 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                            child: Text("File Name", style: Theme.of(context).textTheme.titleMedium),
+                        ),
+                        Expanded(
+                            flex: 3,
+                            child: ValueListenableBuilder<String?>(
+                              valueListenable: _fileName,
+                              builder: (final BuildContext context, final String? filePath, final Widget? child) {
+                                final TextEditingController controller = TextEditingController(text: filePath);
+                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                                return TextField(
+                                  textAlign: TextAlign.end,
+                                  focusNode: _hotkeyManager.exportFileNameTextFocus,
+                                  controller: controller,
+                                  onChanged: (final String value) {
+                                    _fileName.value = value;
+                                    _updateFileNameStatus();
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: ValueListenableBuilder<AnimationExportType>(
+                              valueListenable: _animationExportType,
+                              builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
+                                return ValueListenableBuilder<PaletteExportType>(
+                                  valueListenable: _paletteExportType,
+                                  builder: (final BuildContext context, final PaletteExportType paletteExportType, final Widget? child) {
+                                    return ValueListenableBuilder<ImageExportType>(
+                                      valueListenable: _fileExportType,
+                                      builder: (final BuildContext context, final ImageExportType imageExportType, final Widget? child) {
+                                        String extension = "";
+                                        if (section == ExportSectionType.image)
+                                        {
+                                          extension = ImageExportData.exportTypeMap[imageExportType]!.extension;
+                                        }
+                                        else if (section == ExportSectionType.palette)
+                                        {
+                                          extension = PaletteExportData.exportTypeMap[paletteExportType]!.extension;
+                                        }
+                                        else if (section == ExportSectionType.animation)
+                                        {
+                                          extension = AnimationExportData.exportTypeMap[animationType]!.extension;
+                                        }
+                                        else if (section == ExportSectionType.kpix)
+                                        {
+                                          extension = fileExtensionKpix;
+                                        }
+                                        return Text(".$extension");
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: ValueListenableBuilder<FileNameStatus>(
+                              valueListenable: _fileNameStatus,
+                              builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
+                                return Tooltip(
+                                  message: fileNameStatusTextMap[status],
+                                  waitDuration: AppState.toolTipDuration,
+                                  child: FaIcon(
+                                    fileNameStatusIconMap[status],
+                                    size: _options.iconSize / 2,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                       ],
+                    ),
+                  ],
+                );
               },
             ),
             Row(
@@ -615,21 +642,24 @@ class _ExportWidgetState extends State<ExportWidget>
                                   size: _options.iconSize,
                                 ),
                                 onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
-                                  () {
-                                    if (selSection == ExportSectionType.image)
-                                    {
-                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir), exportType: _fileExportType.value);
-                                    }
-                                    else if (selSection == ExportSectionType.palette)
-                                    {
-                                      widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: PaletteExportData.exportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _paletteExportType.value);
-                                    }
-                                    else if (selSection == ExportSectionType.animation)
-                                    {
-                                      widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
-                                    }
-
-                                  } : null,
+                                () {
+                                  if (selSection == ExportSectionType.image)
+                                  {
+                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[_fileExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir), exportType: _fileExportType.value);
+                                  }
+                                  else if (selSection == ExportSectionType.palette)
+                                  {
+                                    widget.acceptPalette(saveData: PaletteExportData.fromWithConcreteData(other: PaletteExportData.exportTypeMap[_paletteExportType.value]!, fileName: _fileName.value, directory: _appState.exportDir), paletteType: _paletteExportType.value);
+                                  }
+                                  else if (selSection == ExportSectionType.animation)
+                                  {
+                                    widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[_animationExportType.value]!, scaling: exportScalingValues[_scalingIndex.value], fileName: _fileName.value, directory: _appState.exportDir, loopOnly: _animationSectionOnly.value), exportType: _animationExportType.value);
+                                  }
+                                  else if (selSection == ExportSectionType.kpix)
+                                  {
+                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: _appState.exportDir), exportType: ImageExportType.kpix);
+                                  }
+                                } : null,
                               ),
                             );
                           },

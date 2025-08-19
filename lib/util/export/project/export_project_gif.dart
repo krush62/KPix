@@ -24,14 +24,15 @@ Future<Uint8List?> exportGIF({required final AnimationExportData exportData, req
 
   for (int i = startFrame; i <= endFrame; i++)
   {
-    final ui.Image uiImage = await getImageFromLayers(selection: appState.selectionState.selection, canvasSize: appState.canvasSize, layerCollection: appState.timeline.frames.value[i].layerList, scalingFactor: exportData.scaling);
+    final Frame frame = appState.timeline.frames.value[i];
+    final ui.Image uiImage = await getImageFromLayers(selection: appState.selectionState.selection, canvasSize: appState.canvasSize, layerCollection: frame.layerList, scalingFactor: exportData.scaling, frame: frame);
     final ByteData? uiBytes = await uiImage.toByteData();
     if (uiBytes == null)
     {
       return null;
     }
 
-    final img.Image frame = img.Image.fromBytes(
+    final img.Image pngFrame = img.Image.fromBytes(
       width: uiImage.width,
       height: uiImage.height,
       bytes: uiBytes.buffer,
@@ -42,11 +43,11 @@ Future<Uint8List?> exportGIF({required final AnimationExportData exportData, req
 
     if (i == 0)
     {
-      pngImg.frames[0] = frame;
+      pngImg.frames[0] = pngFrame;
     }
     else
     {
-      pngImg.addFrame(frame);
+      pngImg.addFrame(pngFrame);
     }
   }
   return img.encodeGif(pngImg);

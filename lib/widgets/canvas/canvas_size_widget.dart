@@ -23,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -72,7 +73,8 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
   {
     super.initState();
     _setSize(newSize: _appState.canvasSize);
-    getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection).then((final ui.Image img){_image.value = img;});
+    final Frame frame = _appState.timeline.selectedFrame!;
+    getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: frame.layerList, selection: _appState.selectionState.selection, frame: frame).then((final ui.Image img){_image.value = img;});
 
   }
 

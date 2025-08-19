@@ -723,7 +723,7 @@ class KPixPainter extends CustomPainter
   {
     if (_shouldCapture())
     {
-      getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection).then((final ui.Image img) {
+      getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, frame: _appState.timeline.selectedFrame).then((final ui.Image img) {
         _backupImage = img;
         final Frame? frame = _appState.timeline.selectedFrame;
         if (frame != null)

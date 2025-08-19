@@ -41,6 +41,7 @@ import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';

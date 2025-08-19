@@ -24,7 +24,7 @@ Future<Uint8List?> exportAPNG({required final AnimationExportData exportData, re
 
   for (int i = startFrame; i <= endFrame; i++)
   {
-    final ui.Image uiImage = await getImageFromLayers(selection: appState.selectionState.selection, canvasSize: appState.canvasSize, layerCollection: appState.timeline.frames.value[i].layerList, scalingFactor: exportData.scaling);
+    final ui.Image uiImage = await getImageFromLayers(selection: appState.selectionState.selection, canvasSize: appState.canvasSize, layerCollection: appState.timeline.frames.value[i].layerList, scalingFactor: exportData.scaling, frame: appState.timeline.frames.value[i]);
     final ByteData? uiBytes = await uiImage.toByteData();
     if (uiBytes == null)
     {

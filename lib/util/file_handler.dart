@@ -345,7 +345,8 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension, inputFileMustExist: true);
       if (pngPath != null)
       {
-        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layerCollection: appState.timeline.selectedFrame!.layerList, selection: appState.selectionState.selection);
+        final Frame frame = appState.timeline.selectedFrame!;
+        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layerCollection: frame.layerList, selection: appState.selectionState.selection, frame: frame);
         final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
         await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
       }

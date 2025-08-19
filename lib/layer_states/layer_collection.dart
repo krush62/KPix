@@ -27,6 +27,7 @@ import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -769,7 +770,8 @@ class LayerCollection with ChangeNotifier
       if (!foundNextLayer)
       {
         final AppState appState = GetIt.I.get<AppState>();
-        getImageFromLayers(layerCollection: this, canvasSize: appState.canvasSize, selection: appState.selectionState.selection).then((final ui.Image img) {
+        final Frame? frame = appState.timeline.findFrameForCollection(collection: this);
+        getImageFromLayers(layerCollection: this, canvasSize: appState.canvasSize, selection: appState.selectionState.selection, frame: frame).then((final ui.Image img) {
           _rasterImage = img;
         },);
       }

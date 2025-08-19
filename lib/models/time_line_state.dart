@@ -521,6 +521,18 @@ class Timeline
     return list;
   }
 
+  Frame? findFrameForCollection({required final LayerCollection collection})
+  {
+    for (final Frame f in frames.value)
+    {
+      if (f.layerList == collection)
+      {
+        return f;
+      }
+    }
+    return null;
+  }
+
 
   int calculateTotalFrameTime({required final bool sectionOnly})
   {

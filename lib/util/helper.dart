@@ -34,6 +34,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/models/selection_state.dart';
+import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
@@ -510,6 +511,7 @@ class StackCol<T> {
     required final LayerCollection layerCollection,
     required final CoordinateSetI canvasSize,
     required final SelectionList selection,
+    final Frame? frame,
     final List<RasterableLayerState>? layerStack,
     final int scalingFactor = 1,}) async
   {
@@ -531,14 +533,19 @@ class StackCol<T> {
       final LayerState cLayer = layerList[i];
       if (cLayer.visibilityState.value == LayerVisibilityState.visible && cLayer is RasterableLayerState)
       {
-        if (cLayer.rasterImage.value != null)
+        final ui.Image? mapImage = frame != null ? cLayer.rasterImageMap.value[frame]?.raster : null;
+        final ui.Image? rasterImage = cLayer.rasterImage.value;
+        final ui.Image? previousRaster = cLayer.previousRaster;
+        final ui.Image? imageToUse = mapImage ?? (rasterImage ?? previousRaster);
+
+        if (imageToUse != null)
         {
           paintImage(
               canvas: canvas,
               rect: ui.Rect.fromLTWH(0, 0,
                   canvasSize.x.toDouble() * scalingFactor,
                   canvasSize.y.toDouble() * scalingFactor,),
-              image: cLayer.rasterImage.value!,
+              image: imageToUse,
               fit: BoxFit.none,
               scale: 1.0 / scalingFactor.toDouble(),
               alignment: Alignment.topLeft,

@@ -76,20 +76,26 @@ class LayerCollection with ChangeNotifier
 
   LayerCollection({required final List<LayerState> layers, required final int selLayerIdx})
   {
-    _selectedLayerIndexNotifier.addListener(_layerSelectionChanged);
+    _selectedLayerIndexNotifier.addListener(_updateIndividualLayerSelection);
+    addListener(_updateIndividualLayerSelection);
     _addLayers(layers: layers);
     if (selLayerIdx >= 0 && selLayerIdx < layers.length)
     {
       _selectedLayerIndexNotifier.value = selLayerIdx;
     }
+    else if (layers.isNotEmpty)
+    {
+      _selectedLayerIndexNotifier.value = 0;
+    }
   }
 
   LayerCollection.empty()
   {
-    _selectedLayerIndexNotifier.addListener(_layerSelectionChanged);
+    _selectedLayerIndexNotifier.addListener(_updateIndividualLayerSelection);
+    addListener(_updateIndividualLayerSelection);
   }
 
-  void _layerSelectionChanged()
+  void _updateIndividualLayerSelection()
   {
     for (int i = 0; i < _layers.length; i++)
     {
@@ -122,7 +128,7 @@ class LayerCollection with ChangeNotifier
     {
       GetIt.I.get<AppState>().showMessage(text: "Could not add all layers.");
     }
-    _layerSelectionChanged();
+    _updateIndividualLayerSelection();
   }
 
   bool contains({required final LayerState layer})
@@ -144,7 +150,6 @@ class LayerCollection with ChangeNotifier
     {
       notifyListeners();
     }
-    _layerSelectionChanged();
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
@@ -183,7 +188,6 @@ class LayerCollection with ChangeNotifier
       {
         _layers.insert(position, addLayer);
         notifyListeners();
-        _layerSelectionChanged();
         return addLayer;
       }
       else
@@ -212,7 +216,6 @@ class LayerCollection with ChangeNotifier
     {
       _layers.insert(position, layer);
       notifyListeners();
-      _layerSelectionChanged();
       reRasterAllDrawingLayers();
     }
   }
@@ -319,7 +322,6 @@ class LayerCollection with ChangeNotifier
       {
         selectLayer(newLayer: newLayer);
       }
-      _layerSelectionChanged();
       notifyListeners();
       return true;
     }
@@ -339,7 +341,6 @@ class LayerCollection with ChangeNotifier
       {
         _selectedLayerIndexNotifier.value = _layers.indexOf(newLayer);
         notifyListeners();
-        _layerSelectionChanged();
       }
 
       return previousLayer?? newLayer;
@@ -398,7 +399,6 @@ class LayerCollection with ChangeNotifier
       }
       _layers.remove(deleteLayer);
       _selectedLayerIndexNotifier.value = 0;
-      _layerSelectionChanged();
 
 
       notifyListeners();
@@ -545,7 +545,6 @@ class LayerCollection with ChangeNotifier
             _layers.insert(currentIndex, addLayer);
           }
         }
-        _layerSelectionChanged();
         notifyListeners();
       }
       return addLayer;
@@ -623,7 +622,6 @@ class LayerCollection with ChangeNotifier
 
       orderChanged = true;
     }
-    _layerSelectionChanged();
     notifyListeners();
     return orderChanged;
   }

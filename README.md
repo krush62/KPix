@@ -45,7 +45,7 @@ KPix is a pixel art editor for still images and animations with a focus on gener
 ⭐ automatic light/dark theme
 
 
-You might also want to read the [F.A.Q.](faq.md) or watch the [feature overview video](https://youtu.be/Vcz6QdcY5tY).
+You might also want to read the [F.A.Q.](faq.md) or watch the (slightly outdated) [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
 # 🔥Features
 ## Drawing Tools

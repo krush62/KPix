@@ -12,7 +12,8 @@
 ![pull-requests](https://img.shields.io/github/issues-pr-raw/krush62/KPix)
 ![license](https://img.shields.io/github/license/krush62/KPix)
 
-![screenshot01](imgs/screenshot_01.png)
+![screenshot03](imgs/screenshot_03.png)
+*Application Screenshot, Artwork created by krush62, inspired by the Stephen King Novel "Under the Dome"*
 
 # Contents
 
@@ -83,6 +84,7 @@ Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangu
 ## Animation
 - Individual frame times (1-30 fps per frame)
 - Highly customizable frame blending (Onion Skinning)
+- Linked layers
 
 ## File Format Support
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).

@@ -140,16 +140,54 @@ class AppState
     }
   }
 
+
+  /*
+    int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
+  {
+    int pixelCount = 0;
+    for (final LayerState layer in _layers)
+    {
+      if (layer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        if (includeInvisible || drawingLayer.visibilityState.value == LayerVisibilityState.visible)
+        {
+          pixelCount += drawingLayer.getPixelCountForRamp(ramp: ramp);
+        }
+      }
+    }
+    return pixelCount;
+  }
+
+
+   */
+
   int getPixelCountForRamp({required final KPalRampData ramp, final bool includeInvisible = true})
   {
-    if (timeline.selectedFrame != null)
+    int pixelCount = 0;
+    final List<Frame> allFrames = timeline.frames.value;
+    final LinkedHashSet<LayerState> originalLayerSet = LinkedHashSet<LayerState>();
+    for (final Frame f in allFrames)
     {
-      return timeline.selectedFrame!.layerList.getPixelCountForRamp(ramp: ramp, includeInvisible: includeInvisible);
+      final LayerCollection layers = f.layerList;
+      for (int i = 0; i < layers.length; i++)
+      {
+        originalLayerSet.add(layers.getLayer(index: i));
+      }
     }
-    else
+
+    for (final LayerState layer in originalLayerSet)
     {
-      return 0;
+      if (layer.runtimeType == DrawingLayerState)
+      {
+        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+        if (includeInvisible || drawingLayer.visibilityState.value == LayerVisibilityState.visible)
+        {
+          pixelCount += drawingLayer.getPixelCountForRamp(ramp: ramp);
+        }
+      }
     }
+    return pixelCount;
   }
 
   final RepaintNotifier repaintNotifier = RepaintNotifier();

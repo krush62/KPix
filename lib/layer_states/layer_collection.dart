@@ -213,6 +213,7 @@ class LayerCollection with ChangeNotifier
       _layers.insert(position, layer);
       notifyListeners();
       _layerSelectionChanged();
+      reRasterAllDrawingLayers();
     }
   }
 

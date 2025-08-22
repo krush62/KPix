@@ -1093,42 +1093,61 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                     Divider(height: 16, thickness: 2, color: Theme.of(context).primaryColorLight,),
                     const Spacer(),
                     ValueListenableBuilder<bool>(
-                      valueListenable: widget.timeline.isPlaying,
-                      builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
-                        return Tooltip(
-                          message: "Frame Blending\nToggle: ${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false)}",
-                          waitDuration: AppState.toolTipDuration,
-                          child: SizedBox(
-                            height: _cellHeight,
-                            child: IconButton.outlined(
-                              onPressed: isPlaying ? null : () {
-                                final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-                                _frameBlendingOverlay = KPixOverlay(
-                                  entry: OverlayEntry(
-                                    builder: (final BuildContext context) => Stack(
-                                      children: <Widget>[
-                                        ModalBarrier(
-                                          color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-                                        ),
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                      valueListenable: widget.frameBlendingOptions.enabled,
+                      builder: (final BuildContext context, final bool frameBlendingEnabled, final Widget? child) {
+                        return ValueListenableBuilder<bool>(
+                          valueListenable: widget.timeline.isPlaying,
+                          builder: (final BuildContext context, final bool isPlaying, final Widget? child) {
+                            return Tooltip(
+                              message: "Frame Blending\nToggle: ${GetIt.I.get<HotkeyManager>().getShortcutString(action: HotkeyAction.timelineToggleFrameBlending, precededNewLine: false)}",
+                              waitDuration: AppState.toolTipDuration,
+                              child: SizedBox(
+                                height: _cellHeight,
+                                child: IconButton.outlined(
+                                  style: ButtonStyle(
+                                    tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                    backgroundColor: frameBlendingEnabled && !isPlaying
+                                        ? WidgetStatePropertyAll<Color?>(
+                                      Theme.of(context)
+                                          .primaryColorLight,)
+                                        : null,
+                                    iconColor: frameBlendingEnabled && !isPlaying
+                                        ? WidgetStatePropertyAll<Color?>(
+                                      Theme.of(context)
+                                          .primaryColor,)
+                                        : null,
+                                  ),
+                                  onPressed: isPlaying ? null : () {
+                                    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+                                    _frameBlendingOverlay = KPixOverlay(
+                                      entry: OverlayEntry(
+                                        builder: (final BuildContext context) => Stack(
                                           children: <Widget>[
-                                            Padding(
-                                              padding: EdgeInsets.all(options.padding),
-                                              child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: widget.frameBlendingOptions,),
+                                            ModalBarrier(
+                                              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                            ),
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: <Widget>[
+                                                Padding(
+                                                  padding: EdgeInsets.all(options.padding),
+                                                  child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: widget.frameBlendingOptions,),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                                _frameBlendingOverlay.show(context: context);
-                              },
-                              icon: const FaIcon(FontAwesomeIcons.blender, size: _transportIconSize),
-                            ),
-                          ),
+                                      ),
+                                    );
+                                    _frameBlendingOverlay.show(context: context);
+                                  },
+                                  icon: const FaIcon(FontAwesomeIcons.blender, size: _transportIconSize),
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

@@ -717,9 +717,37 @@ class AppState
   {
     if (loadPaletteSet.rampData != null && loadPaletteSet.rampData!.isNotEmpty)
     {
+      final LinkedHashSet<LayerState> collectedLayers = LinkedHashSet<LayerState>();
       for (final Frame f in timeline.frames.value)
       {
-        f.layerList.replacePalette(loadPaletteSet: loadPaletteSet, paletteReplaceBehavior: paletteReplaceBehavior, colorRamps: _colorRamps.value);
+        final LayerCollection layers = f.layerList;
+        for (int i = 0; i < layers.length; i++)
+        {
+          collectedLayers.add(layers.getLayer(index: i));
+        }
+      }
+
+      final HashMap<ColorReference, ColorReference> rampMap = getRampMap(rampList1: colorRamps, rampList2: loadPaletteSet.rampData!);
+
+      for (final LayerState layer in collectedLayers)
+      {
+        if (layer.runtimeType == DrawingLayerState)
+        {
+          final DrawingLayerState drawingLayer = layer as DrawingLayerState;
+          if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
+          {
+            for (final KPalRampData kPalRampData in colorRamps)
+            {
+              drawingLayer.deleteRamp(ramp: kPalRampData);
+            }
+          }
+          else
+          {
+            drawingLayer.remapAllColors(rampMap: rampMap);
+            drawingLayer.remapLayerEffectColors(rampMap: rampMap);
+          }
+          drawingLayer.doManualRaster = true;
+        }
       }
       _selectedColor.value = loadPaletteSet.rampData![0].references[0];
       _colorRamps.value = loadPaletteSet.rampData!;

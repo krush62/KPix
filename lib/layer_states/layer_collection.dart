@@ -28,7 +28,6 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
@@ -531,44 +530,6 @@ class LayerCollection with ChangeNotifier
         notifyListeners();
       }
       return addLayer;
-    }
-  }
-
-  void replacePalette({required final LoadPaletteSet loadPaletteSet, required final PaletteReplaceBehavior paletteReplaceBehavior, required final List<KPalRampData> colorRamps})
-  {
-    if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
-    {
-      _deleteAllRampsFromLayers(colorRamps: colorRamps);
-    }
-    else
-    {
-      final HashMap<ColorReference, ColorReference> rampMap = getRampMap(rampList1: colorRamps, rampList2: loadPaletteSet.rampData!);
-      for (final LayerState layer in _layers)
-      {
-        if (layer.runtimeType == DrawingLayerState)
-        {
-          final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-          drawingLayer.remapAllColors(rampMap: rampMap);
-          drawingLayer.remapLayerEffectColors(rampMap: rampMap);
-        }
-      }
-    }
-    //notifyListeners();
-  }
-
-  void _deleteAllRampsFromLayers({required final List<KPalRampData> colorRamps})
-  {
-    for (final LayerState layer in _layers)
-    {
-      if (layer.runtimeType == DrawingLayerState)
-      {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        for (final KPalRampData kPalRampData in colorRamps)
-        {
-          drawingLayer.deleteRamp(ramp: kPalRampData);
-        }
-        drawingLayer.doManualRaster = true;
-      }
     }
   }
 

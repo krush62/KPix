@@ -244,39 +244,42 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                     const SizedBox(width: _generalPadding),
                     if (outerStrokeStyle == OuterStrokeStyle.solid)...<Widget>[
                       Expanded(
-                        flex: 2,
-                        child: ValueListenableBuilder<ColorReference>(
-                          valueListenable: widget.layer.settings.outerColorReference,
-                          builder: (final BuildContext context, final ColorReference outerColor, final Widget? child)
-                          {
-                            return AspectRatio(
-                              aspectRatio: 1,
-                              child: IconButton.outlined(
-                                onPressed: () {
-                                  _colorPickDialog = getColorPickerDialog(
-                                    title: "SELECT OUTER STROKE COLOR",
-                                    ramps: GetIt.I.get<AppState>().colorRamps,
-                                    onColorSelected: onOuterColorSelected,
-                                    onDismiss: closeDialog,);
-                                  _colorPickDialog.show(context: context);
-                                },
-                                icon: const FaIcon(FontAwesomeIcons.palette),
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStatePropertyAll<Color?>(outerColor.getIdColor().color),
-                                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4.0),
+                        flex: 7,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            const Text("Color", textAlign: TextAlign.center,),
+                            ValueListenableBuilder<ColorReference>(
+                              valueListenable: widget.layer.settings.outerColorReference,
+                              builder: (final BuildContext context, final ColorReference outerColor, final Widget? child)
+                              {
+                                return SizedBox(
+                                  height: 48,
+                                  child: IconButton.outlined(
+                                    onPressed: () {
+                                      _colorPickDialog = getColorPickerDialog(
+                                        title: "SELECT OUTER STROKE COLOR",
+                                        ramps: GetIt.I.get<AppState>().colorRamps,
+                                        onColorSelected: onOuterColorSelected,
+                                        onDismiss: closeDialog,);
+                                      _colorPickDialog.show(context: context);
+                                    },
+                                    icon: const FaIcon(FontAwesomeIcons.palette),
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStatePropertyAll<Color?>(outerColor.getIdColor().color),
+                                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(4.0),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            );
-                          },
+                                );
+                              },
+                            ),
+                            const Spacer(),
+                          ],
                         ),
-                      ),
-                      const Expanded(
-                          flex: 5,
-                          child: SizedBox.shrink(),
                       ),
                     ],
                     if (outerStrokeStyle == OuterStrokeStyle.relative || outerStrokeStyle == OuterStrokeStyle.shade)
@@ -466,47 +469,51 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                       const SizedBox(width: _generalPadding),
                       if (innerStrokeStyle == InnerStrokeStyle.solid)...<Widget>[
                         Expanded(
-                          flex: 2,
-                          child: ValueListenableBuilder<ColorReference>(
-                            valueListenable: widget.layer.settings.innerColorReference,
-                            builder: (final BuildContext context, final ColorReference innerColor, final Widget? child)
-                            {
-                              return AspectRatio(
-                                aspectRatio: 1,
-                                child: IconButton.outlined(
-                                  onPressed: () {
-                                    _colorPickDialog = getColorPickerDialog(
-                                      title: "SELECT INNER STROKE COLOR",
-                                      ramps: GetIt.I.get<AppState>().colorRamps,
-                                      onColorSelected: onInnerColorSelected,
-                                      onDismiss: closeDialog,);
-                                    _colorPickDialog.show(context: context);
-                                  },
-                                  icon: const FaIcon(FontAwesomeIcons.palette),
-                                  style: ButtonStyle(
-                                    backgroundColor: WidgetStatePropertyAll<Color?>(innerColor.getIdColor().color),
-                                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4.0),
+                          flex: 7,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              const Text("Color", textAlign: TextAlign.center,),
+                              ValueListenableBuilder<ColorReference>(
+                                valueListenable: widget.layer.settings.innerColorReference,
+                                builder: (final BuildContext context, final ColorReference innerColor, final Widget? child)
+                                {
+                                  return SizedBox(
+                                    height: 48,
+                                    child: IconButton.outlined(
+                                      onPressed: () {
+                                        _colorPickDialog = getColorPickerDialog(
+                                          title: "SELECT INNER STROKE COLOR",
+                                          ramps: GetIt.I.get<AppState>().colorRamps,
+                                          onColorSelected: onInnerColorSelected,
+                                          onDismiss: closeDialog,);
+                                        _colorPickDialog.show(context: context);
+                                      },
+                                      icon: const FaIcon(FontAwesomeIcons.palette),
+                                      style: ButtonStyle(
+                                        backgroundColor: WidgetStatePropertyAll<Color?>(innerColor.getIdColor().color),
+                                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(4.0),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              );
-                            },
+                                  );
+                                },
+                              ),
+                              const Spacer(),
+                            ],
                           ),
-                        ),
-                        const Expanded(
-                          flex: 5,
-                          child: SizedBox.shrink(),
                         ),
                       ],
                       if (innerStrokeStyle == InnerStrokeStyle.shade)
                         Expanded(
                           flex: 7,
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
+                              const Spacer(),
                               const Text("Darken/Brighten"),
                               ValueListenableBuilder<int>(
                                 valueListenable: widget.layer.settings.innerDarkenBrighten,
@@ -526,7 +533,6 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                     },
                                   );
                                 },
-
                               ),
                             ],
                           ),
@@ -753,72 +759,74 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                             ),
                           ],
                         ),
+                        if (dropShadowStyle == DropShadowStyle.shade)
+                          SizedBox(
+                            height: 32,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                const Expanded(child: Text("Darken /\nBrighten")),
+                                Expanded(
+                                  flex: 2,
+                                  child: ValueListenableBuilder<int>(
+                                    valueListenable: widget.layer.settings.dropShadowDarkenBrighten,
+                                    builder: (final BuildContext context, final int value, final Widget? child)
+                                    {
+                                      int valueIndex = _darkenBrightenValues.indexOf(value);
+                                      if (valueIndex == -1)
+                                      {
+                                        valueIndex = _darkenBrightenValues.length ~/ 2;
+                                      }
+                                      return KPixSlider(
+                                        value: valueIndex.toDouble(),
+                                        max: _darkenBrightenValues.length.toDouble() - 1,
+                                        showPlusSignForPositive: true,
+                                        textStyle: Theme.of(context).textTheme.bodyMedium!,
+                                        label: _getStepSliderLabel(value: value),
+                                        onChanged: (final double value) {
+                                          widget.layer.settings.dropShadowDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (dropShadowStyle == DropShadowStyle.solid)
                         SizedBox(
-                          height: 65,
+                          height: 32,
                           child: Row(
                             children: <Widget>[
-                              const Expanded(child: SizedBox(width: _generalPadding)),
-                              if (dropShadowStyle == DropShadowStyle.solid)
-                                ValueListenableBuilder<ColorReference>(
+                              const Expanded(child: Text("Color")),
+                              Expanded(
+                                flex: 2,
+                                child: ValueListenableBuilder<ColorReference>(
                                   valueListenable: widget.layer.settings.dropShadowColorReference,
                                   builder: (final BuildContext context, final ColorReference dropShadowColor, final Widget? child)
                                   {
-                                    return AspectRatio(
-                                      aspectRatio: 1,
-                                      child: IconButton.outlined(
-                                        onPressed: () {
-                                          _colorPickDialog = getColorPickerDialog(
-                                            title: "SELECT DROP SHADOW COLOR",
-                                            ramps: GetIt.I.get<AppState>().colorRamps,
-                                            onColorSelected: onDropShadowColorSelected,
-                                            onDismiss: closeDialog,);
-                                          _colorPickDialog.show(context: context);
-                                        },
-                                        icon: const FaIcon(FontAwesomeIcons.palette),
-                                        style: ButtonStyle(
-                                          backgroundColor: WidgetStatePropertyAll<Color?>(dropShadowColor.getIdColor().color),
-                                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(4.0),
-                                            ),
+                                    return IconButton.outlined(
+                                      onPressed: () {
+                                        _colorPickDialog = getColorPickerDialog(
+                                          title: "SELECT DROP SHADOW COLOR",
+                                          ramps: GetIt.I.get<AppState>().colorRamps,
+                                          onColorSelected: onDropShadowColorSelected,
+                                          onDismiss: closeDialog,);
+                                        _colorPickDialog.show(context: context);
+                                      },
+                                      icon: const FaIcon(FontAwesomeIcons.palette),
+                                      style: ButtonStyle(
+                                        backgroundColor: WidgetStatePropertyAll<Color?>(dropShadowColor.getIdColor().color),
+                                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(4.0),
                                           ),
                                         ),
                                       ),
                                     );
                                   },
                                 ),
-                              if (dropShadowStyle == DropShadowStyle.shade)
-                                Expanded(
-                                  flex: 7,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      const Text("Darken/Brighten"),
-                                      ValueListenableBuilder<int>(
-                                        valueListenable: widget.layer.settings.dropShadowDarkenBrighten,
-                                        builder: (final BuildContext context, final int value, final Widget? child)
-                                        {
-                                          int valueIndex = _darkenBrightenValues.indexOf(value);
-                                          if (valueIndex == -1)
-                                          {
-                                            valueIndex = _darkenBrightenValues.length ~/ 2;
-                                          }
-                                          return KPixSlider(
-                                            value: valueIndex.toDouble(),
-                                            max: _darkenBrightenValues.length.toDouble() - 1,
-                                            showPlusSignForPositive: true,
-                                            textStyle: Theme.of(context).textTheme.bodyMedium!,
-                                            label: _getStepSliderLabel(value: value),
-                                            onChanged: (final double value) {
-                                              widget.layer.settings.dropShadowDarkenBrighten.value = _darkenBrightenValues[value.toInt()];
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              const Expanded(child: SizedBox(width: _generalPadding)),
+                              ),
                             ],
                           ),
                         ),

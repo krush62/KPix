@@ -202,6 +202,7 @@ class TimeLineMiniWidget extends StatefulWidget {
   final double buttonWidth;
   final double padding;
   final double framePadding;
+  static const int _maxFramesWithLabel = 32;
 
   @override
   State<TimeLineMiniWidget> createState() => _TimeLineMiniWidgetState();
@@ -214,10 +215,10 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
     final List<Frame> frames = widget.timeline.frames.value;
     final List<Widget> rowWidgets = <Widget>[];
 
-    final bool showMarkers = widget.timeline.loopStartIndex.value != 0 && widget.timeline.loopEndIndex.value != widget.timeline.frames.value.length - 1;
+    final bool showMarkers = widget.timeline.loopStartIndex.value != 0 || widget.timeline.loopEndIndex.value != widget.timeline.frames.value.length - 1;
 
-    for (int i = 0; i < frames.length; i++) {
-
+    for (int i = 0; i < frames.length; i++)
+    {
       rowWidgets.add(
         ValueListenableBuilder<int>(
           valueListenable: widget.timeline.loopStartIndex,
@@ -241,19 +242,23 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                 onTap: () {
                   widget.timeline.selectFrameByIndex(index: i);
                 },
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    border: Border.all(
-                      color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
+                child: Tooltip(
+                  message: "Frame ${i + 1}",
+                  waitDuration: AppState.toolTipDuration,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      border: Border.all(
+                        color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
+                      ),
+                      borderRadius: BorderRadius.circular(widget.buttonWidth / 10),
                     ),
-                    borderRadius: BorderRadius.circular(widget.buttonWidth / 10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      (i + 1).toString(),
-                      style: isSelected ? null : Theme.of(context).textTheme.bodyMedium!.copyWith(color: Theme.of(context).primaryColorDark) ,
-                    ),
+                    child: frames.length <= TimeLineMiniWidget._maxFramesWithLabel ? Center(
+                      child: Text(
+                        (i + 1).toString(),
+                        style: isSelected ? null : Theme.of(context).textTheme.bodyMedium!.copyWith(color: Theme.of(context).primaryColorDark) ,
+                      ),
+                    ) : null,
                   ),
                 ),
               );
@@ -315,17 +320,27 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
               },
             ),
           ),
-          ValueListenableBuilder<List<Frame>>(
-            valueListenable: widget.timeline.frames,
-            builder: (final BuildContext context, final List<Frame> frames, final Widget? child) {
-              final List<Widget> rowEntries = _createRowWidgets();
-              return Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: rowEntries,
-                ),
+          ValueListenableBuilder<int>(
+            valueListenable: widget.timeline.loopEndIndex,
+            builder: (final BuildContext context2, final int loopEndIndex, final Widget? child2) {
+              return ValueListenableBuilder<int>(
+                valueListenable: widget.timeline.loopStartIndex,
+                builder: (final BuildContext context1, final int loopStartIndex, final Widget? child1) {
+                  return ValueListenableBuilder<List<Frame>>(
+                    valueListenable: widget.timeline.frames,
+                    builder: (final BuildContext context, final List<Frame> frames, final Widget? child) {
+                      final List<Widget> rowEntries = _createRowWidgets();
+                      return Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: rowEntries,
+                        ),
+                      );
+                    },
+                  );
+                },
               );
-            },
+            }
           ),
         ],
       ),

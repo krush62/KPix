@@ -34,8 +34,8 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequired=lowest
+;PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=WinInstaller
 OutputBaseFilename=kpix-installer-windows-x64-v{#MyAppVersion}
 SetupIconFile=..\windows\runner\resources\app_icon.ico

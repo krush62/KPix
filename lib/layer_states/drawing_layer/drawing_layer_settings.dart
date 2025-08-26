@@ -359,7 +359,16 @@ class DrawingLayerSettings extends LayerSettings {
     final CoordinateColorMap shadowPixels = CoordinateColorMap();
     if (dropShadowStyle.value != DropShadowStyle.off)
     {
-      final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: canvasSize);
+      final Set<CoordinateSetI> dropShadowOriginCoordinates = <CoordinateSetI>{};
+      dropShadowOriginCoordinates.addAll(data.keys);
+
+      if (outerStrokeStyle.value == OuterStrokeStyle.relative || outerStrokeStyle.value == OuterStrokeStyle.solid)
+      {
+        final Iterable<CoordinateSetI> outerPixels = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: canvasSize).keys;
+        dropShadowOriginCoordinates.addAll(outerPixels);
+      }
+      final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(dataPositions: dropShadowOriginCoordinates, offset: dropShadowOffset.value, canvasSize: canvasSize);
+
       for (final CoordinateSetI coord in dropShadowCoordinates)
       {
         if (dropShadowStyle.value == DropShadowStyle.solid)

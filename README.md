@@ -138,27 +138,37 @@ The complete control table can be found [here](docs/controls.md).
 
 
 # 💾Installation
-All release versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).
 
-## Windows
-There are two ways to run KPix on Windows:
-### Installer
+## 🪟Windows
+### Download from GitHub
+*Windows Installer (.exe) and Package (.zip) versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
+#### Installer
 Download and run the provided Windows installer. The application can be easily uninstalled and a file association is created.
-### Package (zip)
+#### Package
 This is a portable version. Extract the contents of the Windows Zip Package and run kpix.exe to start the application.
 
-## Linux
-Extract the contents of the Linux tar.gz Package and run kpix to start the application. This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.
+### Install via WinGet
+Open a terminal (cmd or PowerShell) and run the following command: `winget install --id krush62.kpix`
 
-## Android
+## 🐧Linux
+*Linux Tarball (.tar.gz) version can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
+
+Extract the contents of the Linux tar.gz Package and run kpix to start the application. 
+
+*This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.*
+
+## 🤖Android
 ### Manual Installation
-Download the Android apk file and install it manually.\
+*Android .apk version can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
+
+Download the Android apk file and install it manually (side-loading needs to be enabled).
+
 *Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
 
 [//]: # (### macOS)
 [//]: # (### iOS/iPadOS)
 ## Web Version
-A html/javascript version can be found at kpix.cloud ([link](https://kpix.cloud)). The web version has some limitations:
+A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The web version has some limitations:
 - General performance is lower compared to the native versions
 - No project manager (simple load and save via up/download)
 - No palette import

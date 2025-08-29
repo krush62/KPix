@@ -10,9 +10,11 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
+VERSION=$(echo "$VERSION" | tr -d '\r')
+
 BUNDLE_DIR="build/linux/x64/release/bundle"
 OUTPUT_DIR="release_tools/LinuxPackage"
-TAR_FILE="kpix-linux-x64-v$VERSION.tar.gz"
+TAR_FILE="kpix-$VERSION-x86_x64.tar.gz"
 
 if [ ! -d "$BUNDLE_DIR" ]; then
   echo "Error: Bundle directory not found at $BUNDLE_DIR"

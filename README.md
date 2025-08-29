@@ -151,11 +151,16 @@ This is a portable version. Extract the contents of the Windows Zip Package and 
 Open a terminal (cmd or PowerShell) and run the following command: `winget install --id krush62.kpix`
 
 ## 🐧Linux
-*Linux Tarball (.tar.gz) version can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
-
-Extract the contents of the Linux tar.gz Package and run kpix to start the application. 
+*Linux AppImage and Tarball (.tar.gz) versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
 
 *This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.*
+
+### AppImage
+Just run the AppImage file from the Desktop or Terminal.
+
+### Package
+Extract the contents of the tar.gz Package and run `kpix` to start the application. 
+
 
 ## 🤖Android
 ### Manual Installation

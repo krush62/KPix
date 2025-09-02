@@ -10,7 +10,7 @@ if ($versionLine) {
 	if (-Not (Test-Path -Path $winPackagePath)) {		
 		New-Item -Path ".\" -Name $winPackagePath -ItemType "directory" | Out-Null
 	}
-	$packagePath = "$winPackagePath\kpix-windows-x64-v$versionLine"
+	$packagePath = "$winPackagePath\KPix-$versionLine-x86_x64"
 	if (Test-Path -Path $packagePath) {
 		Remove-Item -LiteralPath $packagePath -Force -Recurse
 	}

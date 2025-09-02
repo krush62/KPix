@@ -22,7 +22,7 @@ if ($versionLine) {
 	# Run Installer creation
 	&$innoLocation /Qp $destinationFile
 
-    $outputDir = "WinInstaller\kpix-installer-windows-x64-v$versionLine.exe"
+    $outputDir = "WinInstaller\KPix-Installer-$versionLine-x64.exe"
 
     # Open in Explorer
     C:\Windows\explorer.exe "/select,`"$outputDir"`"

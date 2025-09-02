@@ -34,7 +34,7 @@ Write-Host "Copying APK..."
 if (-Not (Test-Path -Path $androidApkOutputPath)) {		
 	New-Item -Path ".\" -Name $androidApkOutputPath -ItemType "directory" | Out-Null
 }
-$fullApkPath = "$androidApkOutputPath\$namespace-v$versionLine.apk"
+$fullApkPath = "$androidApkOutputPath\KPix-$versionLine.apk"
 Copy-Item $apkSourcePath -Destination $fullApkPath
 
 
@@ -42,7 +42,7 @@ Write-Host "Copying Bundle..."
 if (-Not (Test-Path -Path $androidBundleOutputPath)) {		
 	New-Item -Path ".\" -Name $androidBundleOutputPath -ItemType "directory" | Out-Null
 }
-$fullBundlePath = "$androidBundleOutputPath\$namespace-v$versionLine.aab"
+$fullBundlePath = "$androidBundleOutputPath\KPix-$versionLine.aab"
 Copy-Item $bundleSourcePath -Destination $fullBundlePath
 
 C:\Windows\explorer.exe "/select,`"$fullApkPath"`"

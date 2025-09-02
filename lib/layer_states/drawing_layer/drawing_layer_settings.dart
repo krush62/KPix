@@ -303,54 +303,80 @@ class DrawingLayerSettings extends LayerSettings {
     return shadowPixels;
   }
 
-  HashMap<CoordinateSetI, int> getOuterShadingPixels({required final CoordinateColorMap data})
-  {
+  HashMap<CoordinateSetI, int> getOuterShadingPixels({required final CoordinateColorMap data}) {
     final AppState appState = GetIt.I.get<AppState>();
     final HashMap<CoordinateSetI, int> dropShadowPixels = HashMap<CoordinateSetI, int>();
-    final HashMap<CoordinateSetI, int> outerPixels = HashMap<CoordinateSetI, int>();
+    final HashMap<CoordinateSetI, int> outerEffectPixels = HashMap<CoordinateSetI, int>();
 
-    if (dropShadowStyle.value == DropShadowStyle.shade)
-    {
-      final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: appState.canvasSize);
-      for (final CoordinateSetI coord in dropShadowCoordinates)
-      {
+    if (dropShadowStyle.value == DropShadowStyle.shade) {
+      final Set<CoordinateSetI> dropShadowCoordinates = _getDropShadowCoordinates(
+          dataPositions: data.keys, offset: dropShadowOffset.value, canvasSize: appState.canvasSize,);
+      for (final CoordinateSetI coord in dropShadowCoordinates) {
         dropShadowPixels[coord] = dropShadowDarkenBrighten.value;
       }
     }
 
-    if (outerStrokeStyle.value == OuterStrokeStyle.shade || outerStrokeStyle.value == OuterStrokeStyle.glow)
-    {
-      final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference = _getOuterStrokePixelsWithReference(selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: appState.canvasSize);
-      for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries)
-      {
-        if (outerStrokeStyle.value == OuterStrokeStyle.shade)
-        {
-          outerPixels[pixelSet.key] = outerDarkenBrighten.value;
+    if (outerStrokeStyle.value == OuterStrokeStyle.shade) {
+      final HashMap<CoordinateSetI, CoordinateSetI> outerStrokePixelsWithReference =
+      _getOuterStrokePixelsWithReference(
+          selectionMap: outerSelectionMap.value, dataPositions: data.keys, canvasSize: appState.canvasSize,);
+      for (final MapEntry<CoordinateSetI, CoordinateSetI> pixelSet in outerStrokePixelsWithReference.entries) {
+        outerEffectPixels[pixelSet.key] = outerDarkenBrighten.value;
+      }
+    } else if (outerStrokeStyle.value == OuterStrokeStyle.glow) {
+      Set<CoordinateSetI> currentLayerEdge = Set<CoordinateSetI>.from(data.keys);
+      final Set<CoordinateSetI> allProcessedGlowPixels = <CoordinateSetI>{};
+      allProcessedGlowPixels.addAll(data.keys); // Assuming glow is strictly OUTSIDE original data
+
+      int lastIterationHighestSelfGlowAmount = 100000;
+
+      for (int i = 0; i < outerGlowDepth.value.abs(); i++) {
+        if (currentLayerEdge.isEmpty) {
+          break;
         }
-        else if (outerStrokeStyle.value == OuterStrokeStyle.glow)
-        {
-          int lastSelfGlowAmount = 100000;
-          for (int i = 0; i < outerGlowDepth.value.abs(); i++)
-          {
-            final Set<CoordinateSetI> setPixels = <CoordinateSetI>{};
-            setPixels.addAll(data.keys);
-            setPixels.addAll(outerPixels.keys);
-            final HashMap<CoordinateSetI, int> glowPixels = _getOuterStrokePixelsWithAmount(selectionMap: outerSelectionMap.value, dataPositions: setPixels, canvasSize: appState.canvasSize);
-            int highestSelfGlowAmount = 0;
-            for (final MapEntry<CoordinateSetI, int> glowPixel in glowPixels.entries)
-            {
-              final int selfGlowAmount = outerGlowRecursive.value ? min(glowPixel.value - 1, lastSelfGlowAmount) : 0;
-              highestSelfGlowAmount = max(highestSelfGlowAmount, selfGlowAmount);
-              final int steps = outerGlowDepth.value > 0 ? outerGlowDepth.value - i + selfGlowAmount : outerGlowDepth.value + i - selfGlowAmount;
-              outerPixels[pixelSet.key] = steps;
+
+        final HashMap<CoordinateSetI, int> newPotentialGlowPixels =
+        _getOuterStrokePixelsWithAmount(
+            selectionMap: outerSelectionMap.value,
+            dataPositions: currentLayerEdge,
+            canvasSize: appState.canvasSize,);
+
+        final Set<CoordinateSetI> nextLayerEdgeCandidates = <CoordinateSetI>{};
+        int currentIterationHighestSelfGlowAmount = 0;
+
+        for (final MapEntry<CoordinateSetI, int> glowEntry in newPotentialGlowPixels.entries) {
+          final CoordinateSetI pixelCoord = glowEntry.key;
+          final int baseAmount = glowEntry.value;
+
+          if (!allProcessedGlowPixels.contains(pixelCoord)) {
+            int selfGlowAmount = 0;
+            if (outerGlowRecursive.value) {
+              selfGlowAmount = min(baseAmount - 1 < 0 ? 0 : baseAmount - 1, lastIterationHighestSelfGlowAmount);
+              currentIterationHighestSelfGlowAmount = max(currentIterationHighestSelfGlowAmount, selfGlowAmount);
             }
-            lastSelfGlowAmount = highestSelfGlowAmount;
+
+            final int steps = outerGlowDepth.value > 0
+                ? outerGlowDepth.value - i + selfGlowAmount
+                : outerGlowDepth.value + i - selfGlowAmount;
+
+            outerEffectPixels[pixelCoord] = steps;
+
+            nextLayerEdgeCandidates.add(pixelCoord);
+            allProcessedGlowPixels.add(pixelCoord);
           }
         }
 
+        currentLayerEdge = nextLayerEdgeCandidates;
+        if (outerGlowRecursive.value) {
+          lastIterationHighestSelfGlowAmount = currentIterationHighestSelfGlowAmount;
+        }
+        if (currentLayerEdge.isEmpty) {
+          break;
+        }
       }
     }
-    dropShadowPixels.addAll(outerPixels);
+
+    dropShadowPixels.addAll(outerEffectPixels);
     return dropShadowPixels;
   }
 

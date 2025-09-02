@@ -340,7 +340,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                   );
                 },
               );
-            }
+            },
           ),
         ],
       ),

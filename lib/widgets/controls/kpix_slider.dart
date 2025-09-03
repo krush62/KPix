@@ -16,8 +16,7 @@
 
 import 'package:flutter/material.dart';
 
-class KPixSlider extends StatelessWidget
-{
+class KPixSlider extends StatefulWidget {
   final double value;
   final ValueChanged<double>? onChanged;
   final double trackHeight;
@@ -63,82 +62,105 @@ class KPixSlider extends StatelessWidget
   });
 
   @override
+  State<KPixSlider> createState() => _KPixSliderState(); // Create state
+}
+
+class _KPixSliderState extends State<KPixSlider> {
+  bool _isHovering = false;
+  @override
   Widget build(final BuildContext context)
   {
-    final Color fgColor = activeTrackColor ?? Theme.of(context).primaryColorLight;
-    final Color bgColor = inActiveTrackColor ?? Theme.of(context).primaryColor;
-    final Color disColor = disabledColor ?? Theme.of(context).primaryColorDark;
-    final Color bColor = borderColor ?? Theme.of(context).primaryColorLight;
+    final Color fgColor = widget.activeTrackColor ?? Theme.of(context).primaryColorLight;
+    final Color bgColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
+    final Color disColor = widget.disabledColor ?? Theme.of(context).primaryColorDark;
+    final Color bColor = widget.borderColor ?? Theme.of(context).primaryColorLight;
+    final Color defaultInActiveTrackColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
 
-    String displayText;
-    if (label != null)
+    final Color hoverOverlayColor = Theme.of(context).primaryColorLight.withAlpha(32);
+
+    final Color currentInActiveTrackColor;
+    if (_isHovering)
     {
-      displayText = label!;
-    }
-    else if (value > 0 && showPlusSignForPositive)
-    {
-      displayText = "+${value.toStringAsFixed(decimals)}";
+      currentInActiveTrackColor = Color.alphaBlend(hoverOverlayColor, defaultInActiveTrackColor);
     }
     else
     {
-      displayText = value.toStringAsFixed(decimals);
+      currentInActiveTrackColor = defaultInActiveTrackColor;
+    }
+
+    String displayText;
+    if (widget.label != null)
+    {
+      displayText = widget.label!;
+    }
+    else if (widget.value > 0 && widget.showPlusSignForPositive)
+    {
+      displayText = "+${widget.value.toStringAsFixed(widget.decimals)}";
+    }
+    else
+    {
+      displayText = widget.value.toStringAsFixed(widget.decimals);
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: topBottomPadding),
-      child: SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-          trackHeight: trackHeight,
-          thumbShape: !isRainbow ? const _InvisibleSliderThumbShape() : _KPixSliderThumbShape(padding: borderRadius / 2),
-          trackShape: _KPixSliderTrackShape(borderRadius: borderRadius, strokeColor: bColor, strokeWidth: borderWidth, isRainbow: isRainbow),
-          activeTrackColor: fgColor,
-          inactiveTrackColor: bgColor,
-          overlayShape: SliderComponentShape.noOverlay,
-          tickMarkShape: SliderTickMarkShape.noTickMark,
-          disabledActiveTrackColor: disColor,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            Slider(
-              value: value,
-              min: min,
-              max: max,
-              onChanged: onChanged,
-              divisions: divisions,
-            ),
-            if (!isRainbow) Positioned.fill(
-              child: Center(
-                child: IgnorePointer(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Text(
-                        displayText,
-                        style: TextStyle(
-                          fontSize: textStyle.fontSize,
-                          fontFamily: textStyle.fontFamily,
-                          foreground: Paint()
-                            ..style = PaintingStyle.stroke
-                            ..strokeWidth = fontStrokeWidth
-                            ..color = bgColor,
+      padding: EdgeInsets.symmetric(vertical: widget.topBottomPadding),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovering = true),
+        onExit: (_) => setState(() => _isHovering = false),
+        child: SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: widget.trackHeight,
+            thumbShape: !widget.isRainbow ? const _InvisibleSliderThumbShape() : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
+            trackShape: _KPixSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth, isRainbow: widget.isRainbow),
+            activeTrackColor: fgColor,
+            inactiveTrackColor: currentInActiveTrackColor,
+            overlayShape: SliderComponentShape.noOverlay,
+            tickMarkShape: SliderTickMarkShape.noTickMark,
+            disabledActiveTrackColor: disColor,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              Slider(
+                value: widget.value,
+                min: widget.min,
+                max: widget.max,
+                onChanged: widget.onChanged,
+                divisions: widget.divisions,
+              ),
+              if (!widget.isRainbow) Positioned.fill(
+                child: Center(
+                  child: IgnorePointer(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        Text(
+                          displayText,
+                          style: TextStyle(
+                            fontSize: widget.textStyle.fontSize,
+                            fontFamily: widget.textStyle.fontFamily,
+                            foreground: Paint()
+                              ..style = PaintingStyle.stroke
+                              ..strokeWidth = widget.fontStrokeWidth
+                              ..color = bgColor,
+                          ),
                         ),
-                      ),
-                      Text(
-                        displayText,
-                        style: TextStyle(
-                          fontSize: textStyle.fontSize,
-                          fontFamily: textStyle.fontFamily,
-                          fontWeight: FontWeight.bold,
-                          color: onChanged != null ? fgColor : disColor,
+                        Text(
+                          displayText,
+                          style: TextStyle(
+                            fontSize: widget.textStyle.fontSize,
+                            fontFamily: widget.textStyle.fontFamily,
+                            fontWeight: FontWeight.bold,
+                            color: widget.onChanged != null ? fgColor : disColor,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ) else const SizedBox.shrink(),
-          ],
+              ) else const SizedBox.shrink(),
+            ],
+          ),
         ),
       ),
     );

@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -138,6 +139,7 @@ class KPixPainter extends CustomPainter
   late Size latestSize = Size.zero;
   late int _latestRasterSize = 8;
   late int _latestContrast = 50;
+  late CoordinateSetI _latestCanvasSize = CoordinateSetI(x: 0, y: 0);
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
   ui.Image? _backupImage;
@@ -229,12 +231,17 @@ class KPixPainter extends CustomPainter
         }
         toolPainter = currentToolPainter;
       }
-      if (size != latestSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
+      if (size != latestSize)
       {
         latestSize = size;
+      }
+
+      if (_appState.canvasSize != _latestCanvasSize || rasterSizes[_guiOptions.rasterSizeIndex.value] != _latestRasterSize || _guiOptions.rasterContrast.value != _latestContrast)
+      {
+        _latestCanvasSize = _appState.canvasSize;
         _latestRasterSize = rasterSizes[_guiOptions.rasterSizeIndex.value];
         _latestContrast = _guiOptions.rasterContrast.value;
-        _createCheckerboard();
+        _createCheckerboardWithVertices();
       }
 
       final Paint noFilterPainter = Paint()..filterQuality = FilterQuality.none..isAntiAlias = false;
@@ -1018,44 +1025,118 @@ class KPixPainter extends CustomPainter
     return (ui.Color.fromARGB(255, val1, val1, val1), ui.Color.fromARGB(255, val2, val2, val2));
   }
 
-  void _createCheckerboard()
+  void _createCheckerboardWithVertices()
   {
     final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(recorder);
-    final Paint paint = Paint();
-    bool rowFlip = false;
-    bool colFlip = false;
+    final ui.Canvas canvas = ui.Canvas(recorder);
+
+    if (_latestCanvasSize.x == 0 || _latestCanvasSize.y == 0 || _latestRasterSize == 0) {
+      final ui.Picture picture = recorder.endRecording();
+      _checkerboardImage = picture.toImageSync(_latestCanvasSize.x, _latestCanvasSize.y);
+      return;
+    }
+
+    final int numCols = (_latestCanvasSize.x / _latestRasterSize).ceil();
+    final int numRows = (_latestCanvasSize.y / _latestRasterSize).ceil();
+    final int totalCells = numCols * numRows;
+
+    if (totalCells == 0) {
+      final ui.Picture picture = recorder.endRecording();
+      _checkerboardImage = picture.toImageSync(_latestCanvasSize.x, _latestCanvasSize.y);
+      return;
+    }
+
+    final Float32List positions = Float32List(totalCells * 4 * 2);
+    final Int32List colors = Int32List(totalCells * 4);
+    final Uint16List indices = Uint16List(totalCells * 6);
+
+    int vertexBufferIndex = 0;
+    int colorBufferIndex = 0;
+    int indexBufferIndex = 0;
+    int baseVertexGlobal = 0;
 
     final (ui.Color, ui.Color) checkerColors = getCheckerBoardColors(_latestContrast);
+    final int colorInt1 = checkerColors.$1.toARGB32();
+    final int colorInt2 = checkerColors.$2.toARGB32();
 
-    for (int x = 0; x < latestSize.width; x += _latestRasterSize)
+    bool rowFlip = false;
+
+    for (int i = 0; i < numCols; i++)
     {
-      colFlip = rowFlip;
-      for (int y = 0; y < latestSize.height; y += _latestRasterSize)
+      bool colFlip = rowFlip;
+      for (int j = 0; j < numRows; j++)
       {
-        paint.color = colFlip ? checkerColors.$1 : checkerColors.$2;
-        int width = _latestRasterSize;
-        int height = _latestRasterSize;
-        if (x + _latestRasterSize > latestSize.width.floor())
-        {
-          width = latestSize.width.floor() - x;
-        }
+        final double x = (i * _latestRasterSize).toDouble();
+        final double y = (j * _latestRasterSize).toDouble();
 
-        if (y + _latestRasterSize > latestSize.height.floor())
-        {
-          height = latestSize.height.floor() - y;
-        }
-        canvas.drawRect(
-          Rect.fromLTWH(x.toDouble(), y.toDouble() , width.toDouble(), height.toDouble()),
-          paint,
-        );
+        final double cellWidth = (x + _latestRasterSize > _latestCanvasSize.x)
+            ? _latestCanvasSize.x - x
+            : _latestRasterSize.toDouble();
+        final double cellHeight = (y + _latestRasterSize > _latestCanvasSize.y)
+            ? _latestCanvasSize.y - y
+            : _latestRasterSize.toDouble();
+
+        if (cellWidth <= 0 || cellHeight <= 0) continue;
+
+        positions[vertexBufferIndex++] = x;
+        positions[vertexBufferIndex++] = y;
+        positions[vertexBufferIndex++] = x + cellWidth;
+        positions[vertexBufferIndex++] = y;
+        positions[vertexBufferIndex++] = x + cellWidth;
+        positions[vertexBufferIndex++] = y + cellHeight;
+        positions[vertexBufferIndex++] = x;
+        positions[vertexBufferIndex++] = y + cellHeight;
+
+        final int currentColorInt = colFlip ? colorInt1 : colorInt2;
+        colors[colorBufferIndex++] = currentColorInt;
+        colors[colorBufferIndex++] = currentColorInt;
+        colors[colorBufferIndex++] = currentColorInt;
+        colors[colorBufferIndex++] = currentColorInt;
+
+        indices[indexBufferIndex++] = baseVertexGlobal + 0;
+        indices[indexBufferIndex++] = baseVertexGlobal + 1;
+        indices[indexBufferIndex++] = baseVertexGlobal + 2;
+        indices[indexBufferIndex++] = baseVertexGlobal + 0;
+        indices[indexBufferIndex++] = baseVertexGlobal + 2;
+        indices[indexBufferIndex++] = baseVertexGlobal + 3;
+
+        baseVertexGlobal += 4;
         colFlip = !colFlip;
       }
       rowFlip = !rowFlip;
     }
+
+    final Paint verticesPaint = Paint()..blendMode = ui.BlendMode.src;
+    if (vertexBufferIndex > 0)
+    {
+      final List<ui.Offset> offsetPositions = List<ui.Offset>.generate(
+        vertexBufferIndex ~/ 2,
+            (final int i) => ui.Offset(positions[i * 2], positions[i * 2 + 1]),
+        growable: false,
+      );
+
+      final List<ui.Color> uiColors = List<ui.Color>.generate(
+        colorBufferIndex,
+            (final int i) => ui.Color(colors[i]),
+        growable: false,
+      );
+
+      final List<int> intIndices = indices.sublist(0, indexBufferIndex);
+
+      final ui.Vertices vertices = ui.Vertices(
+        ui.VertexMode.triangles,
+        offsetPositions,
+        colors: uiColors,
+        indices: intIndices,
+      );
+      canvas.drawVertices(vertices, ui.BlendMode.src, verticesPaint);
+    }
+
     final ui.Picture picture = recorder.endRecording();
-    _checkerboardImage = picture.toImageSync(latestSize.width.floor(), latestSize.height.floor());
+    _checkerboardImage = picture.toImageSync(_latestCanvasSize.x, _latestCanvasSize.y);
   }
+
+
 
   void _drawCheckerboard({required final DrawingParameters drawParams})
   {

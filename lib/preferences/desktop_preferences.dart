@@ -55,6 +55,10 @@ class DesktopPreferenceContent
   }
 
   DesktopPreferenceContent._({required this.cursorType});
+  void update({required final int cursorTypeValue})
+  {
+    cursorType.value = cursorTypeIndexMap[cursorTypeValue]?? CursorType.crossHair;
+  }
 }
 
 class DesktopPreferences extends StatefulWidget

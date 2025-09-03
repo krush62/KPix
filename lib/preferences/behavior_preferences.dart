@@ -54,6 +54,16 @@ class BehaviorPreferenceContent
 
   BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints});
 
+  void update({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints})
+  {
+    this.undoSteps.value = undoSteps.clamp(undoStepsMin, undoStepsMax);
+    selectShapeAfterInsert.value = selectAfterInsert;
+    this.selectLayerAfterInsert.value = selectLayerAfterInsert;
+    fps.value = frameConstraints.defaultFps;
+    shadingStepsMinus.value = shadingConstraints.shadingStepsDefaultDarken;
+    shadingStepsPlus.value = shadingConstraints.shadingStepsDefaultBrighten;
+  }
+
 }
 
 

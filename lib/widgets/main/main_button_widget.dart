@@ -357,7 +357,10 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _reloadPreferences()
   {
-    GetIt.I.get<PreferenceManager>().loadPreferences().then((final void _){_closeAllMenus();});
+    GetIt.I.get<PreferenceManager>().updatePreferences().then((final void _){
+      _closeAllMenus();
+      _appState.repaintNotifier.repaint();
+    });
   }
 
   void _importImage({required final ImportData importData})

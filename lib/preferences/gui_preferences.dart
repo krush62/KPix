@@ -89,6 +89,19 @@ class GuiPreferenceContent
   }
 
   GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
+
+  void update({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final int toolOpacityValue})
+  {
+    themeType.value = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
+    rasterSizeIndex.value = max(rasterSizes.indexOf(rasterSizeValue), 0);
+    this.rasterContrast.value = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
+    colorNameScheme.value = colorNameSchemeMap[colorNameSchemeValue]?? ColorNameScheme.general;
+    canvasBorderOpacity.value = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
+    selectionOpacity.value = selectionOpacityValue.clamp(opacityMin, opacityMax);
+    toolOpacity.value = toolOpacityValue.clamp(opacityMin, opacityMax);
+
+
+  }
 }
 
 

@@ -55,6 +55,19 @@ class TouchPreferenceContent
     required this.zoomStepDistanceMin,
     required this.zoomStepDistanceMax,
   });
+
+  void update({
+    required final int singleTouchDelay,
+    required final int singleTouchDelayMin,
+    required final int singleTouchDelayMax,
+    required final double zoomStepDistance,
+    required final double zoomStepDistanceMin,
+    required final double zoomStepDistanceMax,
+  })
+  {
+    this.singleTouchDelay.value = singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax);
+    this.zoomStepDistance.value = zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax);
+  }
 }
 
 class TouchPreferences extends StatefulWidget

@@ -16,6 +16,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 class StylusPreferenceContent
@@ -101,6 +102,35 @@ class StylusPreferenceContent
     required this.stylusPollIntervalMax,
     required this.stylusPickMaxDurationMin,
     required this.stylusPickMaxDurationMax,});
+
+  void update({
+    required final int stylusLongPressDelay,
+    required final int stylusLongPressDelayMin,
+    required final int stylusLongPressDelayMax,
+    required final double stylusLongPressCancelDistance,
+    required final double stylusLongPressCancelDistanceMin,
+    required final double stylusLongPressCancelDistanceMax,
+    required final double stylusZoomStepDistance,
+    required final double stylusZoomStepDistanceMin,
+    required final double stylusZoomStepDistanceMax,
+    required final double stylusSizeStepDistance,
+    required final double stylusSizeStepDistanceMin,
+    required final double stylusSizeStepDistanceMax,
+    required final int stylusPollInterval,
+    required final int stylusPollIntervalMin,
+    required final int stylusPollIntervalMax,
+    required final int stylusPickMaxDuration,
+    required final int stylusPickMaxDurationMin,
+    required final int stylusPickMaxDurationMax,
+  })
+  {
+    this.stylusLongPressDelay.value = stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax);
+    this.stylusLongPressCancelDistance.value = stylusLongPressCancelDistance.clamp(stylusLongPressCancelDistanceMin, stylusLongPressCancelDistanceMax);
+    this.stylusZoomStepDistance.value = stylusZoomStepDistance.clamp(stylusZoomStepDistanceMin, stylusZoomStepDistanceMax);
+    this.stylusSizeStepDistance.value = stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax);
+    this.stylusPollInterval.value = stylusPollInterval.clamp(stylusPollIntervalMin, stylusPollIntervalMax);
+    this.stylusPickMaxDuration.value = stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax);
+  }
 }
 
 class StylusPreferences extends StatefulWidget
@@ -121,143 +151,167 @@ class _StylusPreferencesState extends State<StylusPreferences>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Poll Interval", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<int>(
-                valueListenable: widget.prefs.stylusPollInterval,
-                builder: (final BuildContext context, final int pollInterval, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: pollInterval.toDouble(),
-                    min: widget.prefs.stylusPollIntervalMin.toDouble(),
-                    max: widget.prefs.stylusPollIntervalMax.toDouble(),
-                    label: "${pollInterval}ms",
-                    onChanged: (final double newVal) {widget.prefs.stylusPollInterval.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+        Tooltip(
+          waitDuration: AppState.toolTipDuration,
+          message: "Polling time to check for presses of stylus buttons.",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(child: Text("Poll Interval", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: widget.prefs.stylusPollInterval,
+                  builder: (final BuildContext context, final int pollInterval, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: pollInterval.toDouble(),
+                      min: widget.prefs.stylusPollIntervalMin.toDouble(),
+                      max: widget.prefs.stylusPollIntervalMax.toDouble(),
+                      label: "${pollInterval}ms",
+                      onChanged: (final double newVal) {widget.prefs.stylusPollInterval.value = newVal.round();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Long Press Delay", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<int>(
-                valueListenable: widget.prefs.stylusLongPressDelay,
-                builder: (final BuildContext context, final int longPressDelay, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: longPressDelay.toDouble(),
-                    min: widget.prefs.stylusLongPressDelayMin.toDouble(),
-                    max: widget.prefs.stylusLongPressDelayMax.toDouble(),
-                    label: "${longPressDelay}ms",
-                    onChanged: (final double newVal) {widget.prefs.stylusLongPressDelay.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+        Tooltip(
+          waitDuration: AppState.toolTipDuration,
+          message: "Time that needs to be held down for a long press.",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(child: Text("Long Press Delay", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: widget.prefs.stylusLongPressDelay,
+                  builder: (final BuildContext context, final int longPressDelay, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: longPressDelay.toDouble(),
+                      min: widget.prefs.stylusLongPressDelayMin.toDouble(),
+                      max: widget.prefs.stylusLongPressDelayMax.toDouble(),
+                      label: "${longPressDelay}ms",
+                      onChanged: (final double newVal) {widget.prefs.stylusLongPressDelay.value = newVal.round();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Long Press Cancel Distance", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<double>(
-                valueListenable: widget.prefs.stylusLongPressCancelDistance,
-                builder: (final BuildContext context, final double longPressDistance, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: longPressDistance,
-                    min: widget.prefs.stylusLongPressCancelDistanceMin,
-                    max: widget.prefs.stylusLongPressCancelDistanceMax,
-                    label: "${longPressDistance.round()}px",
-                    onChanged: (final double newVal) {widget.prefs.stylusLongPressCancelDistance.value = newVal;},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+        Tooltip(
+          waitDuration: AppState.toolTipDuration,
+          message: "Distance that must be moved during a long press to cancel it.",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(child: Text("Long Press Cancel Distance", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: widget.prefs.stylusLongPressCancelDistance,
+                  builder: (final BuildContext context, final double longPressDistance, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: longPressDistance,
+                      min: widget.prefs.stylusLongPressCancelDistanceMin,
+                      max: widget.prefs.stylusLongPressCancelDistanceMax,
+                      label: "${longPressDistance.round()}px",
+                      onChanged: (final double newVal) {widget.prefs.stylusLongPressCancelDistance.value = newVal;},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<double>(
-                valueListenable: widget.prefs.stylusZoomStepDistance,
-                builder: (final BuildContext context, final double zoomStepDistance, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: zoomStepDistance,
-                    min: widget.prefs.stylusZoomStepDistanceMin,
-                    max: widget.prefs.stylusZoomStepDistanceMax,
-                    label: "${zoomStepDistance.round()}px",
-                    onChanged: (final double newVal) {widget.prefs.stylusZoomStepDistance.value = newVal;},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+        Tooltip(
+          waitDuration: AppState.toolTipDuration,
+          message: "Distance that needs to be moved vertically to zoom in or out.",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: widget.prefs.stylusZoomStepDistance,
+                  builder: (final BuildContext context, final double zoomStepDistance, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: zoomStepDistance,
+                      min: widget.prefs.stylusZoomStepDistanceMin,
+                      max: widget.prefs.stylusZoomStepDistanceMax,
+                      label: "${zoomStepDistance.round()}px",
+                      onChanged: (final double newVal) {widget.prefs.stylusZoomStepDistance.value = newVal;},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Tool Size Step Distance", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<double>(
-                valueListenable: widget.prefs.stylusSizeStepDistance,
-                builder: (final BuildContext context, final double sizeStepDistance, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: sizeStepDistance,
-                    min: widget.prefs.stylusSizeStepDistanceMin,
-                    max: widget.prefs.stylusSizeStepDistanceMax,
-                    label: "${sizeStepDistance.round()}px",
-                    onChanged: (final double newVal) {widget.prefs.stylusSizeStepDistance.value = newVal;},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+        Tooltip(
+          waitDuration: AppState.toolTipDuration,
+          message: "Distance that needs to be moved horizontally to change the size of the current tool.",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(child: Text("Tool Size Step Distance", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: widget.prefs.stylusSizeStepDistance,
+                  builder: (final BuildContext context, final double sizeStepDistance, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: sizeStepDistance,
+                      min: widget.prefs.stylusSizeStepDistanceMin,
+                      max: widget.prefs.stylusSizeStepDistanceMax,
+                      label: "${sizeStepDistance.round()}px",
+                      onChanged: (final double newVal) {widget.prefs.stylusSizeStepDistance.value = newVal;},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Color Pick Timeout", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<int>(
-                valueListenable: widget.prefs.stylusPickMaxDuration,
-                builder: (final BuildContext context, final int pickDuration, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: pickDuration.toDouble(),
-                    min: widget.prefs.stylusPickMaxDurationMin.toDouble(),
-                    max: widget.prefs.stylusPickMaxDurationMax.toDouble(),
-                    label: "${pickDuration}ms",
-                    onChanged: (final double newVal) {widget.prefs.stylusPickMaxDuration.value = newVal.toInt();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
+        Tooltip(
+          waitDuration: AppState.toolTipDuration,
+          message: "Timeout for picking a color.",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(child: Text("Color Pick Timeout", style: Theme.of(context).textTheme.titleSmall)),
+              Expanded(
+                flex: 2,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: widget.prefs.stylusPickMaxDuration,
+                  builder: (final BuildContext context, final int pickDuration, final Widget? child)
+                  {
+                    return KPixSlider(
+                      value: pickDuration.toDouble(),
+                      min: widget.prefs.stylusPickMaxDurationMin.toDouble(),
+                      max: widget.prefs.stylusPickMaxDurationMax.toDouble(),
+                      label: "${pickDuration}ms",
+                      onChanged: (final double newVal) {widget.prefs.stylusPickMaxDuration.value = newVal.toInt();},
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

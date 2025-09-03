@@ -473,7 +473,7 @@ enum PreferenceInt
 
   ThemeType(defaultValue: 0),
 
-  StylusOptions_LongPressDelay(defaultValue: 250),
+  StylusOptions_LongPressDelay(defaultValue: 150),
   StylusOptions_LongPressDelayMin(defaultValue: 50),
   StylusOptions_LongPressDelayMax(defaultValue: 1000),
   StylusOptions_PollInterval(defaultValue: 50),
@@ -1292,6 +1292,76 @@ class PreferenceManager
     );
 
     desktopPreferenceContent = DesktopPreferenceContent(
+      cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType),
+    );
+  }
+
+  Future<void> updatePreferences() async
+  {
+    guiPreferenceContent.update(
+      colorNameSchemeValue: _getValueI(PreferenceInt.ColorNames_Scheme),
+      rasterContrast: _getValueI(PreferenceInt.Painter_CheckerBoardContrast),
+      rasterSizeValue: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
+      themeTypeValue: _getValueI(PreferenceInt.ThemeType),
+      canvasBorderOpacityValue: _getValueI(PreferenceInt.Opacity_CanvasBorder),
+      selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
+      toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
+    );
+
+    shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
+      shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
+      shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
+      shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
+      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
+      ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
+
+    frameConstraints = FrameConstraints(
+      minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
+      maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
+      defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),
+    );
+
+    behaviorPreferenceContent.update(
+      undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
+      selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
+      selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
+      undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
+      undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
+      frameConstraints: frameConstraints,
+      shadingConstraints: shadingLayerSettingsConstraints,
+    );
+
+    stylusPreferenceContent.update(
+      stylusLongPressCancelDistance: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistance),
+      stylusLongPressCancelDistanceMin: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMin),
+      stylusLongPressCancelDistanceMax: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMax),
+      stylusLongPressDelay: _getValueI(PreferenceInt.StylusOptions_LongPressDelay),
+      stylusLongPressDelayMin: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMin),
+      stylusLongPressDelayMax: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMax),
+      stylusPollInterval: _getValueI(PreferenceInt.StylusOptions_PollInterval),
+      stylusPollIntervalMin: _getValueI(PreferenceInt.StylusOptions_PollIntervalMin),
+      stylusPollIntervalMax: _getValueI(PreferenceInt.StylusOptions_PollIntervalMax),
+      stylusSizeStepDistance: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistance),
+      stylusSizeStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMin),
+      stylusSizeStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMax),
+      stylusZoomStepDistance: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistance),
+      stylusZoomStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMin),
+      stylusZoomStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMax),
+      stylusPickMaxDuration: _getValueI(PreferenceInt.StylusOptions_PickMaxDuration),
+      stylusPickMaxDurationMin: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMin),
+      stylusPickMaxDurationMax: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMax),
+    );
+
+    touchPreferenceContent.update(
+      singleTouchDelay: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelay),
+      singleTouchDelayMin: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMin),
+      singleTouchDelayMax: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMax),
+      zoomStepDistance: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistance),
+      zoomStepDistanceMin: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMin),
+      zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
+    );
+
+    desktopPreferenceContent.update(
       cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType),
     );
   }

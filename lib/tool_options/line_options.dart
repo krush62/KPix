@@ -145,7 +145,7 @@ class LineOptions extends IToolOptions
                     value: width.toDouble(),
                     min: lineOptions.widthMin.toDouble(),
                     max: lineOptions.widthMax.toDouble(),
-                    divisions: lineOptions.widthMax - lineOptions.widthMin,
+                    //divisions: lineOptions.widthMax - lineOptions.widthMin,
                     onChanged: (final double newVal) {lineOptions.width.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );

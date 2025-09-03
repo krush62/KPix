@@ -74,7 +74,7 @@ class EraserOptions extends IToolOptions
                     min: eraserOptions.sizeMin.toDouble(),
                     max: eraserOptions.sizeMax.toDouble(),
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
+                    //divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
                     onChanged: (final double newVal) {eraserOptions.size.value = newVal.round();},
                   );
                 },

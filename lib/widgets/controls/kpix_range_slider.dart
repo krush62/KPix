@@ -17,8 +17,7 @@
 
 import 'package:flutter/material.dart';
 
-class KPixRangeSlider extends StatelessWidget
-{
+class KPixRangeSlider extends StatefulWidget {
   final RangeValues values;
   final ValueChanged<RangeValues>? onChanged;
   final double trackHeight;
@@ -60,66 +59,90 @@ class KPixRangeSlider extends StatelessWidget
   });
 
   @override
+  State<KPixRangeSlider> createState() => _KPixRangeSliderState();
+}
+
+class _KPixRangeSliderState extends State<KPixRangeSlider>
+{
+  bool _isHovering = false;
+
+  @override
   Widget build(final BuildContext context)
   {
-    final Color fgColor = activeTrackColor ?? Theme.of(context).primaryColorLight;
-    final Color bgColor = inActiveTrackColor ?? Theme.of(context).primaryColor;
-    final Color disColor = disabledColor ?? Theme.of(context).primaryColorDark;
-    final Color bColor = borderColor ?? Theme.of(context).primaryColorLight;
+    final Color fgColor = widget.activeTrackColor ?? Theme.of(context).primaryColorLight;
+    final Color bgColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
+    final Color disColor = widget.disabledColor ?? Theme.of(context).primaryColorDark;
+    final Color bColor = widget.borderColor ?? Theme.of(context).primaryColorLight;
+    final Color hoverOverlayColor = Theme.of(context).primaryColorLight.withAlpha(32);
+    final Color defaultInActiveTrackColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
 
-    return SliderTheme(
-      data: SliderTheme.of(context).copyWith(
-        trackHeight: trackHeight,
-        activeTrackColor: fgColor,
-        inactiveTrackColor: bgColor,
-        overlayShape: SliderComponentShape.noOverlay, // No overlay
-        rangeTrackShape: _KPixRangeSliderTrackShape(borderRadius: borderRadius, strokeColor: bColor, strokeWidth: borderWidth),
-        rangeThumbShape: const _InvisibleRangeSliderThumbShape(),
-        rangeTickMarkShape: const _InvisibleRangeSliderTickMarkShape(),
+    final Color currentInActiveTrackColor;
+    if (_isHovering)
+    {
+      currentInActiveTrackColor = Color.alphaBlend(hoverOverlayColor, defaultInActiveTrackColor);
+    }
+    else
+    {
+      currentInActiveTrackColor = defaultInActiveTrackColor;
+    }
 
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: <Widget>[
-          RangeSlider(
-            values: values,
-            onChanged: onChanged,
-            divisions: divisions,
-            min: min,
-            max: max,
-          ),
-          Positioned.fill(
-            child: Center(
-              child: IgnorePointer(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: <Widget>[
-                    Text(
-                      label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
-                      style: TextStyle(
-                        fontSize: textStyle.fontSize,
-                        fontFamily: textStyle.fontFamily,
-                        foreground: Paint()
-                          ..style = PaintingStyle.stroke
-                          ..strokeWidth = fontStrokeWidth
-                          ..color = bgColor,
+    return MouseRegion(
+      onEnter: (final _) => setState(() => _isHovering = true),
+      onExit: (final _) => setState(() => _isHovering = false),
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          trackHeight: widget.trackHeight,
+          activeTrackColor: fgColor,
+          inactiveTrackColor: currentInActiveTrackColor,
+          overlayShape: SliderComponentShape.noOverlay,
+          rangeTrackShape: _KPixRangeSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth),
+          rangeThumbShape: const _InvisibleRangeSliderThumbShape(),
+          rangeTickMarkShape: const _InvisibleRangeSliderTickMarkShape(),
+
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            RangeSlider(
+              values: widget.values,
+              onChanged: widget.onChanged,
+              divisions: widget.divisions,
+              min: widget.min,
+              max: widget.max,
+            ),
+            Positioned.fill(
+              child: Center(
+                child: IgnorePointer(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      Text(
+                        widget.label ?? "${widget.values.start.toStringAsFixed(widget.decimals)}-${widget.values.end.toStringAsFixed(widget.decimals)}",
+                        style: TextStyle(
+                          fontSize: widget.textStyle.fontSize,
+                          fontFamily: widget.textStyle.fontFamily,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = widget.fontStrokeWidth
+                            ..color = bgColor,
+                        ),
                       ),
-                    ),
-                    Text(
-                      label ?? "${values.start.toStringAsFixed(decimals)}-${values.end.toStringAsFixed(decimals)}",
-                      style: TextStyle(
-                        fontSize: textStyle.fontSize,
-                        fontFamily: textStyle.fontFamily,
-                        fontWeight: FontWeight.bold,
-                        color: onChanged != null ? fgColor : disColor,
+                      Text(
+                        widget.label ?? "${widget.values.start.toStringAsFixed(widget.decimals)}-${widget.values.end.toStringAsFixed(widget.decimals)}",
+                        style: TextStyle(
+                          fontSize: widget.textStyle.fontSize,
+                          fontFamily: widget.textStyle.fontFamily,
+                          fontWeight: FontWeight.bold,
+                          color: widget.onChanged != null ? fgColor : disColor,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -164,7 +187,7 @@ class _InvisibleRangeSliderThumbShape extends RangeSliderThumbShape
 
 }
 
-class _KPixRangeSliderTrackShape extends RoundedRectRangeSliderTrackShape {
+class _KPixRangeSliderTrackShape extends RectangularRangeSliderTrackShape {
   final double borderRadius;
   final double strokeWidth;
   final Color strokeColor;
@@ -177,7 +200,19 @@ class _KPixRangeSliderTrackShape extends RoundedRectRangeSliderTrackShape {
 
 
   @override
-  void paint(final PaintingContext context, final Offset offset, {required final RenderBox parentBox, required final SliderThemeData sliderTheme, required final Animation<double> enableAnimation, required final Offset startThumbCenter, required final Offset endThumbCenter, final bool isEnabled = false, final bool isDiscrete = false, required final TextDirection textDirection, final double additionalActiveTrackHeight = 2}) {
+  void paint(
+    final PaintingContext context,
+    final Offset offset, {
+        required final RenderBox parentBox,
+        required final SliderThemeData sliderTheme,
+        required final Animation<double>? enableAnimation,
+        required final Offset startThumbCenter,
+        required final Offset endThumbCenter,
+        final bool isEnabled = true,
+        final bool isDiscrete = false,
+        required final TextDirection textDirection,
+      })
+  {
     final Rect trackRect = getPreferredRect(
       parentBox: parentBox,
       sliderTheme: sliderTheme,
@@ -214,6 +249,12 @@ class _KPixRangeSliderTrackShape extends RoundedRectRangeSliderTrackShape {
       RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
       outlinePaint,
     );
+
+    if ((activeTrack.right - activeTrack.left) < borderRadius * 2)
+    {
+      final RRect clipRect = RRect.fromLTRBR(trackRect.left - strokeWidth / 2, trackRect.top - strokeWidth / 2, trackRect.right + strokeWidth / 2, trackRect.bottom + strokeWidth / 2, Radius.circular(borderRadius));
+      context.canvas.clipRRect(clipRect);
+    }
 
     context.canvas.drawRRect(
       RRect.fromRectAndRadius(activeTrack, Radius.circular(borderRadius)),

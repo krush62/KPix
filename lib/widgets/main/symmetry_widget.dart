@@ -238,7 +238,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                           min: 1.0,
                                           value: horVal,
                                           max: max(GetIt.I.get<AppState>().canvasSize.x - 1, 1.0),
-                                          divisions: max((GetIt.I.get<AppState>().canvasSize.x - 2) * 2, 1),
+                                          //divisions: max((GetIt.I.get<AppState>().canvasSize.x - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: horActivated ? (final double value) {
                                             widget.state.horizontalValue.value = value;
@@ -321,7 +321,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                           min: 1.0,
                                           value: horVal,
                                           max: max(GetIt.I.get<AppState>().canvasSize.y - 1, 1.0),
-                                          divisions: max((GetIt.I.get<AppState>().canvasSize.y - 2) * 2, 1),
+                                          //divisions: max((GetIt.I.get<AppState>().canvasSize.y - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: vertActivated ? (final double value) {
                                             widget.state.verticalValue.value = value;

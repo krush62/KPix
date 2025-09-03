@@ -90,7 +90,7 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                     min: widget.prefs.undoStepsMin.toDouble(),
                     max: widget.prefs.undoStepsMax.toDouble(),
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    onChanged: (final double newVal) {widget.prefs.undoSteps.value = newVal.toInt();},
+                    onChanged: (final double newVal) {widget.prefs.undoSteps.value = newVal.round();},
                   );
                 },
               ),

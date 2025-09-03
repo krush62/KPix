@@ -162,9 +162,9 @@ class _GuiPreferencesState extends State<GuiPreferences>
                     return KPixSlider(
                       value: rasterSizeIndex.toDouble(),
                       max: rasterSizes.length.toDouble() - 1,
-                      divisions: rasterSizes.length,
+                      //divisions: rasterSizes.length,
                       label: rasterSizes[rasterSizeIndex].toString(),
-                      onChanged: (final double newVal) {widget.prefs.rasterSizeIndex.value = newVal.toInt();},
+                      onChanged: (final double newVal) {widget.prefs.rasterSizeIndex.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
@@ -186,8 +186,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
                       value: rasterContrast.toDouble(),
                       min: rasterContrastMin.toDouble(),
                       max: rasterContrastMax.toDouble(),
-                      divisions: rasterContrastDivisions,
-                      onChanged: (final double newVal) {widget.prefs.rasterContrast.value = newVal.toInt();},
+                      //divisions: rasterContrastDivisions,
+                      onChanged: (final double newVal) {widget.prefs.rasterContrast.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
@@ -280,8 +280,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
                       value: toolOutlineOpacity.toDouble(),
                       min: opacityMin.toDouble(),
                       max: opacityMax.toDouble(),
-                      divisions: opacityMax - opacityMin,
-                      onChanged: (final double newVal) {widget.prefs.toolOpacity.value = newVal.toInt();},
+                      //divisions: opacityMax - opacityMin,
+                      onChanged: (final double newVal) {widget.prefs.toolOpacity.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
@@ -303,8 +303,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
                       value: selectionOpacity.toDouble(),
                       min: opacityMin.toDouble(),
                       max: opacityMax.toDouble(),
-                      divisions: opacityMax - opacityMin,
-                      onChanged: (final double newVal) {widget.prefs.selectionOpacity.value = newVal.toInt();},
+                      //divisions: opacityMax - opacityMin,
+                      onChanged: (final double newVal) {widget.prefs.selectionOpacity.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },
@@ -326,8 +326,8 @@ class _GuiPreferencesState extends State<GuiPreferences>
                       value: canvasBorderOpacity.toDouble(),
                       min: opacityMin.toDouble(),
                       max: opacityMax.toDouble(),
-                      divisions: opacityMax - opacityMin,
-                      onChanged: (final double newVal) {widget.prefs.canvasBorderOpacity.value = newVal.toInt();},
+                      //divisions: opacityMax - opacityMin,
+                      onChanged: (final double newVal) {widget.prefs.canvasBorderOpacity.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );
                   },

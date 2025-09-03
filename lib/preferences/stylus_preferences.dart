@@ -136,7 +136,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
                     min: widget.prefs.stylusPollIntervalMin.toDouble(),
                     max: widget.prefs.stylusPollIntervalMax.toDouble(),
                     label: "${pollInterval}ms",
-                    onChanged: (final double newVal) {widget.prefs.stylusPollInterval.value = newVal.toInt();},
+                    onChanged: (final double newVal) {widget.prefs.stylusPollInterval.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },
@@ -159,7 +159,7 @@ class _StylusPreferencesState extends State<StylusPreferences>
                     min: widget.prefs.stylusLongPressDelayMin.toDouble(),
                     max: widget.prefs.stylusLongPressDelayMax.toDouble(),
                     label: "${longPressDelay}ms",
-                    onChanged: (final double newVal) {widget.prefs.stylusLongPressDelay.value = newVal.toInt();},
+                    onChanged: (final double newVal) {widget.prefs.stylusLongPressDelay.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
                 },

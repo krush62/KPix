@@ -344,7 +344,7 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                   min: widget.options.opacityMin,
                                   max: widget.options.opacityMax,
                                   decimals: 1,
-                                  divisions: ((widget.options.opacityMax - widget.options.opacityMin) / widget.options.opacityStep).toInt(),
+                                  //divisions: ((widget.options.opacityMax - widget.options.opacityMin) / widget.options.opacityStep).toInt(),
                                   onChanged: enabled ? (final double newOpacity)
                                   {
                                     widget.options.opacity.value = newOpacity;

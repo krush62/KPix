@@ -62,10 +62,11 @@ class KPixSlider extends StatefulWidget {
   });
 
   @override
-  State<KPixSlider> createState() => _KPixSliderState(); // Create state
+  State<KPixSlider> createState() => _KPixSliderState();
 }
 
-class _KPixSliderState extends State<KPixSlider> {
+class _KPixSliderState extends State<KPixSlider>
+{
   bool _isHovering = false;
   @override
   Widget build(final BuildContext context)
@@ -105,12 +106,12 @@ class _KPixSliderState extends State<KPixSlider> {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: widget.topBottomPadding),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovering = true),
-        onExit: (_) => setState(() => _isHovering = false),
+        onEnter: (final _) => setState(() => _isHovering = true),
+        onExit: (final _) => setState(() => _isHovering = false),
         child: SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: widget.trackHeight,
-            thumbShape: !widget.isRainbow ? const _InvisibleSliderThumbShape() : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
+            thumbShape: !widget.isRainbow ? SliderComponentShape.noThumb : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
             trackShape: _KPixSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth, isRainbow: widget.isRainbow),
             activeTrackColor: fgColor,
             inactiveTrackColor: currentInActiveTrackColor,
@@ -195,33 +196,7 @@ class _KPixSliderThumbShape extends RoundSliderThumbShape
   }
 }
 
-//TODO this might be deleted since SliderComponentShape.noThumb exists which does the exact same thing
-class _InvisibleSliderThumbShape extends SliderComponentShape {
-  const _InvisibleSliderThumbShape();
-
-  @override
-  Size getPreferredSize(final bool isEnabled, final bool isDiscrete) => Size.zero;
-
-  @override
-  void paint(
-      final PaintingContext context,
-      final Offset center, {
-        required final Animation<double> activationAnimation,
-        required final Animation<double> enableAnimation,
-        required final bool isDiscrete,
-        required final TextPainter labelPainter,
-        required final RenderBox parentBox,
-        required final SliderThemeData sliderTheme,
-        required final TextDirection textDirection,
-        required final double value,
-        required final double textScaleFactor,
-        required final Size sizeWithOverflow,
-      }) {
-    // No thumb painting
-  }
-}
-
-class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
+class _KPixSliderTrackShape extends RectangularSliderTrackShape {
   final double borderRadius;
   final double strokeWidth;
   final Color strokeColor;
@@ -291,15 +266,22 @@ class _KPixSliderTrackShape extends RoundedRectSliderTrackShape {
           inActivePaint,
         );
       }
+    context.canvas.drawRRect(
+      RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
+      outlinePaint,
+    );
+
+      if (!isRainbow && activeTrack.right < borderRadius * 2)
+      {
+        final RRect clipRect = RRect.fromLTRBR(trackRect.left - strokeWidth / 2, trackRect.top - strokeWidth / 2, trackRect.right + strokeWidth / 2, trackRect.bottom + strokeWidth / 2, Radius.circular(borderRadius));
+        context.canvas.clipRRect(clipRect);
+      }
 
       context.canvas.drawRRect(
         RRect.fromRectAndRadius(isRainbow ? trackRect : activeTrack, Radius.circular(borderRadius)),
         activePaint,
       );
 
-      context.canvas.drawRRect(
-        RRect.fromRectAndRadius(trackRect, Radius.circular(borderRadius)),
-        outlinePaint,
-      );
+
    }
 }

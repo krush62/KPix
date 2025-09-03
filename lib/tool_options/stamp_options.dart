@@ -183,7 +183,7 @@ class StampOptions extends IToolOptions
                       value: scale.toDouble(),
                       min: stampOptions.scaleMin.toDouble(),
                       max: stampOptions.scaleMax.toDouble(),
-                      divisions: stampOptions.scaleMax - stampOptions.scaleMin,
+                      //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
                       onChanged: (final double newVal) {stampOptions.scale.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );

@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -296,7 +295,7 @@ class _ImportWidgetState extends State<ImportWidget>
                                       label: img != null ? "$originalDims -> $scaledDims" : "",
                                       min: _currentMinScale.toDouble(),
                                       max: _currentMaxScale.toDouble(),
-                                      divisions: max(_currentMaxScale - _currentMinScale, 1),
+                                      //divisions: max(_currentMaxScale - _currentMinScale, 1),
                                       onChanged: (img != null) ? (final double newValue) {
                                         _scaleDownNotifier.value = newValue.round();
                                       } : null,
@@ -358,7 +357,7 @@ class _ImportWidgetState extends State<ImportWidget>
                                       value: maxRampValue.toDouble(),
                                       min: _constraints.rampCountMin.toDouble(),
                                       max: _constraints.maxClusters.toDouble(),
-                                      divisions: _constraints.maxClusters - _constraints.rampCountMin,
+                                      //divisions: _constraints.maxClusters - _constraints.rampCountMin,
                                       onChanged: createNew ? (final double newValue) {
                                         _maxRampsNotifier.value = newValue.round();
                                       } : null,
@@ -393,7 +392,7 @@ class _ImportWidgetState extends State<ImportWidget>
                                         value: maxColorsValue.toDouble(),
                                         min: _constraints.colorCountMin.toDouble(),
                                         max: _constraints.colorCountMax.toDouble(),
-                                        divisions: _constraints.colorCountMax - _constraints.colorCountMin,
+                                        //divisions: _constraints.colorCountMax - _constraints.colorCountMin,
                                         onChanged: createNew ? (final double newValue) {
                                           _maxColorsPerRampNotifier.value = newValue.round();
                                         } : null,

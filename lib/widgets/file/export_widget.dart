@@ -410,7 +410,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                         return KPixSlider(
                                           value: isScalable? scalingIndexVal.toDouble() : 0,
                                           max: exportScalingValues.length.toDouble() - 1,
-                                          divisions: exportScalingValues.length,
+                                          //divisions: exportScalingValues.length,
                                           label: "${exportScalingValues[scalingIndexVal]}:1",
                                           onChanged: isScalable ? (final double newVal){_scalingIndex.value = newVal.round();} : null,
                                           textStyle: Theme.of(context).textTheme.bodyLarge!,

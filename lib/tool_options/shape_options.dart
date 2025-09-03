@@ -287,7 +287,7 @@ class ShapeOptions extends IToolOptions
                               value: width.toDouble(),
                               min: shapeOptions.strokeWidthMin.toDouble(),
                               max: shapeOptions.strokeWidthMax.toDouble(),
-                              divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
+                              //divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
                               onChanged: strokeOnly ? (final double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -331,7 +331,7 @@ class ShapeOptions extends IToolOptions
                               value: cornerRadius.toDouble(),
                               min: shapeOptions.cornerRadiusMin.toDouble(),
                               max: shapeOptions.cornerRadiusMax.toDouble(),
-                              divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
+                              //divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
                               onChanged: (final double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -367,7 +367,7 @@ class ShapeOptions extends IToolOptions
                               value: angle.toDouble(),
                               min: shapeOptions.ellipseAngleMin.toDouble(),
                               max: shapeOptions.ellipseAngleMax.toDouble(),
-                              divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
+                              //divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
                               onChanged: (final double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -401,7 +401,7 @@ class ShapeOptions extends IToolOptions
                               value: corners.toDouble(),
                               min: shapeOptions.cornerCountMin.toDouble(),
                               max: shapeOptions.cornerCountMax.toDouble(),
-                              divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
+                              //divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
                               onChanged: (final double newVal) {shapeOptions.cornerCount.value = newVal.round();},
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );

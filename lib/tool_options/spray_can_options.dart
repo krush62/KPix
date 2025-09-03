@@ -84,7 +84,7 @@ class SprayCanOptions extends IToolOptions
                     value: radius.toDouble(),
                     min: sprayCanOptions.radiusMin.toDouble(),
                     max: sprayCanOptions.radiusMax.toDouble(),
-                    divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
+                    //divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
                     onChanged: (final double newVal) {sprayCanOptions.radius.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
@@ -115,7 +115,7 @@ class SprayCanOptions extends IToolOptions
                     value: blobSize.toDouble(),
                     min: sprayCanOptions.blobSizeMin.toDouble(),
                     max: sprayCanOptions.blobSizeMax.toDouble(),
-                    divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
+                    //divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
                     onChanged: (final double newVal) {sprayCanOptions.blobSize.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );
@@ -146,7 +146,7 @@ class SprayCanOptions extends IToolOptions
                     value: intensity.toDouble(),
                     min: sprayCanOptions.intensityMin.toDouble(),
                     max: sprayCanOptions.intensityMax.toDouble(),
-                    divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
+                    //divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
                     onChanged: (final double newVal) {sprayCanOptions.intensity.value = newVal.round();},
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
                   );

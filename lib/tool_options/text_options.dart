@@ -125,7 +125,7 @@ class TextOptions extends IToolOptions
                       value: size.toDouble(),
                       min: textOptions.sizeMin.toDouble(),
                       max: textOptions.sizeMax.toDouble(),
-                      divisions: textOptions.sizeMax - textOptions.sizeMin,
+                      //divisions: textOptions.sizeMax - textOptions.sizeMin,
                       onChanged: (final double newVal) {textOptions.size.value = newVal.round();},
                       textStyle: Theme.of(context).textTheme.bodyLarge!,
                     );

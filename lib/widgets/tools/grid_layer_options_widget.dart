@@ -250,7 +250,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               label: "$opacity%",
                               min: _gridSettings.opacityMin.toDouble(),
                               max: _gridSettings.opacityMax.toDouble(),
-                              divisions: _gridSettings.opacityMax - _gridSettings.opacityMin,
+                              //divisions: _gridSettings.opacityMax - _gridSettings.opacityMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.opacityNotifier.value = newVal.round();
                               },
@@ -282,7 +282,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               value: brightness.toDouble(),
                               min: _gridSettings.brightnessMin.toDouble(),
                               max: _gridSettings.brightnessMax.toDouble(),
-                              divisions: _gridSettings.brightnessMax - _gridSettings.brightnessMin,
+                              //divisions: _gridSettings.brightnessMax - _gridSettings.brightnessMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.brightnessNotifier.value = newVal.round();
                               },
@@ -314,7 +314,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               value: intervalX.toDouble(),
                               min: _gridSettings.intervalXMin.toDouble(),
                               max: _gridSettings.intervalXMax.toDouble(),
-                              divisions: _gridSettings.intervalXMax - _gridSettings.intervalXMin,
+                              //divisions: _gridSettings.intervalXMax - _gridSettings.intervalXMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.intervalXNotifier.value = newVal.round();
                               },
@@ -347,7 +347,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               value: intervalY.toDouble(),
                               min: _gridSettings.intervalYMin.toDouble(),
                               max: _gridSettings.intervalYMax.toDouble(),
-                              divisions: _gridSettings.intervalYMax - _gridSettings.intervalYMin,
+                              //divisions: _gridSettings.intervalYMax - _gridSettings.intervalYMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.intervalYNotifier.value = newVal.round();
                               },

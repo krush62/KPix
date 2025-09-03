@@ -97,7 +97,7 @@ class PencilOptions extends IToolOptions
                     min: pencilOptions.sizeMin.toDouble(),
                     max: pencilOptions.sizeMax.toDouble(),
                     textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
+                    //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
                     onChanged: (final double newVal) {pencilOptions.size.value = newVal.round();},
                   );
                 },

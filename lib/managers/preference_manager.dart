@@ -528,6 +528,7 @@ enum PreferenceBool
 
   SelectShapeAfterInsert(defaultValue: false),
   SelectLayerAfterInsert(defaultValue: true),
+  ShowReferenceOutsideCanvas(defaultValue: false),
 
   DrawingLayerConstraints_DefaultGlowRecursive(defaultValue: true),
 
@@ -1259,6 +1260,7 @@ class PreferenceManager
       undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
       frameConstraints: frameConstraints,
       shadingConstraints: shadingLayerSettingsConstraints,
+      showReferenceOutsideCanvas: _getValueB(PreferenceBool.ShowReferenceOutsideCanvas),
     );
 
     stylusPreferenceContent = StylusPreferenceContent(
@@ -1329,6 +1331,7 @@ class PreferenceManager
       undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
       frameConstraints: frameConstraints,
       shadingConstraints: shadingLayerSettingsConstraints,
+      showReferenceOutsideCanvas: _getValueB(PreferenceBool.ShowReferenceOutsideCanvas),
     );
 
     stylusPreferenceContent.update(
@@ -1397,6 +1400,7 @@ class PreferenceManager
     _intMap[PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten]!.value = behaviorPreferenceContent.shadingStepsPlus.value;
 
     _intMap[PreferenceInt.FrameConstraints_DefaultFps]!.value = behaviorPreferenceContent.fps.value;
+    _boolMap[PreferenceBool.ShowReferenceOutsideCanvas]!.value = behaviorPreferenceContent.showReferenceOutsideCanvas.value;
 
 
     //STYLUS PREFERENCES

@@ -29,6 +29,7 @@ class BehaviorPreferenceContent
   final ValueNotifier<int> undoSteps;
   final ValueNotifier<bool> selectShapeAfterInsert;
   final ValueNotifier<bool> selectLayerAfterInsert;
+  final ValueNotifier<bool> showReferenceOutsideCanvas;
   final ValueNotifier<int> shadingStepsMinus;
   final ValueNotifier<int> shadingStepsPlus;
   final int undoStepsMax;
@@ -37,7 +38,7 @@ class BehaviorPreferenceContent
   final FrameConstraints frameConstraints;
   final ValueNotifier<int> fps;
 
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints})
+  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas})
   {
       return BehaviorPreferenceContent._(
         undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
@@ -49,12 +50,14 @@ class BehaviorPreferenceContent
         shadingStepsPlus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultBrighten),
         shadingConstraints: shadingConstraints,
         undoStepsMax: undoStepsMax,
-        undoStepsMin: undoStepsMin,);
+        undoStepsMin: undoStepsMin,
+        showReferenceOutsideCanvas: ValueNotifier<bool>(showReferenceOutsideCanvas),
+      );
   }
 
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints});
+  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas});
 
-  void update({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints})
+  void update({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas})
   {
     this.undoSteps.value = undoSteps.clamp(undoStepsMin, undoStepsMax);
     selectShapeAfterInsert.value = selectAfterInsert;
@@ -62,6 +65,7 @@ class BehaviorPreferenceContent
     fps.value = frameConstraints.defaultFps;
     shadingStepsMinus.value = shadingConstraints.shadingStepsDefaultDarken;
     shadingStepsPlus.value = shadingConstraints.shadingStepsDefaultBrighten;
+    this.showReferenceOutsideCanvas.value = showReferenceOutsideCanvas;
   }
 
 }
@@ -134,16 +138,21 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
             Expanded(child: Text("Select Inserted Layers", style: Theme.of(context).textTheme.titleSmall)),
             Expanded(
               flex: 2,
-              child: ValueListenableBuilder<bool>(
-                valueListenable: widget.prefs.selectLayerAfterInsert,
-                builder: (final BuildContext context, final bool select, final Widget? child)
-                {
-                  return Switch(
-                    value: select,
-                    onChanged: (final bool newVal){widget.prefs.selectLayerAfterInsert.value = newVal;},
-                  );
-                },
-              ),
+              child: Row(
+                children: <Widget>[
+                  ValueListenableBuilder<bool>(
+                    valueListenable: widget.prefs.selectLayerAfterInsert,
+                    builder: (final BuildContext context, final bool select, final Widget? child)
+                    {
+                      return Switch(
+                        value: select,
+                        onChanged: (final bool newVal){widget.prefs.selectLayerAfterInsert.value = newVal;},
+                      );
+                    },
+                  ),
+                  const Spacer(),
+                ]
+              )
             ),
           ],
         ),
@@ -226,6 +235,30 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                   );
                 },
               ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Expanded(child: Text("Show Reference Layers outside of canvas", style: Theme.of(context).textTheme.titleSmall)),
+            Expanded(
+                flex: 2,
+                child: Row(
+                    children: <Widget>[
+                      ValueListenableBuilder<bool>(
+                        valueListenable: widget.prefs.showReferenceOutsideCanvas,
+                        builder: (final BuildContext context, final bool select, final Widget? child)
+                        {
+                          return Switch(
+                            value: select,
+                            onChanged: (final bool newVal){widget.prefs.showReferenceOutsideCanvas.value = newVal;},
+                          );
+                        },
+                      ),
+                      const Spacer(),
+                    ]
+                )
             ),
           ],
         ),

@@ -42,6 +42,7 @@ import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/preferences/gui_preferences.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
@@ -132,6 +133,7 @@ class KPixPainter extends CustomPainter
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
   final GuiPreferenceContent _guiOptions = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final FrameBlendingOptions _frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
+  final BehaviorPreferenceContent _behaviorPreferences = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   late Color _blackSelectionAlphaColor;
   late Color _whiteSelectionAlphaColor;
   late Color _blackBorderAlphaColor;
@@ -143,6 +145,7 @@ class KPixPainter extends CustomPainter
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
   ui.Image? _backupImage;
+  final List<int> _previousRasterHashes = <int>[];
 
   // status for reference layer movements
   bool _referenceImgMovementStarted = false;
@@ -682,9 +685,6 @@ class KPixPainter extends CustomPainter
     }
   }
 
-
-  final List<int> _previousRasterHashes = <int>[]; //TODO move me
-
   bool _shouldCapture()
   {
     final Frame? frame = _appState.timeline.selectedFrame;
@@ -839,22 +839,58 @@ class KPixPainter extends CustomPainter
 
                 final ui.Image image = refLayer.image!.image;
 
-                final ui.Rect srcRect = ui.Rect.fromLTWH(
-                  -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-                  -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-                  drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
-                  drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
-                );
+                ui.Rect srcRect;
+                ui.Rect targetRect;
 
-                final ui.Rect targetRect = ui.Rect.fromLTWH(
-                  drawParams.offset.dx,
-                  drawParams.offset.dy,
-                  effCanvasSize.x,
-                  effCanvasSize.y,
-                );
+                if (_behaviorPreferences.showReferenceOutsideCanvas.value)
+                {
+                  final double targetImageScreenX = drawParams.offset.dx + (refLayer.offsetX * effPxSize);
+                  final double targetImageScreenY = drawParams.offset.dy + (refLayer.offsetY * effPxSize);
 
+                  final double targetImageScreenWidth = image.width *
+                      refLayer.zoomFactor *
+                      refLayer.aspectRatioFactorX *
+                      effPxSize;
+                  final double targetImageScreenHeight = image.height *
+                      refLayer.zoomFactor *
+                      refLayer.aspectRatioFactorY *
+                      effPxSize;
+
+                  targetRect = ui.Rect.fromLTWH(
+                    targetImageScreenX,
+                    targetImageScreenY,
+                    targetImageScreenWidth,
+                    targetImageScreenHeight,
+                  );
+                  srcRect = ui.Rect.fromLTWH(
+                    0,
+                    0,
+                    image.width.toDouble(),
+                    image.height.toDouble(),
+                  );
+                }
+                else
+                {
+                  srcRect = ui.Rect.fromLTWH(
+                    -refLayer.offsetX / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                    -refLayer.offsetY / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+                    drawParams.canvasSize.x.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorX,
+                    drawParams.canvasSize.y.toDouble() / refLayer.zoomFactor / refLayer.aspectRatioFactorY,
+                  );
+
+                  targetRect = ui.Rect.fromLTWH(
+                    drawParams.offset.dx,
+                    drawParams.offset.dy,
+                    effCanvasSize.x,
+                    effCanvasSize.y,
+                  );
+
+                }
                 final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
                 drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
+
+
+
               }
             }
             else if (visibleLayers[i].runtimeType == GridLayerState)

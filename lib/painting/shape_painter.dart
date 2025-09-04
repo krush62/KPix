@@ -281,7 +281,10 @@ class ShapePainter extends IToolPainter
       final CoordinateSetI innerSelectionEnd = CoordinateSetI(x: selectionEnd.x - options.strokeWidth.value, y: selectionEnd.y - options.strokeWidth.value);
       final int innerWidth = innerSelectionEnd.x - innerSelectionStart.x + 1;
       final int innerHeight = innerSelectionEnd.y - innerSelectionStart.y + 1;
-      final int innerCornerRadius = max(0, (options.cornerRadius.value.toDouble() / width.toDouble() * (width - options.strokeWidth.value * 2).toDouble()).round());
+      final int maxAllowedRadius = min(innerWidth, innerHeight) ~/ 2;
+      final int innerCornerRadius = min(max(0, options.cornerRadius.value - options.strokeWidth.value), maxAllowedRadius);
+
+
 
       final bool shouldHandleStroke = options.cornerRadius.value != 0 //only when there is a corner radius
           && options.strokeOnly.value // ...and stroke is activated
@@ -289,7 +292,8 @@ class ShapePainter extends IToolPainter
           && width / 2 > options.strokeWidth.value // ...and width is larger than stroke width
           && height / 2 > options.strokeWidth.value // ...and height is larger than stroke width
           && options.cornerRadius.value <= min(width, height) / 2 // ...and corner radius is smaller than half of the smaller dimension
-          && innerCornerRadius <= min(innerWidth, innerHeight) / 2; // ...and the same for the inner rectangle
+          && innerCornerRadius <= min(innerWidth, innerHeight) / 2 // ...and the same for the inner rectangle
+          && options.cornerRadius.value >= options.strokeWidth.value;
       final Set<CoordinateSetI> innerContent = <CoordinateSetI>{};
       if (shouldHandleStroke)
       {

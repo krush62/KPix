@@ -99,7 +99,7 @@ class ColorSet
       valueIndicatorTextStyle: TextStyle(
           color: _lightColors.dark,
       ),
-      showValueIndicator: ShowValueIndicator.always,
+      showValueIndicator: ShowValueIndicator.onDrag,
 
     ),
     switchTheme: SwitchThemeData(
@@ -230,7 +230,7 @@ class ColorSet
       valueIndicatorTextStyle: TextStyle(
         color: _darkColors.normal,
       ),
-      showValueIndicator: ShowValueIndicator.always,
+      showValueIndicator: ShowValueIndicator.onDrag,
 
     ),
 

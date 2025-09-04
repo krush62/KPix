@@ -151,8 +151,8 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                     },
                   ),
                   const Spacer(),
-                ]
-              )
+                ],
+              ),
             ),
           ],
         ),
@@ -257,8 +257,8 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
                         },
                       ),
                       const Spacer(),
-                    ]
-                )
+                    ],
+                ),
             ),
           ],
         ),

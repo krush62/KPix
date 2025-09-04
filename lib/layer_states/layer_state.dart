@@ -104,7 +104,7 @@ class ColorReference
 
 abstract class LayerState
 {
-  final ValueNotifier<bool> selectionNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> selectedInCurrentFrameNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier<LayerVisibilityState>(LayerVisibilityState.visible);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier<ui.Image?>(null);
 }

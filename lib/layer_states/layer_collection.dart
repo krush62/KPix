@@ -75,8 +75,8 @@ class LayerCollection with ChangeNotifier
 
   LayerCollection({required final List<LayerState> layers, required final int selLayerIdx})
   {
-    _selectedLayerIndexNotifier.addListener(_updateIndividualLayerSelection);
-    addListener(_updateIndividualLayerSelection);
+    _selectedLayerIndexNotifier.addListener(updateIndividualLayerSelection);
+    addListener(updateIndividualLayerSelection);
     _addLayers(layers: layers);
     if (selLayerIdx >= 0 && selLayerIdx < layers.length)
     {
@@ -90,18 +90,18 @@ class LayerCollection with ChangeNotifier
 
   LayerCollection.empty()
   {
-    _selectedLayerIndexNotifier.addListener(_updateIndividualLayerSelection);
-    addListener(_updateIndividualLayerSelection);
+    _selectedLayerIndexNotifier.addListener(updateIndividualLayerSelection);
+    addListener(updateIndividualLayerSelection);
   }
 
-  void _updateIndividualLayerSelection()
+  void updateIndividualLayerSelection()
   {
     for (int i = 0; i < _layers.length; i++)
     {
       final bool shouldBeSelected = i == selectedLayerIndex;
-      if (shouldBeSelected != _layers[i].selectionNotifier.value)
+      if (shouldBeSelected != _layers[i].selectedInCurrentFrameNotifier.value)
       {
-        _layers[i].selectionNotifier.value = shouldBeSelected;
+        _layers[i].selectedInCurrentFrameNotifier.value = shouldBeSelected;
       }
     }
   }
@@ -127,7 +127,7 @@ class LayerCollection with ChangeNotifier
     {
       GetIt.I.get<AppState>().showMessage(text: "Could not add all layers.");
     }
-    _updateIndividualLayerSelection();
+    updateIndividualLayerSelection();
   }
 
   bool contains({required final LayerState layer})

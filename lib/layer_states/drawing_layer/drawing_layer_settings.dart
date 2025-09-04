@@ -293,7 +293,7 @@ class DrawingLayerSettings extends LayerSettings {
   CoordinateColorMap getSettingsPixels({required final CoordinateColorMap data, required final DrawingLayerState layerState, required final List<LayerState> layerList, required final bool frameIsSelected})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final SelectionList? selectionList = layerState.selectionNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
+    final SelectionList? selectionList = layerState.selectedInCurrentFrameNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
     final CoordinateColorMap shadowPixels = getDropShadowPixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
     final CoordinateColorMap outerPixels = getOuterStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize);
     final CoordinateColorMap innerPixels = getInnerStrokePixels(layerState: layerState, layers: layerList, data: data, canvasSize: appState.canvasSize, selectionList: selectionList);

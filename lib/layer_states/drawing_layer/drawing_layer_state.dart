@@ -335,7 +335,7 @@ class DrawingLayerState extends RasterableLayerState
   void rasterInline({required final List<LayerState> layers, required final bool frameIsSelected})
   {
     final AppState appState = GetIt.I.get<AppState>();
-    final SelectionList? selectionList = selectionNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
+    final SelectionList? selectionList = selectedInCurrentFrameNotifier.value && frameIsSelected ? appState.selectionState.selection : null;
     final CoordinateColorMap innerPixels = settings.getInnerStrokePixels(data: _data, layerState: this, canvasSize: appState.canvasSize, layers: layers, selectionList: selectionList);
     setDataAll(list: innerPixels);
   }

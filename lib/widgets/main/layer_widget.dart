@@ -233,7 +233,7 @@ class _LayerWidgetState extends State<LayerWidget> {
       child: SizedBox(
         height: _options.height,
         child: ValueListenableBuilder<bool>(
-          valueListenable: widget.layerState.selectionNotifier,
+          valueListenable: widget.layerState.selectedInCurrentFrameNotifier,
           builder: (final BuildContext context, final bool isSelected,final Widget? child,)
           {
             final Widget iconButton = Padding(

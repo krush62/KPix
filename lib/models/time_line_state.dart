@@ -87,6 +87,7 @@ class Timeline
     isPlaying.addListener(() {
       _playChanged();
     },);
+    layerChangeNotifier.addListener(_layerChanged);
   }
 
   Timeline.empty()
@@ -99,6 +100,16 @@ class Timeline
     isPlaying.addListener(() {
       _playChanged();
     },);
+    layerChangeNotifier.addListener(_layerChanged);
+  }
+
+  void _layerChanged()
+  {
+    final Frame? currentFrame = selectedFrame;
+    if (currentFrame != null)
+    {
+      currentFrame.layerList.updateIndividualLayerSelection();
+    }
   }
 
   void setData({required final int selectedFrameIndex, required final List<Frame> frames, required final int loopStartIndex, required final int loopEndIndex})

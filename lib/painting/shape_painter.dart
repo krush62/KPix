@@ -271,20 +271,62 @@ class ShapePainter extends IToolPainter
     final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
     final double radiusX = (selectionEnd.x - selectionStart.x + 1) / 2.0;
     final double radiusY = (selectionEnd.y - selectionStart.y + 1) / 2.0;
+    final int width = selectionEnd.x - selectionStart.x + 1;
+    final int height = selectionEnd.y - selectionStart.y + 1;
 
     //RECTANGLE
     if (options.shape.value == ShapeShape.rectangle)
     {
+      final CoordinateSetI innerSelectionStart = CoordinateSetI(x: selectionStart.x + options.strokeWidth.value, y: selectionStart.y + options.strokeWidth.value);
+      final CoordinateSetI innerSelectionEnd = CoordinateSetI(x: selectionEnd.x - options.strokeWidth.value, y: selectionEnd.y - options.strokeWidth.value);
+      final int innerWidth = innerSelectionEnd.x - innerSelectionStart.x + 1;
+      final int innerHeight = innerSelectionEnd.y - innerSelectionStart.y + 1;
+      final int innerCornerRadius = max(0, (options.cornerRadius.value.toDouble() / width.toDouble() * (width - options.strokeWidth.value * 2).toDouble()).round());
+
+      final bool shouldHandleStroke = options.cornerRadius.value != 0 //only when there is a corner radius
+          && options.strokeOnly.value // ...and stroke is activated
+          && options.strokeWidth.value > 1 // ...and stroke is larger than 1px
+          && width / 2 > options.strokeWidth.value // ...and width is larger than stroke width
+          && height / 2 > options.strokeWidth.value // ...and height is larger than stroke width
+          && options.cornerRadius.value <= min(width, height) / 2 // ...and corner radius is smaller than half of the smaller dimension
+          && innerCornerRadius <= min(innerWidth, innerHeight) / 2; // ...and the same for the inner rectangle
+      final Set<CoordinateSetI> innerContent = <CoordinateSetI>{};
+      if (shouldHandleStroke)
+      {
+        //calculate inner rectangle
+        for (int x = innerSelectionStart.x; x <= innerSelectionEnd.x; x++)
+        {
+          for (int y = innerSelectionStart.y; y <= innerSelectionEnd.y; y++)
+          {
+            if (_isPointInRoundedRectangle(testPoint: CoordinateSetI(x: x, y: y), topLeft: innerSelectionStart, bottomRight: innerSelectionEnd, radius: innerCornerRadius))
+            {
+              innerContent.add(CoordinateSetI(x: x, y: y));
+            }
+          }
+        }
+      }
+
+
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
         for (int y = selectionStart.y; y <= selectionEnd.y; y++)
         {
           if (options.cornerRadius.value == 0 || _isPointInRoundedRectangle(testPoint: CoordinateSetI(x: x, y: y), topLeft: selectionStart, bottomRight: selectionEnd, radius: options.cornerRadius.value))
           {
-            content.add(CoordinateSetI(x: x, y: y));
+            if (!shouldHandleStroke)
+            {
+              //Don't handle stroke
+              content.add(CoordinateSetI(x: x, y: y));
+            }
+            else if (!innerContent.contains(CoordinateSetI(x: x, y: y)))
+            {
+              //Handle stroke here: Do not add to content if coordinate is in the inner rectangle
+              content.add(CoordinateSetI(x: x, y: y));
+            }
           }
         }
       }
+      strokeHandled = shouldHandleStroke;
     }
     //ELLIPSE
     else if (options.shape.value == ShapeShape.ellipse)

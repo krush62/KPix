@@ -241,7 +241,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                           //divisions: max((GetIt.I.get<AppState>().canvasSize.x - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: horActivated ? (final double value) {
-                                            widget.state.horizontalValue.value = value;
+                                            widget.state.horizontalValue.value = (value * 2).roundToDouble() / 2.0;
                                           } : null,
                                           textStyle: Theme.of(context).textTheme.bodyLarge!,);
                                       },
@@ -324,7 +324,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                           //divisions: max((GetIt.I.get<AppState>().canvasSize.y - 2) * 2, 1),
                                           label: horVal.toStringAsFixed(1),
                                           onChanged: vertActivated ? (final double value) {
-                                            widget.state.verticalValue.value = value;
+                                            widget.state.verticalValue.value = (value * 2).roundToDouble() / 2.0;
                                           } : null,
                                           textStyle: Theme.of(context).textTheme.bodyLarge!,);
                                       },

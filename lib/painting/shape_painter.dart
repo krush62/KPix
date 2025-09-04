@@ -46,6 +46,7 @@ class ShapePainter extends IToolPainter
   bool _isStarted = false;
   bool _waitingForRasterization = false;
   CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
+  static const double _ellipseThreshold = 1.005;
 
   ShapePainter({required super.painterOptions});
 
@@ -264,6 +265,7 @@ class ShapePainter extends IToolPainter
 
   static Set<CoordinateSetI> _calculateSelectionContent({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
   {
+    bool strokeHandled = false;
     Set<CoordinateSetI> content = <CoordinateSetI>{};
     final double centerX = (selectionStart.x + selectionEnd.x + 1) / 2.0;
     final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
@@ -287,8 +289,15 @@ class ShapePainter extends IToolPainter
     //ELLIPSE
     else if (options.shape.value == ShapeShape.ellipse)
     {
+      final bool shouldHandleStroke = options.strokeOnly.value && radiusX > options.strokeWidth.value && radiusY > options.strokeWidth.value && options.strokeWidth.value > 1;
       final double invRadiusXSquared = 1.0 / (radiusX * radiusX);
       final double invRadiusYSquared = 1.0 / (radiusY * radiusY);
+
+      final double radiusInnerX = radiusX - options.strokeWidth.value;
+      final double radiusInnerY = radiusY - options.strokeWidth.value;
+
+      final double invRadiusXSquaredInner = 1.0 / (radiusInnerX * radiusInnerX);
+      final double invRadiusYSquaredInner = 1.0 / (radiusInnerY * radiusInnerY);
 
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
@@ -299,12 +308,25 @@ class ShapePainter extends IToolPainter
           final double normalizedX = dx * dx * invRadiusXSquared;
           final double normalizedY = dy * dy * invRadiusYSquared;
 
-          if (normalizedX + normalizedY <= 1.005)
+          if (normalizedX + normalizedY <= _ellipseThreshold)
           {
-            content.add(CoordinateSetI(x: x, y: y));
+            if (!shouldHandleStroke)
+            {
+              content.add(CoordinateSetI(x: x, y: y));
+            }
+            else
+            {
+              final double normalizedXInner = dx * dx * invRadiusXSquaredInner;
+              final double normalizedYInner = dy * dy * invRadiusYSquaredInner;
+              if (normalizedXInner + normalizedYInner > _ellipseThreshold)
+              {
+                content.add(CoordinateSetI(x: x, y: y));
+              }
+            }
           }
         }
       }
+      strokeHandled = shouldHandleStroke;
     }
     //OTHER SHAPES
     else
@@ -325,14 +347,12 @@ class ShapePainter extends IToolPainter
       }
     }
 
-    if (options.strokeOnly.value)
+    if (options.strokeOnly.value && !strokeHandled)
     {
       content = _calculateInnerStrokeForWidth(content, options.strokeWidth.value);
     }
     return content;
   }
-
-
 
 
 

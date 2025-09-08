@@ -395,7 +395,8 @@ class LayerCollection with ChangeNotifier
   String? layerIsMergeable({required final LayerState mergeLayer})
   {
     String? message;
-    if (mergeLayer.runtimeType == DrawingLayerState) {
+    if (mergeLayer.runtimeType == DrawingLayerState)
+    {
       final AppState appState = GetIt.I.get<AppState>();
       final DrawingLayerState drawingMergeLayer = mergeLayer as DrawingLayerState;
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
@@ -430,6 +431,10 @@ class LayerCollection with ChangeNotifier
       else if (appState.timeline.isLayerLinked(layer: _layers[mergeLayerIndex + 1]))
       {
         message = "Cannot merge with a linked layer!";
+      }
+      else if (drawingMergeLayer.layerSettings.hasActiveSettings() || _layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).layerSettings.hasActiveSettings())
+      {
+        message = "Cannot merge layers with active effects!";
       }
     }
     else

@@ -161,13 +161,14 @@ class PencilPainter extends IToolPainter
               }
 
               CoordinateColorMap additionalDrawingPixels = CoordinateColorMap();
+              final Set<CoordinateSetI> additionalMirrorPoints = getMirrorPoints(coords: additionalPaintPoints, canvasSize: drawParams.canvasSize, symmetryX: drawParams.symmetryHorizontal, symmetryY: drawParams.symmetryVertical);
               if (rasterLayer is DrawingLayerState)
               {
-                additionalDrawingPixels = getPixelsToDraw(coords: additionalPaintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
+                additionalDrawingPixels = getPixelsToDraw(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, selectedColor: appState.selectedColor!, selection: appState.selectionState, shaderOptions: shaderOptions);
               }
               else if (rasterLayer is ShadingLayerState)
               {
-                additionalDrawingPixels = getPixelsToDrawForShading(coords: additionalPaintPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
+                additionalDrawingPixels = getPixelsToDrawForShading(coords: additionalMirrorPoints, currentLayer: rasterLayer, canvasSize: drawParams.canvasSize, shaderOptions: shaderOptions);
               }
 
               addPixels = HashMap<CoordinateSetI, ColorReference>();

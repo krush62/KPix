@@ -18,6 +18,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
@@ -31,7 +32,6 @@ import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:media_scanner/media_scanner.dart';
 
 class MainButtonWidgetOptions
 {
@@ -175,7 +175,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       _appState.showMessage(text: "Exported to: $fileName");
       if (!kIsWeb && Platform.isAndroid)
       {
-        MediaScanner.loadMedia(path: fileName);
+        const MethodChannel channel = MethodChannel('media_scanner');
+        channel.invokeMethod('refreshGallery', <String, String>{"path": fileName});
       }
     }
     else

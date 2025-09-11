@@ -46,6 +46,7 @@ class MainActivity: FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+        flutterEngine.plugins.add(MediaScanner())
     }
 
     private fun handleSendFile(intent: Intent) {

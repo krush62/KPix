@@ -15,6 +15,7 @@
  */
 
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class KPixRangeSlider extends StatefulWidget {
@@ -35,6 +36,7 @@ class KPixRangeSlider extends StatefulWidget {
   final TextStyle textStyle;
   final double topBottomPadding;
   final String? label;
+  final int hoverAlpha;
 
   const KPixRangeSlider({
     super.key,
@@ -54,6 +56,7 @@ class KPixRangeSlider extends StatefulWidget {
     this.max = 1.0,
     required this.textStyle,
     this.topBottomPadding = 8.0,
+    this.hoverAlpha = 32,
     this.label,
 
   });
@@ -64,7 +67,7 @@ class KPixRangeSlider extends StatefulWidget {
 
 class _KPixRangeSliderState extends State<KPixRangeSlider>
 {
-  bool _isHovering = false;
+  final ValueNotifier<bool> isHovering = ValueNotifier<bool>(false);
 
   @override
   Widget build(final BuildContext context)
@@ -72,77 +75,88 @@ class _KPixRangeSliderState extends State<KPixRangeSlider>
     final Color fgColor = widget.activeTrackColor ?? Theme.of(context).primaryColorLight;
     final Color bgColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
     final Color disColor = widget.disabledColor ?? Theme.of(context).primaryColorDark;
-    final Color bColor = widget.borderColor ?? Theme.of(context).primaryColorLight;
-    final Color hoverOverlayColor = Theme.of(context).primaryColorLight.withAlpha(32);
-    final Color defaultInActiveTrackColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
 
-    final Color currentInActiveTrackColor;
-    if (_isHovering)
-    {
-      currentInActiveTrackColor = Color.alphaBlend(hoverOverlayColor, defaultInActiveTrackColor);
-    }
-    else
-    {
-      currentInActiveTrackColor = defaultInActiveTrackColor;
-    }
 
     return MouseRegion(
-      onEnter: (final _) => setState(() => _isHovering = true),
-      onExit: (final _) => setState(() => _isHovering = false),
-      child: SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-          trackHeight: widget.trackHeight,
-          activeTrackColor: fgColor,
-          inactiveTrackColor: currentInActiveTrackColor,
-          overlayShape: SliderComponentShape.noOverlay,
-          rangeTrackShape: _KPixRangeSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth),
-          rangeThumbShape: const _InvisibleRangeSliderThumbShape(),
-          rangeTickMarkShape: const _InvisibleRangeSliderTickMarkShape(),
+      onEnter: (final PointerEnterEvent event) {
+        isHovering.value = true;
+      },
+      onExit: (final PointerExitEvent event) {
+        isHovering.value = false;
+      },
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isHovering,
+        builder: (final BuildContext context, final bool hoverValue, final Widget? child) {
+          final Color bColor = widget.borderColor ?? Theme.of(context).primaryColorLight;
+          final Color hoverOverlayColor = Theme.of(context).primaryColorLight.withAlpha(widget.hoverAlpha);
+          final Color defaultInActiveTrackColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
 
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            RangeSlider(
-              values: widget.values,
-              onChanged: widget.onChanged,
-              divisions: widget.divisions,
-              min: widget.min,
-              max: widget.max,
+          final Color currentInActiveTrackColor;
+          if (hoverValue)
+          {
+            currentInActiveTrackColor = Color.alphaBlend(hoverOverlayColor, defaultInActiveTrackColor);
+          }
+          else
+          {
+            currentInActiveTrackColor = defaultInActiveTrackColor;
+          }
+
+          return SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: widget.trackHeight,
+              activeTrackColor: fgColor,
+              inactiveTrackColor: currentInActiveTrackColor,
+              overlayShape: SliderComponentShape.noOverlay,
+              rangeTrackShape: _KPixRangeSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth),
+              rangeThumbShape: const _InvisibleRangeSliderThumbShape(),
+              rangeTickMarkShape: const _InvisibleRangeSliderTickMarkShape(),
+
             ),
-            Positioned.fill(
-              child: Center(
-                child: IgnorePointer(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Text(
-                        widget.label ?? "${widget.values.start.toStringAsFixed(widget.decimals)}-${widget.values.end.toStringAsFixed(widget.decimals)}",
-                        style: TextStyle(
-                          fontSize: widget.textStyle.fontSize,
-                          fontFamily: widget.textStyle.fontFamily,
-                          foreground: Paint()
-                            ..style = PaintingStyle.stroke
-                            ..strokeWidth = widget.fontStrokeWidth
-                            ..color = bgColor,
-                        ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                RangeSlider(
+                  values: widget.values,
+                  onChanged: widget.onChanged,
+                  divisions: widget.divisions,
+                  min: widget.min,
+                  max: widget.max,
+                ),
+                Positioned.fill(
+                  child: Center(
+                    child: IgnorePointer(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          Text(
+                            widget.label ?? "${widget.values.start.toStringAsFixed(widget.decimals)}-${widget.values.end.toStringAsFixed(widget.decimals)}",
+                            style: TextStyle(
+                              fontSize: widget.textStyle.fontSize,
+                              fontFamily: widget.textStyle.fontFamily,
+                              foreground: Paint()
+                                ..style = PaintingStyle.stroke
+                                ..strokeWidth = widget.fontStrokeWidth
+                                ..color = bgColor,
+                            ),
+                          ),
+                          Text(
+                            widget.label ?? "${widget.values.start.toStringAsFixed(widget.decimals)}-${widget.values.end.toStringAsFixed(widget.decimals)}",
+                            style: TextStyle(
+                              fontSize: widget.textStyle.fontSize,
+                              fontFamily: widget.textStyle.fontFamily,
+                              fontWeight: FontWeight.bold,
+                              color: widget.onChanged != null ? fgColor : disColor,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        widget.label ?? "${widget.values.start.toStringAsFixed(widget.decimals)}-${widget.values.end.toStringAsFixed(widget.decimals)}",
-                        style: TextStyle(
-                          fontSize: widget.textStyle.fontSize,
-                          fontFamily: widget.textStyle.fontFamily,
-                          fontWeight: FontWeight.bold,
-                          color: widget.onChanged != null ? fgColor : disColor,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

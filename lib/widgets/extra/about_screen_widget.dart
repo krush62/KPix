@@ -59,27 +59,18 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
 
   void _licensesPressed()
   {
-    setState(() {
-      _licenseScreen.show(context: context);
-    });
-
+    _licenseScreen.show(context: context);
   }
 
   void _creditsPressed()
   {
-    setState(() {
-      _creditsScreen.show(context: context);
-    });
-
+    _creditsScreen.show(context: context);
   }
 
   void _dismissDialogs()
   {
-    setState(() {
-      _licenseScreen.hide();
-      _creditsScreen.hide();
-    });
-
+    _licenseScreen.hide();
+    _creditsScreen.hide();
   }
 
   @override

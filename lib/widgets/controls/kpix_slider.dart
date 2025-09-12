@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class KPixSlider extends StatefulWidget {
@@ -67,27 +68,14 @@ class KPixSlider extends StatefulWidget {
 
 class _KPixSliderState extends State<KPixSlider>
 {
-  bool _isHovering = false;
+  final ValueNotifier<bool> isHovering = ValueNotifier<bool>(false);
   @override
   Widget build(final BuildContext context)
   {
     final Color fgColor = widget.activeTrackColor ?? Theme.of(context).primaryColorLight;
     final Color bgColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
     final Color disColor = widget.disabledColor ?? Theme.of(context).primaryColorDark;
-    final Color bColor = widget.borderColor ?? Theme.of(context).primaryColorLight;
-    final Color defaultInActiveTrackColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
 
-    final Color hoverOverlayColor = Theme.of(context).primaryColorLight.withAlpha(32);
-
-    final Color currentInActiveTrackColor;
-    if (_isHovering)
-    {
-      currentInActiveTrackColor = Color.alphaBlend(hoverOverlayColor, defaultInActiveTrackColor);
-    }
-    else
-    {
-      currentInActiveTrackColor = defaultInActiveTrackColor;
-    }
 
     String displayText;
     if (widget.label != null)
@@ -106,62 +94,85 @@ class _KPixSliderState extends State<KPixSlider>
     return Padding(
       padding: EdgeInsets.symmetric(vertical: widget.topBottomPadding),
       child: MouseRegion(
-        onEnter: (final _) => setState(() => _isHovering = true),
-        onExit: (final _) => setState(() => _isHovering = false),
-        child: SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: widget.trackHeight,
-            thumbShape: !widget.isRainbow ? SliderComponentShape.noThumb : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
-            trackShape: _KPixSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth, isRainbow: widget.isRainbow),
-            activeTrackColor: fgColor,
-            inactiveTrackColor: currentInActiveTrackColor,
-            overlayShape: SliderComponentShape.noOverlay,
-            tickMarkShape: SliderTickMarkShape.noTickMark,
-            disabledActiveTrackColor: disColor,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Slider(
-                value: widget.value,
-                min: widget.min,
-                max: widget.max,
-                onChanged: widget.onChanged,
-                divisions: widget.divisions,
+        onEnter: (final PointerEnterEvent event) {
+          isHovering.value = true;
+        },
+        onExit: (final PointerExitEvent event) {
+          isHovering.value = false;
+        },
+        child: ValueListenableBuilder<bool>(
+          valueListenable: isHovering,
+          builder: (final BuildContext context, final bool hoverValue, final Widget? child) {
+            final Color bColor = widget.borderColor ?? Theme.of(context).primaryColorLight;
+            final Color defaultInActiveTrackColor = widget.inActiveTrackColor ?? Theme.of(context).primaryColor;
+
+            final Color hoverOverlayColor = Theme.of(context).primaryColorLight.withAlpha(32);
+
+            final Color currentInActiveTrackColor;
+            if (hoverValue)
+            {
+              currentInActiveTrackColor = Color.alphaBlend(hoverOverlayColor, defaultInActiveTrackColor);
+            }
+            else
+            {
+              currentInActiveTrackColor = defaultInActiveTrackColor;
+            }
+            return SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: widget.trackHeight,
+                thumbShape: !widget.isRainbow ? SliderComponentShape.noThumb : _KPixSliderThumbShape(padding: widget.borderRadius / 2),
+                trackShape: _KPixSliderTrackShape(borderRadius: widget.borderRadius, strokeColor: bColor, strokeWidth: widget.borderWidth, isRainbow: widget.isRainbow),
+                activeTrackColor: fgColor,
+                inactiveTrackColor: currentInActiveTrackColor,
+                overlayShape: SliderComponentShape.noOverlay,
+                tickMarkShape: SliderTickMarkShape.noTickMark,
+                disabledActiveTrackColor: disColor,
               ),
-              if (!widget.isRainbow) Positioned.fill(
-                child: Center(
-                  child: IgnorePointer(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: <Widget>[
-                        Text(
-                          displayText,
-                          style: TextStyle(
-                            fontSize: widget.textStyle.fontSize,
-                            fontFamily: widget.textStyle.fontFamily,
-                            foreground: Paint()
-                              ..style = PaintingStyle.stroke
-                              ..strokeWidth = widget.fontStrokeWidth
-                              ..color = bgColor,
-                          ),
-                        ),
-                        Text(
-                          displayText,
-                          style: TextStyle(
-                            fontSize: widget.textStyle.fontSize,
-                            fontFamily: widget.textStyle.fontFamily,
-                            fontWeight: FontWeight.bold,
-                            color: widget.onChanged != null ? fgColor : disColor,
-                          ),
-                        ),
-                      ],
-                    ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: <Widget>[
+                  Slider(
+                    value: widget.value,
+                    min: widget.min,
+                    max: widget.max,
+                    onChanged: widget.onChanged,
+                    divisions: widget.divisions,
                   ),
-                ),
-              ) else const SizedBox.shrink(),
-            ],
-          ),
+                  if (!widget.isRainbow) Positioned.fill(
+                    child: Center(
+                      child: IgnorePointer(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            Text(
+                              displayText,
+                              style: TextStyle(
+                                fontSize: widget.textStyle.fontSize,
+                                fontFamily: widget.textStyle.fontFamily,
+                                foreground: Paint()
+                                  ..style = PaintingStyle.stroke
+                                  ..strokeWidth = widget.fontStrokeWidth
+                                  ..color = bgColor,
+                              ),
+                            ),
+                            Text(
+                              displayText,
+                              style: TextStyle(
+                                fontSize: widget.textStyle.fontSize,
+                                fontFamily: widget.textStyle.fontFamily,
+                                fontWeight: FontWeight.bold,
+                                color: widget.onChanged != null ? fgColor : disColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ) else const SizedBox.shrink(),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

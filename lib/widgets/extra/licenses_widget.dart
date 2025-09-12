@@ -54,8 +54,8 @@ class LicensesWidget extends StatelessWidget
                   isThreeLine: true,
                   title: Text(_licenses[index].description, style: Theme.of(context).textTheme.titleMedium),
                   leading: Text(_licenses[index].name, style: Theme.of(context).textTheme.headlineMedium),
-                  subtitle: Text(_licenses[index].license!, style: Theme.of(context).textTheme.bodySmall),
-                  trailing: Text(_licenses[index].version, style: Theme.of(context).textTheme.headlineMedium),
+                  subtitle: Text(_licenses[index].license ?? "", style: Theme.of(context).textTheme.bodySmall),
+                  trailing: Text(_licenses[index].version ?? "", style: Theme.of(context).textTheme.headlineMedium),
                 );
               },
               separatorBuilder: (final BuildContext context, final int index) => const Divider(),

@@ -740,6 +740,7 @@ class AppState
             {
               drawingLayer.deleteRamp(ramp: kPalRampData);
             }
+            drawingLayer.resetLayerEffectColors(newColor: loadPaletteSet.rampData!.first.references.first);
           }
           else
           {

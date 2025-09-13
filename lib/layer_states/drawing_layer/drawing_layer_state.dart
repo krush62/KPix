@@ -174,6 +174,13 @@ class DrawingLayerState extends RasterableLayerState
     settings.dropShadowColorReference.value = rampMap.containsKey(settings.dropShadowColorReference.value) ? rampMap[settings.dropShadowColorReference.value]! : rampMap.values.first;
   }
 
+  void resetLayerEffectColors({required final ColorReference newColor})
+  {
+    settings.innerColorReference.value = newColor;
+    settings.outerColorReference.value = newColor;
+    settings.dropShadowColorReference.value = newColor;
+  }
+
   void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})
   {
     isRasterizing = true;

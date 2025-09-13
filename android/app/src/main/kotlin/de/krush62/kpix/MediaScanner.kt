@@ -41,11 +41,12 @@ class MediaScanner : FlutterPlugin, MethodCallHandler {
             if (path == null)
                 throw NullPointerException()
             val file = File(path)
-            if (android.os.Build.VERSION.SDK_INT < 29) {
-                context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)))
-            } else {
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
                 MediaScannerConnection.scanFile(context, arrayOf(file.toString()),
                     arrayOf(file.name), null)
+
+            } else {
+                //context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)))
             }
             Log.d("Media Scanner", "Success show image $path in Gallery")
             "Success show image $path in Gallery"

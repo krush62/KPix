@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
@@ -134,20 +134,20 @@ class SelectOptions extends IToolOptions
 
                                 return SegmentedButton<SelectionMode>(
                                   segments: <ButtonSegment<SelectionMode>>[
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.replace, label: FaIcon(
-                                      FontAwesomeIcons.rotate,
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.replace, label: Icon(
+                                      TablerIcons.repeat,
                                       size: toolSettingsWidgetOptions.smallIconSize,
                                     ),),
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.add, label: FaIcon(
-                                      FontAwesomeIcons.plus,
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.add, label: Icon(
+                                      TablerIcons.plus,
                                       size: toolSettingsWidgetOptions.smallIconSize,
                                     ),),
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.subtract, label: FaIcon(
-                                      FontAwesomeIcons.minus,
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.subtract, label: Icon(
+                                      TablerIcons.minus,
                                       size: toolSettingsWidgetOptions.smallIconSize,
                                     ),),
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.intersect, label: FaIcon(
-                                      FontAwesomeIcons.plusMinus,
+                                    ButtonSegment<SelectionMode>(value: SelectionMode.intersect, label: Icon(
+                                      TablerIcons.plus_minus,
                                       size: toolSettingsWidgetOptions.smallIconSize,
                                     ),),
                                   ],
@@ -199,29 +199,29 @@ class SelectOptions extends IToolOptions
                         ButtonSegment<SelectShape>(
                             value: SelectShape.rectangle,
                             tooltip: "Rectangle",
-                            label: FaIcon(
-                              FontAwesomeIcons.square,
+                            label: Icon(
+                              TablerIcons.square,
                               size: toolSettingsWidgetOptions.smallIconSize,
                             ),),
                         ButtonSegment<SelectShape>(
                             value: SelectShape.ellipse,
                             tooltip: "Ellipse",
-                            label: FaIcon(
-                              FontAwesomeIcons.circle,
+                            label: Icon(
+                              TablerIcons.circle,
                               size: toolSettingsWidgetOptions.smallIconSize,
                             ),),
                         ButtonSegment<SelectShape>(
                             value: SelectShape.polygon,
                             tooltip: "Polygon",
-                            label: FaIcon(
-                              FontAwesomeIcons.drawPolygon,
+                            label: Icon(
+                              TablerIcons.polygon,
                               size: toolSettingsWidgetOptions.smallIconSize,
                             ),),
                         ButtonSegment<SelectShape>(
                             value: SelectShape.wand,
                             tooltip: "Wand",
-                            label: FaIcon(
-                              FontAwesomeIcons.wandMagicSparkles,
+                            label: Icon(
+                              TablerIcons.wand,
                               size: toolSettingsWidgetOptions.smallIconSize,
                             ),),
                       ],

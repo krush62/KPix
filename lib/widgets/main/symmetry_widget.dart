@@ -17,7 +17,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -154,7 +154,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
                               const Spacer(),
-                              Icon(Icons.border_inner, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
+                              Icon(TablerIcons.flip_vertical, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
                               Icon(expanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
                               const Spacer(),
                             ],
@@ -202,13 +202,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         width: _options.padding,
                                       ),
                                       const Spacer(),
-                                      Icon(FontAwesomeIcons.caretRight, size: _options.horizontalIconSize, color: Theme.of(context).primaryColorLight),
-                                      Container(
-                                        height: _options.horizontalIconSize,
-                                        width: _options.dividerWidth,
-                                        color: Theme.of(context).primaryColorLight,
-                                      ),
-                                      Icon(FontAwesomeIcons.caretLeft, size: _options.horizontalIconSize, color: Theme.of(context).primaryColorLight,),
+                                      Icon(TablerIcons.flip_vertical, size: _options.buttonHeight, color: Theme.of(context).primaryColorDark),
                                       const Spacer(),
                                       Padding(
                                         padding:  EdgeInsets.only(right: _options.padding * 4),
@@ -222,7 +216,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                               onPressed: horActivated ? () {
                                                 widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
                                               } : null,
-                                              icon: Icon(Icons.border_vertical, size: _options.centerButtonIconSize,),
+                                              icon: Icon(TablerIcons.layout_align_middle, size: _options.buttonHeight,),
                                             ),
                                           ),
                                         ),
@@ -283,13 +277,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                       const Spacer(),
                                       Column(
                                         children: <Widget>[
-                                          Icon(FontAwesomeIcons.caretDown, size: _options.verticalIconSize, color: Theme.of(context).primaryColorLight,),
-                                          Container(
-                                            height: _options.dividerWidth,
-                                            width: _options.verticalIconSize,
-                                            color: Theme.of(context).primaryColorLight,
-                                          ),
-                                          Icon(FontAwesomeIcons.caretUp, size: _options.verticalIconSize, color: Theme.of(context).primaryColorLight,),
+                                          Icon(TablerIcons.flip_horizontal, size: _options.buttonHeight, color: Theme.of(context).primaryColorDark),
                                         ],
                                       ),
                                       const Spacer(),
@@ -305,7 +293,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                               onPressed: vertActivated ? () {
                                                 widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
                                               } : null,
-                                              icon: Icon(Icons.border_horizontal, size: _options.centerButtonIconSize,),
+                                              icon: Icon(TablerIcons.layout_align_center, size: _options.buttonHeight,),
                                             ),
                                           ),
                                         ),

@@ -16,7 +16,7 @@
 
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
@@ -217,7 +217,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                 message: "Open Reference File",
                                 child: IconButton.outlined(
                                   onPressed: _onLoadPressed,
-                                  icon: const FaIcon(FontAwesomeIcons.image),
+                                  icon: const Icon(TablerIcons.folder_open),
                                 ),
                               ),
                             ),
@@ -305,7 +305,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               message: "Reset Aspect Ratio",
                               child: IconButton.outlined(
                                 onPressed: refImg == null ? null: _resetAspectRatio,
-                                icon: const FaIcon(FontAwesomeIcons.arrowRotateLeft),
+                                icon: const Icon(TablerIcons.restore),
                               ),
                             ),
                           ],
@@ -357,7 +357,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           child: IconButton.outlined(
                             onPressed: refImg == null ? null : _fitHorizontal,
                             icon:
-                              const FaIcon(FontAwesomeIcons.arrowsLeftRight),
+                              const Icon(TablerIcons.arrows_horizontal),
                           ),
                         ),
                       ),
@@ -368,7 +368,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           message: "Expand vertically and center by keeping the current aspect ratio",
                           child: IconButton.outlined(
                             onPressed: refImg == null ? null : _fitVertical,
-                            icon: const FaIcon(FontAwesomeIcons.arrowsUpDown),
+                            icon: const Icon(TablerIcons.arrows_vertical),
                           ),
                         ),
                       ),
@@ -379,8 +379,9 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           message: "Fits the image into the canvas (changes aspect ratio)",
                           child: IconButton.outlined(
                             onPressed: refImg == null ? null : _fill,
-                            icon: const FaIcon(
-                                FontAwesomeIcons.arrowsUpDownLeftRight,),
+                            icon: const Icon(
+                              TablerIcons.arrows_maximize,
+                            ),
                           ),
                         ),
                       ),

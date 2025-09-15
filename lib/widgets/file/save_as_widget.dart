@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -114,7 +114,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                       return Tooltip(
                         message: fileNameStatusTextMap[status],
                         waitDuration: AppState.toolTipDuration,
-                        child: FaIcon(
+                        child: Icon(
                           fileNameStatusIconMap[status],
                           size: _options.iconSize / 2,
                         ),
@@ -133,9 +133,8 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                   child: Padding(
                     padding: EdgeInsets.all(_options.padding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: _options.iconSize,
+                      icon: const Icon(
+                        TablerIcons.x,
                       ),
                       onPressed: () {
                         widget.dismiss();
@@ -150,9 +149,8 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                       valueListenable: _fileNameStatus,
                       builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                         return IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.check,
-                            size: _options.iconSize,
+                          icon: const Icon(
+                            TablerIcons.check,
                           ),
                           onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                               () {

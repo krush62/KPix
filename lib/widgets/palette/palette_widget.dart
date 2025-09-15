@@ -31,7 +31,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -176,7 +176,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                     padding: EdgeInsets.only(top: paletteWidgetOptions.padding, left: paletteWidgetOptions.padding, right: paletteWidgetOptions.padding),
                     child: IconButton.outlined(
                       onPressed: _paletteManagerPressed,
-                      icon: const FaIcon(FontAwesomeIcons.palette),
+                      icon: const Icon(Icons.palette),
                       style: IconButton.styleFrom(
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
@@ -215,7 +215,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                         }
                         );
                       },
-                      icon: const FaIcon(FontAwesomeIcons.plus),
+                      icon: const Icon(TablerIcons.plus),
                       style: IconButton.styleFrom(
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),

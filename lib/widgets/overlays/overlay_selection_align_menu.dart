@@ -15,6 +15,7 @@
  */
 
  import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -95,7 +96,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
    Widget build(final BuildContext context)
    {
      return Positioned(
-       width: _options.width / 2,
+       width: _options.width / 3,
        child: CompositedTransformFollower(
          link: widget.layerLink,
          showWhenUnlinked: false,
@@ -112,12 +113,12 @@ class OverlaySelectionAlignMenu extends StatefulWidget
                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                crossAxisAlignment: CrossAxisAlignment.stretch,
                children: <Widget>[
-                 _getEntry(toolTipMessage: "Center Horizontally", onPressed: widget.onAlignCenterH, icon: Icons.align_horizontal_center),
-                 _getEntry(toolTipMessage: "Center Vertically", onPressed: widget.onAlignCenterV, icon: Icons.align_vertical_center),
-                 _getEntry(toolTipMessage: "Left", onPressed: widget.onAlignLeft, icon: Icons.align_horizontal_left),
-                 _getEntry(toolTipMessage: "Right", onPressed: widget.onAlignRight, icon: Icons.align_horizontal_right),
-                 _getEntry(toolTipMessage: "Top", onPressed: widget.onAlignTop, icon: Icons.align_vertical_top),
-                 _getEntry(toolTipMessage: "Bottom", onPressed: widget.onAlignBottom, icon: Icons.align_vertical_bottom),
+                 _getEntry(toolTipMessage: "Center Horizontally", onPressed: widget.onAlignCenterH, icon: TablerIcons.layout_align_middle),
+                 _getEntry(toolTipMessage: "Center Vertically", onPressed: widget.onAlignCenterV, icon: TablerIcons.layout_align_center),
+                 _getEntry(toolTipMessage: "Left", onPressed: widget.onAlignLeft, icon: TablerIcons.layout_align_left),
+                 _getEntry(toolTipMessage: "Right", onPressed: widget.onAlignRight, icon: TablerIcons.layout_align_right),
+                 _getEntry(toolTipMessage: "Top", onPressed: widget.onAlignTop, icon: TablerIcons.layout_align_top),
+                 _getEntry(toolTipMessage: "Bottom", onPressed: widget.onAlignBottom, icon: TablerIcons.layout_align_bottom),
                ],
              ),
            ),

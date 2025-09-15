@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
@@ -170,7 +170,7 @@ class _TimeLineDragTargetWidgetState extends State<TimeLineDragTargetWidget>
 
     if (dragType.value == DragType.copyOnly)
     {
-      return Icon(FontAwesomeIcons.copy, color: Theme.of(context).primaryColorLight, size: widget.cellHeight / 2);
+      return Icon(TablerIcons.copy, color: Theme.of(context).primaryColorLight, size: widget.cellHeight / 2);
     }
 
     if (dragType.value == DragType.copyAndLink)
@@ -181,10 +181,10 @@ class _TimeLineDragTargetWidgetState extends State<TimeLineDragTargetWidget>
           return Row(
             children: <Widget>[
               Expanded(
-                child: Icon(FontAwesomeIcons.copy, color: linkButtonChosen.value == false ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor, size: widget.cellHeight / 2),
+                child: Icon(TablerIcons.copy, color: linkButtonChosen.value == false ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor, size: widget.cellHeight / 2),
               ),
               Expanded(
-                child: Icon(FontAwesomeIcons.link, color: linkButtonChosen.value == true ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor, size: widget.cellHeight / 2),
+                child: Icon(TablerIcons.link, color: linkButtonChosen.value == true ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor, size: widget.cellHeight / 2),
               ),
             ],
           );

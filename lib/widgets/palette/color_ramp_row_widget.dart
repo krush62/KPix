@@ -31,7 +31,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -118,16 +118,21 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
             final List<Widget> widgetList = <Widget>[];
             for (int i = 0; i < widget.rampData.shiftedColors.length; i++)
             {
-              widgetList.add(Padding(padding: EdgeInsets.all(_options.dragFeedbackSquarePadding), child: FaIcon(FontAwesomeIcons.solidSquare, size: _options.dragFeedbackSquareSize)));
+              widgetList.add(Padding(padding: EdgeInsets.all(_options.dragFeedbackSquarePadding), child: Icon(TablerIcons.square, size: _options.dragFeedbackSquareSize)));
             }
             return Row(children: widgetList,);
           },
         ),
         child: Padding(
           padding: EdgeInsets.only(left: _options.buttonPadding, right: _options.buttonPadding,),
-          child: FaIcon(
-            color: Theme.of(context).primaryColor,
-            FontAwesomeIcons.gripVertical,
+          child: ClipRect(
+            child: Align(
+              widthFactor: 0.5,
+              child: Icon(
+                color: Theme.of(context).primaryColor,
+                TablerIcons.grip_vertical,
+              ),
+            ),
           ),
         ),
       ),
@@ -152,7 +157,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
             padding: EdgeInsets.all(_options.buttonPadding),
             iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize - _options.buttonPadding,
             constraints: const BoxConstraints(),
-            icon: const FaIcon(FontAwesomeIcons.sliders),
+            icon: const Icon(TablerIcons.adjustments_horizontal),
             onPressed: () {createKPal(ramp: widget.rampData);
             },
           ),

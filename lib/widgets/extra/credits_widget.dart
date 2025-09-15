@@ -16,7 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -135,9 +135,9 @@ class _CreditsWidgetState extends State<CreditsWidget>
                   message: "Close",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.xmark,
-                      size: _options.iconSize,
+                    icon: const Icon(
+                      TablerIcons.x,
+                      //size: _options.iconSize,
                     ),
                     onPressed: _dismissPressed,
                   ),

@@ -34,7 +34,7 @@ dependencies:
   file_saver: ^0.3.1
   flutter:
     sdk: flutter
-  flutter_launcher_icons: ^0.14.1
+  flutter_tabler_icons: ^1.43.0
   font_awesome_flutter: ^10.8.0
   get_it: ^8.0.2
   google_fonts: ^6.2.1

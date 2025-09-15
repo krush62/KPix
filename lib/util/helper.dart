@@ -23,7 +23,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -79,16 +79,16 @@ class Tool
 
 const Map<ToolType, Tool> toolList =
 <ToolType, Tool>{
-  ToolType.pencil: Tool(icon: FontAwesomeIcons.pen, title: "Pencil"),
-  ToolType.shape: Tool(icon: FontAwesomeIcons.shapes, title: "Shapes"),
-  ToolType.fill: Tool(icon: FontAwesomeIcons.fillDrip, title: "Fill"),
-  ToolType.select : Tool(icon: Icons.select_all, title: "Select"),
-  ToolType.pick : Tool(icon: FontAwesomeIcons.eyeDropper, title: "Color Pick"),
-  ToolType.erase : Tool(icon: FontAwesomeIcons.eraser, title: "Eraser"),
-  ToolType.font : Tool(icon: FontAwesomeIcons.font, title: "Text"),
-  ToolType.spraycan : Tool(icon: FontAwesomeIcons.sprayCan, title: "Spray Can"),
+  ToolType.pencil: Tool(icon: TablerIcons.pencil, title: "Pencil"),
+  ToolType.shape: Tool(icon: TablerIcons.triangle_square_circle, title: "Shapes"),
+  ToolType.fill: Tool(icon: TablerIcons.droplet, title: "Fill"),
+  ToolType.select : Tool(icon: TablerIcons.border_corners, title: "Select"),
+  ToolType.pick : Tool(icon: TablerIcons.color_picker, title: "Color Pick"),
+  ToolType.erase : Tool(icon: TablerIcons.eraser, title: "Eraser"),
+  ToolType.font : Tool(icon: TablerIcons.typography, title: "Text"),
+  ToolType.spraycan : Tool(icon: TablerIcons.spray, title: "Spray Can"),
   ToolType.line : Tool(icon: Icons.multiline_chart, title: "Line"),
-  ToolType.stamp : Tool(icon: FontAwesomeIcons.stamp, title: "Stamp"),
+  ToolType.stamp : Tool(icon: TablerIcons.rubber_stamp, title: "Stamp"),
 };
 
 
@@ -715,7 +715,7 @@ class StackCol<T> {
     {
       return null;
     }
-    return filePath.replaceAll(RegExp(r'\.[^\.]+$'), '.$newExtension');
+    return filePath.replaceAll(RegExp(r'\.[^.]+$'), '.$newExtension');
   }
 
   String formatDateTime({required final DateTime dateTime})

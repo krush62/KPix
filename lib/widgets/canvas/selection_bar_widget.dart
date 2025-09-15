@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -31,8 +31,6 @@ class SelectionBarWidgetOptions
   final int opacityDuration;
 
   SelectionBarWidgetOptions({required this.iconHeight, required this.padding, required this.opacityDuration});
-
-
 }
 
 class SelectionBarWidget extends StatefulWidget
@@ -139,9 +137,9 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selectAll,
-                    icon: FaIcon(
-                        FontAwesomeIcons.objectGroup,
-                        size: _options.iconHeight,
+                    icon: Icon(
+                        TablerIcons.select_all,
+                      size: _options.iconHeight,
                     ),
                   ),
                 ),
@@ -153,8 +151,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                       onPressed: _selectionState.selection.isEmpty ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
-                      icon: FaIcon(
-                        FontAwesomeIcons.objectUngroup,
+                      icon: Icon(
+                        TablerIcons.deselect,
                         size: _options.iconHeight,
                       ),
                   ),
@@ -167,8 +165,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                       onPressed: _selectionState.selection.isEmpty ? null : _selectionState.inverse,
-                      icon: FaIcon(
-                        FontAwesomeIcons.circleHalfStroke,
+                      icon: Icon(
+                        TablerIcons.percentage_50,
                         size: _options.iconHeight,
                       ),
                   ),
@@ -181,8 +179,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copy,
-                    icon: FaIcon(
-                      FontAwesomeIcons.copy,
+                    icon: Icon(
+                      TablerIcons.copy,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -195,8 +193,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copyMerged,
-                    icon: FaIcon(
-                      FontAwesomeIcons.clone,
+                    icon: Icon(
+                      TablerIcons.copy_plus,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -209,8 +207,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.cut,
-                    icon: FaIcon(
-                      FontAwesomeIcons.scissors,
+                    icon: Icon(
+                      TablerIcons.scissors,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -223,8 +221,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.clipboard == null ? null : _selectionState.paste,
-                    icon: FaIcon(
-                      FontAwesomeIcons.paste,
+                    icon: Icon(
+                      TablerIcons.clipboard,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -237,8 +235,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.clipboard == null ? null : _pasteNewPressed,
-                    icon: FaIcon(
-                      FontAwesomeIcons.layerGroup,
+                    icon: Icon(
+                      TablerIcons.clipboard_plus,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -251,8 +249,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipH,
-                    icon: FaIcon(
-                      FontAwesomeIcons.arrowsLeftRight,
+                    icon: Icon(
+                      TablerIcons.flip_vertical,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -265,8 +263,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipV,
-                    icon: FaIcon(
-                      FontAwesomeIcons.arrowsUpDown,
+                    icon: Icon(
+                      TablerIcons.flip_horizontal,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -279,8 +277,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.rotate,
-                    icon: FaIcon(
-                      FontAwesomeIcons.rotateRight,
+                    icon: Icon(
+                      TablerIcons.rotate_clockwise_2,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -295,8 +293,9 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
                       onPressed: _selectionState.selection.isEmpty ? null : _showAlignmentMenu,
-                      icon: const Icon(
-                        Icons.settings_overscan_outlined,
+                      icon: Icon(
+                        TablerIcons.keyframe_align_center,
+                        size: _options.iconHeight,
                       ),
                     ),
                   ),
@@ -309,8 +308,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
-                    icon: FaIcon(
-                      FontAwesomeIcons.ban,
+                    icon: Icon(
+                      TablerIcons.trash,
                       size: _options.iconHeight,
                     ),
                   ),

@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
@@ -337,9 +337,9 @@ KPixOverlay getRasterLayerMenu({
                           child: Padding(
                             padding: EdgeInsets.all(options.padding),
                             child: IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.check,
-                                size: options.iconSize,
+                              icon: const Icon(
+                                TablerIcons.check,
+                                //size: options.iconSize,
                               ),
                               onPressed: () {
                                 onYes();
@@ -351,9 +351,9 @@ KPixOverlay getRasterLayerMenu({
                           child: Padding(
                             padding: EdgeInsets.all(options.padding),
                             child: IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.xmark,
-                                size: options.iconSize,
+                              icon: const Icon(
+                                TablerIcons.x,
+                                //size: options.iconSize,
                               ),
                               onPressed: () {
                                 onNo();
@@ -365,9 +365,9 @@ KPixOverlay getRasterLayerMenu({
                           child: Padding(
                             padding: EdgeInsets.all(options.padding),
                             child: IconButton.outlined(
-                              icon: FaIcon(
-                                FontAwesomeIcons.ban,
-                                size: options.iconSize,
+                              icon: const Icon(
+                                TablerIcons.ban,
+                                //size: options.iconSize,
                               ),
                               onPressed: () {
                                 onCancel();
@@ -427,9 +427,9 @@ KPixOverlay getRasterLayerMenu({
                             child: Padding(
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.check,
-                                  size: options.iconSize,
+                                icon: const Icon(
+                                  TablerIcons.check,
+                                  //size: options.iconSize,
                                 ),
                                 onPressed: () {
                                   onYes();
@@ -441,9 +441,9 @@ KPixOverlay getRasterLayerMenu({
                             child: Padding(
                               padding: EdgeInsets.all(options.padding),
                               child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.xmark,
-                                  size: options.iconSize,
+                                icon: const Icon(
+                                  TablerIcons.x,
+                                  //size: options.iconSize,
                                 ),
                                 onPressed: () {
                                   onNo();
@@ -500,9 +500,9 @@ KPixOverlay getSingleButtonDialog({
                         child: Padding(
                           padding: EdgeInsets.all(options.padding),
                           child: IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.check,
-                              size: options.iconSize,
+                            icon: const Icon(
+                              TablerIcons.check,
+                              //size: options.iconSize,
                             ),
                             onPressed: () {
                               onAction();

@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -102,9 +102,9 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onNewDrawingLayer();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.paintbrush,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.brush,
+                        //size: _options.buttonHeight,
                       ) ,
                     ),
                   ),
@@ -119,9 +119,9 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onNewShadingLayer();},
-                      icon: FaIcon(
-                        Icons.exposure,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.exposure,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -136,9 +136,9 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onNewDitherLayer();},
-                      icon: FaIcon(
+                      icon: const Icon(
                         Icons.gradient,
-                        size: _options.buttonHeight,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -153,9 +153,9 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onNewReferenceLayer();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.image,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.photo,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -169,9 +169,9 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onNewGridLayer();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.tableCells,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.grid_4x4,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),

@@ -16,7 +16,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -112,7 +112,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.dimensionString,
-                      icon: FontAwesomeIcons.arrowsUpDownLeftRight,
+                      icon: TablerIcons.dimensions,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     ),
@@ -124,7 +124,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.cursorPositionString,
-                      icon: FontAwesomeIcons.locationCrosshairs,
+                      icon: TablerIcons.crosshair,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     ),
@@ -136,7 +136,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolDimensionString,
-                      icon: FontAwesomeIcons.rulerCombined,
+                      icon: TablerIcons.ruler,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     ),
@@ -148,7 +148,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolDiagonalString,
-                      icon: FontAwesomeIcons.slash,
+                      icon: TablerIcons.ruler_measure,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     ),
@@ -160,7 +160,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolAspectRatioString,
-                      icon: FontAwesomeIcons.percent,
+                      icon: TablerIcons.percentage,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     ),
@@ -172,7 +172,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolAngleString,
-                      icon: FontAwesomeIcons.lessThan,
+                      icon: TablerIcons.angle,
                       iconSize: widget.iconSize,
                       padding: widget.options.padding,
                     ),
@@ -186,7 +186,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                       onTap: _zoomPressed,
                       child: _StatusBarWidgetEntry(
                         listenable: widget.zoomFactorString,
-                        icon: FontAwesomeIcons.magnifyingGlass,
+                        icon: TablerIcons.zoom,
                         iconSize: widget.iconSize,
                         padding: widget.options.padding,
                       ),
@@ -235,7 +235,7 @@ class _StatusBarWidgetEntryState extends State<_StatusBarWidgetEntry>
                   padding: EdgeInsets.only(right: widget.padding, top: widget.padding),
                   child: Visibility(
                     visible: value != null,
-                    child: FaIcon(
+                    child: Icon(
                       widget.icon,
                       size: widget.iconSize,
                       color: Theme.of(context).primaryColor,

@@ -16,7 +16,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -257,8 +257,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                     label: Tooltip(
                       message: "Order by file name (ascending)",
                       waitDuration: AppState.toolTipDuration,
-                      child: FaIcon(
-                          FontAwesomeIcons.arrowDownAZ,
+                      child: Icon(
+                          TablerIcons.sort_ascending_letters,
                       ),
                     ),
                   ),
@@ -267,8 +267,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                     label: Tooltip(
                       message: "Order by file name (descending)",
                       waitDuration: AppState.toolTipDuration,
-                      child: FaIcon(
-                          FontAwesomeIcons.arrowDownZA,
+                      child: Icon(
+                          TablerIcons.sort_descending_letters,
                       ),
                     ),
                   ),
@@ -277,8 +277,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                     label: Tooltip(
                       message: "Order by last modification (ascending)",
                       waitDuration: AppState.toolTipDuration,
-                      child: FaIcon(
-                          FontAwesomeIcons.arrowDown19,
+                      child: Icon(
+                          TablerIcons.sort_ascending_numbers,
                       ),
                     ),
                   ),
@@ -287,8 +287,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                     label: Tooltip(
                       message: "Order by last modification (descending)",
                       waitDuration: AppState.toolTipDuration,
-                      child: FaIcon(
-                          FontAwesomeIcons.arrowDown91,
+                      child: Icon(
+                          TablerIcons.sort_descending_numbers,
                       ),
                     ),
                   ),
@@ -332,9 +332,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   child: Padding(
                     padding: EdgeInsets.all(_alertOptions.padding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: _alertOptions.iconSize,
+                      icon: const Icon(
+                        TablerIcons.x,
                       ),
                       onPressed: _dismissPressed,
                     ),
@@ -348,9 +347,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   child: Padding(
                     padding: EdgeInsets.all(_alertOptions.padding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.fileImport,
-                        size: _alertOptions.iconSize,
+                      icon: const Icon(
+                        TablerIcons.file_import,
                       ),
                       onPressed: kIsWeb ? null : _importProjectPressed,
                     ),
@@ -367,9 +365,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                       valueListenable: _selectedWidget,
                       builder: (final BuildContext context, final ProjectManagerEntryWidget? selWidget, final Widget? child) {
                         return IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.trashCan,
-                            size: _alertOptions.iconSize,
+                          icon: const Icon(
+                            TablerIcons.trash,
                           ),
                           onPressed: (selWidget != null) ? _deleteProjectPressed : null,
                         );
@@ -388,9 +385,8 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                       valueListenable: _selectedWidget,
                       builder: (final BuildContext context, final ProjectManagerEntryWidget? selWidget, final Widget? child) {
                         return IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.check,
-                            size: _alertOptions.iconSize,
+                          icon: const Icon(
+                            TablerIcons.check,
                           ),
                           onPressed: selWidget != null ? _loadProject : null,
                         );

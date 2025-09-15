@@ -17,7 +17,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 class KPixNumberPickerWidget extends StatefulWidget {
   final Function(int newValue)? onValueChanged;
@@ -50,7 +50,7 @@ class _KPixNumberPickerWidgetState extends State<KPixNumberPickerWidget> {
                 onPressed: widget.valueNotifier.value < widget.maxValue ? () {
                   widget.valueNotifier.value++;
                 } : null,
-                icon: const Icon(FontAwesomeIcons.chevronUp),
+                icon: const Icon(TablerIcons.chevron_up),
               );
             },
           ),
@@ -67,7 +67,7 @@ class _KPixNumberPickerWidgetState extends State<KPixNumberPickerWidget> {
                 onPressed: (widget.valueNotifier.value > widget.minValue) ? () {
                   widget.valueNotifier.value--;
                 } : null,
-                icon: const Icon(FontAwesomeIcons.chevronDown),
+                icon: const Icon(TablerIcons.chevron_down),
               );
             },
           ),

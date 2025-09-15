@@ -25,7 +25,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
@@ -124,10 +124,10 @@ const Map<FileNameStatus, String> fileNameStatusTextMap =
 
 const Map<FileNameStatus, IconData> fileNameStatusIconMap =
 <FileNameStatus, IconData>{
-  FileNameStatus.available:FontAwesomeIcons.check,
-  FileNameStatus.forbidden:FontAwesomeIcons.xmark,
-  FileNameStatus.noRights:FontAwesomeIcons.ban,
-  FileNameStatus.overwrite:FontAwesomeIcons.exclamation,
+  FileNameStatus.available: TablerIcons.check,
+  FileNameStatus.forbidden: TablerIcons.x,
+  FileNameStatus.noRights:TablerIcons.ban,
+  FileNameStatus.overwrite:TablerIcons.exclamation_mark,
 };
 
 

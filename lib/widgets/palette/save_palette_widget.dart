@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -106,7 +106,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                       return Tooltip(
                         message: fileNameStatusTextMap[status],
                         waitDuration: AppState.toolTipDuration,
-                        child: FaIcon(
+                        child: Icon(
                           fileNameStatusIconMap[status],
                           size: _options.iconSize / 2,
                         ),
@@ -125,9 +125,9 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                 child: Padding(
                   padding: EdgeInsets.all(_options.padding),
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.xmark,
-                      size: _options.iconSize,
+                    icon: const Icon(
+                      TablerIcons.x,
+                      //size: _options.iconSize,
                     ),
                     onPressed: () {
                       widget.dismiss();
@@ -142,9 +142,9 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                     valueListenable: _fileNameStatus,
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.check,
-                          size: _options.iconSize,
+                        icon: const Icon(
+                          TablerIcons.check,
+                          //size: _options.iconSize,
                         ),
                         onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                             () {

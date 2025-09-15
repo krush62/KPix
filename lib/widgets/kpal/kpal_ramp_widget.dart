@@ -550,19 +550,19 @@ class _KPalRampState extends State<KPalRamp>
                                   segments: const <ButtonSegment<SatCurve>>[
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.noFlat,
-                                      label: FaIcon(KPixIcons.noFlat),
+                                      label: Icon(KPixIcons.noFlat),
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.darkFlat,
-                                      label: FaIcon(KPixIcons.darkFlat),
+                                      label: Icon(KPixIcons.darkFlat),
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.brightFlat,
-                                      label: FaIcon(KPixIcons.brightFlat),
+                                      label: Icon(KPixIcons.brightFlat),
                                     ),
                                     ButtonSegment<SatCurve>(
                                       value: SatCurve.linear,
-                                      label: FaIcon(KPixIcons.linear),
+                                      label: Icon(KPixIcons.linear),
                                     ),
                                   ],
                                 ),

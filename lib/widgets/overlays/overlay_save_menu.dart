@@ -15,7 +15,6 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -94,7 +93,7 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onSaveFile();},
-                      icon: FaIcon(
+                      icon: Icon(
                         Icons.save,
                         size: _options.buttonHeight,
                       ),
@@ -110,7 +109,7 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onSaveAsFile();},
-                      icon: FaIcon(
+                      icon: Icon(
                         Icons.save_as,
                         size: _options.buttonHeight,
                       ),
@@ -126,7 +125,7 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onExportFile();},
-                      icon: FaIcon(
+                      icon: Icon(
                         Icons.share,
                         size: _options.buttonHeight,
                       ),

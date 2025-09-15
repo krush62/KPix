@@ -18,7 +18,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -499,9 +499,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                             child: Padding(
                               padding: EdgeInsets.all(_options.padding),
                               child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.leftRight,
-                                  size: _options.iconSize / 2,
+                                icon: Icon(
+                                  TablerIcons.layout_align_middle,
+                                  size: _options.iconSize,
                                 ),
                                 onPressed: _centerH,
                               ),
@@ -511,9 +511,12 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                             child: Padding(
                               padding: EdgeInsets.all(_options.padding),
                               child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.upDown,
-                                  size: _options.iconSize / 2,
+                                icon: Transform.rotate(
+                                  angle: pi / 2,
+                                  child: Icon(
+                                    TablerIcons.layout_align_middle,
+                                    size: _options.iconSize,
+                                  ),
                                 ),
                                 onPressed: _centerV,
                               ),
@@ -537,8 +540,8 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                 child: Padding(
                   padding: EdgeInsets.all(_options.padding),
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.xmark,
+                    icon: Icon(
+                      TablerIcons.x,
                       size: _options.iconSize,
                     ),
                     onPressed: () {
@@ -551,8 +554,8 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                 child: Padding(
                   padding: EdgeInsets.all(_options.padding),
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.check,
+                    icon: Icon(
+                      TablerIcons.check,
                       size: _options.iconSize,
                     ),
                     onPressed: () {

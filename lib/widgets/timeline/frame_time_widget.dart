@@ -17,7 +17,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -101,11 +101,11 @@ class _FrameTimeWidgetState extends State<FrameTimeWidget>
                 const SizedBox(height: _padding,),
                 Row(
                   children: <Widget>[
-                    Expanded(child: Tooltip(message: "Cancel", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(FontAwesomeIcons.xmark),))),
+                    Expanded(child: Tooltip(message: "Cancel", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onDismiss?.call();}, icon: const Icon(TablerIcons.x),))),
                     const SizedBox(width: _padding,),
-                    Expanded(child: Tooltip(message: "Apply to All Frames", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.checkDouble)))),
+                    Expanded(child: Tooltip(message: "Apply to All Frames", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmAll?.call(value: widget.valueNotifier.value);}, icon: const Icon(TablerIcons.checks)))),
                     const SizedBox(width: _padding,),
-                    Expanded(child: Tooltip(message: "Apply to Current Frame", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(FontAwesomeIcons.check)))),
+                    Expanded(child: Tooltip(message: "Apply to Current Frame", waitDuration: AppState.toolTipDuration, child: IconButton(onPressed: () {widget.onConfirmSingle?.call(frame: widget.frame, value: widget.valueNotifier.value);}, icon: const Icon(TablerIcons.check)))),
                   ],
                 ),
               ],

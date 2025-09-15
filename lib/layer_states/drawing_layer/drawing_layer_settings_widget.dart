@@ -17,7 +17,6 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -264,7 +263,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                         onDismiss: closeDialog,);
                                       _colorPickDialog.show(context: context);
                                     },
-                                    icon: const FaIcon(FontAwesomeIcons.palette),
+                                    icon: const Icon(Icons.palette),
                                     style: ButtonStyle(
                                       backgroundColor: WidgetStatePropertyAll<Color?>(outerColor.getIdColor().color),
                                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -391,7 +390,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                         }
                       } : null,
-                      icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                      icon: const Icon(Icons.brush),
                     );
                   }
                 },
@@ -489,7 +488,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                           onDismiss: closeDialog,);
                                         _colorPickDialog.show(context: context);
                                       },
-                                      icon: const FaIcon(FontAwesomeIcons.palette),
+                                      icon: const Icon(Icons.palette),
                                       style: ButtonStyle(
                                         backgroundColor: WidgetStatePropertyAll<Color?>(innerColor.getIdColor().color),
                                         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -654,7 +653,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                         }
                       } : null,
-                      icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                      icon: const Icon(Icons.brush),
                     );
                   }
                 },
@@ -814,7 +813,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                                           onDismiss: closeDialog,);
                                         _colorPickDialog.show(context: context);
                                       },
-                                      icon: const FaIcon(FontAwesomeIcons.palette),
+                                      icon: const Icon(Icons.palette),
                                       style: ButtonStyle(
                                         backgroundColor: WidgetStatePropertyAll<Color?>(dropShadowColor.getIdColor().color),
                                         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -864,7 +863,7 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
                           GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsRaster, originLayer: widget.layer);
                         }
                       } : null,
-                      icon: const FaIcon(FontAwesomeIcons.paintbrush),
+                      icon: const Icon(Icons.brush),
                     );
                   }
                 },

@@ -38,7 +38,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_icons.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -330,9 +330,9 @@ class _KPalState extends State<KPal>
                   child: Padding(
                     padding: EdgeInsets.all(_options.insidePadding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: _options.iconSize,
+                      icon: const Icon(
+                        TablerIcons.x
+                        //size: _options.iconSize,
                       ),
                       onPressed: _discardChange,
                     ),
@@ -342,9 +342,9 @@ class _KPalState extends State<KPal>
                   child: Padding(
                     padding: EdgeInsets.all(_options.insidePadding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.trash,
-                        size: _options.iconSize,
+                      icon: const Icon(
+                        TablerIcons.trash,
+                        //size: _options.iconSize,
                       ),
                       onPressed: () {
                         _showDeleteDialog();
@@ -356,9 +356,9 @@ class _KPalState extends State<KPal>
                   child: Padding(
                     padding: EdgeInsets.all(_options.insidePadding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.check,
-                        size: _options.iconSize,
+                      icon: const Icon(
+                        TablerIcons.check,
+                        //size: _options.iconSize,
                       ),
                       onPressed: _acceptChange,
                     ),

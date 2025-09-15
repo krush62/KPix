@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
@@ -97,9 +97,9 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
                       padding: EdgeInsets.all(
                         _options.buttonSpacing,),
                       onPressed: () {widget.onDelete();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.trashCan,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.trash,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -113,9 +113,9 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
                     child: IconButton.outlined(
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onDuplicate();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.clone,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.squares,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -129,9 +129,9 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
                     child: IconButton.outlined(
                       padding: EdgeInsets.all(_options.buttonSpacing),
                       onPressed: () {widget.onRaster();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.paintbrush,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.brush,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),

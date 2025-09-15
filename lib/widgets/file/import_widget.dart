@@ -17,7 +17,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -260,8 +260,8 @@ class _ImportWidgetState extends State<ImportWidget>
                                 constraints: const BoxConstraints(),
                                 padding: EdgeInsets.all(_options.padding),
                                 onPressed: _chooseImagePressed,
-                                icon: FaIcon(
-                                  FontAwesomeIcons.folderOpen,
+                                icon: Icon(
+                                  TablerIcons.folder_open,
                                   size: _options.iconSize / 2,
                                 ),
                               ),
@@ -478,9 +478,8 @@ class _ImportWidgetState extends State<ImportWidget>
                     waitDuration: AppState.toolTipDuration,
                     message: "Close",
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: _options.iconSize,
+                      icon: const Icon(
+                        TablerIcons.x,
                       ),
                       onPressed: () {
                         widget.dismiss();
@@ -497,9 +496,8 @@ class _ImportWidgetState extends State<ImportWidget>
                       valueListenable: _fileNameNotifier,
                       builder: (final BuildContext context, final String? fileNameValue, final Widget? child) {
                         return IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.check,
-                            size: _options.iconSize,
+                          icon: const Icon(
+                            TablerIcons.check,
                           ),
                           onPressed: _fileNameNotifier.value == null ? null : () {
                             _loadImage();

@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -89,9 +89,9 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
                       padding: EdgeInsets.all(
                         _options.buttonSpacing,),
                       onPressed: () {widget.onNewFile();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.file,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.file,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -106,9 +106,9 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
                       padding: EdgeInsets.all(
                         _options.buttonSpacing,),
                       onPressed: () {widget.onLoadFile();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.folderOpen,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.folder_open,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),
@@ -123,9 +123,9 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
                       padding: EdgeInsets.all(
                         _options.buttonSpacing,),
                       onPressed: () {widget.onImportFile();},
-                      icon: FaIcon(
-                        FontAwesomeIcons.fileImport,
-                        size: _options.buttonHeight,
+                      icon: const Icon(
+                        TablerIcons.file_import,
+                        //size: _options.buttonHeight,
                       ),
                     ),
                   ),

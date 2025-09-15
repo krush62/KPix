@@ -223,8 +223,8 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                              opacity: editIsVisible ? 1 : 0,
                                              child: Padding(
                                                padding:  EdgeInsets.all(_options.outsidePadding),
-                                               child: FaIcon(
-                                                 FontAwesomeIcons.pen,
+                                               child: Icon(
+                                                 TablerIcons.pencil,
                                                  shadows: <Shadow>[
                                                    Shadow(
                                                      offset: const Offset(0.0, 1.0),

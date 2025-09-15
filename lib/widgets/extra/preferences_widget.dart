@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -45,11 +45,11 @@ class PreferenceSection
 
 const Map<PreferenceSectionType, PreferenceSection> preferenceMap =
 <PreferenceSectionType, PreferenceSection>{
-  PreferenceSectionType.gui: PreferenceSection(title: "GUI", icon: FontAwesomeIcons.tv),
-  PreferenceSectionType.behavior: PreferenceSection(title: "Behavior", icon: FontAwesomeIcons.gears),
-  PreferenceSectionType.controlsPC: PreferenceSection(title: "Controls PC", icon: FontAwesomeIcons.keyboard),
-  PreferenceSectionType.controlsStylus: PreferenceSection(title: "Controls Stylus", icon: FontAwesomeIcons.pen),
-  PreferenceSectionType.controlsTouch: PreferenceSection(title: "Controls Touch", icon: FontAwesomeIcons.fingerprint),
+  PreferenceSectionType.gui: PreferenceSection(title: "GUI", icon: TablerIcons.app_window),
+  PreferenceSectionType.behavior: PreferenceSection(title: "Behavior", icon: TablerIcons.tools),
+  PreferenceSectionType.controlsPC: PreferenceSection(title: "Controls PC", icon: TablerIcons.device_desktop),
+  PreferenceSectionType.controlsStylus: PreferenceSection(title: "Controls Stylus", icon: TablerIcons.pencil_bolt),
+  PreferenceSectionType.controlsTouch: PreferenceSection(title: "Controls Touch", icon: TablerIcons.hand_click),
 };
 
 class PreferencesWidget extends StatefulWidget
@@ -189,9 +189,9 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                 child: Padding(
                   padding: EdgeInsets.all(_options.padding),
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.xmark,
-                      size: _options.iconSize,
+                    icon: const Icon(
+                      TablerIcons.x,
+                      //size: _options.iconSize,
                     ),
                     onPressed: widget.dismiss,
                   ),
@@ -201,9 +201,9 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
                 child: Padding(
                   padding: EdgeInsets.all(_options.padding),
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.check,
-                      size: _options.iconSize,
+                    icon: const Icon(
+                      TablerIcons.check,
+                      //size: _options.iconSize,
                     ),
                     onPressed: widget.accept,
                   ),

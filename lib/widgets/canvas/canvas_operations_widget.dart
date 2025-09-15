@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -108,8 +108,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
-                    icon: FaIcon(
-                      FontAwesomeIcons.rotate,
+                    icon: Icon(
+                      TablerIcons.rotate_clockwise_2,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -122,8 +122,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
-                    icon: FaIcon(
-                      FontAwesomeIcons.arrowsLeftRight,
+                    icon: Icon(
+                      TablerIcons.flip_vertical,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -135,8 +135,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   message: transformationDescriptions[CanvasTransformation.flipV],
                   child: IconButton.outlined(
                     onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
-                    icon: FaIcon(
-                      FontAwesomeIcons.arrowsUpDown,
+                    icon: Icon(
+                      TablerIcons.flip_horizontal,
                       size: _options.iconHeight,
                     ),
                   ),
@@ -152,8 +152,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       waitDuration: AppState.toolTipDuration,
                       child: IconButton.outlined(
                         onPressed: _appState.selectionState.selection.isEmpty ? null : _crop,
-                        icon: FaIcon(
-                          FontAwesomeIcons.cropSimple,
+                        icon: Icon(
+                          TablerIcons.crop,
                           size: _options.iconHeight,
                         ),
                       ),
@@ -168,8 +168,8 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _setSize,
-                    icon: FaIcon(
-                      FontAwesomeIcons.rulerCombined,
+                    icon: Icon(
+                      TablerIcons.resize,
                       size: _options.iconHeight,
                     ),
                   ),

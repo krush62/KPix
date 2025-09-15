@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -248,7 +248,7 @@ class _ExportWidgetState extends State<ExportWidget>
                           message: "Image",
                           waitDuration: AppState.toolTipDuration,
                           child: Icon(
-                              FontAwesomeIcons.image,
+                              TablerIcons.photo,
                           ),
                       ),
                     ),
@@ -259,7 +259,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         message: "Animation",
                         waitDuration: AppState.toolTipDuration,
                         child: Icon(
-                          FontAwesomeIcons.film,
+                          TablerIcons.movie,
                         ),
                       ),
                     ),
@@ -269,7 +269,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         message: "Palette",
                         waitDuration: AppState.toolTipDuration,
                         child: Icon(
-                          FontAwesomeIcons.palette,
+                          Icons.palette,
                         ),
                       ),
                     ),
@@ -279,7 +279,7 @@ class _ExportWidgetState extends State<ExportWidget>
                         message: "KPix project",
                         waitDuration: AppState.toolTipDuration,
                         child:  Icon(
-                          FontAwesomeIcons.fileExport,
+                          TablerIcons.file_export,
                         ),
                       ),
                     ),
@@ -511,8 +511,8 @@ class _ExportWidgetState extends State<ExportWidget>
                               constraints: const BoxConstraints(),
                               padding: EdgeInsets.all(_options.padding),
                               onPressed: _changeDirectoryPressed,
-                              icon: FaIcon(
-                                  FontAwesomeIcons.file,
+                              icon: Icon(
+                                  TablerIcons.folder,
                                   size: _options.iconSize / 2,
                               ),
                             ),
@@ -588,7 +588,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                 return Tooltip(
                                   message: fileNameStatusTextMap[status],
                                   waitDuration: AppState.toolTipDuration,
-                                  child: FaIcon(
+                                  child: Icon(
                                     fileNameStatusIconMap[status],
                                     size: _options.iconSize / 2,
                                   ),
@@ -613,9 +613,8 @@ class _ExportWidgetState extends State<ExportWidget>
                       waitDuration: AppState.toolTipDuration,
                       message: "Close",
                       child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.xmark,
-                          size: _options.iconSize,
+                        icon: const Icon(
+                          TablerIcons.x,
                         ),
                         onPressed: () {
                           widget.dismiss();
@@ -637,9 +636,8 @@ class _ExportWidgetState extends State<ExportWidget>
                               waitDuration: AppState.toolTipDuration,
                               message: "Export File",
                               child: IconButton.outlined(
-                                icon: FaIcon(
-                                  FontAwesomeIcons.check,
-                                  size: _options.iconSize,
+                                icon: const Icon(
+                                  TablerIcons.check,
                                 ),
                                 onPressed: (status == FileNameStatus.available || status == FileNameStatus.overwrite) ?
                                 () {

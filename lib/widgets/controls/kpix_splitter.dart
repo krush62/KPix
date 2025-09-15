@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class KPixSplitter extends StatefulWidget {
   final Widget left;
@@ -100,7 +100,9 @@ class _KPixSplitterState extends State<KPixSplitter> {
                           color: Theme.of(context).primaryColor,
                           width: widget.dividerWidth,
                           height: constraints.maxHeight,
-                          child: Center(child: FaIcon(FontAwesomeIcons.ellipsisVertical, color: Theme.of(context).primaryColorLight, size: widget.dividerWidth * 2,),),
+                          child: Center(
+                            child: Text(".\n.\n.", style: Theme.of(context).textTheme.bodyLarge,),
+                          ),
                         ),
 
                         onPanUpdate: (final DragUpdateDetails details) {
@@ -117,7 +119,9 @@ class _KPixSplitterState extends State<KPixSplitter> {
                           color: Theme.of(context).primaryColor,
                           width: widget.dividerWidth,
                           height: constraints.maxHeight,
-                          child: Center(child: FaIcon(FontAwesomeIcons.ellipsisVertical, color: Theme.of(context).primaryColorLight, size: widget.dividerWidth * 2,),),
+                          child: Center(
+                            child: Text(".\n.\n.", style: Theme.of(context).textTheme.bodyLarge,),
+                          ),
                         ),
                         onPanUpdate: (final DragUpdateDetails details) {
                           _panUpdateRight(details: details, maxWidth: maxWidth);

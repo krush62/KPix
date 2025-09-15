@@ -19,7 +19,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/main.dart';
@@ -396,9 +396,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     message: "New/Open...",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
-                      icon:  FaIcon(
-                        FontAwesomeIcons.folder,
-                        size: _options.menuIconSize,
+                      icon: const Icon(
+                        TablerIcons.folder_open,
+                        //size: _options.menuIconSize,
                       ),
                       onPressed: _newOpenPressed,
                     ),
@@ -413,9 +413,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     message: "Save...",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
-                      icon:  FaIcon(
-                        FontAwesomeIcons.floppyDisk,
-                        size: _options.menuIconSize,
+                      icon: const Icon(
+                        TablerIcons.device_floppy,
+                        //size: _options.menuIconSize,
                       ),
                       onPressed: _savePressed,
                     ),
@@ -428,9 +428,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   message: "Preferences",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
-                    icon:  FaIcon(
-                      FontAwesomeIcons.gear,
-                      size: _options.menuIconSize,
+                    icon: const Icon(
+                      TablerIcons.settings,
+                      //size: _options.menuIconSize,
                     ),
                     onPressed: _settingsPressed,
                   ),
@@ -446,9 +446,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                     fit: StackFit.passthrough,
                     children: <Widget>[
                       IconButton.outlined(
-                        icon:  FaIcon(
-                          FontAwesomeIcons.question,
-                          size: _options.menuIconSize,
+                        icon: const Icon(
+                          TablerIcons.question_mark,
+                          //size: _options.menuIconSize,
                         ),
                         onPressed: _questionPressed,
                       ),
@@ -496,9 +496,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                         message: "Undo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalUndo)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
-                          icon:  FaIcon(
-                            FontAwesomeIcons.rotateLeft,
-                            size: _options.menuIconSize,
+                          icon: const Icon(
+                            TablerIcons.arrow_back_up,
+                            //size: _options.menuIconSize,
                           ),
                           onPressed: hasUndo ? _undoPressed : null,
                         ),
@@ -517,9 +517,9 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                         message: "Redo${_hotkeyManager.getShortcutString(action: HotkeyAction.generalRedo)}",
                         waitDuration: AppState.toolTipDuration,
                         child: IconButton.outlined(
-                          icon:  FaIcon(
-                            FontAwesomeIcons.rotateRight,
-                            size: _options.menuIconSize,
+                          icon: const Icon(
+                            TablerIcons.arrow_forward_up,
+                            //size: _options.menuIconSize,
                           ),
                           onPressed: hasRedo ? _redoPressed : null,
                         ),

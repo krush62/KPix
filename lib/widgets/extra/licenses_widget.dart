@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -70,9 +70,8 @@ class LicensesWidget extends StatelessWidget
                     message: "Close",
                     waitDuration: AppState.toolTipDuration,
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: options.iconSize,
+                      icon: const Icon(
+                        TablerIcons.x,
                       ),
                       onPressed: onDismiss,
                     ),

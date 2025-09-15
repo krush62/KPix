@@ -19,7 +19,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -40,11 +40,11 @@ import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_drag_target_widget.dart';
 
 const Map<Type, IconData> layerIconMap = <Type, IconData>{
-  ReferenceLayerState: FontAwesomeIcons.image,
-  GridLayerState: FontAwesomeIcons.tableCells,
-  ShadingLayerState: Icons.exposure,
+  ReferenceLayerState: TablerIcons.photo,
+  GridLayerState: TablerIcons.grid_4x4,
+  ShadingLayerState: TablerIcons.exposure,
   DitherLayerState: Icons.gradient,
-  DrawingLayerState: Icons.brush,
+  DrawingLayerState: TablerIcons.brush,
 };
 
 class LayerFrameDragData
@@ -179,7 +179,7 @@ class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProvid
                               onPressed: () {
                                 _toggleExpand();
                               },
-                              icon: FaIcon(isExpanded ? FontAwesomeIcons.chevronUp : FontAwesomeIcons.chevronDown, size: widget.height / 3,),
+                              icon: Icon(isExpanded ? TablerIcons.chevron_up : TablerIcons.chevron_down, size: widget.height / 2,),
                           ),
                         ),
                       );
@@ -309,7 +309,7 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
                               onPressed: (loopEndIndex == loopStartIndex) ? null : () {
                                 widget.timeline.togglePlaying();
                               },
-                              icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: widget.buttonWidth / 2,),
+                              icon: Icon(isPlaying ? TablerIcons.player_pause_filled : TablerIcons.player_play_filled, size: widget.buttonWidth / 2,),
                             ),
                           ),
                         );
@@ -438,8 +438,8 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
 
       if (loopStart == i || loopEnd == i)
       {
-        final Widget startIcon = Tooltip(message: "Loop Start Marker", waitDuration: AppState.toolTipDuration, child: FaIcon(FontAwesomeIcons.caretRight, color: Theme.of(context).primaryColorLight,));
-        final Widget endIcon = Tooltip(message: "Loop End Marker", waitDuration: AppState.toolTipDuration, child: FaIcon(FontAwesomeIcons.caretLeft, color: Theme.of(context).primaryColorLight,));
+        final Widget startIcon = Tooltip(message: "Loop Start Marker", waitDuration: AppState.toolTipDuration, child: ClipRect(child: Align(widthFactor: 0.5, child: Icon(TablerIcons.caret_right_filled, color: Theme.of(context).primaryColorLight,))));
+        final Widget endIcon = Tooltip(message: "Loop End Marker", waitDuration: AppState.toolTipDuration, child: ClipRect(child: Align(widthFactor: 0.5, child: Icon(TablerIcons.caret_left_filled, color: Theme.of(context).primaryColorLight,))));
 
         final SizedBox stack = SizedBox(
           width: _cellWidth,
@@ -537,7 +537,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
       ),
       width: _cellWidth - (_cellPadding * 2),
       height: _cellHeight - _cellPadding,
-      child: Center(child: FaIcon(layerIconMap[layer.runtimeType], size: _layerIconSize, color: frameIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
+      child: Center(child: Icon(layerIconMap[layer.runtimeType], size: _layerIconSize, color: frameIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
     );
   }
 
@@ -828,7 +828,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                         onPressed: loopStart == loopEnd ? null : () {
                                           widget.timeline.togglePlaying();
                                         },
-                                        icon: FaIcon(isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play, size: _transportIconSize,),
+                                        icon: Icon(isPlaying ? TablerIcons.player_pause_filled : TablerIcons.player_play_filled, size: _transportIconSize,),
                                     ),
                                   ),
                                 );
@@ -859,7 +859,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                           height: _cellHeight,
                                           child: IconButton.outlined(
                                               onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex <= 0) ? null : () {widget.timeline.moveFrameLeft();},
-                                              icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                              icon: const Icon(TablerIcons.chevron_left),
                                           ),
                                         ),
                                       );
@@ -876,9 +876,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         Tooltip(
                           message: "Move Frame",
                           waitDuration: AppState.toolTipDuration,
-                          child: FaIcon(
-                            FontAwesomeIcons.leftRight,
-                            size: _layerIconSize,
+                          child: Icon(
+                            TablerIcons.arrows_left_right,
+                            //size: _layerIconSize,
                             color: Theme.of(context).primaryColorLight,
                           ),
                         ),
@@ -902,7 +902,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                           height: _cellHeight,
                                           child: IconButton.outlined(
                                               onPressed: (isPlaying || frames.length <= 1 || selectedFrameIndex >= frames.length - 1) ? null : () {widget.timeline.moveFrameRight();},
-                                              icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                              icon: const Icon(TablerIcons.chevron_right),
                                           ),
                                         ),
                                       );
@@ -929,7 +929,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                     onPressed: isPlaying ? null : () {widget.timeline.addNewFrameLeft();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                    icon: const Icon(TablerIcons.chevron_left),
                                   ),
                                 ),
                               );
@@ -942,9 +942,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         Tooltip(
                           message: "Add Frame",
                           waitDuration: AppState.toolTipDuration,
-                          child: FaIcon(
-                            FontAwesomeIcons.file,
-                            size: _layerIconSize,
+                          child: Icon(
+                            TablerIcons.file,
+                            //size: _layerIconSize,
                             color: Theme.of(context).primaryColorLight,
                           ),
                         ),
@@ -962,7 +962,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                     onPressed: isPlaying ? null : () {widget.timeline.addNewFrameRight();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                    icon: const Icon(TablerIcons.chevron_right),
                                   ),
                                 ),
                               );
@@ -985,7 +985,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                       onPressed: isPlaying ? null : () {widget.timeline.copyFrameLeft();},
-                                      icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                      icon: const Icon(TablerIcons.chevron_left),
                                   ),
                                 ),
                               );
@@ -998,9 +998,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         Tooltip(
                           message: "Copy Frame",
                           waitDuration: AppState.toolTipDuration,
-                          child: FaIcon(
-                            FontAwesomeIcons.copy,
-                            size: _layerIconSize,
+                          child: Icon(
+                            TablerIcons.copy,
+                            //size: _layerIconSize,
                             color: Theme.of(context).primaryColorLight,
                           ),
                         ),
@@ -1018,7 +1018,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                     onPressed: isPlaying ? null : () {widget.timeline.copyFrameRight();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                    icon: const Icon(TablerIcons.chevron_right),
                                   ),
                                 ),
                               );
@@ -1041,7 +1041,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                     onPressed: isPlaying ? null : () {widget.timeline.linkFrameLeft();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: _transportIconSize),
+                                    icon: const Icon(TablerIcons.chevron_left),
                                   ),
                                 ),
                               );
@@ -1054,9 +1054,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         Tooltip(
                           message: "Create Linked Frame",
                           waitDuration: AppState.toolTipDuration,
-                          child: FaIcon(
-                            FontAwesomeIcons.link,
-                            size: _layerIconSize,
+                          child: Icon(
+                            TablerIcons.link,
+                            //size: _layerIconSize,
                             color: Theme.of(context).primaryColorLight,
                           ),
                         ),
@@ -1074,7 +1074,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                   height: _cellHeight,
                                   child: IconButton.outlined(
                                     onPressed: isPlaying ? null : () {widget.timeline.linkFrameRight();},
-                                    icon: const FaIcon(FontAwesomeIcons.chevronRight, size: _transportIconSize),
+                                    icon: const Icon(TablerIcons.chevron_right),
                                   ),
                                 ),
                               );
@@ -1097,7 +1097,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                 height: _cellHeight,
                                 child: IconButton.outlined(
                                     onPressed: isPlaying || frames.length <= 1 ? null : () { widget.timeline.deleteFrame(); },
-                                    icon: const FaIcon(FontAwesomeIcons.trash, size: _transportIconSize),
+                                    icon: const Icon(TablerIcons.trash),
                                 ),
                               ),
                             );
@@ -1158,7 +1158,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                     );
                                     _frameBlendingOverlay.show(context: context);
                                   },
-                                  icon: const FaIcon(FontAwesomeIcons.blender, size: _transportIconSize),
+                                  icon: const Icon(TablerIcons.blend_mode),
                                 ),
                               ),
                             );

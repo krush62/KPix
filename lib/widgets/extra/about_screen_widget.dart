@@ -17,7 +17,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -151,9 +151,8 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                           message: "Credits",
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.peopleGroup,
-                              size: _options.iconSize,
+                            icon: const Icon(
+                              TablerIcons.users,
                             ),
                             onPressed: _creditsPressed,
                           ),
@@ -165,9 +164,8 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                           message: "Licenses",
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.section,
-                              size: _options.iconSize,
+                            icon: const Icon(
+                              TablerIcons.license,
                             ),
                             onPressed: _licensesPressed,
                           ),
@@ -179,9 +177,8 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                           message: "Close",
                           waitDuration: AppState.toolTipDuration,
                           child: IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.xmark,
-                              size: _options.iconSize,
+                            icon: const Icon(
+                              TablerIcons.x,
                             ),
                             onPressed: _dismissPressed,
                           ),

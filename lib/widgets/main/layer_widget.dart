@@ -17,7 +17,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
@@ -45,9 +45,9 @@ class LayerWidget extends StatefulWidget {
 }
 
 const Map<Type, IconData> layerIconMap = <Type, IconData>{
-  ReferenceLayerState: FontAwesomeIcons.image,
-  GridLayerState: FontAwesomeIcons.tableCells,
-  ShadingLayerState: Icons.exposure,
+  ReferenceLayerState: TablerIcons.photo,
+  GridLayerState: TablerIcons.grid_4x4,
+  ShadingLayerState: TablerIcons.exposure,
   DitherLayerState: Icons.gradient,
 };
 
@@ -59,8 +59,8 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   static const Map<LayerVisibilityState, IconData> _visibilityIconMap =
       <LayerVisibilityState, IconData>{
-    LayerVisibilityState.visible: FontAwesomeIcons.eye,
-    LayerVisibilityState.hidden: FontAwesomeIcons.eyeSlash,
+    LayerVisibilityState.visible: TablerIcons.eye,
+    LayerVisibilityState.hidden: TablerIcons.eye_closed,
   };
 
   static const Map<LayerVisibilityState, String> _visibilityTooltipMap =
@@ -71,9 +71,9 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   static const Map<LayerLockState, IconData> _lockIconMap =
       <LayerLockState, IconData>{
-    LayerLockState.unlocked: FontAwesomeIcons.lockOpen,
-    LayerLockState.transparency: FontAwesomeIcons.unlockKeyhole,
-    LayerLockState.locked: FontAwesomeIcons.lock,
+    LayerLockState.unlocked: TablerIcons.lock_open_2,
+    LayerLockState.transparency: TablerIcons.lock_open,
+    LayerLockState.locked: TablerIcons.lock,
   };
 
   static const Map<LayerLockState, String> _lockStringMap =
@@ -238,9 +238,13 @@ class _LayerWidgetState extends State<LayerWidget> {
           {
             final Widget iconButton = Padding(
               padding: EdgeInsets.only(right: _options.innerPadding),
-              child: FaIcon(FontAwesomeIcons.gripVertical, color: Theme.of(context).primaryColor,),
+              child: ClipRect(
+                child: Align(
+                  widthFactor: 0.5,
+                  child: Icon(TablerIcons.grip_vertical, color: Theme.of(context).primaryColor, size: 32),
+                ),
+              ),
             );
-
             return Row(
               children: <Widget>[
                 Draggable<LayerState>(
@@ -317,6 +321,13 @@ class _LayerWidgetState extends State<LayerWidget> {
                                               minHeight: _options.buttonSizeMin,
                                             ),
                                             style: ButtonStyle(
+                                              shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                                RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.all(
+                                                    Radius.circular(_options.borderRadius / 2),
+                                                  ),
+                                                ),
+                                              ),
                                               tapTargetSize:
                                                   MaterialTapTargetSize.shrinkWrap,
                                               backgroundColor: visibility ==
@@ -333,7 +344,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                   : null,
                                             ),
                                             onPressed: _visibilityButtonPressed,
-                                            icon: FaIcon(
+                                            icon: Icon(
                                               _visibilityIconMap[visibility],
                                               size: _options.iconSize,
                                             ),
@@ -373,6 +384,13 @@ class _LayerWidgetState extends State<LayerWidget> {
                                               minHeight: _options.buttonSizeMin,
                                             ),
                                             style: ButtonStyle(
+                                            shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                              RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(_options.borderRadius / 2),
+                                                ),
+                                              ),
+                                            ),
                                               tapTargetSize:
                                                   MaterialTapTargetSize.shrinkWrap,
                                               backgroundColor: lock ==
@@ -389,7 +407,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                           .primaryColor,),
                                             ),
                                             onPressed: _lockButtonPressed,
-                                            icon: FaIcon(
+                                            icon: Icon(
                                               _lockIconMap[lock],
                                               size: _options.iconSize,
                                             ),
@@ -422,7 +440,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                   },
                                 ),
                                 Center(
-                                  child: FaIcon(
+                                  child: Icon(
                                     layerIconMap[widget.layerState.runtimeType],
                                     size: _options.height / 2,
                                     color: Theme.of(context).primaryColorLight,
@@ -474,13 +492,20 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                     minWidth: _options.buttonSizeMin,
                                                     minHeight: _options.buttonSizeMin,
                                                   ),
-                                                  style: const ButtonStyle(
+                                                  style: ButtonStyle(
+                                                    shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                                      RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.all(
+                                                          Radius.circular(_options.borderRadius / 2),
+                                                        ),
+                                                      ),
+                                                    ),
                                                     tapTargetSize:
                                                     MaterialTapTargetSize.shrinkWrap,
                                                   ),
                                                   onPressed: lockState != LayerLockState.locked ? _actionsButtonPressed : null,
-                                                  icon: FaIcon(
-                                                    FontAwesomeIcons.bars,
+                                                  icon: Icon(
+                                                    TablerIcons.menu_2,
                                                     size: _options.iconSize,
                                                   ),
                                                 );
@@ -533,6 +558,13 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                       minHeight: _options.buttonSizeMin,
                                                     ),
                                                     style: ButtonStyle(
+                                                      shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                                        RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.all(
+                                                            Radius.circular(_options.borderRadius / 2),
+                                                          ),
+                                                        ),
+                                                      ),
                                                       tapTargetSize:
                                                       MaterialTapTargetSize.shrinkWrap,
                                                       backgroundColor: !hasChanges ? null : WidgetStatePropertyAll<Color?>(
@@ -545,8 +577,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                             .primaryColor,),
                                                     ),
                                                     onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
-                                                    icon: FaIcon(
-                                                      FontAwesomeIcons.gear,
+                                                    icon: Icon(
+                                                      TablerIcons.settings,
                                                       size: _options.iconSize,
                                                     ),
                                                   );

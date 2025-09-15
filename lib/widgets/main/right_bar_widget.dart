@@ -31,7 +31,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -199,7 +199,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                   waitDuration: AppState.toolTipDuration,
                                   child: IconButton.outlined(
                                     onPressed: () {addLayerMenu.show(context: context);},
-                                    icon: const FaIcon(FontAwesomeIcons.plus),
+                                    icon: const Icon(TablerIcons.plus),
                                     style: IconButton.styleFrom(
                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
@@ -325,7 +325,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                               }
                                             }
                                           },
-                                          icon: const FaIcon(FontAwesomeIcons.arrowRightLong,),
+                                          icon: const Icon(TablerIcons.arrow_narrow_right,),
                                         ),
                                       ),
                                     ),

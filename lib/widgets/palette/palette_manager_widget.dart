@@ -18,7 +18,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -303,9 +303,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                   child: Padding(
                     padding: EdgeInsets.all(_alertOptions.padding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: _alertOptions.iconSize,
+                      icon: const Icon(
+                        TablerIcons.x,
+                        //size: _alertOptions.iconSize,
                       ),
                       onPressed: _dismissPressed,
                     ),
@@ -319,9 +319,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                     child: Padding(
                       padding: EdgeInsets.all(_alertOptions.padding),
                       child: IconButton.outlined(
-                        icon: FaIcon(
-                          FontAwesomeIcons.fileImport,
-                          size: _alertOptions.iconSize,
+                        icon: const Icon(
+                          TablerIcons.file_import,
+                          //size: _alertOptions.iconSize,
                         ),
                         onPressed: kIsWeb ? null : _importPalettePressed,
                       ),
@@ -335,9 +335,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                   child: Padding(
                     padding: EdgeInsets.all(_alertOptions.padding),
                     child: IconButton.outlined(
-                      icon: FaIcon(
-                        FontAwesomeIcons.floppyDisk,
-                        size: _alertOptions.iconSize,
+                      icon: const Icon(
+                        TablerIcons.device_floppy,
+                        //size: _alertOptions.iconSize,
                       ),
                       onPressed: kIsWeb ? null : _addCurrentPalette,
                     ),
@@ -354,9 +354,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                         valueListenable: _selectedWidget,
                         builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
                           return IconButton.outlined(
-                            icon: FaIcon(
-                              FontAwesomeIcons.trashCan,
-                              size: _alertOptions.iconSize,
+                            icon: const Icon(
+                              TablerIcons.trash,
+                              //size: _alertOptions.iconSize,
                             ),
                             onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deletePalettePressed : null,
                           );
@@ -375,9 +375,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                       valueListenable: _selectedWidget,
                       builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
                         return IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.plus,
-                            size: _alertOptions.iconSize,
+                          icon: const Icon(
+                            TablerIcons.plus,
+                            //size: _alertOptions.iconSize,
                           ),
                           onPressed: selWidget != null ? _appendPalette : null,
                         );
@@ -396,9 +396,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                       valueListenable: _selectedWidget,
                       builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
                         return IconButton.outlined(
-                          icon: FaIcon(
-                            FontAwesomeIcons.check,
-                            size: _alertOptions.iconSize,
+                          icon: const Icon(
+                            TablerIcons.check,
+                            //size: _alertOptions.iconSize,
                           ),
                           onPressed: selWidget != null ? _applyPalette : null,
                         );

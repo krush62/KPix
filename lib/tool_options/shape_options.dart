@@ -14,9 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -135,7 +134,7 @@ class ShapeOptions extends IToolOptions
                     message: "Triangle",
                     waitDuration: AppState.toolTipDuration,
                     child: Icon(
-                      Icons.change_history,
+                      TablerIcons.triangle,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
                   ),
@@ -146,7 +145,7 @@ class ShapeOptions extends IToolOptions
                     message: "Rectangle",
                     waitDuration: AppState.toolTipDuration,
                     child: Icon(
-                      Icons.check_box_outline_blank,
+                      TablerIcons.square,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
                   ),
@@ -156,12 +155,9 @@ class ShapeOptions extends IToolOptions
                   label: Tooltip(
                     message: "Mid-Angle Rectangle",
                     waitDuration: AppState.toolTipDuration,
-                    child: Transform.rotate(
-                      angle: -pi / 4,
-                      child: Icon(
-                        Icons.check_box_outline_blank,
-                        size: toolSettingsWidgetOptions.smallIconSize,
-                      ),
+                    child: Icon(
+                      TablerIcons.diamonds,
+                      size: toolSettingsWidgetOptions.smallIconSize,
                     ),
                   ),
                 ),
@@ -171,7 +167,7 @@ class ShapeOptions extends IToolOptions
                     message: "Ellipse",
                     waitDuration: AppState.toolTipDuration,
                     child: Icon(
-                      Icons.circle_outlined,
+                      TablerIcons.circle,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
                   ),
@@ -182,7 +178,7 @@ class ShapeOptions extends IToolOptions
                     message: "Regular Polygon",
                     waitDuration: AppState.toolTipDuration,
                     child: Icon(
-                      Icons.hexagon_outlined,
+                      TablerIcons.pentagon,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
                   ),
@@ -193,7 +189,7 @@ class ShapeOptions extends IToolOptions
                     message: "Star",
                     waitDuration: AppState.toolTipDuration,
                     child: Icon(
-                      Icons.star_outline,
+                      TablerIcons.star,
                       size: toolSettingsWidgetOptions.smallIconSize,
                     ),
                   ),

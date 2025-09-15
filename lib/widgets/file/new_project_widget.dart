@@ -17,7 +17,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -300,8 +300,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                       maxHeight: _options.iconSize * 2.5,
                       maxWidth: _options.iconSize,
                     ),
-                    icon: FaIcon(
-                      locked ? FontAwesomeIcons.lock : FontAwesomeIcons.lockOpen,
+                    icon: Icon(
+                      locked ? TablerIcons.lock : TablerIcons.lock_open_2,
                       size: _options.iconSize / 2,
                     ),
                     style: ButtonStyle(
@@ -368,9 +368,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
             children: <Widget>[
               Expanded(
                 child: IconButton.outlined(
-                  icon: FaIcon(
-                    FontAwesomeIcons.xmark,
-                    size: _options.iconSize,
+                  icon: const Icon(
+                    TablerIcons.x,
                   ),
                   onPressed: () {
                     widget.dismiss();
@@ -380,9 +379,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
               SizedBox(width: _options.padding),
               Expanded(
                   child: IconButton.outlined(
-                    icon: FaIcon(
-                      FontAwesomeIcons.folderOpen,
-                      size: _options.iconSize,
+                    icon: const Icon(
+                      TablerIcons.folder_open,
                     ),
                     onPressed: () {
                       widget.open();
@@ -392,9 +390,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
               SizedBox(width: _options.padding),
               Expanded(
                 child: IconButton.outlined(
-                  icon: FaIcon(
-                    FontAwesomeIcons.check,
-                    size: _options.iconSize,
+                  icon: const Icon(
+                    TablerIcons.check,
                   ),
                   onPressed: () {
                     widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value));

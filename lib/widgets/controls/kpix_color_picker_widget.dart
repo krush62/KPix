@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
@@ -92,7 +92,7 @@ class KPixColorPickerWidget extends StatelessWidget
             height: padding,
           ),
           IconButton.outlined(
-            icon: const FaIcon(FontAwesomeIcons.xmark,),
+            icon: const Icon(TablerIcons.x,),
             onPressed: () {
               dismiss();
             },

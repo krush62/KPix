@@ -84,7 +84,7 @@ enum PreferenceDouble
   Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
 
   Layout_Tools_Padding(defaultValue: 8.0),
-  Layout_Tools_IconSize(defaultValue: 20.0),
+  Layout_Tools_IconSize(defaultValue: 22.0),
   Layout_Tools_ButtonSize(defaultValue: 48.0),
 
   Layout_Palette_Padding(defaultValue: 8.0),
@@ -147,17 +147,17 @@ enum PreferenceDouble
   Layout_LayerWidget_BorderRadius(defaultValue: 8.0),
   Layout_LayerWidget_ButtonSizeMin(defaultValue: 24.0),
   Layout_LayerWidget_ButtonSizeMax(defaultValue: 32.0),
-  Layout_LayerWidget_IconSize(defaultValue: 12.0),
+  Layout_LayerWidget_IconSize(defaultValue: 16.0),
   Layout_LayerWidget_Height(defaultValue: 64.0),
   Layout_LayerWidget_DragOpacity(defaultValue: 0.75),
   Layout_LayerWidget_BorderWidth(defaultValue: 2.0),
   Layout_LayerWidget_DragFeedbackSize(defaultValue: 64.0),
   Layout_LayerWidget_DragTargetHeight(defaultValue: 64.0),
 
-  Layout_SelectionBar_IconHeight(defaultValue: 16.0),
+  Layout_SelectionBar_IconHeight(defaultValue: 20.0),
   Layout_SelectionBar_Padding(defaultValue: 4.0),
 
-  Layout_CanvasOperations_IconHeight(defaultValue: 12.0),
+  Layout_CanvasOperations_IconHeight(defaultValue: 20.0),
   Layout_CanvasOperations_ButtonHeight(defaultValue: 36.0),
   Layout_CanvasOperations_Padding(defaultValue: 4.0),
 

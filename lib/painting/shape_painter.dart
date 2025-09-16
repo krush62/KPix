@@ -310,7 +310,6 @@ class ShapePainter extends IToolPainter
         }
       }
 
-
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
         for (int y = selectionStart.y; y <= selectionEnd.y; y++)

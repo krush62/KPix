@@ -332,82 +332,92 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                       ),
                       SizedBox(height: _options.padding,),
                       Text("Offset", style: Theme.of(context).textTheme.titleLarge),
-                      Row(
-                        children: <Widget>[
-                          const Expanded(
-                            child:
-                            Text("X"),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _offset,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                return KPixSlider(
-                                  min: _minOffset.value.x.toDouble(),
-                                  max: _maxOffset.value.x.toDouble(),
-                                  onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
-                                  value: value.x.toDouble(),
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: _options.padding),
-                          Expanded(
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _offset,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                final TextEditingController controller = TextEditingController(text: value.x.toString());
-                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                return TextField(
-                                  focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
-                                  textAlign: TextAlign.end,
-                                  controller: controller,
-                                  onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);},
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      ValueListenableBuilder<CoordinateSetI>(
+                        valueListenable: _offset,
+                        builder: (final BuildContext context0, final CoordinateSetI offset, final Widget? child0) {
+                          final TextEditingController controller = TextEditingController(text: offset.x.toString());
+                          controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                          return ValueListenableBuilder<CoordinateSetI>(
+                            valueListenable: _minOffset,
+                            builder: (final BuildContext context1, final CoordinateSetI minOffset, final Widget? child1) {
+                              return ValueListenableBuilder<CoordinateSetI>(
+                                valueListenable: _maxOffset,
+                                builder: (final BuildContext context2, final CoordinateSetI maxOffset, final Widget? child2) {
+                                  return Row(
+                                    children: <Widget>[
+                                      const Expanded(
+                                        child:
+                                        Text("X"),
+                                      ),
+                                      Expanded(
+                                        flex: 7,
+                                        child: KPixSlider(
+                                          min: minOffset.x.toDouble(),
+                                          max: maxOffset.x.toDouble(),
+                                          onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
+                                          value: offset.x.toDouble(),
+                                          textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                        ),
+                                      ),
+                                      SizedBox(width: _options.padding),
+                                      Expanded(
+                                        child: TextField(
+                                          focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
+                                          textAlign: TextAlign.end,
+                                          controller: controller,
+                                          onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);},
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
                       ),
-                      Row(
-                        children: <Widget>[
-                          const Expanded(
-                            child: Text("Y"),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _offset,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                return KPixSlider(
-                                  min: _minOffset.value.y.toDouble(),
-                                  max: _maxOffset.value.y.toDouble(),
-                                  onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
-                                  value: value.y.toDouble(),
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: _options.padding),
-                          Expanded(
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _offset,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                final TextEditingController controller = TextEditingController(text: value.y.toString());
-                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                return TextField(
-                                  focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
-                                  textAlign: TextAlign.end,
-                                  controller: controller,
-                                  onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);},
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      ValueListenableBuilder<CoordinateSetI>(
+                        valueListenable: _offset,
+                        builder: (final BuildContext context0, final CoordinateSetI offset, final Widget? child0) {
+                          final TextEditingController controller = TextEditingController(text: offset.y.toString());
+                          controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                          return ValueListenableBuilder<CoordinateSetI>(
+                            valueListenable: _minOffset,
+                            builder: (final BuildContext context1, final CoordinateSetI minOffset, final Widget? child1) {
+                              return ValueListenableBuilder<CoordinateSetI>(
+                                valueListenable: _maxOffset,
+                                builder: (final BuildContext context2, final CoordinateSetI maxOffset, final Widget? child2) {
+                                  return Row(
+                                    children: <Widget>[
+                                      const Expanded(
+                                        child: Text("Y"),
+                                      ),
+                                      Expanded(
+                                        flex: 7,
+                                        child: KPixSlider(
+                                          min: minOffset.y.toDouble(),
+                                          max: maxOffset.y.toDouble(),
+                                          onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
+                                          value: offset.y.toDouble(),
+                                          textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                        ),
+                                      ),
+                                      SizedBox(width: _options.padding),
+                                      Expanded(
+                                        child: TextField(
+                                          focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
+                                          textAlign: TextAlign.end,
+                                          controller: controller,
+                                          onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);},
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),

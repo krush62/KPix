@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class CanvasOperationsWidgetOptions
@@ -58,6 +59,7 @@ class CanvasOperationsWidget extends StatefulWidget
 class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
   final CanvasOperationsWidgetOptions _options = GetIt.I.get<PreferenceManager>().canvasOperationsWidgetOptions;
+  final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final AppState _appState = GetIt.I.get<AppState>();
   late KPixOverlay _canvasSizeOverlay;
 
@@ -147,11 +149,23 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                 child: ListenableBuilder(
                   listenable: _appState.selectionState,
                   builder: (final BuildContext context, final Widget? child) {
+                    bool cropEnabled = false;
+
+                    if (!_appState.selectionState.selection.isEmpty)
+                    {
+                      final (CoordinateSetI?, CoordinateSetI?) selectionSize = _appState.selectionState.selection.getBoundingBox(canvasSize: _appState.canvasSize);
+                      final CoordinateSetI? topLeft = selectionSize.$1;
+                      final CoordinateSetI? bottomRight = selectionSize.$2;
+                      if (topLeft != null && bottomRight != null && (bottomRight.x - topLeft.x + 1) >= _sizeOptions.sizeMin && (bottomRight.y - topLeft.y + 1) >= _sizeOptions.sizeMin)
+                      {
+                        cropEnabled = true;
+                      }
+                    }
                     return Tooltip(
                       message: "Crop To Selection",
                       waitDuration: AppState.toolTipDuration,
                       child: IconButton.outlined(
-                        onPressed: _appState.selectionState.selection.isEmpty ? null : _crop,
+                        onPressed: cropEnabled ? _crop : null,
                         icon: Icon(
                           TablerIcons.crop,
                           size: _options.iconHeight,

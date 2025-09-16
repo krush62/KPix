@@ -752,17 +752,6 @@ class LayerCollection with ChangeNotifier
     notifyListeners();
   }
 
-  void changeLayerSizes({required final CoordinateSetI newSize, required final CoordinateSetI offset})
-  {
-    for (final LayerState layer in _layers)
-    {
-      if (layer is RasterableLayerState)
-      {
-        layer.resizeLayer(newSize: newSize, offset: offset);
-      }
-    }
-  }
-
   void deleteRampFromLayers({required final KPalRampData ramp, required final ColorReference backupColor})
   {
     for (final LayerState layer in _layers)

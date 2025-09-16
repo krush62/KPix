@@ -1464,9 +1464,22 @@ class AppState
   void changeCanvasSize({required final CoordinateSetI newSize, required final CoordinateSetI offset})
   {
     selectionState.deselect(addToHistoryStack: false, notify: false);
+    final LinkedHashSet<RasterableLayerState> layerSet = LinkedHashSet<RasterableLayerState>();
     for (final Frame f in timeline.frames.value)
     {
-      f.layerList.changeLayerSizes(newSize: newSize, offset: offset);
+      final LayerCollection layers = f.layerList;
+      for (int i = 0; i < layers.length; i++)
+      {
+        final LayerState l = layers.getLayer(index: i);
+        if (l is RasterableLayerState)
+        {
+          layerSet.add(l);
+        }
+      }
+    }
+    for (final RasterableLayerState l in layerSet)
+    {
+      l.resizeLayer(newSize: newSize, offset: offset);
     }
     _setCanvasDimensions(width: newSize.x, height: newSize.y);
     rasterLayersAll();

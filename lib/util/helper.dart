@@ -507,6 +507,29 @@ class StackCol<T> {
     return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
   }
 
+  Future<CoordinateColorMapNullable> getMergedColors({required final Frame frame, required final CoordinateSetI canvasSize}) async
+  {
+    final CoordinateColorMapNullable colorData = CoordinateColorMapNullable();
+    final Iterable<RasterableLayerState> layerList = frame.layerList.getVisibleRasterLayers();
+    for (int x = 0; x < canvasSize.x; x++)
+    {
+      for (int y = 0; y < canvasSize.y; y++)
+      {
+        for (final RasterableLayerState layer in layerList)
+        {
+          final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+          final ColorReference? colAtPos = layer.rasterPixels[coord];
+          if (colAtPos != null)
+          {
+            colorData[coord] = colAtPos;
+            break;
+          }
+        }
+      }
+    }
+    return colorData;
+  }
+
   Future<ui.Image> getImageFromLayers({
     required final LayerCollection layerCollection,
     required final CoordinateSetI canvasSize,
@@ -756,6 +779,18 @@ class StackCol<T> {
       }
     }
     return rampIndex;
+  }
+
+  bool rampsHaveEqualLengths({required final List<KPalRampData> ramps})
+  {
+    for (int i = 1; i < ramps.length; i++)
+    {
+      if (ramps[i].settings.colorCount != ramps[i - 1].settings.colorCount)
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
   void exitApplication({final int exitCode = 0})

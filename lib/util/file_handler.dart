@@ -528,6 +528,9 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       case ImageExportType.kpix:
         data = (await createKPixData(appState: appState)).buffer.asUint8List();
         //break;
+      case ImageExportType.texturePack:
+        data = await exportTexturePack(exportData: exportData, appState: appState);
+        //break;
     }
 
     String? returnPath;

@@ -17,12 +17,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -347,9 +345,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                   valueListenable: _fileExportType,
                                   builder: (final BuildContext context, final ImageExportType exportTypeEnum, final Widget? child) {
 
-                                    final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.length == 1
-                                        && _appState.timeline.selectedFrame!.layerList.first is DrawingLayerState
-                                        && !(_appState.timeline.selectedFrame!.layerList.first as DrawingLayerState).layerSettings.hasActiveSettings();
+                                    final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
                                     return SegmentedButton<ImageExportType>(
                                       selected: <ImageExportType>{exportTypeEnum},
                                       showSelectedIcon: false,

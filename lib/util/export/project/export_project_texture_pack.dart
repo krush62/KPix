@@ -20,13 +20,15 @@ Future<Uint8List?> exportTexturePack({required final ImageExportData exportData,
 {
   final Archive zipFile = Archive();
 
+  final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.selectedFrame!, canvasSize: appState.canvasSize);
+
   //create color texture
-  final Uint8List colorTexture = await _createColorTexture(layer: appState.timeline.selectedFrame!.layerList.first as DrawingLayerState, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+  final Uint8List colorTexture = await _createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
   final List<int> colorTextureList = colorTexture.toList();
   zipFile.addFile(ArchiveFile("color.bin", colorTextureList.length, colorTextureList));
 
   //create distance texture
-  final Uint8List distanceTexture = await _createDistanceTexture(layer: appState.timeline.selectedFrame!.layerList.first as DrawingLayerState, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+  final Uint8List distanceTexture = await _createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
   final List<int> distanceTextureList = distanceTexture.toList();
   zipFile.addFile(ArchiveFile("distance.bin", distanceTextureList.length, distanceTextureList));
 
@@ -34,10 +36,26 @@ Future<Uint8List?> exportTexturePack({required final ImageExportData exportData,
   final Uint8List paletteData = await _createPaletteData(ramps: appState.colorRamps);
   final List<int> paletteDataList = paletteData.toList();
   zipFile.addFile(ArchiveFile("palette.bin", paletteDataList.length, paletteDataList));
+
+  //create data file
+  final Uint8List dataFile = await _createDataFile(canvasSize: appState.canvasSize);
+  final List<int> dataFileList = dataFile.toList();
+  zipFile.addFile(ArchiveFile("data.bin", dataFileList.length, dataFileList));
+
   return Uint8List.fromList(ZipEncoder().encode(zipFile));
 }
 
-Future<Uint8List> _createColorTexture({required final DrawingLayerState layer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
+Future<Uint8List> _createDataFile({required final CoordinateSetI canvasSize}) async
+{
+  int offset = 0;
+  final ByteData outBytes = ByteData(4);
+  outBytes.setUint16(offset, canvasSize.x, Endian.little);
+  offset += 2;
+  outBytes.setUint16(offset, canvasSize.y, Endian.little);
+  return outBytes.buffer.asUint8List();
+}
+
+Future<Uint8List> _createColorTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
 {
   final int fileSize = canvasSize.x * canvasSize.y;
   final ByteData outBytes = ByteData(fileSize);
@@ -47,10 +65,10 @@ Future<Uint8List> _createColorTexture({required final DrawingLayerState layer, r
     for (int x = 0; x < canvasSize.x; x++)
     {
       final CoordinateSetI pos = CoordinateSetI(x: x, y: y);
-      final ColorReference? colAtPos = layer.rasterPixels[pos];
+      final ColorReference? colAtPos = colorMap[pos];
       if (colAtPos == null)
       {
-        outBytes.setUint8(offset++, 0);
+        outBytes.setUint8(offset++, 255);
       }
       else
       {
@@ -61,7 +79,7 @@ Future<Uint8List> _createColorTexture({required final DrawingLayerState layer, r
   return outBytes.buffer.asUint8List();
 }
 
-Future<Uint8List> _createDistanceTexture({required final DrawingLayerState layer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
+Future<Uint8List> _createDistanceTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
 {
   final int fileSize = canvasSize.x * canvasSize.y;
   final ByteData outBytes = ByteData(fileSize);
@@ -71,7 +89,7 @@ Future<Uint8List> _createDistanceTexture({required final DrawingLayerState layer
     for (int x = 0; x < canvasSize.x; x++)
     {
       final CoordinateSetI pos = CoordinateSetI(x: x, y: y);
-      final ColorReference? colAtPos = layer.rasterPixels[pos];
+      final ColorReference? colAtPos = colorMap[pos];
       if (colAtPos == null)
       {
         outBytes.setUint8(offset++, 255);

@@ -37,23 +37,9 @@ Future<Uint8List?> exportTexturePack({required final ImageExportData exportData,
   final List<int> paletteDataList = paletteData.toList();
   zipFile.addFile(ArchiveFile("palette.bin", paletteDataList.length, paletteDataList));
 
-  //create data file
-  final Uint8List dataFile = await _createDataFile(canvasSize: appState.canvasSize);
-  final List<int> dataFileList = dataFile.toList();
-  zipFile.addFile(ArchiveFile("data.bin", dataFileList.length, dataFileList));
-
   return Uint8List.fromList(ZipEncoder().encode(zipFile));
 }
 
-Future<Uint8List> _createDataFile({required final CoordinateSetI canvasSize}) async
-{
-  int offset = 0;
-  final ByteData outBytes = ByteData(4);
-  outBytes.setUint16(offset, canvasSize.x, Endian.little);
-  offset += 2;
-  outBytes.setUint16(offset, canvasSize.y, Endian.little);
-  return outBytes.buffer.asUint8List();
-}
 
 Future<Uint8List> _createColorTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
 {

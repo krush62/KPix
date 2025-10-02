@@ -23,17 +23,17 @@ Future<Uint8List?> exportTexturePack({required final ImageExportData exportData,
   final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.selectedFrame!, canvasSize: appState.canvasSize);
 
   //create color texture
-  final Uint8List colorTexture = await _createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+  final Uint8List colorTexture = await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
   final List<int> colorTextureList = colorTexture.toList();
   zipFile.addFile(ArchiveFile("color.bin", colorTextureList.length, colorTextureList));
 
   //create distance texture
-  final Uint8List distanceTexture = await _createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
+  final Uint8List distanceTexture = await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
   final List<int> distanceTextureList = distanceTexture.toList();
   zipFile.addFile(ArchiveFile("distance.bin", distanceTextureList.length, distanceTextureList));
 
   //create palette data
-  final Uint8List paletteData = await _createPaletteData(ramps: appState.colorRamps);
+  final Uint8List paletteData = await createPaletteData(ramps: appState.colorRamps);
   final List<int> paletteDataList = paletteData.toList();
   zipFile.addFile(ArchiveFile("palette.bin", paletteDataList.length, paletteDataList));
 
@@ -41,7 +41,7 @@ Future<Uint8List?> exportTexturePack({required final ImageExportData exportData,
 }
 
 
-Future<Uint8List> _createColorTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
+Future<Uint8List> createColorTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
 {
   final int fileSize = canvasSize.x * canvasSize.y;
   final ByteData outBytes = ByteData(fileSize);
@@ -65,7 +65,7 @@ Future<Uint8List> _createColorTexture({required final CoordinateColorMapNullable
   return outBytes.buffer.asUint8List();
 }
 
-Future<Uint8List> _createDistanceTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
+Future<Uint8List> createDistanceTexture({required final CoordinateColorMapNullable colorMap, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps}) async
 {
   final int fileSize = canvasSize.x * canvasSize.y;
   final ByteData outBytes = ByteData(fileSize);
@@ -91,7 +91,7 @@ Future<Uint8List> _createDistanceTexture({required final CoordinateColorMapNulla
   return outBytes.buffer.asUint8List();
 }
 
-Future<Uint8List> _createPaletteData({required final List<KPalRampData> ramps}) async
+Future<Uint8List> createPaletteData({required final List<KPalRampData> ramps}) async
 {
   int colorCount = 0;
   for (final KPalRampData ramp in ramps)

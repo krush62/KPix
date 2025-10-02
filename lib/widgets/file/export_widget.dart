@@ -45,6 +45,7 @@ enum AnimationExportType
   zippedPng,
   //aseprite,
   //pixelorama,
+  texturePack
 }
 
 enum PaletteExportType
@@ -141,6 +142,7 @@ class AnimationExportData extends ImageExportData
     AnimationExportType.zippedPng : AnimationExportData(name: "PNG SEQUENCE", extension: "zip", scalable: true, ),
     //AnimationExportType.aseprite : AnimationExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
     //AnimationExportType.pixelorama : AnimationExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
+    AnimationExportType.texturePack : AnimationExportData(name: "TEXTURE PACK", extension: "zip", scalable: false, ),
   };
 }
 
@@ -344,7 +346,6 @@ class _ExportWidgetState extends State<ExportWidget>
                                 child: ValueListenableBuilder<ImageExportType>(
                                   valueListenable: _fileExportType,
                                   builder: (final BuildContext context, final ImageExportType exportTypeEnum, final Widget? child) {
-
                                     final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
                                     return SegmentedButton<ImageExportType>(
                                       selected: <ImageExportType>{exportTypeEnum},
@@ -359,14 +360,31 @@ class _ExportWidgetState extends State<ExportWidget>
                               ),
                               Visibility(
                                 visible: section == ExportSectionType.animation,
-                                child: ValueListenableBuilder<AnimationExportType>(
-                                  valueListenable: _animationExportType,
-                                  builder: (final BuildContext context, final AnimationExportType exportTypeEnum, final Widget? child) {
-                                    return SegmentedButton<AnimationExportType>(
-                                      selected: <AnimationExportType>{exportTypeEnum},
-                                      showSelectedIcon: false,
-                                      onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
-                                      segments: AnimationExportType.values.map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: _animationSectionOnly,
+                                  builder: (final BuildContext context0, final bool sectionOnly, final Widget? child0) {
+                                    return ValueListenableBuilder<AnimationExportType>(
+                                      valueListenable: _animationExportType,
+                                      builder: (final BuildContext context, final AnimationExportType exportTypeEnum, final Widget? child) {
+                                        bool isValidTexturePack = true;
+                                        final int startFrameIndex = sectionOnly ? _appState.timeline.loopStartIndex.value : 0;
+                                        final int endFrameIndex = sectionOnly ? _appState.timeline.loopEndIndex.value : _appState.timeline.frames.value.length - 1;
+                                        for (int i = startFrameIndex; i <= endFrameIndex; i++)
+                                        {
+                                          if (_appState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
+                                          {
+                                            isValidTexturePack = false;
+                                            break;
+                                          }
+                                        }
+
+                                        return SegmentedButton<AnimationExportType>(
+                                          selected: <AnimationExportType>{exportTypeEnum},
+                                          showSelectedIcon: false,
+                                          onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
+                                          segments: AnimationExportType.values.map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                        );
+                                      },
                                     );
                                   },
                                 ),

@@ -579,6 +579,10 @@ Future<String?> exportAnimation({required final AnimationExportData exportData, 
     //case ExportType.pixelorama:
     // TODO: Handle this case.
     //  break;
+    case AnimationExportType.texturePack:
+      data = await exportTexturePackAnimation(exportData: exportData, appState: appState);
+      //break;
+
 
   }
 

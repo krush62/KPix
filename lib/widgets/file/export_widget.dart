@@ -62,6 +62,13 @@ enum PaletteExportType
   json
 }
 
+enum KPixExportType
+{
+  kpix,
+  texturePack,
+  texturePackAnimated
+}
+
 enum ExportSectionType
 {
   image,
@@ -175,6 +182,7 @@ class _ExportWidgetState extends State<ExportWidget>
   final ValueNotifier<ImageExportType> _fileExportType = ValueNotifier<ImageExportType>(ImageExportType.png);
   final ValueNotifier<PaletteExportType> _paletteExportType = ValueNotifier<PaletteExportType>(PaletteExportType.kpal);
   final ValueNotifier<AnimationExportType> _animationExportType = ValueNotifier<AnimationExportType>(AnimationExportType.gif);
+  final ValueNotifier<KPixExportType> _kpixExportType = ValueNotifier<KPixExportType>(KPixExportType.kpix);
   final ValueNotifier<bool> _animationSectionOnly = ValueNotifier<bool>(false);
   final ValueNotifier<int> _scalingIndex = ValueNotifier<int>(0);
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
@@ -221,7 +229,18 @@ class _ExportWidgetState extends State<ExportWidget>
       case ExportSectionType.animation:
         extension = AnimationExportData.exportTypeMap[_animationExportType.value]!.extension;
       case ExportSectionType.kpix:
-        extension = fileExtensionKpix;
+        if (_kpixExportType.value == KPixExportType.texturePack)
+        {
+          extension = ImageExportData.exportTypeMap[ImageExportType.texturePack]!.extension;
+        }
+        else if (_kpixExportType.value == KPixExportType.texturePackAnimated)
+        {
+          extension = AnimationExportData.exportTypeMap[AnimationExportType.texturePack]!.extension;
+        }
+        else
+        {
+          extension = fileExtensionKpix;
+        }
     }
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
   }
@@ -331,10 +350,7 @@ class _ExportWidgetState extends State<ExportWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                          child: Visibility(
-                            visible: section != ExportSectionType.kpix,
-                            child: Text("Format", style: Theme.of(context).textTheme.titleMedium),
-                          ),
+                          child: Text("Format", style: Theme.of(context).textTheme.titleMedium),
                         ),
                         Expanded(
                           flex: 6,
@@ -352,7 +368,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                       showSelectedIcon: false,
                                       onSelectionChanged: (final Set<ImageExportType> types) {_fileExportType.value = types.first; _updateFileNameStatus();},
                                       segments: ImageExportType.values
-                                        .where((final ImageExportType type) => type != ImageExportType.kpix)
+                                        .where((final ImageExportType type) => type != ImageExportType.kpix && type != ImageExportType.texturePack)
                                         .map((final ImageExportType x) => ButtonSegment<ImageExportType>(value: x, enabled: x != ImageExportType.texturePack || isValidTexturePack, label: Text(ImageExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                     );
                                   },
@@ -382,7 +398,9 @@ class _ExportWidgetState extends State<ExportWidget>
                                           selected: <AnimationExportType>{exportTypeEnum},
                                           showSelectedIcon: false,
                                           onSelectionChanged: (final Set<AnimationExportType> types) {_animationExportType.value = types.first; _updateFileNameStatus();},
-                                          segments: AnimationExportType.values.map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                          segments: AnimationExportType.values
+                                            .where((final AnimationExportType type) => type != AnimationExportType.texturePack)
+                                            .map((final AnimationExportType x) => ButtonSegment<AnimationExportType>(value: x, enabled: x != AnimationExportType.texturePack || isValidTexturePack, label: Text(AnimationExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
                                         );
                                       },
                                     );
@@ -399,6 +417,42 @@ class _ExportWidgetState extends State<ExportWidget>
                                       showSelectedIcon: false,
                                       onSelectionChanged: (final Set<PaletteExportType> types) {_paletteExportType.value = types.first; _updateFileNameStatus();},
                                       segments: PaletteExportType.values.map((final PaletteExportType x) => ButtonSegment<PaletteExportType>(value: x, label: Text(PaletteExportData.exportTypeMap[x]!.name, style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportType == x ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight)))).toList(),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: section == ExportSectionType.kpix,
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: _animationSectionOnly,
+                                  builder: (final BuildContext context0, final bool sectionOnly, final Widget? child0) {
+                                    return ValueListenableBuilder<KPixExportType>(
+                                      valueListenable: _kpixExportType,
+                                      builder: (final BuildContext context, final KPixExportType exportTypeEnum, final Widget? child) {
+                                        bool isValidTexturePackAnimation = _appState.timeline.frames.value.length > 1;
+                                        final bool isValidTexturePack = _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers().isNotEmpty;
+                                        final int startFrameIndex = sectionOnly ? _appState.timeline.loopStartIndex.value : 0;
+                                        final int endFrameIndex = sectionOnly ? _appState.timeline.loopEndIndex.value : _appState.timeline.frames.value.length - 1;
+                                        for (int i = startFrameIndex; i <= endFrameIndex; i++)
+                                        {
+                                          if (_appState.timeline.frames.value[i].layerList.getVisibleRasterLayers().isEmpty)
+                                          {
+                                            isValidTexturePackAnimation = false;
+                                            break;
+                                          }
+                                        }
+
+                                        return SegmentedButton<KPixExportType>(
+                                          selected: <KPixExportType>{exportTypeEnum},
+                                          showSelectedIcon: false,
+                                          onSelectionChanged: (final Set<KPixExportType> types) {_kpixExportType.value = types.first; _updateFileNameStatus();},
+                                          segments: <ButtonSegment<KPixExportType>>[
+                                            ButtonSegment<KPixExportType>(value: KPixExportType.kpix, label: Text("KPIX PROJECT", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.kpix ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePack, value: KPixExportType.texturePack, label: Text("TEXTURE PACK", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePack ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                            ButtonSegment<KPixExportType>(enabled: isValidTexturePackAnimation, value: KPixExportType.texturePackAnimated, label: Text("TEXTURE PACK ANIMATION", style: Theme.of(context).textTheme.bodyMedium!.apply(color: exportTypeEnum == KPixExportType.texturePackAnimated ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight))),
+                                          ],
+                                        );
+                                      },
                                     );
                                   },
                                 ),
@@ -470,43 +524,48 @@ class _ExportWidgetState extends State<ExportWidget>
                         ],
                       ),
                     ),
-                    Opacity(
-                      opacity: (section == ExportSectionType.animation) ? 1.0 : 0.0,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Expanded(
-                            child: Text("Selection Only", style: Theme.of(context).textTheme.titleMedium),
+                    ValueListenableBuilder<KPixExportType>(
+                      valueListenable: _kpixExportType,
+                      builder: (final BuildContext context0, final KPixExportType kPixExportType, final Widget? child0) {
+                        return Opacity(
+                          opacity: (section == ExportSectionType.animation || (section == ExportSectionType.kpix && kPixExportType == KPixExportType.texturePackAnimated)) ? 1.0 : 0.0,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Expanded(
+                                child: Text("Selection Only", style: Theme.of(context).textTheme.titleMedium),
+                              ),
+                              Expanded(
+                                flex: 4,
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: _animationSectionOnly,
+                                  builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
+                                    final bool moreThanOneFrame = _appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value;
+                                    final bool sectionIsNotWhole = _appState.timeline.loopStartIndex.value > 0 || _appState.timeline.loopEndIndex.value < _appState.timeline.frames.value.length - 1;
+                                    return Switch(
+                                      value: animationSectionOnly,
+                                      onChanged: (moreThanOneFrame && sectionIsNotWhole) ? (final bool newValue) {_animationSectionOnly.value = newValue;} : null,
+                                    );
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: _animationSectionOnly,
+                                  builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
+                                    final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
+                                    final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
+                                    final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
+                                    return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            flex: 4,
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: _animationSectionOnly,
-                              builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                final bool moreThanOneFrame = _appState.timeline.loopStartIndex.value != _appState.timeline.loopEndIndex.value;
-                                final bool sectionIsNotWhole = _appState.timeline.loopStartIndex.value > 0 || _appState.timeline.loopEndIndex.value < _appState.timeline.frames.value.length - 1;
-                                return Switch(
-                                  value: animationSectionOnly,
-                                  onChanged: (moreThanOneFrame && sectionIsNotWhole) ? (final bool newValue) {_animationSectionOnly.value = newValue;} : null,
-                                );
-                              },
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: _animationSectionOnly,
-                              builder: (final BuildContext context, final bool animationSectionOnly, final Widget? child) {
-                                final int animationLengthMs = _appState.timeline.calculateTotalFrameTime(sectionOnly: animationSectionOnly);
-                                final int frameCount = animationSectionOnly ? _appState.timeline.loopEndIndex.value - _appState.timeline.loopStartIndex.value + 1 : _appState.timeline.frames.value.length;
-                                final String animationLength = "$frameCount frames (${(animationLengthMs.toDouble() / 1000.0).toStringAsFixed(3)}s)";
-                                return Text(animationLength, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -677,7 +736,19 @@ class _ExportWidgetState extends State<ExportWidget>
                                   }
                                   else if (selSection == ExportSectionType.kpix)
                                   {
-                                    widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: _appState.exportDir), exportType: ImageExportType.kpix);
+                                    if (_kpixExportType.value == KPixExportType.kpix)
+                                    {
+                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: const ImageExportData(name: "KPIX", extension: fileExtensionKpix, scalable: false), scaling: 1, fileName: _fileName.value, directory: _appState.exportDir), exportType: ImageExportType.kpix);
+                                    }
+                                    else if (_kpixExportType.value == KPixExportType.texturePack)
+                                    {
+                                      widget.acceptFile(exportData: ImageExportData.fromWithConcreteData(other: ImageExportData.exportTypeMap[ImageExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: _appState.exportDir), exportType: ImageExportType.texturePack);
+                                    }
+                                    else if (_kpixExportType.value == KPixExportType.texturePackAnimated)
+                                    {
+                                      widget.acceptAnimation(exportData: AnimationExportData.fromWithConcreteData(other: AnimationExportData.exportTypeMap[AnimationExportType.texturePack]!, scaling: 1, fileName: _fileName.value, directory: _appState.exportDir, loopOnly: _animationSectionOnly.value), exportType: AnimationExportType.texturePack);
+                                    }
+
                                   }
                                 } : null,
                               ),

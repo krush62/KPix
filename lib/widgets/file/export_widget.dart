@@ -217,10 +217,10 @@ class _ExportWidgetState extends State<ExportWidget>
     _hotkeyManager.exportFileNameTextFocus.requestFocus();
   }
 
-  void _updateFileNameStatus()
+  String _getExtension({required final ExportSectionType section})
   {
     String extension;
-    switch(_selectedSection.value)
+    switch(section)
     {
       case ExportSectionType.image:
         extension = ImageExportData.exportTypeMap[_fileExportType.value]!.extension;
@@ -242,6 +242,12 @@ class _ExportWidgetState extends State<ExportWidget>
           extension = fileExtensionKpix;
         }
     }
+    return extension;
+  }
+
+  void _updateFileNameStatus()
+  {
+    final String extension = _getExtension(section: _selectedSection.value);
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
   }
 
@@ -309,7 +315,7 @@ class _ExportWidgetState extends State<ExportWidget>
                   ],
                   selected: <ExportSectionType>{section},
                   showSelectedIcon: false,
-                  onSelectionChanged: (final Set<ExportSectionType> exportSections) {_selectedSection.value = exportSections.first; _updateFileNameStatus();},
+                  onSelectionChanged: (final Set<ExportSectionType> exportSections) {_selectedSection.value = exportSections.first; _updateFileNameStatus(); },
                 );
               },
             ),
@@ -628,33 +634,22 @@ class _ExportWidgetState extends State<ExportWidget>
                             ),
                           ),
                           Expanded(
-                            child: ValueListenableBuilder<AnimationExportType>(
-                              valueListenable: _animationExportType,
-                              builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
-                                return ValueListenableBuilder<PaletteExportType>(
-                                  valueListenable: _paletteExportType,
-                                  builder: (final BuildContext context, final PaletteExportType paletteExportType, final Widget? child) {
-                                    return ValueListenableBuilder<ImageExportType>(
-                                      valueListenable: _fileExportType,
-                                      builder: (final BuildContext context, final ImageExportType imageExportType, final Widget? child) {
-                                        String extension = "";
-                                        if (section == ExportSectionType.image)
-                                        {
-                                          extension = ImageExportData.exportTypeMap[imageExportType]!.extension;
-                                        }
-                                        else if (section == ExportSectionType.palette)
-                                        {
-                                          extension = PaletteExportData.exportTypeMap[paletteExportType]!.extension;
-                                        }
-                                        else if (section == ExportSectionType.animation)
-                                        {
-                                          extension = AnimationExportData.exportTypeMap[animationType]!.extension;
-                                        }
-                                        else if (section == ExportSectionType.kpix)
-                                        {
-                                          extension = fileExtensionKpix;
-                                        }
-                                        return Text(".$extension");
+                            child: ValueListenableBuilder<KPixExportType>(
+                              valueListenable: _kpixExportType,
+                              builder: (final BuildContext context, final KPixExportType kPixExportType, final Widget? child) {
+                                return ValueListenableBuilder<AnimationExportType>(
+                                  valueListenable: _animationExportType,
+                                  builder: (final BuildContext context, final AnimationExportType animationType, final Widget? child) {
+                                    return ValueListenableBuilder<PaletteExportType>(
+                                      valueListenable: _paletteExportType,
+                                      builder: (final BuildContext context, final PaletteExportType paletteExportType, final Widget? child) {
+                                        return ValueListenableBuilder<ImageExportType>(
+                                          valueListenable: _fileExportType,
+                                          builder: (final BuildContext context, final ImageExportType imageExportType, final Widget? child) {
+                                            final String extension = _getExtension(section: section);
+                                            return Text(".$extension");
+                                          },
+                                        );
                                       },
                                     );
                                   },

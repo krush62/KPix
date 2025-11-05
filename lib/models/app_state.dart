@@ -498,6 +498,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
+      selectionState.deselect(addToHistoryStack: false);
       final ReferenceLayerState? newLayer = timeline.selectedFrame!.layerList.addNewReferenceLayer(select: select);
       if (newLayer != null)
       {
@@ -523,6 +524,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
+      selectionState.deselect(addToHistoryStack: false);
       final ShadingLayerState? newLayer = timeline.selectedFrame!.layerList.addNewShadingLayer(select: select);
       if (newLayer != null)
       {
@@ -548,6 +550,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
+      selectionState.deselect(addToHistoryStack: false);
       final DitherLayerState? newLayer = timeline.selectedFrame!.layerList.addNewDitherLayer(select: select);
       if (newLayer != null)
       {
@@ -573,6 +576,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
+      selectionState.deselect(addToHistoryStack: false);
       final GridLayerState? newLayer = timeline.selectedFrame!.layerList.addNewGridLayer(select: select);
       if (newLayer != null)
       {
@@ -598,6 +602,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
+      selectionState.deselect(addToHistoryStack: false);
       final bool setSelectionStateLayer = timeline.selectedFrame!.layerList.isEmpty;
       final DrawingLayerState? newLayer = timeline.selectedFrame!.layerList.addNewDrawingLayer(canvasSize: _canvasSize, select: select, content: content, ramps: colorRamps);
       if (newLayer != null)

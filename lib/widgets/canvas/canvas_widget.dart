@@ -436,7 +436,6 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     {
       _cursorPos.value = CoordinateSetD(x: details.localPosition.dx, y: details.localPosition.dy);
     }
-
     if (kPixPainter.toolPainter != null)
     {
       _appState.statusBarState.updateFromPaint(statusBarData: kPixPainter.toolPainter!.statusBarData);

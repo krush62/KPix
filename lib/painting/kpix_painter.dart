@@ -298,7 +298,7 @@ class KPixPainter extends CustomPainter
         _drawCursor(drawParams: drawParams);
       }
 
-      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer.runtimeType == DrawingLayerState)
+      if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is RasterableLayerState)
       {
         toolPainter?.setStatusBarData(drawParams: drawParams);
       }

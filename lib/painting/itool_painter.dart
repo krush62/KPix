@@ -384,7 +384,6 @@ abstract class IToolPainter
 
   Set<CoordinateSetI> getIntegerRatioLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape, required final Set<AngleData> angles})
   {
-
     Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
     assert(angles.isNotEmpty);
     final double currentAngle = atan2(endPos.x - startPos.x, endPos.y - startPos.y);
@@ -460,7 +459,7 @@ abstract class IToolPainter
         }
 
         final double dist = getDistance(a: endPos, b: currentPos);
-        if (dist < shortestDist)
+        if (dist <= shortestDist)
         {
           shortestDist = dist;
           lPoints.addAll(currPoints);

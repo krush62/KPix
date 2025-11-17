@@ -16,29 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-
-class CreditEntry
-{
-  String _content = "";
-  TextStyle style;
-  CreditEntry({required final String content, required this.style, final bool removeTrailingBackslash = true})
-  {
-    if (content.endsWith("\\\r") && removeTrailingBackslash)
-    {
-      _content = content.replaceAll("\\\r", "\r");
-    }
-    else
-    {
-      _content = content;
-    }
-  }
-}
 
 class CreditsWidget extends StatefulWidget
 {
@@ -51,40 +35,21 @@ class CreditsWidget extends StatefulWidget
 class _CreditsWidgetState extends State<CreditsWidget>
 {
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
-  final ValueNotifier<List<CreditEntry>> _creditEntries = ValueNotifier<List<CreditEntry>>(<CreditEntry>[]);
+  final ValueNotifier<String> _creditsContent = ValueNotifier<String>("");
+
 
   @override
   void initState()
   {
     super.initState();
+    _loadCreditsContent().then((final String content) {
+      _creditsContent.value = content;
+    });
   }
 
-  Future<List<CreditEntry>> _createCreditEntries({required final TextStyle headerLarge, required final TextStyle headerMedium, required final TextStyle headerSmall, required final TextStyle textNormal}) async
+  Future<String> _loadCreditsContent() async
   {
-    final List<CreditEntry> entries = <CreditEntry>[];
-    final String credContent = await rootBundle.loadString("docs/credits.md");
-    final List<String> lines = credContent.split('\n');
-    for (final String line in lines)
-    {
-      if (line.startsWith("# "))
-      {
-        entries.add(CreditEntry(content: line.substring(2), style: headerLarge));
-      }
-      else if (line.startsWith("## "))
-      {
-        entries.add(CreditEntry(content: line.substring(3), style: headerMedium));
-      }
-      else if (line.startsWith("### "))
-      {
-        entries.add(CreditEntry(content: line.substring(4), style: headerSmall));
-      }
-      else
-      {
-        entries.add(CreditEntry(content: line, style: textNormal));
-      }
-    }
-
-    return entries;
+    return await rootBundle.loadString("docs/credits.md");
   }
 
   void _dismissPressed()
@@ -95,16 +60,6 @@ class _CreditsWidgetState extends State<CreditsWidget>
   @override
   Widget build(final BuildContext context)
   {
-    if (_creditEntries.value.isEmpty)
-    {
-      _createCreditEntries(
-        headerLarge: Theme.of(context).textTheme.headlineLarge!,
-        headerMedium: Theme.of(context).textTheme.headlineMedium!,
-        headerSmall: Theme.of(context).textTheme.headlineSmall!,
-        textNormal: Theme.of(context).textTheme.bodyMedium!,
-      ).then((final List<CreditEntry> entries){_creditEntries.value = entries;});
-    }
-
     return KPixAnimationWidget(
       constraints: BoxConstraints(
         minHeight: _options.minHeight,
@@ -115,16 +70,10 @@ class _CreditsWidgetState extends State<CreditsWidget>
       child: Column(
         children: <Widget>[
           Expanded(
-            child: ValueListenableBuilder<List<CreditEntry>>(
-              valueListenable: _creditEntries,
-              builder: (final BuildContext context1, final List<CreditEntry> entryList, final Widget? child) {
-                return ListView.builder(
-                  itemCount: entryList.length,
-                  itemBuilder: (final BuildContext context2, final int index)
-                  {
-                    return Text(entryList[index]._content, style: entryList[index].style);
-                  },
-                );
+            child: ValueListenableBuilder<String>(
+              valueListenable: _creditsContent,
+              builder: (final BuildContext context1, final String content, final Widget? child) {
+                return Markdown(data: content);
               },
             ),
           ),

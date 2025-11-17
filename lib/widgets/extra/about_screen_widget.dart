@@ -43,6 +43,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
 
   late KPixOverlay _licenseScreen;
   late KPixOverlay _creditsScreen;
+  late KPixOverlay _controlsScreen;
 
   void _dismissPressed()
   {
@@ -55,11 +56,17 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
     super.initState();
     _licenseScreen = getLicensesDialog(onDismiss: _dismissDialogs);
     _creditsScreen = getCreditsDialog(onDismiss: _dismissDialogs);
+    _controlsScreen = getControlsDialog(onDismiss: _dismissDialogs);
   }
 
   void _licensesPressed()
   {
     _licenseScreen.show(context: context);
+  }
+
+  void _controlsPressed()
+  {
+    _controlsScreen.show(context: context);
   }
 
   void _creditsPressed()
@@ -71,6 +78,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   {
     _licenseScreen.hide();
     _creditsScreen.hide();
+    _controlsScreen.hide();
   }
 
   @override
@@ -168,6 +176,19 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                               TablerIcons.license,
                             ),
                             onPressed: _licensesPressed,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: _options.padding),
+                      Expanded(
+                        child: Tooltip(
+                          message: "Controls/Shortcuts",
+                          waitDuration: AppState.toolTipDuration,
+                          child: IconButton.outlined(
+                            icon: const Icon(
+                              TablerIcons.keyboard,
+                            ),
+                            onPressed: _controlsPressed,
                           ),
                         ),
                       ),

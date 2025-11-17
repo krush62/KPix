@@ -34,6 +34,7 @@ dependencies:
   file_saver: ^0.3.1
   flutter:
     sdk: flutter
+  flutter_markdown_plus: ^1.0.5
   flutter_tabler_icons: ^1.43.0
   get_it: ^8.0.2
   google_fonts: ^6.2.1
@@ -171,6 +172,7 @@ flutter:
     - stamps/
     - palettes/
     - docs/credits.md
+    - docs/controls.md
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

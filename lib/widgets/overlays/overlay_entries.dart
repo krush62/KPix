@@ -24,6 +24,7 @@ import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_color_picker_widget.dart';
 import 'package:kpix/widgets/extra/about_screen_widget.dart';
+import 'package:kpix/widgets/extra/controls_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
 import 'package:kpix/widgets/extra/preferences_widget.dart';
@@ -677,6 +678,27 @@ KPixOverlay getSingleButtonDialog({
       ),
     );
   }
+
+KPixOverlay getControlsDialog({
+  required final Function() onDismiss,
+})
+{
+  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+          ),
+          Center(
+            child: ControlsWidget(onDismiss: onDismiss),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   KPixOverlay getCanvasSizeDialog({
     required final Function() onDismiss,

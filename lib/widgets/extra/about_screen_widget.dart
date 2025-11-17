@@ -148,7 +148,24 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                   ),
 
                   Text("A Pixel Art Creation Tool", style: Theme.of(context).textTheme.labelMedium),
-                  Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
+                  //Text("This is free software licensed under GNU AGPLv3", style: Theme.of(context).textTheme.labelMedium),
+                  RichText(
+                    textAlign: TextAlign.right,
+                    text: TextSpan(
+                      text: "This is free software licensed under ",
+                      style: Theme.of(context).textTheme.labelMedium,
+                      children: <InlineSpan>[
+                        TextSpan(
+                          text: "GNU AGPLv3.",
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                                launchURL(url: "https://www.gnu.org/licenses/agpl-3.0.html");
+                            },
+                          style: Theme.of(context).textTheme.labelMedium!.apply(decoration: TextDecoration.underline, decorationColor: Theme.of(context).primaryColorLight),
+                        ),
+                      ],
+                    ),
+                  ),
                   SizedBox(height: _options.padding,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

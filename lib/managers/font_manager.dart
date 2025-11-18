@@ -18,6 +18,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/managers/preference_manager.dart';
 
 enum PixelFontType
 {
@@ -131,7 +132,6 @@ class KFont
   });
 }
 
-const String fontPath = "fonts";
 const String sflExtension = ".sfl";
 const String pngExtension = ".PNG";
 
@@ -227,7 +227,7 @@ class FontManager
     final Map<PixelFontType, KFont> fontMap = <PixelFontType, KFont>{};
     for (final MapEntry<PixelFontType, String> mapEntry in _pixelFontFileMap.entries)
     {
-     fontMap[mapEntry.key] = await _readFontFromFile(sflName: "$fontPath/${mapEntry.value}$sflExtension", pngName: "$fontPath/${mapEntry.value}$pngExtension", fontName: _pixelFontNameMap[mapEntry.key]!);
+     fontMap[mapEntry.key] = await _readFontFromFile(sflName: "${PreferenceManager.ASSET_PATH_FONTS}/${mapEntry.value}$sflExtension", pngName: "${PreferenceManager.ASSET_PATH_FONTS}/${mapEntry.value}$pngExtension", fontName: _pixelFontNameMap[mapEntry.key]!);
     }
     return fontMap;
   }

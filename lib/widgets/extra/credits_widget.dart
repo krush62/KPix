@@ -49,7 +49,7 @@ class _CreditsWidgetState extends State<CreditsWidget>
 
   Future<String> _loadCreditsContent() async
   {
-    return await rootBundle.loadString("docs/credits.md");
+    return await rootBundle.loadString(PreferenceManager.ASSET_CREDITS);
   }
 
   void _dismissPressed()

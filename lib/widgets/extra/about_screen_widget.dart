@@ -96,7 +96,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Expanded(
-            child: Image.asset("imgs/kpix_icon.png"),
+            child: Image.asset(PreferenceManager.ASSET_ICON),
           ),
           Expanded(
             flex: 3,

@@ -33,7 +33,7 @@ Future<List<StampManagerEntryData>> _loadInstalledStamps() async
 {
   final List<StampManagerEntryData> stampData = <StampManagerEntryData>[];
   final AssetManifest assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-  final List<String> stampAssetList = assetManifest.listAssets().where((final String string) => string.startsWith("stamps/") && string.endsWith(".png")).toList();
+  final List<String> stampAssetList = assetManifest.listAssets().where((final String string) => string.startsWith("${PreferenceManager.ASSET_PATH_STAMPS}/") && string.endsWith(".png")).toList();
 
   for (final String path in stampAssetList)
   {

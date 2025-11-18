@@ -80,6 +80,9 @@ flutter:
     - family: "Comicoro"
       fonts:
         - asset: fonts/Comicoro.ttf
+    - family: "Cyborg Sister"
+      fonts:
+        - asset: fonts/CyborgSister.ttf
     - family: "Digital Disco"
       fonts:
         - asset: fonts/DigitalDisco.ttf

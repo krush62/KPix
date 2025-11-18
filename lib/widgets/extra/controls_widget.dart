@@ -46,7 +46,7 @@ class _ControlsWidgetState extends State<ControlsWidget>
 
   Future<String> _loadControlsContent() async
   {
-    return await rootBundle.loadString("docs/controls.md");
+    return await rootBundle.loadString(PreferenceManager.ASSET_CONTROLS);
   }
 
   @override

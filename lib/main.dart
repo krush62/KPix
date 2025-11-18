@@ -525,7 +525,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
             padding: EdgeInsets.all(GetIt.I.isRegistered<PreferenceManager>() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.loadingScreenPadding : 32.0),
             child: Stack(
               children: <Widget>[
-                Center(child: Image.asset("imgs/kpix_icon.png"),),
+                Center(child: Image.asset(PreferenceManager.ASSET_ICON),),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Text(

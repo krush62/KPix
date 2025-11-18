@@ -69,6 +69,7 @@ import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 enum PreferenceDouble
 {
   MainLayout_SplitView_DividerWidth(defaultValue: 8.0),
@@ -551,7 +552,7 @@ enum PreferenceString
 {
   Tool_Text_TextDefault(defaultValue: "Text"),
 
-  ColorNames_ColorNamePath(defaultValue: "color_names"),
+  ColorNames_ColorNamePath(defaultValue: PreferenceManager.ASSET_PATH_COLOR_NAMES),
 
   ;
   const PreferenceString({
@@ -655,6 +656,15 @@ class _StringPair
 
 class PreferenceManager
 {
+  static const String ASSET_ICON = "imgs/kpix_icon.png";
+  static const String ASSET_CONTROLS = "docs/controls.md";
+  static const String ASSET_CREDITS = "docs/credits.md";
+  static const String ASSET_PATH_STAMPS = "stamps";
+  static const String ASSET_PATH_PALETTES = "palettes";
+  static const String ASSET_PATH_FONTS = "fonts";
+  static const String ASSET_PATH_COLOR_NAMES = "color_names";
+
+
   final SharedPreferences _prefs;
   final Map<PreferenceDouble, _DoublePair> _doubleMap = <PreferenceDouble, _DoublePair>{};
   final Map<PreferenceInt, _IntPair> _intMap = <PreferenceInt, _IntPair>{};

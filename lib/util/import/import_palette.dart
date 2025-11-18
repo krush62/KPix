@@ -30,7 +30,7 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
 {
   final List<PaletteManagerEntryData> paletteData = <PaletteManagerEntryData>[];
   final AssetManifest assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-  final List<String> imageAssetsList = assetManifest.listAssets().where((final String string) => string.startsWith("palettes/") && string.endsWith(".$fileExtensionKpal")).toList();
+  final List<String> imageAssetsList = assetManifest.listAssets().where((final String string) => string.startsWith("${PreferenceManager.ASSET_PATH_PALETTES}/") && string.endsWith(".$fileExtensionKpal")).toList();
   for (final String filePath in imageAssetsList)
   {
     final ByteData bytes = await rootBundle.load(filePath);

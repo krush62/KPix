@@ -351,29 +351,54 @@ class StackCol<T> {
     return closestColor;
   }
 
-  bool isPointOnLineSegment({required final CoordinateSetI p, required final CoordinateSetI a, required final CoordinateSetI b})
+  bool _isPointOnLineSegment({required final CoordinateSetI p, required final CoordinateSetI a, required final CoordinateSetI b, final double epsilon = 1e-6})
   {
-    return p.x <= max(a.x, b.x) && p.x >= min(a.x, b.x) &&
-        p.y <= max(a.y, b.y) && p.y >= min(a.y, b.y) &&
-        (b.x - a.x) * (p.y - a.y) == (p.x - a.x) * (b.y - a.y);
+    final int cross = (b.x - a.x) * (p.y - a.y) - (p.x - a.x) * (b.y - a.y);
+    if (cross.abs() > epsilon)
+    {
+      return false;
+    }
+    final double minX = min(a.x, b.x) - epsilon;
+    final double maxX = max(a.x, b.x) + epsilon;
+    final double minY = min(a.y, b.y) - epsilon;
+    final double maxY = max(a.y, b.y) + epsilon;
+
+    return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY;
   }
 
-  bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon}) {
-    final int n = polygon.length;
-    bool inside = false;
+  int _isLeft({required final CoordinateSetI a, required final CoordinateSetI b, required final CoordinateSetI p})
+  {
+    return (b.x - a.x) * (p.y - a.y) - (p.x - a.x) * (b.y - a.y);
+  }
 
-    for (int i = 0, j = n - 1; i < n; j = i++) {
-      // Check if the point is on the current edge
-      if (isPointOnLineSegment(p: point, a: polygon[i], b: polygon[j])) {
+  bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon, final double epsilon = 1e-6}) {
+    final int n = polygon.length;
+    int windingNumber = 0;
+
+    for (int i = 0, j = n - 1; i < n; j = i++)
+    {
+      final CoordinateSetI pi = polygon[i];
+      final CoordinateSetI pj = polygon[j];
+      if (_isPointOnLineSegment(p: point, a: pi, b: pj, epsilon: epsilon)) {
         return true;
       }
 
-      if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) &&
-          (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)) {
-        inside = !inside;
+      if (pi.y <= point.y) {
+        if (pj.y > point.y) {
+          if (_isLeft(a: pi, b: pj, p: point) > 0) {
+            windingNumber++;
+          }
+        }
+      } else { // Edge crosses downward
+        if (pj.y <= point.y) {
+          if (_isLeft(a: pi, b: pj, p: point) < 0) {
+            windingNumber--;
+          }
+        }
       }
     }
-    return inside;
+
+    return windingNumber != 0;
   }
 
 
@@ -452,6 +477,171 @@ class StackCol<T> {
     }
 
     return points;
+  }
+
+  Set<CoordinateSetI> _drawEllipse({required final CoordinateSetI start, required final CoordinateSetI end,
+    required final void Function(int x0, int y0, int x1, int y1, int vPixels, Set<CoordinateSetI> pixels) plot,})
+  {
+    final Set<CoordinateSetI> pixels = <CoordinateSetI>{};
+
+    int x0 = start.x;
+    int y0 = start.y;
+    int x1 = end.x;
+    int y1 = end.y;
+
+    int hPixels = 0;
+    int vPixels = 0;
+
+    if (x0 > x1) [x0, x1] = <int>[x1, x0];
+    if (y0 > y1) [y0, y1] = <int>[y1, y0];
+
+    final int w = x1 - x0 + 1;
+    final int h = y1 - y0 + 1;
+
+    final int hDiameter = w - hPixels;
+    final int vDiameter = h - vPixels;
+
+    if (<int>[8, 12, 22].contains(w)) hPixels++;
+    if (<int>[8, 12, 22].contains(h)) vPixels++;
+
+    hPixels = (hDiameter > 5 ? hPixels : 0);
+    vPixels = (vDiameter > 5 ? vPixels : 0);
+
+    if (hDiameter.isEven && hDiameter > 5) hPixels--;
+    if (vDiameter.isEven && vDiameter > 5) vPixels--;
+
+    x1 -= hPixels;
+    y1 -= vPixels;
+
+    int a = (x1 - x0).abs();
+    final int b = (y1 - y0).abs();
+    int b1 = b & 1;
+
+    double dx = 4 * (1 - a) * b * b.toDouble();
+    double dy = 4 * (b1 + 1) * a * a.toDouble();
+    double err = dx + dy + b1 * a * a.toDouble();
+    double e2;
+
+    y0 += (b + 1) ~/ 2;
+    y1 = y0 - b1;
+    a = 8 * a * a;
+    b1 = 8 * b * b;
+
+    final int initialY0 = y0;
+    final int initialY1 = y1;
+    final int initialX0 = x0;
+    final int initialX1 = x1 + hPixels;
+
+    // Main loop
+    do
+    {
+      plot(x0, y0 + vPixels, x1 + hPixels, y1, vPixels, pixels);
+
+      e2 = 2 * err;
+      if (e2 <= dy)
+      {
+        y0++;
+        y1--;
+        err += dy += a.toDouble();
+      }
+      if (e2 >= dx || 2 * err > dy)
+      {
+        x0++;
+        x1--;
+        err += dx += b1.toDouble();
+      }
+    }
+    while (x0 <= x1);
+
+    // Flat ellipse correction
+    while (y0 + vPixels - y1 + 1 <= h)
+    {
+      plot(x0 - 1, y0 + vPixels, x1 + 1 + hPixels, y1, vPixels, pixels);
+      y0++;
+      y1--;
+    }
+
+    // Extra horizontal/vertical midsection pixels
+    if (hPixels > 0)
+    {
+      for (int y = y1 + 1; y <= y0 + vPixels - 1; y++)
+      {
+        plot(x0, y, x1 + hPixels, y, 0, pixels);
+      }
+    }
+    if (vPixels > 0)
+    {
+      for (int y = initialY1 + 1; y < initialY0 + vPixels; y++) {
+        pixels.add(CoordinateSetI(x: initialX0, y: y));
+        pixels.add(CoordinateSetI(x: initialX1, y: y));
+      }
+    }
+
+    return pixels;
+  }
+
+
+
+Set<CoordinateSetI> drawStrokedEllipse({required final CoordinateSetI start, required final CoordinateSetI end, required final int strokeWidth})
+{
+  final int width = end.x - start.x + 1;
+  final int height = end.y - start.y + 1;
+
+  if (strokeWidth == 1)
+  {
+    return _drawEllipse(
+      start: start,
+      end: end,
+      plot: (final int x0, final int y0, final int x1, final int y1, final int vPixels, final Set<CoordinateSetI> pixels)
+      {
+        pixels.add(CoordinateSetI(x: x0, y: y0));       // Quadrant II
+        pixels.add(CoordinateSetI(x: x1, y: y0));       // Quadrant I
+        pixels.add(CoordinateSetI(x: x0, y: y1));       // Quadrant III
+        pixels.add(CoordinateSetI(x: x1, y: y1));       // Quadrant IV
+      },
+    );
+  }
+  else
+  {
+    final Set<CoordinateSetI> pixels = _drawEllipse(
+      start: start,
+      end: end,
+      plot: (final int x0, final int y0, final int x1, final int y1, final int vPixels, final Set<CoordinateSetI> pixels)
+      {
+        for (int x = x0; x <= x1; x++)
+        {
+          pixels.add(CoordinateSetI(x: x, y: y0)); // top half
+          pixels.add(CoordinateSetI(x: x, y: y1)); // bottom half
+        }
+      },
+    );
+
+    if (width > strokeWidth * 2 && height > strokeWidth * 2)
+    {
+      final CoordinateSetI innerSelectionStart = CoordinateSetI(x: start.x + strokeWidth, y: start.y + strokeWidth);
+      final CoordinateSetI innerSelectionEnd = CoordinateSetI(x: end.x - strokeWidth, y: end.y - strokeWidth);
+      final Set<CoordinateSetI> innerCircleContent = drawFilledEllipse(start: innerSelectionStart, end: innerSelectionEnd);
+      pixels.removeAll(innerCircleContent);
+    }
+    return pixels;
+  }
+}
+
+
+  Set<CoordinateSetI> drawFilledEllipse({required final CoordinateSetI start, required final CoordinateSetI end})
+  {
+    return _drawEllipse(
+      start: start,
+      end: end,
+      plot: (final int x0, final int y0, final int x1, final int y1, final int vPixels, final Set<CoordinateSetI> pixels)
+      {
+        for (int x = x0; x <= x1; x++)
+        {
+          pixels.add(CoordinateSetI(x: x, y: y0)); // top half
+          pixels.add(CoordinateSetI(x: x, y: y1)); // bottom half
+        }
+      },
+    );
   }
 
   List<CoordinateSetI> getCoordinateNeighbors({required final CoordinateSetI pixel, required final bool withDiagonals})

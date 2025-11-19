@@ -46,7 +46,6 @@ class ShapePainter extends IToolPainter
   bool _isStarted = false;
   bool _waitingForRasterization = false;
   CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
-  static const double _ellipseThreshold = 1.005;
 
   ShapePainter({required super.painterOptions});
 
@@ -265,12 +264,7 @@ class ShapePainter extends IToolPainter
 
   static Set<CoordinateSetI> _calculateSelectionContent({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
   {
-    bool strokeHandled = false;
     Set<CoordinateSetI> content = <CoordinateSetI>{};
-    final double centerX = (selectionStart.x + selectionEnd.x + 1) / 2.0;
-    final double centerY = (selectionStart.y + selectionEnd.y + 1) / 2.0;
-    final double radiusX = (selectionEnd.x - selectionStart.x + 1) / 2.0;
-    final double radiusY = (selectionEnd.y - selectionStart.y + 1) / 2.0;
     final int width = selectionEnd.x - selectionStart.x + 1;
     final int height = selectionEnd.y - selectionStart.y + 1;
 
@@ -284,18 +278,8 @@ class ShapePainter extends IToolPainter
       final int maxAllowedRadius = min(innerWidth, innerHeight) ~/ 2;
       final int innerCornerRadius = min(max(0, options.cornerRadius.value - options.strokeWidth.value), maxAllowedRadius);
 
-
-
-      final bool shouldHandleStroke = options.cornerRadius.value != 0 //only when there is a corner radius
-          && options.strokeOnly.value // ...and stroke is activated
-          && options.strokeWidth.value > 1 // ...and stroke is larger than 1px
-          && width / 2 > options.strokeWidth.value // ...and width is larger than stroke width
-          && height / 2 > options.strokeWidth.value // ...and height is larger than stroke width
-          && options.cornerRadius.value <= min(width, height) / 2 // ...and corner radius is smaller than half of the smaller dimension
-          && innerCornerRadius <= min(innerWidth, innerHeight) / 2 // ...and the same for the inner rectangle
-          && options.cornerRadius.value >= options.strokeWidth.value;
       final Set<CoordinateSetI> innerContent = <CoordinateSetI>{};
-      if (shouldHandleStroke)
+      if (options.strokeOnly.value)
       {
         //calculate inner rectangle
         for (int x = innerSelectionStart.x; x <= innerSelectionEnd.x; x++)
@@ -310,130 +294,129 @@ class ShapePainter extends IToolPainter
         }
       }
 
+
+      final int usedCornerRadius = min(options.cornerRadius.value, min(width, height) ~/ 2);
+
       for (int x = selectionStart.x; x <= selectionEnd.x; x++)
       {
         for (int y = selectionStart.y; y <= selectionEnd.y; y++)
         {
-          if (options.cornerRadius.value == 0 || _isPointInRoundedRectangle(testPoint: CoordinateSetI(x: x, y: y), topLeft: selectionStart, bottomRight: selectionEnd, radius: options.cornerRadius.value))
+          if (usedCornerRadius == 0 || _isPointInRoundedRectangle(testPoint: CoordinateSetI(x: x, y: y), topLeft: selectionStart, bottomRight: selectionEnd, radius: usedCornerRadius))
           {
-            if (!shouldHandleStroke)
+            if (!innerContent.contains(CoordinateSetI(x: x, y: y)))
             {
-              //Don't handle stroke
-              content.add(CoordinateSetI(x: x, y: y));
-            }
-            else if (!innerContent.contains(CoordinateSetI(x: x, y: y)))
-            {
-              //Handle stroke here: Do not add to content if coordinate is in the inner rectangle
               content.add(CoordinateSetI(x: x, y: y));
             }
           }
         }
       }
-      strokeHandled = shouldHandleStroke;
     }
     //ELLIPSE
     else if (options.shape.value == ShapeShape.ellipse)
     {
-      final bool shouldHandleStroke = options.strokeOnly.value && radiusX > options.strokeWidth.value && radiusY > options.strokeWidth.value && options.strokeWidth.value > 1;
-      final double invRadiusXSquared = 1.0 / (radiusX * radiusX);
-      final double invRadiusYSquared = 1.0 / (radiusY * radiusY);
-
-      final double radiusInnerX = radiusX - options.strokeWidth.value;
-      final double radiusInnerY = radiusY - options.strokeWidth.value;
-
-      final double invRadiusXSquaredInner = 1.0 / (radiusInnerX * radiusInnerX);
-      final double invRadiusYSquaredInner = 1.0 / (radiusInnerY * radiusInnerY);
-
-      for (int x = selectionStart.x; x <= selectionEnd.x; x++)
+      if (options.strokeOnly.value)
       {
-        for (int y = selectionStart.y; y <= selectionEnd.y; y++)
-        {
-          final double dx = (x + 0.5) - centerX;
-          final double dy = (y + 0.5) - centerY;
-          final double normalizedX = dx * dx * invRadiusXSquared;
-          final double normalizedY = dy * dy * invRadiusYSquared;
-
-          if (normalizedX + normalizedY <= _ellipseThreshold)
-          {
-            if (!shouldHandleStroke)
-            {
-              content.add(CoordinateSetI(x: x, y: y));
-            }
-            else
-            {
-              final double normalizedXInner = dx * dx * invRadiusXSquaredInner;
-              final double normalizedYInner = dy * dy * invRadiusYSquaredInner;
-              if (normalizedXInner + normalizedYInner > _ellipseThreshold)
-              {
-                content.add(CoordinateSetI(x: x, y: y));
-              }
-            }
-          }
-        }
+        content.addAll(drawStrokedEllipse(start: selectionStart, end: selectionEnd, strokeWidth: options.strokeWidth.value));
       }
-      strokeHandled = shouldHandleStroke;
+      else
+      {
+        content.addAll(drawFilledEllipse(start: selectionStart, end: selectionEnd));
+      }
     }
-    //OTHER SHAPES
+    //OTHER SHAPES (POLYGONS)
     else
     {
       final List<CoordinateSetI> points = _getPolygonPoints(options: options, selectionStart: selectionStart, selectionEnd: selectionEnd);
-      final CoordinateSetI min = getMin(coordList: points);
-      final CoordinateSetI max = getMax(coordList: points);
-      for (int x = min.x; x <= max.x; x++)
+      if (options.strokeOnly.value && options.strokeWidth.value == 1)
       {
-        for (int y = min.y; y <= max.y; y++)
+        for (int i = 0; i < points.length; i++)
         {
-          final CoordinateSetI point = CoordinateSetI(x: x, y: y);
-          if (isPointInPolygon(point: point, polygon: points))
+          final CoordinateSetI pointOrigin = points[i];
+          final CoordinateSetI pointTarget = points[(i + 1) % points.length];
+          content.addAll(bresenham(start: pointOrigin, end: pointTarget));
+        }
+      }
+      else
+      {
+        final CoordinateSetI min = getMin(coordList: points);
+        final CoordinateSetI max = getMax(coordList: points);
+        for (int x = min.x; x <= max.x; x++)
+        {
+          for (int y = min.y; y <= max.y; y++)
           {
-            content.add(point);
+            final CoordinateSetI point = CoordinateSetI(x: x, y: y);
+            if (isPointInPolygon(point: point, polygon: points))
+            {
+              content.add(point);
+            }
           }
+        }
+
+        if (options.strokeOnly.value)
+        {
+          final List<CoordinateSetD> polygonVertices = points.map((final CoordinateSetI c) => CoordinateSetD(x: c.x.toDouble(), y: c.y.toDouble())).toList();
+          content = _calculateInnerStrokeForWidth(content, polygonVertices, options.strokeWidth.value);
         }
       }
     }
 
-    if (options.strokeOnly.value && !strokeHandled)
-    {
-      content = _calculateInnerStrokeForWidth(content, options.strokeWidth.value);
-    }
     return content;
   }
 
 
+  static double _pointToSegmentDistance(final CoordinateSetD pd, final CoordinateSetD p1, final CoordinateSetD p2)
+  {
+    final double dx = p2.x - p1.x;
+    final double dy = p2.y - p1.y;
 
-  static Set<CoordinateSetI> _calculateInnerStrokeForWidth(final Set<CoordinateSetI> filledShape, final int strokeWidth) {
-    final Set<CoordinateSetI> innerStroke = <CoordinateSetI>{};
-    final Set<CoordinateSetI> currentShape = Set<CoordinateSetI>.from(filledShape);
-
-    for (int i = 0; i < strokeWidth; i++)
+    if (dx == 0 && dy == 0)
     {
-      final Set<CoordinateSetI> boundaryCoords = <CoordinateSetI>{};
-
-      // Find the current boundary
-      for (final CoordinateSetI coord in currentShape)
-      {
-        final List<CoordinateSetI> neighbors = getCoordinateNeighbors(pixel: coord, withDiagonals: false);
-        for (final CoordinateSetI neighbor in neighbors)
-        {
-          if (!currentShape.contains(neighbor))
-          {
-            boundaryCoords.add(coord);
-            break;
-          }
-        }
-      }
-
-      innerStroke.addAll(boundaryCoords);
-
-      currentShape.removeAll(boundaryCoords);
-
-      if (currentShape.isEmpty)
-      {
-        break;
-      }
+      return sqrt((pd.x - p1.x) * (pd.x - p1.x) + (pd.x - p1.y) * (pd.y - p1.y));
     }
 
-    return innerStroke;
+    final double t = ((pd.x - p1.x) * dx + (pd.y - p1.y) * dy) / (dx * dx + dy * dy);
+    final double tc = t.clamp(0.0, 1.0);
+
+    final double cx = p1.x + tc * dx;
+    final double cy = p1.y + tc * dy;
+
+    final double dxp = pd.x - cx;
+    final double dyp = pd.y - cy;
+
+    return sqrt(dxp * dxp + dyp * dyp);
+  }
+
+  static double _distanceToPolygonEdges(final CoordinateSetD pd, final List<CoordinateSetD> vertices)
+  {
+    double minDist = double.infinity;
+    for (int i = 0; i < vertices.length; i++)
+    {
+      final CoordinateSetD p1 = vertices[i];
+      final CoordinateSetD p2 = vertices[(i + 1) % vertices.length];
+      final double dist = _pointToSegmentDistance(pd, p1, p2);
+      if (dist < minDist)
+      {
+        minDist = dist;
+      }
+    }
+    return minDist;
+  }
+
+
+  static Set<CoordinateSetI> _calculateInnerStrokeForWidth(final Set<CoordinateSetI> filledShape, final List<CoordinateSetD> polygonVertices, final int strokeWidth)
+  {
+    final Set<CoordinateSetI> result = <CoordinateSetI>{};
+
+    for (final CoordinateSetI p in filledShape)
+    {
+      final CoordinateSetD pd = CoordinateSetD(x: p.x.toDouble(), y: p.y.toDouble());
+      final double dist = _distanceToPolygonEdges(pd, polygonVertices);
+      if (dist < strokeWidth)
+      {
+        result.add(p);
+      }
+    }
+    return result;
   }
 
   static List<CoordinateSetI> _getPolygonPoints({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
@@ -462,32 +445,37 @@ class ShapePainter extends IToolPainter
     }
     else if (options.shape.value == ShapeShape.star || options.shape.value == ShapeShape.ngon)
     {
-      final double centerX = (selectionStart.x + selectionEnd.x) / 2;
-      final double centerY = (selectionStart.y + selectionEnd.y) / 2;
-      final double boxWidth = (selectionEnd.x - selectionStart.x + 1).toDouble();
-      final double boxHeight = (selectionEnd.y - selectionStart.y + 1).toDouble();
-      final double radiusOuterX = boxWidth / 2;
-      final double radiusOuterY = boxHeight / 2;
-      final double radiusInnerX = radiusOuterX / 2;
-      final double radiusInnerY = radiusOuterY / 2;
+      final int n = options.cornerCount.value;
+      final bool isStar = options.shape.value == ShapeShape.star;
 
-      final double angleStep = pi / options.cornerCount.value;
-      final double startAngle = options.cornerCount.value.isOdd ? -pi / 2 : 0;
+      final double left   = min(selectionStart.x, selectionEnd.x).toDouble();
+      final double top    = min(selectionStart.y, selectionEnd.y).toDouble();
+      final double width  = (selectionEnd.x - selectionStart.x).abs().toDouble();
+      final double height = (selectionEnd.y - selectionStart.y).abs().toDouble();
 
-      for (int i = 0; i < 2 * options.cornerCount.value; i++)
+      final double centerX = left + width / 2;
+      final double centerY = top  + height / 2;
+
+      final double radiusOuterX = width  / 2;
+      final double radiusOuterY = height / 2;
+
+      const double innerRatio = 0.5;
+      final double radiusInnerX = radiusOuterX * innerRatio;
+      final double radiusInnerY = radiusOuterY * innerRatio;
+
+      final int pointCount = isStar ? 2 * n : n;
+      final double angleStep = 2 * pi / pointCount;
+      const double startAngle = -pi / 2; // Point upward
+
+      for (int i = 0; i < pointCount; i++)
       {
-        final bool isOuter = i.isEven;
-        final double radiusX = isOuter ? radiusOuterX : radiusInnerX;
-        final double radiusY = isOuter ? radiusOuterY : radiusInnerY;
         final double angle = startAngle + i * angleStep;
-
-        final int x = (centerX + radiusX * cos(angle)).round();
-        final int y = (centerY + radiusY * sin(angle)).round();
-
-        if (isOuter || options.shape.value == ShapeShape.star)
-        {
-          points.add(CoordinateSetI(x: x, y: y));
-        }
+        final bool isOuter = !isStar || i.isEven;
+        final double rx = isOuter ? radiusOuterX : radiusInnerX;
+        final double ry = isOuter ? radiusOuterY : radiusInnerY;
+        final int x = (centerX + rx * cos(angle)).round();
+        final int y = (centerY + ry * sin(angle)).round();
+        points.add(CoordinateSetI(x: x, y: y));
       }
     }
 

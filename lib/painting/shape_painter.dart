@@ -275,8 +275,13 @@ class ShapePainter extends IToolPainter
       final CoordinateSetI innerSelectionEnd = CoordinateSetI(x: selectionEnd.x - options.strokeWidth.value, y: selectionEnd.y - options.strokeWidth.value);
       final int innerWidth = innerSelectionEnd.x - innerSelectionStart.x + 1;
       final int innerHeight = innerSelectionEnd.y - innerSelectionStart.y + 1;
-      final int maxAllowedRadius = min(innerWidth, innerHeight) ~/ 2;
-      final int innerCornerRadius = min(max(0, options.cornerRadius.value - options.strokeWidth.value), maxAllowedRadius);
+      final int outerWidth = selectionEnd.x - selectionStart.x + 1;
+      final int outerHeight = selectionEnd.y - selectionStart.y + 1;
+      final double shrinkX = innerWidth / outerWidth;
+      final double shrinkY = innerHeight / outerHeight;
+      final double shrinkFactor = min(shrinkX, shrinkY);
+      final int maxInnerRadius = min(innerWidth, innerHeight) ~/ 2;
+      final int innerCornerRadius = min((options.cornerRadius.value * shrinkFactor).floor() - 1, maxInnerRadius);
 
       final Set<CoordinateSetI> innerContent = <CoordinateSetI>{};
       if (options.strokeOnly.value)
@@ -488,27 +493,34 @@ class ShapePainter extends IToolPainter
     return points;
   }
 
-  static bool _isPointInRoundedRectangle(
-      {required final CoordinateSetI testPoint,
-        required final CoordinateSetI topLeft,
-        required final CoordinateSetI bottomRight,
-        required final int radius,})
-  {
-    if ((testPoint.x >= topLeft.x + radius && testPoint.x <= bottomRight.x - radius && testPoint.y >= topLeft.y && testPoint.y <= bottomRight.y) ||
-        (testPoint.y >= topLeft.y + radius && testPoint.y <= bottomRight.y - radius && testPoint.x >= topLeft.x && testPoint.x <= bottomRight.x))
-    {
+  static bool _isPointInRoundedRectangle({
+    required final CoordinateSetI testPoint,
+    required final CoordinateSetI topLeft,
+    required final CoordinateSetI bottomRight,
+    required final int radius,
+  }) {
+    // Clamp radius to fit rectangle
+    final int rx = min(radius, (bottomRight.x - topLeft.x) ~/ 2);
+    final int ry = min(radius, (bottomRight.y - topLeft.y) ~/ 2);
+
+    // Central rectangle (vertical and horizontal bars)
+    if ((testPoint.x >= topLeft.x + rx && testPoint.x <= bottomRight.x - rx &&
+        testPoint.y >= topLeft.y && testPoint.y <= bottomRight.y) ||
+        (testPoint.y >= topLeft.y + ry && testPoint.y <= bottomRight.y - ry &&
+            testPoint.x >= topLeft.x && testPoint.x <= bottomRight.x)) {
       return true;
     }
 
-    final CoordinateSetI topLeftCorner = CoordinateSetI(x: topLeft.x + radius, y: topLeft.y + radius);
-    final CoordinateSetI topRightCorner = CoordinateSetI(x: bottomRight.x - radius, y: topLeft.y + radius);
-    final CoordinateSetI bottomLeftCorner = CoordinateSetI(x: topLeft.x + radius, y: bottomRight.y - radius);
-    final CoordinateSetI bottomRightCorner = CoordinateSetI(x: bottomRight.x - radius, y: bottomRight.y - radius);
+    // Corner circles
+    final CoordinateSetI topLeftCorner = CoordinateSetI(x: topLeft.x + rx, y: topLeft.y + ry);
+    final CoordinateSetI topRightCorner = CoordinateSetI(x: bottomRight.x - rx, y: topLeft.y + ry);
+    final CoordinateSetI bottomLeftCorner = CoordinateSetI(x: topLeft.x + rx, y: bottomRight.y - ry);
+    final CoordinateSetI bottomRightCorner = CoordinateSetI(x: bottomRight.x - rx, y: bottomRight.y - ry);
 
-    if (_isPointInCircle(pt: testPoint, center: topLeftCorner, radius: radius) ||
-        _isPointInCircle(pt: testPoint, center: topRightCorner, radius: radius) ||
-        _isPointInCircle(pt: testPoint, center: bottomLeftCorner, radius: radius) ||
-        _isPointInCircle(pt: testPoint, center: bottomRightCorner, radius: radius)) {
+    if (_isPointInCircle(pt: testPoint, center: topLeftCorner, radius: rx) ||
+        _isPointInCircle(pt: testPoint, center: topRightCorner, radius: rx) ||
+        _isPointInCircle(pt: testPoint, center: bottomLeftCorner, radius: rx) ||
+        _isPointInCircle(pt: testPoint, center: bottomRightCorner, radius: rx)) {
       return true;
     }
 

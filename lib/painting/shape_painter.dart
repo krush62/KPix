@@ -271,21 +271,21 @@ class ShapePainter extends IToolPainter
     //RECTANGLE
     if (options.shape.value == ShapeShape.rectangle)
     {
-      final CoordinateSetI innerSelectionStart = CoordinateSetI(x: selectionStart.x + options.strokeWidth.value, y: selectionStart.y + options.strokeWidth.value);
-      final CoordinateSetI innerSelectionEnd = CoordinateSetI(x: selectionEnd.x - options.strokeWidth.value, y: selectionEnd.y - options.strokeWidth.value);
-      final int innerWidth = innerSelectionEnd.x - innerSelectionStart.x + 1;
-      final int innerHeight = innerSelectionEnd.y - innerSelectionStart.y + 1;
-      final int outerWidth = selectionEnd.x - selectionStart.x + 1;
-      final int outerHeight = selectionEnd.y - selectionStart.y + 1;
-      final double shrinkX = innerWidth / outerWidth;
-      final double shrinkY = innerHeight / outerHeight;
-      final double shrinkFactor = min(shrinkX, shrinkY);
-      final int maxInnerRadius = min(innerWidth, innerHeight) ~/ 2;
-      final int innerCornerRadius = min((options.cornerRadius.value * shrinkFactor).floor() - 1, maxInnerRadius);
-
       final Set<CoordinateSetI> innerContent = <CoordinateSetI>{};
       if (options.strokeOnly.value)
       {
+        final CoordinateSetI innerSelectionStart = CoordinateSetI(x: selectionStart.x + options.strokeWidth.value, y: selectionStart.y + options.strokeWidth.value);
+        final CoordinateSetI innerSelectionEnd = CoordinateSetI(x: selectionEnd.x - options.strokeWidth.value, y: selectionEnd.y - options.strokeWidth.value);
+        final int innerWidth = innerSelectionEnd.x - innerSelectionStart.x + 1;
+        final int innerHeight = innerSelectionEnd.y - innerSelectionStart.y + 1;
+        final int outerWidth = selectionEnd.x - selectionStart.x + 1;
+        final int outerHeight = selectionEnd.y - selectionStart.y + 1;
+        final double shrinkX = innerWidth / outerWidth;
+        final double shrinkY = innerHeight / outerHeight;
+        final double shrinkFactor = min(shrinkX, shrinkY);
+        final int maxInnerRadius = min(innerWidth, innerHeight) ~/ 2;
+        final int innerCornerRadius = options.strokeWidth.value == 1 ? options.cornerRadius.value - 1 :  min((options.cornerRadius.value * shrinkFactor).floor() - 1, maxInnerRadius);
+
         //calculate inner rectangle
         for (int x = innerSelectionStart.x; x <= innerSelectionEnd.x; x++)
         {

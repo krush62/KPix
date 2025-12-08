@@ -29,7 +29,7 @@ class KPalRampData
 {
   final KPalRampSettings settings;
   final String uuid;
-  final List<HSVColor> _originalColors = <HSVColor>[];
+  final List<KHSV> _originalColors = <KHSV>[];
   final List<ValueNotifier<IdColor>> shiftedColors = <ValueNotifier<IdColor>>[];
   final List<ColorReference> references = <ColorReference>[];
   final List<ShiftSet> shifts = <ShiftSet>[];
@@ -287,8 +287,8 @@ class KPalRampData
       for (int i = 0; i < settings.colorCount; i++)
       {
         const Color black = Colors.black;
-        _originalColors.add(HSVColor.fromColor(black));
-        shiftedColors.add(ValueNotifier<IdColor>(IdColor(hsvColor: HSVColor.fromColor(black), uuid: uuid.v1())));
+        _originalColors.add(KHSV.fromColor(color:black));
+        shiftedColors.add(ValueNotifier<IdColor>(IdColor(hsv: KHSV.fromColor(color: black), uuid: uuid.v1())));
         references.add(ColorReference(colorIndex: i, ramp: this));
       }
     }
@@ -299,11 +299,9 @@ class KPalRampData
     final double valueStepSize = ((settings.valueRangeMax - settings.valueRangeMin) / 100.0) / (settings.colorCount - 1);
 
     //setting central (center) color
-    final HSVColor centerColor = HSVColor.fromAHSV(
-        1.0,
-        settings.baseHue.toDouble() % 360,
-        (settings.baseSat.toDouble() / 100.0).clamp(0.0, 1.0),
-        ((settings.valueRangeMin.toDouble() + ((settings.valueRangeMax.toDouble() - settings.valueRangeMin.toDouble()) / 2.0)) / 100.0).clamp(0.0, 1.0),
+    final KHSV centerColor = KHSV(h: settings.baseHue.toDouble() % 360,
+        s: (settings.baseSat.toDouble() / 100.0).clamp(0.0, 1.0),
+        v: ((settings.valueRangeMin.toDouble() + ((settings.valueRangeMax.toDouble() - settings.valueRangeMin.toDouble()) / 2.0)) / 100.0).clamp(0.0, 1.0),
     );
     if (!isEven)
     {
@@ -314,19 +312,18 @@ class KPalRampData
     for (int i = isEven ? (settings.colorCount ~/ 2) : (settings.colorCount ~/ 2 + 1); i < settings.colorCount; i++)
     {
       final double distanceToCenter = isEven? (i - centerIndex).abs().toDouble() + 0.5 : (i - centerIndex).abs().toDouble();
-      HSVColor col = HSVColor.fromAHSV(
-          1.0,
-          (centerColor.hue + (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
-          (centerColor.saturation + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
-          (centerColor.value + (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
+      KHSV col = KHSV(
+          h: (centerColor.h + (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
+          s: (centerColor.s + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
+          v: (centerColor.v + (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
       );
       if (settings.satCurve == SatCurve.brightFlat)
       {
-        col = col.withSaturation(centerColor.saturation);
+        col = KHSV(h: col.h, v: col.v, s: centerColor.s);
       }
       else if (settings.satCurve == SatCurve.linear)
       {
-        col = col.withSaturation((centerColor.saturation - ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0));
+        col = KHSV(h: col.h, v: col.v, s: (centerColor.s - ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0));
       }
       _originalColors[i] = col;
     }
@@ -335,15 +332,14 @@ class KPalRampData
     for (int i = settings.colorCount ~/ 2 - 1; i >= 0; i--)
     {
       final double distanceToCenter = isEven? (i - centerIndex).abs().toDouble() - 0.5 : (i - centerIndex).abs().toDouble();
-      HSVColor col = HSVColor.fromAHSV(
-          1.0,
-          (centerColor.hue - (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
-          (centerColor.saturation + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
-          (centerColor.value - (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
+      KHSV col = KHSV(
+          h: (centerColor.h - (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
+          s: (centerColor.s + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
+          v: (centerColor.v - (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
       );
       if (settings.satCurve == SatCurve.darkFlat)
       {
-        col = col.withSaturation(centerColor.saturation);
+        col = KHSV(h: col.h, v: col.v, s: centerColor.s);
       }
       _originalColors[i] = col;
     }
@@ -351,14 +347,13 @@ class KPalRampData
     //SETTING SHIFTED COLORS
     for (int i = 0; i < _originalColors.length; i++)
     {
-      final HSVColor orig = _originalColors[i];
-      final HSVColor shiftedColor = HSVColor.fromAHSV(
-          1.0,
-          (orig.hue + shifts[i].hueShiftNotifier.value) % 360,
-          (orig.saturation + (shifts[i].satShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
-          (orig.value + (shifts[i].valShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
+      final KHSV orig = _originalColors[i];
+      final KHSV shiftedColor = KHSV(
+          h: (orig.h + shifts[i].hueShiftNotifier.value) % 360,
+          s: (orig.s + (shifts[i].satShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
+          v: (orig.v + (shifts[i].valShiftNotifier.value.toDouble() / 100.0)).clamp(0.0, 1.0),
       );
-      shiftedColors[i].value = IdColor(hsvColor: shiftedColor, uuid: shiftedColors[i].value.uuid);
+      shiftedColors[i].value = IdColor(hsv: shiftedColor, uuid: shiftedColors[i].value.uuid);
     }
   }
 

@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/util/helper.dart';
 
 const double _goldenAngle = 137.50776405003785;
 const double _saturation = 0.3;
@@ -22,7 +23,7 @@ final Map<int, double> _hueMap = <int, double>{};
 
 Color _getColorWithHue({required final double hue, required final BuildContext context, required final bool selected})
 {
-  return HSVColor.fromAHSV(1.0, hue, _saturation, selected ? HSVColor.fromColor(Theme.of(context).primaryColor).value : HSVColor.fromColor(Theme.of(context).primaryColorDark).value).toColor();
+  return KHSV(h: hue, s: _saturation, v: selected ? KHSV.fromColor(color: Theme.of(context).primaryColor).v : KHSV.fromColor(color: Theme.of(context).primaryColorDark).v).toColor();
 }
 
 void resetColorSupplier()

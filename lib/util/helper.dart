@@ -208,10 +208,6 @@ class KHSV
     return KHSV(h: hsvColor.hue, s: hsvColor.saturation, v: hsvColor.value);
   }
 
-  //from other constructor
-
-
-
   HSVColor toHSV({final double alpha = 1.0})
   {
     return HSVColor.fromAHSV(alpha, h, s, v);
@@ -225,7 +221,54 @@ class KHSV
     return _colorFromHue(hue: h, chroma: chroma, secondary: secondary, match: match);
   }
 
-  Color _colorFromHue({required final double hue, required final double chroma, required final double secondary, required final double match})
+
+  factory KHSV.fromColor({required final Color color})
+  {
+    final double maxc = max(color.r, max(color.g, color.b));
+    final double minc = min(color.r, min(color.g, color.b));
+    final double delta = maxc - minc;
+    final double v = maxc;
+
+    if (delta == 0.0) {
+      return KHSV(h: 0.0, s: 0.0, v: v);
+    }
+
+    final double s = (maxc == 0.0) ? 0.0 : (delta / maxc);
+    double h;
+    if (maxc == color.r)
+    {
+      h = 60.0 * (((color.g - color.b) / delta) % 6.0);
+    }
+    else if (maxc == color.g)
+    {
+      h = 60.0 * (((color.b - color.r) / delta) + 2.0);
+    }
+    else
+    {
+      h = 60.0 * (((color.r - color.g) / delta) + 4.0);
+    }
+    if (h < 0.0) h += 360.0;
+    if (h >= 360.0) h -= 360.0;
+
+    return KHSV(h: h, s: s, v: v);
+  }
+
+  factory KHSV.fromRgb({
+    required final int r,
+    required final int g,
+    required final int b,
+  }) => KHSV.fromColor(color: Color.fromARGB(0xFF, r, g, b));
+
+  factory KHSV.fromArgb({
+    required final int a,
+    required final int r,
+    required final int g,
+    required final int b,
+  }) => KHSV.fromColor(color: Color.fromARGB(a, r, g, b));
+
+
+
+Color _colorFromHue({required final double hue, required final double chroma, required final double secondary, required final double match})
   {
     final (double red, double green, double blue) = switch (hue) {
       < 60.0 => (chroma, secondary, 0.0),
@@ -276,12 +319,6 @@ String colorToHexString({required final Color color, final bool withHashTag = tr
 String colorToRGBString({required final Color color}) {
   return '${_clampChannel(color.r)} | ${_clampChannel(color.g)} | ${_clampChannel(color.b)}';
 }
-
-
-  /*Color getColorFromHash({required final int hash, required final BuildContext context, required final bool selected})
-  {
-    return HSVColor.fromAHSV(1.0, (hash.abs() % 360).toDouble(), 0.3, selected ? HSVColor.fromColor(Theme.of(context).primaryColor).value : HSVColor.fromColor(Theme.of(context).primaryColorDark).value).toColor();
-  }*/
 
 
 /// Returns true if the application is running as native desktop application.

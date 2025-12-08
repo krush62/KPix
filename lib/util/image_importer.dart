@@ -66,7 +66,7 @@ class ImportResult
       DrawingLayerState drawingLayer;
       List<KPalRampData> ramps = <KPalRampData>[];
       // Extracting ALL colors
-      final List<KHSV> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
+      final List<KHSV> colorList = await _extractColorsFromImage(imgBytes: imageData);
       if (importData.createNewPalette)
       {
         final List<KPalRampSettings> colorRamps = await _extractColorRamps(imgBytes: imageData, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
@@ -76,7 +76,7 @@ class ImportResult
         }
 
 
-        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
+        drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
         await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
         if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
         {
@@ -94,7 +94,7 @@ class ImportResult
       else
       {
         ramps = currentRamps;
-        drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
+        drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
       }
 
       ReferenceLayerState? referenceLayer;
@@ -167,7 +167,7 @@ class ImportResult
         row++;
       }
       final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
-      final ColorReference reference = _findClosestColor(hsvColor: colorList[i], ramps: ramps);
+      final ColorReference reference = _findClosestColor(color: colorList[i], ramps: ramps);
       layerContent[coord] = reference;
       col++;
     }
@@ -175,9 +175,9 @@ class ImportResult
   }
 
 
-ColorReference _findClosestColor({required final KHSV hsvColor, required final List<KPalRampData> ramps,})
+ColorReference _findClosestColor({required final KHSV color, required final List<KPalRampData> ramps,})
 {
-  final Color pixelColor = hsvColor.toColor();
+  final Color pixelColor = color.toColor();
 
   ColorReference? closestReference;
   double closestDelta = double.infinity;

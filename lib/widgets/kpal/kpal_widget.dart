@@ -65,14 +65,14 @@ part 'kpal_vertical_slider_widget.dart';
 
 class IdColor
 {
-  final HSVColor hsvColor;
+  final KHSV hsv;
   final Color color;
   final String uuid;
-  IdColor({required this.hsvColor, required this.uuid}) : color = hsvColor.toColor();
+  IdColor({required this.hsv, required this.uuid}) : color = hsv.toColor();
   String getTooltipText()
   {
     final String name = GetIt.I.get<PreferenceManager>().colorNames.getColorName(r: color.r, g: color.g, b: color.b);
-    final String hsv = "${hsvColor.hue.round()}° ${(hsvColor.saturation * 100).round()}% ${(hsvColor.value * 100).round()}%";
+    final String hsv = "${this.hsv.h.round()}° ${(this.hsv.s * 100).round()}% ${(this.hsv.v * 100).round()}%";
     final String rgb = colorToRGBString(color: color);
     final String hex = colorToHexString(color: color);
     return "$name\n$hsv\n$rgb\n$hex";

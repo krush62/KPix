@@ -258,9 +258,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                      children: <Widget>[
-                       Text("${currentColor.hsvColor.hue.round()}°"),
-                       Text("${(currentColor.hsvColor.saturation * 100).round()}%"),
-                       Text("${(currentColor.hsvColor.value * 100).round()}%"),
+                       Text("${currentColor.hsv.h.round()}°"),
+                       Text("${(currentColor.hsv.s * 100).round()}%"),
+                       Text("${(currentColor.hsv.v * 100).round()}%"),
                      ],
                    ),
                  ),

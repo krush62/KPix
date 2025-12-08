@@ -16,6 +16,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:kpix/util/helper.dart';
 
 class KPixSlider extends StatefulWidget {
   final double value;
@@ -259,7 +260,7 @@ class _KPixSliderTrackShape extends RectangularSliderTrackShape {
       {
         activePaint = Paint()
           ..shader = LinearGradient(
-            colors: List<Color>.generate(360, (final int hue) => HSVColor.fromAHSV(1, hue.toDouble(), 0.5, 0.7).toColor()),
+            colors: List<Color>.generate(360, (final int hue) => KHSV(h: hue.toDouble(), s: 0.5, v: 0.7).toColor()),
           ).createShader(trackRect);
       }
 

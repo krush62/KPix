@@ -187,6 +187,63 @@ class CoordinateSetI
   }
 }
 
+class KHSV
+{
+  final double h;
+  final double s;
+  final double v;
+
+  KHSV({required this.h, required this.s, required this.v}) :
+    assert(h >= 0.0 && h <= 360.0, 'Hue must be between 0 and 360'),
+    assert(s >= 0.0 && s <= 1.0, 'Saturation must be between 0 and 1'),
+    assert(v >= 0.0 && v <= 1.0, 'Value must be between 0 and 1');
+
+  KHSV.fromOther({required final KHSV other}) :
+    h = other.h,
+    s = other.s,
+    v = other.v;
+
+  factory KHSV.fromHSV({required final HSVColor hsvColor})
+  {
+    return KHSV(h: hsvColor.hue, s: hsvColor.saturation, v: hsvColor.value);
+  }
+
+  //from other constructor
+
+
+
+  HSVColor toHSV({final double alpha = 1.0})
+  {
+    return HSVColor.fromAHSV(alpha, h, s, v);
+  }
+
+  Color toColor() {
+    final double chroma = s * v;
+    final double secondary = chroma * (1.0 - (((h / 60.0) % 2.0) - 1.0).abs());
+    final double match = v - chroma;
+
+    return _colorFromHue(hue: h, chroma: chroma, secondary: secondary, match: match);
+  }
+
+  Color _colorFromHue({required final double hue, required final double chroma, required final double secondary, required final double match})
+  {
+    final (double red, double green, double blue) = switch (hue) {
+      < 60.0 => (chroma, secondary, 0.0),
+      < 120.0 => (secondary, chroma, 0.0),
+      < 180.0 => (0.0, chroma, secondary),
+      < 240.0 => (0.0, secondary, chroma),
+      < 300.0 => (secondary, 0.0, chroma),
+      _ => (chroma, 0.0, secondary),
+    };
+    return Color.fromARGB(
+      0xFF,
+      ((red + match) * 0xFF).round(),
+      ((green + match) * 0xFF).round(),
+      ((blue + match) * 0xFF).round(),
+    );
+  }
+}
+
 class StackCol<T> {
   final List<T> _list = <T>[];
 

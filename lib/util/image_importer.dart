@@ -66,17 +66,10 @@ class ImportResult
       DrawingLayerState drawingLayer;
       List<KPalRampData> ramps = <KPalRampData>[];
       // Extracting ALL colors
-      final List<HSVColor> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
+      final List<KHSV> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
       if (importData.createNewPalette)
       {
-        // Create set of DISTINCT colors
-        final List<HSVColor> distinctHsvColorList = hsvColorList.toSet().toList(growable: false);
-        print("Distinct colors: ${distinctHsvColorList.length}");
-
-
-
-
-        final List<KPalRampSettings> colorRamps = await _extractColorRamps(hsvColorList: distinctHsvColorList, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
+        final List<KPalRampSettings> colorRamps = await _extractColorRamps(imgBytes: imageData, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
         for (final KPalRampSettings colorRamp in colorRamps)
         {
           ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
@@ -161,7 +154,7 @@ class ImportResult
     return refState;
   }
 
-  Future<DrawingLayerState> _createDrawingLayer({required final List<HSVColor> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+  Future<DrawingLayerState> _createDrawingLayer({required final List<KHSV> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
   {
     final HashMap<CoordinateSetI, ColorReference?> layerContent = HashMap<CoordinateSetI, ColorReference?>();
     int row = 0;
@@ -173,53 +166,49 @@ class ImportResult
         col = 0;
         row++;
       }
-      if (colorList[i].alpha > 0.0)
-      {
-        final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
-        final ColorReference reference = _findClosestColor(hsvColor: colorList[i], ramps: ramps);
-        layerContent[coord] = reference;
-      }
+      final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
+      final ColorReference reference = _findClosestColor(hsvColor: colorList[i], ramps: ramps);
+      layerContent[coord] = reference;
       col++;
     }
     return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent, ramps: ramps);
   }
 
-  ColorReference _findClosestColor({required final HSVColor hsvColor, required final List<KPalRampData> ramps})
+
+ColorReference _findClosestColor({required final KHSV hsvColor, required final List<KPalRampData> ramps,})
+{
+  final Color pixelColor = hsvColor.toColor();
+
+  ColorReference? closestReference;
+  double closestDelta = double.infinity;
+
+  for (final KPalRampData ramp in ramps)
   {
-    late ColorReference closestReference;
-    double closestDelta = double.maxFinite;
-
-    for (int i = 0; i < ramps.length; i++)
+    for (final ColorReference reference in ramp.references)
     {
-      for (int j = 0; j < ramps[i].references.length; j++)
-      {
-        final Color convertColor = hsvColor.toColor();
-        final ColorReference reference = ramps[i].references[j];
-        final double delta = getDeltaE00(
-            redA: reference.getIdColor().color.r,
-            greenA: reference.getIdColor().color.g,
-            blueA: reference.getIdColor().color.b,
-            redB: convertColor.r,
-            greenB: convertColor.g,
-            blueB: convertColor.b,);
-        /*final int redDelta = (reference.getIdColor().color.red - convertColor.red).abs();
-        final int greenDelta = (reference.getIdColor().color.green - convertColor.green).abs();
-        final int blueDelta = (reference.getIdColor().color.blue - convertColor.blue).abs();
-        final double delta = (redDelta + greenDelta + blueDelta).toDouble();*/
+      final Color refColor = reference.getIdColor().color;
 
-        if (delta < closestDelta || (i == 0 && j == 0))
-        {
-          closestReference = reference;
-          closestDelta = delta;
-        }
+      final double delta = getDeltaE00(
+        redA: refColor.r,
+        greenA: refColor.g,
+        blueA: refColor.b,
+        redB: pixelColor.r,
+        greenB: pixelColor.g,
+        blueB: pixelColor.b,
+      );
+
+      if (delta < closestDelta) {
+        closestReference = reference;
+        closestDelta = delta;
       }
     }
-    return closestReference;
   }
+  // closestReference is guaranteed non-null if ramps has at least one reference
+  return closestReference!;
+}
 
 
-
-  Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}) async
+Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}) async
   {
     ui.Image? image;
     final File imageFile = File(path);
@@ -245,320 +234,79 @@ class ImportResult
     return image;
   }
 
-Future<List<KPalRampSettings>> _extractColorRamps({required final List<HSVColor> hsvColorList, required final int maxRamps, required final int maxColors}) async {
 
-  if (hsvColorList.isEmpty) {
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
-    return <KPalRampSettings>[
-      KPalRampSettings(constraints: constraints),
-    ];
-  }
-  else
+
+Future<List<KHSV>> _extractColorsFromImage({required final ByteData imgBytes, final int alphaThreshold = 0}) async
+{
+  final Uint8List u8 = imgBytes.buffer.asUint8List(
+    imgBytes.offsetInBytes,
+    imgBytes.lengthInBytes,
+  );
+  final int pixelCount = u8.length ~/ 4;
+
+  final List<KHSV>colors = <KHSV>[];
+  for (int i = 0; i < pixelCount; i++)
   {
-    // K-means in HSV with circular hue distance.
-    final List<_Cluster> clusters = _kMeansHSV(
-      hsvColorList,
-      k: min(maxRamps, hsvColorList.length),
-      maxIter: 30,
-      seed: 123456,
-      hueWeight: 2.0,
-      satWeight: 1.0,
-      valWeight: 0.75,
-    );
+    final int base = i * 4;
+    final int r = u8[base + 0];
+    final int g = u8[base + 1];
+    final int b = u8[base + 2];
+    final int a = u8[base + 3];
+    if (a <= alphaThreshold) continue;
 
-    // Fit a ramp for each cluster.
-    final List<KPalRampSettings> rampSettings = <KPalRampSettings>[];
-    for (final _Cluster c in clusters) {
-      if (c.members.isEmpty) continue;
-      final KPalRampSettings ramp = _fitRampForCluster(
-        c.members,
-        colorCount: maxColors,
-      );
-      rampSettings.add(ramp);
-    }
-    return rampSettings;
-  }
-}
+    // Inline RGB -> HSV (same math you use elsewhere)
+    final double rf = r / 255.0;
+    final double gf = g / 255.0;
+    final double bf = b / 255.0;
+    double maxc = rf;
+    double minc = rf;
+    if (gf > maxc) maxc = gf; if (bf > maxc) maxc = bf;
+    if (gf < minc) minc = gf; if (bf < minc) minc = bf;
+    final double delta = maxc - minc;
 
-
-
-  Future<List<HSVColor>> _extractColorsFromImage({required final ByteData imgBytes}) async
-  {
-    final List<HSVColor> colorList = <HSVColor>[];
-    for (int i = 0; i < imgBytes.lengthInBytes; i+=4)
+    double h;
+    double s;
+    final double v = maxc;
+    if (delta == 0.0)
     {
-      final int r = imgBytes.getUint8(i + 0);
-      final int g = imgBytes.getUint8(i + 1);
-      final int b = imgBytes.getUint8(i + 2);
-      final int a = imgBytes.getUint8(i + 3);
-      final ui.Color color = ui.Color.fromARGB(a, r, g, b);
-      colorList.add(HSVColor.fromColor(color));
+      h = 0.0; s = 0.0;
     }
-    return colorList;
+    else
+    {
+      s = (maxc == 0.0) ? 0.0 : delta / maxc;
+      if (maxc == rf)
+      {
+        h = 60.0 * (((gf - bf) / delta) % 6.0);
+      }
+      else if (maxc == gf)
+      {
+        h = 60.0 * (((bf - rf) / delta) + 2.0);
+      }
+      else
+      {
+        h = 60.0 * (((rf - gf) / delta) + 4.0);
+      }
+      if (h < 0) h += 360.0;
+      if (h >= 360.0) h -= 360.0;
+    }
+    colors.add(KHSV(h: h, s: s, v: v));
   }
-
-class _Cluster {
-  HSVColor center;
-  final List<HSVColor> members = [];
-  _Cluster(this.center);
+  return colors;
 }
 
-List<_Cluster> _kMeansHSV(
-    List<HSVColor> data, {
-      required int k,
-      int maxIter = 30,
-      double hueWeight = 2.0,
-      double satWeight = 1.0,
-      double valWeight = 0.75,
-      int seed = 1337,
-    }) {
-  if (data.length <= k)
-  {
-    return data.map((d) => _Cluster(d)..members.add(d)).toList();
-  }
 
-  final rng = Random(seed);
-
-  // k-means++ initialization
-  final centers = <HSVColor>[];
-  centers.add(data[rng.nextInt(data.length)]);
-  while (centers.length < k) {
-    final dists = List<double>.filled(data.length, 0.0);
-    double sum = 0.0;
-    for (int i = 0; i < data.length; i++) {
-      final p = data[i];
-      double best = double.infinity;
-      for (final c in centers) {
-        final dist = _hsvWeightedDist2(p, c, hueWeight, satWeight, valWeight);
-        if (dist < best) best = dist;
-      }
-      dists[i] = best;
-      sum += best;
-    }
-    if (sum == 0) break;
-    final t = rng.nextDouble() * sum;
-    double acc = 0.0;
-    for (int i = 0; i < dists.length; i++) {
-      acc += dists[i];
-      if (acc >= t) {
-        centers.add(data[i]);
-        break;
-      }
-    }
-    if (centers.length == 1) break;
-  }
-  while (centers.length < k) {
-    centers.add(data[rng.nextInt(data.length)]);
-  }
-
-  List<_Cluster> clusters = centers.map((c) => _Cluster(c)).toList();
-
-  for (int iter = 0; iter < maxIter; iter++) {
-    for (final c in clusters) {
-      c.members.clear();
-    }
-    for (final p in data) {
-      int bestIdx = 0;
-      double best = double.infinity;
-      for (int i = 0; i < clusters.length; i++) {
-        final c = clusters[i].center;
-        final dist = _hsvWeightedDist2(p, c, hueWeight, satWeight, valWeight);
-        if (dist < best) {
-          best = dist;
-          bestIdx = i;
-        }
-      }
-      clusters[bestIdx].members.add(p);
-    }
-
-    // recompute centers
-    bool changed = false;
-    for (final c in clusters) {
-      if (c.members.isEmpty) continue;
-      final newCenter = _meanHSV(c.members);
-      if (_hsvWeightedDist2(newCenter, c.center, hueWeight, satWeight, valWeight) > 1e-6) {
-        c.center = newCenter;
-        changed = true;
-      }
-    }
-    if (!changed) break;
-  }
-  return clusters.where((c) => c.members.isNotEmpty).toList();
-}
-
-double _hsvWeightedDist2(HSVColor a, HSVColor b, double wh, double ws, double wv) {
-  final dh = _hueDistanceDeg(a.hue, b.hue) / 180.0; // normalize to 0..1
-  final ds = (a.saturation - b.saturation).abs();
-  final dv = (a.value - b.value).abs();
-  return wh * dh * dh + ws * ds * ds + wv * dv * dv;
-}
-
-HSVColor _meanHSV(List<HSVColor> pts) {
-  final meanH = _circularMeanDegrees(pts.map((p) => p.hue));
-  final meanS = pts.map((p) => p.saturation).reduce((a, b) => a + b) / pts.length;
-  final meanV = pts.map((p) => p.value).reduce((a, b) => a + b) / pts.length;
-  return HSVColor.fromAHSV(1.0, meanH, meanS, meanV);
-}
-
-double _hueDistanceDeg(double h1, double h2) {
-  final d = (h1 - h2).abs();
+double _hueDistanceDeg({required final double h1, required final double h2})
+{
+  final double d = (h1 - h2).abs();
   return d <= 180.0 ? d : 360.0 - d;
 }
 
-double _circularMeanDegrees(Iterable<double> degs) {
-  double sx = 0.0, sy = 0.0;
-  for (final d in degs) {
-    final rad = d * pi / 180.0;
-    sx += cos(rad);
-    sy += sin(rad);
-  }
-  return (atan2(sy, sx) * 180.0 / pi + 360.0) % 360.0;
-}
 
-double _circularMedianDegrees(List<double> degs) {
-  // Approximate circular median via projecting to circle and scanning a reference.
-  if (degs.isEmpty) return 0.0;
-  degs.sort();
-  // Try several rotations and pick the rotation minimizing arc length variance.
-  double bestMed = degs[degs.length ~/ 2];
-  double minSpread = double.infinity;
-  for (final ref in [0, 45, 90, 135, 180, 225, 270, 315]) {
-    final shifted = degs.map((d) {
-      var s = d - ref;
-      if (s < 0) s += 360;
-      return s;
-    }).toList()
-      ..sort();
-    final med = shifted[shifted.length ~/ 2];
-    // map back
-    final medBack = (med + ref) % 360;
-    // compute dispersion
-    double spread = 0;
-    for (final d in degs) {
-      spread += _hueDistanceDeg(d, medBack);
-    }
-    if (spread < minSpread) {
-      minSpread = spread;
-      bestMed = medBack;
-    }
-  }
-  return bestMed;
-}
-
-
-KPalRampSettings _fitRampForCluster(
-    List<HSVColor> cluster, {
-      required int colorCount,
-    }) {
-  // Sort by V to define t in [-1, 1]
-  final pts = List<HSVColor>.from(cluster)..sort((a, b) => a.value.compareTo(b.value));
-  final n = pts.length;
-
-  double _percentileV(double p) {
-    if (n == 1) return pts.first.value;
-    final idx = (p * (n - 1)).clamp(0.0, (n - 1).toDouble());
-    final lo = idx.floor();
-    final hi = idx.ceil();
-    if (lo == hi) return pts[lo].value;
-    final t = idx - lo;
-    return pts[lo].value * (1 - t) + pts[hi].value * t;
-  }
-
-  final vMin = _percentileV(0.05);
-  final vMax = _percentileV(0.95);
-  final vMid = _percentileV(0.50);
-
-  // Neighborhood near center to define baseHue/baseSat robustly
-  final vWidth = max(0.05, (vMax - vMin) * 0.20); // 20% mid window
-  final centerPts = pts.where((p) => (p.value - vMid).abs() <= vWidth / 2).toList();
-  final huesCenter = centerPts.isEmpty ? pts.map((p) => p.hue).toList() : centerPts.map((p) => p.hue).toList();
-  final satsCenter = centerPts.isEmpty ? pts.map((p) => p.saturation).toList() : centerPts.map((p) => p.saturation).toList();
-
-  final baseHueDeg = _circularMedianDegrees(huesCenter);
-  int baseHue = baseHueDeg.round() % 360;
-  final baseSatPct = (100.0 * _median(satsCenter)).clamp(0.0, 100.0);
-  int baseSat = baseSatPct.round();
-
-  // Build t for points and compute observed hue/sat offsets relative to base.
-  final obs = <_Obs>[];
-  for (final p in pts) {
-    final t = _normalizeToMinusOneToOne(p.value, vMin, vMax);
-    // Hue offset: shortest circular difference
-    double dh = p.hue - baseHue;
-    if (dh > 180) dh -= 360;
-    if (dh < -180) dh += 360;
-    final ds = (100.0 * p.saturation) - baseSat; // sat offset in percent
-    obs.add(_Obs(t: t, hueOffset: dh, satOffset: ds));
-  }
-
-  // Fit hue model: offset ≈ sign(t) * (|t|^exp) * A_h
-  final hueExpCandidates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
-  final hueFit = _fitSignedPowerModel(obs, (o) => o.hueOffset, hueExpCandidates,
-      maxAmp: 25.0);
-
-  // Fit sat model with different sat curves
-  final satExpCandidates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
-  final satFits = <SatCurve, _SignedPowerFit>{};
-  for (final curve in SatCurve.values) {
-    satFits[curve] = _fitSignedPowerModel(
-      obs,
-          (o) => o.satOffset,
-      satExpCandidates,
-      maxAmp: 10.0,
-      curve: curve,
-    );
-  }
-  // Choose best sat curve by error
-  SatCurve bestCurve = SatCurve.linear;
-  double bestCurveErr = double.infinity;
-  _SignedPowerFit bestSatFit = satFits[SatCurve.linear]!;
-  satFits.forEach((curve, fit) {
-    if (fit.error < bestCurveErr) {
-      bestCurveErr = fit.error;
-      bestCurve = curve;
-      bestSatFit = fit;
-    }
-  });
-
-  // Convert vMin/vMax to 0..100 integer percent
-  final valueRangeMin = (vMin * 100).clamp(0.0, 100.0).round();
-  final valueRangeMax = (vMax * 100).clamp(0.0, 100.0).round();
-
-  final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
-  return KPalRampSettings.fromValues(
-    constraints: constraints,
-    colorCount: colorCount,
-    baseHue: baseHue,
-    hueShift: hueFit.amplitude.round().clamp(-25, 25),
-    hueShiftExp: hueFit.exp,
-    baseSat: baseSat,
-    satShift: bestSatFit.amplitude.round().clamp(-10, 10),
-    satShiftExp: bestSatFit.exp,
-    satCurve: bestCurve,
-    valueRangeMin: valueRangeMin,
-    valueRangeMax: valueRangeMax,
-  );
-}
-
-class _Obs {
-  final double t;          // [-1, 1]
-  final double hueOffset;  // degrees
-  final double satOffset;  // percent
-  _Obs({required this.t, required this.hueOffset, required this.satOffset});
-}
-
-double _normalizeToMinusOneToOne(double v, double vMin, double vMax) {
+double _normalizeToMinusOneToOne({required final double v, required final double vMin, required final double vMax})
+{
   if (vMax <= vMin) return 0.0;
-  final t01 = ((v - vMin) / (vMax - vMin)).clamp(0.0, 1.0);
+  final double t01 = ((v - vMin) / (vMax - vMin)).clamp(0.0, 1.0);
   return t01 * 2.0 - 1.0; // to [-1, 1]
-}
-
-double _median(Iterable<double> xs) {
-  final arr = xs.toList()..sort();
-  if (arr.isEmpty) return 0.0;
-  final m = arr.length ~/ 2;
-  if (arr.length.isOdd) return arr[m];
-  return (arr[m - 1] + arr[m]) / 2.0;
 }
 
 class _SignedPowerFit {
@@ -568,52 +316,9 @@ class _SignedPowerFit {
   _SignedPowerFit({required this.amplitude, required this.exp, required this.error});
 }
 
-/// Model: y ≈ A * f(t, exp, curve) where A is amplitude (can be +/-), exp in [0.5..2.0].
-/// We solve A by least squares: A = (Σ y*f) / (Σ f^2), clamp A to ±maxAmp.
-/// Returns amplitude, exponent and sum of squared error.
-_SignedPowerFit _fitSignedPowerModel(
-    List<_Obs> obs,
-    double Function(_Obs) getY,
-    List<double> expCandidates, {
-      required double maxAmp,
-      SatCurve curve = SatCurve.linear,
-    }) {
-  double bestErr = double.infinity;
-  double bestA = 0.0;
-  double bestExp = 1.0;
-
-  for (final e in expCandidates) {
-    double num = 0.0; // Σ y*f
-    double den = 0.0; // Σ f^2
-    for (final o in obs) {
-      final f = _shapeFunction(o.t, e, curve);
-      num += getY(o) * f;
-      den += f * f;
-    }
-    if (den < 1e-12) continue;
-    double A = num / den;
-    A = A.clamp(-maxAmp, maxAmp);
-    // compute error
-    double err = 0.0;
-    for (final o in obs) {
-      final f = _shapeFunction(o.t, e, curve);
-      final yhat = A * f;
-      final diff = getY(o) - yhat;
-      err += diff * diff;
-    }
-    if (err < bestErr) {
-      bestErr = err;
-      bestA = A;
-      bestExp = e;
-    }
-  }
-
-  return _SignedPowerFit(amplitude: bestA, exp: bestExp, error: bestErr);
-}
-
 /// Signed, exponentiated position with optional curve shape.
 /// t ∈ [-1, 1]
-double _shapeFunction(double t, double exp, SatCurve curve)
+double _shapeFunction({required final double t, required final double exp, required final SatCurve curve})
 {
   final double t2 = t.clamp(-1.0, 1.0);
   switch (curve) {
@@ -637,4 +342,553 @@ double _shapeFunction(double t, double exp, SatCurve curve)
     // we use unsigned and let amplitude carry sign.
       return pow(1.0 - t2.abs(), exp).toDouble();
   }
+}
+
+
+
+class _HSVBin {
+  KHSV hsv;
+  final int weight;
+  _HSVBin(this.hsv, this.weight);
+}
+
+class _QuantizeResult {
+  final List<_HSVBin> bins;
+  final List<int> vHist256; // histogram of V (0..255)
+  final int totalPixels;
+  _QuantizeResult(this.bins, this.vHist256, this.totalPixels);
+}
+
+_QuantizeResult quantizeHSVFromRGBABytes({
+      required final ByteData imgBytes,
+      final int hBins = 36,
+      final int sBins = 16,
+      final int vBins = 16,
+      final int alphaThreshold = 16,
+    }) {
+  final Uint8List u8 = imgBytes.buffer.asUint8List(imgBytes.offsetInBytes, imgBytes.lengthInBytes);
+  final int pixelCount = u8.lengthInBytes ~/ 4;
+
+  final int binsLen = hBins * sBins * vBins;
+  final Int32List counts = Int32List(binsLen);
+
+  final Float64List sumHcos = Float64List(binsLen);
+  final Float64List sumHsin = Float64List(binsLen);
+  final Float64List sumS = Float64List(binsLen);
+  final Float64List sumV = Float64List(binsLen);
+
+  final List<int> vHist256 = List<int>.filled(256, 0);
+
+  int idxOf(final int hi, final int si, final int vi) => (hi * sBins + si) * vBins + vi;
+
+  for (int p = 0; p < pixelCount; p++) {
+    final int base = p * 4;
+    final int r = u8[base + 0];
+    final int g = u8[base + 1];
+    final int b = u8[base + 2];
+    final int a = u8[base + 3];
+    if (a < alphaThreshold) continue;
+
+    // --- RGB -> HSV ---
+    final double rf = r / 255.0;
+    final double gf = g / 255.0;
+    final double bf = b / 255.0;
+    final double maxc = max(rf, max(gf, bf));
+    final double minc = min(rf, min(gf, bf));
+    final double delta = maxc - minc;
+
+    double hDeg;
+    double s;
+    final double v = maxc;
+
+    if (delta == 0.0) {
+      hDeg = 0.0;
+      s = 0.0;
+    } else {
+      s = (maxc == 0.0) ? 0.0 : delta / maxc;
+      double hue;
+      if (maxc == rf) {
+        hue = ((gf - bf) / delta) % 6.0;
+      } else if (maxc == gf) {
+        hue = ((bf - rf) / delta) + 2.0;
+      } else {
+        hue = ((rf - gf) / delta) + 4.0;
+      }
+      hDeg = 60.0 * hue;
+      if (hDeg < 0) hDeg += 360.0;
+      if (hDeg >= 360.0) hDeg -= 360.0;
+    }
+
+    // --- Quantize to bins ---
+    final int hi = ((hDeg / 360.0) * hBins).floor().clamp(0, hBins - 1);
+    final int si = (s * sBins).floor().clamp(0, sBins - 1);
+    final int vi = (v * vBins).floor().clamp(0, vBins - 1);
+    final int idx = idxOf(hi, si, vi);
+
+    counts[idx] += 1;
+    final double rad = hDeg * pi / 180.0;
+    sumHcos[idx] += cos(rad);
+    sumHsin[idx] += sin(rad);
+    sumS[idx] += s;
+    sumV[idx] += v;
+
+    // V histogram (0..255)
+    vHist256[(v * 255.0).clamp(0.0, 255.0).toInt()] += 1;
+  }
+
+  // Emit non-empty bins as weighted centroids
+  final List<_HSVBin> bins = <_HSVBin>[];
+  for (int i = 0; i < binsLen; i++) {
+    final int w = counts[i];
+    if (w == 0) continue;
+    final double h = (atan2(sumHsin[i], sumHcos[i]) * 180.0 / pi + 360.0) % 360.0;
+    final double s = sumS[i] / w;
+    final double v = sumV[i] / w;
+    bins.add(_HSVBin(KHSV(h: h, s: s, v: v), w));
+  }
+
+  final int total = vHist256.fold<int>(0, (final int a, final int b) => a + b);
+  return _QuantizeResult(bins, vHist256, total);
+}
+
+double vPercentileFromHist({required final List<int> vHist256, required final int totalPixels, required final double p01}) {
+  if (totalPixels <= 0) return 0.0;
+  final int target = (p01.clamp(0.0, 1.0) * (totalPixels - 1)).round();
+  int acc = 0;
+  for (int i = 0; i < 256; i++) {
+    acc += vHist256[i];
+    if (acc > target) return i / 255.0;
+  }
+  return 1.0;
+}
+
+
+class _WeightedCluster {
+  KHSV center;
+  final List<_HSVBin> members = <_HSVBin>[];
+  int pixelCount = 0; // sum of weights
+  _WeightedCluster(this.center);
+}
+
+List<_WeightedCluster> kMeansOnBins({
+      required final List<_HSVBin> bins,
+      required final int k,
+      final int maxIter = 20,
+      final double hueWeight = 2.0,
+      final double satWeight = 1.0,
+      final double valWeight = 0.75,
+      final int seed = 1337,
+    })
+{
+  if (bins.isEmpty) return <_WeightedCluster>[];
+  if (bins.length <= k)
+  {
+    final List<_WeightedCluster> cs = bins.map((final _HSVBin b)
+    {
+      final KHSV c = KHSV.fromOther(other: b.hsv);
+      final _WeightedCluster cl = _WeightedCluster(c);
+      cl.members.add(b);
+      cl.pixelCount = b.weight;
+      return cl;
+    }).toList();
+    cs.sort((final _WeightedCluster a, final _WeightedCluster b) => b.pixelCount.compareTo(a.pixelCount));
+    return cs;
+  }
+
+  final Random rng = Random(seed);
+
+  // -- k-means++ init weighted by bin counts --
+  final List<KHSV> centers = <KHSV>[];
+  {
+    final int totalW = bins.fold<int>(0, (final int a, final _HSVBin b) => a + b.weight);
+    int pick = rng.nextInt(max(1, totalW));
+    for (final _HSVBin b in bins)
+    {
+      pick -= b.weight;
+      if (pick <= 0)
+      {
+        centers.add(KHSV.fromOther(other: b.hsv));
+        break;
+      }
+    }
+    if (centers.isEmpty) {
+      final _HSVBin b = bins[rng.nextInt(bins.length)];
+      centers.add(KHSV.fromOther(other: b.hsv));
+    }
+  }
+
+  while (centers.length < k)
+  {
+    final List<double> dists = List<double>.filled(bins.length, 0.0);
+    double sum = 0.0;
+    for (int i = 0; i < bins.length; i++)
+    {
+      final _HSVBin p = bins[i];
+      double best = double.infinity;
+      for (final KHSV c in centers)
+      {
+        final double dist = _hsvWeightedDist2Bin(a: p, b: c, wh: hueWeight, ws: satWeight, wv: valWeight);
+        if (dist < best) best = dist;
+      }
+      final double wdist = best * best * p.weight; // km++: proportional to dist^2 * weight
+      dists[i] = wdist;
+      sum += wdist;
+    }
+    if (sum <= 1e-12) break;
+    double t = rng.nextDouble() * sum;
+    for (int i = 0; i < dists.length; i++)
+    {
+      t -= dists[i];
+      if (t <= 0)
+      {
+        final _HSVBin b = bins[i];
+        centers.add(KHSV(h: b.hsv.h, s: b.hsv.s, v: b.hsv.v));
+        break;
+      }
+    }
+    if (centers.length == 1) break;
+  }
+  while (centers.length < k)
+  {
+    final _HSVBin b = bins[rng.nextInt(bins.length)];
+    centers.add(KHSV(h: b.hsv.h, s: b.hsv.s, v: b.hsv.v));
+  }
+
+  List<_WeightedCluster> clusters = centers.map((final KHSV c) => _WeightedCluster(c)).toList();
+
+  for (int iter = 0; iter < maxIter; iter++)
+  {
+    for (final _WeightedCluster c in clusters)
+    {
+      c.members.clear();
+      c.pixelCount = 0;
+    }
+    // Assignment
+    for (final _HSVBin p in bins)
+    {
+      int bestIdx = 0;
+      double best = double.infinity;
+      for (int i = 0; i < clusters.length; i++)
+      {
+        final KHSV c = clusters[i].center;
+        final double dist = _hsvWeightedDist2Bin(a: p, b: c, wh: hueWeight, ws: satWeight, wv: valWeight);
+        if (dist < best) {
+          best = dist;
+          bestIdx = i;
+        }
+      }
+      final _WeightedCluster cl = clusters[bestIdx];
+      cl.members.add(p);
+      cl.pixelCount += p.weight;
+    }
+
+    // Update centers (weighted means)
+    bool changed = false;
+    for (final _WeightedCluster cl in clusters)
+    {
+      if (cl.members.isEmpty) continue;
+      final KHSV newCenter = _weightedMeanHSV(pts: cl.members);
+      if (_hsvWeightedDist2Hsv(a: newCenter, b: cl.center, wh: hueWeight, ws: satWeight, wv: valWeight) > 1e-6)
+      {
+        cl.center = newCenter;
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+
+  clusters = clusters.where((final _WeightedCluster c) => c.members.isNotEmpty).toList();
+  clusters.sort((final _WeightedCluster a, final _WeightedCluster b) => b.pixelCount.compareTo(a.pixelCount));
+  return clusters;
+}
+
+double _hsvWeightedDist2Bin({required final _HSVBin a, required final KHSV b, required final double wh, required final double ws, required final double wv})
+{
+  final double dh = _hueDistanceDeg(h1: a.hsv.h, h2: b.h) / 180.0;
+  final double ds = (a.hsv.s - b.s).abs();
+  final double dv = (a.hsv.v - b.v).abs();
+  return wh * dh * dh + ws * ds * ds + wv * dv * dv;
+}
+
+double _hsvWeightedDist2Hsv({required final KHSV a, required final KHSV b, required final double wh, required final double ws, required final double wv})
+{
+  final double dh = _hueDistanceDeg(h1: a.h, h2: b.h) / 180.0;
+  final double ds = (a.s - b.s).abs();
+  final double dv = (a.v - b.v).abs();
+  return wh * dh * dh + ws * ds * ds + wv * dv * dv;
+}
+
+KHSV _weightedMeanHSV({required final List<_HSVBin> pts})
+{
+  double sx = 0.0;
+  double sy = 0.0;
+  double sumW = 0.0;
+  double sumS = 0.0;
+  double sumV = 0.0;
+  for (final _HSVBin p in pts)
+  {
+    final double w = p.weight.toDouble();
+    final double rad = p.hsv.h * pi / 180.0;
+    sx += w * cos(rad);
+    sy += w * sin(rad);
+    sumS += w * p.hsv.s;
+    sumV += w * p.hsv.v;
+    sumW += w;
+  }
+  final double meanH = (atan2(sy, sx) * 180.0 / pi + 360.0) % 360.0;
+  final double meanS = sumS / sumW;
+  final double meanV = sumV / sumW;
+  return KHSV(h: meanH, s: meanS, v: meanV);
+}
+
+
+
+KPalRampSettings _fitRampForClusterBins({
+      required final List<_HSVBin> cluster,
+      required final int colorCount,
+
+      final int hueShiftMin = -10,
+      final int hueShiftMax = 10,
+      final int satShiftMin = -20,
+      final int satShiftMax = 20,
+      final double hueExpMin = 0.75,
+      final double hueExpMax = 1.5,
+      final double satExpMin = 0.75,
+      final double satExpMax = 1.5,
+
+      final List<double>? hueExpCandidatesOverride,
+      final List<double>? satExpCandidatesOverride,
+    })
+{
+  // --- Build V histogram for this cluster (0..255) ---
+  final List<int> vHist256 = List<int>.filled(256, 0);
+  int total = 0;
+  for (final _HSVBin p in cluster)
+  {
+    final int vb = (p.hsv.v * 255.0).clamp(0.0, 255.0).toInt();
+    vHist256[vb] += p.weight;
+    total += p.weight;
+  }
+  final double vMin = vPercentileFromHist(vHist256: vHist256, totalPixels: total, p01: 0.05);
+  final double vMax = vPercentileFromHist(vHist256: vHist256, totalPixels: total, p01: 0.95);
+  final double vMid = vPercentileFromHist(vHist256: vHist256, totalPixels: total, p01: 0.50);
+
+  // --- Robust base hue/sat (weighted means in a window around vMid) ---
+  final double vWidth = max(0.05, (vMax - vMin) * 0.20);
+  double sx = 0.0;
+  double sy = 0.0;
+  double sumW = 0.0;
+  double sumS = 0.0;
+  for (final _HSVBin p in cluster) {
+    if ((p.hsv.v - vMid).abs() <= vWidth / 2)
+    {
+      final double w = p.weight.toDouble();
+      final double rad = p.hsv.h * pi / 180.0;
+      sx += w * cos(rad);
+      sy += w * sin(rad);
+      sumS += w * p.hsv.s;
+      sumW += w;
+    }
+  }
+  if (sumW == 0.0) {
+    for (final _HSVBin p in cluster)
+    {
+      final double w = p.weight.toDouble();
+      final double rad = p.hsv.h * pi / 180.0;
+      sx += w * cos(rad);
+      sy += w * sin(rad);
+      sumS += w * p.hsv.s;
+      sumW += w;
+    }
+  }
+  final double baseHueDeg = (atan2(sy, sx) * 180.0 / pi + 360.0) % 360.0;
+  final int baseHue = baseHueDeg.round() % 360;
+  final double baseSatPct = (100.0 * (sumS / sumW)).clamp(0.0, 100.0);
+  final int baseSat = baseSatPct.round();
+
+  // --- Observations (weighted) ---
+  final List<_ObsWeighted> obs = <_ObsWeighted>[];
+  for (final _HSVBin p in cluster)
+  {
+    final double t = _normalizeToMinusOneToOne(v: p.hsv.v, vMin: vMin, vMax: vMax);
+    double dh = p.hsv.h - baseHue;
+    if (dh > 180) dh -= 360;
+    if (dh < -180) dh += 360;
+    final double ds = (100.0 * p.hsv.s) - baseSat;
+    obs.add(_ObsWeighted(t: t, hueOffset: dh, satOffset: ds, w: p.weight.toDouble()));
+  }
+
+  // --- Build exponent candidate sets within requested ranges ---
+  const List<double> defaultExpCandidates = <double>[0.75, 1.0, 1.25, 1.5];
+
+  List<double> filterCandidates({required final List<double> cands, required final double minE, required final double maxE})
+  {
+    final List<double> filtered = cands.where((final double e) => e >= minE && e <= maxE).toList()..sort();
+    // Fallback: if nothing is inside range, include the bounds themselves.
+    if (filtered.isEmpty)
+    {
+      filtered.add(minE);
+      if (maxE != minE) filtered.add(maxE);
+    }
+    return filtered;
+  }
+
+  final List<double> hueExpCandidates = filterCandidates(
+    cands: hueExpCandidatesOverride ?? defaultExpCandidates,
+    minE: hueExpMin,
+    maxE: hueExpMax,
+  );
+  final List<double> satExpCandidates = filterCandidates(
+    cands: satExpCandidatesOverride ?? defaultExpCandidates,
+    minE: satExpMin,
+    maxE: satExpMax,
+  );
+
+  // --- Fit hue model: offset ≈ sign(t) * |t|^exp * A_h ---
+  final _SignedPowerFit hueFit = _fitSignedPowerModelWeighted(
+    obs: obs,
+    getY: (final _ObsWeighted o) => o.hueOffset,
+    expCandidates: hueExpCandidates,
+    // Use the passed amplitude limits; maxAmp bounds the solver, final clamp enforces integer limit.
+    maxAmp: max(hueShiftMax.abs(), hueShiftMin.abs()).toDouble(),
+    //curve: SatCurve.linear,
+  );
+
+  // --- Fit sat model across SatCurve choices ---
+  final Map<SatCurve, _SignedPowerFit> satFits = <SatCurve, _SignedPowerFit>{};
+  for (final SatCurve curve in SatCurve.values)
+  {
+    satFits[curve] = _fitSignedPowerModelWeighted(
+      obs: obs,
+      getY: (final _ObsWeighted o) => o.satOffset,
+      expCandidates: satExpCandidates,
+      maxAmp: max(satShiftMax.abs(), satShiftMin.abs()).toDouble(),
+      curve: curve,
+    );
+  }
+
+  SatCurve bestCurve = SatCurve.linear;
+  double bestCurveErr = double.infinity;
+  _SignedPowerFit bestSatFit = satFits[SatCurve.linear]!;
+  satFits.forEach((final SatCurve curve, final _SignedPowerFit fit)
+  {
+    if (fit.error < bestCurveErr)
+    {
+      bestCurveErr = fit.error;
+      bestCurve = curve;
+      bestSatFit = fit;
+    }
+  });
+
+  // --- Final clamping of results to requested limits ---
+  final double hueExp = hueFit.exp.clamp(hueExpMin, hueExpMax);
+  final double satExp = bestSatFit.exp.clamp(satExpMin, satExpMax);
+  final int hueShift = hueFit.amplitude.round().clamp(hueShiftMin, hueShiftMax);
+  final int satShift = bestSatFit.amplitude.round().clamp(satShiftMin, satShiftMax);
+
+  // Value range as before
+  final int valueRangeMin = (vMin * 100).clamp(0.0, 100.0).round();
+  final int valueRangeMax = (vMax * 100).clamp(0.0, 100.0).round();
+
+  final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+  return KPalRampSettings.fromValues(
+    constraints: constraints,
+    colorCount: colorCount,
+    baseHue: baseHue,
+    hueShift: hueShift,
+    hueShiftExp: hueExp,
+    baseSat: baseSat,
+    satShift: satShift,
+    satShiftExp: satExp,
+    satCurve: bestCurve,
+    valueRangeMin: valueRangeMin,
+    valueRangeMax: valueRangeMax,
+  );
+}
+
+
+class _ObsWeighted {
+  final double t;          // [-1, 1]
+  final double hueOffset;  // degrees
+  final double satOffset;  // percent
+  final double w;          // weight
+  _ObsWeighted({required this.t, required this.hueOffset, required this.satOffset, required this.w});
+}
+
+// Weighted version of your signed-power fit
+_SignedPowerFit _fitSignedPowerModelWeighted({
+      required final List<_ObsWeighted> obs,
+      required final double Function(_ObsWeighted) getY,
+      required final List<double> expCandidates,
+      required final double maxAmp,
+      final SatCurve curve = SatCurve.linear,
+    }) {
+  double bestErr = double.infinity;
+  double bestA = 0.0;
+  double bestExp = 1.0;
+
+  for (final double e in expCandidates)
+  {
+    double num = 0.0; // Σ w * y * f
+    double den = 0.0; // Σ w * f^2
+    for (final _ObsWeighted o in obs)
+    {
+      final double f = _shapeFunction(t: o.t, exp: e, curve: curve);
+      num += o.w * getY(o) * f;
+      den += o.w * f * f;
+    }
+    if (den < 1e-12) continue;
+    double A = num / den;
+    A = A.clamp(-maxAmp, maxAmp);
+
+    double err = 0.0;
+    for (final _ObsWeighted o in obs)
+    {
+      final double f = _shapeFunction(t: o.t, exp: e, curve: curve);
+      final double yhat = A * f;
+      final double diff = getY(o) - yhat;
+      err += o.w * diff * diff;
+    }
+    if (err < bestErr) {
+      bestErr = err;
+      bestA = A;
+      bestExp = e;
+    }
+  }
+  return _SignedPowerFit(amplitude: bestA, exp: bestExp, error: bestErr);
+}
+
+
+Future<List<KPalRampSettings>> _extractColorRamps({
+  required final ByteData imgBytes,
+  required final int maxRamps,
+  required final int maxColors,
+}) async {
+  final _QuantizeResult q = quantizeHSVFromRGBABytes(
+    imgBytes: imgBytes,
+  );
+  if (q.bins.isEmpty) {
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    return <KPalRampSettings>[
+      KPalRampSettings(constraints: constraints),
+    ];
+  }
+
+  // Cluster only on the (small) set of bin centroids
+  final List<_WeightedCluster> clusters = kMeansOnBins(
+    bins: q.bins,
+    k: min(maxRamps, q.bins.length),
+  );
+
+  // Fit ramps per weighted cluster
+  final List<KPalRampSettings> rampSettings = <KPalRampSettings>[];
+  for (final _WeightedCluster c in clusters) {
+    if (c.members.isEmpty) continue;
+    final KPalRampSettings ramp = _fitRampForClusterBins(
+      cluster: c.members,
+      colorCount: maxColors,
+    );
+    rampSettings.add(ramp);
+  }
+  return rampSettings;
 }

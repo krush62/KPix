@@ -38,6 +38,8 @@ void main() {
   testGetCoordinateNeighbors();
   testArgbToRgba();
   testIntToBytes();
+  testAngleUtilities();
+  testExtractFileName();
 }
 
 void testToolType() {

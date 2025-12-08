@@ -372,6 +372,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       _appState.importFile(importResult: result);
       GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
       _appState.rasterLayersFrame();
+      _appState.timeline.layerChangeNotifier.reportChange();
       _closeAllMenus();
     });
   }

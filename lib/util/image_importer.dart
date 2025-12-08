@@ -51,6 +51,9 @@ class ImportResult
   ImportResult({this.data, required this.message});
 }
 
+
+
+
   Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
   {
     final ByteData? imageData = await importData.scaledImage.toByteData();
@@ -62,24 +65,23 @@ class ImportResult
     {
       DrawingLayerState drawingLayer;
       List<KPalRampData> ramps = <KPalRampData>[];
+      // Extracting ALL colors
       final List<HSVColor> hsvColorList = await _extractColorsFromImage(imgBytes: imageData);
       if (importData.createNewPalette)
       {
+        // Create set of DISTINCT colors
         final List<HSVColor> distinctHsvColorList = hsvColorList.toSet().toList(growable: false);
-        final List<List<HSVColor>> clusteredColors = await _adaptiveClusterWithMaxRamps(maxRamps: importData.maxRamps, colors: distinctHsvColorList, initialClusters: 16);
+        print("Distinct colors: ${distinctHsvColorList.length}");
 
-        final List<List<HSVColor>> interpolatedColors = <List<HSVColor>>[];
-        for (final List<HSVColor> clusterColorRamp in clusteredColors)
+
+
+
+        final List<KPalRampSettings> colorRamps = await _extractColorRamps(hsvColorList: distinctHsvColorList, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
+        for (final KPalRampSettings colorRamp in colorRamps)
         {
-          final List<HSVColor> interpolatedRamp = await _interpolateColorsFromRamp(ramp: clusterColorRamp, maxColors: importData.maxColors);
-          interpolatedColors.add(interpolatedRamp);
+          ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
         }
 
-
-        for (final List<HSVColor> interRamp in interpolatedColors)
-        {
-          ramps.add(await _getParamsFromColorList(colors: interRamp));
-        }
 
         drawingLayer = await _createDrawingLayer(colorList: hsvColorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
         await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
@@ -193,7 +195,7 @@ class ImportResult
       {
         final Color convertColor = hsvColor.toColor();
         final ColorReference reference = ramps[i].references[j];
-        final double delta = getDeltaE(
+        final double delta = getDeltaE00(
             redA: reference.getIdColor().color.r,
             greenA: reference.getIdColor().color.g,
             blueA: reference.getIdColor().color.b,
@@ -213,193 +215,6 @@ class ImportResult
       }
     }
     return closestReference;
-  }
-
-  Future<KPalRampData> _getParamsFromColorList({required final List<HSVColor> colors}) async
-  {
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
-    colors.sort((final HSVColor a, final HSVColor b) => a.value.compareTo(b.value));
-    HSVColor virtualCenterColor;
-    if (colors.length.isEven)
-    {
-      final int centerIndex2 = colors.length ~/ 2;
-      final int centerIndex1 = centerIndex2 - 1;
-      final HSVColor centerColor1 = colors[centerIndex1];
-      final HSVColor centerColor2 = colors[centerIndex2];
-
-      final double virtualCenterHue = _interpolateHue(hue1: centerColor1.hue, hue2: centerColor2.hue);
-      final double virtualCenterSaturation = (centerColor1.saturation + centerColor2.saturation) / 2;
-      final double virtualCenterValue = (centerColor1.value + centerColor2.value) / 2;
-      virtualCenterColor = HSVColor.fromAHSV(1.0, virtualCenterHue, virtualCenterSaturation, virtualCenterValue);
-    }
-    else
-    {
-      virtualCenterColor = colors[colors.length ~/ 2];
-    }
-    final double baseHue = virtualCenterColor.hue;
-    final double baseSaturation = virtualCenterColor.saturation;
-
-    List<double> hueShifts = <double>[];
-    for (int i = 1; i < colors.length; i++)
-    {
-      final double shift = (colors[i].hue - colors[i - 1].hue).abs();
-      hueShifts.add(shift);
-    }
-    double hueShift = hueShifts.reduce((final double a, final double b) => a + b) / hueShifts.length;
-    final double hueShiftExponent = _estimateExponent(shifts: hueShifts).clamp(constraints.hueShiftExpMin, constraints.hueShiftExpMax);
-    hueShifts = _recalculateShifts(originalShifts: hueShifts, clampedExponent: hueShiftExponent);
-    hueShift = hueShifts.reduce((final double a, final double b) => a + b) / hueShifts.length;
-    hueShift = hueShift.clamp(constraints.hueShiftMin.toDouble() / 100.0, constraints.hueShiftMax.toDouble() / 100.0);
-
-    // Calculate saturation shift and exponent
-    List<double> satShifts = <double>[];
-    for (int i = 1; i < colors.length; i++) {
-      final double shift = (colors[i].saturation - colors[i - 1].saturation).abs();
-      satShifts.add(shift);
-    }
-    double saturationShift = satShifts.reduce((final double a, final double b) => a + b) / satShifts.length;
-    final double saturationShiftExponent = _estimateExponent(shifts: satShifts).clamp(constraints.satShiftExpMin, constraints.satShiftExpMax);
-    satShifts = _recalculateShifts(originalShifts: satShifts, clampedExponent: saturationShiftExponent);
-    saturationShift = satShifts.reduce((final double a, final double b) => a + b) / satShifts.length;
-    saturationShift = saturationShift.clamp(constraints.satShiftMin.toDouble() / 100.0, constraints.satShiftMax.toDouble() / 100.0);
-
-    final SatCurve saturationCurveType = _detectSaturationCurve(colors: colors);
-
-    final double minValue = colors.first.value;
-    final double maxValue = colors.last.value;
-    final KPalRampSettings rampSettings = KPalRampSettings.fromValues(
-      constraints: constraints,
-      satShift: (saturationShift * 100).round() * -1,
-      satShiftExp: saturationShiftExponent,
-      satCurve: saturationCurveType,
-      hueShift: hueShift.round(),
-      hueShiftExp: hueShiftExponent,
-      baseHue: baseHue.round(),
-      baseSat: (baseSaturation * 100).round(),
-      colorCount: colors.length,
-      valueRangeMin: (minValue * 100).round(),
-      valueRangeMax: (maxValue * 100).round(),
-    );
-    //TODO maybe add shifts (?)
-    return KPalRampData(uuid: const Uuid().v1(), settings: rampSettings);
-
-  }
-
-  List<double> _recalculateShifts({required final List<double> originalShifts, required final double clampedExponent})
-  {
-    final int shiftCount = originalShifts.length;
-    final List<double> adjustedShifts = List<double>.filled(shiftCount, 0);
-    for (int i = 0; i < shiftCount; i++)
-    {
-      adjustedShifts[i] = pow(originalShifts[i].abs(), clampedExponent).toDouble();
-    }
-    return adjustedShifts;
-  }
-
-  SatCurve _detectSaturationCurve({required final List<HSVColor> colors})
-  {
-    final int colorCount = colors.length;
-    final int centerIndex1 = (colorCount ~/ 2) - 1;
-    final int centerIndex2 = colorCount ~/ 2;
-
-    final double firstSat = colors.first.saturation;
-    final double lastSat = colors.last.saturation;
-
-    final double virtualCenterSaturation = (colors[centerIndex1].saturation + colors[centerIndex2].saturation) / 2;
-    double linearError = 0.0;
-    for (int i = 0; i < colorCount; i++)
-    {
-      final double expectedSat = firstSat + (lastSat - firstSat) * (i / (colorCount - 1));
-      linearError += (colors[i].saturation - expectedSat).abs();
-    }
-
-    double keepDarkError = 0.0;
-    for (int i = 0; i <= centerIndex1; i++)
-    {
-      keepDarkError += (colors[i].saturation - firstSat).abs();
-    }
-    for (int i = centerIndex2; i < colorCount; i++)
-    {
-      final double expectedSat = firstSat + (lastSat - firstSat) * ((i - centerIndex1) / (colorCount - centerIndex1 - 1));
-      keepDarkError += (colors[i].saturation - expectedSat).abs();
-    }
-
-    double keepLightError = 0.0;
-    for (int i = 0; i <= centerIndex1; i++)
-    {
-      final double expectedSat = firstSat + (lastSat - firstSat) * (i / centerIndex1);
-      keepLightError += (colors[i].saturation - expectedSat).abs();
-    }
-    for (int i = centerIndex2; i < colorCount; i++)
-    {
-      keepLightError += (colors[i].saturation - lastSat).abs();
-    }
-
-    double flipError = 0.0;
-    for (int i = 0; i <= centerIndex1; i++)
-    {
-      final double expectedSat = firstSat + (virtualCenterSaturation - firstSat) * (i / centerIndex1);
-      flipError += (colors[i].saturation - expectedSat).abs();
-    }
-    for (int i = centerIndex2; i < colorCount; i++)
-    {
-      final double expectedSat = virtualCenterSaturation + (virtualCenterSaturation - lastSat) * ((i - centerIndex2) / (colorCount - centerIndex2 - 1));
-      flipError += (colors[i].saturation - expectedSat).abs();
-    }
-
-    final Map<SatCurve, double> errors = <SatCurve, double>{
-      SatCurve.linear: linearError,
-      SatCurve.darkFlat: keepDarkError,
-      SatCurve.brightFlat: keepLightError,
-      SatCurve.noFlat: flipError,
-    };
-
-    final SatCurve bestFit = errors.keys.reduce((final SatCurve a, final SatCurve b) => errors[a]! < errors[b]! ? a : b);
-    return bestFit;
-  }
-
-  double _estimateExponent({required final List<double> shifts})
-  {
-    final double avgShift = shifts.reduce((final double a, final double b) => a + b) / shifts.length;
-    if (avgShift == 0 || avgShift.isNaN)
-    {
-      return 1.0;
-    }
-
-    double exponentSum = 0.0;
-    int validShiftCount = 0;
-    for (int i = 1; i < shifts.length; i++)
-    {
-      if (shifts[i] != 0)
-      {
-        exponentSum += log(shifts[i] / avgShift).abs();
-        validShiftCount++;
-      }
-    }
-
-    if (validShiftCount == 0)
-    {
-      return 1.0;  // Default exponent when all shifts are zero
-    }
-
-    return exponentSum / validShiftCount;
-  }
-
-  double _interpolateHue({required double hue1, required double hue2})
-  {
-    final double diff = (hue2 - hue1).abs();
-    if (diff > 180)
-    {
-      if (hue1  < hue2)
-      {
-        hue1 += 360;
-      }
-      else
-      {
-        hue2 += 360;
-      }
-    }
-    return (hue1 + hue2) / 2 % 360;
   }
 
 
@@ -430,6 +245,41 @@ class ImportResult
     return image;
   }
 
+Future<List<KPalRampSettings>> _extractColorRamps({required final List<HSVColor> hsvColorList, required final int maxRamps, required final int maxColors}) async {
+
+  if (hsvColorList.isEmpty) {
+    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+    return <KPalRampSettings>[
+      KPalRampSettings(constraints: constraints),
+    ];
+  }
+  else
+  {
+    // K-means in HSV with circular hue distance.
+    final List<_Cluster> clusters = _kMeansHSV(
+      hsvColorList,
+      k: min(maxRamps, hsvColorList.length),
+      maxIter: 30,
+      seed: 123456,
+      hueWeight: 2.0,
+      satWeight: 1.0,
+      valWeight: 0.75,
+    );
+
+    // Fit a ramp for each cluster.
+    final List<KPalRampSettings> rampSettings = <KPalRampSettings>[];
+    for (final _Cluster c in clusters) {
+      if (c.members.isEmpty) continue;
+      final KPalRampSettings ramp = _fitRampForCluster(
+        c.members,
+        colorCount: maxColors,
+      );
+      rampSettings.add(ramp);
+    }
+    return rampSettings;
+  }
+}
+
 
 
   Future<List<HSVColor>> _extractColorsFromImage({required final ByteData imgBytes}) async
@@ -447,154 +297,344 @@ class ImportResult
     return colorList;
   }
 
-  Future<List<List<HSVColor>>> _adaptiveClusterWithMaxRamps({required final List<HSVColor> colors, required final int initialClusters, required final int maxRamps}) async
+class _Cluster {
+  HSVColor center;
+  final List<HSVColor> members = [];
+  _Cluster(this.center);
+}
+
+List<_Cluster> _kMeansHSV(
+    List<HSVColor> data, {
+      required int k,
+      int maxIter = 30,
+      double hueWeight = 2.0,
+      double satWeight = 1.0,
+      double valWeight = 0.75,
+      int seed = 1337,
+    }) {
+  if (data.length <= k)
   {
-    final List<List<HSVColor>> clusters = await _clusterByHue(colors: colors, numClusters: initialClusters);
-    final List<List<HSVColor>> finalClusters = <List<HSVColor>>[];
-    for (final List<HSVColor> cluster in clusters)
-    {
-      if (cluster.length >= 2)
-      {
-        final double variance = await _calculateClusterVariance(cluster: cluster);
-        if (variance > 0.05) //TODO magic number
-            {
-          finalClusters.addAll(await _clusterByHue(colors: cluster, numClusters: 2));
+    return data.map((d) => _Cluster(d)..members.add(d)).toList();
+  }
+
+  final rng = Random(seed);
+
+  // k-means++ initialization
+  final centers = <HSVColor>[];
+  centers.add(data[rng.nextInt(data.length)]);
+  while (centers.length < k) {
+    final dists = List<double>.filled(data.length, 0.0);
+    double sum = 0.0;
+    for (int i = 0; i < data.length; i++) {
+      final p = data[i];
+      double best = double.infinity;
+      for (final c in centers) {
+        final dist = _hsvWeightedDist2(p, c, hueWeight, satWeight, valWeight);
+        if (dist < best) best = dist;
+      }
+      dists[i] = best;
+      sum += best;
+    }
+    if (sum == 0) break;
+    final t = rng.nextDouble() * sum;
+    double acc = 0.0;
+    for (int i = 0; i < dists.length; i++) {
+      acc += dists[i];
+      if (acc >= t) {
+        centers.add(data[i]);
+        break;
+      }
+    }
+    if (centers.length == 1) break;
+  }
+  while (centers.length < k) {
+    centers.add(data[rng.nextInt(data.length)]);
+  }
+
+  List<_Cluster> clusters = centers.map((c) => _Cluster(c)).toList();
+
+  for (int iter = 0; iter < maxIter; iter++) {
+    for (final c in clusters) {
+      c.members.clear();
+    }
+    for (final p in data) {
+      int bestIdx = 0;
+      double best = double.infinity;
+      for (int i = 0; i < clusters.length; i++) {
+        final c = clusters[i].center;
+        final dist = _hsvWeightedDist2(p, c, hueWeight, satWeight, valWeight);
+        if (dist < best) {
+          best = dist;
+          bestIdx = i;
         }
-        else
-        {
-          finalClusters.add(cluster);
-        }
       }
-      else
-      {
-        finalClusters.add(cluster);
-      }
-
+      clusters[bestIdx].members.add(p);
     }
-    finalClusters.removeWhere((final List<HSVColor> element) => element.isEmpty);
-    while (finalClusters.length > maxRamps)
-    {
-      await _mergeMostSimilarClusters(clusters: finalClusters);
-    }
-    return finalClusters;
-  }
 
-  Future<List<List<HSVColor>>> _clusterByHue({required final List<HSVColor> colors, required final int numClusters}) async
-  {
-    final List<List<HSVColor>> clusters = List<List<HSVColor>>.generate(numClusters, (final _) => <HSVColor>[]);
-    for (final HSVColor color in colors)
-    {
-      final int bucket = (color.hue / 360 * numClusters).floor() % numClusters;
-      clusters[bucket].add(color);
-    }
-    return clusters;
-  }
-
-  Future<double> _calculateClusterVariance({required final List<HSVColor> cluster}) async
-  {
-    final double meanValue = cluster.map((final HSVColor c) => c.value).reduce((final double a, final double b) => a + b) / cluster.length;
-    final double variance = cluster.map((final HSVColor c) => pow(c.value - meanValue, 2)).reduce((final num a, final num b) => a + b) / cluster.length;
-    return variance;
-  }
-
-  Future<void> _mergeMostSimilarClusters({required final List<List<HSVColor>> clusters}) async
-  {
-    double minDistance = double.infinity;
-    int mergeIndex1 = 0;
-    int mergeIndex2 = 0;
-
-    for (int i = 0; i < clusters.length; i++)
-    {
-      for (int j = i + 1; j < clusters.length; j++)
-      {
-        final double distance = _calculateHueDistance(cluster1: clusters[i], cluster2: clusters[j]);
-        if (distance < minDistance) {
-          minDistance = distance;
-          mergeIndex1 = i;
-          mergeIndex2 = j;
-        }
+    // recompute centers
+    bool changed = false;
+    for (final c in clusters) {
+      if (c.members.isEmpty) continue;
+      final newCenter = _meanHSV(c.members);
+      if (_hsvWeightedDist2(newCenter, c.center, hueWeight, satWeight, valWeight) > 1e-6) {
+        c.center = newCenter;
+        changed = true;
       }
     }
-
-    clusters[mergeIndex1].addAll(clusters[mergeIndex2]);
-    clusters.removeAt(mergeIndex2);
+    if (!changed) break;
   }
+  return clusters.where((c) => c.members.isNotEmpty).toList();
+}
 
-  double _calculateHueDistance({required final List<HSVColor> cluster1, required final List<HSVColor> cluster2})
-  {
-    final double avgHue1 = _calculateMeanHue(cluster: cluster1);
-    final double avgHue2 = _calculateMeanHue(cluster: cluster2);
-    return (avgHue1 - avgHue2).abs();
+double _hsvWeightedDist2(HSVColor a, HSVColor b, double wh, double ws, double wv) {
+  final dh = _hueDistanceDeg(a.hue, b.hue) / 180.0; // normalize to 0..1
+  final ds = (a.saturation - b.saturation).abs();
+  final dv = (a.value - b.value).abs();
+  return wh * dh * dh + ws * ds * ds + wv * dv * dv;
+}
+
+HSVColor _meanHSV(List<HSVColor> pts) {
+  final meanH = _circularMeanDegrees(pts.map((p) => p.hue));
+  final meanS = pts.map((p) => p.saturation).reduce((a, b) => a + b) / pts.length;
+  final meanV = pts.map((p) => p.value).reduce((a, b) => a + b) / pts.length;
+  return HSVColor.fromAHSV(1.0, meanH, meanS, meanV);
+}
+
+double _hueDistanceDeg(double h1, double h2) {
+  final d = (h1 - h2).abs();
+  return d <= 180.0 ? d : 360.0 - d;
+}
+
+double _circularMeanDegrees(Iterable<double> degs) {
+  double sx = 0.0, sy = 0.0;
+  for (final d in degs) {
+    final rad = d * pi / 180.0;
+    sx += cos(rad);
+    sy += sin(rad);
   }
+  return (atan2(sy, sx) * 180.0 / pi + 360.0) % 360.0;
+}
 
-  double _calculateMeanHue({required final List<HSVColor> cluster})
-  {
-    final double sumHue = cluster.map((final HSVColor c) => c.hue).reduce((final double a, final double b) => a + b);
-    return sumHue / cluster.length;
-  }
-
-  Future<List<HSVColor>> _interpolateColorsFromRamp({required final List<HSVColor> ramp, required final int maxColors}) async
-  {
-    final List<HSVColor> interpolatedColors = <HSVColor>[];
-    if (ramp.length == 1)
-    {
-      final HSVColor singleColor = ramp[0];
-      double shift = singleColor.value;
-      if (singleColor.value > 0.5)
-      {
-        shift = 1.0 - singleColor.value;
-      }
-      final HSVColor darkerColor = HSVColor.fromAHSV(1.0, singleColor.hue, singleColor.saturation, singleColor.value - shift);
-      final HSVColor lighterColor = HSVColor.fromAHSV(1.0, singleColor.hue, singleColor.saturation, singleColor.value + shift);
-      interpolatedColors.add(darkerColor);
-      interpolatedColors.add(singleColor);
-      interpolatedColors.add(lighterColor);
+double _circularMedianDegrees(List<double> degs) {
+  // Approximate circular median via projecting to circle and scanning a reference.
+  if (degs.isEmpty) return 0.0;
+  degs.sort();
+  // Try several rotations and pick the rotation minimizing arc length variance.
+  double bestMed = degs[degs.length ~/ 2];
+  double minSpread = double.infinity;
+  for (final ref in [0, 45, 90, 135, 180, 225, 270, 315]) {
+    final shifted = degs.map((d) {
+      var s = d - ref;
+      if (s < 0) s += 360;
+      return s;
+    }).toList()
+      ..sort();
+    final med = shifted[shifted.length ~/ 2];
+    // map back
+    final medBack = (med + ref) % 360;
+    // compute dispersion
+    double spread = 0;
+    for (final d in degs) {
+      spread += _hueDistanceDeg(d, medBack);
     }
-    else if (ramp.length == 2)
-    {
-      final HSVColor darkerColor = ramp[0];
-      final HSVColor lighterColor = ramp[1];
-      final HSVColor middleColor = _interpolateHSV(c1: darkerColor, c2: lighterColor, t: 0.5, originalRamp: ramp);
-      interpolatedColors.add(darkerColor);
-      interpolatedColors.add(middleColor);
-      interpolatedColors.add(lighterColor);
-      return interpolatedColors;
+    if (spread < minSpread) {
+      minSpread = spread;
+      bestMed = medBack;
     }
-    else if (ramp.length >= 3)
-    {
-      if ( ramp.length <= maxColors)
-      {
-        return List<HSVColor>.from(ramp);
-      }
-      else
-      {
-        final HSVColor darkestColor = ramp.first;
-        final HSVColor lightestColor = ramp.last;
-        interpolatedColors.add(darkestColor);
+  }
+  return bestMed;
+}
 
-        for (int i = 1; i < maxColors - 1; i++)
-        {
-          final double factor = i / (maxColors - 1);
-          final HSVColor interpolatedColor = _interpolateHSV(c1: darkestColor, c2: lightestColor, t: factor, originalRamp: ramp);
-          interpolatedColors.add(interpolatedColor);
-        }
 
-        interpolatedColors.add(lightestColor);
-      }
-    }
+KPalRampSettings _fitRampForCluster(
+    List<HSVColor> cluster, {
+      required int colorCount,
+    }) {
+  // Sort by V to define t in [-1, 1]
+  final pts = List<HSVColor>.from(cluster)..sort((a, b) => a.value.compareTo(b.value));
+  final n = pts.length;
 
-    return interpolatedColors;
+  double _percentileV(double p) {
+    if (n == 1) return pts.first.value;
+    final idx = (p * (n - 1)).clamp(0.0, (n - 1).toDouble());
+    final lo = idx.floor();
+    final hi = idx.ceil();
+    if (lo == hi) return pts[lo].value;
+    final t = idx - lo;
+    return pts[lo].value * (1 - t) + pts[hi].value * t;
   }
 
-  HSVColor _interpolateHSV({required final HSVColor c1, required final HSVColor c2, required final double t, required final List<HSVColor> originalRamp})
-  {
-    final double value = (1 - t) * c1.value + t * c2.value;
+  final vMin = _percentileV(0.05);
+  final vMax = _percentileV(0.95);
+  final vMid = _percentileV(0.50);
 
-    final HSVColor lowerNeighbor = originalRamp.firstWhere((final HSVColor c) => c.value <= value, orElse: () => c1);
-    final HSVColor upperNeighbor = originalRamp.lastWhere((final HSVColor c) => c.value >= value, orElse: () => c2);
+  // Neighborhood near center to define baseHue/baseSat robustly
+  final vWidth = max(0.05, (vMax - vMin) * 0.20); // 20% mid window
+  final centerPts = pts.where((p) => (p.value - vMid).abs() <= vWidth / 2).toList();
+  final huesCenter = centerPts.isEmpty ? pts.map((p) => p.hue).toList() : centerPts.map((p) => p.hue).toList();
+  final satsCenter = centerPts.isEmpty ? pts.map((p) => p.saturation).toList() : centerPts.map((p) => p.saturation).toList();
 
-    final double hue = (1 - t) * lowerNeighbor.hue + t * upperNeighbor.hue;
-    final double saturation = (1 - t) * lowerNeighbor.saturation + t * upperNeighbor.saturation;
+  final baseHueDeg = _circularMedianDegrees(huesCenter);
+  int baseHue = baseHueDeg.round() % 360;
+  final baseSatPct = (100.0 * _median(satsCenter)).clamp(0.0, 100.0);
+  int baseSat = baseSatPct.round();
 
-    return HSVColor.fromAHSV(1.0, hue, saturation, value);
+  // Build t for points and compute observed hue/sat offsets relative to base.
+  final obs = <_Obs>[];
+  for (final p in pts) {
+    final t = _normalizeToMinusOneToOne(p.value, vMin, vMax);
+    // Hue offset: shortest circular difference
+    double dh = p.hue - baseHue;
+    if (dh > 180) dh -= 360;
+    if (dh < -180) dh += 360;
+    final ds = (100.0 * p.saturation) - baseSat; // sat offset in percent
+    obs.add(_Obs(t: t, hueOffset: dh, satOffset: ds));
   }
+
+  // Fit hue model: offset ≈ sign(t) * (|t|^exp) * A_h
+  final hueExpCandidates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+  final hueFit = _fitSignedPowerModel(obs, (o) => o.hueOffset, hueExpCandidates,
+      maxAmp: 25.0);
+
+  // Fit sat model with different sat curves
+  final satExpCandidates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+  final satFits = <SatCurve, _SignedPowerFit>{};
+  for (final curve in SatCurve.values) {
+    satFits[curve] = _fitSignedPowerModel(
+      obs,
+          (o) => o.satOffset,
+      satExpCandidates,
+      maxAmp: 10.0,
+      curve: curve,
+    );
+  }
+  // Choose best sat curve by error
+  SatCurve bestCurve = SatCurve.linear;
+  double bestCurveErr = double.infinity;
+  _SignedPowerFit bestSatFit = satFits[SatCurve.linear]!;
+  satFits.forEach((curve, fit) {
+    if (fit.error < bestCurveErr) {
+      bestCurveErr = fit.error;
+      bestCurve = curve;
+      bestSatFit = fit;
+    }
+  });
+
+  // Convert vMin/vMax to 0..100 integer percent
+  final valueRangeMin = (vMin * 100).clamp(0.0, 100.0).round();
+  final valueRangeMax = (vMax * 100).clamp(0.0, 100.0).round();
+
+  final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+  return KPalRampSettings.fromValues(
+    constraints: constraints,
+    colorCount: colorCount,
+    baseHue: baseHue,
+    hueShift: hueFit.amplitude.round().clamp(-25, 25),
+    hueShiftExp: hueFit.exp,
+    baseSat: baseSat,
+    satShift: bestSatFit.amplitude.round().clamp(-10, 10),
+    satShiftExp: bestSatFit.exp,
+    satCurve: bestCurve,
+    valueRangeMin: valueRangeMin,
+    valueRangeMax: valueRangeMax,
+  );
+}
+
+class _Obs {
+  final double t;          // [-1, 1]
+  final double hueOffset;  // degrees
+  final double satOffset;  // percent
+  _Obs({required this.t, required this.hueOffset, required this.satOffset});
+}
+
+double _normalizeToMinusOneToOne(double v, double vMin, double vMax) {
+  if (vMax <= vMin) return 0.0;
+  final t01 = ((v - vMin) / (vMax - vMin)).clamp(0.0, 1.0);
+  return t01 * 2.0 - 1.0; // to [-1, 1]
+}
+
+double _median(Iterable<double> xs) {
+  final arr = xs.toList()..sort();
+  if (arr.isEmpty) return 0.0;
+  final m = arr.length ~/ 2;
+  if (arr.length.isOdd) return arr[m];
+  return (arr[m - 1] + arr[m]) / 2.0;
+}
+
+class _SignedPowerFit {
+  final double amplitude;
+  final double exp;
+  final double error;
+  _SignedPowerFit({required this.amplitude, required this.exp, required this.error});
+}
+
+/// Model: y ≈ A * f(t, exp, curve) where A is amplitude (can be +/-), exp in [0.5..2.0].
+/// We solve A by least squares: A = (Σ y*f) / (Σ f^2), clamp A to ±maxAmp.
+/// Returns amplitude, exponent and sum of squared error.
+_SignedPowerFit _fitSignedPowerModel(
+    List<_Obs> obs,
+    double Function(_Obs) getY,
+    List<double> expCandidates, {
+      required double maxAmp,
+      SatCurve curve = SatCurve.linear,
+    }) {
+  double bestErr = double.infinity;
+  double bestA = 0.0;
+  double bestExp = 1.0;
+
+  for (final e in expCandidates) {
+    double num = 0.0; // Σ y*f
+    double den = 0.0; // Σ f^2
+    for (final o in obs) {
+      final f = _shapeFunction(o.t, e, curve);
+      num += getY(o) * f;
+      den += f * f;
+    }
+    if (den < 1e-12) continue;
+    double A = num / den;
+    A = A.clamp(-maxAmp, maxAmp);
+    // compute error
+    double err = 0.0;
+    for (final o in obs) {
+      final f = _shapeFunction(o.t, e, curve);
+      final yhat = A * f;
+      final diff = getY(o) - yhat;
+      err += diff * diff;
+    }
+    if (err < bestErr) {
+      bestErr = err;
+      bestA = A;
+      bestExp = e;
+    }
+  }
+
+  return _SignedPowerFit(amplitude: bestA, exp: bestExp, error: bestErr);
+}
+
+/// Signed, exponentiated position with optional curve shape.
+/// t ∈ [-1, 1]
+double _shapeFunction(double t, double exp, SatCurve curve)
+{
+  final double t2 = t.clamp(-1.0, 1.0);
+  switch (curve) {
+    case SatCurve.linear:
+    // sign(t) * |t|^exp
+      return t2 == 0.0 ? 0.0 : (t2.isNegative ? -1.0 : 1.0) * pow(t2.abs(), exp).toDouble();
+
+    case SatCurve.darkFlat:
+      if (t2 < 0) return -1.0; // constant
+      return pow(t2.abs(), exp).toDouble(); // rising after center
+
+    case SatCurve.brightFlat:
+      if (t2 > 0) return 1.0;  // constant
+      return -pow(t2.abs(), exp).toDouble(); // rising before center (towards center)
+
+    case SatCurve.noFlat:
+    // Peak at center, 0 at ends. Scale to [-1,1] symmetric:
+    // triangle(t) = 1 - |t|; signed so it goes positive on both sides? For saturation we want symmetric peak.
+    // Use unsigned peak:  (1 - |t|)^exp ∈ [0,1], make it symmetric with sign(t)=0? We'll keep unsigned for sat.
+    // For signed power model we allow amplitude to create positive/negative. Since signed is awkward for triangle,
+    // we use unsigned and let amplitude carry sign.
+      return pow(1.0 - t2.abs(), exp).toDouble();
+  }
+}

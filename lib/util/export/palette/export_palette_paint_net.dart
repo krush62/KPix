@@ -25,7 +25,7 @@ Future<Uint8List> getPalettePaintNetData({required final List<KPalRampData> ramp
   stringBuffer.writeln('; KPix_${DateTime.now().toString().replaceAll(RegExp(r'[:\- ]'), '_')}');
   for (int i = 0; i < colorList.length; i++)
   {
-    stringBuffer.writeln("${colorToHexString(c: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].r, g: colorList[i].g, b: colorList[i].b)}");
+    stringBuffer.writeln("${colorToHexString(color: colorList[i], withHashTag: false).toUpperCase()} ; $i-${colorNames.getColorName(r: colorList[i].r, g: colorList[i].g, b: colorList[i].b)}");
   }
   final String str = stringBuffer.toString();
   return Uint8List.fromList(utf8.encode(str));

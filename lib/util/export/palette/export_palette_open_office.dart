@@ -44,7 +44,7 @@ Future<Uint8List> getPaletteOpenOfficeData({required final List<KPalRampData> ra
 
   for (final ui.Color color in colorList)
   {
-    final String colorHex = colorToHexString(c: color).toLowerCase();
+    final String colorHex = colorToHexString(color: color).toLowerCase();
     final String colorName = escapeXml(input: colorNames.getColorName(r: color.r, g: color.g, b: color.b));
     stringBuffer.writeln('\t<draw:color draw:name="$colorName" draw:color="$colorHex"/>');
   }

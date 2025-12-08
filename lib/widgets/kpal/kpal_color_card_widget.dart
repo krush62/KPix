@@ -154,7 +154,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                        ),
                        Text(
                          textAlign: TextAlign.center,
-                         widget.showName ? colorToHexString(c: currentColor.color, toUpper: true) : "",
+                         widget.showName ? colorToHexString(color: currentColor.color, toUpper: true) : "",
                          style: Theme.of(context).textTheme.bodySmall,
                        ),
                      ],

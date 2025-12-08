@@ -73,8 +73,8 @@ class IdColor
   {
     final String name = GetIt.I.get<PreferenceManager>().colorNames.getColorName(r: color.r, g: color.g, b: color.b);
     final String hsv = "${hsvColor.hue.round()}° ${(hsvColor.saturation * 100).round()}% ${(hsvColor.value * 100).round()}%";
-    final String rgb = colorToRGBString(c: color);
-    final String hex = colorToHexString(c: color);
+    final String rgb = colorToRGBString(color: color);
+    final String hex = colorToHexString(color: color);
     return "$name\n$hsv\n$rgb\n$hex";
   }
 }

@@ -137,7 +137,7 @@ class ColorNames
           break;
         }
         else {
-          final double delta = getDeltaE(redA: r, greenA: g, blueA: b, redB: c.r.toDouble() / 255, greenB: c.g.toDouble() / 255, blueB: c.b.toDouble() / 255);
+          final double delta = getDeltaE00(redA: r, greenA: g, blueA: b, redB: c.r.toDouble() / 255, greenB: c.g.toDouble() / 255, blueB: c.b.toDouble() / 255);
           if (delta < bestDelta) {
             bestDelta = delta;
             bestName = c.name;

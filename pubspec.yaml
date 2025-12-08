@@ -59,6 +59,8 @@ dev_dependencies:
   # rules and activating additional ones.
   dart_pubspec_licenses: ^3.0.7
   flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

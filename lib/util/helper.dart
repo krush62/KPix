@@ -349,6 +349,7 @@ int gcd({required final int a, required final int b})
   return gcd(a: b, b: a % b);
 }
 
+/// Calculates the angle between two points.
 double calculateAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos})
 {
   final int dx = endPos.x - startPos.x;
@@ -587,7 +588,7 @@ double getDeltaE00({
   return sqrt(sum < 0.0 ? 0.0 : sum);
 }
 
-
+/// Gets a map for converting one ramp to another
 HashMap<ColorReference, ColorReference> getRampMap({required final List<KPalRampData> rampList1, required final List<KPalRampData> rampList2})
 {
   final HashMap<ColorReference, ColorReference> rampMap = HashMap<ColorReference, ColorReference>();
@@ -595,13 +596,14 @@ HashMap<ColorReference, ColorReference> getRampMap({required final List<KPalRamp
   {
     for (final ColorReference colRef in kPalRampData.references)
     {
-      rampMap[colRef] = getClosestColor(inputColor: colRef, rampList: rampList2);
+      rampMap[colRef] = _getClosestColor(inputColor: colRef, rampList: rampList2);
     }
   }
   return rampMap;
 }
 
-ColorReference getClosestColor({required final ColorReference inputColor, required final List<KPalRampData> rampList})
+/// Gets the closest color in the given ramp list to the input color.
+ColorReference _getClosestColor({required final ColorReference inputColor, required final List<KPalRampData> rampList})
 {
   assert(rampList.isNotEmpty);
 
@@ -629,6 +631,7 @@ ColorReference getClosestColor({required final ColorReference inputColor, requir
   return closestColor;
 }
 
+/// Returns true if the point is on the line segment.
 bool _isPointOnLineSegment({required final CoordinateSetI p, required final CoordinateSetI a, required final CoordinateSetI b, final double epsilon = 1e-6})
 {
   final int cross = (b.x - a.x) * (p.y - a.y) - (p.x - a.x) * (b.y - a.y);
@@ -649,6 +652,8 @@ int _isLeft({required final CoordinateSetI a, required final CoordinateSetI b, r
   return (b.x - a.x) * (p.y - a.y) - (p.x - a.x) * (b.y - a.y);
 }
 
+
+/// Returns true if the polygon contains the point.
 bool isPointInPolygon({required final CoordinateSetI point, required final List<CoordinateSetI> polygon, final double epsilon = 1e-6}) {
   final int n = polygon.length;
   int windingNumber = 0;
@@ -680,6 +685,7 @@ bool isPointInPolygon({required final CoordinateSetI point, required final List<
 }
 
 
+/// Returns the distance between the point and the closest edge of the polygon.
 double getPointToEdgeDistance({required final CoordinateSetI point, required final List<CoordinateSetI> polygon})
 {
   double minDistance = double.infinity;
@@ -713,7 +719,7 @@ double getPointToEdgeDistance({required final CoordinateSetI point, required fin
 }
 
 
-
+/// Returns a coordinate set with the minimum values of x and y.
 CoordinateSetI getMin({required final List<CoordinateSetI> coordList})
 {
   final int minX = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.x < b.x ? a : b).x;
@@ -721,6 +727,7 @@ CoordinateSetI getMin({required final List<CoordinateSetI> coordList})
   return CoordinateSetI(x: minX, y: minY);
 }
 
+/// Returns a coordinate set with the maximum values of x and y.
 CoordinateSetI getMax({required final List<CoordinateSetI> coordList})
 {
   final int maxX = coordList.reduce((final CoordinateSetI a, final CoordinateSetI b) => a.x > b.x ? a : b).x;
@@ -728,7 +735,7 @@ CoordinateSetI getMax({required final List<CoordinateSetI> coordList})
   return CoordinateSetI(x: maxX, y: maxY);
 }
 
-
+/// Implementation of Bresenham's line algorithm.
 List<CoordinateSetI> bresenham({required final CoordinateSetI start, required final CoordinateSetI end})
 {
   final List<CoordinateSetI> points = <CoordinateSetI>[];
@@ -859,7 +866,7 @@ Set<CoordinateSetI> _drawEllipse({required final CoordinateSetI start, required 
 }
 
 
-
+/// Draws a stroked ellipse inside the given bounds and stroke width.
 Set<CoordinateSetI> drawStrokedEllipse({required final CoordinateSetI start, required final CoordinateSetI end, required final int strokeWidth})
 {
 final int width = end.x - start.x + 1;
@@ -905,7 +912,7 @@ else
 }
 }
 
-
+/// Draws a filled ellipse inside the given bounds.
 Set<CoordinateSetI> drawFilledEllipse({required final CoordinateSetI start, required final CoordinateSetI end})
 {
   return _drawEllipse(
@@ -922,6 +929,7 @@ Set<CoordinateSetI> drawFilledEllipse({required final CoordinateSetI start, requ
   );
 }
 
+/// Returns a list of neighbors of the given pixel coordinate.
 List<CoordinateSetI> getCoordinateNeighbors({required final CoordinateSetI pixel, required final bool withDiagonals})
 {
   final List<CoordinateSetI> neighbors =  <CoordinateSetI>[
@@ -942,34 +950,36 @@ List<CoordinateSetI> getCoordinateNeighbors({required final CoordinateSetI pixel
   return neighbors;
 }
 
+/// Converts an argb color to a rgba color.
 int argbToRgba({required final int argb}) {
   final int a = (argb & 0xFF000000) >> 24; // Extract alpha component
   final int r = (argb & 0x00FF0000) >> 16; // Extract red component
   final int g = (argb & 0x0000FF00) >> 8;  // Extract green component
   final int b = argb & 0x000000FF;       // Extract blue component
-
-  // Combine components into RGBA format
   final int rgba = (r << 24) | (g << 16) | (b << 8) | a;
   return rgba;
 }
 
 const double twoPi = 2 * pi;
-
+/// Normalizes an angle to the range [0, 2pi).
 double normAngle({required final double angle})
 {
   return angle - (twoPi * (angle / twoPi).floor());
 }
 
+/// Converts an angle in degrees to radians.
 double deg2rad({required final double angle})
 {
   return angle * (pi / 180.0);
 }
 
+/// Converts an angle in radians to degrees.
 double rad2deg({required final double angle})
 {
   return angle * (180.0 / pi);
 }
 
+/// Returns the distance between two coordinate sets.
 double getDistance({required final CoordinateSetI a, required final CoordinateSetI b})
 {
   return sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)));
@@ -1135,6 +1145,7 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
   }
 }
 
+/// Returns the filename from the given path.
 String extractFilenameFromPath({required final String? path, final bool keepExtension = true})
 {
   if (path != null && path.isNotEmpty)
@@ -1147,11 +1158,13 @@ String extractFilenameFromPath({required final String? path, final bool keepExte
   }
 }
 
+/// Returns the base directory of the given path.
 String getBaseDir({required final String fullPath})
 {
   return p.dirname(fullPath);
 }
 
+/// Converts a double to a list of bytes.
 List<int> intToBytes({required final int value, required final int length, final bool reverse = false})
 {
   final ByteData bytes = ByteData(length);
@@ -1174,17 +1187,20 @@ List<int> intToBytes({required final int value, required final int length, final
   return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
 }
 
+/// Converts a double to a list of bytes.
 List<int> float32ToBytes({required final double value, final bool reverse = false})
 {
   final ByteData bytes = ByteData(4)..setFloat32(0, value, Endian.little);
   return reverse ? bytes.buffer.asUint8List().reversed.toList() : bytes.buffer.asUint8List();
 }
 
+/// Converts a string to a list of bytes.
 List<int> stringToBytes({required final String value})
 {
   return utf8.encode(value);
 }
 
+/// Returns a string with escaped XML characters.
 String escapeXml({required final String input})
 {
   return input.replaceAll('&', '&amp;')
@@ -1194,6 +1210,7 @@ String escapeXml({required final String input})
       .replaceAll("'", '&apos;');
 }
 
+/// Replaces the extension of the file path with the new extension.
 Future<String?> replaceFileExtension({required final String filePath, required final String newExtension, required final bool inputFileMustExist}) async
 {
   if ((!await File(filePath).exists()) && inputFileMustExist)
@@ -1209,6 +1226,7 @@ Future<String?> replaceFileExtension({required final String filePath, required f
   return filePath.replaceAll(RegExp(r'\.[^.]+$'), '.$newExtension');
 }
 
+/// Returns a string representation of the date and time.
 String formatDateTime({required final DateTime dateTime})
 {
   final String year = dateTime.year.toString();
@@ -1220,6 +1238,7 @@ String formatDateTime({required final DateTime dateTime})
   return '$year-$month-$day $hour:$minute';
 }
 
+/// Returns a map from old indices to new indices.
 HashMap<int, int> remapIndices({required final int oldLength, required final int newLength})
 {
   final HashMap<int, int> indexMap = HashMap<int, int>();
@@ -1235,6 +1254,7 @@ HashMap<int, int> remapIndices({required final int oldLength, required final int
   return indexMap;
 }
 
+/// Returns the index of the ramp with the given UUID.
 int? getRampIndex({required final String uuid, required final List<HistoryRampData> ramps})
 {
   int? rampIndex;
@@ -1249,6 +1269,7 @@ int? getRampIndex({required final String uuid, required final List<HistoryRampDa
   return rampIndex;
 }
 
+/// Returns true if all ramps have the same number of colors.
 bool rampsHaveEqualLengths({required final List<KPalRampData> ramps})
 {
   for (int i = 1; i < ramps.length; i++)
@@ -1261,6 +1282,7 @@ bool rampsHaveEqualLengths({required final List<KPalRampData> ramps})
   return true;
 }
 
+/// Exits the application and clears the recovery directory.
 void exitApplication({final int exitCode = 0})
 {
   clearRecoverDir().then((final void value)
@@ -1276,6 +1298,7 @@ void exitApplication({final int exitCode = 0})
   },);
 }
 
+/// Converts a string to a version object.
 Version? convertStringToVersion({required final String version})
 {
   final RegExp versionRegex = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?$');
@@ -1288,12 +1311,14 @@ Version? convertStringToVersion({required final String version})
         .toList();
     return Version(numbers[0], numbers[1], numbers[2]);
   }
+
   else
   {
     return null;
   }
 }
 
+/// Launches a URL in the default browser.
 Future<void> launchURL({required final String url}) async
 {
   if (!await launchUrl(Uri.parse(url)))

@@ -95,7 +95,6 @@ class HistoryState
     //TIMELINE
     List<HistoryFrame> historyFrameList;
     LinkedHashSet<HistoryLayer> historyLayerSet;
-    HistoryLayer? selectionLayer;
     if (type.group == HistoryStateTypeGroup.colorSelect && previousState != null)
     {
       historyFrameList = previousState.timeline.frames;
@@ -166,7 +165,7 @@ class HistoryState
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
-    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, historyLayer: selectionLayer);
+    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
   }

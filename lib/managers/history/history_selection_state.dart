@@ -17,7 +17,6 @@
 import 'dart:collection';
 
 import 'package:kpix/managers/history/history_color_reference.dart';
-import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -26,11 +25,10 @@ import 'package:kpix/util/typedefs.dart';
 class HistorySelectionState
 {
   final HashMap<CoordinateSetI, HistoryColorReference?> content;
-  final HistoryLayer? currentLayer;
 
-  HistorySelectionState({required this.content, required this.currentLayer});
+  HistorySelectionState({required this.content});
 
-  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, required final HistoryLayer? historyLayer})
+  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps})
   {
     final CoordinateColorMapNullable otherCnt = sState.selection.selectedPixels;
     final HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap<CoordinateSetI, HistoryColorReference?>();
@@ -49,7 +47,7 @@ class HistorySelectionState
         cnt[CoordinateSetI.from(other: entry.key)] = null;
       }
     }
-    return HistorySelectionState(content: cnt, currentLayer: historyLayer);
+    return HistorySelectionState(content: cnt);
   }
 
 }

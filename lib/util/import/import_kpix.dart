@@ -1065,7 +1065,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       hTimeline = HistoryTimeline(frames: hFrames, loopStart: startFrame, loopEnd: endFrame, selectedFrameIndex: 0, allLayers: layerList);
     }
 
-    final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>(), currentLayer: layerList.elementAt(0));
+    final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>());
     final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);

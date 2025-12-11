@@ -18,74 +18,81 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getPsdData({required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
+Future<Uint8List?> getPsdDataRGB({required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
-  return buildPsdBytes(layers: layers, opts: opts);
+  int colorCount = 0;
+  for (final KPalRampData r in colorRamps)
+  {
+    colorCount += r.references.length;
+  }
+
+  return _buildPsdBytes(layers: layerCollection, canvasSize: canvasSize, selection: selection, colorCount: colorCount);
 }
 
 
 
-
-
-Uint8List buildPsdBytes({
-  required LayerCollection layers,
-  required PsdExportOptions opts,
-}) {
-  final w = opts.width, h = opts.height;
+Uint8List _buildPsdBytes({required final LayerCollection layers, required final CoordinateSetI canvasSize, required final SelectionList selection, required final int colorCount}) {
 
   // ---- 1) File Header (26 bytes) ----  [1](https://docs.fileformat.com/image/psd/)
-  final header = _BytesBE();
+  final _BytesBE header = _BytesBE();
   header.ascii('8BPS');    // signature
   header.u16(1);           // version = 1 (PSD)
   header.u32(0); header.u16(0); // 6 reserved bytes (zeros)
   header.u16(3);           // number of channels in merged image (RGB)  [1](https://docs.fileformat.com/image/psd/)
-  header.u32(h);           // height
-  header.u32(w);           // width
+  header.u32(canvasSize.y);           // height
+  header.u32(canvasSize.x);           // width
   header.u16(8);           // depth
   header.u16(3);           // color mode = RGB  [1](https://docs.fileformat.com/image/psd/)
-  final headerBytes = header.toBytes();
+  final Uint8List headerBytes = header.toBytes();
 
   // ---- 2) Color Mode Data (RGB → length 0) ----  [1](https://docs.fileformat.com/image/psd/)
-  final colorModeData = _BytesBE()..u32(0);
+  final _BytesBE colorModeData = _BytesBE()..u32(0);
 
   // ---- 3) Image Resources (palette metadata) ----  [2](https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/)[3](https://docs.fileformat.com/image/psd/)
-  final imgRes = _buildImageResources(
-    indexedCount: opts.palette.length,
-    transparencyIndex: opts.transparentPaletteIndex,
+  final Uint8List imgRes = _buildImageResources(
+    indexedCount: colorCount,
   );
 
   // ---- 4) Layer & Mask Information ----
-  final layerInfo = _BytesBE();
+  //final _BytesBE layerInfo = _BytesBE();
 
   // a) Layer Info subsection
-  final layerRecords = _BytesBE();
-  final channelDatas = <Uint8List>[];
+  final _BytesBE layerRecords = _BytesBE();
+  //final List<Uint8List> channelDatas = <Uint8List>[];
 
   // Important: write layers bottom→top (UI order). If your array is top→bottom, reverse it.  [5](https://github.com/webtoon/psd/blob/main/packages/psd/src/sections/LayerAndMaskInformation/readLayerRecordsAndChannels.ts)
-  final orderedLayers = layers; // adjust if needed
+
+  final List<DrawingLayerState> orderedLayers = <DrawingLayerState>[];
+  for (int li = layers.length - 1; li >= 0; li--)
+  {
+    if (layers.getLayer(index: li) is DrawingLayerState)
+    {
+      orderedLayers.add(layers.getLayer(index: li) as DrawingLayerState);
+    }
+  }
 
   // Layer count (positive)
-  final layerCount = orderedLayers.length;
+  final int layerCount = orderedLayers.length;
 
   // Build all layer records first (we need their bytes to compute lengths)
-  final perLayer = orderedLayers.map((li) =>
-      _buildLayerRecordAndChannels(layer: li, width: w, height: h)).toList();
+  final List<LayerBinary> perLayer = orderedLayers.map((final DrawingLayerState li) =>
+      _buildLayerRecordAndChannels(layerCollection: layers, layer: li, size: canvasSize, selection: selection),).toList();
 
   // Layer Info block: 4-byte length + 2-byte count + records + per-layer channel image data
-  final layerInfoContent = BytesBE();
+  final _BytesBE layerInfoContent = _BytesBE();
   layerInfoContent.u16(layerCount);
-  for (final L in perLayer) {
+  for (final LayerBinary L in perLayer) {
     layerInfoContent.raw(L.record);
   }
-  for (final L in perLayer) {
+  for (final LayerBinary L in perLayer) {
     // Per spec: channel image data follows, in the same order.  [4](https://github.com/iamgqb/psd-spec-translate/blob/master/The%20Photoshop%20File%20Format/6.Layer%20and%20Mask%20Information%20Section.md)
-    for (final ch in L.channelDatas) {
+    for (final Uint8List ch in L.channelDatas) {
       layerInfoContent.raw(ch);
     }
   }
   // Wrap Layer Info with its length (rounded up to even)
-  final licBytes = layerInfoContent.toBytes();
-  final licPadded = _BytesBE()..raw(licBytes)..padEven();
+  final Uint8List licBytes = layerInfoContent.toBytes();
+  final _BytesBE licPadded = _BytesBE()..raw(licBytes)..padEven();
   layerRecords.u32(licPadded.length); // 4-byte length (PSB would be 8)  [4](https://github.com/iamgqb/psd-spec-translate/blob/master/The%20Photoshop%20File%20Format/6.Layer%20and%20Mask%20Information%20Section.md)
   layerRecords.raw(licPadded.toBytes());
 
@@ -96,19 +103,19 @@ Uint8List buildPsdBytes({
   // (omit)
 
   // Wrap Layer & Mask Information with its 4-byte section length
-  final layerInfoPayload = layerRecords.toBytes();
-  final layerAndMask = _BytesBE()..u32(layerInfoPayload.length)..raw(layerInfoPayload);
+  final Uint8List layerInfoPayload = layerRecords.toBytes();
+  final _BytesBE layerAndMask = _BytesBE()..u32(layerInfoPayload.length)..raw(layerInfoPayload);
 
   // ---- 5) Image Data (merged composite, planar RGB, RAW=0) ----  [1](https://docs.fileformat.com/image/psd/)
-  final comp = _buildComposite(w, h, orderedLayers);
-  final imageData = _BytesBE();
+  final _Planes comp = _buildComposite(layers: layers, size: canvasSize, selection: selection);
+  final _BytesBE imageData = _BytesBE();
   imageData.u16(0);              // compression (0=RAW)
   imageData.raw(comp.r);
   imageData.raw(comp.g);
   imageData.raw(comp.b);
 
   // ---- Concatenate all sections ----
-  final out = _BytesBE();
+  final _BytesBE out = _BytesBE();
   out.raw(headerBytes);
   out.raw(colorModeData.toBytes());
   out.raw(imgRes);                // already includes 4-byte length
@@ -123,7 +130,7 @@ Uint8List buildPsdBytes({
 
 
 
-_Planes buildComposite({required final CoordinateSetI size, required final LayerCollection layers, required final SelectionList selection}) {
+_Planes _buildComposite({required final CoordinateSetI size, required final LayerCollection layers, required final SelectionList selection}) {
   final Uint8List r = Uint8List(size.x * size.y);
   final Uint8List g = Uint8List(size.x * size.y);
   final Uint8List b = Uint8List(size.x * size.y);
@@ -138,7 +145,7 @@ _Planes buildComposite({required final CoordinateSetI size, required final Layer
       final CoordinateSetI curCoord = CoordinateSetI(x: x, y: y);
       final int idx = y * size.x + x;
       // find first visible layer with a pixel at (x,y)
-      for (int li = 0; li < layers.length; li--)
+      for (int li = 0; li < layers.length; li++)
       {
         final LayerState l = layers.getLayer(index: li);
         if (l is DrawingLayerState && l.visibilityState.value == LayerVisibilityState.visible)

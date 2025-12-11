@@ -514,22 +514,22 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         data = await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList);
         //break;
       case ImageExportType.aseprite:
-        data = await getAsepriteData(exportData: exportData, canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
+        data = await getAsepriteData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
       //case ExportType.photoshop:
       // TODO: Handle this case.
       //  break;
       case ImageExportType.gimp:
-        data = await getGimpData(exportData: exportData, canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
+        data = await getGimpData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
       case ImageExportType.pixelorama:
-        data = await getPixeloramaData(exportData: exportData, canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
+        data = await getPixeloramaData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
       case ImageExportType.kpix:
         data = (await createKPixData(appState: appState)).buffer.asUint8List();
         //break;
       case ImageExportType.texturePack:
-        data = await exportTexturePack(exportData: exportData, appState: appState);
+        data = await exportTexturePack(appState: appState);
         //break;
     }
 

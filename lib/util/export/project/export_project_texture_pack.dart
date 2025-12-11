@@ -16,7 +16,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> exportTexturePack({required final ImageExportData exportData, required final AppState appState}) async
+Future<Uint8List?> exportTexturePack({required final AppState appState}) async
 {
   final Archive zipFile = Archive();
 

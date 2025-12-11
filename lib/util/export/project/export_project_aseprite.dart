@@ -18,7 +18,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getAsepriteData({required final ImageExportData exportData, required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
+Future<Uint8List?> getAsepriteData({required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
   final List<ui.Color> colorList = <ui.Color>[];
   final Map<ColorReference, int> colorMap = <ColorReference, int>{};

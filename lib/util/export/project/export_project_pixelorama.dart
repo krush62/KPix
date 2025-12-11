@@ -18,7 +18,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getPixeloramaData({required final ImageExportData exportData, required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
+Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
   final List<DrawingLayerState> drawingLayers = <DrawingLayerState>[];
   for (int l = 0; l < layerCollection.length; l++)

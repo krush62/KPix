@@ -192,7 +192,7 @@ A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The 
 - you might use the scripts in the release_tools folder to create Linux/Windows/Android/Web versions
 
 # 🔜Roadmap
-A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53). Prioritizing of items will happen when alpha tests were performed.
+A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53).
 
 # 🤝Feedback
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.

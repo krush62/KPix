@@ -516,8 +516,8 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
       case ImageExportType.aseprite:
         data = await getAsepriteData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
         //break;
-      //case ExportType.photoshop:
-      // TODO: Handle this case.
+      case ImageExportType.photoshop:
+        data = await getPsdDataRGB(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);
       //  break;
       case ImageExportType.gimp:
         data = await getGimpData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps);

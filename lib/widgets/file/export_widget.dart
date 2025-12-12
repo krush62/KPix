@@ -31,7 +31,7 @@ enum ImageExportType
 {
   png,
   aseprite,
-  //photoshop,
+  photoshop,
   gimp,
   pixelorama,
   kpix,
@@ -124,7 +124,7 @@ class ImageExportData extends ExportData
   static const Map<ImageExportType, ImageExportData> exportTypeMap = <ImageExportType, ImageExportData>{
     ImageExportType.png : ImageExportData(name: "PNG", extension: "png", scalable: true),
     ImageExportType.aseprite : ImageExportData(name: "ASEPRITE", extension: "aseprite", scalable: false),
-    //ExportType.photoshop : ExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
+    ImageExportType.photoshop : ImageExportData(name: "PHOTOSHOP", extension: "psd", scalable: false),
     ImageExportType.gimp : ImageExportData(name: "GIMP", extension: "xcf", scalable: false),
     ImageExportType.pixelorama : ImageExportData(name: "PIXELORAMA", extension: "pxo", scalable: false),
     ImageExportType.texturePack : ImageExportData(name: "TEXTURE PACK", extension: "zip", scalable: false),

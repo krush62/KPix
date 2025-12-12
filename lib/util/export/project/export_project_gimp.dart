@@ -18,7 +18,7 @@
 
 part of '../../export_functions.dart';
 
-Future<Uint8List?> getGimpData({required final ImageExportData exportData, required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
+Future<Uint8List?> getGimpData({required final List<KPalRampData> colorRamps, required final LayerCollection layerCollection, required final CoordinateSetI canvasSize, required final SelectionList selection}) async
 {
   final List<Color> colorList = <ui.Color>[];
   final Map<ColorReference, int> colorMap = <ColorReference, int>{};
@@ -141,7 +141,7 @@ Future<Uint8List?> getGimpData({required final ImageExportData exportData, requi
       layerEncBytes.add(tileList);
       drawingLayers.add(layerState);
     }
-    }
+  }
 
   //CALCULATING SIZE
   bool activeLayerSet = false;

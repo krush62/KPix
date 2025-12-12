@@ -68,6 +68,7 @@ part 'export/project/export_project_gimp.dart';
 part 'export/project/export_project_kpix.dart';
 part 'export/project/export_project_pixelorama.dart';
 part 'export/project/export_project_png.dart';
+part 'export/project/export_project_psd.dart';
 part 'export/project/export_project_zipped_png.dart';
 part 'export/project/export_project_texture_pack.dart';
 part 'export/project/export_project_texture_pack_animation.dart';

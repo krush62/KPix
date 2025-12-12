@@ -38,8 +38,9 @@ KPix is a pixel art editor for still images and animations with a focus on gener
 ⭐ shading layers\
 ⭐ dithering layers\
 ⭐ non-destructive layer effects (outer/inner strokes, shadow, glow, ...)\
-⭐ image importing including automatic palette creation\
 ⭐ extensive animation capabilities\
+⭐ image importing including automatic palette creation\
+⭐ image export including layers to Aseprite, Pixelorama, Gimp and Photoshop\
 ⭐ multi-platform support (Windows, Linux, Android, Web)\
 ⭐ stylus and touch support\
 ⭐ automatic light/dark theme
@@ -90,16 +91,19 @@ Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangu
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 ### Export Formats
 #### 🖼️ Image Formats
-Projects can be exported to uncompressed images including transparency. Integer scaling is supported.
+Projects can be exported to lossless images including transparency. Integer scaling is supported.
 - png
 #### 📱 Application Formats
 Projects can be exported for usage in other applications. Special Layers will be either omitted (reference, grid) or merged (shading, dither).
 
-| Application | Extension  | Mode    | Layers | Palette Inclusion |
-|-------------|------------|---------|--------|-------------------|
-| Aseprite    | `aseprite` | indexed | ✅      | ✅                 |
-| Gimp        | `xcf`      | indexed | ✅      | ✅                 |
-| Pixelorama  | `pxo`      | rgba    | ✅      | ❌                 |
+| Application | Extension  | Color Mode | Layers | Palette Inclusion |
+|-------------|------------|------------|--------|-------------------|
+| Aseprite    | `aseprite` | indexed    | ✅      | ✅                 |
+| Gimp        | `xcf`      | indexed    | ✅      | ✅                 |
+| Pixelorama  | `pxo`      | rgba       | ✅      | ❌                 |
+| Photoshop   | `psd`      | rgba       | ✅      | ❌                 |
+
+*\* Note: Pixelorama and Photoshop do not support indexed color mode with layers.*
 
 ### 🎨 Palette Formats
 Palettes can be exported for usage in other applications.
@@ -122,7 +126,7 @@ Animation projects can be exported to the following formats
 ### Import Formats
 Due to its unique way of having parameterized color ramps, an import of other formats always needs the creation of parameterized color ramps from the image's colors.
 Any import is an approximation and will never exactly match the colors given in the original image.
-The following raster image formats are supported: bmp, jpg, gif (first frame) and png.
+The following raster image formats are supported: bmp, jpg, gif (first frame), webp and png.
 
 # 🎮Controls
 This application supports input by mouse/keyboard, touch screen and stylus.

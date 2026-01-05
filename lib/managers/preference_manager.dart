@@ -184,8 +184,8 @@ enum PreferenceDouble
   ReferenceLayer_AspectRatioMin(defaultValue: -5.0),
   ReferenceLayer_ZoomCurveExponent(defaultValue: 2.0),
 
-  GridLayer_VanishingPointMin(defaultValue: 0.0),
-  GridLayer_VanishingPointMax(defaultValue: 1.0),
+  GridLayer_VanishingPointMin(defaultValue: -1.0),
+  GridLayer_VanishingPointMax(defaultValue: 2.0),
   GridLayer_HorizonDefault(defaultValue: 0.5),
   GridLayer_VanishingPoint1Default(defaultValue: 0.1),
   GridLayer_VanishingPoint2Default(defaultValue: 0.9),

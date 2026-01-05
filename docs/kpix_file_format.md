@@ -108,10 +108,10 @@ The kpix file format consists of the following three consecutive sections:
   * grid_type ``ubyte (1)`` // ``00``= rectangular, ``01`` = diagonal, ``02`` = isometric, ``03`` = hexagonal, ``04`` = triangular, , ``05`` = brick
   * interval_x ``ubyte (1)`` // 2...64
   * interval_x ``ubyte (1)`` // 2...64
-  * horizon_position ``float (1)``// 0...1 (vertical horizon position)
-  * vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-  * vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-  * vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
+  * horizon_position ``float (1)``// -1...2 (vertical horizon position)
+  * vanishing_point_1 ``float (1)``// -1...2 (horizontal position of first vanishing point)
+  * vanishing_point_2 ``float (1)``// -1...2 (horizontal position of second vanishing point)
+  * vanishing_point_3 ``float (1)``// -1...2 (vertical position of third vanishing point)
 
   // data for type ``04`` and ``05`` (shading layer/dither layer)
   * lock_type ``ubyte (1)`` // ``00``= unlocked, ``02`` = locked

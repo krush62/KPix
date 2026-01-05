@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -289,7 +290,27 @@ class GridLayerState extends LayerState
     }
     else
     {
-      for (int y = 0; y < appState.canvasSize.y; y++)
+      int repeatRows = appState.canvasSize.y;
+      if (gridType == GridType.rectangular || gridType == GridType.triangular)
+      {
+        repeatRows = intervalY;
+      }
+      else if (gridType == GridType.diagonal || gridType == GridType.isometric)
+      {
+        repeatRows = (intervalX * intervalY) ~/ gcd(a: intervalX, b: intervalY);
+      }
+      else if (gridType == GridType.hexagonal)
+      {
+        repeatRows = (intervalY * 2) - 2;
+      }
+      else if (gridType == GridType.brick)
+      {
+        repeatRows = intervalY * 2;
+      }
+
+      repeatRows = min(repeatRows, appState.canvasSize.y);
+
+      for (int y = 0; y < repeatRows; y++)
       {
         for (int x = 0; x < appState.canvasSize.x; x++)
         {
@@ -409,7 +430,14 @@ class GridLayerState extends LayerState
 
           if (shouldDraw)
           {
-            rasterCoords.add(CoordinateSetI(x: x, y: y));
+            for (int r = 0; r < appState.canvasSize.y; r += repeatRows)
+            {
+              final CoordinateSetI coord = CoordinateSetI(x: x, y: y + r);
+              if (coord.x >= 0 && coord.x < appState.canvasSize.x && coord.y >= 0 && coord.y < appState.canvasSize.y)
+              {
+                rasterCoords.add(coord);
+              }
+            }
           }
         }
       }

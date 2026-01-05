@@ -21,6 +21,7 @@ import 'package:kpix/util/helper.dart';
 class KPixSlider extends StatefulWidget {
   final double value;
   final ValueChanged<double>? onChanged;
+  final ValueChanged<double>? onChangedEnd;
   final double trackHeight;
   final double fontStrokeWidth;
   final Color? activeTrackColor;
@@ -60,7 +61,7 @@ class KPixSlider extends StatefulWidget {
     this.label,
     this.isRainbow = false,
     this.showPlusSignForPositive = false,
-
+    this.onChangedEnd,
   });
 
   @override
@@ -137,6 +138,7 @@ class _KPixSliderState extends State<KPixSlider>
                     min: widget.min,
                     max: widget.max,
                     onChanged: widget.onChanged,
+                    onChangeEnd: widget.onChangedEnd,
                     divisions: widget.divisions,
                   ),
                   if (!widget.isRainbow) Positioned.fill(

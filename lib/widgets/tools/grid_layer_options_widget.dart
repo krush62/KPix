@@ -17,6 +17,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
+import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
@@ -192,6 +194,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                       {
                         widget.gridState.gridTypeNotifier.value = lastPerspectiveGridType;
                       }
+                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                     },
                     segments: <ButtonSegment<bool>>[
                       ButtonSegment<bool>(
@@ -226,6 +229,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         lastPerspectiveGridType = types.first;
                       }
                       widget.gridState.gridTypeNotifier.value = types.first;
+                      GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                     },
                   ),
                   Row(
@@ -253,6 +257,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               //divisions: _gridSettings.opacityMax - _gridSettings.opacityMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.opacityNotifier.value = newVal.round();
+                              },
+                              onChangedEnd: (final double value) {
+                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                               },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -286,6 +293,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               onChanged: (final double newVal) {
                                 widget.gridState.brightnessNotifier.value = newVal.round();
                               },
+                              onChangedEnd: (final double value) {
+                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                              },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
@@ -317,6 +327,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               //divisions: _gridSettings.intervalXMax - _gridSettings.intervalXMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.intervalXNotifier.value = newVal.round();
+                              },
+                              onChangedEnd: (final double value) {
+                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                               },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
@@ -351,6 +364,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                               onChanged: (final double newVal) {
                                 widget.gridState.intervalYNotifier.value = newVal.round();
                               },
+                              onChangedEnd: (final double value) {
+                                GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                              },
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
                             );
                           },
@@ -384,6 +400,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 onChanged: (final double newVal) {
                                   widget.gridState.horizonPositionNotifier.value = newVal;
                                 },
+                                onChangedEnd: (final double value) {
+                                  GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                },
                                 textStyle: Theme.of(context).textTheme.bodyLarge!,
                               );
                             },
@@ -416,6 +435,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 decimals: 2,
                                 onChanged: (final double newVal) {
                                   widget.gridState.vanishingPoint1Notifier.value = newVal;
+                                },
+                                onChangedEnd: (final double value) {
+                                  GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyLarge!,
                               );
@@ -457,6 +479,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                        widget.gridState.vanishingPoint1Notifier.value = newVals.start;
                                        widget.gridState.vanishingPoint2Notifier.value = newVals.end;
                                      },
+                                     onChangedEnd: (final RangeValues values) {
+                                       GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
+                                     },
                                    );
                                 },
                               );
@@ -490,6 +515,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 decimals: 2,
                                 onChanged: (final double newVal) {
                                   widget.gridState.vanishingPoint3Notifier.value = newVal;
+                                },
+                                onChangedEnd: (final double value) {
+                                  GetIt.I.get<HistoryManager>().addState(appState: GetIt.I.get<AppState>(), identifier: HistoryStateTypeIdentifier.layerSettingsChange, originLayer: widget.gridState);
                                 },
                                 textStyle: Theme.of(context).textTheme.bodyLarge!,
                               );

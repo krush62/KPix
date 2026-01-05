@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 class KPixRangeSlider extends StatefulWidget {
   final RangeValues values;
   final ValueChanged<RangeValues>? onChanged;
+  final ValueChanged<RangeValues>? onChangedEnd;
   final double trackHeight;
   final double fontStrokeWidth;
   final Color? activeTrackColor;
@@ -42,6 +43,7 @@ class KPixRangeSlider extends StatefulWidget {
     super.key,
     required this.values,
     required this.onChanged,
+    this.onChangedEnd,
     this.trackHeight = 24.0,
     this.fontStrokeWidth = 3,
     this.decimals = 0,
@@ -118,6 +120,7 @@ class _KPixRangeSliderState extends State<KPixRangeSlider>
                 RangeSlider(
                   values: widget.values,
                   onChanged: widget.onChanged,
+                  onChangeEnd: widget.onChangedEnd,
                   divisions: widget.divisions,
                   min: widget.min,
                   max: widget.max,

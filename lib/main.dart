@@ -33,6 +33,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/logging_extensions.dart';
+import 'package:kpix/util/system_info_helper.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
@@ -78,7 +79,7 @@ const Size minimumApplicationSize = Size(1200, 600);
 
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
-Logger createLogger()
+Logger _createLogger()
 {
   final FileLogOutput fileOutput = FileLogOutput();
   final ThresholdOutput consoleOutput = ThresholdOutput(ConsoleOutput(), minLevel: Level.warning);
@@ -98,11 +99,21 @@ Logger createLogger()
   );
 }
 
+Future<void> _logSystemInfo(final Logger logger) async
+{
+  final Map<String, String> info = await readableDeviceInfo();
+  for (final MapEntry<String, String> entry in info.entries)
+  {
+    logger.i("${entry.key}: ${entry.value}");
+  }
+}
+
 void main(final List<String> args)
 {
-  final Logger logger = createLogger();
+  final Logger logger = _createLogger();
   GetIt.I.registerSingleton<Logger>(logger);
   logger.i("Starting application");
+  _logSystemInfo(logger);
   cmdLineArgs = args;
   WidgetsFlutterBinding.ensureInitialized();
   final HotkeyManager hotkeyManager = HotkeyManager();
@@ -294,8 +305,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           await stampManager.loadAllStamps();
           GetIt.I.registerSingleton<StampManager>(stampManager);
 
-          logger.i("Creating Package Manager");
+          logger.i("Creating Package Info");
           GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
+          logger.i("Creating Reference Image Manager");
           GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
           logger.i("Creating History Manager");
           GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));

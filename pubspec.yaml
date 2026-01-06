@@ -30,6 +30,7 @@ environment:
 dependencies:
   archive: ^4.0.4
   bitsdojo_window: ^0.1.6
+  device_info_plus: ^12.3.0
   file_picker: ^10.2.0
   file_saver: ^0.3.1
   flutter:

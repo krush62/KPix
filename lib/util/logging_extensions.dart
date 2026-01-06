@@ -83,7 +83,7 @@ class FileLogOutput extends LogOutput
   @override
   void output(final OutputEvent event)
   {
-    _writeQueue = _writeQueue.then((_) async
+    _writeQueue = _writeQueue.then((final _) async
     {
       final bool ready = await _ensureReady();
       if (!ready)
@@ -178,5 +178,3 @@ class ThresholdOutput extends LogOutput {
     return super.destroy();
   }
 }
-
-

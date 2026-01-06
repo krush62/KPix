@@ -76,7 +76,7 @@ Future<Map<String, String>> readableDeviceInfo() async
         <List<String>>[
           <String>['version', 'sdkInt'],
         ],
-        data: data),
+        data: data,),
       );
       out.put('Manufacturer', data['manufacturer']);
       out.put('Brand', data['brand']);

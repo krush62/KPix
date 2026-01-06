@@ -87,21 +87,23 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 
   void _acceptAddPalette({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
-    saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final bool success) {
-      _paletteSaved(success: success);
+    saveCurrentPalette(fileName: saveData.fileName, directory: saveData.directory, extension: saveData.extension).then((final String? fileName) {
+
+      if (fileName == null)
+      {
+        GetIt.I.get<AppState>().showMessage(text: "Error saving palette!");
+      }
+      else
+      {
+        GetIt.I.get<AppState>().showMessage(text: "Palette saved successfully at $fileName.");
+        _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
+          _paletteEntries.value = pList;
+        });
+      }
     });
     _dismissAddPalette();
   }
 
-  void _paletteSaved({required final bool success})
-  {
-    if (success)
-    {
-      _createWidgetList().then((final List<PaletteManagerEntryWidget> pList) {
-        _paletteEntries.value = pList;
-      });
-    }
-  }
 
   void _dismissAddPalette()
   {

@@ -32,6 +32,7 @@ import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:logger/logger.dart';
 
 class MainButtonWidgetOptions
 {
@@ -324,8 +325,19 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _paletteSavePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType})
   {
-    exportPalettePressed(saveData: saveData, paletteType: paletteType);
-    _closeAllMenus();
+    exportPalettePressed(saveData: saveData, paletteType: paletteType).then((final String? path)
+    {
+      if (path != null)
+      {
+        _appState.showMessage(text: "Exported palette to: $path.");
+      }
+      else
+      {
+        _appState.showMessage(text: "Error exporting palette file.");
+      }
+      _closeAllMenus();
+    },);
+
   }
 
     void _settingsPressed()
@@ -367,14 +379,23 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _importImage({required final ImportData importData})
   {
     _importLoadingDialog.show(context: context);
-    import(importData: importData, currentRamps: _appState.colorRamps).then((final ImportResult result)
+    try
     {
-      _appState.importFile(importResult: result);
-      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
-      _appState.rasterLayersFrame();
-      _appState.timeline.layerChangeNotifier.reportChange();
-      _closeAllMenus();
-    });
+      import(importData: importData, currentRamps: _appState.colorRamps).then((final ImportResult result)
+      {
+        _appState.importFile(importResult: result);
+        GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+        _appState.rasterLayersFrame();
+        _appState.timeline.layerChangeNotifier.reportChange();
+      });
+    }
+    catch (e, s)
+    {
+      const String failMsg = "Error importing image.";
+      _appState.showMessage(text: failMsg);
+      GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
+    }
+    _closeAllMenus();
   }
 
   @override

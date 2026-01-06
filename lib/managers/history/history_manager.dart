@@ -39,6 +39,7 @@ import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:logger/logger.dart';
 
 
 class HistoryManager
@@ -103,21 +104,30 @@ class HistoryManager
   {
     if (!appState.timeline.isPlaying.value)
     {
-      _removeFutureEntries();
-      _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier, originLayer: originLayer, previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState()));
-      _curPos++;
-      final int entriesLeft = _maxEntries - _states.length;
-
-      if (entriesLeft < 0)
+      GetIt.I.get<Logger>().i("Adding history state: $identifier.");
+      try
       {
-        for (int i = 0; i < -entriesLeft; i++)
+        _removeFutureEntries();
+        _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier, originLayer: originLayer, previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState()));
+        _curPos++;
+        final int entriesLeft = _maxEntries - _states.length;
+
+        if (entriesLeft < 0)
         {
-          _states.removeFirst();
-          _curPos--;
+          for (int i = 0; i < -entriesLeft; i++)
+          {
+            _states.removeFirst();
+            _curPos--;
+          }
         }
+        _compressHistory();
+        _updateNotifiers();
       }
-      _compressHistory();
-      _updateNotifiers();
+      catch (e, s)
+      {
+        GetIt.I.get<Logger>().e("Error adding history state: $identifier.", error: e, stackTrace: s);
+      }
+
     }
     appState.hasChanges.value = setHasChanges;
   }
@@ -128,6 +138,7 @@ class HistoryManager
     HistoryState? hState;
     if (_curPos > 0)
     {
+      GetIt.I.get<Logger>().i("Performing undo.");
       _curPos--;
        hState = _states.elementAt(_curPos);
        _updateNotifiers();
@@ -141,6 +152,7 @@ class HistoryManager
     HistoryState? hState;
     if (_curPos < _states.length - 1)
     {
+      GetIt.I.get<Logger>().i("Performing redo.");
       _curPos++;
       hState = _states.elementAt(_curPos);
       _updateNotifiers();

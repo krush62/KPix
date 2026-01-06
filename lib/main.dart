@@ -32,6 +32,7 @@ import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/logging_extensions.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
@@ -42,6 +43,7 @@ import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
+import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -76,7 +78,31 @@ const Size minimumApplicationSize = Size(1200, 600);
 
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
-void main(final List<String> args) {
+Logger createLogger()
+{
+  final FileLogOutput fileOutput = FileLogOutput();
+  final ThresholdOutput consoleOutput = ThresholdOutput(ConsoleOutput(), minLevel: Level.warning);
+  final SimplePrinter defaultPrinter = SimplePrinter(printTime: true, colors: false);
+  final PrettyPrinter warningPrinter = PrettyPrinter(
+    methodCount: 3,
+    errorMethodCount: 10,
+    printEmojis: false,
+    colors: false,
+    dateTimeFormat: DateTimeFormat.dateAndTime,
+  );
+
+  return Logger(
+    printer: HybridPrinter(defaultPrinter, warning: warningPrinter, error: warningPrinter, fatal: warningPrinter),
+    level: Level.info,
+    output: kIsWeb ?  null : MultiOutput(<LogOutput?>[fileOutput, consoleOutput]),
+  );
+}
+
+void main(final List<String> args)
+{
+  final Logger logger = createLogger();
+  GetIt.I.registerSingleton<Logger>(logger);
+  logger.i("Starting application");
   cmdLineArgs = args;
   WidgetsFlutterBinding.ensureInitialized();
   final HotkeyManager hotkeyManager = HotkeyManager();
@@ -224,106 +250,166 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   Future<void> _initPrefs() async
   {
-    final SharedPreferences sPrefs = await SharedPreferences.getInstance();
-    final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
-    GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
-    final String exportDirString = await findExportDir();
-    final String internalDirString = await findInternalDir();
-
-    if (context.mounted)
+    final Logger logger = GetIt.I.get<Logger>();
+    try
     {
-      final BuildContext c = context;
-      final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
-      final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, devicePixelRatio: devicePixelRatio);
-      bool hasCorrectResolution = true;
-      GetIt.I.registerSingleton<AppState>(appState);
-      final Size logicalSize = MediaQuery.of(c).size;
-      if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
+      logger.i("Initializing preferences");
+      final SharedPreferences sPrefs = await SharedPreferences.getInstance();
+      logger.i("Initializing fonts");
+      final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
+      GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
+      logger.i("Getting Directories");
+      final String exportDirString = await findExportDir();
+      logger.i("Export Dir: $exportDirString");
+      final String internalDirString = await findInternalDir();
+      logger.i("Internal Dir: $internalDirString");
+
+      if (context.mounted)
       {
-        hasCorrectResolution = false;
-      }
-
-      if (!hasCorrectResolution)
-      {
-        final KPixOverlay resolutionDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: "This device does not support the minimum logical resolution to run this application.");
-        resolutionDialog.show(context: c);
-      }
-      else
-      {
-
-        final StampManager stampManager = StampManager();
-        await stampManager.loadAllStamps();
-        GetIt.I.registerSingleton<StampManager>(stampManager);
-
-        GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
-        GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
-        GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
-
-        //CREATE DIALOG OVERLAYS
-        _closeWarningDialog = getThreeButtonDialog(
-          onYes: _closeWarningYes,
-          onNo: _closeWarningNo,
-          onCancel: _closeAllMenus,
-          outsideCancelable: false,
-          message: "There are unsaved changes, do you want to save first?",
-        );
-
-        _saveNewWarningDialog = getThreeButtonDialog(
-          onYes: _saveNewWarningYes,
-          onNo: _saveNewWarningNo,
-          onCancel: _saveNewWarningCancel,
-          outsideCancelable: false,
-          message: "There are unsaved changes, do you want to save first?",
-        );
-        _newProjectDialog = getNewProjectDialog(
-          onDismiss: () {exitApplication();},
-          onAccept: _newFilePressed,
-          onOpen: _openPressed,
-        );
-
-
-        GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
-
-        final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
-        if (themeSettings.themeMode != currentTheme)
+        final BuildContext c = context;
+        final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+        logger.i("Pixel Ratio: $devicePixelRatio");
+        logger.i("Creating App State");
+        final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, devicePixelRatio: devicePixelRatio);
+        bool hasCorrectResolution = true;
+        GetIt.I.registerSingleton<AppState>(appState);
+        final Size logicalSize = MediaQuery.of(c).size;
+        logger.i("Logical Size: $logicalSize");
+        if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
         {
-          themeSettings.themeMode = currentTheme;
+          hasCorrectResolution = false;
         }
-        appState.hasProjectNotifier.addListener(_hasProjectChanged);
 
-        if (!kIsWeb)
+        if (!hasCorrectResolution)
         {
-          await createInternalDirectories();
-          await _handleInitialFile();
-          if (isDesktop())
-          {
-            getLatestVersionInfo().then((final UpdateInfoPackage? value) {
-              updateDataReceived(updateInfo: value);
-            });
-          }
+          const String wrongResolutionMessage = "This device does not support the minimum logical resolution to run this application.";
+          logger.w(wrongResolutionMessage);
+          final KPixOverlay resolutionDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
+          resolutionDialog.show(context: c);
         }
         else
         {
-          _hasProjectChanged();
+          logger.i("Creating Stamp Manager");
+          final StampManager stampManager = StampManager();
+          await stampManager.loadAllStamps();
+          GetIt.I.registerSingleton<StampManager>(stampManager);
+
+          logger.i("Creating Package Manager");
+          GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
+          GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
+          logger.i("Creating History Manager");
+          GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
+
+          //CREATE DIALOG OVERLAYS
+          _closeWarningDialog = getThreeButtonDialog(
+            onYes: _closeWarningYes,
+            onNo: _closeWarningNo,
+            onCancel: _closeAllMenus,
+            outsideCancelable: false,
+            message: "There are unsaved changes, do you want to save first?",
+          );
+
+          _saveNewWarningDialog = getThreeButtonDialog(
+            onYes: _saveNewWarningYes,
+            onNo: _saveNewWarningNo,
+            onCancel: _saveNewWarningCancel,
+            outsideCancelable: false,
+            message: "There are unsaved changes, do you want to save first?",
+          );
+          _newProjectDialog = getNewProjectDialog(
+            onDismiss: () {exitApplication();},
+            onAccept: _newFilePressed,
+            onOpen: _openPressed,
+          );
+
+
+          GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
+
+          final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
+          if (themeSettings.themeMode != currentTheme)
+          {
+            logger.i("Changing Theme Mode");
+            themeSettings.themeMode = currentTheme;
+          }
+          appState.hasProjectNotifier.addListener(_hasProjectChanged);
+
+          if (!kIsWeb)
+          {
+            logger.i("Creating internal directories if needed.");
+            try
+            {
+              await createInternalDirectories();
+            }
+            catch (e, s)
+            {
+              const String couldNotCreateDirsMessage = "Could not create internal directories.";
+              logger.w(couldNotCreateDirsMessage, error: e, stackTrace: s);
+              if (c.mounted)
+              {
+                final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotCreateDirsMessage);
+                dirDialog.show(context: c);
+              }
+            }
+
+            await _handleInitialFile();
+            if (isDesktop())
+            {
+              getLatestVersionInfo().then((final UpdateInfoPackage? value) {
+                updateDataReceived(updateInfo: value);
+              });
+            }
+          }
+          else
+          {
+            _hasProjectChanged();
+          }
+          final String versionString = GetIt.I.get<PackageInfo>().version;
+          initialized.value = true;
+          logger.i("Application initialized. Version: $versionString");
         }
-        initialized.value = true;
+      }
+      else
+      {
+        const String contextNotMountedMessage = "BuildContext not mounted.";
+        logger.e(contextNotMountedMessage);
       }
     }
+    catch (e, s)
+    {
+      const String couldNotInitializeAppMessage = "Could not initialize the application.";
+      logger.w(couldNotInitializeAppMessage, error: e, stackTrace: s);
+      if (context.mounted)
+      {
+        final BuildContext c = context;
+        final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotInitializeAppMessage);
+        dirDialog.show(context: c);
+      }
+    }
+
+
   }
 
   void updateDataReceived({required final UpdateInfoPackage? updateInfo})
   {
+    final Logger logger = GetIt.I.get<Logger>();
     bool hasUpdate = false;
     if (updateInfo != null)
     {
+      logger.i("Received update information. Available version: ${updateInfo.version}.");
       final Version? currentVersion = convertStringToVersion(version: GetIt.I.get<PackageInfo>().version);
       if (currentVersion != null)
       {
         if (updateInfo.version > currentVersion)
         {
+          logger.i("Newer version available at ${updateInfo.url}.");
           GetIt.I.get<AppState>().updatePackage = updateInfo;
           hasUpdate = true;
         }
+      }
+      else
+      {
+        logger.w("Could not determine current version.");
+
       }
     }
     GetIt.I.get<AppState>().hasUpdateNotifier.value = hasUpdate;
@@ -416,6 +502,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     }
     else
     {
+      GetIt.I.get<Logger>().i("Exiting application.");
       exitApplication();
     }
   }

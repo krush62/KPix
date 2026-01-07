@@ -113,9 +113,9 @@ void main(final List<String> args)
   final Logger logger = _createLogger();
   GetIt.I.registerSingleton<Logger>(logger);
   logger.i("Starting application");
-  _logSystemInfo(logger);
   cmdLineArgs = args;
   WidgetsFlutterBinding.ensureInitialized();
+  _logSystemInfo(logger);
   final HotkeyManager hotkeyManager = HotkeyManager();
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);
@@ -126,6 +126,7 @@ void main(final List<String> args)
         return CallbackShortcuts(
           bindings: callbacks,
           child: KeyboardListener(
+
             focusNode: focusNode,
             autofocus: true,
             onKeyEvent: hotkeyManager.handleRawKeyboardEvent,

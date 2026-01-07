@@ -295,7 +295,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         {
           const String wrongResolutionMessage = "This device does not support the minimum logical resolution to run this application.";
           logger.w(wrongResolutionMessage);
-          final KPixOverlay resolutionDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
+          final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: wrongResolutionMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
           resolutionDialog.show(context: c);
         }
         else
@@ -329,11 +329,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
             message: "There are unsaved changes, do you want to save first?",
           );
           _newProjectDialog = getNewProjectDialog(
-            onDismiss: () {exitApplication();},
+            onDismiss: !kIsWeb ? () {exitApplication();} : null,
             onAccept: _newFilePressed,
             onOpen: _openPressed,
           );
-
 
           GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
 
@@ -363,7 +362,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
               }
             }
 
-            await _handleInitialFile();
+            if (!kIsWeb)
+            {
+              await _handleInitialFile();
+            }
+
             if (isDesktop())
             {
               getLatestVersionInfo().then((final UpdateInfoPackage? value) {
@@ -393,7 +396,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       if (context.mounted)
       {
         final BuildContext c = context;
-        final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotInitializeAppMessage);
+        final KPixOverlay dirDialog = kIsWeb ? getLoadingDialog(message: couldNotInitializeAppMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotInitializeAppMessage);
         dirDialog.show(context: c);
       }
     }

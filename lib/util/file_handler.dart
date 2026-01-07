@@ -936,21 +936,23 @@ Future<String?> exportAnimation({required final AnimationExportData exportData, 
 
   Future<void> clearRecoverDir() async
   {
-    final Logger logger = GetIt.I.get<Logger>();
-    try
+    if (!kIsWeb)
     {
-      final Directory recoverDir = Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName));
-      final List<FileSystemEntity> files = await recoverDir.list().toList();
-      for (final FileSystemEntity file in files)
+      final Logger logger = GetIt.I.get<Logger>();
+      try
       {
-        await file.delete(recursive: true);
+        final Directory recoverDir = Directory(p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName));
+        final List<FileSystemEntity> files = await recoverDir.list().toList();
+        for (final FileSystemEntity file in files)
+        {
+          await file.delete(recursive: true);
+        }
+      }
+      catch (e, s)
+      {
+        logger.w("Error clearing recovery directory.", error: e, stackTrace: s);
       }
     }
-    catch (e, s)
-    {
-      logger.w("Error clearing recovery directory.", error: e, stackTrace: s);
-    }
-
   }
 
   Future<String?> getRecoveryFile() async

@@ -745,7 +745,7 @@ KPixOverlay getControlsDialog({
   }
 
   KPixOverlay getNewProjectDialog({
-    required final Function() onDismiss,
+    required final Function()? onDismiss,
     required final NewFileFn onAccept,
     required final Function() onOpen,
   })
@@ -848,7 +848,7 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
     ),);
   }
 
-  KPixOverlay getLoadingDialog({required final String message})
+  KPixOverlay getLoadingDialog({required final String message, final TextStyle? textStyle})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
@@ -867,7 +867,7 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
                   ),
                   child: Text(
                     message,
-                    style: Theme.of(context).textTheme.headlineLarge,
+                    style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
                   ),
                 ),
               ),

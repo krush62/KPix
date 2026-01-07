@@ -30,10 +30,10 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class NewProjectWidget extends StatefulWidget
 {
-  final Function() dismiss;
+  final Function()? dismiss;
   final NewFileFn accept;
   final Function() open;
-  const NewProjectWidget({super.key, required this.dismiss, required this.accept, required this.open});
+  const NewProjectWidget({super.key, this.dismiss, required this.accept, required this.open});
 
   @override
   State<NewProjectWidget> createState() => _NewProjectWidgetState();
@@ -366,17 +366,19 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              Expanded(
-                child: IconButton.outlined(
-                  icon: const Icon(
-                    TablerIcons.x,
+              if (widget.dismiss != null) ...<Widget>[
+                Expanded(
+                  child: IconButton.outlined(
+                    icon: const Icon(
+                      TablerIcons.x,
+                    ),
+                    onPressed: () {
+                      widget.dismiss!();
+                    },
                   ),
-                  onPressed: () {
-                    widget.dismiss();
-                  },
                 ),
-              ),
-              SizedBox(width: _options.padding),
+                SizedBox(width: _options.padding),
+              ],
               Expanded(
                   child: IconButton.outlined(
                     icon: const Icon(

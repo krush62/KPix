@@ -112,7 +112,7 @@ Future<Map<String, String>> readableDeviceInfo() async
       out.put('Kernel', data['kernelVersion']);
       out.put('Arch', data['arch']);
       out.put('Model', data['model']);
-      out.put('Comout.puter Name', data['comout.puterName']);
+      out.put('Computer Name', data['computerName']);
       out.put('Host Name', data['hostName']);
 
     case _osWindows:
@@ -131,7 +131,7 @@ Future<Map<String, String>> readableDeviceInfo() async
       }
       out.put('Product Name', data['productName']);
       out.put('Build', data['buildLab']);
-      //out.put('Comout.puter Name', data['comout.puterName']);
+      //out.put('Computer Name', data['computerName']);
       out.put('Arch', data['arch']);
       out.put('CPU Cores', data['numberOfCores']);
       final dynamic memMb = data['systemMemoryInMegabytes'];

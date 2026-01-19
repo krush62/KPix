@@ -20,7 +20,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class TextOptions extends IToolOptions
@@ -52,6 +54,8 @@ class TextOptions extends IToolOptions
     font.value = pixelFontIndexMap[fontDefault];
     text.value = textDefault;
   }
+
+  static KPixOverlay? _changeTextDialog;
 
   static Column getWidget({
     required final BuildContext context,
@@ -148,20 +152,47 @@ class TextOptions extends IToolOptions
                 ),
               ),
             ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<String>(
+            if (isDesktop(includingWeb: true))
+              Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: ValueListenableBuilder<String>(
+                  valueListenable: textOptions.text,
+                  builder: (final BuildContext context, final String text, final Widget? child)
+                  {
+                    final TextEditingController controller = TextEditingController(text: textOptions.text.value);
+                    controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                    return TextField(
+                      controller: controller,
+                      focusNode: hotkeyManager.textOptionsTextFocus,
+                      onChanged: (final String newText) {textOptions.text.value = newText;},
+                      maxLength: textOptions.maxLength,
+                    );
+                  },
+                ),
+              )
+            else
+              Expanded(
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: ValueListenableBuilder<String>(
                 valueListenable: textOptions.text,
                 builder: (final BuildContext context, final String text, final Widget? child)
                 {
-                  final TextEditingController controller = TextEditingController(text: textOptions.text.value);
-                  controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                  return TextField(
-                    controller: controller,
-                    focusNode: hotkeyManager.textOptionsTextFocus,
-                    onChanged: (final String newText) {textOptions.text.value = newText;},
-                    maxLength: textOptions.maxLength,
-                  );
+                    return OutlinedButton(
+                      
+                      child: Padding(
+                        padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
+                        child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
+                      ),
+                      onPressed: () {
+                        _changeTextDialog = getChangeTextToolDialog(
+                          onAccept: ({required final String newText}) {textOptions.text.value = newText; _changeTextDialog?.hide();},
+                          onDismiss: () {_changeTextDialog?.hide();},
+                          initialText: textOptions.text.value,
+                          maxLength: textOptions.maxLength,
+                        );
+                        _changeTextDialog!.show(context: context);
+                      },
+                    );
                 },
               ),
             ),

@@ -24,6 +24,7 @@ import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_color_picker_widget.dart';
 import 'package:kpix/widgets/extra/about_screen_widget.dart';
+import 'package:kpix/widgets/extra/change_text_tool_widget.dart';
 import 'package:kpix/widgets/extra/controls_widget.dart';
 import 'package:kpix/widgets/extra/credits_widget.dart';
 import 'package:kpix/widgets/extra/licenses_widget.dart';
@@ -532,6 +533,7 @@ KPixOverlay getSingleButtonDialog({
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final ExportWidget exportWidget = ExportWidget(acceptFile: onAcceptImage, acceptPalette: onAcceptPalette, acceptAnimation: onAcceptAnimation, dismiss: onDismiss);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -539,8 +541,11 @@ KPixOverlay getSingleButtonDialog({
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
-            Center(
-              child: ExportWidget(acceptFile: onAcceptImage, acceptPalette: onAcceptPalette, acceptAnimation: onAcceptAnimation, dismiss: onDismiss),
+            if (!isDesktop(includingWeb: true)) Align(
+              alignment: Alignment.topCenter,
+              child: exportWidget,
+            ) else Center(
+              child: exportWidget,
             ),
           ],
         ),
@@ -576,6 +581,7 @@ KPixOverlay getSingleButtonDialog({
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final SavePaletteWidget savePaletteWidget = SavePaletteWidget(accept: onAccept, dismiss: onDismiss);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -583,8 +589,11 @@ KPixOverlay getSingleButtonDialog({
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
-            Center(
-              child: SavePaletteWidget(accept: onAccept, dismiss: onDismiss),
+            if (!isDesktop(includingWeb: true)) Align(
+              alignment: Alignment.topCenter,
+              child: savePaletteWidget,
+            ) else Center(
+              child: savePaletteWidget,
             ),
           ],
         ),
@@ -599,6 +608,7 @@ KPixOverlay getSingleButtonDialog({
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final SaveAsWidget saveAsWidget = SaveAsWidget(accept: onAccept, dismiss: onDismiss, callback: callback);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -606,14 +616,46 @@ KPixOverlay getSingleButtonDialog({
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
-            Center(
-              child: SaveAsWidget(accept: onAccept, dismiss: onDismiss, callback: callback),
+            if (!isDesktop(includingWeb: true)) Align(
+              alignment: Alignment.topCenter,
+              child: saveAsWidget,
+            ) else Center(
+              child: saveAsWidget,
             ),
           ],
         ),
       ),
     );
   }
+
+KPixOverlay getChangeTextToolDialog({
+  required final Function() onDismiss,
+  required final ChangeTextToolFn onAccept,
+  required final String initialText,
+  final int? maxLength,
+})
+{
+  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+  final ChangeTextToolWidget changeTextToolWidget = ChangeTextToolWidget(dismiss: onDismiss, accept: onAccept, initialText: initialText, maxStringLength: maxLength,);
+  return KPixOverlay(
+    entry: OverlayEntry(
+      builder: (final BuildContext context) => Stack(
+        children: <Widget>[
+          ModalBarrier(
+            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            onDismiss: onDismiss,
+          ),
+          if (!isDesktop(includingWeb: true)) Align(
+            alignment: Alignment.topCenter,
+            child: changeTextToolWidget,
+          ) else Center(
+            child: changeTextToolWidget,
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   KPixOverlay getAboutDialog({
     required final Function() onDismiss,
@@ -706,6 +748,7 @@ KPixOverlay getControlsDialog({
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final CanvasSizeWidget canvasSizeWidget = CanvasSizeWidget(accept: onAccept, dismiss: onDismiss);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -713,8 +756,11 @@ KPixOverlay getControlsDialog({
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
-            Center(
-              child: CanvasSizeWidget(accept: onAccept, dismiss: onDismiss),
+            if (!isDesktop(includingWeb: true)) Align(
+              alignment: Alignment.topCenter,
+              child: canvasSizeWidget,
+            ) else Center(
+              child: canvasSizeWidget,
             ),
           ],
         ),
@@ -751,6 +797,7 @@ KPixOverlay getControlsDialog({
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
+    final NewProjectWidget newProjectWidget = NewProjectWidget(accept: onAccept, dismiss: onDismiss, open: onOpen);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
@@ -758,8 +805,11 @@ KPixOverlay getControlsDialog({
             ModalBarrier(
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
-            Center(
-              child: NewProjectWidget(accept: onAccept, dismiss: onDismiss, open: onOpen),
+            if (!isDesktop(includingWeb: true)) Align(
+              alignment: Alignment.topCenter,
+              child: newProjectWidget,
+            ) else Center(
+              child: newProjectWidget,
             ),
           ],
         ),

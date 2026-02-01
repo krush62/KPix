@@ -1,4 +1,4 @@
-name: Flutter • Manual Build (Android + Windows + Linux)
+name: KPix Manual Build (Android + Windows + Linux)
 
 on:
   workflow_dispatch:
@@ -27,9 +27,13 @@ on:
         description: "Build Linux AppImage"
         type: boolean
         default: true
+      create_draft_release:
+        description: "Create draft GitHub release"
+        type: boolean
+        default: false
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FLUTTER_VERSION: "3.38.1"
@@ -440,3 +444,42 @@ jobs:
           name: kpix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
           if-no-files-found: ignore
+
+
+  release:
+    name: Create Draft GitHub Release
+    needs: [ setup, android, desktop ]
+    runs-on: ubuntu-latest
+    if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage) }}
+
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+      TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          find artifacts -type f
+
+      - name: Create draft GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: KPix v${{ env.VERSION }}
+          draft: true
+          prerelease: false
+          files: |
+            artifacts/**/*.apk
+            artifacts/**/*.aab
+            artifacts/**/*.zip
+            artifacts/**/*.tar.gz
+            artifacts/**/*.AppImage
+            artifacts/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

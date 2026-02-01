@@ -80,7 +80,24 @@ jobs:
       - name: Flutter • Dependencies
         run: flutter pub get
 
-      # Android signing, builds, upload steps (same as before)
+      - name: Setup Android keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p android
+          echo $KEYSTORE_BASE64 | base64 --decode > android/keystore.jks
+
+      - name: Write key.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
+          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
+
       - name: Android • Build AAB & APK
         run: |
           FLAVOR_ARG=""
@@ -101,6 +118,10 @@ jobs:
           path: |
             build/app/outputs/bundle/**/release/*.aab
             build/app/outputs/flutter-apk/*release*.apk
+
+
+
+
 
   desktop:
     if: ${{ inputs.build_windows || inputs.build_linux }}
@@ -236,12 +257,12 @@ jobs:
 
 
 
-# Upload Windows Artifact
+        # Upload Windows Artifact
       - name: Upload Windows Artifact
         if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
           if-no-files-found: ignore
 

@@ -239,6 +239,85 @@ jobs:
           name: linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz
 
+
+
+      - name: Create Linux AppImage
+        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          set -e
+
+          APPIMAGE_TOOL_URL="https://github.com/AppImage/appimagetool/releases/download/continuous"
+          APPIMAGE_EXEC="appimagetool-x86_64.AppImage"
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+          OUTPUT_DIR="release_tools/LinuxAppImage"
+          APPDIR_PATH="KPix.AppDir"
+          ICON_PATH="imgs/kpix_icon.png"
+          APPRUN_FILE="$OUTPUT_DIR/$APPDIR_PATH/AppRun"
+          DESKTOP_FILE="$OUTPUT_DIR/$APPDIR_PATH/KPix.desktop"
+          OUTPUT_FILE_NAME="KPix-${VERSION}-x86_64.AppImage"
+
+          if [ ! -d "$BUNDLE_DIR" ]; then
+            echo "Error: Bundle directory not found at $BUNDLE_DIR"
+            exit 1
+          fi
+
+          echo "Creating output directory"
+          mkdir -p "$OUTPUT_DIR"
+
+          echo "Downloading appimagetool"
+          wget -q "$APPIMAGE_TOOL_URL/$APPIMAGE_EXEC" -O "$OUTPUT_DIR/$APPIMAGE_EXEC"
+          chmod +x "$OUTPUT_DIR/$APPIMAGE_EXEC"
+
+          echo "Copying bundle into AppDir"
+          rm -rf "$OUTPUT_DIR/$APPDIR_PATH"
+          mkdir -p "$OUTPUT_DIR/$APPDIR_PATH"
+          cp -r "$BUNDLE_DIR/"* "$OUTPUT_DIR/$APPDIR_PATH/"
+
+          echo "Copying icon"
+          cp "$ICON_PATH" "$OUTPUT_DIR/$APPDIR_PATH/kpix.png"
+
+          echo "Creating AppRun"
+          cat > "$APPRUN_FILE" << 'EOF'
+          #!/bin/sh
+          cd "$(dirname "$0")"
+          exec ./kpix
+          EOF
+          chmod +x "$APPRUN_FILE"
+          
+          echo "Creating .desktop file"
+          cat > "$DESKTOP_FILE" << EOF
+          [ Desktop Entry ]
+          Version=$VERSION
+          Type=Application
+          Terminal=false
+          Name=KPix
+          Comment=KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading.
+          Exec=kpix %u
+          Icon=kpix
+          Categories=Graphics;
+          Keywords=pixelart;
+          PrefersNonDefaultGPU=true
+          SingleMainWindow=true
+          EOF
+          
+          echo "Creating AppImage package"
+          "$OUTPUT_DIR/$APPIMAGE_EXEC" "$OUTPUT_DIR/$APPDIR_PATH" "$OUTPUT_DIR/$OUTPUT_FILE_NAME"
+          
+          echo "Cleaning up temporary files"
+          rm -rf "$OUTPUT_DIR/$APPDIR_PATH"
+          rm -f "$OUTPUT_DIR/$APPIMAGE_EXEC" "$OUTPUT_DIR/$APPIMAGE_EXEC".[0-9]*
+          
+          echo "AppImage created: $OUTPUT_DIR/$OUTPUT_FILE_NAME"
+
+      - name: Upload Linux AppImage
+        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: kpix-linux-appimage-v${{ env.VERSION }}
+          path: release_tools/LinuxAppImage/KPix-${{ env.VERSION }}-x86_64.AppImage
+
       # Build Windows
       - name: Build • Windows
         if: ${{ matrix.enabled && matrix.platform == 'windows' }}

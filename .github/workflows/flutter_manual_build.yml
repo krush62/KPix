@@ -216,12 +216,28 @@ jobs:
         run: |          
           flutter build linux --release
 
+      - name: Package Linux Release
+        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        run: |
+          RELEASE_DIR="build/linux/x64/release/bundle"
+          ARCHIVE_NAME="kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz"
+
+          if [ ! -d "$RELEASE_DIR" ]; then
+            echo "Release directory $RELEASE_DIR not found!"
+            exit 1
+          fi
+
+          # Create tar.gz containing the contents of the bundle folder
+          tar -czf "$ARCHIVE_NAME" -C "$RELEASE_DIR" .
+
+          echo "Created archive: $ARCHIVE_NAME"
+
       - name: Upload Linux Artifact
         if: ${{ matrix.enabled && matrix.platform == 'linux' }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: build/linux/**/release/*
+          name: linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz
 
       # Build Windows
       - name: Build • Windows

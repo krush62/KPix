@@ -280,27 +280,27 @@ jobs:
 
           echo "Creating AppRun"
           cat > "$APPRUN_FILE" << 'EOF'
-#!/bin/sh
-cd "$(dirname "$0")"
-exec ./kpix
-EOF
+          #!/bin/sh
+          cd "$(dirname "$0")"
+          exec ./kpix
+          EOF
           chmod +x "$APPRUN_FILE"
           
           echo "Creating .desktop file"
           cat > "$DESKTOP_FILE" << EOF
-[Desktop Entry]
-Version=$VERSION
-Type=Application
-Terminal=false
-Name=KPix
-Comment=KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading.
-Exec=kpix %u
-Icon=kpix
-Categories=Graphics;
-Keywords=pixelart;
-PrefersNonDefaultGPU=true
-SingleMainWindow=true
-EOF
+          [Desktop Entry]
+          Version=$VERSION
+          Type=Application
+          Terminal=false
+          Name=KPix
+          Comment=KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading.
+          Exec=kpix %u
+          Icon=kpix
+          Categories=Graphics;
+          Keywords=pixelart;
+          PrefersNonDefaultGPU=true
+          SingleMainWindow=true
+          EOF
           
           echo "Creating AppImage package"
           "$OUTPUT_DIR/$APPIMAGE_EXEC" "$OUTPUT_DIR/$APPDIR_PATH" "$OUTPUT_DIR/$OUTPUT_FILE_NAME"

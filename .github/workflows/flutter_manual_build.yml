@@ -10,9 +10,13 @@ on:
       build_android_aab:
         description: "Build Android AAB"
         type: boolean
+        default: false
+      build_windows_package:
+        description: "Build Windows Package"
+        type: boolean
         default: true
-      build_windows:
-        description: "Build Windows"
+      build_windows_installer:
+        description: "Build Windows Installer"
         type: boolean
         default: true
       build_linux_package:
@@ -170,7 +174,7 @@ jobs:
 
 
   desktop:
-    if: ${{ inputs.build_windows || inputs.build_linux }}
+    if: ${{ inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage }}
     needs: setup
     strategy:
       fail-fast: false
@@ -181,7 +185,7 @@ jobs:
             enabled: ${{ inputs.build_linux_package || inputs.build_linux_appimage }}
           - os: windows-latest
             platform: windows
-            enabled: ${{ inputs.build_windows }}
+            enabled: ${{ inputs.build_windows_package || inputs.build_windows_installer }}
     runs-on: ${{ matrix.os }}
     env:
       VERSION: ${{ needs.setup.outputs.version }}
@@ -330,9 +334,38 @@ jobs:
           Write-Host "Running: flutter build windows --release"
           flutter build windows --release
 
+      #Copy distributables
+      - name: Copy distributables
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        run: |
+          $releaseDir = "build/windows/x64/runner/Release"
+          
+          if (-Not (Test-Path $releaseDir)) {
+            Write-Host "Release folder does not exist. Skipping packaging."
+            exit 0
+          }
+          
+          $vcDlls = @(
+            "C:\Windows\System32\msvcp140.dll",
+            "C:\Windows\System32\msvcp140_1.dll",
+            "C:\Windows\System32\msvcp140_2.dll",
+            "C:\Windows\System32\vcruntime140.dll",
+            "C:\Windows\System32\vcruntime140_1.dll"
+          )
+          
+          foreach ($dll in $vcDlls) {
+            if (Test-Path $dll) {
+              Copy-Item $dll -Destination $releaseDir -Force
+            } else {
+              Write-Host "Warning: $dll not found on runner!"
+            }
+          }
+
+
+
       # Package Windows Release including data folder and VC++ DLLs
       - name: Package Windows Release
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
         shell: pwsh
         env:
           VERSION: ${{ needs.setup.outputs.version }}
@@ -358,23 +391,6 @@ jobs:
             Write-Host "Warning: data folder not found!"
           }
         
-          $vcDlls = @(
-            "C:\Windows\System32\msvcp140.dll",
-            "C:\Windows\System32\msvcp140_1.dll",
-            "C:\Windows\System32\msvcp140_2.dll",
-            "C:\Windows\System32\vcruntime140.dll",
-            "C:\Windows\System32\vcruntime140_1.dll"
-          )
-          
-          foreach ($dll in $vcDlls) {
-            if (Test-Path $dll) {
-              Copy-Item $dll -Destination $releaseDir -Force
-              $pathsToZip += Join-Path $releaseDir (Split-Path $dll -Leaf)
-            } else {
-              Write-Host "Warning: $dll not found on runner!"
-            }
-          }
-        
           if ($pathsToZip.Count -gt 0) {
             Remove-Item -Force $zipFile -ErrorAction SilentlyContinue
             Compress-Archive -Path $pathsToZip -DestinationPath $zipFile
@@ -385,9 +401,9 @@ jobs:
 
 
 
-        # Upload Windows Artifact
-      - name: Upload Windows Artifact
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        # Upload Windows Package
+      - name: Upload Windows Package Artifact
+        if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
@@ -396,7 +412,7 @@ jobs:
 
       # Install Inno Setup
       - name: Install Inno Setup
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
         shell: pwsh
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -404,7 +420,7 @@ jobs:
 
       # Build Windows Installer
       - name: Build Windows Installer
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
         shell: pwsh
         env:
           VERSION: ${{ needs.setup.outputs.version }}
@@ -419,7 +435,7 @@ jobs:
 
       # Upload Windows Installer
       - name: Upload Windows Installer
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}

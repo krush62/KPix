@@ -1,6 +1,5 @@
 name: Flutter • Manual Build (Android + Windows + Linux)
 
-
 on:
   workflow_dispatch:
     inputs:
@@ -16,31 +15,25 @@ on:
         description: "Build Linux"
         type: boolean
         default: true
-      # Optional: flavors (leave empty if you don't use them)
       flavor:
         description: "Flutter flavor (e.g., dev, prod). Leave empty for default."
         required: false
         type: string
         default: ""
-      # Optional: build number
       build_number:
         description: "Build number (passed to --build-number)"
         required: false
         type: string
         default: ""
 
-
 permissions:
   contents: read
-
 
 env:
   FLUTTER_VERSION: "3.38.1"
   FLUTTER_CHANNEL: "stable"
 
-
 jobs:
-
   setup:
     name: Setup Version & Timestamp
     runs-on: ubuntu-latest
@@ -62,8 +55,6 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
-  
-  
 
   android:
     if: ${{ inputs.build_android }}
@@ -189,7 +180,7 @@ jobs:
         run: |
           $releaseDir = "build\windows\runner\Release"
           $zipFile = "kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip"
-
+          
           $includeExtensions = @(".exe", ".dll", ".pak", ".json", ".ico", ".txt")
           $filesToZip = Get-ChildItem -Path $releaseDir -Recurse | Where-Object {
               $includeExtensions -contains $_.Extension.ToLower()

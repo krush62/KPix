@@ -15,8 +15,12 @@ on:
         description: "Build Windows"
         type: boolean
         default: true
-      build_linux:
-        description: "Build Linux"
+      build_linux_package:
+        description: "Build Linux Package"
+        type: boolean
+        default: true
+      build_linux_appimage:
+        description: "Build Linux AppImage"
         type: boolean
         default: true
 
@@ -174,7 +178,7 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux
-            enabled: ${{ inputs.build_linux }}
+            enabled: ${{ inputs.build_linux_package || inputs.build_linux_appimage }}
           - os: windows-latest
             platform: windows
             enabled: ${{ inputs.build_windows }}
@@ -217,7 +221,7 @@ jobs:
           flutter build linux --release
 
       - name: Package Linux Release
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
         run: |
           RELEASE_DIR="build/linux/x64/release/bundle"
           ARCHIVE_NAME="kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz"
@@ -233,7 +237,7 @@ jobs:
           echo "Created archive: $ARCHIVE_NAME"
 
       - name: Upload Linux Artifact
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
@@ -242,7 +246,7 @@ jobs:
 
 
       - name: Create Linux AppImage
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_appimage }}
         env:
           VERSION: ${{ env.VERSION }}
         run: |
@@ -312,7 +316,7 @@ jobs:
           echo "AppImage created: $OUTPUT_DIR/$OUTPUT_FILE_NAME"
 
       - name: Upload Linux AppImage
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_appimage }}
         uses: actions/upload-artifact@v4
         with:
           name: kpix-linux-appimage-v${{ env.VERSION }}

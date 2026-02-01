@@ -27,6 +27,10 @@ on:
         description: "Build Linux AppImage"
         type: boolean
         default: true
+      build_web:
+        description: "Build Web Package"
+        type: boolean
+        default: false
       create_draft_release:
         description: "Create draft GitHub release"
         type: boolean
@@ -445,12 +449,39 @@ jobs:
           path: build/windows_installer/*.exe
           if-no-files-found: ignore
 
+  web:
+    if: ${{ inputs.build_web }}
+    needs: setup
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+      TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter build web --release
+
+      - run: |
+          tar -czf kpix-web-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz -C build/web .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kpix-web-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: kpix-web-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz
 
   release:
     name: Create Draft GitHub Release
     needs: [ setup, android, desktop ]
     runs-on: ubuntu-latest
-    if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage) }}
+    if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_web) }}
 
     env:
       VERSION: ${{ needs.setup.outputs.version }}

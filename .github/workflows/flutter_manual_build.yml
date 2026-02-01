@@ -150,15 +150,17 @@ jobs:
             FILE=$(find build/app/outputs/bundle -name "*.aab" | head -n 1)
             EXT=aab
           fi
-          
-          cp "$FILE" "kpix-android-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.$EXT"
+
+          TOPLEVEL_FILE="kpix-android-${{ matrix.buildType }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.$EXT"
+          cp "$FILE" "$TOPLEVEL_FILE"
+          echo "ARTIFACT_FILE=$TOPLEVEL_FILE" >> $GITHUB_ENV
 
       - name: Upload artifact
         if: ${{ matrix.enabled }}
         uses: actions/upload-artifact@v4
         with:
-          name: kpix-android-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: kpix-android-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.${{ matrix.buildType == 'apk' && 'apk' || 'aab' }}
+          name: kpix-android-${{ matrix.buildType }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: ${{ env.ARTIFACT_FILE }}
 
 
 

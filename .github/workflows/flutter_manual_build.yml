@@ -3,8 +3,12 @@ name: Flutter • Manual Build (Android + Windows + Linux)
 on:
   workflow_dispatch:
     inputs:
-      build_android:
-        description: "Build Android (signed)"
+      build_android_apk:
+        description: "Build Android APK"
+        type: boolean
+        default: true
+      build_android_aab:
+        description: "Build Android AAB"
         type: boolean
         default: true
       build_windows:
@@ -57,27 +61,45 @@ jobs:
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
 
   android:
-    if: ${{ inputs.build_android }}
+    if: ${{ inputs.build_android_apk || inputs.build_android_aab }}
     needs: setup
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - buildType: apk
+            enabled: ${{ inputs.build_android_apk }}
+          - buildType: aab
+            enabled: ${{ inputs.build_android_aab }}
     env:
       VERSION: ${{ needs.setup.outputs.version }}
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Skip disabled build type
+        if: ${{ !matrix.enabled }}
+        run: echo "Skipping disabled build type."
 
-      - uses: actions/setup-java@v4
+      - name: Checkout
+        if: ${{ matrix.enabled }}
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        if: ${{ matrix.enabled }}
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        if: ${{ matrix.enabled }}
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Cache Pub
+        if: ${{ matrix.enabled }}
         uses: actions/cache@v4
         with:
           path: ~/.pub-cache
@@ -87,6 +109,7 @@ jobs:
 
 
       - name: Cache Gradle
+        if: ${{ matrix.enabled }}
         uses: actions/cache@v4
         with:
           path: |
@@ -97,9 +120,11 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Flutter • Dependencies
+        if: ${{ matrix.enabled }}
         run: flutter pub get
 
       - name: Android • Setup signing
+        if: ${{ matrix.enabled }}
         shell: bash
 
         run: |
@@ -117,6 +142,7 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
       - name: Android • Build AAB & APK
+        if: ${{ matrix.enabled }}
         run: |
           FLAVOR_ARG=""
           if [ -n "${{ inputs.flavor }}" ]; then
@@ -126,17 +152,31 @@ jobs:
           if [ -n "${{ inputs.build_number }}" ]; then
             BUILDNUM_ARG="--build-number ${{ inputs.build_number }}"
           fi
-          flutter build appbundle --release $FLAVOR_ARG $BUILDNUM_ARG
-          flutter build apk --release $FLAVOR_ARG $BUILDNUM_ARG
+          if [ "${{ matrix.buildType }}" = "apk" ]; then
+            flutter build apk --release $FLAVOR_ARG $BUILDNUM_ARG
+          else
+            flutter build appbundle --release $FLAVOR_ARG $BUILDNUM_ARG
+          fi
 
-      - name: Upload Android Artifacts
+      - name: Copy artifact to top-level
+        if: ${{ matrix.enabled }}
+        run: |
+          if [ "${{ matrix.buildType }}" = "apk" ]; then
+            FILE=$(find build/app/outputs/flutter-apk -name "*release*.apk" | head -n 1)
+            EXT=apk
+          else
+            FILE=$(find build/app/outputs/bundle -name "*.aab" | head -n 1)
+            EXT=aab
+          fi
+          
+          cp "$FILE" "android-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.$EXT"
+
+      - name: Upload artifact
+        if: ${{ matrix.enabled }}
         uses: actions/upload-artifact@v4
         with:
-          name: android-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: |
-            build/app/outputs/bundle/**/release/*.aab
-            build/app/outputs/flutter-apk/*release*.apk
-
+          name: android-${{ matrix.buildType }}-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: android-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.${{ matrix.buildType == 'apk' && 'apk' || 'aab' }}
 
 
 

@@ -11,14 +11,22 @@ on:
         description: "Build Android AAB"
         type: boolean
         default: true
-      build_windows:
-        description: "Build Windows"
+      linux_package:
+        description: "Build Linux .tar.gz package"
         type: boolean
-        default: true
-      build_linux:
-        description: "Build Linux"
+        default: false
+      linux_appimage:
+        description: "Build Linux AppImage"
         type: boolean
-        default: true
+        default: false
+      windows_package:
+        description: "Build Windows zip package"
+        type: boolean
+        default: false
+      windows_installer:
+        description: "Build Windows installer"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -165,180 +173,185 @@ jobs:
 
 
 
-  desktop:
-    if: ${{ inputs.build_windows || inputs.build_linux }}
+  linux:
+    if: ${{ inputs.linux_package || inputs.linux_appimage }}
     needs: setup
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux
-            enabled: ${{ inputs.build_linux }}
-          - os: windows-latest
-            platform: windows
-            enabled: ${{ inputs.build_windows }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.setup.outputs.version }}
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
     steps:
-      - name: Skip if this platform disabled
-        if: ${{ !matrix.enabled }}
-        run: echo "Skipping disabled platform."
+      - uses: actions/checkout@v4
 
-      - name: Checkout
-        if: ${{ matrix.enabled }}
-        uses: actions/checkout@v4
-
-      - name: Set up Flutter
-        if: ${{ matrix.enabled }}
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Flutter • Dependencies
-        if: ${{ matrix.enabled }}
         run: flutter pub get
 
-      # Linux-specific deps
-      - name: Install Linux build deps
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libgtk-3-dev
+      - name: Flutter • Build Linux
+        run: flutter build linux --release
 
-      # Build Linux
-      - name: Build • Linux
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
-        run: |          
-          flutter build linux --release
-
-      - name: Package Linux Release
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+      # -------------------------
+      # Linux tar.gz package
+      # -------------------------
+      - name: Package Linux .tar.gz
+        if: ${{ inputs.linux_package }}
         run: |
           RELEASE_DIR="build/linux/x64/release/bundle"
           ARCHIVE_NAME="kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz"
-
+          
           if [ ! -d "$RELEASE_DIR" ]; then
             echo "Release directory $RELEASE_DIR not found!"
             exit 1
           fi
-
-          # Create tar.gz containing the contents of the bundle folder
+          
           tar -czf "$ARCHIVE_NAME" -C "$RELEASE_DIR" .
+          echo "Linux tar.gz created: $ARCHIVE_NAME"
 
-          echo "Created archive: $ARCHIVE_NAME"
-
-      - name: Upload Linux Artifact
-        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+      - name: Upload Linux .tar.gz
+        if: ${{ inputs.linux_package }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz
 
-      # Build Windows
-      - name: Build • Windows
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
-        shell: pwsh
+      # -------------------------
+      # Linux AppImage
+      # -------------------------
+      - name: Create Linux AppImage
+        if: ${{ inputs.linux_appimage }}
         run: |
-          Write-Host "Running: flutter build windows --release"
-          flutter build windows --release
-
-      # Package Windows Release including data folder and VC++ DLLs
-      - name: Package Windows Release
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
-        shell: pwsh
-        env:
-          VERSION: ${{ needs.setup.outputs.version }}
-          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
-        run: |
-          $releaseDir = "build/windows/x64/runner/Release"
-          $zipFile = "kpix-windows-x64-v$env:VERSION-$env:TIMESTAMP.zip"
+          set -e
+          APPIMAGE_TOOL_URL="https://github.com/AppImage/appimagetool/releases/download/continuous"
+          APPIMAGE_EXEC="appimagetool-x86_64.AppImage"
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+          OUTPUT_DIR="release_tools/LinuxAppImage"
+          APPDIR_PATH="KPix.AppDir"
+          ICON_PATH="imgs/kpix_icon.png"
+          APPRUN_FILE="$OUTPUT_DIR/$APPDIR_PATH/AppRun"
+          DESKTOP_FILE="$OUTPUT_DIR/$APPDIR_PATH/KPix.desktop"
+          OUTPUT_FILE_NAME="KPix-${{ env.VERSION }}-x86_64.AppImage"
           
-          if (-Not (Test-Path $releaseDir)) {
-            Write-Host "Release folder does not exist. Skipping packaging."
-            exit 0
-          }
-        
-          $exeDllFiles = Get-ChildItem -Path $releaseDir -File | Where-Object {
-            $_.Extension -in ".exe", ".dll"
-          } | ForEach-Object { $_.FullName }
-        
-          $dataFolder = Join-Path $releaseDir "data"
-          $pathsToZip = @($exeDllFiles)  # start array
-          if (Test-Path $dataFolder) {
-            $pathsToZip += $dataFolder
-          } else {
-            Write-Host "Warning: data folder not found!"
-          }
-        
-          $vcDlls = @(
-            "C:\Windows\System32\msvcp140.dll",
-            "C:\Windows\System32\msvcp140_1.dll",
-            "C:\Windows\System32\msvcp140_2.dll",
-            "C:\Windows\System32\vcruntime140.dll",
-            "C:\Windows\System32\vcruntime140_1.dll"
-          )
+          mkdir -p "$OUTPUT_DIR"
+          wget -q "$APPIMAGE_TOOL_URL/$APPIMAGE_EXEC" -O "$OUTPUT_DIR/$APPIMAGE_EXEC"
+          chmod +x "$OUTPUT_DIR/$APPIMAGE_EXEC"
           
-          foreach ($dll in $vcDlls) {
-            if (Test-Path $dll) {
-              Copy-Item $dll -Destination $releaseDir -Force
-              $pathsToZip += Join-Path $releaseDir (Split-Path $dll -Leaf)
-            } else {
-              Write-Host "Warning: $dll not found on runner!"
-            }
-          }
-        
-          if ($pathsToZip.Count -gt 0) {
-            Remove-Item -Force $zipFile -ErrorAction SilentlyContinue
-            Compress-Archive -Path $pathsToZip -DestinationPath $zipFile
-            Write-Host "Windows artifact created: $zipFile"
-          } else {
-            Write-Host "No files to zip."
-          }
+          rm -rf "$OUTPUT_DIR/$APPDIR_PATH"
+          mkdir -p "$OUTPUT_DIR/$APPDIR_PATH"
+          cp -r "$BUNDLE_DIR/"* "$OUTPUT_DIR/$APPDIR_PATH/"
+          cp "$ICON_PATH" "$OUTPUT_DIR/$APPDIR_PATH/kpix.png"
+          
+          cat > "$APPRUN_FILE" << 'EOF'
+          #!/bin/sh
+          cd "$(dirname "$0")"
+          exec ./kpix
+          EOF
+          chmod +x "$APPRUN_FILE"
+          
+          cat > "$DESKTOP_FILE" << EOF
+          [ Desktop Entry ]
+          Version=${{ env.VERSION }}
+          Type=Application
+          Terminal=false
+          Name=KPix
+          Comment=KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading.
+          Exec=kpix %u
+          Icon=kpix
+          Categories=Graphics;
+          Keywords=pixelart;
+          PrefersNonDefaultGPU=true
+          SingleMainWindow=true
+          EOF
+          
+          "$OUTPUT_DIR/$APPIMAGE_EXEC" "$OUTPUT_DIR/$APPDIR_PATH" "$OUTPUT_DIR/$OUTPUT_FILE_NAME"
+          rm -rf "$OUTPUT_DIR/$APPDIR_PATH"
+          rm -f "$OUTPUT_DIR/$APPIMAGE_EXEC" "$OUTPUT_DIR/$APPIMAGE_EXEC".[0-9]*
 
-
-
-        # Upload Windows Artifact
-      - name: Upload Windows Artifact
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+      - name: Upload Linux AppImage
+        if: ${{ inputs.linux_appimage }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
-          if-no-files-found: ignore
+          name: kpix-linux-appimage-v${{ env.VERSION }}
+          path: release_tools/LinuxAppImage/KPix-${{ env.VERSION }}-x86_64.AppImage
 
-      # Install Inno Setup
+
+
+  windows:
+    if: ${{ inputs.windows_package || inputs.windows_installer }}
+    needs: setup
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+      TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Flutter • Dependencies
+        run: flutter pub get
+
+      - name: Flutter • Build Windows
+        shell: pwsh
+        run: flutter build windows --release
+
+      # -------------------------
+      # Windows zip package
+      # -------------------------
+      - name: Package Windows Release
+        if: ${{ inputs.windows_package }}
+        shell: pwsh
+        run: |
+          $releaseDir = "build\windows\x64\runner\Release"
+          $zipFile = "kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip"
+          
+          if (-Not (Test-Path $releaseDir)) { exit 0 }
+          
+          Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipFile -Force
+          Write-Host "Windows zip created: $zipFile"
+
+      - name: Upload Windows zip
+        if: ${{ inputs.windows_package }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
+
+      # -------------------------
+      # Windows Installer
+      # -------------------------
       - name: Install Inno Setup
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ inputs.windows_installer }}
         shell: pwsh
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           choco install innosetup -y
 
-      # Build Windows Installer
       - name: Build Windows Installer
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ inputs.windows_installer }}
         shell: pwsh
-        env:
-          VERSION: ${{ needs.setup.outputs.version }}
-          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
         run: |
           $issFile = "release_tools/windows_installer_build.iss"
           $outputDir = "build/windows_installer"
           New-Item -ItemType Directory -Force -Path $outputDir
-          
-          $outputFile = "kpix-windows-installer-v$env:VERSION-$env:TIMESTAMP"
-          ISCC.exe /O"$outputDir" /F"$outputFile" $issFile
+          ISCC.exe /O"$outputDir" /F"kpix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}" $issFile
 
-      # Upload Windows Installer
       - name: Upload Windows Installer
-        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        if: ${{ inputs.windows_installer }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: kpix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
-          if-no-files-found: ignore

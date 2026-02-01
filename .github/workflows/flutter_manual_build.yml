@@ -168,56 +168,80 @@ jobs:
       - name: Build • Windows
         if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         shell: pwsh
+        env:
+          FLAVOR: ${{ inputs.flavor }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
-          FLAVOR_ARG=""
-          if ("${{ inputs.flavor }}" -ne "") { FLAVOR_ARG="--flavor ${{ inputs.flavor }}" }
-          flutter build windows --release $FLAVOR_ARG
+          $FLAVOR_ARG = ""
+          if ($env:FLAVOR -ne "") { $FLAVOR_ARG = "--flavor $env:FLAVOR" }
+
+          $BUILDNUM_ARG = ""
+          if ($env:BUILD_NUMBER -ne "") { $BUILDNUM_ARG = "--build-number $env:BUILD_NUMBER" }
+
+          flutter build windows --release $FLAVOR_ARG $BUILDNUM_ARG
 
       # Package Windows Release cleanly
       - name: Package Windows Release
-        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         shell: pwsh
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
         run: |
           $releaseDir = "build\windows\runner\Release"
-          $zipFile = "kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip"
-          
+          $zipFile = "kpix-windows-x64-v$env:VERSION-$env:TIMESTAMP.zip"
+
           $includeExtensions = @(".exe", ".dll", ".pak", ".json", ".ico", ".txt")
           $filesToZip = Get-ChildItem -Path $releaseDir -Recurse | Where-Object {
               $includeExtensions -contains $_.Extension.ToLower()
           }
 
-          Remove-Item -Force $zipFile -ErrorAction SilentlyContinue
-          Compress-Archive -Path $filesToZip.FullName -DestinationPath $zipFile -Update
+          if ($filesToZip.Count -gt 0) {
+              Remove-Item -Force $zipFile -ErrorAction SilentlyContinue
+              Compress-Archive -Path $filesToZip.FullName -DestinationPath $zipFile
+              Write-Host "Windows artifact created: $zipFile"
+          } else {
+              Write-Host "No files to zip!"
+          }
 
-          Write-Host "Windows artifact created: $zipFile"
-
+      # Upload Windows Artifact
       - name: Upload Windows Artifact
-        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
+          if-no-files-found: ignore
 
-      # Build Inno Setup installer
+      # Install Inno Setup
       - name: Install Inno Setup
-        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         shell: pwsh
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           choco install innosetup -y
 
+      # Build Windows Installer
       - name: Build Windows Installer
-        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         shell: pwsh
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
         run: |
           $issFile = "release_tools/windows_installer_build.iss"
           $outputDir = "build/windows_installer"
           New-Item -ItemType Directory -Force -Path $outputDir
-          ISCC.exe /O"$outputDir" /F"kpix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}" $issFile
 
+          $outputFile = "kpix-windows-installer-v$env:VERSION-$env:TIMESTAMP"
+          ISCC.exe /O"$outputDir" /F"$outputFile" $issFile
+
+      # Upload Windows Installer
       - name: Upload Windows Installer
-        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
+          if-no-files-found: ignore
+

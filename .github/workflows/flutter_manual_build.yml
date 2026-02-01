@@ -188,7 +188,7 @@ jobs:
           VERSION: ${{ needs.setup.outputs.version }}
           TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
         run: |
-          $releaseDir = "build\windows\runner\Release"
+          $releaseDir = "build\windows\x64\runner\Release"
           $zipFile = "kpix-windows-x64-v$env:VERSION-$env:TIMESTAMP.zip"
 
           $includeExtensions = @(".exe", ".dll", ".pak", ".json", ".ico", ".txt")

@@ -1,0 +1,230 @@
+name: Flutter • Manual Build (Android + Windows + Linux)
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_android:
+        description: "Build Android (signed)"
+        type: boolean
+        default: true
+      build_windows:
+        description: "Build Windows"
+        type: boolean
+        default: true
+      build_linux:
+        description: "Build Linux"
+        type: boolean
+        default: true
+      # Optional: flavors (leave empty if you don't use them)
+      flavor:
+        description: "Flutter flavor (e.g., dev, prod). Leave empty for default."
+        required: false
+        type: string
+        default: ""
+      # Optional: build number
+      build_number:
+        description: "Build number (passed to --build-number)"
+        required: false
+        type: string
+        default: ""
+
+
+permissions:
+  contents: read
+
+
+env:
+  FLUTTER_VERSION: "3.22.2"     # pin to a known-good version
+  FLUTTER_CHANNEL: "stable"
+
+
+jobs:
+  android:
+    if: ${{ inputs.build_android }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+
+      - name: Cache Pub
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+
+      - name: Flutter • Dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+
+      - name: Android • Setup signing
+        shell: bash
+
+        run: |
+          # Write keystore from Base64
+          echo "${ANDROID_KEYSTORE_BASE64}" | base64 -d > android/app/keystore.jks
+          
+          
+          # Create key.properties consumed by build.gradle
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=keystore.jks
+          EOF
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+
+
+      - name: Build • Android (AAB)
+        shell: bash
+        run: |
+          FLAVOR_ARG=""
+          if [ -n "${{ inputs.flavor }}" ]; then
+            FLAVOR_ARG="--flavor ${{ inputs.flavor }}"
+          fi
+          BUILDNUM_ARG=""
+          if [ -n "${{ inputs.build_number }}" ]; then
+            BUILDNUM_ARG="--build-number ${{ inputs.build_number }}"
+          fi
+          flutter build appbundle --release $FLAVOR_ARG $BUILDNUM_ARG
+
+
+      - name: (Optional) Build • Android APK
+        if: always()
+        run: |
+          FLAVOR_ARG=""
+          if [ -n "${{ inputs.flavor }}" ]; then
+            FLAVOR_ARG="--flavor ${{ inputs.flavor }}"
+          fi
+          BUILDNUM_ARG=""
+          if [ -n "${{ inputs.build_number }}" ]; then
+            BUILDNUM_ARG="--build-number ${{ inputs.build_number }}"
+          fi
+          flutter build apk --release $FLAVOR_ARG $BUILDNUM_ARG
+
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ inputs.flavor || 'default' }}
+          path: |
+            build/app/outputs/bundle/**/release/*.aab
+            build/app/outputs/flutter-apk/*release*.apk
+  
+
+  desktop:
+    # Matrix for Windows + Linux in one job
+    if: ${{ inputs.build_windows || inputs.build_linux }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            enabled: ${{ inputs.build_linux }}
+          - os: windows-latest
+            platform: windows
+            enabled: ${{ inputs.build_windows }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Skip if this platform disabled
+        if: ${{ !matrix.enabled }}
+        run: echo "Skipping disabled platform."
+
+
+      - name: Checkout
+        if: ${{ matrix.enabled }}
+        uses: actions/checkout@v4
+
+
+      - name: Set up Flutter
+        if: ${{ matrix.enabled }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+
+      - name: Flutter • Dependencies
+        if: ${{ matrix.enabled }}
+        run: flutter pub get
+
+
+      # Linux dependencies
+      - name: Install Linux build deps
+        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev
+
+
+      - name: Build • Linux
+        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        shell: bash
+        run: |
+          FLAVOR_ARG=""
+          if [ -n "${{ inputs.flavor }}" ]; then
+            FLAVOR_ARG="--flavor ${{ inputs.flavor }}"
+          fi
+          flutter build linux --release $FLAVOR_ARG
+
+
+      - name: Upload Linux Artifact
+        if: ${{ matrix.enabled && matrix.platform == 'linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ inputs.flavor || 'default' }}
+          path: build/linux/**/release/*
+
+
+      - name: Build • Windows
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        shell: bash
+        run: |
+          FLAVOR_ARG=""
+          if [ -n "${{ inputs.flavor }}" ]; then
+            FLAVOR_ARG="--flavor ${{ inputs.flavor }}"
+          fi
+          flutter build windows --release $FLAVOR_ARG
+
+
+      - name: Upload Windows Artifact
+        if: ${{ matrix.enabled && matrix.platform == 'windows' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ inputs.flavor || 'default' }}
+          path: build/windows/**/runner/Release/*

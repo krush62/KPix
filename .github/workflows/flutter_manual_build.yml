@@ -35,7 +35,7 @@ permissions:
 
 
 env:
-  FLUTTER_VERSION: "3.22.2"     # pin to a known-good version
+  FLUTTER_VERSION: "3.38.1"
   FLUTTER_CHANNEL: "stable"
 
 

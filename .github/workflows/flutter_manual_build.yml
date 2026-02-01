@@ -198,6 +198,11 @@ jobs:
     env:
       VERSION: ${{ needs.setup.outputs.version }}
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+      APPIMAGE_OUTPUT_DIR: LinuxAppImage
+      APPIMAGE_PREFIX: KPix-linux-appimage
+      LINUX_PACKAGE_PREFIX: KPix-linux-package
+      WIN_PACKAGE_PREFIX: KPix-windows-package
+      WIN_INSTALLER_PREFIX: KPix-windows-installer
     steps:
       - name: Skip if this platform disabled
         if: ${{ !matrix.enabled }}
@@ -234,9 +239,13 @@ jobs:
 
       - name: Package Linux Release
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
+        env:
+          VERSION: ${{ needs.setup.outputs.version }}
+          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+          LINUX_PACKAGE_PREFIX: ${{ env.LINUX_PACKAGE_PREFIX }}
         run: |
           RELEASE_DIR="build/linux/x64/release/bundle"
-          ARCHIVE_NAME="KPix-linux-package-v${{ env.VERSION }}.tar.gz"
+          ARCHIVE_NAME="${{ env.LINUX_PACKAGE_PREFIX }}-v${{ env.VERSION }}.tar.gz"
 
           if [ ! -d "$RELEASE_DIR" ]; then
             echo "Release directory $RELEASE_DIR not found!"
@@ -252,8 +261,8 @@ jobs:
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
         uses: actions/upload-artifact@v4
         with:
-          name: KPix-linux-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: KPix-linux-package-v${{ env.VERSION }}.tar.gz
+          name: ${{ env.LINUX_PACKAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: ${{ env.LINUX_PACKAGE_PREFIX }}-v${{ env.VERSION }}.tar.gz
 
 
       - name: Create Linux AppImage
@@ -261,20 +270,20 @@ jobs:
         env:
           VERSION: ${{ env.VERSION }}
           TIMESTAMP: ${{ env.TIMESTAMP }}
-          OUTPUT_DIR: LinuxAppImage
-          PREFIX: KPix-linux-appimage
+          APPIMAGE_PREFIX: ${{ env.APPIMAGE_PREFIX }}
+          APPIMAGE_OUTPUT_DIR: ${{ env.APPIMAGE_OUTPUT_DIR }}
         run: |
           set -e
 
           APPIMAGE_TOOL_URL="https://github.com/AppImage/appimagetool/releases/download/continuous"
           APPIMAGE_EXEC="appimagetool-x86_64.AppImage"
           BUNDLE_DIR="build/linux/x64/release/bundle"
-          OUTPUT_DIR="${OUTPUT_DIR}"
+          OUTPUT_DIR="${APPIMAGE_OUTPUT_DIR}"
           APPDIR_PATH="KPix.AppDir"
           ICON_PATH="imgs/kpix_icon.png"
           APPRUN_FILE="$OUTPUT_DIR/$APPDIR_PATH/AppRun"
           DESKTOP_FILE="$OUTPUT_DIR/$APPDIR_PATH/KPix.desktop"
-          OUTPUT_FILE_NAME="${PREFIX}-${VERSION}-x86_64.AppImage"
+          OUTPUT_FILE_NAME="${APPIMAGE_PREFIX}-${VERSION}-x86_64.AppImage"
 
           if [ ! -d "$BUNDLE_DIR" ]; then
             echo "Error: Bundle directory not found at $BUNDLE_DIR"
@@ -331,10 +340,15 @@ jobs:
 
       - name: Upload Linux AppImage
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_appimage }}
+        env:
+          APPIMAGE_PREFIX: ${{ env.APPIMAGE_PREFIX }}
+          APPIMAGE_OUTPUT_DIR: ${{ env.APPIMAGE_OUTPUT_DIR }}
+          TIMESTAMP: ${{ env.TIMESTAMP }}
+          VERSION: ${{ env.VERSION }}
         uses: actions/upload-artifact@v4
         with:
-          name: KPix-linux-appimage-v${{ env.VERSION }}
-          path: ${{ env.OUTPUT_DIR }}/${ env.PREFIX }}-${{ env.VERSION }}-x86_64.AppImage
+          name: ${ env.APP_IMAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: ${{ env.APPIMAGE_OUTPUT_DIR }}/${ env.APP_IMAGE_PREFIX }}-${{ env.VERSION }}-x86_64.AppImage
 
       # Build Windows
       - name: Build • Windows
@@ -380,9 +394,10 @@ jobs:
         env:
           VERSION: ${{ needs.setup.outputs.version }}
           TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+          WIN_PACKAGE_PREFIX: ${{ env.WIN_PACKAGE_PREFIX }}
         run: |
           $releaseDir = "build/windows/x64/runner/Release"
-          $zipFile = "KPix-windows-package-v$env:VERSION.zip"
+          $zipFile = "$env:WIN_PACKAGE_PREFIX-v$env:VERSION.zip"
           
           if (-Not (Test-Path $releaseDir)) {
             Write-Host "Release folder does not exist. Skipping packaging."
@@ -414,10 +429,12 @@ jobs:
         # Upload Windows Package
       - name: Upload Windows Package Artifact
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
+        env:
+          WIN_PACKAGE_PREFIX: ${{ env.WIN_PACKAGE_PREFIX }}
         uses: actions/upload-artifact@v4
         with:
-          name: KPix-windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: KPix-windows-package-v${{ env.VERSION }}.zip
+          name: ${{ env.WIN_PACKAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: ${{ env.WIN_PACKAGE_PREFIX }}-v${{ env.VERSION }}.zip
           if-no-files-found: ignore
 
       # Install Inno Setup
@@ -435,20 +452,23 @@ jobs:
         env:
           VERSION: ${{ needs.setup.outputs.version }}
           TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+          WIN_INSTALLER_PREFIX: ${{ env.WIN_INSTALLER_PREFIX }}
         run: |
           $issFile = "release_tools/windows_installer_build.iss"
           $outputDir = "build/windows_installer"
           New-Item -ItemType Directory -Force -Path $outputDir
           
-          $outputFile = "KPix-windows-installer-v$env:VERSION"
+          $outputFile = "$env:WIN_INSTALLER_PREFIX-v$env:VERSION"
           ISCC.exe /O"$outputDir" /F"$outputFile" $issFile
 
       # Upload Windows Installer
       - name: Upload Windows Installer
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
+        env:
+          WIN_INSTALLER_PREFIX: ${{ env.WIN_INSTALLER_PREFIX }}
         uses: actions/upload-artifact@v4
         with:
-          name: KPix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: ${{ env.WIN_INSTALLER_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
           if-no-files-found: ignore
 

@@ -19,16 +19,6 @@ on:
         description: "Build Linux"
         type: boolean
         default: true
-      flavor:
-        description: "Flutter flavor (e.g., dev, prod). Leave empty for default."
-        required: false
-        type: string
-        default: ""
-      build_number:
-        description: "Build number (passed to --build-number)"
-        required: false
-        type: string
-        default: ""
 
 permissions:
   contents: read
@@ -144,18 +134,10 @@ jobs:
       - name: Android • Build AAB & APK
         if: ${{ matrix.enabled }}
         run: |
-          FLAVOR_ARG=""
-          if [ -n "${{ inputs.flavor }}" ]; then
-            FLAVOR_ARG="--flavor ${{ inputs.flavor }}"
-          fi
-          BUILDNUM_ARG=""
-          if [ -n "${{ inputs.build_number }}" ]; then
-            BUILDNUM_ARG="--build-number ${{ inputs.build_number }}"
-          fi
           if [ "${{ matrix.buildType }}" = "apk" ]; then
-            flutter build apk --release $FLAVOR_ARG $BUILDNUM_ARG
+            flutter build apk --release
           else
-            flutter build appbundle --release $FLAVOR_ARG $BUILDNUM_ARG
+            flutter build appbundle --release
           fi
 
       - name: Copy artifact to top-level
@@ -169,14 +151,14 @@ jobs:
             EXT=aab
           fi
           
-          cp "$FILE" "android-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.$EXT"
+          cp "$FILE" "kpix-android-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.$EXT"
 
       - name: Upload artifact
         if: ${{ matrix.enabled }}
         uses: actions/upload-artifact@v4
         with:
-          name: android-${{ matrix.buildType }}-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: android-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.${{ matrix.buildType == 'apk' && 'apk' || 'aab' }}
+          name: kpix-android-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: kpix-android-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.${{ matrix.buildType == 'apk' && 'apk' || 'aab' }}
 
 
 
@@ -229,36 +211,23 @@ jobs:
       # Build Linux
       - name: Build • Linux
         if: ${{ matrix.enabled && matrix.platform == 'linux' }}
-        run: |
-          FLAVOR_ARG=""
-          if [ -n "${{ inputs.flavor }}" ]; then
-            FLAVOR_ARG="--flavor ${{ inputs.flavor }}"
-          fi
-          flutter build linux --release $FLAVOR_ARG
+        run: |          
+          flutter build linux --release
 
       - name: Upload Linux Artifact
         if: ${{ matrix.enabled && matrix.platform == 'linux' }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: linux-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/linux/**/release/*
 
       # Build Windows
       - name: Build • Windows
         if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         shell: pwsh
-        env:
-          FLAVOR: ${{ inputs.flavor }}
-          BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
-          $FLAVOR_ARG = ""
-          if ($env:FLAVOR -ne "") { $FLAVOR_ARG = "--flavor $env:FLAVOR" }
-          
-          $BUILDNUM_ARG = ""
-          if ($env:BUILD_NUMBER -ne "") { $BUILDNUM_ARG = "--build-number $env:BUILD_NUMBER" }
-          
-          Write-Host "Running: flutter build windows --release $FLAVOR_ARG $BUILDNUM_ARG"
-          flutter build windows --release $FLAVOR_ARG $BUILDNUM_ARG
+          Write-Host "Running: flutter build windows --release"
+          flutter build windows --release
 
       # Package Windows Release including data folder and VC++ DLLs
       - name: Package Windows Release

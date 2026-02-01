@@ -174,13 +174,14 @@ jobs:
         run: |
           $FLAVOR_ARG = ""
           if ($env:FLAVOR -ne "") { $FLAVOR_ARG = "--flavor $env:FLAVOR" }
-
+          
           $BUILDNUM_ARG = ""
           if ($env:BUILD_NUMBER -ne "") { $BUILDNUM_ARG = "--build-number $env:BUILD_NUMBER" }
-
+          
+          Write-Host "Running: flutter build windows --release $FLAVOR_ARG $BUILDNUM_ARG"
           flutter build windows --release $FLAVOR_ARG $BUILDNUM_ARG
 
-      # Package Windows Release cleanly
+      # Package Windows Release including data folder and VC++ DLLs
       - name: Package Windows Release
         if: ${{ matrix.enabled && matrix.platform == 'windows' }}
         shell: pwsh
@@ -188,20 +189,46 @@ jobs:
           VERSION: ${{ needs.setup.outputs.version }}
           TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
         run: |
-          $releaseDir = "build\windows\x64\runner\Release"
+          $releaseDir = "build/windows/x64/runner/Release"
           $zipFile = "kpix-windows-x64-v$env:VERSION-$env:TIMESTAMP.zip"
-
-          $includeExtensions = @(".exe", ".dll", ".pak", ".json", ".ico", ".txt")
-          $filesToZip = Get-ChildItem -Path $releaseDir -Recurse | Where-Object {
-              $includeExtensions -contains $_.Extension.ToLower()
+          
+          if (-Not (Test-Path $releaseDir)) {
+              Write-Host "Release folder does not exist. Skipping packaging."
+              exit 0
           }
-
+          
+          # Define allowed file extensions
+          $includeExtensions = @(".exe", ".dll", ".pak", ".json", ".ico", ".txt")
+          
+          # Get all files + folders (data folder) for packaging
+          $filesToZip = Get-ChildItem -Path $releaseDir -Recurse | Where-Object {
+              $_.PSIsContainer -or ($includeExtensions -contains $_.Extension.ToLower())
+          }
+          
+          # Copy necessary VC++ redistributable DLLs from dev machine
+          $vcDlls = @(
+              "C:\Windows\System32\msvcp140.dll",
+              "C:\Windows\System32\msvcp140_1.dll",
+              "C:\Windows\System32\msvcp140_2.dll",
+              "C:\Windows\System32\vcruntime140.dll",
+              "C:\Windows\System32\vcruntime140_1.dll"
+          )
+          
+          foreach ($dll in $vcDlls) {
+              if (Test-Path $dll) {
+                  Copy-Item $dll -Destination $releaseDir -Force
+              } else {
+                  Write-Host "Warning: $dll not found on runner!"
+              }
+          }
+          
+          # Zip the files
           if ($filesToZip.Count -gt 0) {
               Remove-Item -Force $zipFile -ErrorAction SilentlyContinue
               Compress-Archive -Path $filesToZip.FullName -DestinationPath $zipFile
               Write-Host "Windows artifact created: $zipFile"
           } else {
-              Write-Host "No files to zip!"
+              Write-Host "No files or folders to zip."
           }
 
       # Upload Windows Artifact
@@ -232,7 +259,7 @@ jobs:
           $issFile = "release_tools/windows_installer_build.iss"
           $outputDir = "build/windows_installer"
           New-Item -ItemType Directory -Force -Path $outputDir
-
+          
           $outputFile = "kpix-windows-installer-v$env:VERSION-$env:TIMESTAMP"
           ISCC.exe /O"$outputDir" /F"$outputFile" $issFile
 
@@ -244,4 +271,3 @@ jobs:
           name: windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
           if-no-files-found: ignore
-

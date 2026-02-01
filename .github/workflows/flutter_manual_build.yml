@@ -197,3 +197,27 @@ jobs:
         with:
           name: windows-${{ inputs.flavor || 'default' }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
+
+      # Build Inno Setup installer
+      - name: Install Inno Setup
+        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          choco install innosetup -y
+
+      - name: Build Windows Installer
+        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        shell: pwsh
+        run: |
+          $issFile = "release_tools/windows_installer_build.iss"
+          $outputDir = "build/windows_installer"
+          New-Item -ItemType Directory -Force -Path $outputDir
+          ISCC.exe /O"$outputDir" /F"kpix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}" $issFile
+
+      - name: Upload Windows Installer
+        if: ${{ matrix.platform == 'windows' && matrix.enabled }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: build/windows_installer/*.exe

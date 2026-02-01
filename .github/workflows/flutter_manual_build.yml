@@ -228,7 +228,7 @@ jobs:
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
         run: |
           RELEASE_DIR="build/linux/x64/release/bundle"
-          ARCHIVE_NAME="kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz"
+          ARCHIVE_NAME="kpix-linux-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz"
 
           if [ ! -d "$RELEASE_DIR" ]; then
             echo "Release directory $RELEASE_DIR not found!"
@@ -240,13 +240,12 @@ jobs:
 
           echo "Created archive: $ARCHIVE_NAME"
 
-      - name: Upload Linux Artifact
+      - name: Upload Linux Package
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: kpix-linux-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz
-
+          name: kpix-linux-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: kpix-linux-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.tar.gz
 
 
       - name: Create Linux AppImage
@@ -372,7 +371,7 @@ jobs:
           TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
         run: |
           $releaseDir = "build/windows/x64/runner/Release"
-          $zipFile = "kpix-windows-x64-v$env:VERSION-$env:TIMESTAMP.zip"
+          $zipFile = "kpix-windows-package-v$env:VERSION-$env:TIMESTAMP.zip"
           
           if (-Not (Test-Path $releaseDir)) {
             Write-Host "Release folder does not exist. Skipping packaging."
@@ -406,8 +405,8 @@ jobs:
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
-          path: kpix-windows-x64-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
+          name: kpix-windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: kpix-windows-package-v${{ env.VERSION }}-${{ env.TIMESTAMP }}.zip
           if-no-files-found: ignore
 
       # Install Inno Setup
@@ -438,6 +437,6 @@ jobs:
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: kpix-windows-installer-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
           if-no-files-found: ignore

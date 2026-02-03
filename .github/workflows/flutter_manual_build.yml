@@ -1,4 +1,4 @@
-name: KPix Manual Build (Android + Windows + Linux + Web)
+name: KPix Manual Build
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ on:
         type: boolean
         default: false
       build_macos_dmg:
-        description: "Build MacOs Image"
+        description: "Build MacOS Image"
         type: boolean
         default: false
       create_draft_release:
@@ -508,42 +508,28 @@ jobs:
   macos:
     if: ${{ inputs.build_macos_dmg }}
     needs: setup
-
     runs-on: macos-latest
-
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
+      TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
     steps:
-      # --------------------------
-      # Checkout source
-      # --------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --------------------------
-      # Install Flutter
-      # --------------------------
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      # --------------------------
-      # Flutter setup
-      # --------------------------
       - name: Enable macOS desktop
         run: flutter config --enable-macos-desktop
 
       - name: Install dependencies
         run: flutter pub get
 
-      # --------------------------
-      # Build Flutter macOS app
-      # --------------------------
-      - name: Build macOS app (release)
+      - name: Build macOS app
         run: flutter build macos --release
 
-      # --------------------------
-      # Generate .icns from PNG
-      # --------------------------
       - name: Generate .icns icon
         run: |
           mkdir icon.iconset
@@ -568,19 +554,17 @@ jobs:
           # Convert to .icns
           iconutil -c icns icon.iconset -o kpix.icns
 
-      # --------------------------
-      # Install DMG creator
-      # --------------------------
+
       - name: Install create-dmg
         run: brew install create-dmg
 
-      # --------------------------
-      # Create DMG
-      # --------------------------
       - name: Create .dmg installer
+        env:
+          VERSION: ${{ env.VERSION }}
+          TIMESTAMP: ${{ env.TIMESTAMP }}
         run: |
           APP_PATH="build/macos/Build/Products/Release/KPix.app"
-          DMG_PATH="build/macos/Build/Products/Release/KPix.dmg"
+          DMG_PATH="build/macos/Build/Products/Release/KPix-macos-dmg-${VERSION}.dmg"
           
           create-dmg \
             --volname "KPix" \
@@ -592,16 +576,15 @@ jobs:
             "$DMG_PATH" \
             "$APP_PATH"
 
-      # --------------------------
-      # Upload artifact
-      # --------------------------
+
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
+        env:
+          VERSION: ${{ env.VERSION }}
+          TIMESTAMP: ${{ env.TIMESTAMP }}
         with:
-          name: macos-dmg
+          name: KPix-macos-dmg-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/macos/Build/Products/Release/*.dmg
-
-
 
 
 
@@ -609,7 +592,7 @@ jobs:
     name: Create Draft GitHub Release
     needs: [ setup, android, desktop ]
     runs-on: ubuntu-latest
-    if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_web) }}
+    if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_web || inputs.build_macos_dmg) }}
 
     env:
       VERSION: ${{ needs.setup.outputs.version }}
@@ -640,5 +623,6 @@ jobs:
             artifacts/**/*.tar.gz
             artifacts/**/*.AppImage
             artifacts/**/*.exe
+            artifacts/**/*.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

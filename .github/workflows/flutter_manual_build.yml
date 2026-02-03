@@ -589,7 +589,7 @@ jobs:
 
   release:
     name: Create Draft GitHub Release
-    needs: [ setup, android, desktop ]
+    needs: [ setup, android, desktop, macos, web ]
     runs-on: ubuntu-latest
     if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_web || inputs.build_macos_dmg) }}
 

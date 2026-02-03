@@ -510,8 +510,8 @@ jobs:
     needs: setup
     runs-on: macos-latest
     env:
-      VERSION: ${{ needs.setup.outputs.version }}
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+      FILE_NAME: KPix-macos-v${{ needs.setup.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -560,11 +560,10 @@ jobs:
 
       - name: Create .dmg installer
         env:
-          VERSION: ${{ env.VERSION }}
-          TIMESTAMP: ${{ env.TIMESTAMP }}
+          FILE_NAME: ${{ env.FILE_NAME }}
         run: |
           APP_PATH="build/macos/Build/Products/Release/KPix.app"
-          DMG_PATH="build/macos/Build/Products/Release/KPix-macos-dmg-${VERSION}.dmg"
+          DMG_PATH="build/macos/Build/Products/Release/${FILE_NAME}.dmg"
           
           create-dmg \
             --volname "KPix" \
@@ -580,10 +579,10 @@ jobs:
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         env:
-          VERSION: ${{ env.VERSION }}
+          FILE_NAME: ${{ env.FILE_NAME }}
           TIMESTAMP: ${{ env.TIMESTAMP }}
         with:
-          name: KPix-macos-dmg-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: ${{ env.FILE_NAME }}-${{ env.TIMESTAMP }}
           path: build/macos/Build/Products/Release/*.dmg
 
 

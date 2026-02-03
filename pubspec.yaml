@@ -38,7 +38,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.5
   flutter_tabler_icons: ^1.43.0
   get_it: ^9.0.5
-  google_fonts: ^6.2.1
+  google_fonts: ^8.0.0
   http: ^1.2.2
   image: ^4.5.4
   logger: ^2.6.2

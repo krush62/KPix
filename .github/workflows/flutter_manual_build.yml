@@ -1,4 +1,4 @@
-name: KPix Manual Build (Android + Windows + Linux + Web)
+name: KPix Manual Build
 
 on:
   workflow_dispatch:
@@ -29,6 +29,10 @@ on:
         default: true
       build_web:
         description: "Build Web Package"
+        type: boolean
+        default: false
+      build_macos_dmg:
+        description: "Build MacOS Image"
         type: boolean
         default: false
       create_draft_release:
@@ -70,6 +74,8 @@ jobs:
     if: ${{ inputs.build_android_apk || inputs.build_android_aab }}
     needs: setup
     runs-on: ubuntu-latest
+    outputs:
+      has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
     strategy:
       matrix:
         include:
@@ -178,12 +184,16 @@ jobs:
           name: KPix-android-${{ matrix.buildType }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.ARTIFACT_FILE }}
 
+      - id: upload_success
+        run: echo "has_artifact=true" >> $GITHUB_OUTPUT
 
 
 
   desktop:
     if: ${{ inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage }}
     needs: setup
+    outputs:
+      has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
     strategy:
       fail-fast: false
       matrix:
@@ -239,10 +249,6 @@ jobs:
 
       - name: Package Linux Release
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
-        env:
-          VERSION: ${{ needs.setup.outputs.version }}
-          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
-          LINUX_PACKAGE_PREFIX: ${{ env.LINUX_PACKAGE_PREFIX }}
         run: |
           RELEASE_DIR="build/linux/x64/release/bundle"
           ARCHIVE_NAME="${{ env.LINUX_PACKAGE_PREFIX }}-v${{ env.VERSION }}.tar.gz"
@@ -267,11 +273,6 @@ jobs:
 
       - name: Create Linux AppImage
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_appimage }}
-        env:
-          VERSION: ${{ env.VERSION }}
-          TIMESTAMP: ${{ env.TIMESTAMP }}
-          APPIMAGE_PREFIX: ${{ env.APPIMAGE_PREFIX }}
-          APPIMAGE_OUTPUT_DIR: ${{ env.APPIMAGE_OUTPUT_DIR }}
         run: |
           set -e
 
@@ -340,11 +341,6 @@ jobs:
 
       - name: Upload Linux AppImage
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_appimage }}
-        env:
-          APPIMAGE_PREFIX: ${{ env.APPIMAGE_PREFIX }}
-          APPIMAGE_OUTPUT_DIR: ${{ env.APPIMAGE_OUTPUT_DIR }}
-          TIMESTAMP: ${{ env.TIMESTAMP }}
-          VERSION: ${{ env.VERSION }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APPIMAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
@@ -391,10 +387,6 @@ jobs:
       - name: Package Windows Release
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
         shell: pwsh
-        env:
-          VERSION: ${{ needs.setup.outputs.version }}
-          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
-          WIN_PACKAGE_PREFIX: ${{ env.WIN_PACKAGE_PREFIX }}
         run: |
           $releaseDir = "build/windows/x64/runner/Release"
           $zipFile = "$env:WIN_PACKAGE_PREFIX-v$env:VERSION.zip"
@@ -429,13 +421,12 @@ jobs:
         # Upload Windows Package
       - name: Upload Windows Package Artifact
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
-        env:
-          WIN_PACKAGE_PREFIX: ${{ env.WIN_PACKAGE_PREFIX }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.WIN_PACKAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.WIN_PACKAGE_PREFIX }}-v${{ env.VERSION }}.zip
           if-no-files-found: ignore
+
 
       # Install Inno Setup
       - name: Install Inno Setup
@@ -449,10 +440,6 @@ jobs:
       - name: Build Windows Installer
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
         shell: pwsh
-        env:
-          VERSION: ${{ needs.setup.outputs.version }}
-          TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
-          WIN_INSTALLER_PREFIX: ${{ env.WIN_INSTALLER_PREFIX }}
         run: |
           $issFile = "release_tools/windows_installer_build.iss"
           $outputDir = "build/windows_installer"
@@ -464,17 +451,22 @@ jobs:
       # Upload Windows Installer
       - name: Upload Windows Installer
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
-        env:
-          WIN_INSTALLER_PREFIX: ${{ env.WIN_INSTALLER_PREFIX }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.WIN_INSTALLER_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
           if-no-files-found: ignore
 
+
+      - id: upload_success
+        run: echo "has_artifact=true" >> $GITHUB_OUTPUT
+
+
   web:
     if: ${{ inputs.build_web }}
     needs: setup
+    outputs:
+      has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
     runs-on: ubuntu-latest
     env:
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
@@ -500,11 +492,103 @@ jobs:
           name: ${{ env.FILE_NAME }}-${{ env.TIMESTAMP }}
           path: ${{ env.FILE_NAME }}.tar.gz
 
+      - id: upload_success
+        run: echo "has_artifact=true" >> $GITHUB_OUTPUT
+
+
+  macos:
+    if: ${{ inputs.build_macos_dmg }}
+    needs: setup
+    outputs:
+      has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
+    runs-on: macos-latest
+    env:
+      TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+      FILE_NAME: KPix-macos-v${{ needs.setup.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS app
+        run: flutter build macos --release
+
+      - name: Generate .icns icon
+        run: |
+          mkdir icon.iconset
+          
+          # Source PNG (change path if needed)
+          ICON_SRC="imgs/kpix_icon.png"
+          
+          # Create sizes required for .icns
+          sips -z 16 16     "$ICON_SRC" --out icon.iconset/icon_16x16.png
+          sips -z 32 32     "$ICON_SRC" --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32     "$ICON_SRC" --out icon.iconset/icon_32x32.png
+          sips -z 64 64     "$ICON_SRC" --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128   "$ICON_SRC" --out icon.iconset/icon_128x128.png
+          sips -z 256 256   "$ICON_SRC" --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256   "$ICON_SRC" --out icon.iconset/icon_256x256.png
+          sips -z 512 512   "$ICON_SRC" --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512   "$ICON_SRC" --out icon.iconset/icon_512x512.png
+          
+          # Use original PNG for 1024px
+          cp "$ICON_SRC" icon.iconset/icon_512x512@2x.png
+          
+          # Convert to .icns
+          iconutil -c icns icon.iconset -o kpix.icns
+
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create .dmg installer
+        run: |
+          APP_PATH="build/macos/Build/Products/Release/KPix.app"
+          DMG_PATH="build/macos/Build/Products/Release/${FILE_NAME}.dmg"
+          
+          create-dmg \
+            --volname "KPix" \
+            --volicon "kpix.icns" \
+            --window-pos 200 120 \
+            --window-size 1920 1080 \
+            --icon-size 100 \
+            --app-drop-link 600 185 \
+            "$DMG_PATH" \
+            "$APP_PATH"
+
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILE_NAME }}-${{ env.TIMESTAMP }}
+          path: build/macos/Build/Products/Release/*.dmg
+
+      - id: upload_success
+        run: echo "has_artifact=true" >> $GITHUB_OUTPUT
+
+
   release:
     name: Create Draft GitHub Release
-    needs: [ setup, android, desktop ]
+    needs: [ setup, android, desktop, macos, web ]
     runs-on: ubuntu-latest
-    if: ${{ inputs.create_draft_release && (inputs.build_android_apk || inputs.build_android_aab || inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_web) }}
+    if: |
+      inputs.create_draft_release &&
+      (
+        needs.android.outputs.has_artifact == 'true' ||
+        needs.desktop.outputs.has_artifact == 'true' ||
+        needs.web.outputs.has_artifact == 'true' ||
+        needs.macos.outputs.has_artifact == 'true'
+      )
 
     env:
       VERSION: ${{ needs.setup.outputs.version }}
@@ -535,5 +619,6 @@ jobs:
             artifacts/**/*.tar.gz
             artifacts/**/*.AppImage
             artifacts/**/*.exe
+            artifacts/**/*.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

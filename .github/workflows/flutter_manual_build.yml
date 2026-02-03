@@ -31,6 +31,10 @@ on:
         description: "Build Web Package"
         type: boolean
         default: false
+      build_macos_dmg:
+        description: "Build MacOs Image"
+        type: boolean
+        default: false
       create_draft_release:
         description: "Create draft GitHub release"
         type: boolean
@@ -499,6 +503,107 @@ jobs:
         with:
           name: ${{ env.FILE_NAME }}-${{ env.TIMESTAMP }}
           path: ${{ env.FILE_NAME }}.tar.gz
+
+
+  macos:
+    if: ${{ inputs.build_macos_dmg }}
+    needs: setup
+
+    runs-on: macos-latest
+
+    steps:
+      # --------------------------
+      # Checkout source
+      # --------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --------------------------
+      # Install Flutter
+      # --------------------------
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # --------------------------
+      # Flutter setup
+      # --------------------------
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # --------------------------
+      # Build Flutter macOS app
+      # --------------------------
+      - name: Build macOS app (release)
+        run: flutter build macos --release
+
+      # --------------------------
+      # Generate .icns from PNG
+      # --------------------------
+      - name: Generate .icns icon
+        run: |
+          mkdir icon.iconset
+          
+          # Source PNG (change path if needed)
+          ICON_SRC="imgs/kpix_icon.png"
+          
+          # Create sizes required for .icns
+          sips -z 16 16     "$ICON_SRC" --out icon.iconset/icon_16x16.png
+          sips -z 32 32     "$ICON_SRC" --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32     "$ICON_SRC" --out icon.iconset/icon_32x32.png
+          sips -z 64 64     "$ICON_SRC" --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128   "$ICON_SRC" --out icon.iconset/icon_128x128.png
+          sips -z 256 256   "$ICON_SRC" --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256   "$ICON_SRC" --out icon.iconset/icon_256x256.png
+          sips -z 512 512   "$ICON_SRC" --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512   "$ICON_SRC" --out icon.iconset/icon_512x512.png
+          
+          # Use original PNG for 1024px
+          cp "$ICON_SRC" icon.iconset/icon_512x512@2x.png
+          
+          # Convert to .icns
+          iconutil -c icns icon.iconset -o kpix.icns
+
+      # --------------------------
+      # Install DMG creator
+      # --------------------------
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      # --------------------------
+      # Create DMG
+      # --------------------------
+      - name: Create .dmg installer
+        run: |
+          APP_PATH="build/macos/Build/Products/Release/KPix.app"
+          DMG_PATH="build/macos/Build/Products/Release/KPix.dmg"
+          
+          create-dmg \
+            --volname "KPix" \
+            --volicon "kpix.icns" \
+            --window-pos 200 120 \
+            --window-size 1920 1080 \
+            --icon-size 100 \
+            --app-drop-link 600 185 \
+            "$DMG_PATH" \
+            "$APP_PATH"
+
+      # --------------------------
+      # Upload artifact
+      # --------------------------
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: build/macos/Build/Products/Release/*.dmg
+
+
+
+
 
   release:
     name: Create Draft GitHub Release

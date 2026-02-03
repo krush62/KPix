@@ -347,7 +347,7 @@ jobs:
           VERSION: ${{ env.VERSION }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${ env.APPIMAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          name: ${{ env.APPIMAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.APPIMAGE_OUTPUT_DIR }}/${{ env.APPIMAGE_PREFIX }}-${{ env.VERSION }}-x86_64.AppImage
 
       # Build Windows

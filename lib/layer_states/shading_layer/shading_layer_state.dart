@@ -40,6 +40,8 @@ class ShadingLayerState extends RasterableLayerState
   @protected
   final HashMap<CoordinateSetI, int> sData = HashMap<CoordinateSetI, int>();
 
+  bool _isUpdateScheduled = false;
+
   ShadingLayerState() : this._(settings: ShadingLayerSettings.defaultValue(constraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints));
 
   ShadingLayerState._({required this.settings}) : super(layerSettings: settings)
@@ -102,9 +104,15 @@ class ShadingLayerState extends RasterableLayerState
       {
         sData[entry.key] = sData[entry.key]!.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
       }
-
     }
     doManualRaster = true;
+
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+
+    for (final Frame frame in frames) {
+      frame.layerList.invalidateDependents(layer: this);
+    }
   }
 
   HashMap<CoordinateSetI, int> get shadingData
@@ -148,6 +156,13 @@ class ShadingLayerState extends RasterableLayerState
         }
       }
       doManualRaster = true;
+
+      // ===== CORRECTED: Cross-frame invalidation =====
+      final AppState appState = GetIt.I.get<AppState>();
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      for (final Frame frame in frames) {
+        frame.layerList.invalidateDependents(layer: this);
+      }
     }
   }
 
@@ -160,6 +175,13 @@ class ShadingLayerState extends RasterableLayerState
         sData[entry.key] = entry.value.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
       }
       doManualRaster = true;
+
+      // ===== CORRECTED: Cross-frame invalidation =====
+      final AppState appState = GetIt.I.get<AppState>();
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      for (final Frame frame in frames) {
+        frame.layerList.invalidateDependents(layer: this);
+      }
     }
   }
 
@@ -213,54 +235,80 @@ class ShadingLayerState extends RasterableLayerState
     }
   }
 
-  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex}) async
+  Future<RasterImagePair> _createRasterFromLayers({
+    required final CoordinateSetI canvasSize,
+    required final List<RasterableLayerState> rasterLayers,
+    required final int currentIndex,
+  }) async
   {
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final CoordinateColorMap allColorPixels = CoordinateColorMap();
 
-      for (int x = 0; x < canvasSize.x; x++)
+    for (int x = 0; x < canvasSize.x; x++)
+    {
+      for (int y = 0; y < canvasSize.y; y++)
       {
-        for (int y = 0; y < canvasSize.y; y++)
+        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+        final int? valAt = sData[coord];
+        int brightVal = thumbnailBrightnessMap[0]!;
+
+        if (valAt != null)
         {
-          final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
-          final int? valAt = sData[coord];
-          int brightVal = thumbnailBrightnessMap[0]!;
-          if (valAt != null)
+          brightVal = thumbnailBrightnessMap[valAt] ?? 0;
+
+          for (int i = currentIndex + 1; i < rasterLayers.length; i++)
           {
-            brightVal = thumbnailBrightnessMap[valAt]?? 0;
-            for (int i = currentIndex + 1; i < rasterLayers.length; i++)
+            final RasterableLayerState layer = rasterLayers[i];
+
+            if (layer.isRasterizing) {
+              debugPrint('Warning: Shading layer reading from layer at index $i that is still rasterizing');
+              continue;
+            }
+
+            if (layer.doManualRaster) {
+              debugPrint('Warning: Shading layer reading from layer at index $i that has pending updates');
+              continue;
+            }
+
+            ColorReference? refCol;
+            if (layer.visibilityState.value == LayerVisibilityState.visible)
             {
-              final RasterableLayerState layer = rasterLayers[i];
-              ColorReference? refCol;
-              if (layer.visibilityState.value == LayerVisibilityState.visible)
-              {
-                refCol = layer.rasterPixels[coord];
-              }
-              if (refCol != null)
-              {
-                final int currentColorIndex = refCol.colorIndex;
-                final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-                allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
-                final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
-                final int index = (y * canvasSize.x + x) * 4;
-                if (index >= 0 && index < byteDataImg.lengthInBytes)
-                {
-                  byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+              if (layer.rasterPixels.isEmpty) {
+                if (layer.previousRaster == null) {
+                  debugPrint('Warning: Layer at index $i has no rasterPixels and no previous raster');
+                  continue;
                 }
-                break;
               }
+
+              refCol = layer.rasterPixels[coord];
+            }
+
+            if (refCol != null)
+            {
+              final int currentColorIndex = refCol.colorIndex;
+              final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
+              allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
+              final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
+              final int index = (y * canvasSize.x + x) * 4;
+              if (index >= 0 && index < byteDataImg.lengthInBytes)
+              {
+                byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+              }
+              break;
             }
           }
-          final int pixelIndex = (y * canvasSize.x + x) * 4;
-          byteDataThb.setUint8(pixelIndex + 0, brightVal);
-          byteDataThb.setUint8(pixelIndex + 1, brightVal);
-          byteDataThb.setUint8(pixelIndex + 2, brightVal);
-          byteDataThb.setUint8(pixelIndex + 3, 255);
         }
-      }
-      rasterPixels = allColorPixels;
 
+        final int pixelIndex = (y * canvasSize.x + x) * 4;
+        byteDataThb.setUint8(pixelIndex + 0, brightVal);
+        byteDataThb.setUint8(pixelIndex + 1, brightVal);
+        byteDataThb.setUint8(pixelIndex + 2, brightVal);
+        byteDataThb.setUint8(pixelIndex + 3, 255);
+      }
+    }
+
+    rasterPixels = allColorPixels;
 
     final Completer<ui.Image> completerThb = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -293,27 +341,60 @@ class ShadingLayerState extends RasterableLayerState
 
   void _rasterCreated({required final DualRasterResult rasterResult})
   {
-    thumbnail.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.thumbnail : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
+    thumbnail.value = rasterResult.externalStackImages != null
+        ? rasterResult.externalStackImages!.thumbnail
+        : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
     previousRaster = rasterImage.value;
-    rasterImage.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.raster : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
+    rasterImage.value = rasterResult.externalStackImages != null
+        ? rasterResult.externalStackImages!.raster
+        : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
     rasterImageMap.value = rasterResult.rasterImages;
+
     isRasterizing = false;
     doManualRaster = false;
+    _isUpdateScheduled = false;
+
     if (layerStack == null)
     {
       GetIt.I.get<AppState>().newRasterData(layer: this);
     }
-
   }
 
   void _updateTimerCallback({required final Timer timer})
   {
+    if (_isUpdateScheduled) {
+      return;
+    }
+
     if (doManualRaster && !isRasterizing)
     {
+      final AppState appState = GetIt.I.get<AppState>();
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+
+      bool canRender = false;
+      for (final Frame frame in frames) {
+        if (frame.layerList.areDependenciesComplete(layer: this)) {
+          canRender = true;
+          break;
+        }
+      }
+
+      if (!canRender) {
+        return;
+      }
+
+      _isUpdateScheduled = true;
       isRasterizing = true;
+
       createRasters().then((final DualRasterResult rasterResult)
       {
-        _rasterCreated(rasterResult: rasterResult);
+        if (_isUpdateScheduled) {
+          _rasterCreated(rasterResult: rasterResult);
+        }
+      }).catchError((final dynamic error) {
+        debugPrint('Error during shading layer rasterization: $error');
+        isRasterizing = false;
+        _isUpdateScheduled = false;
       });
     }
   }
@@ -338,6 +419,36 @@ class ShadingLayerState extends RasterableLayerState
   @override
   LayerSettingsWidget getSettingsWidget() {
     return ShadingLayerSettingsWidget(settings: settings, isForDithering: false);
+  }
+
+  void dispose()
+  {
+    _isUpdateScheduled = false;
+    sData.clear();
+    thumbnailBrightnessMap.clear();
+    rasterImage.value?.dispose();
+    thumbnail.value?.dispose();
+    previousRaster?.dispose();
+  }
+
+  void debugPrintState()
+  {
+    debugPrint('ShadingLayer State:');
+    debugPrint('  isRasterizing: $isRasterizing');
+    debugPrint('  doManualRaster: $doManualRaster');
+    debugPrint('  _isUpdateScheduled: $_isUpdateScheduled');
+    debugPrint('  rasterPixels.length: ${rasterPixels.length}');
+    debugPrint('  sData.length: ${sData.length}');
+
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    debugPrint('  Present in ${frames.length} frame(s)');
+
+    for (int i = 0; i < frames.length; i++) {
+      final Frame frame = frames[i];
+      final bool depsComplete = frame.layerList.areDependenciesComplete(layer: this);
+      debugPrint('  Frame $i dependencies complete: $depsComplete');
+    }
   }
 
 }

@@ -42,3 +42,4 @@ typedef CoordinateColorMap = HashMap<CoordinateSetI, ColorReference>;
 typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
 typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;
 typedef CoordinateColorNullable = MapEntry<CoordinateSetI, ColorReference?>;
+typedef StampMap = Map<String, List<StampManagerEntryData>>;

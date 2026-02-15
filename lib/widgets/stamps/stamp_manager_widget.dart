@@ -160,9 +160,10 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
         maxWidth: _options.maxWidth,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           SizedBox(height: _alertOptions.padding),
-          Text("STAMP MANAGER", style: Theme.of(context).textTheme.titleLarge),
+          Center(child: Text("STAMP MANAGER", style: Theme.of(context).textTheme.titleLarge)),
           ValueListenableBuilder<StampMap>(
             valueListenable: _stampManager.stampMap,
             builder: (final BuildContext context1, final StampMap stampMap, final Widget? child1) {

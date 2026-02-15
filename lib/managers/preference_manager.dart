@@ -373,6 +373,7 @@ enum PreferenceInt
   Tool_Stamp_ScaleMin(defaultValue: 1),
   Tool_Stamp_ScaleMax(defaultValue: 8),
   Tool_Stamp_ScaleDefault(defaultValue: 1),
+  Tool_Stamp_GridOffsetDefault(defaultValue: 0),
 
 
 
@@ -526,6 +527,7 @@ enum PreferenceBool
   Tool_Wand_Continuous(defaultValue: true),
   Tool_Stamp_FlipH(defaultValue: false),
   Tool_Stamp_FlipV(defaultValue: false),
+  Tool_Stamp_GridAlign(defaultValue: false),
 
   SelectShapeAfterInsert(defaultValue: false),
   SelectLayerAfterInsert(defaultValue: true),
@@ -1119,7 +1121,9 @@ class PreferenceManager
         scaleMax: _getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
         scaleDefault: _getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
         flipHDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
-        flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),);
+        flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
+        gridAlignDefault: _getValueB(PreferenceBool.Tool_Stamp_GridAlign),
+        gridOffsetDefault: _getValueI(PreferenceInt.Tool_Stamp_GridOffsetDefault),);
     toolOptions = ToolOptions(
         pencilOptions: pencilOptions,
         shapeOptions: shapeOptions,

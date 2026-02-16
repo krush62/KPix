@@ -665,8 +665,6 @@ class LayerCollection with ChangeNotifier {
   void layerRasterDone({required final LayerState layer}) {
     if (layer is! RasterableLayerState) return;
 
-
-    // Trigger dependent layers in THIS frame's dependency graph
     final Set<RasterableLayerState> dependents = _getDependents(layer: layer);
     for (final RasterableLayerState dependent in dependents) {
       if (areDependenciesComplete(layer: dependent) &&
@@ -675,7 +673,6 @@ class LayerCollection with ChangeNotifier {
       }
     }
 
-    // Check if ALL layers in THIS frame are done rendering
     bool anyLayerStillPending = false;
     for (final LayerState l in _layers) {
       if (l is RasterableLayerState) {
@@ -686,7 +683,6 @@ class LayerCollection with ChangeNotifier {
       }
     }
 
-    // Only create final composite when ALL layers in THIS frame are complete
     if (!anyLayerStillPending) {
       final AppState appState = GetIt.I.get<AppState>();
       final Frame? frame = appState.timeline.findFrameForCollection(
@@ -700,6 +696,19 @@ class LayerCollection with ChangeNotifier {
         _rasterImage = img;
       });
     }
+  }
+
+  void onLayerVisibilityChanged({required final LayerState layer}) {
+    _rebuildDependencies();
+    if (layer is RasterableLayerState)
+    {
+      if (!layer.isRasterizing && layer.visibilityState.value == LayerVisibilityState.visible)
+      {
+        layer.doManualRaster = true;
+      }
+      invalidateDependents(layer: layer);
+    }
+    notifyListeners();
   }
 
   void remapLayers({required final KPalRampData newData, required final HashMap<
@@ -932,58 +941,6 @@ class LayerCollection with ChangeNotifier {
     final Set<RasterableLayerState> deps = _getDependencies(layer: layer);
     for (final RasterableLayerState dep in deps) {
       unlockLayerFromRendering(layer: dep);
-    }
-  }
-
-  /*List<RasterableLayerState> _getRenderOrder() {
-    final List<RasterableLayerState> result = <RasterableLayerState>[];
-    final Set<RasterableLayerState> visited = <RasterableLayerState>{};
-    final Set<RasterableLayerState> visiting = <RasterableLayerState>{};
-
-    void visit(final RasterableLayerState layer) {
-      if (visited.contains(layer)) return;
-
-      if (visiting.contains(layer)) {
-        throw StateError(
-            'Circular dependency detected in layer graph for frame',);
-      }
-
-      visiting.add(layer);
-
-      final Set<RasterableLayerState> deps = _getDependencies(layer: layer);
-      for (final RasterableLayerState dep in deps) {
-        visit(dep);
-      }
-
-      visiting.remove(layer);
-      visited.add(layer);
-      result.add(layer);
-    }
-
-    for (int i = _layers.length - 1; i >= 0; i--) {
-      if (_layers[i] is RasterableLayerState) {
-        visit(_layers[i] as RasterableLayerState);
-      }
-    }
-
-    return result;
-  }*/
-
-  void debugPrintDependencies() {
-    debugPrint('=== Dependency Graph for Frame ===');
-    for (int i = 0; i < _layers.length; i++) {
-      final LayerState layer = _layers[i];
-      if (layer is RasterableLayerState) {
-        final Set<RasterableLayerState> deps = _getDependencies(layer: layer);
-        final Set<RasterableLayerState> dependents = _getDependents(
-            layer: layer,);
-        debugPrint('Layer $i (${layer.runtimeType}):');
-        debugPrint(
-            '  Depends on: ${deps.map((final RasterableLayerState l) => _layers.indexOf(l)).toList()}',);
-        debugPrint('  Dependents: ${dependents
-            .map((final RasterableLayerState l) => _layers.indexOf(l))
-            .toList()}');
-      }
     }
   }
 }

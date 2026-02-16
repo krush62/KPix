@@ -612,18 +612,5 @@ class DrawingLayerState extends RasterableLayerState
     previousRaster?.dispose();
   }
 
-  void debugPrintState()
-  {
-    debugPrint('DrawingLayer State:');
-    debugPrint('  isRasterizing: $isRasterizing');
-    debugPrint('  doManualRaster: $doManualRaster');
-    debugPrint('  _isUpdateScheduled: $_isUpdateScheduled');
-    debugPrint('  rasterQueue.length: ${rasterQueue.length}');
-    debugPrint('  _data.length: ${_data.length}');
-
-    final AppState appState = GetIt.I.get<AppState>();
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
-    debugPrint('  Present in ${frames.length} frame(s)');
-  }
 
 }

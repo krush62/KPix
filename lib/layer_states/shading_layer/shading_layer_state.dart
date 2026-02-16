@@ -447,24 +447,5 @@ class ShadingLayerState extends RasterableLayerState
     previousRaster?.dispose();
   }
 
-  void debugPrintState()
-  {
-    debugPrint('ShadingLayer State:');
-    debugPrint('  isRasterizing: $isRasterizing');
-    debugPrint('  doManualRaster: $doManualRaster');
-    debugPrint('  _isUpdateScheduled: $_isUpdateScheduled');
-    debugPrint('  rasterPixels.length: ${rasterPixels.length}');
-    debugPrint('  sData.length: ${sData.length}');
-
-    final AppState appState = GetIt.I.get<AppState>();
-    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
-    debugPrint('  Present in ${frames.length} frame(s)');
-
-    for (int i = 0; i < frames.length; i++) {
-      final Frame frame = frames[i];
-      final bool depsComplete = frame.layerList.areDependenciesComplete(layer: this);
-      debugPrint('  Frame $i dependencies complete: $depsComplete');
-    }
-  }
 
 }

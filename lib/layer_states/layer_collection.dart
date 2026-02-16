@@ -49,9 +49,9 @@ class LayerCollection with ChangeNotifier {
       Set<RasterableLayerState>> _layerDependents = <RasterableLayerState,
       Set<RasterableLayerState>>{};
 
-  final Set<RasterableLayerState> _layersCurrentlyRendering = {};
-  final Map<RasterableLayerState, int> _recentInvalidations = {};
-  final Map<RasterableLayerState, DateTime> _lastInvalidationTime = {};
+  final Set<RasterableLayerState> _layersCurrentlyRendering = <RasterableLayerState>{};
+  final Map<RasterableLayerState, int> _recentInvalidations = <RasterableLayerState, int>{};
+  final Map<RasterableLayerState, DateTime> _lastInvalidationTime = <RasterableLayerState, DateTime>{};
 
   bool get isEmpty {
     return _layers.isEmpty;

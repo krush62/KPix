@@ -31,6 +31,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:logger/logger.dart';
 
 class ShadingLayerState extends RasterableLayerState
 {
@@ -266,12 +267,12 @@ class ShadingLayerState extends RasterableLayerState
             final RasterableLayerState layer = rasterLayers[i];
 
             if (layer.isRasterizing) {
-              debugPrint('Warning: Shading layer reading from layer at index $i that is still rasterizing');
+              GetIt.I.get<Logger>().e("Warning: Shading layer reading from layer at index $i that is still rasterizing.");
               continue;
             }
 
             if (layer.doManualRaster) {
-              debugPrint('Warning: Shading layer reading from layer at index $i that has pending updates');
+              GetIt.I.get<Logger>().e("Warning: Shading layer reading from layer at index $i that has pending updates");
               continue;
             }
 
@@ -280,7 +281,7 @@ class ShadingLayerState extends RasterableLayerState
             {
               if (layer.rasterPixels.isEmpty) {
                 if (layer.previousRaster == null) {
-                  debugPrint('Warning: Layer at index $i has no rasterPixels and no previous raster');
+                  GetIt.I.get<Logger>().e("Warning: Layer at index $i has no rasterPixels and no previous raster");
                   continue;
                 }
               }
@@ -403,8 +404,8 @@ class ShadingLayerState extends RasterableLayerState
         if (_isUpdateScheduled) {
           _rasterCreated(rasterResult: rasterResult);
         }
-      }).catchError((final dynamic error) {
-        debugPrint('Error during shading layer rasterization: $error');
+      }).catchError((e, s) {
+        GetIt.I.get<Logger>().e("Error during shading layer rasterization", error: e);
         isRasterizing = false;
         _isUpdateScheduled = false;
       }).whenComplete(() {

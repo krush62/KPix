@@ -34,6 +34,7 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:logger/logger.dart';
 
 class LayerCollection with ChangeNotifier {
   static const int maxLayers = 256;
@@ -860,7 +861,7 @@ class LayerCollection with ChangeNotifier {
           _recentInvalidations[dependent] = (_recentInvalidations[dependent] ?? 0) + 1;
 
           if (_recentInvalidations[dependent]! > 10) {
-            debugPrint('WARNING: Breaking invalidation loop for ${dependent.runtimeType} at index ${_layers.indexOf(dependent)}');
+            GetIt.I.get<Logger>().e("WARNING: Breaking invalidation loop for ${dependent.runtimeType} at index ${_layers.indexOf(dependent)}");
             _recentInvalidations[dependent] = 0;
             dependent.doManualRaster = true;
             return;

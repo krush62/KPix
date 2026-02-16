@@ -33,6 +33,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:logger/logger.dart';
 
 class DrawingLayerState extends RasterableLayerState
 {
@@ -124,6 +125,7 @@ class DrawingLayerState extends RasterableLayerState
 
   Future<void> updateTimerCallback({required final Timer timer}) async
   {
+    //final int startTime = DateTime.now().millisecondsSinceEpoch;
     if (_isUpdateScheduled) {
       return;
     }
@@ -146,8 +148,9 @@ class DrawingLayerState extends RasterableLayerState
         if (_isUpdateScheduled) {
           _rasterizingDone(rasterResult: rasterResult, startedFromManual: wasManualRaster);
         }
-      } catch (e) {
-        debugPrint('Error during drawing layer rasterization: $e');
+        //debugPrint("END: " + (DateTime.now().millisecondsSinceEpoch - startTime).toString());
+      } catch (e, s) {
+        GetIt.I.get<Logger>().e("Error during drawing layer rasterization", error: e, stackTrace: s);
         isRasterizing = false;
       } finally {
         _isUpdateScheduled = false;

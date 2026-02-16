@@ -16,6 +16,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings_widget.da
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/rendering_helper.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -46,6 +48,9 @@ class DrawingLayerState extends RasterableLayerState
   Map<Frame, HashMap<CoordinateSetI, int>> settingsShadingPixels = <Frame, HashMap<CoordinateSetI, int>>{};
 
   bool _isUpdateScheduled = false;
+
+  final List<DirtyRegion> dirtyRegions = <DirtyRegion>[];
+  bool _forceFullRender = false;
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {
@@ -86,15 +91,17 @@ class DrawingLayerState extends RasterableLayerState
 
   void _settingsChanged()
   {
-    if (isRasterizing) {
-      doManualRaster = true;
+    if (isRasterizing)
+    {
+      forceFullRender();
       return;
     }
-    doManualRaster = true;
+    forceFullRender();
     final AppState appState = GetIt.I.get<AppState>();
     final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
 
-    for (final Frame frame in frames) {
+    for (final Frame frame in frames)
+    {
       frame.layerList.invalidateDependents(layer: this);
     }
   }
@@ -125,7 +132,6 @@ class DrawingLayerState extends RasterableLayerState
 
   Future<void> updateTimerCallback({required final Timer timer}) async
   {
-    //final int startTime = DateTime.now().millisecondsSinceEpoch;
     if (_isUpdateScheduled) {
       return;
     }
@@ -148,7 +154,6 @@ class DrawingLayerState extends RasterableLayerState
         if (_isUpdateScheduled) {
           _rasterizingDone(rasterResult: rasterResult, startedFromManual: wasManualRaster);
         }
-        //debugPrint("END: " + (DateTime.now().millisecondsSinceEpoch - startTime).toString());
       } catch (e, s) {
         GetIt.I.get<Logger>().e("Error during drawing layer rasterization", error: e, stackTrace: s);
         isRasterizing = false;
@@ -215,7 +220,7 @@ class DrawingLayerState extends RasterableLayerState
   void remapAllColors({required final HashMap<ColorReference, ColorReference> rampMap})
   {
     if (isRasterizing) {
-      doManualRaster = true;
+      forceFullRender();
       return;
     }
 
@@ -225,12 +230,12 @@ class DrawingLayerState extends RasterableLayerState
       _data[entry.key] = rampMap[entry.value]!;
     }
     isRasterizing = false;
-    doManualRaster = true;
+    forceFullRender();
 
-    // ===== CORRECTED: Cross-frame invalidation =====
     final AppState appState = GetIt.I.get<AppState>();
     final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
-    for (final Frame frame in frames) {
+    for (final Frame frame in frames)
+    {
       frame.layerList.invalidateDependents(layer: this);
     }
   }
@@ -252,7 +257,7 @@ class DrawingLayerState extends RasterableLayerState
   void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})
   {
     if (isRasterizing) {
-      doManualRaster = true;
+      forceFullRender();
       return;
     }
 
@@ -265,12 +270,12 @@ class DrawingLayerState extends RasterableLayerState
       }
     }
     isRasterizing = false;
-    doManualRaster = true;
+    forceFullRender();
 
-    // ===== CORRECTED: Cross-frame invalidation =====
     final AppState appState = GetIt.I.get<AppState>();
     final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
-    for (final Frame frame in frames) {
+    for (final Frame frame in frames)
+    {
       frame.layerList.invalidateDependents(layer: this);
     }
   }
@@ -375,7 +380,20 @@ class DrawingLayerState extends RasterableLayerState
     }
   }
 
-  Future<ui.Image> _createRasterFromLayers({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers}) async
+  Future<ui.Image> _createRasterFromLayers({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers,}) async
+  {
+    final RenderStrategy strategy = determineStrategy(
+      dirtyRegions: dirtyRegions,
+      canvasSize: canvasSize,
+    );
+    final ui.Image img = (strategy == RenderStrategy.full || _forceFullRender || previousRaster == null) ?
+      await _fullRender(canvasSize: canvasSize, frame: frame, frameIsSelected: frameIsSelected, layers: layers) :
+      await _regionalRender(canvasSize: canvasSize, frame: frame, frameIsSelected: frameIsSelected, layers: layers);
+
+    return img;
+  }
+
+  Future<ui.Image> _fullRender({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers}) async
   {
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     //NORMAL OPAQUE PIXELS
@@ -414,7 +432,128 @@ class DrawingLayerState extends RasterableLayerState
     }
     );
 
+    dirtyRegions.clear();
+    _forceFullRender = false;
     return await completerImg.future;
+  }
+
+  Future<ui.Image> _regionalRender({
+    required final CoordinateSetI canvasSize,
+    required final Frame? frame,
+    required final bool frameIsSelected,
+    required final List<LayerState> layers,
+  }) async
+  {
+    final List<DirtyRegion> expandedRegions = _expandDirtyRegionsForEffects(regions: dirtyRegions);
+
+    final List<DirtyRegion> mergedRegions = mergeOverlappingRegions(regions: expandedRegions);
+
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+    final Paint paint = Paint();
+
+    ui.Image? baseImage;
+
+    if (frame != null && rasterImageMap.value.containsKey(frame))
+    {
+      baseImage = rasterImageMap.value[frame]!.raster;
+    }
+    else if (rasterImage.value != null)
+    {
+      baseImage = rasterImage.value;
+    }
+    else
+    {
+      baseImage = previousRaster;
+    }
+
+    if (baseImage == null)
+    {
+      return await _fullRender(canvasSize: canvasSize, frame: frame, frameIsSelected: frameIsSelected, layers: layers);
+    }
+
+    canvas.drawImage(baseImage, Offset.zero, paint);
+
+    for (final DirtyRegion region in mergedRegions)
+    {
+      final DirtyRegion clampedRegion = _clampRegion(region: region, canvasSize: canvasSize);
+
+      final ui.Image regionImage = await _renderRegion(
+        region: clampedRegion,
+        canvasSize: canvasSize,
+        frame: frame,
+        frameIsSelected: frameIsSelected,
+        layers: layers,
+      );
+
+      canvas.drawImage(
+        regionImage,
+        Offset(clampedRegion.x.toDouble(), clampedRegion.y.toDouble()),
+        paint,
+      );
+
+      regionImage.dispose();
+    }
+
+    final ui.Picture picture = recorder.endRecording();
+    final ui.Image result = await picture.toImage(canvasSize.x, canvasSize.y);
+    picture.dispose();
+
+    dirtyRegions.clear();
+
+    return result;
+  }
+
+  Future<ui.Image> _renderRegion({
+    required final DirtyRegion region,
+    required final CoordinateSetI canvasSize,
+    required final Frame? frame,
+    required final bool frameIsSelected,
+    required final List<LayerState> layers,
+  }) async
+  {
+    final ByteData byteData = ByteData(region.width * region.height * 4);
+    final CoordinateColorMap allPixels = _getContentWithSelection();
+    if (frame != null)
+    {
+      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: allPixels);
+    }
+    _settingsPixels = settings.getSettingsPixels(data: allPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
+
+    allPixels.addAll(_settingsPixels);
+
+    for (int y = region.y; y < region.y + region.height; y++)
+    {
+      for (int x = region.x; x < region.x + region.width; x++)
+      {
+        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+        final ColorReference? colorRef = allPixels[coord];
+
+        if (colorRef != null) {
+          final Color color = colorRef.getIdColor().color;
+          final int bufferX = x - region.x;
+          final int bufferY = y - region.y;
+          final int index = (bufferY * region.width + bufferX) * 4;
+
+          if (index >= 0 && index < byteData.lengthInBytes) {
+            byteData.setUint32(index, argbToRgba(argb: color.toARGB32()));
+          }
+        }
+      }
+    }
+
+    final Completer<ui.Image> completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      byteData.buffer.asUint8List(),
+      region.width,
+      region.height,
+      ui.PixelFormat.rgba8888,
+          (final ui.Image image) {
+        completer.complete(image);
+      },
+    );
+
+    return await completer.future;
   }
 
   void rasterOutline({required final List<LayerState> layers})
@@ -470,11 +609,16 @@ class DrawingLayerState extends RasterableLayerState
 
   void setDataAll({required final CoordinateColorMapNullable list})
   {
-    if (isRasterizing) {
+    if (isRasterizing)
+    {
       rasterQueue.addAll(list);
       doManualRaster = true;
-    } else {
+    }
+    else
+    {
       rasterQueue.addAll(list);
+      _trackDirtyRegions(changedCoords: list.keys);
+      doManualRaster = true;
     }
   }
 
@@ -546,6 +690,7 @@ class DrawingLayerState extends RasterableLayerState
     }
     removeDataAll(removeCoordList: removeCoordList);
     setDataAll(list: rotatedContent);
+    forceFullRender();
   }
 
   @override
@@ -582,7 +727,7 @@ class DrawingLayerState extends RasterableLayerState
     _data.clear();
     rasterQueue.clear();
     _data.addAll(croppedContent);
-
+    forceFullRender();
   }
 
   int getPixelCountForRamp({required final KPalRampData ramp})
@@ -598,8 +743,89 @@ class DrawingLayerState extends RasterableLayerState
     return count;
   }
 
+  void _trackDirtyRegions({required final Iterable<CoordinateSetI> changedCoords})
+  {
+    if (changedCoords.isEmpty) return;
+
+    int minX = changedCoords.first.x;
+    int minY = changedCoords.first.y;
+    int maxX = changedCoords.first.x;
+    int maxY = changedCoords.first.y;
+
+    for (final CoordinateSetI coord in changedCoords)
+    {
+      minX = min(minX, coord.x);
+      minY = min(minY, coord.y);
+      maxX = max(maxX, coord.x);
+      maxY = max(maxY, coord.y);
+    }
+
+    dirtyRegions.add(
+      DirtyRegion(
+        x: minX,
+        y: minY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1,
+      ),
+    );
+  }
+
+  List<DirtyRegion> _expandDirtyRegionsForEffects({required final List<DirtyRegion> regions})
+  {
+    final List<DirtyRegion> expanded = <DirtyRegion>[];
+
+    for (final DirtyRegion region in regions) {
+      int maxExpansion = 0;
+
+
+      if (settings.outerStrokeStyle.value != OuterStrokeStyle.off)
+      {
+        int strokeWidth = 1;
+        if (settings.outerStrokeStyle.value == OuterStrokeStyle.glow)
+        {
+          strokeWidth = settings.outerGlowDepth.value;
+        }
+        maxExpansion = max(maxExpansion, strokeWidth + 1);
+      }
+      if (settings.dropShadowStyle.value != DropShadowStyle.off)
+      {
+        final int shadowExpansion = max(
+          settings.dropShadowOffset.value.x.abs(),
+          settings.dropShadowOffset.value.y.abs(),
+        );
+        maxExpansion = max(maxExpansion, shadowExpansion + 1);
+      }
+      expanded.add(region.expand(padding: maxExpansion));
+    }
+
+    return expanded;
+  }
+
+  DirtyRegion _clampRegion({required final DirtyRegion region, required final CoordinateSetI canvasSize})
+  {
+    final int x = max(0, region.x);
+    final int y = max(0, region.y);
+    final int right = min(canvasSize.x, region.x + region.width);
+    final int bottom = min(canvasSize.y, region.y + region.height);
+
+    return DirtyRegion(
+      x: x,
+      y: y,
+      width: right - x,
+      height: bottom - y,
+    );
+  }
+
+  void forceFullRender()
+  {
+    _forceFullRender = true;
+    dirtyRegions.clear();
+    doManualRaster = true;
+  }
+
   @override
-  LayerSettingsWidget getSettingsWidget() {
+  LayerSettingsWidget getSettingsWidget()
+  {
     return DrawingLayerSettingsWidget(layer: this);
   }
 

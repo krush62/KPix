@@ -884,8 +884,7 @@ class LayerCollection with ChangeNotifier {
 
       if (layer is ShadingLayerState || layer is DitherLayerState) {
         for (int j = i + 1; j < _layers.length; j++) {
-          if (_layers[j] is DrawingLayerState &&
-              _layers[j] is RasterableLayerState) {
+          if (_layers[j] is RasterableLayerState) {
             _addDependency(
                 dependent: layer as RasterableLayerState,
                 dependency: _layers[j] as RasterableLayerState,

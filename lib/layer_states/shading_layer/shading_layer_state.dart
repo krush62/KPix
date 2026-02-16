@@ -366,33 +366,37 @@ class ShadingLayerState extends RasterableLayerState
 
   void _updateTimerCallback({required final Timer timer})
   {
-    if (_isUpdateScheduled) {
+    if (_isUpdateScheduled || !doManualRaster || isRasterizing) {
       return;
     }
 
-    if (doManualRaster && !isRasterizing)
-    {
-      final AppState appState = GetIt.I.get<AppState>();
-      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    _isUpdateScheduled = true;
+    isRasterizing = true;
 
-      bool canRender = false;
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+
+    for (final Frame frame in frames) {
+      frame.layerList.lockLayerAndDependenciesForRendering(layer: this);
+    }
+
+    bool allDepsComplete = true;
+    for (final Frame frame in frames) {
+      if (!frame.layerList.areDependenciesComplete(layer: this)) {
+        allDepsComplete = false;
+        break;
+      }
+    }
+
+    if (!allDepsComplete) {
+      isRasterizing = false;
+      _isUpdateScheduled = false;
+      doManualRaster = true;
       for (final Frame frame in frames) {
-        if (frame.layerList.areDependenciesComplete(layer: this)) {
-          canRender = true;
-          break;
-        }
+        frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
       }
-
-      if (!canRender) {
-        return;
-      }
-
-      _isUpdateScheduled = true;
-      isRasterizing = true;
-
-      for (final Frame frame in frames) {
-        frame.layerList.lockLayerForRendering(layer: this);
-      }
+      return;
+    }
 
       createRasters().then((final DualRasterResult rasterResult)
       {
@@ -405,11 +409,11 @@ class ShadingLayerState extends RasterableLayerState
         _isUpdateScheduled = false;
       }).whenComplete(() {
         for (final Frame frame in frames) {
-          frame.layerList.unlockLayerFromRendering(layer: this);
+          frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
         }
       });
-    }
   }
+
 
   @override
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset})

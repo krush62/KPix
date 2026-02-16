@@ -136,7 +136,7 @@ class DrawingLayerState extends RasterableLayerState
       final AppState appState = GetIt.I.get<AppState>();
       final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
       for (final Frame frame in frames) {
-        frame.layerList.lockLayerForRendering(layer: this);
+        frame.layerList.lockLayerAndDependenciesForRendering(layer: this);
       }
 
       try {
@@ -153,7 +153,7 @@ class DrawingLayerState extends RasterableLayerState
         _isUpdateScheduled = false;
 
         for (final Frame frame in frames) {
-          frame.layerList.unlockLayerFromRendering(layer: this);
+          frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
         }
       }
     }

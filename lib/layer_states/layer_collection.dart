@@ -918,6 +918,24 @@ class LayerCollection with ChangeNotifier {
     _layersCurrentlyRendering.remove(layer);
   }
 
+  void lockLayerAndDependenciesForRendering({required final RasterableLayerState layer}) {
+    lockLayerForRendering(layer: layer);
+
+    final Set<RasterableLayerState> deps = _getDependencies(layer: layer);
+    for (final RasterableLayerState dep in deps) {
+      lockLayerForRendering(layer: dep);
+    }
+  }
+
+  void unlockLayerAndDependenciesFromRendering({required final RasterableLayerState layer}) {
+    unlockLayerFromRendering(layer: layer);
+
+    final Set<RasterableLayerState> deps = _getDependencies(layer: layer);
+    for (final RasterableLayerState dep in deps) {
+      unlockLayerFromRendering(layer: dep);
+    }
+  }
+
   /*List<RasterableLayerState> _getRenderOrder() {
     final List<RasterableLayerState> result = <RasterableLayerState>[];
     final Set<RasterableLayerState> visited = <RasterableLayerState>{};

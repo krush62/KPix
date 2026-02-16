@@ -6,6 +6,7 @@
 ![release](https://img.shields.io/github/v/release/krush62/KPix)
 ![release-date](https://img.shields.io/github/release-date/krush62/KPix)
 ![downloads](https://img.shields.io/github/downloads/krush62/KPix/total)
+[![NO AI](https://raw.githubusercontent.com/nuxy/no-ai-badge/master/badge.svg)](https://github.com/nuxy/no-ai-badge)
 
 ![last-commit](https://img.shields.io/github/last-commit/krush62/KPix)
 ![issues](https://img.shields.io/github/issues-raw/krush62/KPix)

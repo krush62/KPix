@@ -44,6 +44,8 @@ class DrawingLayerState extends RasterableLayerState
   final DrawingLayerSettings settings;
   Map<Frame, HashMap<CoordinateSetI, int>> settingsShadingPixels = <Frame, HashMap<CoordinateSetI, int>>{};
 
+  bool _isUpdateScheduled = false;
+
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
@@ -83,7 +85,17 @@ class DrawingLayerState extends RasterableLayerState
 
   void _settingsChanged()
   {
+    if (isRasterizing) {
+      doManualRaster = true;
+      return;
+    }
     doManualRaster = true;
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+
+    for (final Frame frame in frames) {
+      frame.layerList.invalidateDependents(layer: this);
+    }
   }
 
 
@@ -112,15 +124,48 @@ class DrawingLayerState extends RasterableLayerState
 
   Future<void> updateTimerCallback({required final Timer timer}) async
   {
+    if (_isUpdateScheduled) {
+      return;
+    }
+
     if ((rasterQueue.isNotEmpty || doManualRaster) && !isRasterizing)
     {
+      _isUpdateScheduled = true;
       isRasterizing = true;
-      _createRaster().then((final DualRasterResult rasterResult) => _rasterizingDone(rasterResult: rasterResult, startedFromManual: doManualRaster));
+
+      final AppState appState = GetIt.I.get<AppState>();
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      for (final Frame frame in frames) {
+        frame.layerList.lockLayerAndDependenciesForRendering(layer: this);
+      }
+
+      try {
+        final bool wasManualRaster = doManualRaster;
+        final DualRasterResult rasterResult = await _createRaster();
+
+        if (_isUpdateScheduled) {
+          _rasterizingDone(rasterResult: rasterResult, startedFromManual: wasManualRaster);
+        }
+      } catch (e) {
+        debugPrint('Error during drawing layer rasterization: $e');
+        isRasterizing = false;
+      } finally {
+        _isUpdateScheduled = false;
+
+        for (final Frame frame in frames) {
+          frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
+        }
+      }
     }
   }
 
   void deleteRamp({required final KPalRampData ramp})
   {
+    if (isRasterizing) {
+      doManualRaster = true;
+      return;
+    }
+
     isRasterizing = true;
     final Set<CoordinateSetI> deleteData = <CoordinateSetI>{};
     for (final CoordinateColor entry in _data.entries)
@@ -139,6 +184,13 @@ class DrawingLayerState extends RasterableLayerState
     settings.deleteRamp(ramp: ramp);
 
     isRasterizing = false;
+    doManualRaster = true;
+
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    for (final Frame frame in frames) {
+      frame.layerList.invalidateDependents(layer: this);
+    }
   }
 
   void deleteRampFromLayerEffects({required final KPalRampData ramp, required final ColorReference backupColor})
@@ -159,12 +211,25 @@ class DrawingLayerState extends RasterableLayerState
 
   void remapAllColors({required final HashMap<ColorReference, ColorReference> rampMap})
   {
+    if (isRasterizing) {
+      doManualRaster = true;
+      return;
+    }
+
     isRasterizing = true;
     for (final CoordinateColor entry in _data.entries)
     {
       _data[entry.key] = rampMap[entry.value]!;
     }
     isRasterizing = false;
+    doManualRaster = true;
+
+    // ===== CORRECTED: Cross-frame invalidation =====
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    for (final Frame frame in frames) {
+      frame.layerList.invalidateDependents(layer: this);
+    }
   }
 
   void remapLayerEffectColors({required final HashMap<ColorReference, ColorReference> rampMap})
@@ -183,6 +248,11 @@ class DrawingLayerState extends RasterableLayerState
 
   void remapSingleRamp({required final KPalRampData newData, required final HashMap<int, int> map})
   {
+    if (isRasterizing) {
+      doManualRaster = true;
+      return;
+    }
+
     isRasterizing = true;
     for (final CoordinateColor entry in _data.entries)
     {
@@ -192,6 +262,14 @@ class DrawingLayerState extends RasterableLayerState
       }
     }
     isRasterizing = false;
+    doManualRaster = true;
+
+    // ===== CORRECTED: Cross-frame invalidation =====
+    final AppState appState = GetIt.I.get<AppState>();
+    final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+    for (final Frame frame in frames) {
+      frame.layerList.invalidateDependents(layer: this);
+    }
   }
 
   void remapSingleRampLayerEffects({required final KPalRampData newData, required final HashMap<int, int> map})
@@ -214,10 +292,16 @@ class DrawingLayerState extends RasterableLayerState
   void _rasterizingDone({required final DualRasterResult rasterResult, required final bool startedFromManual})
   {
     isRasterizing = false;
+    previousRaster?.dispose();
     previousRaster = rasterImage.value;
-    rasterImage.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.raster : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
-    thumbnail.value = rasterResult.externalStackImages != null ? rasterResult.externalStackImages!.thumbnail : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
+    rasterImage.value = rasterResult.externalStackImages != null
+        ? rasterResult.externalStackImages!.raster
+        : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
+    thumbnail.value = rasterResult.externalStackImages != null
+        ? rasterResult.externalStackImages!.thumbnail
+        : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
     rasterImageMap.value = rasterResult.rasterImages;
+
     if (startedFromManual)
     {
       doManualRaster = false;
@@ -227,8 +311,6 @@ class DrawingLayerState extends RasterableLayerState
     {
       GetIt.I.get<AppState>().newRasterData(layer: this);
     }
-
-
   }
 
   CoordinateColorMap _getContentWithSelection()
@@ -385,15 +467,25 @@ class DrawingLayerState extends RasterableLayerState
 
   void setDataAll({required final CoordinateColorMapNullable list})
   {
-    rasterQueue.addAll(list);
+    if (isRasterizing) {
+      rasterQueue.addAll(list);
+      doManualRaster = true;
+    } else {
+      rasterQueue.addAll(list);
+    }
   }
 
-  Future <void> removeDataAll({required final Set<CoordinateSetI> removeCoordList}) async
+  Future<void> removeDataAll({required final Set<CoordinateSetI> removeCoordList}) async
   {
+    if (isRasterizing) {
+      await Future<dynamic>.delayed(const Duration(milliseconds: 10));
+    }
+
     for (final CoordinateSetI coord in removeCoordList)
     {
       rasterQueue[coord] = null;
     }
+    doManualRaster = true;
   }
 
 
@@ -507,4 +599,19 @@ class DrawingLayerState extends RasterableLayerState
   LayerSettingsWidget getSettingsWidget() {
     return DrawingLayerSettingsWidget(layer: this);
   }
+
+  void dispose()
+  {
+    _isUpdateScheduled = false;
+
+    rasterQueue.clear();
+    _data.clear();
+    _settingsPixels.clear();
+
+    rasterImage.value?.dispose();
+    thumbnail.value?.dispose();
+    previousRaster?.dispose();
+  }
+
+
 }

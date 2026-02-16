@@ -292,6 +292,7 @@ class DrawingLayerState extends RasterableLayerState
   void _rasterizingDone({required final DualRasterResult rasterResult, required final bool startedFromManual})
   {
     isRasterizing = false;
+    previousRaster?.dispose();
     previousRaster = rasterImage.value;
     rasterImage.value = rasterResult.externalStackImages != null
         ? rasterResult.externalStackImages!.raster

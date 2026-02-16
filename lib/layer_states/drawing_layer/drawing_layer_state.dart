@@ -85,6 +85,10 @@ class DrawingLayerState extends RasterableLayerState
 
   void _settingsChanged()
   {
+    if (isRasterizing) {
+      doManualRaster = true;
+      return;
+    }
     doManualRaster = true;
     final AppState appState = GetIt.I.get<AppState>();
     final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
@@ -129,9 +133,14 @@ class DrawingLayerState extends RasterableLayerState
       _isUpdateScheduled = true;
       isRasterizing = true;
 
+      final AppState appState = GetIt.I.get<AppState>();
+      final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      for (final Frame frame in frames) {
+        frame.layerList.lockLayerForRendering(layer: this);
+      }
+
       try {
         final bool wasManualRaster = doManualRaster;
-
         final DualRasterResult rasterResult = await _createRaster();
 
         if (_isUpdateScheduled) {
@@ -142,6 +151,10 @@ class DrawingLayerState extends RasterableLayerState
         isRasterizing = false;
       } finally {
         _isUpdateScheduled = false;
+
+        for (final Frame frame in frames) {
+          frame.layerList.unlockLayerFromRendering(layer: this);
+        }
       }
     }
   }

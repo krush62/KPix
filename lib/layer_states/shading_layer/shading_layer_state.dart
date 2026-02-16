@@ -105,6 +105,10 @@ class ShadingLayerState extends RasterableLayerState
         sData[entry.key] = sData[entry.key]!.clamp(-settings.shadingStepsMinus.value, settings.shadingStepsPlus.value);
       }
     }
+    if (isRasterizing) {
+      doManualRaster = true;
+      return;
+    }
     doManualRaster = true;
 
     final AppState appState = GetIt.I.get<AppState>();
@@ -386,6 +390,10 @@ class ShadingLayerState extends RasterableLayerState
       _isUpdateScheduled = true;
       isRasterizing = true;
 
+      for (final Frame frame in frames) {
+        frame.layerList.lockLayerForRendering(layer: this);
+      }
+
       createRasters().then((final DualRasterResult rasterResult)
       {
         if (_isUpdateScheduled) {
@@ -395,6 +403,10 @@ class ShadingLayerState extends RasterableLayerState
         debugPrint('Error during shading layer rasterization: $error');
         isRasterizing = false;
         _isUpdateScheduled = false;
+      }).whenComplete(() {
+        for (final Frame frame in frames) {
+          frame.layerList.unlockLayerFromRendering(layer: this);
+        }
       });
     }
   }

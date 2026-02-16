@@ -49,6 +49,9 @@ class LayerCollection with ChangeNotifier {
       Set<RasterableLayerState>> _layerDependents = <RasterableLayerState,
       Set<RasterableLayerState>>{};
 
+  final Set<RasterableLayerState> _layersCurrentlyRendering = {};
+  final Map<RasterableLayerState, int> _recentInvalidations = {};
+  final Map<RasterableLayerState, DateTime> _lastInvalidationTime = {};
 
   bool get isEmpty {
     return _layers.isEmpty;
@@ -830,10 +833,37 @@ class LayerCollection with ChangeNotifier {
 
   void invalidateDependents({required final RasterableLayerState layer}) {
     final Set<RasterableLayerState> dependents = _getDependents(layer: layer);
+
     for (final RasterableLayerState dependent in dependents) {
-      if (!dependent.doManualRaster && !dependent.isRasterizing) {
+      if (_layersCurrentlyRendering.contains(dependent)) {
+        continue;
+      }
+
+      if (dependent.isRasterizing) {
+        continue;
+      }
+
+      if (!dependent.doManualRaster) {
+        final DateTime now = DateTime.now();
+        final DateTime? lastTime = _lastInvalidationTime[dependent];
+
+        if (lastTime != null && now.difference(lastTime).inMilliseconds < 100) {
+          _recentInvalidations[dependent] = (_recentInvalidations[dependent] ?? 0) + 1;
+
+          if (_recentInvalidations[dependent]! > 10) {
+            debugPrint('WARNING: Breaking invalidation loop for ${dependent.runtimeType} at index ${_layers.indexOf(dependent)}');
+            _recentInvalidations[dependent] = 0;
+            dependent.doManualRaster = true;
+            return;
+          }
+        } else {
+          _recentInvalidations[dependent] = 1;
+        }
+
+        _lastInvalidationTime[dependent] = now;
+
         dependent.doManualRaster = true;
-        invalidateDependents(layer: dependent); // Recursive cascade
+        invalidateDependents(layer: dependent);
       }
     }
   }
@@ -841,6 +871,9 @@ class LayerCollection with ChangeNotifier {
   void _clearDependencies() {
     _layerDependencies.clear();
     _layerDependents.clear();
+    _layersCurrentlyRendering.clear();
+    _recentInvalidations.clear();
+    _lastInvalidationTime.clear();
   }
 
   void _rebuildDependencies() {
@@ -875,6 +908,14 @@ class LayerCollection with ChangeNotifier {
         frame.layerList.invalidateDependents(layer: layer);
       }
     }
+  }
+
+  void lockLayerForRendering({required final RasterableLayerState layer}) {
+    _layersCurrentlyRendering.add(layer);
+  }
+
+  void unlockLayerFromRendering({required final RasterableLayerState layer}) {
+    _layersCurrentlyRendering.remove(layer);
   }
 
   /*List<RasterableLayerState> _getRenderOrder() {

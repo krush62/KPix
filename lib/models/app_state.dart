@@ -1217,7 +1217,11 @@ class AppState
       {
         layerState.visibilityState.value = LayerVisibilityState.visible;
       }
-      newRasterData(layer: layerState);
+      final List<Frame> layerFrames = timeline.findFramesForLayer(layer: layerState);
+      for (final Frame frame in layerFrames)
+      {
+        frame.layerList.onLayerVisibilityChanged(layer: layerState);
+      }
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange, originLayer: layerState);
     }
   }

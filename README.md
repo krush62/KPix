@@ -6,6 +6,7 @@
 ![release](https://img.shields.io/github/v/release/krush62/KPix)
 ![release-date](https://img.shields.io/github/release-date/krush62/KPix)
 ![downloads](https://img.shields.io/github/downloads/krush62/KPix/total)
+[![NO AI](https://raw.githubusercontent.com/nuxy/no-ai-badge/master/badge.svg)](https://github.com/nuxy/no-ai-badge)
 
 ![last-commit](https://img.shields.io/github/last-commit/krush62/KPix)
 ![issues](https://img.shields.io/github/issues-raw/krush62/KPix)
@@ -41,7 +42,7 @@ KPix is a pixel art editor for still images and animations with a focus on gener
 ⭐ extensive animation capabilities\
 ⭐ image importing including automatic palette creation\
 ⭐ image export including layers to Aseprite, Pixelorama, Gimp and Photoshop\
-⭐ multi-platform support (Windows, Linux, Android, Web)\
+⭐ multi-platform support (Windows, Linux, Android, macOS, Web)\
 ⭐ stylus and touch support\
 ⭐ automatic light/dark theme
 
@@ -174,7 +175,14 @@ Download the Android apk file and install it manually (side-loading needs to be 
 
 *Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
 
-[//]: # (### macOS)
+## 🍎macOS
+❗ **The support for macOS is highly experimental and completely untested.**
+- Download the provided dmg file
+- Double-click the downloaded dmg file
+- Drag the application icon to the Applications folder shortcut within the window
+- Double-click the application icon to start the application
+
+
 [//]: # (### iOS/iPadOS)
 ## Web Version
 A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The web version has some limitations:

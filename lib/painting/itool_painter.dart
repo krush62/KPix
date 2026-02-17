@@ -1020,4 +1020,23 @@ abstract class IToolPainter
     return mirrorPoints;
   }
 
+  ui.Path getPathFromList({required final List<MapEntry<int, int>> pointList, required final CoordinateSetD offsetPos, required final double scaling})
+  {
+    final ui.Path path = ui.Path();
+    bool firstHandled = false;
+    for (final MapEntry<int, int> entry in pointList)
+    {
+      if (!firstHandled)
+      {
+        path.moveTo(offsetPos.x + (entry.key * scaling), offsetPos.y + (entry.value * scaling));
+        firstHandled = true;
+      }
+      else
+      {
+        path.lineTo(offsetPos.x + (entry.key * scaling),offsetPos.y + (entry.value * scaling));
+      }
+    }
+    return path;
+  }
+
 }

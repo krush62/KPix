@@ -39,6 +39,7 @@ class StampPainter extends IToolPainter
   final StampOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.stampOptions;
   final StampManager _manager = GetIt.I.get<StampManager>();
   final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _gridPosNorm = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
   bool _down = false;
@@ -48,6 +49,18 @@ class StampPainter extends IToolPainter
   ShaderDirection _lastShadingDirection = ShaderDirection.left;
   bool _lastShadingCurrentRamp = false;
   ColorReference? _lastColorSelection;
+
+  static const List<MapEntry<int, int>> _symbolPath = <MapEntry<int, int>>[
+    MapEntry<int, int>(0, 0),
+    MapEntry<int, int>(5, 0),
+    MapEntry<int, int>(5, 1),
+    MapEntry<int, int>(3, 1),
+    MapEntry<int, int>(4, 4),
+    MapEntry<int, int>(1, 4),
+    MapEntry<int, int>(2, 1),
+    MapEntry<int, int>(0, 1),
+    MapEntry<int, int>(0, 0),
+  ];
 
   @override
   void calculate({required final DrawingParameters drawParams})
@@ -63,6 +76,7 @@ class StampPainter extends IToolPainter
           value: drawParams.cursorPos!.y - drawParams.offset.dy,
           pixelSize: effPxlSize,)
           ;
+
       _cursorStartPos.x = drawParams.offset.dx + ((_cursorPosNorm.x) * effPxlSize);
       _cursorStartPos.y = drawParams.offset.dy + ((_cursorPosNorm.y) * effPxlSize);
     }
@@ -79,10 +93,10 @@ class StampPainter extends IToolPainter
         _lastShadingDirection != shaderOptions.shaderDirection.value ||
         _lastColorSelection != appState.selectedColor;
 
-      if (shouldUpdate && _manager.selectedStamp.value != null)
+      final StampManagerEntryData? currentStamp = _manager.selectedStamp.value;
+      if (shouldUpdate && currentStamp != null)
       {
         _stampData.clear();
-        final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
         for (final MapEntry<CoordinateSetI, int> entry in currentStamp.data.entries)
         {
           int stampX = entry.key.x - currentStamp.width;
@@ -96,11 +110,26 @@ class StampPainter extends IToolPainter
             stampY = -(stampY + currentStamp.height) - 1;
           }
 
+          if (_options.gridAlign.value)
+          {
+            _gridPosNorm.x = ((_cursorPosNorm.x + currentStamp.width ~/ 2) ~/ currentStamp.width) * currentStamp.width + _options.gridOffsetX.value;
+            _gridPosNorm.y = ((_cursorPosNorm.y + currentStamp.height ~/ 2) ~/ currentStamp.height) * currentStamp.height + _options.gridOffsetY.value;
+
+          }
+
           for (int x = 0; x < _options.scale.value; x++)
           {
             for (int y = 0; y < _options.scale.value; y++)
             {
-              _stampData[CoordinateSetI(x: _cursorPosNorm.x + (stampX * _options.scale.value) + x, y: _cursorPosNorm.y + (stampY * _options.scale.value) + y)] = entry.value;
+              if (_options.gridAlign.value)
+              {
+                _stampData[CoordinateSetI(x: _gridPosNorm.x + (stampX * _options.scale.value) + x, y: _gridPosNorm.y + (stampY * _options.scale.value) + y)] = entry.value;
+              }
+              else
+              {
+                _stampData[CoordinateSetI(x: _cursorPosNorm.x + (stampX * _options.scale.value) + x, y: _cursorPosNorm.y + (stampY * _options.scale.value) + y)] = entry.value;
+              }
+
             }
           }
         }
@@ -182,16 +211,7 @@ class StampPainter extends IToolPainter
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
     final double effPxlSize = drawParams.pixelSize / drawParams.pixelRatio;
-    final Path path = Path();
-    path.moveTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (5 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (5 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (3 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (4 * painterOptions.cursorSize), _cursorStartPos.y + (4 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y + (4 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (2 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (1 * painterOptions.cursorSize));
-    path.lineTo(_cursorStartPos.x + (0 * painterOptions.cursorSize), _cursorStartPos.y + (0 * painterOptions.cursorSize));
+    final Path path = getPathFromList(pointList: _symbolPath, offsetPos: _cursorStartPos, scaling: painterOptions.cursorSize);
 
     drawParams.paint.style = PaintingStyle.stroke;
     drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
@@ -204,9 +224,9 @@ class StampPainter extends IToolPainter
     if (drawParams.currentRasterLayer != null && drawParams.currentRasterLayer is DrawingLayerState && _manager.selectedStamp.value != null)
     {
       final StampManagerEntryData currentStamp = _manager.selectedStamp.value!;
-      final CoordinateSetD cursorPos = CoordinateSetD(
-          x: drawParams.offset.dx + _cursorPosNorm.x * effPxlSize,
-          y: drawParams.offset.dy + _cursorPosNorm.y * effPxlSize,);
+      final CoordinateSetD cursorPos = _options.gridAlign.value ?
+        CoordinateSetD(x: drawParams.offset.dx + _gridPosNorm.x * effPxlSize, y: drawParams.offset.dy + _gridPosNorm.y * effPxlSize,) :
+        CoordinateSetD(x: drawParams.offset.dx + _cursorPosNorm.x * effPxlSize, y: drawParams.offset.dy + _cursorPosNorm.y * effPxlSize,);
       drawParams.paint.style = PaintingStyle.stroke;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;
       drawParams.paint.color = blackToolAlphaColor;

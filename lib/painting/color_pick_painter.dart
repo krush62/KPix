@@ -27,6 +27,22 @@ class ColorPickPainter extends IToolPainter
   final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
   ColorReference? selectedColor;
 
+  static const List<MapEntry<int, int>> _symbolPathOutline = <MapEntry<int, int>>[
+    MapEntry<int, int>(0, 0),
+    MapEntry<int, int>(1, 0),
+    MapEntry<int, int>(3, -2),
+    MapEntry<int, int>(2, -3),
+    MapEntry<int, int>(0, -1),
+    MapEntry<int, int>(0, 0),
+  ];
+
+  static const List<MapEntry<int, int>> _symbolPathFill = <MapEntry<int, int>>[
+    MapEntry<int, int>(0, 0),
+    MapEntry<int, int>(1, 0),
+    MapEntry<int, int>(2, -1),
+    MapEntry<int, int>(0, -1),
+  ];
+
 
   @override
   void calculate({required final DrawingParameters drawParams})
@@ -55,19 +71,8 @@ class ColorPickPainter extends IToolPainter
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
 
-    final Path outlinePath = Path();
-    outlinePath.moveTo(_cursorStartPos.x, _cursorStartPos.y);
-    outlinePath.lineTo(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y);
-    outlinePath.lineTo(_cursorStartPos.x + (3 * painterOptions.cursorSize), _cursorStartPos.y + (-2 * painterOptions.cursorSize));
-    outlinePath.lineTo(_cursorStartPos.x + (2 * painterOptions.cursorSize), _cursorStartPos.y + (-3 * painterOptions.cursorSize));
-    outlinePath.lineTo(_cursorStartPos.x, _cursorStartPos.y + (-1 * painterOptions.cursorSize));
-    outlinePath.lineTo(_cursorStartPos.x, _cursorStartPos.y);
-
-    final Path fillPath = Path();
-    fillPath.moveTo(_cursorStartPos.x, _cursorStartPos.y);
-    fillPath.lineTo(_cursorStartPos.x + (1 * painterOptions.cursorSize), _cursorStartPos.y);
-    fillPath.lineTo(_cursorStartPos.x + (2 * painterOptions.cursorSize), _cursorStartPos.y + (-1 * painterOptions.cursorSize));
-    fillPath.lineTo(_cursorStartPos.x, _cursorStartPos.y + (-1 * painterOptions.cursorSize));
+    final Path outlinePath = getPathFromList(pointList: _symbolPathOutline, offsetPos: _cursorStartPos, scaling: painterOptions.cursorSize);
+    final Path fillPath =  getPathFromList(pointList: _symbolPathFill, offsetPos: _cursorStartPos, scaling: painterOptions.cursorSize);
 
 
     drawParams.paint.style = PaintingStyle.fill;

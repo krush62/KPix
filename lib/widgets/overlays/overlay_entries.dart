@@ -35,14 +35,12 @@ import 'package:kpix/widgets/file/new_project_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/file/save_as_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_drawing_layer_menu_linked.dart';
 import 'package:kpix/widgets/overlays/overlay_load_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_raster_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_reduced_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_save_menu.dart';
-import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/palette/save_palette_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
@@ -874,30 +872,6 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
   );
 }
 
-  KPixOverlay getAddLayerMenu({
-    required final Function() onDismiss,
-    required final Function() onNewDrawingLayer,
-    required final Function() onNewReferenceLayer,
-    required final Function() onNewGridLayer,
-    required final Function() onNewShadingLayer,
-    required final Function() onNewDitherLayer,
-    required final LayerLink layerLink,
-  })
-  {
-    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-    return KPixOverlay(entry: OverlayEntry(
-      builder: (final BuildContext context) => Stack(
-        children: <Widget>[
-          ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-            onDismiss: () {onDismiss();},
-          ),
-          OverlayAddNewLayerMenu(layerLink: layerLink, onNewDrawingLayer: onNewDrawingLayer, onNewReferenceLayer: onNewReferenceLayer, onNewGridLayer: onNewGridLayer, onNewShadingLayer: onNewShadingLayer, onNewDitherLayer: onNewDitherLayer),
-        ],
-      ),
-    ),);
-  }
-
   KPixOverlay getLoadingDialog({required final String message, final TextStyle? textStyle})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -958,29 +932,4 @@ KPixOverlay getColorPickerDialog({required final Function() onDismiss, required 
   );
 }
 
-KPixOverlay getSelectionAlignMenu({
-  required final Function() onDismiss,
-  required final Function() onAlignLeft,
-  required final Function() onAlignRight,
-  required final Function() onAlignTop,
-  required final Function() onAlignBottom,
-  required final Function() onAlignCenterH,
-  required final Function() onAlignCenterV,
-  required final LayerLink layerLink,
-})
-{
-  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-  return KPixOverlay(
-    entry: OverlayEntry(
-      builder: (final BuildContext context) => Stack(
-        children: <Widget>[
-          ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
-            onDismiss: () {onDismiss();},
-          ),
-          OverlaySelectionAlignMenu(layerLink: layerLink, onAlignLeft: onAlignLeft, onAlignRight: onAlignRight, onAlignTop: onAlignTop, onAlignBottom: onAlignBottom, onAlignCenterH: onAlignCenterH, onAlignCenterV: onAlignCenterV, onDismiss: onDismiss,),
-        ],
-      ),
-    ),
-  );
-}
+

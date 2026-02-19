@@ -931,5 +931,3 @@ KPixOverlay getColorPickerDialog({required final Function() onDismiss, required 
     ),
   );
 }
-
-

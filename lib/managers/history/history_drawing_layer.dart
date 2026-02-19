@@ -30,11 +30,12 @@ class HistoryDrawingLayer extends HistoryLayer
   final LayerLockState lockState;
   final HashMap<CoordinateSetI, HistoryColorReference> data;
   final HistoryDrawingLayerSettings settings;
-  HistoryDrawingLayer({required super.visibilityState, required this.lockState, required this.data, required this.settings});
+  HistoryDrawingLayer({required super.visibilityState, required super.layerIdentity, required this.lockState, required this.data, required this.settings});
   factory HistoryDrawingLayer.fromDrawingLayerState({required final DrawingLayerState layerState, required final List<HistoryRampData> ramps })
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
+    final int identity = identityHashCode(layerState);
     final HashMap<CoordinateSetI, HistoryColorReference> dt = HashMap<CoordinateSetI, HistoryColorReference>();
     final CoordinateColorMap lData = layerState.getData();
     for (final CoordinateColor entry in lData.entries)
@@ -61,6 +62,6 @@ class HistoryDrawingLayer extends HistoryLayer
       }
     }
     final HistoryDrawingLayerSettings settings = HistoryDrawingLayerSettings.fromDrawingLayerSettings(settings: layerState.settings);
-    return HistoryDrawingLayer(visibilityState: visState, lockState: lState, data: dt, settings: settings);
+    return HistoryDrawingLayer(visibilityState: visState, layerIdentity: identity, lockState: lState, data: dt, settings: settings);
   }
 }

@@ -31,6 +31,7 @@
  */
 
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -63,6 +64,7 @@ class HistoryManager
 
   String getCurrentDescription()
   {
+    if (_curPos < 0 || _curPos >= _states.length) return '';
     return _states.elementAt(_curPos).type.description;
   }
 
@@ -180,41 +182,54 @@ class HistoryManager
 
   void _compressHistory()
   {
+    final int maxIndex = min(_curPos - 1, _states.length - 1 - _minEntries);
+    if (maxIndex < 0) return;
     int index = 0;
-    final int maxIndex = _states.length - 1 - _minEntries;
-    final List<HistoryState> deleteStates = <HistoryState>[];
+    int deleteCount = 0;
     HistoryState? previousMergeState;
+    final Queue<HistoryState> rebuilt = Queue<HistoryState>();
+
     for (final HistoryState state in _states)
     {
       if (index <= maxIndex)
       {
         if (state.type.isMergeCompression)
         {
-          if (previousMergeState != null && previousMergeState.type.identifier == state.type.identifier)
+          if (previousMergeState != null &&
+              previousMergeState.type.identifier == state.type.identifier)
           {
-            deleteStates.add(previousMergeState);
+            rebuilt.removeLast();
+            deleteCount++;
           }
           previousMergeState = state;
+          rebuilt.addLast(state);
         }
         else
         {
           previousMergeState = null;
           if (state.type.isDeleteCompression)
           {
-            deleteStates.add(state);
+            deleteCount++;
+          }
+          else
+          {
+            rebuilt.addLast(state);
           }
         }
       }
       else
       {
-        break;
+        rebuilt.addLast(state);
       }
       index++;
     }
-    for (final HistoryState deleteState in deleteStates)
+
+    if (deleteCount > 0)
     {
-      _states.remove(deleteState);
-      _curPos--;
+      _states
+        ..clear()
+        ..addAll(rebuilt);
+      _curPos -= deleteCount;
     }
   }
 }

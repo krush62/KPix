@@ -19,5 +19,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 abstract class HistoryLayer
 {
   final LayerVisibilityState visibilityState;
-  HistoryLayer({required this.visibilityState});
+  final int layerIdentity;
+
+  HistoryLayer({required this.visibilityState, required this.layerIdentity});
 }

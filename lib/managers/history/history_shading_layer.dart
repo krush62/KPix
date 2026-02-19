@@ -28,11 +28,12 @@ class HistoryShadingLayer extends HistoryLayer
   final HashMap<CoordinateSetI, int> data;
   final HistoryShadingLayerSettings settings;
 
-  HistoryShadingLayer({required super.visibilityState, required this.lockState, required this.data, required this.settings});
+  HistoryShadingLayer({required super.visibilityState, required super.layerIdentity, required this.lockState, required this.data, required this.settings});
   factory HistoryShadingLayer.fromShadingLayerState({required final ShadingLayerState layerState})
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
+    final int identity = identityHashCode(layerState);
 
     final HashMap<CoordinateSetI, int> dt = HashMap<CoordinateSetI, int>();
     final HashMap<CoordinateSetI, int> lData = layerState.shadingData;
@@ -42,6 +43,6 @@ class HistoryShadingLayer extends HistoryLayer
     }
     final HistoryShadingLayerSettings settings = HistoryShadingLayerSettings.fromShadingLayerSettings(settings: layerState.settings);
 
-    return HistoryShadingLayer(visibilityState: visState, lockState: lState, data: dt, settings: settings);
+    return HistoryShadingLayer(visibilityState: visState, layerIdentity: identity, lockState: lState, data: dt, settings: settings);
   }
 }

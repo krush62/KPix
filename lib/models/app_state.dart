@@ -121,7 +121,7 @@ class AppState
 
   bool get layerSettingsVisible
   {
-      return layerSettingsVisibleNotifier.value;
+    return layerSettingsVisibleNotifier.value;
   }
 
   set layerSettingsVisible(final bool newVisibility)
@@ -381,9 +381,9 @@ class AppState
       final int endIndex = startZoomLevel + steps;
       if (endIndex <= zoomLevelMax && endIndex >= zoomLevelMin && endIndex != _zoomFactor.value)
       {
-         _zoomFactor.value = endIndex;
-         statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
-         change = true;
+        _zoomFactor.value = endIndex;
+        statusBarState.setStatusBarZoomFactor(val: _zoomFactor.value * 100);
+        change = true;
       }
     }
     return change;
@@ -475,10 +475,10 @@ class AppState
       const Uuid uuid = Uuid();
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       final KPalRampData newRamp = KPalRampData(
-          uuid: uuid.v1(),
-          settings: KPalRampSettings(
-              constraints: prefs.kPalConstraints,
-          ),
+        uuid: uuid.v1(),
+        settings: KPalRampSettings(
+          constraints: prefs.kPalConstraints,
+        ),
       );
       rampDataList.add(newRamp);
       _colorRamps.value = rampDataList;
@@ -861,7 +861,17 @@ class AppState
           {
             if (historyState.restoreLayerIndex != null && typeGroup == HistoryStateTypeGroup.layerFull && historyState.restoreLayerIndex != layerCounter && collectedLayers.length == allHistoryLayers.length)
             {
-              allLayers.add(collectedLayers.elementAt(layerCounter));
+              final LayerState liveLayer = collectedLayers.elementAt(layerCounter);
+              liveLayer.visibilityState.value = hLayer.visibilityState;
+              if (hLayer is HistoryDrawingLayer && liveLayer is DrawingLayerState)
+              {
+                liveLayer.lockState.value = hLayer.lockState;
+              }
+              else if (hLayer is HistoryShadingLayer && liveLayer is ShadingLayerState) // also matches HistoryDitherLayer
+              {
+                liveLayer.lockState.value = hLayer.lockState;
+              }
+              allLayers.add(liveLayer);
             }
             else
             {
@@ -1079,7 +1089,7 @@ class AppState
     {
       if ((indices.$2 + 1) < colorRamps[indices.$1].references.length)
       {
-         colorSelected(color: colorRamps[indices.$1].references[indices.$2 + 1]);
+        colorSelected(color: colorRamps[indices.$1].references[indices.$2 + 1]);
       }
       else if ((indices.$1 + 1) < colorRamps.length)
       {
@@ -1151,18 +1161,18 @@ class AppState
 
   void copyLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
   {
-      selectionState.deselect(addToHistoryStack: false);
-      final LayerState? addLayer = targetFrame.layerList.addLayerWithData(layer: sourceLayer, position: position);
-      if (addLayer != null)
+    selectionState.deselect(addToHistoryStack: false);
+    final LayerState? addLayer = targetFrame.layerList.addLayerWithData(layer: sourceLayer, position: position);
+    if (addLayer != null)
+    {
+      if (addToHistoryStack)
       {
-        if (addToHistoryStack)
-        {
-          GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
-        }
-        newRasterData(layer: addLayer);
-        timeline.layerChangeNotifier.reportChange();
-        timeline.selectFrame(frame: targetFrame, layerIndex: position);
+        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerDuplicate);
       }
+      newRasterData(layer: addLayer);
+      timeline.layerChangeNotifier.reportChange();
+      timeline.selectFrame(frame: targetFrame, layerIndex: position);
+    }
   }
 
   void linkLayerToOtherFrame({required final LayerState sourceLayer, required final Frame targetFrame, required final int position, final bool addToHistoryStack = true})
@@ -1530,28 +1540,28 @@ class AppState
   void showMessage({required final String text})
   {
     toastification.showCustom(
-        alignment: Alignment.bottomCenter,
-        autoCloseDuration: const Duration(seconds: 3),
-        builder: (final BuildContext context, final ToastificationItem holder) {
-          const double padding = 8.0;
-          return Container(
-            margin: EdgeInsets.zero,
-            padding: const EdgeInsets.only(left: padding, right: padding, top: padding, bottom: padding * 2),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColorDark,
-              border: Border(
-                left: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
-                right: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
-                top: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
+      alignment: Alignment.bottomCenter,
+      autoCloseDuration: const Duration(seconds: 3),
+      builder: (final BuildContext context, final ToastificationItem holder) {
+        const double padding = 8.0;
+        return Container(
+          margin: EdgeInsets.zero,
+          padding: const EdgeInsets.only(left: padding, right: padding, top: padding, bottom: padding * 2),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColorDark,
+            border: Border(
+              left: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
+              right: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
+              top: BorderSide(color: Theme.of(context).primaryColor, width: 2.0,),
             ),
-            child: Text(
-              text,
-              softWrap: true,
-              style: Theme.of(context).textTheme.titleMedium,),
-          );
-        },
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10.0)),
+          ),
+          child: Text(
+            text,
+            softWrap: true,
+            style: Theme.of(context).textTheme.titleMedium,),
+        );
+      },
       animationBuilder: (final BuildContext context, final Animation<double> animation, final Alignment alignment, final Widget? child) {
         return SlideTransition(
           position: Tween<Offset>(

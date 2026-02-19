@@ -25,9 +25,9 @@ class HistoryReferenceLayer extends HistoryLayer
   final double offsetY;
   final int zoom;
   final double aspectRatio;
-  HistoryReferenceLayer({required super.visibilityState, required this.opacity, required this.offsetX, required this.offsetY, required this.path, required this.zoom, required this.aspectRatio});
+  HistoryReferenceLayer({required super.visibilityState, required super.layerIdentity, required this.opacity, required this.offsetX, required this.offsetY, required this.path, required this.zoom, required this.aspectRatio});
   factory HistoryReferenceLayer.fromReferenceLayer({required final ReferenceLayerState referenceState})
   {
-    return HistoryReferenceLayer(visibilityState: referenceState.visibilityState.value, path: referenceState.imageNotifier.value == null ? "" : referenceState.imageNotifier.value!.path, offsetX: referenceState.offsetXNotifier.value, offsetY: referenceState.offsetYNotifier.value, opacity: referenceState.opacityNotifier.value, zoom: referenceState.zoomNotifier.value, aspectRatio: referenceState.aspectRatioNotifier.value);
+    return HistoryReferenceLayer(visibilityState: referenceState.visibilityState.value, layerIdentity: identityHashCode(referenceState), path: referenceState.imageNotifier.value == null ? "" : referenceState.imageNotifier.value!.path, offsetX: referenceState.offsetXNotifier.value, offsetY: referenceState.offsetYNotifier.value, opacity: referenceState.opacityNotifier.value, zoom: referenceState.zoomNotifier.value, aspectRatio: referenceState.aspectRatioNotifier.value);
   }
 }

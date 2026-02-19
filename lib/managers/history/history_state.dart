@@ -123,27 +123,32 @@ class HistoryState
 
       //CREATE HISTORY LAYERS
       historyLayerSet = LinkedHashSet<HistoryLayer>();
-
-      for (int i = 0; i < originalLayerSet.length; i++)
+      final bool hasPrevious = previousState != null;
+      final Map<int, HistoryLayer> previousLayerMap = <int, HistoryLayer>{};
+      if (hasPrevious)
       {
-        final LayerState l = originalLayerSet.elementAt(i);
-        final bool hasPrevious = (previousState != null);
+        for (final HistoryLayer hl in previousState.timeline.allLayers)
+        {
+          previousLayerMap[hl.layerIdentity] = hl;
+        }
+      }
 
-        //WHEN TO CREATE A COPY
-        final bool option1 = !hasPrevious;
-        final bool option2 = hasPrevious && previousState.timeline.allLayers.length != originalLayerSet.length;
-        final bool option3 = type.group == HistoryStateTypeGroup.full;
-        final bool option4 = type.group == HistoryStateTypeGroup.layerFull &&  l == originLayer;
+      for (final LayerState l in originalLayerSet)
+      {
+        final int identity = identityHashCode(l);
+        final bool forceFullSnapshot = !hasPrevious || type.group == HistoryStateTypeGroup.full;
+        final bool isNewLayer        = !previousLayerMap.containsKey(identity);
+        final bool isOriginLayer     = type.group == HistoryStateTypeGroup.layerFull && l == originLayer;
 
-        if (option1 || option2 || option3 || option4)
+        if (forceFullSnapshot || isNewLayer || isOriginLayer)
         {
           final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList)!;
           historyLayerSet.add(hLayer);
         }
-        else //USE PREVIOUS LAYER
+        else
         {
-          final HistoryLayer hLayer = previousState.timeline.allLayers.elementAt(i);
-          historyLayerSet.add(hLayer);
+          // Reuse the unchanged snapshot from the previous state.
+          historyLayerSet.add(previousLayerMap[identity]!);
         }
       }
 

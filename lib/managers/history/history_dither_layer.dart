@@ -25,11 +25,12 @@ import 'package:kpix/util/helper.dart';
 class HistoryDitherLayer extends HistoryShadingLayer
 {
 
-  HistoryDitherLayer({required super.visibilityState, required super.lockState, required super.data, required super.settings});
+  HistoryDitherLayer({required super.visibilityState, required super.layerIdentity, required super.lockState, required super.data, required super.settings});
   factory HistoryDitherLayer.fromDitherLayerState({required final DitherLayerState layerState})
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
+    final int identity = identityHashCode(layerState);
 
     final HashMap<CoordinateSetI, int> dt = HashMap<CoordinateSetI, int>();
     final HashMap<CoordinateSetI, int> lData = layerState.shadingData;
@@ -38,6 +39,6 @@ class HistoryDitherLayer extends HistoryShadingLayer
       dt[entry.key] = entry.value;
     }
     final HistoryShadingLayerSettings settings = HistoryShadingLayerSettings.fromShadingLayerSettings(settings: layerState.settings);
-    return HistoryDitherLayer(visibilityState: visState, lockState: lState, data: dt, settings: settings);
+    return HistoryDitherLayer(visibilityState: visState, layerIdentity: identity, lockState: lState, data: dt, settings: settings);
   }
 }

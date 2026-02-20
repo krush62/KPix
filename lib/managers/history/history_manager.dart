@@ -92,7 +92,7 @@ class HistoryManager
           identifier: identifier,
           originLayer: originLayer,
           previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState(),
-        ));
+        ),);
         _curPos++;
 
         final int excess = _states.length - _maxEntries;

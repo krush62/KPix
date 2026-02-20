@@ -313,8 +313,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
 
       if (_historyLayerValueMap[layerType] == HistoryDrawingLayer) //DRAWING LAYER
-          {
-        HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: HistoryColorReference(colorIndex: 0, rampIndex: 0));
+      {
+        HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: const HistoryColorReference(colorIndex: 0, rampIndex: 0));
 
         // LOCK STATE
         final int lockStateVal = byteData.getUint8(offset++);
@@ -1021,11 +1021,11 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
         if (_historyLayerValueMap[layerType] == HistoryShadingLayer)
         {
-          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings, layerIdentity: i));
+          layerList.add(HistoryShadingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
         }
         else if (_historyLayerValueMap[layerType] == HistoryDitherLayer)
         {
-          layerList.add(HistoryDitherLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings, layerIdentity: i));
+          layerList.add(HistoryDitherLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
         }
       }
     }
@@ -1066,7 +1066,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     }
 
     final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>());
-    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
+    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);
   }

@@ -222,7 +222,7 @@ class HistoryDrawingLayer extends HistoryLayer
         final int? rampIndex = rampIndexByUuid[entry.value!.ramp.uuid];
         after = rampIndex != null
             ? HistoryColorReference(
-            colorIndex: entry.value!.colorIndex, rampIndex: rampIndex)
+            colorIndex: entry.value!.colorIndex, rampIndex: rampIndex,)
             : null;
       }
       else

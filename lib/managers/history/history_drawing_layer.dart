@@ -31,29 +31,35 @@ class HistoryDrawingLayer extends HistoryLayer
   final HashMap<CoordinateSetI, HistoryColorReference> data;
   final HistoryDrawingLayerSettings settings;
   HistoryDrawingLayer({required super.visibilityState, required super.layerIdentity, required this.lockState, required this.data, required this.settings});
-  factory HistoryDrawingLayer.fromDrawingLayerState({required final DrawingLayerState layerState, required final List<HistoryRampData> ramps })
+  factory HistoryDrawingLayer.fromDrawingLayerState({required final DrawingLayerState layerState, required final List<HistoryRampData> ramps})
   {
     final LayerVisibilityState visState = layerState.visibilityState.value;
     final LayerLockState  lState = layerState.lockState.value;
     final int identity = identityHashCode(layerState);
     final HashMap<CoordinateSetI, HistoryColorReference> dt = HashMap<CoordinateSetI, HistoryColorReference>();
+
+    final Map<String, int> rampIndexByUuid = <String, int>{
+      for (int r = 0; r < ramps.length; r++) ramps[r].uuid: r,
+    };
+
     final CoordinateColorMap lData = layerState.getData();
     for (final CoordinateColor entry in lData.entries)
     {
-      final int? rampIndex = getRampIndex(uuid: entry.value.ramp.uuid, ramps: ramps);
+      final int? rampIndex = rampIndexByUuid[entry.value.ramp.uuid];
       if (rampIndex != null)
       {
-        dt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
+        dt[entry.key] = HistoryColorReference(colorIndex: entry.value.colorIndex, rampIndex: rampIndex);
       }
     }
+
     for (final CoordinateColorNullable entry in layerState.rasterQueue.entries)
     {
       if (entry.value != null)
       {
-        final int? rampIndex = getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
+        final int? rampIndex = rampIndexByUuid[entry.value!.ramp.uuid];
         if (rampIndex != null)
         {
-          dt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
+          dt[entry.key] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
         }
       }
       else

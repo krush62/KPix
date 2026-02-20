@@ -716,7 +716,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
           data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
         }
-        layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: drawingLayerSettings, layerIdentity: i));
+        layerList.add(HistoryDrawingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: drawingLayerSettings, layerIdentity: i));
       }
       else if (_historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
           {

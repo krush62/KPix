@@ -156,7 +156,14 @@ class HistoryState
 
         if (forceFullSnapshot || isNewLayer || isOriginLayer)
         {
-          final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList)!;
+          HistoryDrawingLayer? previousDrawingLayer;
+          if (isOriginLayer && !forceFullSnapshot && !isNewLayer)
+          {
+            final HistoryLayer? prev = previousLayerMap[identity];
+            if (prev is HistoryDrawingLayer) previousDrawingLayer = prev;
+          }
+
+          final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList, previousDrawingLayer: previousDrawingLayer,)!;
           historyLayerSet.add(hLayer);
         }
         else
@@ -199,12 +206,26 @@ class HistoryState
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
   }
 
-  static HistoryLayer? _createHistoryLayer({required final LayerState layerState, required final List<HistoryRampData> rampList})
+  static HistoryLayer? _createHistoryLayer({required final LayerState layerState, required final List<HistoryRampData> rampList, final HistoryDrawingLayer? previousDrawingLayer,})
   {
     HistoryLayer? hLayer;
     if (layerState.runtimeType == DrawingLayerState)
     {
-      hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
+      if (previousDrawingLayer != null)
+      {
+        hLayer = HistoryDrawingLayer.deltaFrom(
+          layerState:    layerState as DrawingLayerState,
+          ramps:         rampList,
+          previousLayer: previousDrawingLayer,
+        );
+      }
+      else
+      {
+        hLayer = HistoryDrawingLayer.fromDrawingLayerState(
+          layerState: layerState as DrawingLayerState,
+          ramps:      rampList,
+        );
+      }
     }
     else if (layerState.runtimeType == ReferenceLayerState)
     {

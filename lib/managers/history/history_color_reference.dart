@@ -18,5 +18,16 @@ class HistoryColorReference
 {
   final int colorIndex;
   final int rampIndex;
-  HistoryColorReference({required this.colorIndex, required this.rampIndex});
+
+  const HistoryColorReference({required this.colorIndex, required this.rampIndex});
+
+  @override
+  bool operator ==(final Object other) =>
+      identical(this, other) ||
+          other is HistoryColorReference &&
+              rampIndex  == other.rampIndex &&
+              colorIndex == other.colorIndex;
+
+  @override
+  int get hashCode => Object.hash(rampIndex, colorIndex);
 }

@@ -14,23 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * KPix
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -50,13 +33,16 @@ class HistoryManager
   final int _minEntries = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoStepsMin;
   int _maxEntries;
   int _curPos = -1;
-  final Queue<HistoryState> _states = Queue<HistoryState>();
+
+  final List<HistoryState> _states = <HistoryState>[];
+  int _lastCompressedIndex = -1;
 
   HistoryManager({required final int maxEntries}) : _maxEntries = maxEntries;
 
   void clear()
   {
     _curPos = -1;
+    _lastCompressedIndex = -1;
     _states.clear();
     hasUndo.value = false;
     hasRedo.value = false;
@@ -65,7 +51,7 @@ class HistoryManager
   String getCurrentDescription()
   {
     if (_curPos < 0 || _curPos >= _states.length) return '';
-    return _states.elementAt(_curPos).type.description;
+    return _states[_curPos].type.description;
   }
 
   void changeMaxEntries({required final int maxEntries})
@@ -74,16 +60,12 @@ class HistoryManager
     {
       _removeFutureEntries();
       final int deleteCount = _states.length - maxEntries;
-      for (int i = 0; i < deleteCount; i++)
-      {
-        _states.removeFirst();
-      }
-      _curPos -= deleteCount;
-      if (_curPos < 0)
-      {
-        _curPos = 0;
-      }
 
+      _states.removeRange(0, deleteCount);
+      _curPos -= deleteCount;
+      if (_curPos < 0) _curPos = 0;
+
+      _lastCompressedIndex = (_lastCompressedIndex - deleteCount).clamp(-1, _states.length - 1);
     }
     _maxEntries = maxEntries;
     _updateNotifiers();
@@ -93,12 +75,7 @@ class HistoryManager
   {
     if (_curPos >= 0 && _curPos < _states.length - 1)
     {
-      final int removeCount = _states.length - (_curPos + 1);
-      for (int i = 0; i < removeCount; i++)
-      {
-        _states.removeLast();
-      }
-      _curPos = _states.length - 1;
+      _states.removeRange(_curPos + 1, _states.length);
     }
   }
 
@@ -110,18 +87,23 @@ class HistoryManager
       try
       {
         _removeFutureEntries();
-        _states.add(HistoryState.fromAppState(appState: appState, identifier: identifier, originLayer: originLayer, previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState()));
+        _states.add(HistoryState.fromAppState(
+          appState: appState,
+          identifier: identifier,
+          originLayer: originLayer,
+          previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState(),
+        ));
         _curPos++;
-        final int entriesLeft = _maxEntries - _states.length;
 
-        if (entriesLeft < 0)
+        final int excess = _states.length - _maxEntries;
+        if (excess > 0)
         {
-          for (int i = 0; i < -entriesLeft; i++)
-          {
-            _states.removeFirst();
-            _curPos--;
-          }
+          _states.removeRange(0, excess);
+          _curPos -= excess;
+
+          _lastCompressedIndex = (_lastCompressedIndex - excess).clamp(-1, _states.length - 1);
         }
+
         _compressHistory();
         _updateNotifiers();
       }
@@ -129,11 +111,9 @@ class HistoryManager
       {
         GetIt.I.get<Logger>().e("Error adding history state: $identifier.", error: e, stackTrace: s);
       }
-
     }
     appState.hasChanges.value = setHasChanges;
   }
-
 
   HistoryState? undo()
   {
@@ -142,12 +122,11 @@ class HistoryManager
     {
       GetIt.I.get<Logger>().i("Performing undo.");
       _curPos--;
-       hState = _states.elementAt(_curPos);
-       _updateNotifiers();
+      hState = _states[_curPos];
+      _updateNotifiers();
     }
     return hState;
   }
-
 
   HistoryState? redo()
   {
@@ -156,7 +135,7 @@ class HistoryManager
     {
       GetIt.I.get<Logger>().i("Performing redo.");
       _curPos++;
-      hState = _states.elementAt(_curPos);
+      hState = _states[_curPos];
       _updateNotifiers();
     }
     return hState;
@@ -166,12 +145,9 @@ class HistoryManager
   {
     if (_curPos >= 0 && _curPos < _states.length)
     {
-      return _states.elementAt(_curPos);
+      return _states[_curPos];
     }
-    else
-    {
-      return null;
-    }
+    return null;
   }
 
   void _updateNotifiers()
@@ -183,53 +159,66 @@ class HistoryManager
   void _compressHistory()
   {
     final int maxIndex = min(_curPos - 1, _states.length - 1 - _minEntries);
-    if (maxIndex < 0) return;
-    int index = 0;
-    int deleteCount = 0;
-    HistoryState? previousMergeState;
-    final Queue<HistoryState> rebuilt = Queue<HistoryState>();
+    if (maxIndex < 0 || maxIndex <= _lastCompressedIndex) return;
 
-    for (final HistoryState state in _states)
+    final int scanFrom = _lastCompressedIndex + 1;
+
+    HistoryState? previousMergeState;
+    int?          previousMergeStateIndex;
+    if (scanFrom > 0)
     {
-      if (index <= maxIndex)
+      final HistoryState boundary = _states[scanFrom - 1];
+      if (boundary.type.isMergeCompression)
       {
-        if (state.type.isMergeCompression)
+        previousMergeState      = boundary;
+        previousMergeStateIndex = scanFrom - 1;
+      }
+    }
+
+    int localMax = maxIndex;
+    int i        = scanFrom;
+
+    while (i <= localMax)
+    {
+      final HistoryState state = _states[i];
+
+      if (state.type.isMergeCompression)
+      {
+        if (previousMergeState != null &&
+            previousMergeState.type.identifier == state.type.identifier)
         {
-          if (previousMergeState != null &&
-              previousMergeState.type.identifier == state.type.identifier)
-          {
-            rebuilt.removeLast();
-            deleteCount++;
-          }
-          previousMergeState = state;
-          rebuilt.addLast(state);
+          final int removeIdx = previousMergeStateIndex!;
+          _states.removeAt(removeIdx);
+
+          i--;
+          localMax--;
+          _curPos--;
+
+          if (removeIdx <= _lastCompressedIndex) _lastCompressedIndex--;
         }
-        else
-        {
-          previousMergeState = null;
-          if (state.type.isDeleteCompression)
-          {
-            deleteCount++;
-          }
-          else
-          {
-            rebuilt.addLast(state);
-          }
-        }
+        previousMergeState      = state;
+        previousMergeStateIndex = i;
+        i++;
       }
       else
       {
-        rebuilt.addLast(state);
+        previousMergeState      = null;
+        previousMergeStateIndex = null;
+
+        if (state.type.isDeleteCompression)
+        {
+          _states.removeAt(i);
+          localMax--;
+          _curPos--;
+          if (i <= _lastCompressedIndex) _lastCompressedIndex--;
+        }
+        else
+        {
+          i++;
+        }
       }
-      index++;
     }
 
-    if (deleteCount > 0)
-    {
-      _states
-        ..clear()
-        ..addAll(rebuilt);
-      _curPos -= deleteCount;
-    }
+    _lastCompressedIndex = localMax;
   }
 }

@@ -51,7 +51,21 @@ class HistoryState
   final int? restoreLayerIndex;
 
   HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, this.restoreLayerIndex});
-
+  static const Set<HistoryStateTypeIdentifier> _selectionAffectingTypes =
+  <HistoryStateTypeIdentifier>{
+    HistoryStateTypeIdentifier.selectionNew,
+    HistoryStateTypeIdentifier.selectionDeselect,
+    HistoryStateTypeIdentifier.selectionSelectAll,
+    HistoryStateTypeIdentifier.selectionInverse,
+    HistoryStateTypeIdentifier.selectionCut,
+    HistoryStateTypeIdentifier.selectionFlipH,
+    HistoryStateTypeIdentifier.selectionFlipV,
+    HistoryStateTypeIdentifier.selectionRotate,
+    HistoryStateTypeIdentifier.selectionMove,
+    HistoryStateTypeIdentifier.selectionPaste,
+    HistoryStateTypeIdentifier.selectionNewLayer,
+    HistoryStateTypeIdentifier.selectionDelete,
+  };
 
   factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final HistoryState? previousState})
   {
@@ -147,7 +161,6 @@ class HistoryState
         }
         else
         {
-          // Reuse the unchanged snapshot from the previous state.
           historyLayerSet.add(previousLayerMap[identity]!);
         }
       }
@@ -170,12 +183,21 @@ class HistoryState
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
-    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
+
+    final HistorySelectionState selectionState;
+    if (previousState != null &&
+        type.group != HistoryStateTypeGroup.full &&
+        !_selectionAffectingTypes.contains(identifier))
+    {
+      selectionState = previousState.selectionState;
+    }
+    else
+    {
+      selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
+    }
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
   }
-
-
 
   static HistoryLayer? _createHistoryLayer({required final LayerState layerState, required final List<HistoryRampData> rampList})
   {
@@ -199,7 +221,6 @@ class HistoryState
     else if (layerState.runtimeType == DitherLayerState)
     {
       hLayer = HistoryDitherLayer.fromDitherLayerState(layerState: layerState as DitherLayerState);
-
     }
     return hLayer;
   }

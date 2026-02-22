@@ -29,9 +29,9 @@ class HistoryGridLayer extends HistoryLayer
   final double vanishingPoint1;
   final double vanishingPoint2;
   final double vanishingPoint3;
-  HistoryGridLayer({required super.visibilityState, required this.opacity, required this.gridType, required this.intervalX, required this.intervalY, required this.brightness, required this.vanishingPoint1, required this.vanishingPoint2, required this.vanishingPoint3, required this.horizonPosition});
+  HistoryGridLayer({required super.visibilityState, required super.layerIdentity, required this.opacity, required this.gridType, required this.intervalX, required this.intervalY, required this.brightness, required this.vanishingPoint1, required this.vanishingPoint2, required this.vanishingPoint3, required this.horizonPosition});
   factory HistoryGridLayer.fromGridLayer({required final GridLayerState gridState})
   {
-    return HistoryGridLayer(opacity: gridState.opacity, brightness: gridState.brightness, gridType: gridState.gridType, visibilityState: gridState.visibilityState.value, intervalX: gridState.intervalX, intervalY: gridState.intervalY, horizonPosition: gridState.horizonPosition, vanishingPoint1: gridState.vanishingPoint1, vanishingPoint2: gridState.vanishingPoint2, vanishingPoint3: gridState.vanishingPoint3);
+    return HistoryGridLayer(opacity: gridState.opacity, brightness: gridState.brightness, gridType: gridState.gridType, visibilityState: gridState.visibilityState.value, layerIdentity: identityHashCode(gridState), intervalX: gridState.intervalX, intervalY: gridState.intervalY, horizonPosition: gridState.horizonPosition, vanishingPoint1: gridState.vanishingPoint1, vanishingPoint2: gridState.vanishingPoint2, vanishingPoint3: gridState.vanishingPoint3);
   }
 }

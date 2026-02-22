@@ -32,7 +32,6 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
-import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_frame.dart';

@@ -14,5 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export 'package:kpix/managers/history/history_shading_layer.dart'
-    show HistoryDitherLayer;
+class HistoryShadingChange
+{
+  final int? before;
+  final int? after;
+
+  const HistoryShadingChange({this.before, this.after});
+}

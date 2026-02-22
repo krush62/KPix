@@ -159,13 +159,18 @@ LRESULT CALLBACK Win32Window::WndProc(HWND const window,
                                       WPARAM const wparam,
                                       LPARAM const lparam) noexcept {
   if (message == WM_NCCREATE) {
-    auto window_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
+    auto window_struct = reinterpret_cast<CREATESTRUCT *>(lparam);
     SetWindowLongPtr(window, GWLP_USERDATA,
-                     reinterpret_cast<LONG_PTR>(window_struct->lpCreateParams));
+    reinterpret_cast
+    <LONG_PTR>(window_struct
+    ->lpCreateParams));
 
-    auto that = static_cast<Win32Window*>(window_struct->lpCreateParams);
+    auto that = static_cast<Win32Window *>(window_struct->lpCreateParams);
     EnableFullDpiSupportIfAvailable(window);
-    that->window_handle_ = window;
+    that->
+    window_handle_ = window;
+  } else if (message == WM_SYSCOMMAND && (wparam & 0xFFF0) == SC_KEYMENU) {
+    return 0;
   } else if (Win32Window* that = GetThisFromHandle(window)) {
     return that->MessageHandler(window, message, wparam, lparam);
   }

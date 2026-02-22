@@ -30,13 +30,17 @@ class HistorySelectionState
 
   factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps})
   {
+    final Map<String, int> rampIndexByUuid = <String, int>{
+      for (int r = 0; r < ramps.length; r++) ramps[r].uuid: r,
+    };
+
     final CoordinateColorMapNullable otherCnt = sState.selection.selectedPixels;
     final HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap<CoordinateSetI, HistoryColorReference?>();
     for (final CoordinateColorNullable entry in otherCnt.entries)
     {
       if (entry.value != null)
       {
-        final int? rampIndex = getRampIndex(uuid: entry.value!.ramp.uuid, ramps: ramps);
+        final int? rampIndex = rampIndexByUuid[entry.value!.ramp.uuid];
         if (rampIndex != null)
         {
           cnt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
@@ -49,5 +53,4 @@ class HistorySelectionState
     }
     return HistorySelectionState(content: cnt);
   }
-
 }

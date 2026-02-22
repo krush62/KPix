@@ -156,7 +156,16 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   void _setDefaultCursor()
   {
     _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
-    _mouseCursor.value = _defaultMouseCursor;
+    final bool isForbidden = _appState.timeline.isPlaying.value;
+    if (isForbidden && _mouseCursor.value == SystemMouseCursors.none)
+    {
+      _mouseCursor.value = SystemMouseCursors.forbidden;
+    }
+    else
+    {
+      _mouseCursor.value = _defaultMouseCursor;
+    }
+
   }
 
   @override
@@ -187,6 +196,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     _shaderOptions.onlyCurrentRampEnabled.addListener(_updateFromChange);
     _shaderOptions.shaderDirection.addListener(_updateFromChange);
     _appState.selectedColorNotifier.addListener(_updateFromChange);
+    _appState.timeline.isPlaying.addListener(_setDefaultCursor);
 
     _selectionBarAnimationController = AnimationController(
       vsync: this,

@@ -24,7 +24,6 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
-import 'package:kpix/managers/history/history_dither_layer.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_frame.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
@@ -51,7 +50,21 @@ class HistoryState
   final int? restoreLayerIndex;
 
   HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, this.restoreLayerIndex});
-
+  static const Set<HistoryStateTypeIdentifier> _selectionAffectingTypes =
+  <HistoryStateTypeIdentifier>{
+    HistoryStateTypeIdentifier.selectionNew,
+    HistoryStateTypeIdentifier.selectionDeselect,
+    HistoryStateTypeIdentifier.selectionSelectAll,
+    HistoryStateTypeIdentifier.selectionInverse,
+    HistoryStateTypeIdentifier.selectionCut,
+    HistoryStateTypeIdentifier.selectionFlipH,
+    HistoryStateTypeIdentifier.selectionFlipV,
+    HistoryStateTypeIdentifier.selectionRotate,
+    HistoryStateTypeIdentifier.selectionMove,
+    HistoryStateTypeIdentifier.selectionPaste,
+    HistoryStateTypeIdentifier.selectionNewLayer,
+    HistoryStateTypeIdentifier.selectionDelete,
+  };
 
   factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final HistoryState? previousState})
   {
@@ -123,27 +136,40 @@ class HistoryState
 
       //CREATE HISTORY LAYERS
       historyLayerSet = LinkedHashSet<HistoryLayer>();
-
-      for (int i = 0; i < originalLayerSet.length; i++)
+      final bool hasPrevious = previousState != null;
+      final Map<int, HistoryLayer> previousLayerMap = <int, HistoryLayer>{};
+      if (hasPrevious)
       {
-        final LayerState l = originalLayerSet.elementAt(i);
-        final bool hasPrevious = (previousState != null);
-
-        //WHEN TO CREATE A COPY
-        final bool option1 = !hasPrevious;
-        final bool option2 = hasPrevious && previousState.timeline.allLayers.length != originalLayerSet.length;
-        final bool option3 = type.group == HistoryStateTypeGroup.full;
-        final bool option4 = type.group == HistoryStateTypeGroup.layerFull &&  l == originLayer;
-
-        if (option1 || option2 || option3 || option4)
+        for (final HistoryLayer hl in previousState.timeline.allLayers)
         {
-          final HistoryLayer hLayer = _createHistoryLayer(layerState: l, rampList: rampList)!;
-          historyLayerSet.add(hLayer);
+          previousLayerMap[hl.layerIdentity] = hl;
         }
-        else //USE PREVIOUS LAYER
+      }
+
+      for (final LayerState l in originalLayerSet)
+      {
+        final int identity = identityHashCode(l);
+        final bool forceFullSnapshot = !hasPrevious || type.group == HistoryStateTypeGroup.full;
+        final bool isNewLayer        = !previousLayerMap.containsKey(identity);
+        final bool isOriginLayer     = type.group == HistoryStateTypeGroup.layerFull && l == originLayer;
+
+        if (forceFullSnapshot || isNewLayer || isOriginLayer)
         {
-          final HistoryLayer hLayer = previousState.timeline.allLayers.elementAt(i);
-          historyLayerSet.add(hLayer);
+          HistoryLayer? previousTypedLayer;
+          if (isOriginLayer && !forceFullSnapshot && !isNewLayer)
+          {
+            previousTypedLayer = previousLayerMap[identity];
+          }
+
+          historyLayerSet.add(_createHistoryLayer(
+            layerState:        l,
+            rampList:          rampList,
+            previousLayer:     previousTypedLayer,
+          )!,);
+        }
+        else
+        {
+          historyLayerSet.add(previousLayerMap[identity]!);
         }
       }
 
@@ -165,37 +191,87 @@ class HistoryState
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
-    final HistorySelectionState selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
+
+    final HistorySelectionState selectionState;
+    if (previousState != null &&
+        type.group != HistoryStateTypeGroup.full &&
+        !_selectionAffectingTypes.contains(identifier))
+    {
+      selectionState = previousState.selectionState;
+    }
+    else
+    {
+      selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
+    }
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
   }
 
-
-
-  static HistoryLayer? _createHistoryLayer({required final LayerState layerState, required final List<HistoryRampData> rampList})
+  static HistoryLayer? _createHistoryLayer({
+    required final LayerState            layerState,
+    required final List<HistoryRampData> rampList,
+    final HistoryLayer?                  previousLayer,
+  })
   {
-    HistoryLayer? hLayer;
     if (layerState.runtimeType == DrawingLayerState)
     {
-      hLayer = HistoryDrawingLayer.fromDrawingLayerState(layerState: layerState as DrawingLayerState, ramps: rampList);
-    }
-    else if (layerState.runtimeType == ReferenceLayerState)
-    {
-      hLayer = HistoryReferenceLayer.fromReferenceLayer(referenceState: layerState as ReferenceLayerState);
-    }
-    else if (layerState.runtimeType == GridLayerState)
-    {
-      hLayer = HistoryGridLayer.fromGridLayer(gridState: layerState as GridLayerState);
-    }
-    else if (layerState.runtimeType == ShadingLayerState)
-    {
-      hLayer = HistoryShadingLayer.fromShadingLayerState(layerState: layerState as ShadingLayerState);
-    }
-    else if (layerState.runtimeType == DitherLayerState)
-    {
-      hLayer = HistoryDitherLayer.fromDitherLayerState(layerState: layerState as DitherLayerState);
+      final HistoryDrawingLayer? prevDrawing =
+      previousLayer is HistoryDrawingLayer ? previousLayer : null;
 
+      return prevDrawing != null
+          ? HistoryDrawingLayer.deltaFrom(
+        layerState:    layerState as DrawingLayerState,
+        ramps:         rampList,
+        previousLayer: prevDrawing,
+      )
+          : HistoryDrawingLayer.fromDrawingLayerState(
+        layerState: layerState as DrawingLayerState,
+        ramps:      rampList,
+      );
     }
-    return hLayer;
+
+    if (layerState.runtimeType == ShadingLayerState)
+    {
+      final HistoryShadingLayer? prevShading =
+      previousLayer is HistoryShadingLayer ? previousLayer : null;
+
+      return prevShading != null
+          ? HistoryShadingLayer.deltaFrom(
+        layerState:    layerState as ShadingLayerState,
+        previousLayer: prevShading,
+      )
+          : HistoryShadingLayer.fromShadingLayerState(
+        layerState: layerState as ShadingLayerState,
+      );
+    }
+
+    if (layerState.runtimeType == DitherLayerState)
+    {
+      final HistoryDitherLayer? prevDither =
+      previousLayer is HistoryDitherLayer ? previousLayer : null;
+
+      return prevDither != null
+          ? HistoryDitherLayer.deltaFrom(
+        layerState:    layerState as DitherLayerState,
+        previousLayer: prevDither,
+      )
+          : HistoryDitherLayer.fromDitherLayerState(
+        layerState: layerState as DitherLayerState,
+      );
+    }
+
+    if (layerState.runtimeType == ReferenceLayerState)
+    {
+      return HistoryReferenceLayer.fromReferenceLayer(
+          referenceState: layerState as ReferenceLayerState,);
+    }
+
+    if (layerState.runtimeType == GridLayerState)
+    {
+      return HistoryGridLayer.fromGridLayer(
+          gridState: layerState as GridLayerState,);
+    }
+
+    return null;
   }
 }

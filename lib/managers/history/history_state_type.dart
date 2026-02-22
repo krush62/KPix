@@ -50,6 +50,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.selectionRotate: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionRotate, description: "rotate selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.selectionMove: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionMove, description: "move selection", compressionBehavior: HistoryStateCompressionBehavior.merge),
   HistoryStateTypeIdentifier.selectionPaste: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionPaste, description: "paste selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
+  HistoryStateTypeIdentifier.selectionNewLayer: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionNewLayer, description: "selection to new layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.selectionDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.selectionDelete, description: "delete selection", compressionBehavior: HistoryStateCompressionBehavior.leave),
 
   HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.canvasSizeChange, description: "change canvas size", compressionBehavior: HistoryStateCompressionBehavior.leave),
@@ -171,7 +172,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
   HistoryStateTypeIdentifier.loadData: HistoryStateTypeGroup.full,
 
   HistoryStateTypeIdentifier.layerChange: HistoryStateTypeGroup.layerSelect, //layer select
-  
+
   HistoryStateTypeIdentifier.layerDelete: HistoryStateTypeGroup.full, //layer delete
   HistoryStateTypeIdentifier.layerMerge: HistoryStateTypeGroup.full, //layer merge
   HistoryStateTypeIdentifier.layerDuplicate: HistoryStateTypeGroup.full, //layer new
@@ -198,6 +199,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
   HistoryStateTypeIdentifier.selectionRotate: HistoryStateTypeGroup.layerFull, //layer full
   HistoryStateTypeIdentifier.selectionMove: HistoryStateTypeGroup.layerFull, //layer full
   HistoryStateTypeIdentifier.selectionPaste: HistoryStateTypeGroup.layerFull, //layer full
+  HistoryStateTypeIdentifier.selectionNewLayer: HistoryStateTypeGroup.full, //full — creates a new layer
   HistoryStateTypeIdentifier.selectionDelete: HistoryStateTypeGroup.layerFull, //layer full
 
   HistoryStateTypeIdentifier.canvasSizeChange: HistoryStateTypeGroup.full, //full

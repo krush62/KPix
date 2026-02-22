@@ -313,8 +313,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
 
       if (_historyLayerValueMap[layerType] == HistoryDrawingLayer) //DRAWING LAYER
-          {
-        HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: HistoryColorReference(colorIndex: 0, rampIndex: 0));
+      {
+        HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: const HistoryColorReference(colorIndex: 0, rampIndex: 0));
 
         // LOCK STATE
         final int lockStateVal = byteData.getUint8(offset++);
@@ -716,7 +716,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
           data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
         }
-        layerList.add(HistoryDrawingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: drawingLayerSettings));
+        layerList.add(HistoryDrawingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: drawingLayerSettings, layerIdentity: i));
       }
       else if (_historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
           {
@@ -786,7 +786,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         aspectRatio = aspectRatio.clamp(referenceLayerSettings.aspectRatioMin, referenceLayerSettings.aspectRatioMax);
         offset+=4;
 
-        layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio));
+        layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio, layerIdentity: i));
       }
       else if (_historyLayerValueMap[layerType] == HistoryGridLayer) //GRID LAYER
           {
@@ -945,7 +945,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         vanishingPoint3 = vanishingPoint3.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
         offset += 4;
 
-        layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3));
+        layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3, layerIdentity: i));
       }
       else if (_historyLayerValueMap[layerType] == HistoryShadingLayer || _historyLayerValueMap[layerType] == HistoryDitherLayer) //SHADING/DITHER LAYER
           {
@@ -1021,11 +1021,11 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
         if (_historyLayerValueMap[layerType] == HistoryShadingLayer)
         {
-          layerList.add(HistoryShadingLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings));
+          layerList.add(HistoryShadingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
         }
         else if (_historyLayerValueMap[layerType] == HistoryDitherLayer)
         {
-          layerList.add(HistoryDitherLayer(visibilityState: visibilityState, lockState: lockState, data: data, settings: shadingLayerSettings));
+          layerList.add(HistoryDitherLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
         }
       }
     }
@@ -1066,7 +1066,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     }
 
     final HistorySelectionState selectionState = HistorySelectionState(content: HashMap<CoordinateSetI, HistoryColorReference?>());
-    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
+    final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);
   }

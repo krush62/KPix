@@ -146,6 +146,7 @@ class KPixPainter extends CustomPainter
   late ui.Image _checkerboardImage;
   ui.Image? _backupImage;
   final List<int> _previousRasterHashes = <int>[];
+  ContentRasterSet? _lastContentRaster;
 
   // status for reference layer movements
   bool _referenceImgMovementStarted = false;
@@ -813,9 +814,16 @@ class KPixPainter extends CustomPainter
         final CoordinateSetD effCanvasSize = CoordinateSetD(
           x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
           y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
-        final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any((final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing);
-        if (!hasRasterizingLayers || _backupImage == null)
+        final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any(
+                (final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing);
+
+        final bool hasUnreadyLayers = visibleLayers.whereType<RasterableLayerState>().any(
+                (final RasterableLayerState rasterLayer) =>
+            rasterLayer.rasterImage.value == null &&
+                (rasterLayer.rasterImageMap.value[frame]?.raster == null));
+        if ((!hasRasterizingLayers && !hasUnreadyLayers) || _backupImage == null)
         {
+          _lastContentRaster = null;
           for (int i = visibleLayers.length - 1; i >= 0; i--)
           {
             final LayerState vLayer = visibleLayers[i];
@@ -923,6 +931,7 @@ class KPixPainter extends CustomPainter
             final ContentRasterSet? contentRasterSet = toolPainter?.contentRaster;
             if (contentRasterSet != null)
             {
+              _lastContentRaster = contentRasterSet;
               paintImage(
                 canvas: drawParams.canvas,
                 rect: ui.Rect.fromLTWH(drawParams.offset.dx + (contentRasterSet.offset.x * effPxSize) , drawParams.offset.dy + (contentRasterSet.offset.y * effPxSize),
@@ -939,6 +948,25 @@ class KPixPainter extends CustomPainter
         else
         {
           _drawRasterImage(drawParams: drawParams, pxlSzDbl: pxlSzDbl, displayImage: _backupImage!);
+          final ContentRasterSet? cachedRaster = _lastContentRaster;
+          if (cachedRaster != null)
+          {
+            final double effPxSize = drawParams.pixelSize.toDouble() / _appState.devicePixelRatio;
+            paintImage(
+              canvas: drawParams.canvas,
+              rect: ui.Rect.fromLTWH(
+                drawParams.offset.dx + (cachedRaster.offset.x * effPxSize),
+                drawParams.offset.dy + (cachedRaster.offset.y * effPxSize),
+                cachedRaster.size.x * effPxSize,
+                cachedRaster.size.y * effPxSize,
+              ),
+              image: cachedRaster.image,
+              scale: 1.0 / pxlSzDbl * _appState.devicePixelRatio,
+              fit: BoxFit.none,
+              alignment: Alignment.topLeft,
+              filterQuality: FilterQuality.none,
+            );
+          }
         }
 
         if (_frameBlendingOptions.enabled.value && _frameBlendingOptions.framesAfter.value + _frameBlendingOptions.framesBefore.value > 0 && _appState.timeline.frames.value.length > 1)

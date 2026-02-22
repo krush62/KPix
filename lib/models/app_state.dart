@@ -1152,8 +1152,8 @@ class AppState
         {
           GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerOrderChange);
         }
-        timeline.layerChangeNotifier.reportChange();
         rasterLayersFrame();
+        timeline.layerChangeNotifier.reportChange();
       }
     }
   }
@@ -1329,8 +1329,8 @@ class AppState
       {
         showMessage(text: "Cannot delete the layer!");
       }
-      timeline.layerChangeNotifier.reportChange();
       rasterLayersAll();
+      timeline.layerChangeNotifier.reportChange();
     }
   }
 

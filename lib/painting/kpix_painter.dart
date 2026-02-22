@@ -815,12 +815,12 @@ class KPixPainter extends CustomPainter
           x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
           y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
         final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any(
-                (final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing);
+                (final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing,);
 
         final bool hasUnreadyLayers = visibleLayers.whereType<RasterableLayerState>().any(
                 (final RasterableLayerState rasterLayer) =>
             rasterLayer.rasterImage.value == null &&
-                (rasterLayer.rasterImageMap.value[frame]?.raster == null));
+                (rasterLayer.rasterImageMap.value[frame]?.raster == null),);
         if ((!hasRasterizingLayers && !hasUnreadyLayers) || _backupImage == null)
         {
           _lastContentRaster = null;

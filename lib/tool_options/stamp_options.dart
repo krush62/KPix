@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -30,10 +31,17 @@ class StampOptions extends IToolOptions
   final int scaleDefault;
   final bool flipHDefault;
   final bool flipVDefault;
+  final bool gridAlignDefault;
+  final int gridOffsetDefault;
+
 
   final ValueNotifier<int> scale = ValueNotifier<int>(1);
   final ValueNotifier<bool> flipH = ValueNotifier<bool>(false);
   final ValueNotifier<bool> flipV = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> gridAlign = ValueNotifier<bool>(false);
+  final ValueNotifier<int> gridOffsetX = ValueNotifier<int>(0);
+  final ValueNotifier<int> gridOffsetY = ValueNotifier<int>(0);
+
 
 
   StampOptions({
@@ -42,11 +50,16 @@ class StampOptions extends IToolOptions
     required this.scaleDefault,
     required this.flipHDefault,
     required this.flipVDefault,
+    required this.gridAlignDefault,
+    required this.gridOffsetDefault,
   })
   {
     scale.value = scaleDefault;
     flipH.value = flipHDefault;
     flipV.value = flipVDefault;
+    gridAlign.value = gridAlignDefault;
+    gridOffsetX.value = gridOffsetDefault;
+    gridOffsetY.value = gridOffsetDefault;
   }
 
   static Column getWidget({
@@ -83,7 +96,21 @@ class StampOptions extends IToolOptions
                         {
                           return Padding(
                             padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
-                            child: RawImage(image: stampData.thumbnail, fit: BoxFit.contain, filterQuality: FilterQuality.none, scale: 0.1,),
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: stampOptions.flipH,
+                              builder: (final BuildContext contextH, final bool flipH, final Widget? childH) {
+                                return ValueListenableBuilder<bool>(
+                                  valueListenable: stampOptions.flipV,
+                                  builder: (final BuildContext contextV, final bool flipV, final Widget? childV) {
+                                    return Transform.flip(
+                                      flipX: flipH,
+                                      flipY: flipV,
+                                      child: RawImage(image: stampData.thumbnail, fit: BoxFit.contain, filterQuality: FilterQuality.none, scale: 0.1,),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                           );
                         }
                         else
@@ -111,9 +138,9 @@ class StampOptions extends IToolOptions
                       Expanded(
                         child: Align(
                           alignment: Alignment.centerRight,
-                          child: Text(
-                            "Flip H",
-                            style: Theme.of(context).textTheme.labelLarge,
+                          child: Icon(
+                            color: Theme.of(context).primaryColorLight,
+                            TablerIcons.flip_vertical,
                           ),
                         ),
                       ),
@@ -136,9 +163,9 @@ class StampOptions extends IToolOptions
                         child: Align
                           (
                           alignment: Alignment.centerRight,
-                          child: Text(
-                            "Flip V",
-                            style: Theme.of(context).textTheme.labelLarge,
+                          child: Icon(
+                            color: Theme.of(context).primaryColorLight,
+                            TablerIcons.flip_horizontal,
                           ),
                         ),
                       ),
@@ -159,33 +186,64 @@ class StampOptions extends IToolOptions
             ),
           ],
         ),
+        Visibility(
+          visible: false,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Scale",
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ),
+              ),
+              Expanded
+              (
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: stampOptions.scale,
+                    builder: (final BuildContext context, final int scale, final Widget? child)
+                    {
+                      return KPixSlider(
+                        value: scale.toDouble(),
+                        min: stampOptions.scaleMin.toDouble(),
+                        max: stampOptions.scaleMax.toDouble(),
+                        //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
+                        onChanged: (final double newVal) {stampOptions.scale.value = newVal.round();},
+                        textStyle: Theme.of(context).textTheme.bodyLarge!,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         Row(
           children: <Widget>[
             Expanded(
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Scale",
+                  "Grid Align",
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
             ),
-            Expanded
-            (
+            Expanded(
               flex: toolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: stampOptions.scale,
-                  builder: (final BuildContext context, final int scale, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: scale.toDouble(),
-                      min: stampOptions.scaleMin.toDouble(),
-                      max: stampOptions.scaleMax.toDouble(),
-                      //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
-                      onChanged: (final double newVal) {stampOptions.scale.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: stampOptions.gridAlign,
+                  builder: (final BuildContext context, final bool gridAlign, final Widget? child){
+                    return Switch(
+                      onChanged: (final bool newVal) {stampOptions.gridAlign.value = newVal;},
+                      value: gridAlign,
                     );
                   },
                 ),
@@ -193,7 +251,122 @@ class StampOptions extends IToolOptions
             ),
           ],
         ),
+        ValueListenableBuilder<bool>(
+          valueListenable: stampOptions.gridAlign,
+          builder: (final BuildContext context, final bool gridAlign, final Widget? child) {
+            if (gridAlign)
+            {
+              return Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Offset X",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ValueListenableBuilder<StampManagerEntryData?>(
+                        valueListenable: GetIt.I.get<StampManager>().selectedStamp,
+                        builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
+                        {
+                          if (stampData != null)
+                          {
+                            return ValueListenableBuilder<int>(
+                              valueListenable: stampOptions.gridOffsetX,
+                              builder: (final BuildContext context, final int offsetX, final Widget? child) {
 
+
+                                return KPixSlider(
+                                  value: offsetX.toDouble(),
+                                  max: stampData.width - 1,
+                                  //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
+                                  onChanged: (final double newVal) {stampOptions.gridOffsetX.value = newVal.round();},
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                );
+                              },
+                            );
+                          }
+                          else
+                          {
+                            return const SizedBox();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            else
+            {
+              return const SizedBox();
+            }
+          },
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: stampOptions.gridAlign,
+          builder: (final BuildContext context, final bool gridAlign, final Widget? child) {
+            if (gridAlign)
+            {
+              return Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Offset Y",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ValueListenableBuilder<StampManagerEntryData?>(
+                        valueListenable: GetIt.I.get<StampManager>().selectedStamp,
+                        builder: (final BuildContext context, final StampManagerEntryData? stampData, final Widget? child)
+                        {
+                          if (stampData != null)
+                          {
+                            return ValueListenableBuilder<int>(
+                              valueListenable: stampOptions.gridOffsetY,
+                              builder: (final BuildContext context, final int offsetY, final Widget? child) {
+
+
+                                return KPixSlider(
+                                  value: offsetY.toDouble(),
+                                  max: stampData.height - 1,
+                                  //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
+                                  onChanged: (final double newVal) {stampOptions.gridOffsetY.value = newVal.round();},
+                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                );
+                              },
+                            );
+                          }
+                          else
+                          {
+                            return const SizedBox();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            else
+            {
+              return const SizedBox();
+            }
+          },
+        ),
       ],
     );
   }

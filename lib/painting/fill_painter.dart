@@ -37,6 +37,24 @@ class FillPainter extends IToolPainter
   bool _isDown = false;
   bool _shouldDraw = false;
 
+  static const List<MapEntry<int, int>> _symbolPathOutline = <MapEntry<int, int>>[
+    MapEntry<int, int>(0, 0),
+    MapEntry<int, int>(3, -3),
+    MapEntry<int, int>(6, 0),
+    MapEntry<int, int>(4, 2),
+    MapEntry<int, int>(2, 0),
+    MapEntry<int, int>(0, 0),
+  ];
+
+  static const List<MapEntry<int, int>> _symbolPathFill = <MapEntry<int, int>>[
+    MapEntry<int, int>(0, 0),
+    MapEntry<int, int>(1, -1),
+    MapEntry<int, int>(5, -1),
+    MapEntry<int, int>(6, 0),
+    MapEntry<int, int>(4, 2),
+    MapEntry<int, int>(2, 0),
+  ];
+
   @override
   void calculate({required final DrawingParameters drawParams})
   {
@@ -58,27 +76,16 @@ class FillPainter extends IToolPainter
   @override
   void drawCursorOutline({required final DrawingParameters drawParams})
   {
+
+
     final double effPixelSize = drawParams.pixelSize / drawParams.pixelRatio;
     if (drawParams.cursorPosNorm != null)
     {
       final CoordinateSetD cursorPos = CoordinateSetD(
         x: drawParams.offset.dx + (drawParams.cursorPosNorm!.x + 0.5) * effPixelSize,
         y: drawParams.offset.dy + (drawParams.cursorPosNorm!.y + 0.5) * effPixelSize,);
-      final Path outlinePath = Path();
-      outlinePath.moveTo(cursorPos.x, cursorPos.y);
-      outlinePath.lineTo(cursorPos.x + (3 * painterOptions.cursorSize), cursorPos.y - (3 * painterOptions.cursorSize));
-      outlinePath.lineTo(cursorPos.x + (6 * painterOptions.cursorSize), cursorPos.y);
-      outlinePath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
-      outlinePath.lineTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y);
-      outlinePath.lineTo(cursorPos.x, cursorPos.y);
-
-      final Path fillPath = Path();
-      fillPath.moveTo(cursorPos.x, cursorPos.y);
-      fillPath.lineTo(cursorPos.x + (1 * painterOptions.cursorSize), cursorPos.y - (1 * painterOptions.cursorSize));
-      fillPath.lineTo(cursorPos.x + (5 * painterOptions.cursorSize), cursorPos.y - (1 * painterOptions.cursorSize));
-      fillPath.lineTo(cursorPos.x + (6 * painterOptions.cursorSize), cursorPos.y);
-      fillPath.lineTo(cursorPos.x + (4 * painterOptions.cursorSize), cursorPos.y + (2 * painterOptions.cursorSize));
-      fillPath.lineTo(cursorPos.x + (2 * painterOptions.cursorSize), cursorPos.y);
+      final Path outlinePath = getPathFromList(pointList: _symbolPathOutline, offsetPos: cursorPos, scaling: painterOptions.cursorSize);
+      final Path fillPath = getPathFromList(pointList: _symbolPathFill, offsetPos: cursorPos, scaling: painterOptions.cursorSize);
 
       drawParams.paint.style = PaintingStyle.fill;
       drawParams.paint.strokeWidth = painterOptions.selectionStrokeWidthLarge;

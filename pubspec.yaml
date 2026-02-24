@@ -176,7 +176,11 @@ flutter:
     - color_names/
     - fonts/
     - imgs/
-    - stamps/
+    - stamps/dither/
+    - stamps/floors/
+    - stamps/nature/
+    - stamps/shapes/
+    - stamps/walls/
     - palettes/
     - docs/credits.md
     - docs/controls.md

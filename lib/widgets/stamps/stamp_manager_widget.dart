@@ -29,21 +29,24 @@ import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 
 class StampManager
 {
-  final ValueNotifier<List<StampManagerEntryData>> stampList = ValueNotifier<List<StampManagerEntryData>>(<StampManagerEntryData>[]);
+  final ValueNotifier<StampMap> stampMap = ValueNotifier<StampMap>(<String, List<StampManagerEntryData>>{});
   final ValueNotifier<StampManagerEntryData?> selectedStamp = ValueNotifier<StampManagerEntryData?>(null);
+  final ValueNotifier<String?> selectedFolder = ValueNotifier<String?>(null);
 
   Future<void> loadAllStamps() async
   {
-    stampList.value = await loadStamps(loadUserStamps: !kIsWeb);
-    if (stampList.value.isNotEmpty)
+    stampMap.value = await loadStamps(loadUserStamps: !kIsWeb);
+    for (final MapEntry<String, List<StampManagerEntryData>> stampList in stampMap.value.entries)
     {
-      selectedStamp.value = stampList.value.first;
-    }
-    else
-    {
-      selectedStamp.value = null;
+      if (stampList.value.isNotEmpty)
+      {
+        selectedFolder.value = stampList.key;
+        selectedStamp.value = stampList.value.first;
+      }
     }
   }
+
+
 }
 
 class StampManagerOptions
@@ -85,29 +88,31 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
       outsideCancelable: false,
     );
 
-    _createWidgetList().then((final List<StampManagerEntryWidget> pList) {
-      _fileEntries.value = pList;
-    });
+    _createWidgetList();
   }
 
-  Future<List<StampManagerEntryWidget>> _createWidgetList() async
+  Future<void> _createWidgetList() async
   {
+    final String? sectionName = _stampManager.selectedFolder.value;
     final List<StampManagerEntryWidget> fList = <StampManagerEntryWidget>[];
-    if (!kIsWeb)
+    if (sectionName != null && !kIsWeb)
     {
-      final List<StampManagerEntryData> stamps = _stampManager.stampList.value;
-      for (final StampManagerEntryData fileData in stamps)
+      final StampMap stamps = _stampManager.stampMap.value;
+      if (stamps.containsKey(sectionName))
       {
-        final StampManagerEntryWidget entryWidget = StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData);
-        fList.add(entryWidget);
-        if (fileData == _stampManager.selectedStamp.value)
+        final List<StampManagerEntryData> stampList = stamps[sectionName]!;
+        for (final StampManagerEntryData fileData in stampList)
         {
-          _selectedWidget.value = entryWidget;
+          final StampManagerEntryWidget entryWidget = StampManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData);
+          fList.add(entryWidget);
+          if (fileData == _stampManager.selectedStamp.value)
+          {
+            _selectedWidget.value = entryWidget;
+          }
         }
+        _fileEntries.value = fList;
       }
     }
-
-    return fList;
   }
 
   void _deleteWarningYes()
@@ -125,10 +130,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   {
     if (success)
     {
-      _createWidgetList().then((final List<StampManagerEntryWidget> fList) {
-        _selectedWidget.value = null;
-        _fileEntries.value = fList;
-      });
+      _createWidgetList();
     }
   }
 
@@ -158,9 +160,46 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
         maxWidth: _options.maxWidth,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           SizedBox(height: _alertOptions.padding),
-          Text("STAMP MANAGER", style: Theme.of(context).textTheme.titleLarge),
+          Center(child: Text("STAMP MANAGER", style: Theme.of(context).textTheme.titleLarge)),
+          ValueListenableBuilder<StampMap>(
+            valueListenable: _stampManager.stampMap,
+            builder: (final BuildContext context1, final StampMap stampMap, final Widget? child1) {
+              return ValueListenableBuilder<String?>(
+                valueListenable: _stampManager.selectedFolder,
+                builder: (final BuildContext context2, final String? section, final Widget? child2) {
+                  if (section != null)
+                  {
+                    final List<ButtonSegment<String>> segments = <ButtonSegment<String>>[];
+                    for (final String stampSection in stampMap.keys)
+                    {
+                      segments.add(
+                        ButtonSegment<String>(
+                          value: stampSection,
+                          label: Text(stampSection),
+                        ),
+                      );
+
+                    }
+                    return SegmentedButton<String>(
+                      segments: segments,
+                      selected: <String>{section},
+                      showSelectedIcon: false,
+                      onSelectionChanged: (final Set<String> newSelection) {
+                        _stampManager.selectedFolder.value = newSelection.first;
+                        _createWidgetList();
+                      },
+                    );
+                  }
+                  else
+                  {
+                    return const SizedBox();
+                  }
+              },);
+            },
+          ),
           SizedBox(height: _alertOptions.padding),
           Expanded(
             child: DecoratedBox(

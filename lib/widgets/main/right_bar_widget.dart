@@ -45,6 +45,7 @@ import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
+import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class RightBarWidget extends StatefulWidget
@@ -64,27 +65,19 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
+  final OverlayPortalController _addLayerPortalController = OverlayPortalController();
   final LayerLink _layerLink = LayerLink();
-  late KPixOverlay addLayerMenu;
+
 
   @override
   void initState()
   {
     super.initState();
-    addLayerMenu = getAddLayerMenu(
-      onDismiss: _closeLayerMenu,
-      layerLink: _layerLink,
-      onNewDrawingLayer: _newDrawingLayerPressed,
-      onNewReferenceLayer: _newReferenceLayerPressed,
-      onNewGridLayer: _newGridLayerPressed,
-      onNewShadingLayer: _newShadingLayerPressed,
-      onNewDitherLayer: _newDitherLayerPressed,
-    );
   }
 
   void _closeLayerMenu()
   {
-    addLayerMenu.hide();
+    _addLayerPortalController.hide();
   }
 
   void _newDrawingLayerPressed()
@@ -197,15 +190,37 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 child: Tooltip(
                                   message: "Add New Layer...",
                                   waitDuration: AppState.toolTipDuration,
-                                  child: IconButton.outlined(
-                                    onPressed: () {addLayerMenu.show(context: context);},
-                                    icon: const Icon(TablerIcons.plus),
-                                    style: IconButton.styleFrom(
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
-                                      maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
-                                      iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
-                                      padding: EdgeInsets.zero,
+                                  child: OverlayPortal(
+                                    controller: _addLayerPortalController,
+                                    overlayChildBuilder: (final BuildContext bcontext) {
+                                      final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+                                      return Stack(
+                                        children: <Widget>[
+                                          ModalBarrier(
+                                            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                            onDismiss: _closeLayerMenu,
+                                          ),
+                                          OverlayAddNewLayerMenu(
+                                            layerLink: _layerLink,
+                                            onNewDrawingLayer: _newDrawingLayerPressed,
+                                            onNewReferenceLayer: _newReferenceLayerPressed,
+                                            onNewGridLayer: _newGridLayerPressed,
+                                            onNewShadingLayer: _newShadingLayerPressed,
+                                            onNewDitherLayer: _newDitherLayerPressed,
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    child: IconButton.outlined(
+                                      onPressed: _addLayerPortalController.show,
+                                      icon: const Icon(TablerIcons.plus),
+                                      style: IconButton.styleFrom(
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                        maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
+                                        iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
+                                        padding: EdgeInsets.zero,
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -18,33 +18,38 @@
 
 part of '../file_handler.dart';
 
-Future<List<StampManagerEntryData>> loadStamps({required final bool loadUserStamps}) async
+Future<StampMap> loadStamps({required final bool loadUserStamps}) async
 {
-  final List<StampManagerEntryData> allStamps = <StampManagerEntryData>[];
-  allStamps.addAll(await _loadInstalledStamps());
+  const String userSectionName = "user";
+  final StampMap allStamps = await _loadInstalledStamps();
   if (loadUserStamps)
   {
-    allStamps.addAll(await _loadUserStamps());
+    allStamps[userSectionName] = await _loadUserStamps();
   }
   return allStamps;
 }
 
-Future<List<StampManagerEntryData>> _loadInstalledStamps() async
+Future<StampMap> _loadInstalledStamps() async
 {
-  final List<StampManagerEntryData> stampData = <StampManagerEntryData>[];
+  final StampMap stampData = <String, List<StampManagerEntryData>>{};
   final AssetManifest assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-  final List<String> stampAssetList = assetManifest.listAssets().where((final String string) => string.startsWith("${PreferenceManager.ASSET_PATH_STAMPS}/") && string.endsWith(".png")).toList();
-
-  for (final String path in stampAssetList)
+  const String stampRoot = "${PreferenceManager.ASSET_PATH_STAMPS}/";
+  final List<String> stampAssets = assetManifest
+      .listAssets()
+      .where((final String path) => path.startsWith(stampRoot) && path.endsWith(".png"))
+      .toList();
+  for (final String path in stampAssets)
   {
-
+    final String folder = path.substring(0, path.lastIndexOf('/')).substring(stampRoot.length);
     final ByteData byteData = await rootBundle.load(path);
     final Uint8List pngBytes = byteData.buffer.asUint8List();
     final StampManagerEntryData data = await _readStampFromFileData(pngBytes: pngBytes, fileName: path, isLocked: true);
     if (data.thumbnail != null)
     {
-      stampData.add(data);
+      stampData[folder] ??= <StampManagerEntryData>[];
+      stampData[folder]!.add(data);
     }
+
   }
   return stampData;
 }

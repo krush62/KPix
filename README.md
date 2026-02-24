@@ -13,8 +13,8 @@
 ![pull-requests](https://img.shields.io/github/issues-pr-raw/krush62/KPix)
 ![license](https://img.shields.io/github/license/krush62/KPix)
 
-![screenshot03](imgs/screenshot_03.png)
-*Application Screenshot, Artwork created by krush62, inspired by the Stephen King Novel "Under the Dome"*
+![screenshot04](imgs/screenshot_04.png)
+*Application Screenshot, Artwork created by krush62*
 
 # Contents
 

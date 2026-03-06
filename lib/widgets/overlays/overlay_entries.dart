@@ -883,15 +883,26 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             ),
             Center(
-              child: Center(
-                child: KPixAnimationWidget(
-                  constraints: BoxConstraints(
-                    maxHeight: options.maxHeight / 4.0,
-                    maxWidth: options.maxWidth / 2.0,
-                  ),
-                  child: Text(
-                    message,
-                    style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
+              child: KPixAnimationWidget(
+                constraints: BoxConstraints(
+                  maxHeight: options.maxHeight / 4.0,
+                  maxWidth: options.maxWidth * 0.6,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(options.padding),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const CircularProgressIndicator(),
+                      SizedBox(width: options.padding * 2),
+                      Flexible(
+                        child: Text(
+                          message,
+                          style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

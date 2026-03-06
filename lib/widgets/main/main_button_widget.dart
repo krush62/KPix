@@ -75,6 +75,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _importDialog;
   late KPixOverlay _importLoadingDialog;
   late KPixOverlay _exportLoadingDialog;
+  late KPixOverlay _kpixLoadingDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -142,6 +143,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
     _importLoadingDialog = getLoadingDialog(message: "Importing Image...");
     _exportLoadingDialog = getLoadingDialog(message: "Exporting...");
+    _kpixLoadingDialog = getLoadingDialog(message: "Loading File...");
 
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
@@ -201,6 +203,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _importDialog.hide();
     _importLoadingDialog.hide();
     _exportLoadingDialog.hide();
+    _kpixLoadingDialog.hide();
   }
 
   void _newFile()
@@ -224,7 +227,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       }
       else
       {
-        loadFilePressed(finishCallback: callback);
+        _kpixLoadingDialog.show(context: context);
+        loadFilePressed(finishCallback: callback, loadingDialog: _kpixLoadingDialog);
         _closeAllMenus();
       }
     }
@@ -273,7 +277,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveBeforeLoadFinished()
   {
-    loadFilePressed();
+    _kpixLoadingDialog.show(context: context);
+    loadFilePressed(loadingDialog: _kpixLoadingDialog);
     _closeAllMenus();
   }
 
@@ -379,6 +384,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _importImage({required final ImportData importData})
   {
+    _importDialog.hide();
     _importLoadingDialog.show(context: context);
     try
     {
@@ -388,15 +394,21 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
         _appState.rasterLayersFrame();
         _appState.timeline.layerChangeNotifier.reportChange();
+        _closeAllMenus();
+      }).catchError((final Object e, final StackTrace s) {
+        _closeAllMenus();
+        const String failMsg = "Error importing image.";
+        _appState.showMessage(text: failMsg);
+        GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
       });
     }
     catch (e, s)
     {
+      _closeAllMenus();
       const String failMsg = "Error importing image.";
       _appState.showMessage(text: failMsg);
       GetIt.I.get<Logger>().w(failMsg, error: e, stackTrace: s);
     }
-    _closeAllMenus();
   }
 
   @override

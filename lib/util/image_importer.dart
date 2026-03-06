@@ -17,7 +17,6 @@
 import 'dart:collection';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -51,7 +50,34 @@ class ImportResult
   ImportResult({this.data, required this.message});
 }
 
+class _ImportParams {
+  final ByteData imageData;
+  final int maxRamps;
+  final int maxColors;
+  final bool createNewPalette;
+  final int width;
+  final int height;
+  final List<List<Color>>? currentRampsColors;
+  final KPalConstraints kPalConstraints;
 
+  _ImportParams({
+    required this.imageData,
+    required this.maxRamps,
+    required this.maxColors,
+    required this.createNewPalette,
+    required this.width,
+    required this.height,
+    required this.kPalConstraints,
+    this.currentRampsColors,
+  });
+}
+
+class _ImportIsolateResult {
+  final List<KPalRampSettings>? newRampSettings;
+  final List<int> pixelIndices;
+  final List<int> rampIndices;
+  _ImportIsolateResult({this.newRampSettings, required this.pixelIndices, required this.rampIndices});
+}
 
 
   Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
@@ -63,20 +89,37 @@ class ImportResult
     }
     else
     {
+      final KPalConstraints kPalConstraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
+
+      // 1. Run heavy calculations in isolate
+      final _ImportIsolateResult isolateResult = await compute(_importIsolate, _ImportParams(
+        imageData: imageData,
+        maxRamps: importData.maxRamps,
+        maxColors: importData.maxColors,
+        createNewPalette: importData.createNewPalette,
+        width: importData.scaledImage.width,
+        height: importData.scaledImage.height,
+        kPalConstraints: kPalConstraints,
+        currentRampsColors: importData.createNewPalette ? null : currentRamps.map((final KPalRampData r) => r.shiftedColors.map((final ValueNotifier<IdColor> c) => c.value.color).toList()).toList(),
+      ),);
+
       DrawingLayerState drawingLayer;
       List<KPalRampData> ramps = <KPalRampData>[];
-      // Extracting ALL colors
-      final List<KHSV> colorList = await _extractColorsFromImage(imgBytes: imageData);
+
       if (importData.createNewPalette)
       {
-        final List<KPalRampSettings> colorRamps = await _extractColorRamps(imgBytes: imageData, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
-        for (final KPalRampSettings colorRamp in colorRamps)
+        for (final KPalRampSettings colorRamp in isolateResult.newRampSettings!)
         {
           ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
         }
 
+        drawingLayer = await _createDrawingLayerFromIndices(
+            pixelIndices: isolateResult.pixelIndices,
+            rampIndices: isolateResult.rampIndices,
+            width: importData.scaledImage.width,
+            height: importData.scaledImage.height,
+            ramps: ramps,);
 
-        drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
         await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
         if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
         {
@@ -94,7 +137,12 @@ class ImportResult
       else
       {
         ramps = currentRamps;
-        drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
+        drawingLayer = await _createDrawingLayerFromIndices(
+            pixelIndices: isolateResult.pixelIndices,
+            rampIndices: isolateResult.rampIndices,
+            width: importData.scaledImage.width,
+            height: importData.scaledImage.height,
+            ramps: ramps,);
       }
 
       ReferenceLayerState? referenceLayer;
@@ -111,6 +159,123 @@ class ImportResult
 
     }
 
+  }
+
+  _ImportIsolateResult _importIsolate(final _ImportParams params)
+  {
+    List<KPalRampSettings>? newRampSettings;
+    List<int> pixelIndices = <int>[];
+    List<int> rampIndices = <int>[];
+
+    if (params.createNewPalette)
+    {
+      newRampSettings = _extractColorRampsSync(imgBytes: params.imageData, maxRamps: params.maxRamps, maxColors: params.maxColors, constraints: params.kPalConstraints);
+      
+      // Manually generate colors from settings since we can't easily use KPalRampData in isolate
+      final List<List<Color>> tempRampColors = newRampSettings.map((final KPalRampSettings s) => _generateColorsFromSettings(s)).toList();
+      
+      final (List<int> rIdx, List<int> pIdx) = _findClosestColorsSync(imgBytes: params.imageData, rampColors: tempRampColors);
+      rampIndices = rIdx;
+      pixelIndices = pIdx;
+    }
+    else
+    {
+      final (List<int> rIdx, List<int> pIdx) = _findClosestColorsSync(imgBytes: params.imageData, rampColors: params.currentRampsColors!);
+      rampIndices = rIdx;
+      pixelIndices = pIdx;
+    }
+
+    return _ImportIsolateResult(newRampSettings: newRampSettings, pixelIndices: pixelIndices, rampIndices: rampIndices);
+  }
+
+  List<Color> _generateColorsFromSettings(final KPalRampSettings settings) {
+    final int colorCount = settings.colorCount;
+    final int centerIndex = colorCount ~/ 2;
+    final bool isEven = colorCount.isEven;
+    final double valueStepSize = ((settings.valueRangeMax - settings.valueRangeMin) / 100.0) / (colorCount - 1);
+
+    final KHSV centerColor = KHSV(
+      h: settings.baseHue.toDouble() % 360,
+      s: (settings.baseSat.toDouble() / 100.0).clamp(0.0, 1.0),
+      v: ((settings.valueRangeMin.toDouble() + ((settings.valueRangeMax.toDouble() - settings.valueRangeMin.toDouble()) / 2.0)) / 100.0).clamp(0.0, 1.0),
+    );
+
+    final List<KHSV> hsvList = List<KHSV>.filled(colorCount, centerColor);
+
+    // brighter
+    for (int i = isEven ? (colorCount ~/ 2) : (colorCount ~/ 2 + 1); i < colorCount; i++) {
+      final double distanceToCenter = isEven ? (i - centerIndex).abs().toDouble() + 0.5 : (i - centerIndex).abs().toDouble();
+      KHSV col = KHSV(
+        h: (centerColor.h + (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
+        s: (centerColor.s + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
+        v: (centerColor.v + (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
+      );
+      if (settings.satCurve == SatCurve.brightFlat) {
+        col = KHSV(h: col.h, v: col.v, s: centerColor.s);
+      } else if (settings.satCurve == SatCurve.linear) {
+        col = KHSV(h: col.h, v: col.v, s: (centerColor.s - ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0));
+      }
+      hsvList[i] = col;
+    }
+
+    // darker
+    for (int i = colorCount ~/ 2 - 1; i >= 0; i--) {
+      final double distanceToCenter = isEven ? (i - centerIndex).abs().toDouble() - 0.5 : (i - centerIndex).abs().toDouble();
+      KHSV col = KHSV(
+        h: (centerColor.h - (settings.hueShiftExp * settings.hueShift * pow(distanceToCenter, settings.hueShiftExp))) % 360,
+        s: (centerColor.s + ((settings.satShift.toDouble() / 100.0) * settings.satShiftExp * pow(distanceToCenter, settings.satShiftExp))).clamp(0.0, 1.0),
+        v: (centerColor.v - (valueStepSize * distanceToCenter)).clamp(0.0, 1.0),
+      );
+      if (settings.satCurve == SatCurve.darkFlat) {
+        col = KHSV(h: col.h, v: col.v, s: centerColor.s);
+      }
+      hsvList[i] = col;
+    }
+
+    return hsvList.map((final KHSV hsv) => hsv.toColor()).toList();
+  }
+
+  (List<int>, List<int>) _findClosestColorsSync({required final ByteData imgBytes, required final List<List<Color>> rampColors})
+  {
+    final Uint8List u8 = imgBytes.buffer.asUint8List(imgBytes.offsetInBytes, imgBytes.lengthInBytes);
+    final int pixelCount = u8.length ~/ 4;
+    final List<int> pixelIndices = List<int>.filled(pixelCount, 0);
+    final List<int> rampIndices = List<int>.filled(pixelCount, 0);
+
+    for (int i = 0; i < pixelCount; i++)
+    {
+      final int base = i * 4;
+      final Color pixelColor = Color.fromARGB(u8[base + 3], u8[base + 0], u8[base + 1], u8[base + 2]);
+      
+      int closestRampIdx = 0;
+      int closestColorIdx = 0;
+      double closestDelta = double.infinity;
+
+      for (int r = 0; r < rampColors.length; r++)
+      {
+        for (int c = 0; c < rampColors[r].length; c++)
+        {
+          final Color refColor = rampColors[r][c];
+          final double delta = getDeltaE00(
+            redA: refColor.r,
+            greenA: refColor.g,
+            blueA: refColor.b,
+            redB: pixelColor.r,
+            greenB: pixelColor.g,
+            blueB: pixelColor.b,
+          );
+
+          if (delta < closestDelta) {
+            closestDelta = delta;
+            closestRampIdx = r;
+            closestColorIdx = c;
+          }
+        }
+      }
+      rampIndices[i] = closestRampIdx;
+      pixelIndices[i] = closestColorIdx;
+    }
+    return (rampIndices, pixelIndices);
   }
 
   Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, required final Set<ColorReference> references}) async
@@ -154,58 +319,18 @@ class ImportResult
     return refState;
   }
 
-  Future<DrawingLayerState> _createDrawingLayer({required final List<KHSV> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+  Future<DrawingLayerState> _createDrawingLayerFromIndices({required final List<int> pixelIndices, required final List<int> rampIndices, required final int width, required final int height, required final List<KPalRampData> ramps}) async
   {
     final HashMap<CoordinateSetI, ColorReference?> layerContent = HashMap<CoordinateSetI, ColorReference?>();
-    int row = 0;
-    int col = 0;
-    for (int i = 0; i < colorList.length; i++)
+    for (int i = 0; i < pixelIndices.length; i++)
     {
-      if (col >= width)
-      {
-        col = 0;
-        row++;
-      }
+      final int row = i ~/ width;
+      final int col = i % width;
       final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
-      final ColorReference reference = _findClosestColor(color: colorList[i], ramps: ramps);
-      layerContent[coord] = reference;
-      col++;
+      layerContent[coord] = ColorReference(colorIndex: pixelIndices[i], ramp: ramps[rampIndices[i]]);
     }
     return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent, ramps: ramps);
   }
-
-
-ColorReference _findClosestColor({required final KHSV color, required final List<KPalRampData> ramps,})
-{
-  final Color pixelColor = color.toColor();
-
-  ColorReference? closestReference;
-  double closestDelta = double.infinity;
-
-  for (final KPalRampData ramp in ramps)
-  {
-    for (final ColorReference reference in ramp.references)
-    {
-      final Color refColor = reference.getIdColor().color;
-
-      final double delta = getDeltaE00(
-        redA: refColor.r,
-        greenA: refColor.g,
-        blueA: refColor.b,
-        redB: pixelColor.r,
-        greenB: pixelColor.g,
-        blueB: pixelColor.b,
-      );
-
-      if (delta < closestDelta) {
-        closestReference = reference;
-        closestDelta = delta;
-      }
-    }
-  }
-  // closestReference is guaranteed non-null if ramps has at least one reference
-  return closestReference!;
-}
 
 
 Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}) async
@@ -233,66 +358,6 @@ Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}
     }
     return image;
   }
-
-
-
-Future<List<KHSV>> _extractColorsFromImage({required final ByteData imgBytes, final int alphaThreshold = 0}) async
-{
-  final Uint8List u8 = imgBytes.buffer.asUint8List(
-    imgBytes.offsetInBytes,
-    imgBytes.lengthInBytes,
-  );
-  final int pixelCount = u8.length ~/ 4;
-
-  final List<KHSV>colors = <KHSV>[];
-  for (int i = 0; i < pixelCount; i++)
-  {
-    final int base = i * 4;
-    final int r = u8[base + 0];
-    final int g = u8[base + 1];
-    final int b = u8[base + 2];
-    final int a = u8[base + 3];
-    if (a <= alphaThreshold) continue;
-
-    // Inline RGB -> HSV (same math you use elsewhere)
-    final double rf = r / 255.0;
-    final double gf = g / 255.0;
-    final double bf = b / 255.0;
-    double maxc = rf;
-    double minc = rf;
-    if (gf > maxc) maxc = gf; if (bf > maxc) maxc = bf;
-    if (gf < minc) minc = gf; if (bf < minc) minc = bf;
-    final double delta = maxc - minc;
-
-    double h;
-    double s;
-    final double v = maxc;
-    if (delta == 0.0)
-    {
-      h = 0.0; s = 0.0;
-    }
-    else
-    {
-      s = (maxc == 0.0) ? 0.0 : delta / maxc;
-      if (maxc == rf)
-      {
-        h = 60.0 * (((gf - bf) / delta) % 6.0);
-      }
-      else if (maxc == gf)
-      {
-        h = 60.0 * (((bf - rf) / delta) + 2.0);
-      }
-      else
-      {
-        h = 60.0 * (((rf - gf) / delta) + 4.0);
-      }
-      if (h < 0) h += 360.0;
-      if (h >= 360.0) h -= 360.0;
-    }
-    colors.add(KHSV(h: h, s: s, v: v));
-  }
-  return colors;
-}
 
 
 double _hueDistanceDeg({required final double h1, required final double h2})
@@ -646,6 +711,7 @@ KHSV _weightedMeanHSV({required final List<_HSVBin> pts})
 KPalRampSettings _fitRampForClusterBins({
       required final List<_HSVBin> cluster,
       required final int colorCount,
+      required final KPalConstraints constraints,
 
       final int hueShiftMin = -10,
       final int hueShiftMax = 10,
@@ -790,7 +856,6 @@ KPalRampSettings _fitRampForClusterBins({
   final int valueRangeMin = (vMin * 100).clamp(0.0, 100.0).round();
   final int valueRangeMax = (vMax * 100).clamp(0.0, 100.0).round();
 
-  final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
   return KPalRampSettings.fromValues(
     constraints: constraints,
     colorCount: colorCount,
@@ -859,16 +924,16 @@ _SignedPowerFit _fitSignedPowerModelWeighted({
 }
 
 
-Future<List<KPalRampSettings>> _extractColorRamps({
+List<KPalRampSettings> _extractColorRampsSync({
   required final ByteData imgBytes,
   required final int maxRamps,
   required final int maxColors,
-}) async {
+  required final KPalConstraints constraints,
+}) {
   final _QuantizeResult q = quantizeHSVFromRGBABytes(
     imgBytes: imgBytes,
   );
   if (q.bins.isEmpty) {
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     return <KPalRampSettings>[
       KPalRampSettings(constraints: constraints),
     ];
@@ -887,6 +952,7 @@ Future<List<KPalRampSettings>> _extractColorRamps({
     final KPalRampSettings ramp = _fitRampForClusterBins(
       cluster: c.members,
       colorCount: maxColors,
+      constraints: constraints,
     );
     rampSettings.add(ramp);
   }

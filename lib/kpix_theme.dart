@@ -160,6 +160,9 @@ class ColorSet
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: _lightColors.light,
     ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: _lightColors.light,
+    ),
 
   );
 
@@ -288,7 +291,10 @@ class ColorSet
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
         ),
     ),
-      textSelectionTheme: TextSelectionThemeData(
-          cursorColor: _darkColors.light,
-      ),
+    textSelectionTheme: TextSelectionThemeData(
+        cursorColor: _darkColors.light,
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: _darkColors.light,
+    ),
   );

@@ -58,6 +58,7 @@ import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
@@ -277,7 +278,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
     }
   }
 
-  void loadFilePressed({final Function()? finishCallback})
+  void loadFilePressed({final Function()? finishCallback, final KPixOverlay? loadingDialog})
   {
     if (isDesktop(includingWeb: true))
     {
@@ -285,17 +286,17 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
           type: FileType.custom,
           allowedExtensions: <String>[fileExtensionKpix],
           initialDirectory: GetIt.I.get<AppState>().exportDir,
-      ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
+      ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback, loadingDialog: loadingDialog);});
     }
     else //mobile
     {
       FilePicker.platform.pickFiles(
           initialDirectory: GetIt.I.get<AppState>().exportDir,
-      ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback);});
+      ).then((final FilePickerResult? result) {_loadFileChosen(result: result, finishCallback: finishCallback, loadingDialog: loadingDialog);});
     }
   }
 
-  void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback})
+  void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback, final KPixOverlay? loadingDialog})
   {
     if (result != null && result.files.isNotEmpty)
     {
@@ -313,7 +314,14 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
         gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
         drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
         shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
-      ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);});
+      ).then((final LoadFileSet loadFileSet){
+        loadingDialog?.hide();
+        fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);
+      });
+    }
+    else
+    {
+      loadingDialog?.hide();
     }
   }
 

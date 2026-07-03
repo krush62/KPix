@@ -164,6 +164,7 @@ abstract class IToolPainter
   //may have selected a different layer by then)
   LayerState? historyLayer;
   ContentRasterSet? _contentRaster;
+  int _contentRasterVersion = 0;
   ContentRasterSet? cursorRaster;
   bool hasAsyncUpdate = false;
 
@@ -246,16 +247,22 @@ abstract class IToolPainter
 
   ContentRasterSet? get contentRaster => _contentRaster;
 
-  // ignore: use_setters_to_change_properties
   void setContentRasterData({required final ContentRasterSet content})
   {
       _contentRaster = content;
+      _contentRasterVersion++;
   }
 
   void resetContentRaster({required final LayerState currentLayer})
   {
+    final int versionAtRequest = _contentRasterVersion;
     _waitForLayerToFinishRasterizing(currentLayer: currentLayer).then((final void _) {
-      _contentRaster = null;
+      //only clear if the content was not replaced in the meantime
+      //(e.g. by a newly started stroke)
+      if (_contentRasterVersion == versionAtRequest)
+      {
+        _contentRaster = null;
+      }
     });
   }
 

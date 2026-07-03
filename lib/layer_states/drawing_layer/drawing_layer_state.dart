@@ -361,9 +361,16 @@ class DrawingLayerState extends RasterableLayerState
 
     settingsShadingPixels.clear();
 
+    //consume the render flags now; flags set during rasterization describe
+    //changes that are not part of this render and must survive it
+    final bool fullRenderForced = _forceFullRender;
+    final List<DirtyRegion> renderRegions = List<DirtyRegion>.from(dirtyRegions);
+    _forceFullRender = false;
+    dirtyRegions.clear();
+
     if (layerStack != null)
     {
-      final ui.Image layerStackImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, layers: layerStack!, frameIsSelected: false);
+      final ui.Image layerStackImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, layers: layerStack!, frameIsSelected: false, fullRenderForced: fullRenderForced, renderRegions: renderRegions);
       return DualRasterResult(rasterImages: rasterImages, externalStackImages: RasterImagePair(thumbnail: layerStackImage, raster: layerStackImage));
     }
     else
@@ -371,22 +378,22 @@ class DrawingLayerState extends RasterableLayerState
       final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
       for (final Frame frame in frames)
       {
-        final ui.Image rasterImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, frame: frame, frameIsSelected: frame == appState.timeline.selectedFrame, layers: frame.layerList.getAllLayers());
+        final ui.Image rasterImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, frame: frame, frameIsSelected: frame == appState.timeline.selectedFrame, layers: frame.layerList.getAllLayers(), fullRenderForced: fullRenderForced, renderRegions: renderRegions);
         rasterImages[frame] = RasterImagePair(thumbnail: rasterImage, raster: rasterImage);
       }
       return DualRasterResult(rasterImages: rasterImages);
     }
   }
 
-  Future<ui.Image> _createRasterFromLayers({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers,}) async
+  Future<ui.Image> _createRasterFromLayers({required final CoordinateSetI canvasSize, final Frame? frame, required final bool frameIsSelected, required final List<LayerState> layers, required final bool fullRenderForced, required final List<DirtyRegion> renderRegions,}) async
   {
     final RenderStrategy strategy = determineStrategy(
-      dirtyRegions: dirtyRegions,
+      dirtyRegions: renderRegions,
       canvasSize: canvasSize,
     );
-    final ui.Image img = (strategy == RenderStrategy.full || _forceFullRender || previousRaster == null) ?
+    final ui.Image img = (strategy == RenderStrategy.full || fullRenderForced || previousRaster == null) ?
       await _fullRender(canvasSize: canvasSize, frame: frame, frameIsSelected: frameIsSelected, layers: layers) :
-      await _regionalRender(canvasSize: canvasSize, frame: frame, frameIsSelected: frameIsSelected, layers: layers);
+      await _regionalRender(canvasSize: canvasSize, frame: frame, frameIsSelected: frameIsSelected, layers: layers, renderRegions: renderRegions);
 
     return img;
   }
@@ -430,8 +437,6 @@ class DrawingLayerState extends RasterableLayerState
     }
     );
 
-    dirtyRegions.clear();
-    _forceFullRender = false;
     return await completerImg.future;
   }
 
@@ -440,15 +445,19 @@ class DrawingLayerState extends RasterableLayerState
     required final Frame? frame,
     required final bool frameIsSelected,
     required final List<LayerState> layers,
+    required final List<DirtyRegion> renderRegions,
   }) async
   {
-    final List<DirtyRegion> expandedRegions = _expandDirtyRegionsForEffects(regions: dirtyRegions);
+    final List<DirtyRegion> expandedRegions = _expandDirtyRegionsForEffects(regions: renderRegions);
 
     final List<DirtyRegion> mergedRegions = mergeOverlappingRegions(regions: expandedRegions);
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
     final Paint paint = Paint();
+    //regions must replace the base content 1:1 (including transparent/erased
+    //pixels); srcOver would keep deleted pixels from the base image visible
+    final Paint regionPaint = Paint()..blendMode = ui.BlendMode.src;
 
     ui.Image? baseImage;
 
@@ -487,7 +496,7 @@ class DrawingLayerState extends RasterableLayerState
       canvas.drawImage(
         regionImage,
         Offset(clampedRegion.x.toDouble(), clampedRegion.y.toDouble()),
-        paint,
+        regionPaint,
       );
 
       regionImage.dispose();
@@ -496,8 +505,6 @@ class DrawingLayerState extends RasterableLayerState
     final ui.Picture picture = recorder.endRecording();
     final ui.Image result = await picture.toImage(canvasSize.x, canvasSize.y);
     picture.dispose();
-
-    dirtyRegions.clear();
 
     return result;
   }
@@ -519,6 +526,9 @@ class DrawingLayerState extends RasterableLayerState
     _settingsPixels = settings.getSettingsPixels(data: allPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
 
     allPixels.addAll(_settingsPixels);
+    //keep the compositing input for dependent (shading/dither) layers up to
+    //date; otherwise they would compose from the state of the last full render
+    rasterPixels = allPixels;
 
     for (int y = region.y; y < region.y + region.height; y++)
     {
@@ -814,6 +824,7 @@ class DrawingLayerState extends RasterableLayerState
     );
   }
 
+  @override
   void forceFullRender()
   {
     _forceFullRender = true;

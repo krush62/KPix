@@ -202,6 +202,14 @@ class ShadingLayerState extends RasterableLayerState
   {
     final AppState appState = GetIt.I.get<AppState>();
     final Map<Frame, RasterImagePair> rasterImages = <Frame, RasterImagePair>{};
+
+    //consume the render flags now; flags set during rasterization describe
+    //changes that are not part of this render and must survive it
+    final bool fullRenderForced = _forceFullRender;
+    final List<DirtyRegion> renderRegions = List<DirtyRegion>.from(_dirtyRegions);
+    _forceFullRender = false;
+    _dirtyRegions.clear();
+
     int? currentIndex;
     if (layerStack != null)
     {
@@ -215,7 +223,7 @@ class ShadingLayerState extends RasterableLayerState
       }
       if (currentIndex != null)
       {
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex);
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions);
         return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
       }
       else
@@ -240,7 +248,7 @@ class ShadingLayerState extends RasterableLayerState
         }
         if (frameLayerIndex != null)
         {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex);
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, fullRenderForced: fullRenderForced, renderRegions: renderRegions);
           rasterImages[frame] = rasterImagePair;
         }
       }
@@ -252,9 +260,12 @@ class ShadingLayerState extends RasterableLayerState
     required final CoordinateSetI canvasSize,
     required final List<RasterableLayerState> rasterLayers,
     required final int currentIndex,
+    required final bool fullRenderForced,
+    required final List<DirtyRegion> renderRegions,
   }) async
   {
     final List<DirtyRegion> combined = _getCombinedDirtyRegions(
+      ownRegions: renderRegions,
       rasterLayers: rasterLayers,
       currentIndex: currentIndex,
     );
@@ -264,7 +275,7 @@ class ShadingLayerState extends RasterableLayerState
       canvasSize: canvasSize,
     );
 
-    if (strategy == RenderStrategy.full || _forceFullRender || previousRaster == null)
+    if (strategy == RenderStrategy.full || fullRenderForced || previousRaster == null)
     {
       return await _fullRender(
         canvasSize: canvasSize,
@@ -366,9 +377,6 @@ class ShadingLayerState extends RasterableLayerState
     );
     final ui.Image rasterImg = await completerImg.future;
 
-    _dirtyRegions.clear();
-    _forceFullRender = false;
-
     return RasterImagePair(raster: rasterImg, thumbnail: thbImg);
   }
 
@@ -396,6 +404,9 @@ class ShadingLayerState extends RasterableLayerState
     final ui.PictureRecorder rasterRecorder = ui.PictureRecorder();
     final Canvas rasterCanvas = Canvas(rasterRecorder);
     final Paint paint = Paint();
+    //regions must replace the base content 1:1 (including pixels that are no
+    //longer shaded); srcOver would keep stale shaded pixels from the base visible
+    final Paint regionPaint = Paint()..blendMode = ui.BlendMode.src;
     rasterCanvas.drawImage(baseRaster, Offset.zero, paint);
 
     final ui.PictureRecorder thumbRecorder = ui.PictureRecorder();
@@ -414,8 +425,8 @@ class ShadingLayerState extends RasterableLayerState
       );
 
       final Offset offset = Offset(clampedRegion.x.toDouble(), clampedRegion.y.toDouble());
-      rasterCanvas.drawImage(regionImages.raster, offset, paint);
-      thumbCanvas.drawImage(regionImages.thumbnail, offset, paint);
+      rasterCanvas.drawImage(regionImages.raster, offset, regionPaint);
+      thumbCanvas.drawImage(regionImages.thumbnail, offset, regionPaint);
 
       regionImages.raster.dispose();
       regionImages.thumbnail.dispose();
@@ -428,8 +439,6 @@ class ShadingLayerState extends RasterableLayerState
     final ui.Picture thumbPicture = thumbRecorder.endRecording();
     final ui.Image finalThumb = await thumbPicture.toImage(canvasSize.x, canvasSize.y);
     thumbPicture.dispose();
-
-    _dirtyRegions.clear();
 
     return RasterImagePair(raster: finalRaster, thumbnail: finalThumb);
   }
@@ -472,7 +481,8 @@ class ShadingLayerState extends RasterableLayerState
             {
               final int currentColorIndex = refCol.colorIndex;
               final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-              final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
+              final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+              final Color usageColor = targetColor.getIdColor().color;
 
               final int bufferX = x - region.x;
               final int bufferY = y - region.y;
@@ -481,35 +491,7 @@ class ShadingLayerState extends RasterableLayerState
               if (index >= 0 && index < byteDataImg.lengthInBytes)
               {
                 byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
-                pixelRendered = true;
-              }
-              break;
-            }
-          }
-        }
-        else
-        {
-          for (int i = currentIndex + 1; i < rasterLayers.length; i++)
-          {
-            final RasterableLayerState layer = rasterLayers[i];
-            ColorReference? refCol;
-
-            if (layer.visibilityState.value == LayerVisibilityState.visible)
-            {
-              refCol = layer.rasterPixels[coord];
-            }
-
-            if (refCol != null)
-            {
-              final Color usageColor = refCol.getIdColor().color;
-
-              final int bufferX = x - region.x;
-              final int bufferY = y - region.y;
-              final int index = (bufferY * region.width + bufferX) * 4;
-
-              if (index >= 0 && index < byteDataImg.lengthInBytes)
-              {
-                byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+                rasterPixels[coord] = targetColor;
                 pixelRendered = true;
               }
               break;
@@ -517,8 +499,12 @@ class ShadingLayerState extends RasterableLayerState
           }
         }
 
+        //non-shaded pixels stay transparent (same as in _fullRender); the
+        //underlying layers are drawn by the canvas painter itself — baking
+        //their content into this raster would occlude later changes below
         if (!pixelRendered)
         {
+          rasterPixels.remove(coord);
           final int bufferX = x - region.x;
           final int bufferY = y - region.y;
           final int index = (bufferY * region.width + bufferX) * 4;
@@ -668,6 +654,7 @@ class ShadingLayerState extends RasterableLayerState
     return ShadingLayerSettingsWidget(settings: settings, isForDithering: false);
   }
 
+  @override
   void forceFullRender()
   {
     _forceFullRender = true;
@@ -703,11 +690,12 @@ class ShadingLayerState extends RasterableLayerState
   }
 
   List<DirtyRegion> _getCombinedDirtyRegions({
+    required final List<DirtyRegion> ownRegions,
     required final List<RasterableLayerState> rasterLayers,
     required final int currentIndex,
   })
   {
-    final List<DirtyRegion> combined = List<DirtyRegion>.from(_dirtyRegions);
+    final List<DirtyRegion> combined = List<DirtyRegion>.from(ownRegions);
 
     for (int i = currentIndex + 1; i < rasterLayers.length; i++)
     {

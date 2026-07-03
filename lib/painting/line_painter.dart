@@ -44,6 +44,10 @@ class LinePainter extends IToolPainter
   final CoordinateSetI _lineEndPos1 = CoordinateSetI(x: 0, y: 0);
   final CoordinateSetI _lineEndPos2 = CoordinateSetI(x: 0, y: 0);
   bool _isDown = false;
+  //keeps the committed line preview visible until the target layer has
+  //rasterized it (otherwise the line vanishes for one raster cycle)
+  bool _waitingForRasterization = false;
+  RasterableLayerState? _dumpLayer;
 
 
 
@@ -194,12 +198,33 @@ class LinePainter extends IToolPainter
 
           hasHistoryData = true;
           reset();
+          _waitingForRasterization = true;
+          _dumpLayer = rasterLayer;
         }
         _isDown = false;
       }
     }
 
-    if (drawParams.cursorPos == null || !_lineStarted)
+    if (_waitingForRasterization)
+    {
+      final RasterableLayerState? dumpLayer = _dumpLayer;
+      bool layerBusy = false;
+      if (dumpLayer is DrawingLayerState)
+      {
+        layerBusy = dumpLayer.rasterQueue.isNotEmpty || dumpLayer.doManualRaster || dumpLayer.isRasterizing;
+      }
+      else if (dumpLayer != null)
+      {
+        layerBusy = dumpLayer.doManualRaster || dumpLayer.isRasterizing;
+      }
+      if (!layerBusy)
+      {
+        _waitingForRasterization = false;
+        _dumpLayer = null;
+      }
+    }
+
+    if ((drawParams.cursorPos == null || !_lineStarted) && !_waitingForRasterization)
     {
       cursorRaster = null;
     }
@@ -450,5 +475,8 @@ class LinePainter extends IToolPainter
     _lineStarted = false;
     _dragStarted = false;
     _isDown = false;
+    //note: the dump path sets the waiting state after calling reset()
+    _waitingForRasterization = false;
+    _dumpLayer = null;
   }
 }

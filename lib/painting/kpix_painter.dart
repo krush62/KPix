@@ -818,14 +818,13 @@ class KPixPainter extends CustomPainter
         final CoordinateSetD effCanvasSize = CoordinateSetD(
           x: drawParams.scaledCanvasSize.x / _appState.devicePixelRatio,
           y: drawParams.scaledCanvasSize.y / _appState.devicePixelRatio,);
-        final bool hasRasterizingLayers = visibleLayers.whereType<RasterableLayerState>().any(
-                (final RasterableLayerState rasterLayer) => rasterLayer.isRasterizing,);
-
+        //layers without any raster image cannot be drawn individually
+        //(e.g. right after a history restore); bridge with the backup image
         final bool hasUnreadyLayers = visibleLayers.whereType<RasterableLayerState>().any(
                 (final RasterableLayerState rasterLayer) =>
             rasterLayer.rasterImage.value == null &&
                 (rasterLayer.rasterImageMap.value[frame]?.raster == null),);
-        if ((!hasRasterizingLayers && !hasUnreadyLayers) || _backupImage == null)
+        if (!hasUnreadyLayers || _backupImage == null)
         {
           _lastContentRaster = null;
           for (int i = visibleLayers.length - 1; i >= 0; i--)
@@ -835,8 +834,10 @@ class KPixPainter extends CustomPainter
             {
               final ui.Image? mapImage = vLayer.rasterImageMap.value[frame]?.raster;
               final ui.Image? rasterImage = vLayer.rasterImage.value;
-              final ui.Image? previousRaster = vLayer.previousRaster;
-              final ui.Image? displayImage = vLayer.isRasterizing ? previousRaster : (mapImage ?? rasterImage);
+              //always show the freshest completed raster; while a layer is
+              //rasterizing its last completed image stays valid, which keeps
+              //the display consistent during continuous drawing
+              final ui.Image? displayImage = mapImage ?? rasterImage ?? vLayer.previousRaster;
 
               if (displayImage != null)
               {

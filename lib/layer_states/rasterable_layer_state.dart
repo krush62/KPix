@@ -54,5 +54,9 @@ abstract class RasterableLayerState extends LayerState
   void resizeLayer({required final CoordinateSetI newSize, required final CoordinateSetI offset});
   LayerSettingsWidget getSettingsWidget();
 
+  //requests a full (non-regional) re-rasterization of this layer;
+  //used when the changed area is unknown (e.g. a dependency layer changed)
+  void forceFullRender();
+
 
 }

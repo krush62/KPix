@@ -750,9 +750,12 @@ class LayerCollection with ChangeNotifier {
     final Set<RasterableLayerState> dependents = _getDependents(layer: layer);
     for (final RasterableLayerState dependent in dependents)
     {
-      if (areDependenciesComplete(layer: dependent) && !dependent.doManualRaster)
+      if (areDependenciesComplete(layer: dependent))
       {
-        dependent.doManualRaster = true;
+        //a dependency changed; the dependent's own dirty regions do not cover
+        //the changed area, so a full render is required
+        //(this also upgrades an already pending regional render to a full one)
+        dependent.forceFullRender();
       }
     }
 
@@ -953,11 +956,17 @@ class LayerCollection with ChangeNotifier {
       {
         //the layer is busy: queue the request instead of dropping it;
         //it is serviced by the layer's timer after the current raster finishes
-        dependent.doManualRaster = true;
+        dependent.forceFullRender();
         continue;
       }
 
-      if (!dependent.doManualRaster)
+      if (dependent.doManualRaster)
+      {
+        //already pending: upgrade the pending render to a full one so the
+        //dependency's changed area is covered, but do not cascade again
+        dependent.forceFullRender();
+      }
+      else
       {
         final DateTime now = DateTime.now();
         final DateTime? lastTime = _lastInvalidationTime[dependent];
@@ -970,7 +979,7 @@ class LayerCollection with ChangeNotifier {
           {
             GetIt.I.get<Logger>().e("WARNING: Breaking invalidation loop for ${dependent.runtimeType} at index ${_layers.indexOf(dependent)}");
             _recentInvalidations[dependent] = 0;
-            dependent.doManualRaster = true;
+            dependent.forceFullRender();
             return;
           }
         }
@@ -981,7 +990,9 @@ class LayerCollection with ChangeNotifier {
 
         _lastInvalidationTime[dependent] = now;
 
-        dependent.doManualRaster = true;
+        //a dependency changed; the dependent's own dirty regions do not cover
+        //the changed area, so a full render is required
+        dependent.forceFullRender();
         invalidateDependents(layer: dependent);
       }
     }

@@ -670,24 +670,32 @@ class AppState
     }
   }
 
+  //set by the canvas widget; commits pending tool changes to the history stack
+  //before undo/redo so freshly drawn content cannot be lost to the poll timer
+  VoidCallback? flushHistoryData;
+
   void undoPressed()
   {
+    flushHistoryData?.call();
     if (GetIt.I.get<HistoryManager>().hasUndo.value && !timeline.isPlaying.value)
     {
       showMessage(text: "Undo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
+      //the state being undone describes what changed (and on which layer);
+      //the target state provides the data to restore
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
       final HistoryStateTypeGroup typeGroup = currentState != null ? currentState.type.group : HistoryStateTypeGroup.full;
-      _restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup);
+      _restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndex: currentState?.restoreLayerIndex);
     }
   }
 
   void redoPressed()
   {
+    flushHistoryData?.call();
     if (GetIt.I.get<HistoryManager>().hasRedo.value && !timeline.isPlaying.value)
     {
       final HistoryState? switchState = GetIt.I.get<HistoryManager>().redo();
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
-      _restoreState(historyState: switchState, typeGroup: typeGroup);
+      _restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndex: switchState?.restoreLayerIndex);
       showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
     }
   }
@@ -812,7 +820,7 @@ class AppState
   }
 
 
-  Future<void> _restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup}) async
+  Future<void> _restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup, final int? restoreLayerIndex}) async
   {
     const String failMessage = "History restore feiled!";
 
@@ -858,7 +866,7 @@ class AppState
           int layerCounter = 0;
           for (final HistoryLayer hLayer in allHistoryLayers)
           {
-            if (historyState.restoreLayerIndex != null && typeGroup == HistoryStateTypeGroup.layerFull && historyState.restoreLayerIndex != layerCounter && collectedLayers.length == allHistoryLayers.length)
+            if (restoreLayerIndex != null && typeGroup == HistoryStateTypeGroup.layerFull && restoreLayerIndex != layerCounter && collectedLayers.length == allHistoryLayers.length)
             {
               final LayerState liveLayer = collectedLayers.elementAt(layerCounter);
               liveLayer.visibilityState.value = hLayer.visibilityState;
@@ -1011,9 +1019,9 @@ class AppState
           while (aLayerIsRastering);
 
           timeline.layerChangeNotifier.reportChange();
-          if (typeGroup == HistoryStateTypeGroup.layerFull && historyState.restoreLayerIndex != null && historyState.restoreLayerIndex! >= 0 && historyState.restoreLayerIndex! < allLayers.length)
+          if (typeGroup == HistoryStateTypeGroup.layerFull && restoreLayerIndex != null && restoreLayerIndex >= 0 && restoreLayerIndex < allLayers.length)
           {
-            final LayerState restoreLayer = allLayers[historyState.restoreLayerIndex!];
+            final LayerState restoreLayer = allLayers[restoreLayerIndex];
             if (restoreLayer is RasterableLayerState)
             {
               restoreLayer.doManualRaster = true;
@@ -1439,8 +1447,24 @@ class AppState
   }
 
 
+  //mirrors the restrictions of the tool buttons in ToolsWidget
+  //(also covers keyboard shortcuts which bypass the disabled buttons)
+  bool toolIsAllowedForCurrentLayer({required final ToolType tool})
+  {
+    final LayerState? currentLayer = timeline.getCurrentLayer();
+    if (currentLayer is ShadingLayerState && (tool == ToolType.select || tool == ToolType.pick))
+    {
+      return false;
+    }
+    return true;
+  }
+
   void setToolSelection({required final ToolType tool, final bool forceSetting = false})
   {
+    if (!toolIsAllowedForCurrentLayer(tool: tool))
+    {
+      return;
+    }
     if (tool != _selectedTool.value || forceSetting)
     {
       for (final ToolType k in _toolMap.keys)

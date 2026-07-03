@@ -178,6 +178,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);});
     Timer.periodic(Duration(milliseconds: _options.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
     Timer.periodic(Duration(milliseconds: _options.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
+    _appState.flushHistoryData = _flushHistoryData;
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((final _)
     {
@@ -235,6 +236,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   void _checkHistoryData({required final Timer t})
   {
+    _flushHistoryData();
+  }
+
+  void _flushHistoryData()
+  {
     if (kPixPainter.toolPainter != null && kPixPainter.toolPainter!.hasHistoryData)
     {
       HistoryStateTypeIdentifier identifier = HistoryStateTypeIdentifier.generic;
@@ -270,7 +276,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       {
         identifier = HistoryStateTypeIdentifier.toolFill;
       }
-      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, originLayer: _appState.timeline.getCurrentLayer());
+      final LayerState? originLayer = kPixPainter.toolPainter!.historyLayer ?? _appState.timeline.getCurrentLayer();
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: identifier, originLayer: originLayer);
       kPixPainter.toolPainter!.hasHistoryData = false;
     }
   }

@@ -40,6 +40,7 @@ class LayerCollection with ChangeNotifier {
   static const int maxLayers = 256;
   final List<LayerState> _layers = <LayerState>[];
   ui.Image? _rasterImage;
+  int _rasterImageGeneration = 0;
 
   ui.Image? get rasterImage => _rasterImage;
 
@@ -159,12 +160,12 @@ class LayerCollection with ChangeNotifier {
 
   void _triggerNewLayerRender({required final LayerState layer})
   {
-    if (layer is RasterableLayerState && !layer.isRasterizing && !layer.doManualRaster)
+    if (layer is RasterableLayerState)
     {
-      if (areDependenciesComplete(layer: layer))
-      {
-        layer.doManualRaster = true;
-      }
+      //always queue the render: a newly created layer may still be busy with its
+      //constructor raster which ran before the layer was attached to any frame
+      //(and therefore produced no image)
+      layer.doManualRaster = true;
     }
   }
 
@@ -557,6 +558,8 @@ class LayerCollection with ChangeNotifier {
             _layers.insert(currentIndex, addLayer);
           }
         }
+        _rebuildDependencies();
+        _triggerNewLayerRender(layer: addLayer);
         notifyListeners();
       }
       return addLayer;
@@ -700,6 +703,8 @@ class LayerCollection with ChangeNotifier {
       _layers.remove(originalLayer);
       _layers.insert(insertIndex, drawingLayer);
       drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
+      _rebuildDependencies();
+      _triggerNewLayerRender(layer: drawingLayer);
       notifyListeners();
     }
   }
@@ -725,11 +730,13 @@ class LayerCollection with ChangeNotifier {
     for (int i = _layers.length - 1; i >= 0; i--)
     {
       final LayerState layer = _layers[i];
-      if (layer is RasterableLayerState && !layer.isRasterizing)
+      if (layer is RasterableLayerState)
       {
         final Set<RasterableLayerState> deps = _getDependencies(layer: layer);
         if (deps.isEmpty)
         {
+          //queueing while the layer is rasterizing is safe: the request
+          //is serviced after the current raster finishes
           layer.doManualRaster = true;
         }
       }
@@ -766,13 +773,18 @@ class LayerCollection with ChangeNotifier {
     {
       final AppState appState = GetIt.I.get<AppState>();
       final Frame? frame = appState.timeline.findFrameForCollection(collection: this,);
+      final int generation = ++_rasterImageGeneration;
       getImageFromLayers(
           layerCollection: this,
           canvasSize: appState.canvasSize,
           selection: appState.selectionState.selection,
           frame: frame,
       ).then((final ui.Image img) {
-        _rasterImage = img;
+        //only accept the result if no newer composite was requested in the meantime
+        if (generation == _rasterImageGeneration)
+        {
+          _rasterImage = img;
+        }
       });
     }
   }
@@ -782,8 +794,10 @@ class LayerCollection with ChangeNotifier {
     _rebuildDependencies();
     if (layer is RasterableLayerState)
     {
-      if (!layer.isRasterizing && layer.visibilityState.value == LayerVisibilityState.visible)
+      if (layer.visibilityState.value == LayerVisibilityState.visible)
       {
+        //queueing while the layer is rasterizing is safe: the request
+        //is serviced after the current raster finishes
         layer.doManualRaster = true;
       }
       invalidateDependents(layer: layer);
@@ -935,13 +949,11 @@ class LayerCollection with ChangeNotifier {
 
     for (final RasterableLayerState dependent in dependents)
     {
-      if (_layersCurrentlyRendering.contains(dependent))
+      if (_layersCurrentlyRendering.contains(dependent) || dependent.isRasterizing)
       {
-        continue;
-      }
-
-      if (dependent.isRasterizing)
-      {
+        //the layer is busy: queue the request instead of dropping it;
+        //it is serviced by the layer's timer after the current raster finishes
+        dependent.doManualRaster = true;
         continue;
       }
 

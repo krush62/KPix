@@ -229,17 +229,18 @@ class ShadingLayerState extends RasterableLayerState
       for (final Frame frame in frames)
       {
         final List<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers().toList(growable: false);
+        int? frameLayerIndex;
         for (int i = 0; i < rasterLayers.length; i++)
         {
           if (rasterLayers[i] == this)
           {
-            currentIndex = i;
+            frameLayerIndex = i;
             break;
           }
         }
-        if (currentIndex != null)
+        if (frameLayerIndex != null)
         {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: currentIndex);
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex);
           rasterImages[frame] = rasterImagePair;
         }
       }
@@ -580,7 +581,6 @@ class ShadingLayerState extends RasterableLayerState
     rasterImageMap.value = rasterResult.rasterImages;
 
     isRasterizing = false;
-    doManualRaster = false;
     _isUpdateScheduled = false;
 
     if (layerStack == null)
@@ -623,6 +623,10 @@ class ShadingLayerState extends RasterableLayerState
       return;
     }
 
+    //consume the pending request now; requests arriving during rasterization
+    //set the flag again and are serviced on the next timer tick
+    doManualRaster = false;
+
     createRasters().then((final DualRasterResult rasterResult)
     {
       if (_isUpdateScheduled) {
@@ -632,6 +636,7 @@ class ShadingLayerState extends RasterableLayerState
       GetIt.I.get<Logger>().e("Error during shading layer rasterization", error: e);
       isRasterizing = false;
       _isUpdateScheduled = false;
+      doManualRaster = true;
     }).whenComplete(() {
       for (final Frame frame in frames) {
         frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);

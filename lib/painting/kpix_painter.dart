@@ -692,10 +692,9 @@ class KPixPainter extends CustomPainter
     if (frame != null)
     {
       final Iterable<RasterableLayerState> rasterLayers = frame.layerList.getVisibleRasterLayers();
-      if (rasterLayers.length != _previousRasterHashes.length)
-      {
-        return true;
-      }
+      //never capture while any layer is not ready (e.g. during undo/redo restore);
+      //capturing a half-ready layer stack would replace the backup image with a
+      //blank/partial composite and let the checkerboard shine through
       final List<int> rasterHashes = <int>[];
       for (final RasterableLayerState drawingLayer in rasterLayers)
       {
@@ -711,6 +710,11 @@ class KPixPainter extends CustomPainter
         {
           rasterHashes.add(drawingLayer.rasterImage.value!.hashCode);
         }
+      }
+
+      if (rasterHashes.length != _previousRasterHashes.length)
+      {
+        return true;
       }
 
       for (final int hash in rasterHashes)

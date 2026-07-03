@@ -77,7 +77,7 @@ class DrawingLayerState extends RasterableLayerState
         super(layerSettings: settings)
   {
     isRasterizing = true;
-    _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result, startedFromManual: false));
+    _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result));
     lockState.value = lState;
     visibilityState.value = vState;
     final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
@@ -140,6 +140,9 @@ class DrawingLayerState extends RasterableLayerState
     {
       _isUpdateScheduled = true;
       isRasterizing = true;
+      //consume the pending request now; requests arriving during rasterization
+      //set the flag again and are serviced on the next timer tick
+      doManualRaster = false;
 
       final AppState appState = GetIt.I.get<AppState>();
       final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
@@ -148,15 +151,15 @@ class DrawingLayerState extends RasterableLayerState
       }
 
       try {
-        final bool wasManualRaster = doManualRaster;
         final DualRasterResult rasterResult = await _createRaster();
 
         if (_isUpdateScheduled) {
-          _rasterizingDone(rasterResult: rasterResult, startedFromManual: wasManualRaster);
+          _rasterizingDone(rasterResult: rasterResult);
         }
       } catch (e, s) {
         GetIt.I.get<Logger>().e("Error during drawing layer rasterization", error: e, stackTrace: s);
         isRasterizing = false;
+        doManualRaster = true;
       } finally {
         _isUpdateScheduled = false;
 
@@ -297,7 +300,7 @@ class DrawingLayerState extends RasterableLayerState
   }
 
 
-  void _rasterizingDone({required final DualRasterResult rasterResult, required final bool startedFromManual})
+  void _rasterizingDone({required final DualRasterResult rasterResult})
   {
     isRasterizing = false;
     previousRaster?.dispose();
@@ -309,11 +312,6 @@ class DrawingLayerState extends RasterableLayerState
         ? rasterResult.externalStackImages!.thumbnail
         : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
     rasterImageMap.value = rasterResult.rasterImages;
-
-    if (startedFromManual)
-    {
-      doManualRaster = false;
-    }
 
     if (layerStack == null)
     {

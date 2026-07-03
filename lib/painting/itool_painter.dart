@@ -158,7 +158,11 @@ abstract class IToolPainter
   final StatusBarData statusBarData = StatusBarData();
   late Color blackToolAlphaColor;
   late Color whiteToolAlphaColor;
-  bool hasHistoryData = false;
+  bool _hasHistoryData = false;
+  //the layer the pending history data was drawn on, captured at commit time
+  //(the history state itself is added later by a polling timer and the user
+  //may have selected a different layer by then)
+  LayerState? historyLayer;
   ContentRasterSet? _contentRaster;
   ContentRasterSet? cursorRaster;
   bool hasAsyncUpdate = false;
@@ -176,6 +180,17 @@ abstract class IToolPainter
     final int alignedValue = (percentageValue.toDouble() * 2.55).round();
     blackToolAlphaColor = Colors.black.withAlpha(alignedValue);
     whiteToolAlphaColor = Colors.white.withAlpha(alignedValue);
+  }
+
+  bool get hasHistoryData
+  {
+    return _hasHistoryData;
+  }
+
+  set hasHistoryData(final bool value)
+  {
+    _hasHistoryData = value;
+    historyLayer = value ? appState.timeline.getCurrentLayer() : null;
   }
 
 

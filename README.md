@@ -6,7 +6,6 @@
 ![release](https://img.shields.io/github/v/release/krush62/KPix)
 ![release-date](https://img.shields.io/github/release-date/krush62/KPix)
 ![downloads](https://img.shields.io/github/downloads/krush62/KPix/total)
-[![NO AI](https://raw.githubusercontent.com/nuxy/no-ai-badge/master/badge.svg)](https://github.com/nuxy/no-ai-badge)
 
 ![last-commit](https://img.shields.io/github/last-commit/krush62/KPix)
 ![issues](https://img.shields.io/github/issues-raw/krush62/KPix)
@@ -168,6 +167,10 @@ Extract the contents of the tar.gz Package and run `kpix` to start the applicati
 
 
 ## 🤖Android
+[<img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png"
+alt="Get it on Obtainium"
+height="48">](https://apps.obtainium.imranr.dev/redirect.html?r=https://github.com/krush62/kpix)
+
 ### Manual Installation
 *Android .apk version can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
 

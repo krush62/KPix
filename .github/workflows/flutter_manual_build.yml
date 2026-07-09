@@ -56,7 +56,7 @@ jobs:
       timestamp: ${{ steps.build_time.outputs.timestamp }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Extract version from pubspec.yaml
         id: extract_version
@@ -93,7 +93,7 @@ jobs:
 
       - name: Checkout
         if: ${{ matrix.enabled }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Java
         if: ${{ matrix.enabled }}
@@ -216,7 +216,7 @@ jobs:
 
       - name: Checkout
         if: ${{ matrix.enabled }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Flutter
         if: ${{ matrix.enabled }}
@@ -451,7 +451,7 @@ jobs:
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
       FILE_NAME: KPix-web-v${{ needs.setup.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:
@@ -486,7 +486,7 @@ jobs:
       FILE_NAME: KPix-macos-v${{ needs.setup.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2

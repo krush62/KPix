@@ -169,7 +169,7 @@ Extract the contents of the tar.gz Package and run `kpix` to start the applicati
 ## 🤖Android
 [<img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png"
 alt="Get it on Obtainium"
-height="48">](https://apps.obtainium.imranr.dev/redirect.html?r=https://github.com/krush62/kpix)
+height="60">](https://apps.obtainium.imranr.dev/redirect.html?r=https://github.com/krush62/kpix)
 
 ### Manual Installation
 *Android .apk version can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*

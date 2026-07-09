@@ -480,7 +480,7 @@ jobs:
     needs: setup
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
       FILE_NAME: KPix-macos-v${{ needs.setup.outputs.version }}

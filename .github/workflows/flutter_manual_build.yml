@@ -97,7 +97,7 @@ jobs:
 
       - name: Setup Java
         if: ${{ matrix.enabled }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
@@ -112,7 +112,7 @@ jobs:
 
       - name: Cache Pub
         if: ${{ matrix.enabled }}
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
@@ -122,7 +122,7 @@ jobs:
 
       - name: Cache Gradle
         if: ${{ matrix.enabled }}
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
@@ -176,7 +176,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ matrix.enabled }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: KPix-android-${{ matrix.buildType }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.ARTIFACT_FILE }}
@@ -257,7 +257,7 @@ jobs:
 
       - name: Upload Linux Package
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_package }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.LINUX_PACKAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.LINUX_PACKAGE_PREFIX }}-v${{ env.VERSION }}.tar.gz
@@ -333,7 +333,7 @@ jobs:
 
       - name: Upload Linux AppImage
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_appimage }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.APPIMAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.APPIMAGE_OUTPUT_DIR }}/${{ env.APPIMAGE_PREFIX }}-${{ env.VERSION }}-x86_64.AppImage
@@ -405,7 +405,7 @@ jobs:
 
       - name: Upload Windows Package Artifact
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_package }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.WIN_PACKAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.WIN_PACKAGE_PREFIX }}-v${{ env.VERSION }}.zip
@@ -431,7 +431,7 @@ jobs:
 
       - name: Upload Windows Installer
         if: ${{ matrix.enabled && matrix.platform == 'windows' && inputs.build_windows_installer }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.WIN_INSTALLER_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: build/windows_installer/*.exe
@@ -466,7 +466,7 @@ jobs:
       - run: |
           tar -czf ${{ env.FILE_NAME }}.tar.gz -C build/web .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ env.FILE_NAME }}-${{ env.TIMESTAMP }}
           path: ${{ env.FILE_NAME }}.tar.gz
@@ -541,7 +541,7 @@ jobs:
 
 
       - name: Upload DMG artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.FILE_NAME }}-${{ env.TIMESTAMP }}
           path: build/macos/Build/Products/Release/*.dmg
@@ -569,7 +569,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
 

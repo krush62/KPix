@@ -39,7 +39,7 @@ class PencilPainter extends IToolPainter
   final LineOptions _lineOptions = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final List<CoordinateSetI> _paintPositions = <CoordinateSetI>[];
-  final Set<CoordinateSetI> _allPaintPositions = <CoordinateSetI>{};
+  final List<CoordinateSetI> _allPaintPositions = <CoordinateSetI>[];
   CoordinateSetI? _previousCursorPosNorm;
   int _previousToolSize = -1;
   Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
@@ -108,11 +108,8 @@ class PencilPainter extends IToolPainter
                   if (_options.pixelPerfect.value &&
                       _paintPositions.last.isDiagonal(other: _paintPositions[_paintPositions.length - 3]))
                   {
-                    final CoordinateSetI deletedPos = _paintPositions.removeAt(_paintPositions.length - 2);
-                    if (_allPaintPositions.elementAt(_allPaintPositions.length - 2) == deletedPos)
-                    {
-                      _allPaintPositions.remove(deletedPos);
-                    }
+                    _paintPositions.removeAt(_paintPositions.length - 2);
+                    _allPaintPositions.removeAt(_allPaintPositions.length - 2);
                   }
                 }
               }

@@ -197,7 +197,7 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             enabled: ${{ inputs.build_linux_package || inputs.build_linux_appimage }}
-          - os: windows-latest
+          - os: windows-2022
             platform: windows
             enabled: ${{ inputs.build_windows_package || inputs.build_windows_installer }}
     runs-on: ${{ matrix.os }}

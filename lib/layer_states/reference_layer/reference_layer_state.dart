@@ -47,7 +47,7 @@ class ReferenceLayerState extends LayerState
     required final double brightness,
     required final double contrast,
     required final double saturation,
-    required final double warmth
+    required final double warmth,
   }) :
         opacityNotifier = ValueNotifier<int>(opacity),
         aspectRatioNotifier = ValueNotifier<double>(aspectRatio),

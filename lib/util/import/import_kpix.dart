@@ -878,8 +878,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
                 contrast: contrast,
                 saturation: saturation,
                 warmth: warmth,
-                layerIdentity: i
-            )
+                layerIdentity: i,
+            ),
         );
       }
       else if (_historyLayerValueMap[layerType] == HistoryGridLayer) //GRID LAYER

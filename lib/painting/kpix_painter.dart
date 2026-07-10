@@ -852,6 +852,7 @@ class KPixPainter extends CustomPainter
 
                 final ui.Image image = refLayer.image!.image;
 
+
                 ui.Rect srcRect;
                 ui.Rect targetRect;
 
@@ -899,11 +900,10 @@ class KPixPainter extends CustomPainter
                   );
 
                 }
-                final Paint paint = Paint()..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255);
+                final Paint paint = Paint()
+                  ..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255)
+                  ..colorFilter = imageAdjustmentsFilter(brightness: refLayer.brightnessNotifier.value, contrast: refLayer.contrastNotifier.value, saturation: refLayer.saturationNotifier.value, warmth: refLayer.warmthNotifier.value);
                 drawParams.canvas.drawImageRect(image, srcRect, targetRect, paint);
-
-
-
               }
             }
             else if (visibleLayers[i].runtimeType == GridLayerState)

@@ -25,9 +25,39 @@ class HistoryReferenceLayer extends HistoryLayer
   final double offsetY;
   final int zoom;
   final double aspectRatio;
-  HistoryReferenceLayer({required super.visibilityState, required super.layerIdentity, required this.opacity, required this.offsetX, required this.offsetY, required this.path, required this.zoom, required this.aspectRatio});
+  final double brightness;
+  final double saturation;
+  final double contrast;
+  final double warmth;
+  HistoryReferenceLayer({
+    required super.visibilityState,
+    required super.layerIdentity,
+    required this.opacity,
+    required this.offsetX,
+    required this.offsetY,
+    required this.path,
+    required this.zoom,
+    required this.aspectRatio,
+    required this.brightness,
+    required this.saturation,
+    required this.contrast,
+    required this.warmth,
+  });
   factory HistoryReferenceLayer.fromReferenceLayer({required final ReferenceLayerState referenceState})
   {
-    return HistoryReferenceLayer(visibilityState: referenceState.visibilityState.value, layerIdentity: identityHashCode(referenceState), path: referenceState.imageNotifier.value == null ? "" : referenceState.imageNotifier.value!.path, offsetX: referenceState.offsetXNotifier.value, offsetY: referenceState.offsetYNotifier.value, opacity: referenceState.opacityNotifier.value, zoom: referenceState.zoomNotifier.value, aspectRatio: referenceState.aspectRatioNotifier.value);
+    return HistoryReferenceLayer(
+        visibilityState: referenceState.visibilityState.value,
+        layerIdentity: identityHashCode(referenceState),
+        path: referenceState.imageNotifier.value == null ? "" : referenceState.imageNotifier.value!.path,
+        offsetX: referenceState.offsetXNotifier.value,
+        offsetY: referenceState.offsetYNotifier.value,
+        opacity: referenceState.opacityNotifier.value,
+        zoom: referenceState.zoomNotifier.value,
+        aspectRatio: referenceState.aspectRatioNotifier.value,
+        brightness: referenceState.brightnessNotifier.value,
+        saturation: referenceState.saturationNotifier.value,
+        contrast: referenceState.contrastNotifier.value,
+        warmth: referenceState.warmthNotifier.value,
+    );
   }
 }

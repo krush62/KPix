@@ -233,7 +233,13 @@ class LayerCollection with ChangeNotifier {
         offsetX: 0,
         offsetY: 0,
         opacity: refSettings.opacityDefault,
-        zoom: refSettings.zoomDefault,);
+        zoom: refSettings.zoomDefault,
+        brightness: refSettings.brightnessDefault,
+        contrast: refSettings.contrastDefault,
+        warmth: refSettings.warmthDefault,
+        saturation: refSettings.saturationDefault,
+
+    );
     if (_addNewLayer(newLayer: newLayer, select: select))
     {
       return newLayer;

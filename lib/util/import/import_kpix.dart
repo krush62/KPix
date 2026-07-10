@@ -786,7 +786,101 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         aspectRatio = aspectRatio.clamp(referenceLayerSettings.aspectRatioMin, referenceLayerSettings.aspectRatioMax);
         offset+=4;
 
-        layerList.add(HistoryReferenceLayer(visibilityState: visibilityState, zoom: zoom, opacity: opacity, offsetY: offsetY, offsetX: offsetX, path: pathString, aspectRatio: aspectRatio, layerIdentity: i));
+
+        double brightness = referenceLayerSettings.brightnessDefault;
+        double contrast = referenceLayerSettings.contrastDefault;
+        double saturation = referenceLayerSettings.saturationDefault;
+        double warmth = referenceLayerSettings.warmthDefault;
+
+        if (fVersion >= 4)
+        {
+          //brightness ``float (1)`` // -1...1
+          brightness = byteData.getFloat32(offset);
+          if (brightness < referenceLayerSettings.brightnessMin || brightness > referenceLayerSettings.brightnessMax)
+          {
+            final String msg = "Brightness for reference layer is out of range: $brightness";
+            if (strict)
+            {
+              return LoadFileSet(status: msg);
+            }
+            else
+            {
+              brightness = referenceLayerSettings.brightnessDefault;
+              returnString.write("\n$msg");
+            }
+          }
+          offset+=4;
+
+          //contrast ``float (1)`` // 0...2
+          contrast = byteData.getFloat32(offset);
+          if (contrast < referenceLayerSettings.contrastMin || contrast > referenceLayerSettings.contrastMax)
+          {
+            final String msg = "Contrast for reference layer is out of range: $contrast";
+            if (strict)
+            {
+              return LoadFileSet(status: msg);
+            }
+            else
+            {
+              contrast = referenceLayerSettings.contrastDefault;
+              returnString.write("\n$msg");
+            }
+          }
+          offset+=4;
+
+          //saturation ``float (1)`` // 0...2
+          saturation = byteData.getFloat32(offset);
+          if (saturation < referenceLayerSettings.saturationMin || saturation > referenceLayerSettings.saturationMax)
+          {
+            final String msg = "Saturation for reference layer is out of range: $saturation";
+            if (strict)
+            {
+              return LoadFileSet(status: msg);
+            }
+            else
+            {
+              saturation = referenceLayerSettings.saturationDefault;
+              returnString.write("\n$msg");
+            }
+          }
+          offset+=4;
+
+          //warmth ``float (1)`` // -1...1
+          warmth = byteData.getFloat32(offset);
+          if (warmth < referenceLayerSettings.warmthMin || warmth > referenceLayerSettings.warmthMax)
+          {
+            final String msg = "Warmth for reference layer is out of range: $warmth";
+            if (strict)
+            {
+              return LoadFileSet(status: msg);
+            }
+            else
+            {
+              warmth = referenceLayerSettings.warmthDefault;
+              returnString.write("\n$msg");
+            }
+          }
+          offset+=4;
+        }
+
+
+
+        layerList.add(
+            HistoryReferenceLayer(
+                visibilityState: visibilityState,
+                zoom: zoom,
+                opacity: opacity,
+                offsetY: offsetY,
+                offsetX: offsetX,
+                path: pathString,
+                aspectRatio: aspectRatio,
+                brightness: brightness,
+                contrast: contrast,
+                saturation: saturation,
+                warmth: warmth,
+                layerIdentity: i
+            )
+        );
       }
       else if (_historyLayerValueMap[layerType] == HistoryGridLayer) //GRID LAYER
           {

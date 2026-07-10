@@ -287,7 +287,6 @@ Future<ByteData> createKPixData({required final AppState appState}) async
       {
         byteData.setUint8(offset++, encodedPath[i]);
       }
-
       //opacity ``ubyte (1)`` // 0...100
       byteData.setUint8(offset++, referenceLayer.opacity);
       //offset_x ``float (1)``
@@ -301,6 +300,18 @@ Future<ByteData> createKPixData({required final AppState appState}) async
       offset+=2;
       //aspect_ratio ``float (1)``
       byteData.setFloat32(offset, referenceLayer.aspectRatio);
+      offset += 4;
+      //brightness ``float (1)`` // -1...1
+      byteData.setFloat32(offset, referenceLayer.brightness);
+      offset += 4;
+      //contrast ``float (1)`` // 0...2
+      byteData.setFloat32(offset, referenceLayer.contrast);
+      offset += 4;
+      //saturation ``float (1)`` // 0...2
+      byteData.setFloat32(offset, referenceLayer.saturation);
+      offset += 4;
+      //warmth ``float (1)`` // -1...1
+      byteData.setFloat32(offset, referenceLayer.warmth);
       offset += 4;
     }
     else if (cLayer.runtimeType == HistoryGridLayer)
@@ -587,6 +598,14 @@ int _calculateKPixFileSize({required final HistoryState saveData})
       //zoom ``ushort (1)``
       size += 2;
       //aspect_ratio ``float (1)``
+      size += 4;
+      //brightness ``float (1)`` // -1...1
+      size += 4;
+      //contrast ``float (1)`` // 0...2
+      size += 4;
+      //saturation ``float (1)`` // 0...2
+      size += 4;
+      //warmth ``float (1)`` // -1...1
       size += 4;
     }
     else if (cLayer.runtimeType == HistoryGridLayer)

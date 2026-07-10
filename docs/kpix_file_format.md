@@ -1,4 +1,4 @@
-# kpix File Format Description v3
+# kpix File Format Description v4
 
 This document describes the structure of the kpix file format which is used to save/load project files for the KPix software.
 
@@ -101,6 +101,10 @@ The kpix file format consists of the following three consecutive sections:
   * offset_y ``float (1)``
   * zoom ``ushort (1)`` // 1...2000 (representing zoom factor * 1000)
   * aspect_ratio ``float (1)``// -5...5 (vertical/horizontal stretch max. 6x)
+  * brightness ``float (1)`` // -1...1
+  * contrast ``float (1)`` // 0...2
+  * saturation ``float (1)`` // 0...2
+  * warmth ``float (1)`` // -1...1
 
   // data for type ``03`` (grid layer)  
   * opacity ``ubyte (1)`` // 0...100

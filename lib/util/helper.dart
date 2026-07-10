@@ -1326,3 +1326,116 @@ Future<void> launchURL({required final String url}) async
     throw Exception("Could not launch");
   }
 }
+
+
+// IMAGE ADJUSTMENT FUNCTIONS
+
+List<double> _saturationMatrix({required final double saturation})
+{
+  final double invSat = 1.0 - saturation;
+
+  // Rec. 709 luminance coefficients
+  final double r = 0.2126 * invSat;
+  final double g = 0.7152 * invSat;
+  final double b = 0.0722 * invSat;
+
+  return <double>[
+    r + saturation, g, b, 0, 0,
+    r, g + saturation, b, 0, 0,
+    r, g, b + saturation, 0, 0,
+    0, 0, 0, 1, 0,
+  ];
+}
+
+List<double> _brightnessMatrix({required final double brightness})
+{
+  final double offset = brightness * 255.0;
+
+  return <double>[
+    1, 0, 0, 0, offset,
+    0, 1, 0, 0, offset,
+    0, 0, 1, 0, offset,
+    0, 0, 0, 1, 0,
+  ];
+}
+
+List<double> _contrastMatrix({required final double contrast})
+{
+  final double offset = 128.0 * (1.0 - contrast);
+
+  return <double>[
+    contrast, 0, 0, 0, offset,
+    0, contrast, 0, 0, offset,
+    0, 0, contrast, 0, offset,
+    0, 0, 0, 1, 0,
+  ];
+}
+
+List<double> _warmthMatrix({required final double warmth})
+{
+  final double amount = warmth * 0.15;
+
+  final double redScale = 1.0 + amount;
+  final double greenScale = 1.0 + amount * 0.4;
+  final double blueScale = 1.0 - amount;
+
+  return <double>[
+    redScale, 0, 0, 0, 0,
+    0, greenScale, 0, 0, 0,
+    0, 0, blueScale, 0, 0,
+    0, 0, 0, 1, 0,
+  ];
+}
+
+List<double> _multiplyColorMatrices({required final List<double> a, required final List<double> b,})
+{
+  final List<double> result = List<double>.filled(20, 0.0);
+
+  for (int row = 0; row < 4; row++)
+  {
+    final int rowIndex = row * 5;
+
+    for (int col = 0; col < 5; col++)
+    {
+      if (col == 4)
+      {
+        result[rowIndex + col] =
+            a[rowIndex + 0] * b[4] +
+                a[rowIndex + 1] * b[9] +
+                a[rowIndex + 2] * b[14] +
+                a[rowIndex + 3] * b[19] +
+                a[rowIndex + 4];
+      }
+      else
+      {
+        result[rowIndex + col] =
+            a[rowIndex + 0] * b[col] +
+                a[rowIndex + 1] * b[5 + col] +
+                a[rowIndex + 2] * b[10 + col] +
+                a[rowIndex + 3] * b[15 + col];
+      }
+    }
+  }
+
+  return result;
+}
+
+ColorFilter imageAdjustmentsFilter({
+  final double saturation = 1.0,
+  final double brightness = 0.0,
+  final double contrast = 1.0,
+  final double warmth = 0.0,
+}) {
+    final List<double> matrix = _multiplyColorMatrices(a:
+    _brightnessMatrix(brightness: brightness),
+    b: _multiplyColorMatrices(
+      a: _contrastMatrix(contrast: contrast),
+      b: _multiplyColorMatrices(
+        a: _warmthMatrix(warmth: warmth),
+        b: _saturationMatrix(saturation: saturation),
+      ),
+    ),
+  );
+
+  return ColorFilter.matrix(matrix);
+}

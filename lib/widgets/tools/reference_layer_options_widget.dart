@@ -41,20 +41,45 @@ class ReferenceLayerSettings
   final int zoomMin;
   final int zoomMax;
   final double zoomCurveExponent;
+  final double brightnessDefault;
+  final double brightnessMin;
+  final double brightnessMax;
+  final double saturationDefault;
+  final double saturationMin;
+  final double saturationMax;
+  final double contrastDefault;
+  final double contrastMin;
+  final double contrastMax;
+  final double warmthDefault;
+  final double warmthMin;
+  final double warmthMax;
 
-  ReferenceLayerSettings
-  (
-      {required this.opacityDefault,
-      required this.opacityMin,
-      required this.opacityMax,
-      required this.aspectRatioDefault,
-      required this.aspectRatioMin,
-      required this.aspectRatioMax,
-      required this.zoomDefault,
-      required this.zoomMin,
-      required this.zoomMax,
-      required this.zoomCurveExponent,}
-  );
+
+
+  ReferenceLayerSettings({
+    required this.opacityDefault,
+    required this.opacityMin,
+    required this.opacityMax,
+    required this.aspectRatioDefault,
+    required this.aspectRatioMin,
+    required this.aspectRatioMax,
+    required this.zoomDefault,
+    required this.zoomMin,
+    required this.zoomMax,
+    required this.zoomCurveExponent,
+    required this.brightnessDefault,
+    required this.brightnessMin,
+    required this.brightnessMax,
+    required this.saturationDefault,
+    required this.saturationMin,
+    required this.saturationMax,
+    required this.contrastDefault,
+    required this.contrastMin,
+    required this.contrastMax,
+    required this.warmthDefault,
+    required this.warmthMin,
+    required this.warmthMax,
+  });
 }
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
@@ -70,6 +95,9 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   final ToolSettingsWidgetOptions _toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
   final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
   final ReferenceImageManager _refManager = GetIt.I.get<ReferenceImageManager>();
+
+  final double _resetButtonHeight = 28;
+  final double _resetIconSize = 16;
 
   void _onLoadPressed()
   {
@@ -117,6 +145,30 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
   {
     widget.referenceState.aspectRatioNotifier.value =
         _refSettings.aspectRatioDefault;
+  }
+
+  void _resetBrightness()
+  {
+    widget.referenceState.brightnessNotifier.value =
+        _refSettings.brightnessDefault;
+  }
+
+  void _resetContrast()
+  {
+    widget.referenceState.contrastNotifier.value =
+        _refSettings.contrastDefault;
+  }
+
+  void _resetSaturation()
+  {
+    widget.referenceState.saturationNotifier.value =
+        _refSettings.saturationDefault;
+  }
+
+  void _resetWarmth()
+  {
+    widget.referenceState.warmthNotifier.value =
+        _refSettings.warmthDefault;
   }
 
   void _fitHorizontal()
@@ -303,9 +355,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                             Tooltip(
                               waitDuration: AppState.toolTipDuration,
                               message: "Reset Aspect Ratio",
-                              child: IconButton.outlined(
-                                onPressed: refImg == null ? null: _resetAspectRatio,
-                                icon: const Icon(TablerIcons.restore),
+                              child: SizedBox(
+                                height: _resetButtonHeight,
+                                child: IconButton.outlined(
+                                  iconSize: _resetIconSize,
+                                  onPressed: refImg == null ? null: _resetAspectRatio,
+                                  icon: const Icon(TablerIcons.restore),
+                                ),
                               ),
                             ),
                           ],
@@ -354,10 +410,14 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
                           message: "Expand horizontally and center by keeping the current aspect ratio",
-                          child: IconButton.outlined(
-                            onPressed: refImg == null ? null : _fitHorizontal,
-                            icon:
-                              const Icon(TablerIcons.arrows_horizontal),
+                          child: SizedBox(
+                            height: _resetButtonHeight,
+                            child: IconButton.outlined(
+                              onPressed: refImg == null ? null : _fitHorizontal,
+                              iconSize: _resetIconSize,
+                              icon:
+                                const Icon(TablerIcons.arrows_horizontal),
+                            ),
                           ),
                         ),
                       ),
@@ -366,9 +426,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
                           message: "Expand vertically and center by keeping the current aspect ratio",
-                          child: IconButton.outlined(
-                            onPressed: refImg == null ? null : _fitVertical,
-                            icon: const Icon(TablerIcons.arrows_vertical),
+                          child: SizedBox(
+                            height: _resetButtonHeight,
+                            child: IconButton.outlined(
+                              onPressed: refImg == null ? null : _fitVertical,
+                              iconSize: _resetIconSize,
+                              icon: const Icon(TablerIcons.arrows_vertical),
+                            ),
                           ),
                         ),
                       ),
@@ -377,16 +441,239 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
                           message: "Fits the image into the canvas (changes aspect ratio)",
-                          child: IconButton.outlined(
-                            onPressed: refImg == null ? null : _fill,
-                            icon: const Icon(
-                              TablerIcons.arrows_maximize,
+                          child: SizedBox(
+                            height: _resetButtonHeight,
+                            child: IconButton.outlined(
+                              onPressed: refImg == null ? null : _fill,
+                              iconSize: _resetIconSize,
+                              icon: const Icon(
+                                TablerIcons.arrows_maximize,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: _toolSettingsWidgetOptions.padding),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Brightness",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: ValueListenableBuilder<double>(
+                                valueListenable:
+                                widget.referenceState.brightnessNotifier,
+                                builder: (final BuildContext context,
+                                    final double brightness,
+                                    final Widget? child,) {
+                                  return KPixSlider(
+                                    value: brightness,
+                                    min: _refSettings.brightnessMin,
+                                    max: _refSettings.brightnessMax,
+                                    onChanged: refImg == null ? null : (final double newVal) {
+                                      widget.referenceState.brightnessNotifier.value = newVal;
+                                    },
+                                    decimals: 2,
+                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
+                            Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message: "Reset Brightness",
+                              child: SizedBox(
+                                height: _resetButtonHeight,
+                                child: IconButton.outlined(
+                                  iconSize: _resetIconSize,
+                                  onPressed: refImg == null ? null: _resetBrightness,
+                                  icon: const Icon(TablerIcons.restore),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Contrast",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: ValueListenableBuilder<double>(
+                                valueListenable:
+                                widget.referenceState.contrastNotifier,
+                                builder: (final BuildContext context,
+                                    final double contrast,
+                                    final Widget? child,) {
+                                  return KPixSlider(
+                                    value: contrast,
+                                    min: _refSettings.contrastMin,
+                                    max: _refSettings.contrastMax,
+                                    onChanged: refImg == null ? null : (final double newVal) {
+                                      widget.referenceState.contrastNotifier.value = newVal;
+                                    },
+                                    decimals: 2,
+                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
+                            Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message: "Reset Contrast",
+                              child: SizedBox(
+                                height: _resetButtonHeight,
+                                child: IconButton.outlined(
+                                  onPressed: refImg == null ? null: _resetContrast,
+                                  iconSize: _resetIconSize,
+                                  icon: const Icon(TablerIcons.restore),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Saturation",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: ValueListenableBuilder<double>(
+                                valueListenable:
+                                widget.referenceState.saturationNotifier,
+                                builder: (final BuildContext context,
+                                    final double saturation,
+                                    final Widget? child,) {
+                                  return KPixSlider(
+                                    value: saturation,
+                                    min: _refSettings.saturationMin,
+                                    max: _refSettings.saturationMax,
+                                    onChanged: refImg == null ? null : (final double newVal) {
+                                      widget.referenceState.saturationNotifier.value = newVal;
+                                    },
+                                    decimals: 2,
+                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
+                            Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message: "Reset Saturation",
+                              child: SizedBox(
+                                height: _resetButtonHeight,
+                                child: IconButton.outlined(
+                                  onPressed: refImg == null ? null: _resetSaturation,
+                                  iconSize: _resetIconSize,
+                                  icon: const Icon(TablerIcons.restore),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Warmth",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: ValueListenableBuilder<double>(
+                                valueListenable:
+                                widget.referenceState.warmthNotifier,
+                                builder: (final BuildContext context,
+                                    final double warmth,
+                                    final Widget? child,) {
+                                  return KPixSlider(
+                                    value: warmth,
+                                    min: _refSettings.warmthMin,
+                                    max: _refSettings.warmthMax,
+                                    onChanged: refImg == null ? null : (final double newVal) {
+                                      widget.referenceState.warmthNotifier.value = newVal;
+                                    },
+                                    decimals: 2,
+                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
+                            Tooltip(
+                              waitDuration: AppState.toolTipDuration,
+                              message: "Reset Warmth",
+                              child: SizedBox(
+                                height: _resetButtonHeight,
+                                child: IconButton.outlined(
+                                  onPressed: refImg == null ? null: _resetWarmth,
+                                  iconSize: _resetIconSize,
+                                  icon: const Icon(TablerIcons.restore,),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+
                 ],
               );
             },

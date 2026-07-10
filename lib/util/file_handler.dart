@@ -114,7 +114,7 @@ const Map<FileNameStatus, IconData> fileNameStatusIconMap =
   FileNameStatus.overwrite: TablerIcons.exclamation_mark,
 };
 
-const int fileVersion = 3;
+const int fileVersion = 4;
 const String magicNumber = "4B504958";
 const String fileExtensionKpix = "kpix";
 const String fileExtensionKpal = "kpal";

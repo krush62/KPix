@@ -929,7 +929,18 @@ class AppState
               else if (hLayer.runtimeType == HistoryReferenceLayer)
               {
                 final HistoryReferenceLayer referenceLayer = hLayer as HistoryReferenceLayer;
-                layerState = ReferenceLayerState(zoom: referenceLayer.zoom, opacity: referenceLayer.opacity, offsetX: referenceLayer.offsetX, offsetY: referenceLayer.offsetY, image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path), aspectRatio: referenceLayer.aspectRatio);
+                layerState = ReferenceLayerState(
+                    zoom: referenceLayer.zoom,
+                    opacity: referenceLayer.opacity,
+                    offsetX: referenceLayer.offsetX,
+                    offsetY: referenceLayer.offsetY,
+                    image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path),
+                    aspectRatio: referenceLayer.aspectRatio,
+                    brightness: referenceLayer.brightness,
+                    contrast: referenceLayer.contrast,
+                    saturation: referenceLayer.saturation,
+                    warmth: referenceLayer.warmth,
+                );
               }
               else if (hLayer.runtimeType == HistoryGridLayer)
               {

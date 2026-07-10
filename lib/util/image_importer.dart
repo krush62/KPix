@@ -147,7 +147,18 @@ class ImportResult
   Future<ReferenceLayerState> _getReferenceLayer({required final ui.Image img, required final String imgPath}) async
   {
     final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
-    final ReferenceLayerState refState = ReferenceLayerState(aspectRatio: refSettings.aspectRatioDefault, image: null, offsetX: 0, offsetY: 0, opacity: refSettings.opacityDefault, zoom: refSettings.zoomDefault);
+    final ReferenceLayerState refState = ReferenceLayerState(
+        aspectRatio: refSettings.aspectRatioDefault,
+        image: null,
+        offsetX: 0,
+        offsetY: 0,
+        opacity: refSettings.opacityDefault,
+        zoom: refSettings.zoomDefault,
+        brightness: refSettings.brightnessDefault,
+        contrast: refSettings.contrastDefault,
+        saturation: refSettings.saturationDefault,
+        warmth: refSettings.warmthDefault,
+    );
     final ReferenceImage refImg = await GetIt.I.get<ReferenceImageManager>().addLoadedImage(path: imgPath, img: img);
     refState.imageNotifier.value = refImg;
     refState.thumbnail.value = refImg.image;

@@ -32,13 +32,32 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<double> offsetXNotifier;
   final ValueNotifier<double> offsetYNotifier;
   final ValueNotifier<ReferenceImage?> imageNotifier;
+  final ValueNotifier<double> brightnessNotifier;
+  final ValueNotifier<double> contrastNotifier;
+  final ValueNotifier<double> saturationNotifier;
+  final ValueNotifier<double> warmthNotifier;
 
-  ReferenceLayerState({required final int opacity, required final double aspectRatio, required final int zoom, required final ReferenceImage? image, required final double offsetX, required final double offsetY}) :
+  ReferenceLayerState({
+    required final int opacity,
+    required final double aspectRatio,
+    required final int zoom,
+    required final ReferenceImage? image,
+    required final double offsetX,
+    required final double offsetY,
+    required final double brightness,
+    required final double contrast,
+    required final double saturation,
+    required final double warmth
+  }) :
         opacityNotifier = ValueNotifier<int>(opacity),
         aspectRatioNotifier = ValueNotifier<double>(aspectRatio),
         zoomNotifier = ValueNotifier<int>(zoom),
         offsetXNotifier = ValueNotifier<double>(offsetX),
         offsetYNotifier = ValueNotifier<double>(offsetY),
+        brightnessNotifier = ValueNotifier<double>(brightness),
+        contrastNotifier = ValueNotifier<double>(contrast),
+        saturationNotifier = ValueNotifier<double>(saturation),
+        warmthNotifier = ValueNotifier<double>(warmth),
         imageNotifier = ValueNotifier<ReferenceImage?>(image)
   {
     if (image != null)
@@ -50,7 +69,18 @@ class ReferenceLayerState extends LayerState
 
   factory ReferenceLayerState.from({required final ReferenceLayerState other})
   {
-    return ReferenceLayerState(aspectRatio: other.aspectRatioNotifier.value, opacity: other.opacity, zoom: other.zoomNotifier.value, image: other.image, offsetX: other.offsetX, offsetY: other.offsetY);
+    return ReferenceLayerState(
+        aspectRatio: other.aspectRatioNotifier.value,
+        opacity: other.opacity,
+        zoom: other.zoomNotifier.value,
+        image: other.image,
+        offsetX: other.offsetX,
+        offsetY: other.offsetY,
+        brightness: other.brightnessNotifier.value,
+        contrast: other.contrastNotifier.value,
+        saturation: other.saturationNotifier.value,
+        warmth: other.warmthNotifier.value,
+    );
   }
 
   void increaseZoom({final int step = 1})

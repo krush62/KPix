@@ -141,36 +141,6 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
     }
   }
 
-  void _resetAspectRatio()
-  {
-    widget.referenceState.aspectRatioNotifier.value =
-        _refSettings.aspectRatioDefault;
-  }
-
-  void _resetBrightness()
-  {
-    widget.referenceState.brightnessNotifier.value =
-        _refSettings.brightnessDefault;
-  }
-
-  void _resetContrast()
-  {
-    widget.referenceState.contrastNotifier.value =
-        _refSettings.contrastDefault;
-  }
-
-  void _resetSaturation()
-  {
-    widget.referenceState.saturationNotifier.value =
-        _refSettings.saturationDefault;
-  }
-
-  void _resetWarmth()
-  {
-    widget.referenceState.warmthNotifier.value =
-        _refSettings.warmthDefault;
-  }
-
   void _fitHorizontal()
   {
     if (widget.referenceState.image != null)
@@ -217,6 +187,69 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
     }
   }
+
+
+  Row _createSliderRow({required final ReferenceImage? refImg, required final ValueNotifier<double> notifier, required final double min, required final double max, required final double defaultValue, required final String name})
+  {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              name,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: ValueListenableBuilder<double>(
+                  valueListenable:
+                  notifier,
+                  builder: (final BuildContext context,
+                      final double value,
+                      final Widget? child,) {
+                    return KPixSlider(
+                      value: value,
+                      min: min,
+                      max: max,
+                      onChanged: refImg == null ? null : (final double newVal) {
+                        notifier.value = newVal;
+                      },
+                      decimals: 2,
+                      textStyle: Theme.of(context).textTheme.bodyLarge!,
+                    );
+                  },
+                ),
+              ),
+              SizedBox(width: _toolSettingsWidgetOptions.padding,),
+              Tooltip(
+                waitDuration: AppState.toolTipDuration,
+                message: "Reset $name",
+                child: SizedBox(
+                  height: _resetButtonHeight,
+                  child: IconButton.outlined(
+                    onPressed: refImg == null ? null: (){notifier.value = defaultValue;},
+                    iconSize: _resetIconSize,
+                    icon: const Icon(TablerIcons.restore,),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+
 
   @override
   Widget build(final BuildContext context)
@@ -313,61 +346,13 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Aspect Ratio",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: ValueListenableBuilder<double>(
-                                valueListenable:
-                                    widget.referenceState.aspectRatioNotifier,
-                                builder: (final BuildContext context,
-                                    final double aspectRatio,
-                                    final Widget? child,) {
-                                  return KPixSlider(
-                                    value: aspectRatio,
-                                    min: _refSettings.aspectRatioMin
-                                        ,
-                                    max: _refSettings.aspectRatioMax
-                                        ,
-                                    onChanged: refImg == null ? null : (final double newVal) {
-                                      widget.referenceState.aspectRatioNotifier.value = newVal;
-                                    },
-                                    decimals: 2,
-                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
-                            Tooltip(
-                              waitDuration: AppState.toolTipDuration,
-                              message: "Reset Aspect Ratio",
-                              child: SizedBox(
-                                height: _resetButtonHeight,
-                                child: IconButton.outlined(
-                                  iconSize: _resetIconSize,
-                                  onPressed: refImg == null ? null: _resetAspectRatio,
-                                  icon: const Icon(TablerIcons.restore),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  _createSliderRow(
+                      refImg: refImg,
+                      notifier: widget.referenceState.aspectRatioNotifier,
+                      min: _refSettings.aspectRatioMin,
+                      max: _refSettings.aspectRatioMax,
+                      defaultValue: _refSettings.aspectRatioDefault,
+                      name: "Aspect Ratio",
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -456,224 +441,38 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                     ],
                   ),
                   SizedBox(height: _toolSettingsWidgetOptions.padding),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Brightness",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: ValueListenableBuilder<double>(
-                                valueListenable:
-                                widget.referenceState.brightnessNotifier,
-                                builder: (final BuildContext context,
-                                    final double brightness,
-                                    final Widget? child,) {
-                                  return KPixSlider(
-                                    value: brightness,
-                                    min: _refSettings.brightnessMin,
-                                    max: _refSettings.brightnessMax,
-                                    onChanged: refImg == null ? null : (final double newVal) {
-                                      widget.referenceState.brightnessNotifier.value = newVal;
-                                    },
-                                    decimals: 2,
-                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
-                            Tooltip(
-                              waitDuration: AppState.toolTipDuration,
-                              message: "Reset Brightness",
-                              child: SizedBox(
-                                height: _resetButtonHeight,
-                                child: IconButton.outlined(
-                                  iconSize: _resetIconSize,
-                                  onPressed: refImg == null ? null: _resetBrightness,
-                                  icon: const Icon(TablerIcons.restore),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  _createSliderRow(
+                    refImg: refImg,
+                    notifier: widget.referenceState.brightnessNotifier,
+                    min: _refSettings.brightnessMin,
+                    max: _refSettings.brightnessMax,
+                    defaultValue: _refSettings.brightnessDefault,
+                    name: "Brightness",
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Contrast",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: ValueListenableBuilder<double>(
-                                valueListenable:
-                                widget.referenceState.contrastNotifier,
-                                builder: (final BuildContext context,
-                                    final double contrast,
-                                    final Widget? child,) {
-                                  return KPixSlider(
-                                    value: contrast,
-                                    min: _refSettings.contrastMin,
-                                    max: _refSettings.contrastMax,
-                                    onChanged: refImg == null ? null : (final double newVal) {
-                                      widget.referenceState.contrastNotifier.value = newVal;
-                                    },
-                                    decimals: 2,
-                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
-                            Tooltip(
-                              waitDuration: AppState.toolTipDuration,
-                              message: "Reset Contrast",
-                              child: SizedBox(
-                                height: _resetButtonHeight,
-                                child: IconButton.outlined(
-                                  onPressed: refImg == null ? null: _resetContrast,
-                                  iconSize: _resetIconSize,
-                                  icon: const Icon(TablerIcons.restore),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  _createSliderRow(
+                    refImg: refImg,
+                    notifier: widget.referenceState.contrastNotifier,
+                    min: _refSettings.contrastMin,
+                    max: _refSettings.contrastMax,
+                    defaultValue: _refSettings.contrastDefault,
+                    name: "Contrast",
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Saturation",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: ValueListenableBuilder<double>(
-                                valueListenable:
-                                widget.referenceState.saturationNotifier,
-                                builder: (final BuildContext context,
-                                    final double saturation,
-                                    final Widget? child,) {
-                                  return KPixSlider(
-                                    value: saturation,
-                                    min: _refSettings.saturationMin,
-                                    max: _refSettings.saturationMax,
-                                    onChanged: refImg == null ? null : (final double newVal) {
-                                      widget.referenceState.saturationNotifier.value = newVal;
-                                    },
-                                    decimals: 2,
-                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
-                            Tooltip(
-                              waitDuration: AppState.toolTipDuration,
-                              message: "Reset Saturation",
-                              child: SizedBox(
-                                height: _resetButtonHeight,
-                                child: IconButton.outlined(
-                                  onPressed: refImg == null ? null: _resetSaturation,
-                                  iconSize: _resetIconSize,
-                                  icon: const Icon(TablerIcons.restore),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  _createSliderRow(
+                    refImg: refImg,
+                    notifier: widget.referenceState.saturationNotifier,
+                    min: _refSettings.saturationMin,
+                    max: _refSettings.saturationMax,
+                    defaultValue: _refSettings.saturationDefault,
+                    name: "Saturation",
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Warmth",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: ValueListenableBuilder<double>(
-                                valueListenable:
-                                widget.referenceState.warmthNotifier,
-                                builder: (final BuildContext context,
-                                    final double warmth,
-                                    final Widget? child,) {
-                                  return KPixSlider(
-                                    value: warmth,
-                                    min: _refSettings.warmthMin,
-                                    max: _refSettings.warmthMax,
-                                    onChanged: refImg == null ? null : (final double newVal) {
-                                      widget.referenceState.warmthNotifier.value = newVal;
-                                    },
-                                    decimals: 2,
-                                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(width: _toolSettingsWidgetOptions.padding,),
-                            Tooltip(
-                              waitDuration: AppState.toolTipDuration,
-                              message: "Reset Warmth",
-                              child: SizedBox(
-                                height: _resetButtonHeight,
-                                child: IconButton.outlined(
-                                  onPressed: refImg == null ? null: _resetWarmth,
-                                  iconSize: _resetIconSize,
-                                  icon: const Icon(TablerIcons.restore,),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  _createSliderRow(
+                    refImg: refImg,
+                    notifier: widget.referenceState.warmthNotifier,
+                    min: _refSettings.warmthMin,
+                    max: _refSettings.warmthMax,
+                    defaultValue: _refSettings.warmthDefault,
+                    name: "Warmth",
                   ),
-
-
                 ],
               );
             },

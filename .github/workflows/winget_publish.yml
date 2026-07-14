@@ -1,0 +1,84 @@
+name: KPix WinGet Publish
+
+# Submits the Windows installer of a published GitHub release to the
+# Windows Package Manager Community Repository (microsoft/winget-pkgs).
+#
+# Runs automatically when a release is published (drafts and pre-releases
+# are ignored) and can also be triggered manually for an already published
+# release.
+#
+# Requires a repository secret WINGET_TOKEN: a classic GitHub personal
+# access token with the "public_repo" scope. wingetcreate uses it to push
+# a branch to the krush62/winget-pkgs fork and open the pull request
+# against microsoft/winget-pkgs.
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version of an already published release (e.g. 0.9.7)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE_ID: krush62.KPix
+
+jobs:
+  winget:
+    name: Submit manifest to winget-pkgs
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Determine version and installer URL
+        id: info
+        shell: pwsh
+        env:
+          RAW_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.version }}
+        run: |
+          $version = $env:RAW_VERSION.Trim() -replace '^v'
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            Write-Error "Could not determine the release version."
+            exit 1
+          }
+          $installerUrl = "https://github.com/${{ github.repository }}/releases/download/v$version/KPix-windows-installer-v$version.exe"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "installer_url=$installerUrl" >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $version"
+          Write-Host "Installer: $installerUrl"
+
+      - name: Check that the installer is downloadable
+        shell: pwsh
+        env:
+          INSTALLER_URL: ${{ steps.info.outputs.installer_url }}
+        run: |
+          try {
+            Invoke-WebRequest -Uri $env:INSTALLER_URL -Method Head | Out-Null
+            Write-Host "Installer asset found."
+          } catch {
+            Write-Error "Installer not downloadable at $env:INSTALLER_URL - make sure the release is published (not a draft) and contains the Windows installer."
+            exit 1
+          }
+
+      - name: Update manifest and submit pull request
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.info.outputs.version }}
+          INSTALLER_URL: ${{ steps.info.outputs.installer_url }}
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_TOKEN)) {
+            Write-Error "The WINGET_TOKEN secret is not set. Create a classic GitHub PAT with the 'public_repo' scope and add it as a repository secret named WINGET_TOKEN."
+            exit 1
+          }
+          Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          .\wingetcreate.exe update $env:PACKAGE_ID `
+            --version $env:VERSION `
+            --urls "$($env:INSTALLER_URL)|x64|inno|user" `
+            --submit `
+            --token $env:WINGET_TOKEN
+          exit $LASTEXITCODE

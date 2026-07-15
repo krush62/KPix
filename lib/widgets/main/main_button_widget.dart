@@ -75,6 +75,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _importDialog;
   late KPixOverlay _importLoadingDialog;
   late KPixOverlay _exportLoadingDialog;
+  late KPixOverlay _openLoadingDialog;
   final LayerLink _loadMenuLayerLink = LayerLink();
   final LayerLink _saveMenuLayerLink = LayerLink();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
@@ -142,6 +143,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
     _importLoadingDialog = getLoadingDialog(message: "Importing Image...");
     _exportLoadingDialog = getLoadingDialog(message: "Exporting...");
+    _openLoadingDialog = getLoadingDialog(message: "Opening Image...");
 
 
     _hotkeyManager.addListener(func: _loadFile, action: HotkeyAction.generalOpen);
@@ -201,6 +203,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     _importDialog.hide();
     _importLoadingDialog.hide();
     _exportLoadingDialog.hide();
+    _openLoadingDialog.hide();
   }
 
   void _newFile()
@@ -224,7 +227,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       }
       else
       {
-        loadFilePressed(finishCallback: callback);
+        _loadFileWithLoadingDialog(callback: callback);
         _closeAllMenus();
       }
     }
@@ -273,8 +276,21 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _saveBeforeLoadFinished()
   {
-    loadFilePressed();
+    _loadFileWithLoadingDialog();
     _closeAllMenus();
+  }
+
+  void _loadFileWithLoadingDialog({final Function()? callback})
+  {
+    loadFilePressed(
+      finishCallback: () {
+        _openLoadingDialog.hide();
+        callback?.call();
+      },
+      loadStartCallback: () {
+        _openLoadingDialog.show(context: context);
+      },
+    );
   }
 
   void _fileLoaded()

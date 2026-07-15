@@ -229,33 +229,35 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async {
   }
 }
 
-void loadFilePressed({final Function()? finishCallback}) {
+void loadFilePressed({final Function()? finishCallback, final Function()? loadStartCallback}) {
   if (isDesktop(includingWeb: true)) {
     FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: <String>[fileExtensionKpix],
       initialDirectory: GetIt.I.get<AppState>().exportDir,
     ).then((final FilePickerResult? result) {
-      _loadFileChosen(result: result, finishCallback: finishCallback);
+      _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
     });
   } else //mobile
   {
     FilePicker.pickFiles(
       initialDirectory: GetIt.I.get<AppState>().exportDir,
     ).then((final FilePickerResult? result) {
-      _loadFileChosen(result: result, finishCallback: finishCallback);
+      _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
     });
   }
 }
 
 void _loadFileChosen(
     {final FilePickerResult? result,
-    required final Function()? finishCallback,}) {
+    required final Function()? finishCallback,
+    required final Function()? loadStartCallback,}) {
   if (result != null && result.files.isNotEmpty) {
     String path = result.files.first.name;
     if (!kIsWeb && result.files.first.path != null) {
       path = result.files.first.path!;
     }
+    loadStartCallback?.call();
     loadKPixFile(
       fileData: result.files.first.bytes,
       constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
@@ -277,10 +279,9 @@ void _loadFileChosen(
 void fileLoaded(
     {required final LoadFileSet loadFileSet,
     required final Function()? finishCallback,}) {
-  GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet);
-  if (finishCallback != null) {
-    finishCallback();
-  }
+  GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(() {
+    finishCallback?.call();
+  });
 }
 
 Future<void> saveFilePressed(

@@ -700,26 +700,24 @@ class AppState
     }
   }
 
-  void restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false})
+  Future<void> restoreFromFile({required final LoadFileSet loadFileSet, final bool setHasChanges = false}) async
   {
     if (loadFileSet.historyState != null && loadFileSet.path != null)
     {
-      _restoreState(historyState: loadFileSet.historyState, typeGroup: HistoryStateTypeGroup.full).then((final void value)
+      await _restoreState(historyState: loadFileSet.historyState, typeGroup: HistoryStateTypeGroup.full);
+      final String projectNameExtracted = extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
+      projectName.value = projectNameExtracted == recoverFileName ? null : projectNameExtracted;
+      hasChanges.value = setHasChanges;
+      hasProjectNotifier.value = true;
+      GetIt.I.get<HistoryManager>().clear();
+      GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
+      _setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
+      symmetryState.reset();
+      GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
+      if (loadFileSet.status.isNotEmpty)
       {
-        final String projectNameExtracted = extractFilenameFromPath(path: loadFileSet.path, keepExtension: false);
-        projectName.value = projectNameExtracted == recoverFileName ? null : projectNameExtracted;
-        hasChanges.value = setHasChanges;
-        hasProjectNotifier.value = true;
-        GetIt.I.get<HistoryManager>().clear();
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.initial, setHasChanges: setHasChanges);
-        _setCanvasDimensions(width: loadFileSet.historyState!.canvasSize.x , height: loadFileSet.historyState!.canvasSize.y, addToHistoryStack: false);
-        symmetryState.reset();
-        GetIt.I.get<HotkeyManager>().triggerShortcut(action: HotkeyAction.panZoomOptimalZoom);
-        if (loadFileSet.status.isNotEmpty)
-        {
-          showMessage(text: loadFileSet.status);
-        }
-      });
+        showMessage(text: loadFileSet.status);
+      }
     }
     else
     {

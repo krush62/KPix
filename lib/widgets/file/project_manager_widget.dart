@@ -64,6 +64,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   late KPixOverlay _saveBeforeLoadWarningDialog;
   late KPixOverlay _deleteWarningDialog;
+  late KPixOverlay _loadingDialog;
 
   @override
   void initState()
@@ -76,6 +77,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         outsideCancelable: false,
         message: "There are unsaved changes, do you want to save first?",
     );
+    _loadingDialog = getLoadingDialog(message: "Opening Image...");
     _deleteWarningDialog = getTwoButtonDialog(
       message: "Do you really want to delete this project?",
       onNo: _deleteWarningNo,
@@ -100,6 +102,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _saveBeforeLoadWarningNo()
   {
+    _loadingDialog.show(context: context);
     loadKPixFile(
       fileData: null,
       constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
@@ -109,7 +112,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
-    ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: null);});
+    ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: _loadingDialog.hide);});
     _closeSaveBeforeLoadWarning();
     widget.dismiss();
     widget.fileLoad();

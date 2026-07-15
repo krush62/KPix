@@ -486,7 +486,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       );
       if (lfs.path != null && lfs.historyState != null)
       {
-        appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
+        await appState.restoreFromFile(loadFileSet: lfs, setHasChanges: fromRecovery);
         appState.hasProjectNotifier.value = true;
         _newProjectDialog.hide();
         appState.showMessage(text: "work recovered");

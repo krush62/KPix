@@ -29,6 +29,7 @@
 # 🚀About
 KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading. The key aspects are:
 
+## Highlights
 ⭐ exclusive use of indexed colors\
 ⭐ generative color ramps based on parameters\
 ⭐ hsv based color representation\
@@ -45,7 +46,14 @@ KPix is a pixel art editor for still images and animations with a focus on gener
 ⭐ stylus and touch support\
 ⭐ automatic light/dark theme
 
+## Developer Statement
+KPix began as a personal project designed around my own pixel art workflow. I also used it as an opportunity to learn Flutter for desktop and tablet development. Because of this, some UI and workflow choices might feel unconventional—but these restrictions are entirely by design.
+I eventually decided to polish the app and release it to the public. Because I am a strong advocate for FOSS and open distribution channels, KPix is not available on Google Play or the Apple App Store.
 
+## AI usage statement
+I am a professional developer and frequently use AI in my daily work, but KPix is entirely human-made. This project was started way before the rise of LLMs, and I wanted to keep it that way to ensure I fully understand everything I am responsible for. To me, that is essential for being proud of my work.
+
+## More Information
 You might also want to read the [F.A.Q.](faq.md) or watch the (slightly outdated) [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
 # 🔥Features

@@ -24,6 +24,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
+import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helper.dart';
@@ -34,6 +35,7 @@ class SelectionPainter extends IToolPainter
   final CoordinateSetI selectionEnd = CoordinateSetI(x: 0, y: 0);
   bool hasNewSelection = false;
   final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
+  final LineOptions _lineOptions = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   bool movementStarted = false;
   List<CoordinateSetI> polygonPoints = <CoordinateSetI>[];
@@ -149,7 +151,15 @@ class SelectionPainter extends IToolPainter
           }
           if (polygonDown)
           {
-            final CoordinateSetI point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
+            final CoordinateSetI point;
+            if (_hotkeyManager.controlIsPressed && polygonPoints.isNotEmpty)
+            {
+              point = getIntegerRatioSnappedPoint(startPos: polygonPoints.last, endPos: _normStartPos, angles: _lineOptions.angles);
+            }
+            else
+            {
+              point = CoordinateSetI(x: _normStartPos.x, y: _normStartPos.y);
+            }
             bool isInsideCircle = false;
             if (polygonPoints.isNotEmpty)
             {
@@ -301,14 +311,23 @@ class SelectionPainter extends IToolPainter
     final double effPxSize = drawParams.pixelSize.toDouble() / drawParams.pixelRatio;
     if (options.shape.value == SelectShape.polygon && polygonPoints.isNotEmpty)
     {
-      final CoordinateSetD? cursorPos = drawParams.cursorPos != null ?
-      CoordinateSetD(
-          x: drawParams.offset.dx + IToolPainter.getClosestPixel(
+      CoordinateSetI? cursorPosNorm = drawParams.cursorPos != null ?
+      CoordinateSetI(
+          x: IToolPainter.getClosestPixel(
               value: drawParams.cursorPos!.x - drawParams.offset.dx,
-              pixelSize: effPxSize,) * effPxSize + (effPxSize / 2),
-          y: drawParams.offset.dy + IToolPainter.getClosestPixel(
+              pixelSize: effPxSize,),
+          y: IToolPainter.getClosestPixel(
               value: drawParams.cursorPos!.y - drawParams.offset.dy,
-              pixelSize: effPxSize,) * effPxSize + (effPxSize / 2),)
+              pixelSize: effPxSize,),)
+          : null;
+      if (cursorPosNorm != null && _hotkeyManager.controlIsPressed)
+      {
+        cursorPosNorm = getIntegerRatioSnappedPoint(startPos: polygonPoints.last, endPos: cursorPosNorm, angles: _lineOptions.angles);
+      }
+      final CoordinateSetD? cursorPos = cursorPosNorm != null ?
+      CoordinateSetD(
+          x: drawParams.offset.dx + (cursorPosNorm.x * effPxSize) + (effPxSize / 2),
+          y: drawParams.offset.dy + (cursorPosNorm.y * effPxSize) + (effPxSize / 2),)
           : null;
 
 

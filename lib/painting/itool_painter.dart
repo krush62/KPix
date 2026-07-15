@@ -404,22 +404,44 @@ abstract class IToolPainter
     return linePoints;
   }
 
-  Set<CoordinateSetI> getIntegerRatioLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape, required final Set<AngleData> angles})
+  AngleData? getClosestAngle({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final Set<AngleData> angles})
   {
-    Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
-    assert(angles.isNotEmpty);
-    final double currentAngle = atan2(endPos.x - startPos.x, endPos.y - startPos.y);
+    final double currentAngle = normAngle(angle: atan2(endPos.x - startPos.x, endPos.y - startPos.y));
     AngleData? closestAngle;
     double closestDist = 0.0;
     for (final AngleData aData in angles)
     {
-      final double currentDist = (normAngle(angle: aData.angle) - normAngle(angle: currentAngle)).abs();
+      final double angleDiff = (normAngle(angle: aData.angle) - currentAngle).abs();
+      final double currentDist = min(angleDiff, twoPi - angleDiff);
       if (closestAngle == null || currentDist < closestDist)
       {
         closestAngle = aData;
-        closestDist = (normAngle(angle: currentAngle) - normAngle(angle: closestAngle.angle)).abs();
+        closestDist = currentDist;
       }
     }
+    return closestAngle;
+  }
+
+  CoordinateSetI getIntegerRatioSnappedPoint({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final Set<AngleData> angles})
+  {
+    assert(angles.isNotEmpty);
+    final AngleData? closestAngle = getClosestAngle(startPos: startPos, endPos: endPos, angles: angles);
+    if (closestAngle == null) //should never happen
+    {
+      return CoordinateSetI.from(other: endPos);
+    }
+    //closest full multiple of the pattern vector keeps the snapped line regular
+    final int patternLengthSquared = (closestAngle.x * closestAngle.x) + (closestAngle.y * closestAngle.y);
+    final int projection = ((endPos.x - startPos.x) * closestAngle.x) + ((endPos.y - startPos.y) * closestAngle.y);
+    final int factor = (projection / patternLengthSquared).round();
+    return CoordinateSetI(x: startPos.x + (factor * closestAngle.x), y: startPos.y + (factor * closestAngle.y));
+  }
+
+  Set<CoordinateSetI> getIntegerRatioLinePoints({required final CoordinateSetI startPos, required final CoordinateSetI endPos, required final int size, required final PencilShape shape, required final Set<AngleData> angles})
+  {
+    Set<CoordinateSetI> linePoints = <CoordinateSetI>{};
+    assert(angles.isNotEmpty);
+    final AngleData? closestAngle = getClosestAngle(startPos: startPos, endPos: endPos, angles: angles);
 
     if (closestAngle != null) //should never happen
     {

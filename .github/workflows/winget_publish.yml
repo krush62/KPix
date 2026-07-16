@@ -49,7 +49,7 @@ jobs:
         run: |
           $version = $env:RAW_VERSION.Trim() -replace '^v'
           if ([string]::IsNullOrWhiteSpace($version)) {
-            Write-Error "Could not determine the release version."
+            Write-Host "::error::Could not determine the release version."
             exit 1
           }
           $installerUrl = "https://github.com/${{ github.repository }}/releases/download/v$version/KPix-windows-installer-v$version.exe"
@@ -67,7 +67,7 @@ jobs:
             Invoke-WebRequest -Uri $env:INSTALLER_URL -Method Head | Out-Null
             Write-Host "Installer asset found."
           } catch {
-            Write-Error "Installer not downloadable at $env:INSTALLER_URL - make sure the release is published (not a draft) and contains the Windows installer."
+            Write-Host "::error::Installer not downloadable at $env:INSTALLER_URL - make sure the release is published (not a draft) and contains the Windows installer."
             exit 1
           }
 
@@ -78,7 +78,7 @@ jobs:
           FORK_REPO: ${{ github.repository_owner }}/winget-pkgs
         run: |
           if ([string]::IsNullOrWhiteSpace($env:WINGET_TOKEN)) {
-            Write-Error "The WINGET_TOKEN secret is not set. Create a classic GitHub PAT with the 'public_repo' and 'workflow' scopes and add it as a repository secret named WINGET_TOKEN."
+            Write-Host "::error::The WINGET_TOKEN secret is not set. Create a classic GitHub PAT with the 'public_repo' and 'workflow' scopes and add it as a repository secret named WINGET_TOKEN."
             exit 1
           }
           $headers = @{
@@ -86,6 +86,24 @@ jobs:
             Accept        = "application/vnd.github+json"
           }
           try {
+            # Preflight: the token must be a CLASSIC PAT (fine-grained tokens
+            # cannot write to the fork and fail with misleading 404 errors).
+            # Classic tokens report their scopes in the X-OAuth-Scopes header.
+            $user = Invoke-WebRequest -Uri "https://api.github.com/user" -Headers $headers
+            $scopes = @($user.Headers['X-OAuth-Scopes']) -join ','
+            $scopeList = $scopes -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+            $hasRepo = ($scopeList -contains 'repo') -or ($scopeList -contains 'public_repo')
+            $hasWorkflow = $scopeList -contains 'workflow'
+            if ($scopeList.Count -eq 0) {
+              Write-Host "::error::WINGET_TOKEN reports no OAuth scopes, so it appears to be a fine-grained token. Create a CLASSIC personal access token with the 'public_repo' and 'workflow' scopes and update the WINGET_TOKEN secret."
+              exit 1
+            }
+            if (-not $hasRepo -or -not $hasWorkflow) {
+              Write-Host "::error::WINGET_TOKEN is missing required scopes. It has: [$scopes]. Required: 'public_repo' (or 'repo') and 'workflow'. Edit the token's scopes or create a new classic token, then update the WINGET_TOKEN secret."
+              exit 1
+            }
+            Write-Host "Token OK (classic PAT with scopes: $scopes)."
+
             $upstream = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-pkgs/git/ref/heads/master" -Headers $headers
             $fork = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:FORK_REPO/git/ref/heads/master" -Headers $headers
             if ($fork.object.sha -eq $upstream.object.sha) {
@@ -99,8 +117,7 @@ jobs:
             }
           } catch {
             $detail = $_.ErrorDetails.Message
-            Write-Error "Failed to sync $env:FORK_REPO with microsoft/winget-pkgs: $($_.Exception.Message) $detail"
-            Write-Error "If this is a permission error, make sure WINGET_TOKEN is a classic PAT with the 'public_repo' and 'workflow' scopes."
+            Write-Host "::error::Failed to sync $env:FORK_REPO with microsoft/winget-pkgs: $($_.Exception.Message) $detail (404 on write usually means the token cannot push to the fork - it must be a classic PAT with the 'public_repo' and 'workflow' scopes.)"
             exit 1
           }
 

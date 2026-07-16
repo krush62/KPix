@@ -1,0 +1,47 @@
+# Flatpak manifest for KPix.
+#
+# This packages the pre-built Flutter Linux bundle, so
+# `flutter build linux --release` must have been run first.
+#
+# Local build (from the repository root):
+#   flatpak run org.flatpak.Builder --user --force-clean --install-deps-from=flathub \
+#     --repo=flatpak-repo flatpak-builddir release_tools/flatpak/de.krush62.kpix.yml
+app-id: de.krush62.kpix
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: kpix
+separate-locales: false
+finish-args:
+  # Window system access
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --share=ipc
+  # Hardware-accelerated rendering
+  - --device=dri
+  # Update check (GitHub API) and Google Fonts
+  - --share=network
+  # Direct access for opening/saving files and restoring recent projects
+  - --filesystem=home
+modules:
+  - name: kpix
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/kpix
+      - cp -r bundle/* /app/kpix/
+      - chmod +x /app/kpix/kpix
+      - mkdir -p /app/bin
+      - ln -s /app/kpix/kpix /app/bin/kpix
+      - install -Dm644 kpix_icon.png /app/share/icons/hicolor/512x512/apps/de.krush62.kpix.png
+      - install -Dm644 de.krush62.kpix.desktop /app/share/applications/de.krush62.kpix.desktop
+      - install -Dm644 de.krush62.kpix.metainfo.xml /app/share/metainfo/de.krush62.kpix.metainfo.xml
+    sources:
+      - type: dir
+        path: ../../build/linux/x64/release/bundle
+        dest: bundle
+      - type: file
+        path: ../../imgs/kpix_icon.png
+      - type: file
+        path: de.krush62.kpix.desktop
+      - type: file
+        path: de.krush62.kpix.metainfo.xml

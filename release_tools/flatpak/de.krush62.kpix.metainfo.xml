@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>de.krush62.kpix</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <name>KPix</name>
+  <summary>Pixel art editor for still images and animations</summary>
+  <description>
+    <p>
+      KPix is a pixel art editor for still images and animations with a focus on
+      generative color ramps and shading.
+    </p>
+    <p>Highlights:</p>
+    <ul>
+      <li>Exclusive use of indexed colors</li>
+      <li>Generative color ramps based on parameters</li>
+      <li>Shading capabilities for all tools</li>
+      <li>Reference, grid/perspective, shading and dithering layers</li>
+      <li>Non-destructive layer effects (outer/inner strokes, shadow, glow, ...)</li>
+      <li>Extensive animation capabilities</li>
+      <li>Image import including automatic palette creation</li>
+      <li>Image export including layers to Aseprite, Pixelorama, Gimp and Photoshop</li>
+      <li>Stylus and touch support</li>
+    </ul>
+  </description>
+  <developer id="de.krush62">
+    <name>krush62</name>
+  </developer>
+  <launchable type="desktop-id">de.krush62.kpix.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+  <url type="homepage">https://github.com/krush62/KPix</url>
+  <url type="bugtracker">https://github.com/krush62/KPix/issues</url>
+  <url type="vcs-browser">https://github.com/krush62/KPix</url>
+  <releases>
+    <release version="@VERSION@" date="@DATE@"/>
+  </releases>
+</component>

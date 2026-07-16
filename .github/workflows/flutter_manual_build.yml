@@ -27,6 +27,10 @@ on:
         description: "Build Linux AppImage"
         type: boolean
         default: true
+      build_linux_flatpak:
+        description: "Build Linux Flatpak"
+        type: boolean
+        default: true
       build_web:
         description: "Build Web Package"
         type: boolean
@@ -186,7 +190,7 @@ jobs:
 
 
   desktop:
-    if: ${{ inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage }}
+    if: ${{ inputs.build_windows_package || inputs.build_windows_installer || inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_linux_flatpak }}
     needs: setup
     outputs:
       has_artifact: ${{ steps.upload_success.outputs.has_artifact }}
@@ -196,7 +200,7 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux
-            enabled: ${{ inputs.build_linux_package || inputs.build_linux_appimage }}
+            enabled: ${{ inputs.build_linux_package || inputs.build_linux_appimage || inputs.build_linux_flatpak }}
           - os: windows-2022
             platform: windows
             enabled: ${{ inputs.build_windows_package || inputs.build_windows_installer }}
@@ -206,6 +210,8 @@ jobs:
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
       APPIMAGE_OUTPUT_DIR: LinuxAppImage
       APPIMAGE_PREFIX: KPix-linux-appimage
+      FLATPAK_PREFIX: KPix-linux-flatpak
+      FLATPAK_APP_ID: de.krush62.kpix
       LINUX_PACKAGE_PREFIX: KPix-linux-package
       WIN_PACKAGE_PREFIX: KPix-windows-package
       WIN_INSTALLER_PREFIX: KPix-windows-installer
@@ -337,6 +343,58 @@ jobs:
         with:
           name: ${{ env.APPIMAGE_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
           path: ${{ env.APPIMAGE_OUTPUT_DIR }}/${{ env.APPIMAGE_PREFIX }}-${{ env.VERSION }}-x86_64.AppImage
+
+      - name: Install Flatpak tooling
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_flatpak }}
+        run: |
+          set -e
+
+          sudo apt-get update
+          sudo apt-get install -y flatpak
+
+          # Ubuntu 24.04 can restrict unprivileged user namespaces, which breaks
+          # the bubblewrap sandbox used by flatpak.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+
+          # org.flatpak.Builder is used instead of the distro flatpak-builder
+          # package because the latter is broken on ubuntu-24.04 runners
+          # (https://github.com/actions/runner-images/issues/11359).
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y --noninteractive flathub org.flatpak.Builder
+
+      - name: Create Linux Flatpak
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_flatpak }}
+        run: |
+          set -e
+
+          MANIFEST="release_tools/flatpak/${FLATPAK_APP_ID}.yml"
+          METAINFO="release_tools/flatpak/${FLATPAK_APP_ID}.metainfo.xml"
+          OUTPUT_FILE_NAME="${FLATPAK_PREFIX}-v${VERSION}-x86_64.flatpak"
+
+          echo "Setting release version and date in metainfo"
+          sed -i "s/@VERSION@/${VERSION}/g" "$METAINFO"
+          sed -i "s/@DATE@/$(date +%Y-%m-%d)/g" "$METAINFO"
+
+          echo "Building Flatpak"
+          flatpak run org.flatpak.Builder \
+            --user --force-clean --disable-rofiles-fuse \
+            --install-deps-from=flathub \
+            --repo=flatpak-repo \
+            flatpak-builddir "$MANIFEST"
+
+          echo "Creating Flatpak bundle"
+          flatpak build-bundle \
+            --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+            flatpak-repo "$OUTPUT_FILE_NAME" "$FLATPAK_APP_ID"
+
+          echo "Flatpak created: $OUTPUT_FILE_NAME"
+
+      - name: Upload Linux Flatpak
+        if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_flatpak }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.FLATPAK_PREFIX }}-v${{ env.VERSION }}-${{ env.TIMESTAMP }}
+          path: ${{ env.FLATPAK_PREFIX }}-v${{ env.VERSION }}-x86_64.flatpak
 
       - name: Build • Windows
         if: ${{ matrix.enabled && matrix.platform == 'windows' }}
@@ -591,6 +649,7 @@ jobs:
             artifacts/**/*.zip
             artifacts/**/*.tar.gz
             artifacts/**/*.AppImage
+            artifacts/**/*.flatpak
             artifacts/**/*.exe
             artifacts/**/*.dmg
         env:

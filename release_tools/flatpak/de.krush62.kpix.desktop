@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=KPix
+Comment=KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading.
+Exec=kpix %u
+Icon=de.krush62.kpix
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;
+Keywords=pixelart;pixel;animation;
+StartupWMClass=kpix
+PrefersNonDefaultGPU=true
+SingleMainWindow=true

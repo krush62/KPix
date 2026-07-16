@@ -8,9 +8,16 @@ name: KPix WinGet Publish
 # release.
 #
 # Requires a repository secret WINGET_TOKEN: a classic GitHub personal
-# access token with the "public_repo" scope. wingetcreate uses it to push
-# a branch to the krush62/winget-pkgs fork and open the pull request
-# against microsoft/winget-pkgs.
+# access token with the "public_repo" AND "workflow" scopes. wingetcreate
+# uses it to push a branch to the krush62/winget-pkgs fork and open the
+# pull request against microsoft/winget-pkgs. The "workflow" scope is
+# needed because syncing the fork updates .github/workflows files that
+# changed upstream - GitHub rejects such pushes without it.
+#
+# Before submitting, the fork's master branch is reset to upstream
+# microsoft/winget-pkgs master. wingetcreate can only fast-forward the fork
+# and fails if it has diverged. The fork's master is a pure mirror (all PRs
+# are made from separate branches), so discarding stray commits is safe.
 
 on:
   release:
@@ -64,21 +71,49 @@ jobs:
             exit 1
           }
 
+      - name: Sync winget-pkgs fork with upstream
+        shell: pwsh
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          FORK_REPO: ${{ github.repository_owner }}/winget-pkgs
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_TOKEN)) {
+            Write-Error "The WINGET_TOKEN secret is not set. Create a classic GitHub PAT with the 'public_repo' and 'workflow' scopes and add it as a repository secret named WINGET_TOKEN."
+            exit 1
+          }
+          $headers = @{
+            Authorization = "Bearer $env:WINGET_TOKEN"
+            Accept        = "application/vnd.github+json"
+          }
+          try {
+            $upstream = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-pkgs/git/ref/heads/master" -Headers $headers
+            $fork = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:FORK_REPO/git/ref/heads/master" -Headers $headers
+            if ($fork.object.sha -eq $upstream.object.sha) {
+              Write-Host "Fork master is already in sync with upstream."
+            } else {
+              # Hard-reset: the fork's master carries no unique work, and
+              # wingetcreate refuses to submit when the fork has diverged.
+              $body = @{ sha = $upstream.object.sha; force = $true } | ConvertTo-Json
+              Invoke-RestMethod -Method Patch -Uri "https://api.github.com/repos/$env:FORK_REPO/git/refs/heads/master" -Headers $headers -Body $body | Out-Null
+              Write-Host "Fork master reset to upstream commit $($upstream.object.sha)."
+            }
+          } catch {
+            $detail = $_.ErrorDetails.Message
+            Write-Error "Failed to sync $env:FORK_REPO with microsoft/winget-pkgs: $($_.Exception.Message) $detail"
+            Write-Error "If this is a permission error, make sure WINGET_TOKEN is a classic PAT with the 'public_repo' and 'workflow' scopes."
+            exit 1
+          }
+
       - name: Update manifest and submit pull request
         shell: pwsh
         env:
           VERSION: ${{ steps.info.outputs.version }}
           INSTALLER_URL: ${{ steps.info.outputs.installer_url }}
-          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:WINGET_TOKEN)) {
-            Write-Error "The WINGET_TOKEN secret is not set. Create a classic GitHub PAT with the 'public_repo' scope and add it as a repository secret named WINGET_TOKEN."
-            exit 1
-          }
           Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
           .\wingetcreate.exe update $env:PACKAGE_ID `
             --version $env:VERSION `
             --urls "$($env:INSTALLER_URL)|x64|inno|user" `
-            --submit `
-            --token $env:WINGET_TOKEN
+            --submit
           exit $LASTEXITCODE

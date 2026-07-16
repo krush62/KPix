@@ -362,6 +362,20 @@ jobs:
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install --user -y --noninteractive flathub org.flatpak.Builder
 
+          # The runtime and SDK from the manifest are pre-installed with the
+          # host flatpak. Letting org.flatpak.Builder install them via
+          # --install-deps-from requires a D-Bus session bus, which the
+          # headless runner does not have.
+          RUNTIME_VERSION=$(sed -nE "s/^runtime-version:[[:space:]]*['\"]?([^'\"[:space:]]+)['\"]?.*/\1/p" "release_tools/flatpak/${FLATPAK_APP_ID}.yml")
+          if [ -z "$RUNTIME_VERSION" ]; then
+            echo "Could not determine runtime-version from the Flatpak manifest!"
+            exit 1
+          fi
+          echo "Installing Freedesktop platform and SDK ${RUNTIME_VERSION}"
+          flatpak install --user -y --noninteractive flathub \
+            "org.freedesktop.Platform//${RUNTIME_VERSION}" \
+            "org.freedesktop.Sdk//${RUNTIME_VERSION}"
+
       - name: Create Linux Flatpak
         if: ${{ matrix.enabled && matrix.platform == 'linux' && inputs.build_linux_flatpak }}
         run: |
@@ -378,7 +392,6 @@ jobs:
           echo "Building Flatpak"
           flatpak run org.flatpak.Builder \
             --user --force-clean --disable-rofiles-fuse \
-            --install-deps-from=flathub \
             --repo=flatpak-repo \
             flatpak-builddir "$MANIFEST"
 

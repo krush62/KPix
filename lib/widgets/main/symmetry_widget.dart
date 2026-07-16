@@ -168,7 +168,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
             ),
             SizeTransition(
               sizeFactor: _animation,
-              axisAlignment: -1.0,
+              alignment: Alignment.topCenter,
               child: Padding(
                 padding: EdgeInsets.all(_options.padding),
                 child: Column(

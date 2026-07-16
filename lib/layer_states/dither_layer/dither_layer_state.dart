@@ -47,7 +47,6 @@ class DitherLayerState extends ShadingLayerState
     update();
   }
 
-  @override
   factory DitherLayerState.from({required final DitherLayerState other, final List<RasterableLayerState>? layerStack})
   {
     final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
@@ -60,7 +59,6 @@ class DitherLayerState extends ShadingLayerState
     return DitherLayerState.withData(data: data, lState: other.lockState.value, newSettings: settings, layerStack: layerStack);
   }
 
-  @override
   DitherLayerState.withData({required super.data, required super.lState, required super.newSettings, super.layerStack})
   : super.withData()
   {

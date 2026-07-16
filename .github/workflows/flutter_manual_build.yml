@@ -350,7 +350,7 @@ jobs:
           set -e
 
           sudo apt-get update
-          sudo apt-get install -y flatpak
+          sudo apt-get install -y flatpak dbus
 
           # Ubuntu 24.04 can restrict unprivileged user namespaces, which breaks
           # the bubblewrap sandbox used by flatpak.
@@ -390,7 +390,12 @@ jobs:
           sed -i "s/@DATE@/$(date +%Y-%m-%d)/g" "$METAINFO"
 
           echo "Building Flatpak"
-          flatpak run org.flatpak.Builder \
+          # org.flatpak.Builder delegates all flatpak operations (SDK lookup,
+          # flatpak build, export) to the host flatpak via flatpak-spawn, which
+          # requires a D-Bus session bus. Headless runners do not have one, so
+          # dbus-run-session provides it (the host org.freedesktop.Flatpak
+          # service is started on demand through D-Bus activation).
+          dbus-run-session -- flatpak run org.flatpak.Builder \
             --user --force-clean --disable-rofiles-fuse \
             --repo=flatpak-repo \
             flatpak-builddir "$MANIFEST"

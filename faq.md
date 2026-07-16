@@ -40,6 +40,8 @@ The project files (and other files like palettes, stamps, ...) are inside these 
 
 If you want to store your project files in a different location, you can set a custom project directory in the application settings (Settings > Behavior > Project Directory). When the directory is changed, all existing project files are moved to the new location. This only affects project files; palettes, stamps and other files stay in the internal directories.
 
+On Android, KPix can only see files in a custom directory that it created itself, unless the "All files access" permission is granted. If you want to add project files to the custom directory with other apps (for example synchronization tools like Syncthing), grant this permission when KPix asks for it (or manually via system settings > apps > KPix > permissions). When switching back to the default directory, KPix offers to open the system settings so the permission can be revoked.
+
 
 ## How can I support this project?
 You can support KPix by:

@@ -523,6 +523,24 @@ KPixOverlay getSingleButtonDialog({
 }
 
 
+/// Creates a self-closing dialog that asks the user to open the Android
+/// "All files access" system settings page.
+KPixOverlay getAllFilesAccessDialog({required final String message})
+{
+  late final KPixOverlay dialog;
+  return dialog = getTwoButtonDialog(
+    onYes: () {
+      dialog.hide();
+      openAllFilesAccessSettings();
+    },
+    onNo: () {
+      dialog.hide();
+    },
+    outsideCancelable: false,
+    message: message,
+  );
+}
+
   KPixOverlay getExportDialog({
     required final Function() onDismiss,
     required final ImageExportDataFn onAcceptImage,

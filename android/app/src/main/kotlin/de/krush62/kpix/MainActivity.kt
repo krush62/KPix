@@ -2,7 +2,10 @@ package de.krush62.kpix
 
 //import io.flutter.embedding.android.FlutterActivity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.embedding.android.FlutterActivity
@@ -43,10 +46,43 @@ class MainActivity: FlutterActivity() {
                     result.success(sharedFilePath)
                     sharedFilePath = null
                 }
+                "hasAllFilesAccess" -> {
+                    result.success(hasAllFilesAccess())
+                }
+                "openAllFilesAccessSettings" -> {
+                    result.success(openAllFilesAccessSettings())
+                }
                 else -> result.notImplemented()
             }
         }
         flutterEngine.plugins.add(MediaScanner())
+    }
+
+    private fun hasAllFilesAccess(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            // MANAGE_EXTERNAL_STORAGE does not exist below Android 11
+            true
+        }
+    }
+
+    private fun openAllFilesAccessSettings(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return false
+        }
+        return try {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName"))
+            startActivity(intent)
+            true
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
+                true
+            } catch (e2: Exception) {
+                false
+            }
+        }
     }
 
     private fun handleSendFile(intent: Intent) {

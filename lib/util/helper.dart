@@ -335,6 +335,45 @@ bool isDesktop({final bool includingWeb = false})
   }
 }
 
+/// Returns true if the application can see files created by other applications
+/// in shared storage (Android "All files access" permission).
+/// Always returns true on platforms other than Android.
+Future<bool> hasAllFilesAccess() async
+{
+  if (kIsWeb || !Platform.isAndroid)
+  {
+    return true;
+  }
+  try
+  {
+    const MethodChannel channel = MethodChannel('app.channel.shared.data');
+    final bool? result = await channel.invokeMethod<bool>('hasAllFilesAccess');
+    return result ?? false;
+  }
+  on PlatformException
+  {
+    return false;
+  }
+}
+
+/// Opens the Android system settings page for the "All files access" permission.
+/// Does nothing on platforms other than Android.
+Future<void> openAllFilesAccessSettings() async
+{
+  if (!kIsWeb && Platform.isAndroid)
+  {
+    try
+    {
+      const MethodChannel channel = MethodChannel('app.channel.shared.data');
+      await channel.invokeMethod<bool>('openAllFilesAccessSettings');
+    }
+    on PlatformException
+    {
+      //the settings page could not be opened, nothing to do here
+    }
+  }
+}
+
 /// Returns true if the square root of the [number] is an integer.
 bool isPerfectSquare({required final int number})
 {

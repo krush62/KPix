@@ -370,6 +370,11 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
               await _handleInitialFile();
             }
 
+            if (!kIsWeb && Platform.isAndroid && c.mounted)
+            {
+              await _checkAllFilesAccessOnStartup(context: c);
+            }
+
             if (isDesktop())
             {
               getLatestVersionInfo().then((final UpdateInfoPackage? value) {
@@ -434,6 +439,23 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   }
 
 
+
+  Future<void> _checkAllFilesAccessOnStartup({required final BuildContext context}) async
+  {
+    final AppState appState = GetIt.I.get<AppState>();
+    final String defaultProjectsDir = getDefaultProjectsDir(internalDir: appState.internalDir);
+    if (!p.equals(appState.projectsDir, defaultProjectsDir) && !await hasAllFilesAccess())
+    {
+      GetIt.I.get<Logger>().w("Using a custom project directory without all files access.");
+      final KPixOverlay permissionDialog = getAllFilesAccessDialog(
+        message: 'A custom project directory is used, but KPix does not have the "All files access" permission. Project files created by other apps (e.g. sync tools) might not be shown.\nDo you want to open the system settings to grant the permission?',
+      );
+      if (context.mounted)
+      {
+        permissionDialog.show(context: context);
+      }
+    }
+  }
 
   Future<void> _handleInitialFile() async
   {

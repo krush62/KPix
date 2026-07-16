@@ -29,6 +29,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
@@ -413,6 +414,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     {
       _appState.projectsDir = targetDir;
       _appState.showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
+      await _handleAllFilesAccessPermission(switchedToCustomDir: useCustom);
     }
     else
     {
@@ -429,6 +431,32 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       {
         errorDialog.show(context: context);
       }
+    }
+  }
+
+  Future<void> _handleAllFilesAccessPermission({required final bool switchedToCustomDir}) async
+  {
+    if (kIsWeb || !Platform.isAndroid)
+    {
+      return;
+    }
+    final bool allFilesAccess = await hasAllFilesAccess();
+    KPixOverlay? permissionDialog;
+    if (switchedToCustomDir && !allFilesAccess)
+    {
+      permissionDialog = getAllFilesAccessDialog(
+        message: 'Without the "All files access" permission, KPix cannot see project files that were created by other apps (e.g. sync tools) in this directory.\nDo you want to open the system settings to grant the permission?',
+      );
+    }
+    else if (!switchedToCustomDir && allFilesAccess)
+    {
+      permissionDialog = getAllFilesAccessDialog(
+        message: 'The "All files access" permission is not needed for the default project directory.\nDo you want to open the system settings to revoke the permission?',
+      );
+    }
+    if (permissionDialog != null && mounted)
+    {
+      permissionDialog.show(context: context);
     }
   }
 

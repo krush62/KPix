@@ -545,6 +545,8 @@ enum PreferenceBool
   SelectLayerAfterInsert(defaultValue: true),
   ShowReferenceOutsideCanvas(defaultValue: false),
 
+  ProjectDirectory_UseCustom(defaultValue: false),
+
   DrawingLayerConstraints_DefaultGlowRecursive(defaultValue: true),
 
   FrameBlendingOptions_Enabled(defaultValue: false),
@@ -567,6 +569,8 @@ enum PreferenceString
   Tool_Text_TextDefault(defaultValue: "Text"),
 
   ColorNames_ColorNamePath(defaultValue: PreferenceManager.ASSET_PATH_COLOR_NAMES),
+
+  ProjectDirectory_CustomPath(defaultValue: ""),
 
   ;
   const PreferenceString({
@@ -1299,6 +1303,8 @@ class PreferenceManager
       frameConstraints: frameConstraints,
       shadingConstraints: shadingLayerSettingsConstraints,
       showReferenceOutsideCanvas: _getValueB(PreferenceBool.ShowReferenceOutsideCanvas),
+      useCustomProjectDirectory: _getValueB(PreferenceBool.ProjectDirectory_UseCustom),
+      customProjectDirectory: _getValueS(PreferenceString.ProjectDirectory_CustomPath),
     );
 
     stylusPreferenceContent = StylusPreferenceContent(
@@ -1370,6 +1376,8 @@ class PreferenceManager
       frameConstraints: frameConstraints,
       shadingConstraints: shadingLayerSettingsConstraints,
       showReferenceOutsideCanvas: _getValueB(PreferenceBool.ShowReferenceOutsideCanvas),
+      useCustomProjectDirectory: _getValueB(PreferenceBool.ProjectDirectory_UseCustom),
+      customProjectDirectory: _getValueS(PreferenceString.ProjectDirectory_CustomPath),
     );
 
     stylusPreferenceContent.update(
@@ -1439,6 +1447,9 @@ class PreferenceManager
 
     _intMap[PreferenceInt.FrameConstraints_DefaultFps]!.value = behaviorPreferenceContent.fps.value;
     _boolMap[PreferenceBool.ShowReferenceOutsideCanvas]!.value = behaviorPreferenceContent.showReferenceOutsideCanvas.value;
+
+    _boolMap[PreferenceBool.ProjectDirectory_UseCustom]!.value = behaviorPreferenceContent.useCustomProjectDirectory.value;
+    _stringMap[PreferenceString.ProjectDirectory_CustomPath]!.value = behaviorPreferenceContent.customProjectDirectory.value;
 
 
     //STYLUS PREFERENCES

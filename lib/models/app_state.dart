@@ -237,6 +237,20 @@ class AppState
     _internalDir.value = dir;
   }
 
+  final ValueNotifier<String> _projectsDir;
+  String get projectsDir
+  {
+    return _projectsDir.value;
+  }
+  ValueNotifier<String> get projectsDirNotifier
+  {
+    return _projectsDir;
+  }
+  set projectsDir(final String dir)
+  {
+    _projectsDir.value = dir;
+  }
+
   final ValueNotifier<bool> _hasUpdate;
   bool get hasUpdate
   {
@@ -259,7 +273,7 @@ class AppState
   final SymmetryState symmetryState = SymmetryState();
 
 
-  AppState({required final String exportDir, required final String internalDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _hasUpdate = ValueNotifier<bool>(false)
+  AppState({required final String exportDir, required final String internalDir, required final String projectsDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _projectsDir = ValueNotifier<String>(projectsDir), _hasUpdate = ValueNotifier<bool>(false)
   {
     for (final ToolType toolType in toolList.keys)
     {

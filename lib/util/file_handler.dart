@@ -290,8 +290,8 @@ Future<void> saveFilePressed(
     final bool forceSaveAs = false,}) async {
   final AppState appState = GetIt.I.get<AppState>();
   if (!kIsWeb) {
-    final String finalPath = p.join(appState.internalDir, projectsSubDirName,
-        "$fileName.$fileExtensionKpix",);
+    final String finalPath =
+        p.join(appState.projectsDir, "$fileName.$fileExtensionKpix");
     saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>())
         .then((final String? path) {
       if (path != null) {
@@ -798,14 +798,151 @@ Future<String> findInternalDir() async {
   return internalDir.path;
 }
 
+String getDefaultProjectsDir({required final String internalDir}) {
+  return p.join(internalDir, projectsSubDirName);
+}
+
+Future<String> resolveProjectsDir({required final String internalDir}) async {
+  if (!kIsWeb) {
+    final bool useCustomDir = GetIt.I
+        .get<PreferenceManager>()
+        .behaviorPreferenceContent
+        .useCustomProjectDirectory
+        .value;
+    final String customDir = GetIt.I
+        .get<PreferenceManager>()
+        .behaviorPreferenceContent
+        .customProjectDirectory
+        .value;
+    if (useCustomDir && customDir.isNotEmpty) {
+      if (await Directory(customDir).exists() &&
+          hasWriteAccess(directory: customDir)) {
+        return customDir;
+      }
+      GetIt.I.get<Logger>().w(
+          "Custom project directory $customDir is not accessible, falling back to the default directory.",);
+    }
+  }
+  return getDefaultProjectsDir(internalDir: internalDir);
+}
+
+class ProjectDirectoryMoveResult {
+  final bool success;
+  final String message;
+  final int projectCount;
+  ProjectDirectoryMoveResult(
+      {required this.success, required this.message, this.projectCount = 0,});
+}
+
+Future<ProjectDirectoryMoveResult> moveProjectFiles(
+    {required final String sourceDir, required final String targetDir,}) async {
+  final Logger logger = GetIt.I.get<Logger>();
+  logger.i("Moving project files from $sourceDir to $targetDir.");
+  try {
+    final Directory target = Directory(targetDir);
+    if (!await target.exists()) {
+      try {
+        await target.create(recursive: true);
+      } catch (e, s) {
+        logger.w("Could not create target directory $targetDir.",
+            error: e, stackTrace: s,);
+        return ProjectDirectoryMoveResult(
+            success: false,
+            message: "The directory does not exist and could not be created!",);
+      }
+    }
+    if (!hasWriteAccess(directory: targetDir)) {
+      return ProjectDirectoryMoveResult(
+          success: false,
+          message: "Insufficient permissions for the directory!",);
+    }
+
+    final List<File> filesToMove = <File>[];
+    int projectCount = 0;
+    final Directory source = Directory(sourceDir);
+    if (await source.exists()) {
+      await for (final FileSystemEntity entity
+          in source.list(followLinks: false)) {
+        if (entity is File && entity.path.endsWith(".$fileExtensionKpix")) {
+          filesToMove.add(entity);
+          projectCount++;
+          final String? pngPath = await replaceFileExtension(
+              filePath: entity.path,
+              newExtension: thumbnailExtension,
+              inputFileMustExist: true,);
+          if (pngPath != null) {
+            final File pngFile = File(pngPath);
+            if (await pngFile.exists()) {
+              filesToMove.add(pngFile);
+            }
+          }
+        }
+      }
+    }
+
+    for (final File file in filesToMove) {
+      final String targetPath = p.join(targetDir, p.basename(file.path));
+      if (await File(targetPath).exists()) {
+        return ProjectDirectoryMoveResult(
+            success: false,
+            message:
+                "The directory already contains a file named ${p.basename(file.path)}!",);
+      }
+    }
+
+    final List<(String, String)> movedFiles = <(String, String)>[];
+    for (final File file in filesToMove) {
+      final String targetPath = p.join(targetDir, p.basename(file.path));
+      try {
+        await _moveFile(sourceFile: file, targetPath: targetPath);
+        movedFiles.add((file.path, targetPath));
+      } catch (e, s) {
+        logger.w("Error moving ${file.path} to $targetPath, rolling back.",
+            error: e, stackTrace: s,);
+        for (final (String, String) movedFile in movedFiles) {
+          try {
+            await _moveFile(
+                sourceFile: File(movedFile.$2), targetPath: movedFile.$1,);
+          } catch (e2, s2) {
+            logger.e("Rollback failed for ${movedFile.$2}.",
+                error: e2, stackTrace: s2,);
+          }
+        }
+        return ProjectDirectoryMoveResult(
+            success: false,
+            message: "Could not move file ${p.basename(file.path)}!",);
+      }
+    }
+
+    logger.i("Moved $projectCount project file(s) to $targetDir.");
+    return ProjectDirectoryMoveResult(
+        success: true, message: "", projectCount: projectCount,);
+  } catch (e, s) {
+    logger.w("Error moving project files.", error: e, stackTrace: s);
+    return ProjectDirectoryMoveResult(
+        success: false,
+        message: "An unexpected error occurred while moving project files!",);
+  }
+}
+
+Future<void> _moveFile(
+    {required final File sourceFile, required final String targetPath,}) async {
+  try {
+    await sourceFile.rename(targetPath);
+  } on FileSystemException {
+    //rename does not work across file systems -> copy and delete
+    await sourceFile.copy(targetPath);
+    await sourceFile.delete();
+  }
+}
+
 Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async {
   final Logger logger = GetIt.I.get<Logger>();
   logger.i(
-      "Loading projects from internal directory: ${GetIt.I.get<AppState>().internalDir}.",);
+      "Loading projects from project directory: ${GetIt.I.get<AppState>().projectsDir}.",);
 
   final List<ProjectManagerEntryData> projectData = <ProjectManagerEntryData>[];
-  final Directory dir = Directory(
-      p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName),);
+  final Directory dir = Directory(GetIt.I.get<AppState>().projectsDir);
 
   if (await dir.exists()) {
     try {
@@ -840,7 +977,7 @@ Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async {
     }
   } else {
     logger.w(
-        "Internal directory ${GetIt.I.get<AppState>().internalDir} does not exist.",);
+        "Project directory ${GetIt.I.get<AppState>().projectsDir} does not exist.",);
   }
   return projectData;
 }
@@ -940,8 +1077,7 @@ Future<bool> importProject(
         if (loadFileSet.historyState != null && loadFileSet.path != null) {
           final String fileName =
               extractFilenameFromPath(path: loadFileSet.path);
-          final String projectPath =
-              p.join(appState.internalDir, projectsSubDirName, fileName);
+          final String projectPath = p.join(appState.projectsDir, fileName);
           if (!File(projectPath).existsSync()) {
             final ui.Image? img = await getImageFromLoadFileSet(
                 loadFileSet: loadFileSet,

@@ -275,6 +275,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       logger.i("Export Dir: $exportDirString");
       final String internalDirString = await findInternalDir();
       logger.i("Internal Dir: $internalDirString");
+      final String projectsDirString = await resolveProjectsDir(internalDir: internalDirString);
+      logger.i("Projects Dir: $projectsDirString");
 
       if (context.mounted)
       {
@@ -282,7 +284,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
         logger.i("Pixel Ratio: $devicePixelRatio");
         logger.i("Creating App State");
-        final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, devicePixelRatio: devicePixelRatio);
+        final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectsDirString, devicePixelRatio: devicePixelRatio);
         bool hasCorrectResolution = true;
         GetIt.I.registerSingleton<AppState>(appState);
         final Size logicalSize = MediaQuery.of(c).size;
@@ -455,7 +457,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
       await importProject(path: initialFilePath);
       final String fileName = extractFilenameFromPath(path: initialFilePath);
-      final String expectedFileName = initialFilePath = p.join(appState.internalDir, projectsSubDirName, fileName);
+      final String expectedFileName = initialFilePath = p.join(appState.projectsDir, fileName);
       final File expectedFile = File(expectedFileName);
 
       if (await expectedFile.exists())

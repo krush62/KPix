@@ -27,12 +27,14 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/preferences/behavior_preferences.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:logger/logger.dart';
+import 'package:path/path.dart' as p;
 
 class MainButtonWidgetOptions
 {
@@ -379,10 +381,55 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   void _savePreferencesPressed()
   {
     GetIt.I.get<Logger>().i("Saving user preferences");
-    GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){
-      _reloadPreferences();
-      _closeAllMenus();
+    _applyProjectDirectoryChange().then((final void _){
+      GetIt.I.get<PreferenceManager>().saveUserPrefs().then((final void _){
+        _reloadPreferences();
+        _closeAllMenus();
+      });
     });
+  }
+
+  Future<void> _applyProjectDirectoryChange() async
+  {
+    if (kIsWeb)
+    {
+      return;
+    }
+    final BehaviorPreferenceContent behaviorPrefs = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
+    final String defaultDir = getDefaultProjectsDir(internalDir: _appState.internalDir);
+    final bool useCustom = behaviorPrefs.useCustomProjectDirectory.value && behaviorPrefs.customProjectDirectory.value.isNotEmpty;
+    final String targetDir = useCustom ? behaviorPrefs.customProjectDirectory.value : defaultDir;
+    final String currentDir = _appState.projectsDir;
+    if (p.equals(targetDir, currentDir))
+    {
+      return;
+    }
+
+    final KPixOverlay movingDialog = getLoadingDialog(message: "Moving project files...");
+    movingDialog.show(context: context);
+    final ProjectDirectoryMoveResult moveResult = await moveProjectFiles(sourceDir: currentDir, targetDir: targetDir);
+    movingDialog.hide();
+    if (moveResult.success)
+    {
+      _appState.projectsDir = targetDir;
+      _appState.showMessage(text: "Changed project directory to $targetDir (moved ${moveResult.projectCount} project file(s)).");
+    }
+    else
+    {
+      GetIt.I.get<Logger>().w("Project directory was not changed: ${moveResult.message}");
+      final bool currentIsCustom = !p.equals(currentDir, defaultDir);
+      behaviorPrefs.useCustomProjectDirectory.value = currentIsCustom;
+      if (currentIsCustom)
+      {
+        behaviorPrefs.customProjectDirectory.value = currentDir;
+      }
+      late final KPixOverlay errorDialog;
+      errorDialog = getSingleButtonDialog(onAction: () {errorDialog.hide();}, message: "The project directory was not changed!\n${moveResult.message}");
+      if (mounted)
+      {
+        errorDialog.show(context: context);
+      }
+    }
   }
 
   void _reloadPreferences()

@@ -24,7 +24,6 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:path/path.dart' as p;
 
 class SaveAsWidget extends StatefulWidget
 {
@@ -57,7 +56,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
 
   void _updateFileNameStatus()
   {
-    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: p.join(_appState.internalDir, projectsSubDirName), extension: fileExtensionKpix, allowRecoverFile: false);
+    _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.projectsDir, extension: fileExtensionKpix, allowRecoverFile: false);
   }
 
   @override

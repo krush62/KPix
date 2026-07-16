@@ -38,6 +38,8 @@ These internal user directories are:
 
 The project files (and other files like palettes, stamps, ...) are inside these directories.
 
+If you want to store your project files in a different location, you can set a custom project directory in the application settings (Settings > Behavior > Project Directory). When the directory is changed, all existing project files are moved to the new location. This only affects project files; palettes, stamps and other files stay in the internal directories.
+
 
 ## How can I support this project?
 You can support KPix by:

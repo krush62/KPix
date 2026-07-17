@@ -160,6 +160,10 @@ class ColorSet
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: _lightColors.light,
     ),
+    radioTheme: RadioThemeData(
+      backgroundColor: WidgetStateColor.resolveWith((final Set<WidgetState> states) => _lightColors.normal),
+      fillColor:  WidgetStateColor.resolveWith((final Set<WidgetState> states) => _lightColors.light),
+    ),
 
   );
 
@@ -288,7 +292,12 @@ class ColorSet
           padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 2.0, right: 2.0)),
         ),
     ),
-      textSelectionTheme: TextSelectionThemeData(
+    textSelectionTheme: TextSelectionThemeData(
           cursorColor: _darkColors.light,
       ),
+
+    radioTheme: RadioThemeData(
+      backgroundColor: WidgetStateColor.resolveWith((final Set<WidgetState> states) => _darkColors.normal),
+      fillColor:  WidgetStateColor.resolveWith((final Set<WidgetState> states) => _darkColors.light),
+    ),
   );

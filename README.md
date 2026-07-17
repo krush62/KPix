@@ -47,7 +47,7 @@ KPix is a pixel art editor for still images and animations with a focus on gener
 ⭐ automatic light/dark theme
 
 ## Developer Statement
-KPix began as a personal project designed around my own pixel art workflow. I also used it as an opportunity to learn Flutter for desktop and tablet development. Because of this, some UI and workflow choices might feel unconventional—but these restrictions are entirely by design.
+KPix began as a personal project designed around my own pixel art workflow. I also used it as an opportunity to learn Flutter for desktop and tablet development. Because of this, some UI and workflow choices might feel unconventional - but these restrictions are entirely by design.
 I eventually decided to polish the app and release it to the public. Because I am a strong advocate for FOSS and open distribution channels, KPix is not available on Google Play or the Apple App Store.
 
 ## AI usage statement
@@ -160,6 +160,7 @@ Download and run the provided Windows installer. The application can be easily u
 This is a portable version. Extract the contents of the Windows Zip Package and run kpix.exe to start the application.
 
 ### Install via WinGet
+![WinGet Package Version](https://img.shields.io/winget/v/krush62.KPix) \
 Open a terminal (cmd or PowerShell) and run the following command: `winget install --id krush62.kpix`
 
 ## 🐧Linux
@@ -170,8 +171,11 @@ Open a terminal (cmd or PowerShell) and run the following command: `winget insta
 ### AppImage
 Just run the AppImage file from the Desktop or Terminal.
 
+### Flatpak
+Install the Flatpak from Desktop or Terminal.
+
 ### Package
-Extract the contents of the tar.gz Package and run `kpix` to start the application. 
+Extract the contents of the tar.gz Package and run `./kpix` to start the application. 
 
 
 ## 🤖Android
@@ -195,9 +199,11 @@ Download the Android apk file and install it manually (side-loading needs to be 
 
 
 [//]: # (### iOS/iPadOS)
+
 ## Web Version
 A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The web version has some limitations:
-- General performance is lower compared to the native versions
+- General performance might be lower compared to the native versions
+- Not always the latest version
 - No project manager (simple load and save via up/download)
 - No palette import
 - Limited stylus and keyboard shortcut support
@@ -207,8 +213,8 @@ A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=fff)
 - Clone the repository
 - [Install the Flutter SDK](https://docs.flutter.dev/get-started/install)
-- Open the project in your configured IDE or use gradle directly to build your variant
-- you might use the scripts in the release_tools folder to create Linux/Windows/Android/Web versions
+- Open the project in your configured IDE (Android Studio or VSCode recommended) or use gradle directly to build your variant
+- you might use the scripts in the release_tools folder to create custom Linux/Windows/Android/Web versions
 
 # 🔜Roadmap
 A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53).

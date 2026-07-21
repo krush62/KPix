@@ -309,8 +309,10 @@ enum PreferenceInt
   Layout_PaletteManager_ColCount(defaultValue: 4),
   Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
   Layout_ProjectManager_ColCount(defaultValue: 5),
+  Layout_ProjectManager_FilterTextLength(defaultValue: 16),
   Layout_StampManagerEntry_LayoutFlex(defaultValue: 6),
   Layout_StampManager_ColCount(defaultValue: 6),
+
 
   ReferenceLayer_OpacityDefault(defaultValue: 100),
   ReferenceLayer_OpacityMax(defaultValue: 100),
@@ -988,7 +990,8 @@ class PreferenceManager
         colCount: _getValueI(PreferenceInt.Layout_ProjectManager_ColCount),
         entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
         maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
-        maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight),);
+        maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight),
+        maxFilterTextLength: _getValueI(PreferenceInt.Layout_ProjectManager_FilterTextLength),);
     stampManagerEntryOptions = StampManagerEntryOptions(
       borderRadius: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderRadius),
       borderWidth: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderWidth),

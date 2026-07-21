@@ -18,6 +18,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -32,7 +33,8 @@ class ProjectManagerOptions
   final double entryAspectRatio;
   final double maxWidth;
   final double maxHeight;
-  ProjectManagerOptions({required this.colCount, required this.entryAspectRatio, required this.maxWidth, required this.maxHeight});
+  final int maxFilterTextLength;
+  ProjectManagerOptions({required this.colCount, required this.entryAspectRatio, required this.maxWidth, required this.maxHeight, required this.maxFilterTextLength});
 }
 
 class ProjectManagerWidget extends StatefulWidget
@@ -58,18 +60,22 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 {
   final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ProjectManagerOptions _options = GetIt.I.get<PreferenceManager>().projectManagerOptions;
+  final List<ProjectManagerEntryWidget> _allFileEntries = <ProjectManagerEntryWidget>[];
   final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier<List<ProjectManagerEntryWidget>>(<ProjectManagerEntryWidget>[]);
   final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier<ProjectManagerEntryWidget?>(null);
   final ValueNotifier<ProjectViewOrder> _projectViewOrder = ValueNotifier<ProjectViewOrder>(ProjectViewOrder.lastModifiedDesc);
+  bool _isLoading = false;
 
   late KPixOverlay _saveBeforeLoadWarningDialog;
   late KPixOverlay _deleteWarningDialog;
   late KPixOverlay _loadingDialog;
 
+  final ValueNotifier<String> _filterText = ValueNotifier<String>("");
   @override
   void initState()
   {
     super.initState();
+    _isLoading = true;
     _saveBeforeLoadWarningDialog = getThreeButtonDialog(
         onYes: _saveBeforeLoadWarningYes,
         onNo: _saveBeforeLoadWarningNo,
@@ -85,8 +91,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       outsideCancelable: false,
     );
 
-    _createWidgetList().then((final List<ProjectManagerEntryWidget> pList) {
-      _fileEntries.value = pList;
+    _createWidgetList().then((final void nothing) {
+      _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
+      _isLoading = false;
     });
   }
 
@@ -160,56 +167,31 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   {
     if (success)
     {
-      _createWidgetList().then((final List<ProjectManagerEntryWidget> fList) {
+      _isLoading = true;
+      _createWidgetList().then((final void nothing) {
         _selectedWidget.value = null;
-        _fileEntries.value = fList;
+        _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
+        _isLoading = false;
       });
     }
   }
 
-  Future<List<ProjectManagerEntryWidget>> _createWidgetList() async
+  Future<void> _createWidgetList() async
   {
-    final List<ProjectManagerEntryWidget> fList = <ProjectManagerEntryWidget>[];
+    _allFileEntries.clear();
     if (!kIsWeb)
     {
       final List<ProjectManagerEntryData> internalFiles = await loadProjectsFromInternal();
       for (final ProjectManagerEntryData fileData in internalFiles)
       {
-        fList.add(ProjectManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
+        _allFileEntries.add(ProjectManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
       }
     }
-    _sortWidgetEntries(fList: fList, order: _projectViewOrder.value);
-
-    return fList;
   }
-
-  static void _sortWidgetEntries({required final ProjectViewOrder order, required final List<ProjectManagerEntryWidget> fList})
-  {
-    if (order== ProjectViewOrder.lastModifiedAsc)
-    {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.dateTime.compareTo(b.entryData.dateTime));
-    }
-    else if (order == ProjectViewOrder.lastModifiedDesc)
-    {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.dateTime.compareTo(a.entryData.dateTime));
-    }
-    else if (order == ProjectViewOrder.nameAsc)
-    {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.name.toLowerCase().compareTo(b.entryData.name.toLowerCase()));
-    }
-    else if (order == ProjectViewOrder.nameDesc)
-    {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.name.toLowerCase().compareTo(a.entryData.name.toLowerCase()));
-    }
-  }
-
   void changeOrder({required final ProjectViewOrder newOrder})
   {
-    final List<ProjectManagerEntryWidget> fList = _fileEntries.value;
-    _fileEntries.value = <ProjectManagerEntryWidget>[];
-    _sortWidgetEntries(fList: fList, order: newOrder);
-    _fileEntries.value = fList;
     _projectViewOrder.value = newOrder;
+    _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
   }
 
   void _importProjectPressed()
@@ -230,15 +212,46 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     final AppState appState = GetIt.I.get<AppState>();
     if (success)
     {
-      _createWidgetList().then((final List<ProjectManagerEntryWidget> pList) {
-        _fileEntries.value = pList;
+      _isLoading = true;
+      _createWidgetList().then((final void nothing) {
+        _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
+        _isLoading = false;
       });
       appState.showMessage(text: "Project imported successfully!");
     }
   }
 
+  void _filterAndSort({required final String filterText, required final ProjectViewOrder order})
+  {
+    final List<ProjectManagerEntryWidget> fList = _allFileEntries.where((final ProjectManagerEntryWidget element) => element.entryData.name.toLowerCase().contains(filterText.toLowerCase())).toList();
+    if (order== ProjectViewOrder.lastModifiedAsc)
+    {
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.dateTime.compareTo(b.entryData.dateTime));
+    }
+    else if (order == ProjectViewOrder.lastModifiedDesc)
+    {
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.dateTime.compareTo(a.entryData.dateTime));
+    }
+    else if (order == ProjectViewOrder.nameAsc)
+    {
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.name.toLowerCase().compareTo(b.entryData.name.toLowerCase()));
+    }
+    else if (order == ProjectViewOrder.nameDesc)
+    {
+      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.name.toLowerCase().compareTo(a.entryData.name.toLowerCase()));
+    }
+    _fileEntries.value = fList;
+  }
+
+  void _filterTextChanged({required final String newText})
+  {
+    _filterText.value = newText;
+    _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
+  }
+
   @override
   Widget build(final BuildContext context) {
+    final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixAnimationWidget(
       constraints: BoxConstraints(
         minHeight: _alertOptions.minHeight,
@@ -250,57 +263,106 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
         children: <Widget>[
           SizedBox(height: _alertOptions.padding),
           Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
-          ValueListenableBuilder<ProjectViewOrder>(
-            valueListenable: _projectViewOrder,
-            builder: (final BuildContext context, final ProjectViewOrder viewOrder, final Widget? child) {
-              return SegmentedButton<ProjectViewOrder>(
-                segments: const <ButtonSegment<ProjectViewOrder>>[
-                  ButtonSegment<ProjectViewOrder>(
-                    value: ProjectViewOrder.nameAsc,
-                    label: Tooltip(
-                      message: "Order by file name (ascending)",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                          TablerIcons.sort_ascending_letters,
+          SizedBox(
+            height: 48,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        "Filter",
+                        style: Theme.of(context).textTheme.labelLarge,
                       ),
-                    ),
-                  ),
-                  ButtonSegment<ProjectViewOrder>(
-                    value: ProjectViewOrder.nameDesc,
-                    label: Tooltip(
-                      message: "Order by file name (descending)",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                          TablerIcons.sort_descending_letters,
+                      const SizedBox(
+                        width: 16,
                       ),
-                    ),
-                  ),
-                  ButtonSegment<ProjectViewOrder>(
-                    value: ProjectViewOrder.lastModifiedAsc,
-                    label: Tooltip(
-                      message: "Order by last modification (ascending)",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                          TablerIcons.sort_ascending_numbers,
+                      Expanded(
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: _filterText,
+                          builder: (final BuildContext context, final String text, final Widget? child)
+                          {
+                            final TextEditingController controller = TextEditingController(text: _filterText.value);
+                            controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                            return TextField(
+                              controller: controller,
+                              focusNode: hotkeyManager.projectFilterTextFocus,
+                              onChanged: (final String newText) {_filterTextChanged(newText: newText);},
+                              maxLength: _options.maxFilterTextLength,
+                            );
+                          },
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  ButtonSegment<ProjectViewOrder>(
-                    value: ProjectViewOrder.lastModifiedDesc,
-                    label: Tooltip(
-                      message: "Order by last modification (descending)",
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                          TablerIcons.sort_descending_numbers,
-                      ),
-                    ),
+                ),
+                SizedBox(
+                  child: VerticalDivider(
+                    color: Theme.of(context).primaryColorLight,
+                    width: 32,
+                    thickness: 1,
+                    indent: 8,
+                    endIndent: 8,
                   ),
-                ],
-                selected: <ProjectViewOrder>{viewOrder},
-                showSelectedIcon: false,
-                onSelectionChanged: (final Set<ProjectViewOrder> newOrders){changeOrder(newOrder: newOrders.first);},
-              );
-            },
+                ),
+                Expanded(
+                  child: ValueListenableBuilder<ProjectViewOrder>(
+                    valueListenable: _projectViewOrder,
+                    builder: (final BuildContext context, final ProjectViewOrder viewOrder, final Widget? child) {
+                      return SegmentedButton<ProjectViewOrder>(
+                        segments: const <ButtonSegment<ProjectViewOrder>>[
+                          ButtonSegment<ProjectViewOrder>(
+                            value: ProjectViewOrder.nameAsc,
+                            label: Tooltip(
+                              message: "Order by file name (ascending)",
+                              waitDuration: AppState.toolTipDuration,
+                              child: Icon(
+                                  TablerIcons.sort_ascending_letters,
+                              ),
+                            ),
+                          ),
+                          ButtonSegment<ProjectViewOrder>(
+                            value: ProjectViewOrder.nameDesc,
+                            label: Tooltip(
+                              message: "Order by file name (descending)",
+                              waitDuration: AppState.toolTipDuration,
+                              child: Icon(
+                                  TablerIcons.sort_descending_letters,
+                              ),
+                            ),
+                          ),
+                          ButtonSegment<ProjectViewOrder>(
+                            value: ProjectViewOrder.lastModifiedAsc,
+                            label: Tooltip(
+                              message: "Order by last modification (ascending)",
+                              waitDuration: AppState.toolTipDuration,
+                              child: Icon(
+                                  TablerIcons.sort_ascending_numbers,
+                              ),
+                            ),
+                          ),
+                          ButtonSegment<ProjectViewOrder>(
+                            value: ProjectViewOrder.lastModifiedDesc,
+                            label: Tooltip(
+                              message: "Order by last modification (descending)",
+                              waitDuration: AppState.toolTipDuration,
+                              child: Icon(
+                                  TablerIcons.sort_descending_numbers,
+                              ),
+                            ),
+                          ),
+                        ],
+                        selected: <ProjectViewOrder>{viewOrder},
+                        showSelectedIcon: false,
+                        onSelectionChanged: (final Set<ProjectViewOrder> newOrders){changeOrder(newOrder: newOrders.first);},
+                      );
+                    },
+                  ),
+                ),
+
+
+              ],
+            ),
           ),
           SizedBox(height: _alertOptions.padding),
           Expanded(
@@ -312,14 +374,39 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               child: ValueListenableBuilder<List<ProjectManagerEntryWidget>>(
                 valueListenable: _fileEntries,
                 builder: (final BuildContext context, final List<ProjectManagerEntryWidget> pList, final Widget? child) {
-                  return GridView.extent(
-                    maxCrossAxisExtent: _options.maxWidth / _options.colCount,
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    childAspectRatio: _options.entryAspectRatio,
-                    mainAxisSpacing: _alertOptions.padding,
-                    crossAxisSpacing: _alertOptions.padding,
-                    children: pList.toList(),
-                  );
+                  if (_isLoading)
+                  {
+                    return SizedBox.expand(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColorLight,
+                        ),
+                      ),
+                    );
+                  }
+                  else if (pList.isEmpty)
+                  {
+                    return SizedBox.expand(
+                        child: Center(
+                            child: Text(
+                              "No files found!",
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                        ),
+                    );
+                  }
+                  else
+                  {
+                    return GridView.extent(
+                      maxCrossAxisExtent: _options.maxWidth / _options.colCount,
+                      padding: EdgeInsets.all(_alertOptions.padding),
+                      childAspectRatio: _options.entryAspectRatio,
+                      mainAxisSpacing: _alertOptions.padding,
+                      crossAxisSpacing: _alertOptions.padding,
+                      children: pList.toList(),
+                    );
+                  }
+
                 },
               ),
             ),

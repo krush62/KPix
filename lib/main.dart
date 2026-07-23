@@ -275,127 +275,133 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       logger.i("Export Dir: $exportDirString");
       final String internalDirString = await findInternalDir();
       logger.i("Internal Dir: $internalDirString");
-      final String projectsDirString = await resolveProjectsDir(internalDir: internalDirString);
-      logger.i("Projects Dir: $projectsDirString");
+      final ProjectDirectoryResolveResult projectDirResult = await resolveProjectsDir(internalDir: internalDirString);
+      logger.i("Projects Dir: ${projectDirResult.resolvedDir}");
 
-      if (context.mounted)
+      if (!context.mounted)
       {
-        final BuildContext c = context;
-        final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
-        logger.i("Pixel Ratio: $devicePixelRatio");
-        logger.i("Creating App State");
-        final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectsDirString, devicePixelRatio: devicePixelRatio);
-        bool hasCorrectResolution = true;
-        GetIt.I.registerSingleton<AppState>(appState);
-        final Size logicalSize = MediaQuery.of(c).size;
-        logger.i("Logical Size: $logicalSize");
-        if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
+        const String contextNotMountedMessage = "BuildContext not mounted.";
+        logger.e(contextNotMountedMessage);
+        return;
+      }
+
+
+      final BuildContext c = context;
+      final double devicePixelRatio = MediaQuery.of(c).devicePixelRatio;
+      logger.i("Pixel Ratio: $devicePixelRatio");
+      logger.i("Creating App State");
+      final AppState appState = AppState(exportDir: exportDirString, internalDir: internalDirString, projectsDir: projectDirResult.resolvedDir, devicePixelRatio: devicePixelRatio);
+
+      GetIt.I.registerSingleton<AppState>(appState);
+      final Size logicalSize = MediaQuery.of(c).size;
+      logger.i("Logical Size: $logicalSize");
+
+      if (logicalSize.width < minimumApplicationSize.width || logicalSize.height < minimumApplicationSize.height)
+      {
+        const String wrongResolutionMessage = "This device does not support the minimum logical resolution to run this application.";
+        logger.w(wrongResolutionMessage);
+        final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: wrongResolutionMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
+        resolutionDialog.show(context: c);
+        return;
+      }
+
+      logger.i("Creating Stamp Manager");
+      final StampManager stampManager = StampManager();
+      await stampManager.loadAllStamps();
+      GetIt.I.registerSingleton<StampManager>(stampManager);
+
+      logger.i("Creating Package Info");
+      GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
+      logger.i("Creating Reference Image Manager");
+      GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
+      logger.i("Creating History Manager");
+      GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
+
+      //CREATE DIALOG OVERLAYS
+      _closeWarningDialog = getThreeButtonDialog(
+        onYes: _closeWarningYes,
+        onNo: _closeWarningNo,
+        onCancel: _closeAllMenus,
+        outsideCancelable: false,
+        message: "There are unsaved changes, do you want to save first?",
+      );
+
+      _saveNewWarningDialog = getThreeButtonDialog(
+        onYes: _saveNewWarningYes,
+        onNo: _saveNewWarningNo,
+        onCancel: _saveNewWarningCancel,
+        outsideCancelable: false,
+        message: "There are unsaved changes, do you want to save first?",
+      );
+      _newProjectDialog = getNewProjectDialog(
+        onDismiss: !kIsWeb ? () {exitApplication();} : null,
+        onAccept: _newFilePressed,
+        onOpen: _openPressed,
+      );
+
+      GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
+
+      final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
+      if (themeSettings.themeMode != currentTheme)
+      {
+        logger.i("Changing Theme Mode");
+        themeSettings.themeMode = currentTheme;
+      }
+      appState.hasProjectNotifier.addListener(_hasProjectChanged);
+
+      if (!kIsWeb)
+      {
+        logger.i("Creating internal directories if needed.");
+        try
         {
-          hasCorrectResolution = false;
+          await createInternalDirectories();
+        }
+        catch (e, s)
+        {
+          const String couldNotCreateDirsMessage = "Could not create internal directories.";
+          logger.w(couldNotCreateDirsMessage, error: e, stackTrace: s);
+          if (c.mounted)
+          {
+            final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotCreateDirsMessage);
+            dirDialog.show(context: c);
+          }
         }
 
-        if (!hasCorrectResolution)
+        if (!kIsWeb)
         {
-          const String wrongResolutionMessage = "This device does not support the minimum logical resolution to run this application.";
-          logger.w(wrongResolutionMessage);
-          final KPixOverlay resolutionDialog = kIsWeb ? getLoadingDialog(message: wrongResolutionMessage, textStyle: Theme.of(c).textTheme.titleMedium) : getSingleButtonDialog(onAction: () => exitApplication(), message: wrongResolutionMessage);
-          resolutionDialog.show(context: c);
+          await _handleInitialFile();
         }
-        else
+
+        if (projectDirResult.useCustom && !projectDirResult.customValid)
         {
-          logger.i("Creating Stamp Manager");
-          final StampManager stampManager = StampManager();
-          await stampManager.loadAllStamps();
-          GetIt.I.registerSingleton<StampManager>(stampManager);
+          final PreferenceManager preferenceManager = GetIt.I.get<PreferenceManager>();
+          preferenceManager.behaviorPreferenceContent.useCustomProjectDirectory.value = false;
+          preferenceManager.behaviorPreferenceContent.customProjectDirectory.value = "";
+          appState.showMessage(text: "Custom Project directory invalid. Switching to default directory.");
+        }
 
-          logger.i("Creating Package Info");
-          GetIt.I.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
-          logger.i("Creating Reference Image Manager");
-          GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
-          logger.i("Creating History Manager");
-          GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
 
-          //CREATE DIALOG OVERLAYS
-          _closeWarningDialog = getThreeButtonDialog(
-            onYes: _closeWarningYes,
-            onNo: _closeWarningNo,
-            onCancel: _closeAllMenus,
-            outsideCancelable: false,
-            message: "There are unsaved changes, do you want to save first?",
-          );
+        if (!kIsWeb && Platform.isAndroid && c.mounted)
+        {
+          await _checkAllFilesAccessOnStartup(context: c);
+        }
 
-          _saveNewWarningDialog = getThreeButtonDialog(
-            onYes: _saveNewWarningYes,
-            onNo: _saveNewWarningNo,
-            onCancel: _saveNewWarningCancel,
-            outsideCancelable: false,
-            message: "There are unsaved changes, do you want to save first?",
-          );
-          _newProjectDialog = getNewProjectDialog(
-            onDismiss: !kIsWeb ? () {exitApplication();} : null,
-            onAccept: _newFilePressed,
-            onOpen: _openPressed,
-          );
-
-          GetIt.I.get<HotkeyManager>().addListener(action: HotkeyAction.generalExit, func: _closePressed);
-
-          final ThemeMode currentTheme = GetIt.I.get<PreferenceManager>().guiPreferenceContent.themeType.value;
-          if (themeSettings.themeMode != currentTheme)
-          {
-            logger.i("Changing Theme Mode");
-            themeSettings.themeMode = currentTheme;
-          }
-          appState.hasProjectNotifier.addListener(_hasProjectChanged);
-
-          if (!kIsWeb)
-          {
-            logger.i("Creating internal directories if needed.");
-            try
-            {
-              await createInternalDirectories();
-            }
-            catch (e, s)
-            {
-              const String couldNotCreateDirsMessage = "Could not create internal directories.";
-              logger.w(couldNotCreateDirsMessage, error: e, stackTrace: s);
-              if (c.mounted)
-              {
-                final KPixOverlay dirDialog = getSingleButtonDialog(onAction: () => exitApplication(), message: couldNotCreateDirsMessage);
-                dirDialog.show(context: c);
-              }
-            }
-
-            if (!kIsWeb)
-            {
-              await _handleInitialFile();
-            }
-
-            if (!kIsWeb && Platform.isAndroid && c.mounted)
-            {
-              await _checkAllFilesAccessOnStartup(context: c);
-            }
-
-            if (isDesktop())
-            {
-              getLatestVersionInfo().then((final UpdateInfoPackage? value) {
-                updateDataReceived(updateInfo: value);
-              });
-            }
-          }
-          else
-          {
-            _hasProjectChanged();
-          }
-          final String versionString = GetIt.I.get<PackageInfo>().version;
-          initialized.value = true;
-          logger.i("Application initialized. Version: $versionString");
+        if (isDesktop())
+        {
+          getLatestVersionInfo().then((final UpdateInfoPackage? value) {
+            updateDataReceived(updateInfo: value);
+          });
         }
       }
       else
       {
-        const String contextNotMountedMessage = "BuildContext not mounted.";
-        logger.e(contextNotMountedMessage);
+        _hasProjectChanged();
       }
+      final String versionString = GetIt.I.get<PackageInfo>().version;
+      initialized.value = true;
+      logger.i("Application initialized. Version: $versionString");
+
+
     }
     catch (e, s)
     {

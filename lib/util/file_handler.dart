@@ -802,9 +802,20 @@ String getDefaultProjectsDir({required final String internalDir}) {
   return p.join(internalDir, projectsSubDirName);
 }
 
-Future<String> resolveProjectsDir({required final String internalDir}) async {
+class ProjectDirectoryResolveResult
+{
+  final String resolvedDir;
+  final bool useCustom;
+  final bool customValid;
+  ProjectDirectoryResolveResult({required this.resolvedDir, required this.useCustom, required this.customValid});
+}
+
+Future<ProjectDirectoryResolveResult> resolveProjectsDir({required final String internalDir}) async {
+  String dirToUse = getDefaultProjectsDir(internalDir: internalDir);
+  bool customValid = false;
+  bool useCustomDir = false;
   if (!kIsWeb) {
-    final bool useCustomDir = GetIt.I
+    useCustomDir = GetIt.I
         .get<PreferenceManager>()
         .behaviorPreferenceContent
         .useCustomProjectDirectory
@@ -814,16 +825,27 @@ Future<String> resolveProjectsDir({required final String internalDir}) async {
         .behaviorPreferenceContent
         .customProjectDirectory
         .value;
-    if (useCustomDir && customDir.isNotEmpty) {
+
+
+    if (customDir.isNotEmpty) {
       if (await Directory(customDir).exists() &&
           hasWriteAccess(directory: customDir)) {
-        return customDir;
+        customValid = true;
       }
-      GetIt.I.get<Logger>().w(
+    }
+
+    if (useCustomDir) {
+      if (!customValid) {
+        GetIt.I.get<Logger>().w(
           "Custom project directory $customDir is not accessible, falling back to the default directory.",);
+      }
+      else
+      {
+        dirToUse = customDir;
+      }
     }
   }
-  return getDefaultProjectsDir(internalDir: internalDir);
+  return ProjectDirectoryResolveResult(resolvedDir: dirToUse, useCustom: useCustomDir, customValid: customValid);
 }
 
 class ProjectDirectoryMoveResult {

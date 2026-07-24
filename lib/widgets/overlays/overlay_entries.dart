@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -60,6 +61,7 @@ class KPixOverlay
       Overlay.of(context).insert(entry);
       isVisible = true;
     }
+    GetIt.I.get<HotkeyManager>().deactivateCallbacks();
     closeCallback = callbackFunction;
   }
 
@@ -67,6 +69,7 @@ class KPixOverlay
   {
     if (isVisible)
     {
+      GetIt.I.get<HotkeyManager>().activateCallbacks();
       entry.remove();
       isVisible = false;
     }

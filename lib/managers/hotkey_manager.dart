@@ -112,6 +112,7 @@ class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners(
 
 class HotkeyManager
 {
+  bool _isActive = true;
   final Map<SingleActivator, HotkeyAction> _shortCutMap = <SingleActivator, HotkeyAction>{};
   final Map<HotkeyAction, HotkeyNotifier> _notifierMap = <HotkeyAction, HotkeyNotifier>{};
   final Map<HotkeyAction, VoidCallback> _actionMap = <HotkeyAction, VoidCallback>{};
@@ -449,23 +450,31 @@ class HotkeyManager
   {
     if (_focusNodes.where((final FocusNode node) => node.hasFocus).isNotEmpty)
     {
-      _deactivateCallbacks();
+      deactivateCallbacks();
     }
     else
     {
-      _activateCallbacks();
+      activateCallbacks();
     }
   }
 
-  void _deactivateCallbacks()
+  void deactivateCallbacks()
   {
-    _callbackMapBackup = _callbackMap.value;
-    _callbackMap.value = <SingleActivator, VoidCallback>{};
+    if (_isActive)
+    {
+      _callbackMapBackup = _callbackMap.value;
+      _callbackMap.value = <SingleActivator, VoidCallback>{};
+      _isActive = false;
+    }
   }
 
-  void _activateCallbacks()
+  void activateCallbacks()
   {
-    _callbackMap.value = _callbackMapBackup;
+    if (!_isActive)
+    {
+      _callbackMap.value = _callbackMapBackup;
+      _isActive = true;
+    }
   }
 
 

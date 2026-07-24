@@ -50,27 +50,50 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   static const double _maxPreviewWidth = 224;
   final ValueNotifier<bool> _locked = ValueNotifier<bool>(false);
   double _aspectRatio = 1.0;
+  final TextEditingController _textWidthController = TextEditingController();
+  final TextEditingController _textHeightController = TextEditingController();
+
+  @override
+  void initState()
+  {
+    super.initState();
+    _hotkeyManager.newProjectWidthTextFocus.addListener(_widthFocusChanged);
+    _hotkeyManager.newProjectHeightTextFocus.addListener(_heightFocusChanged);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _hotkeyManager.newProjectWidthTextFocus.removeListener(_widthFocusChanged);
+    _hotkeyManager.newProjectHeightTextFocus.removeListener(_heightFocusChanged);
+  }
+
+  void _widthFocusChanged()
+  {
+    if (!_hotkeyManager.newProjectWidthTextFocus.hasFocus)
+    {
+      _textWidthController.text = _width.value.toString();
+    }
+  }
+
+  void _heightFocusChanged()
+  {
+    if (!_hotkeyManager.newProjectHeightTextFocus.hasFocus)
+    {
+      _textHeightController.text = _height.value.toString();
+    }
+  }
 
   void _setAspectRatio()
   {
     _aspectRatio = _width.value.toDouble() / _height.value.toDouble();
   }
-
-  void _widthInputChanged({required final String newVal})
+  void _sizeInputChanged({required final String newVal, required final Function({required int newVal}) changeFunc})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null)
+    if (parsedVal != null && parsedVal >= _sizeOptions.sizeMin && parsedVal <= _sizeOptions.sizeMax)
     {
-      _changeWidth(newWidth: parsedVal);
-    }
-  }
-
-  void _heightInputChanged({required final String newVal})
-  {
-    final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null)
-    {
-      _changeHeight(newHeight: parsedVal);
+      changeFunc(newVal: parsedVal);
     }
   }
 
@@ -81,22 +104,87 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
     _setAspectRatio();
   }
 
-  void _changeWidth({required final int newWidth})
+  void _changeWidth({required final int newVal})
   {
-    _width.value = newWidth.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+    _width.value = newVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
     if (_locked.value)
     {
       _height.value = (_width.value / _aspectRatio).toInt().clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
     }
   }
 
-  void _changeHeight({required final int newHeight})
+  void _changeHeight({required final int newVal})
   {
-    _height.value = newHeight.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+    _height.value = newVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
     if (_locked.value)
     {
       _width.value = (_height.value * _aspectRatio).toInt().clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
     }
+  }
+
+  Row _getSizeRow({required final List<CoordinateSetI> sizes, required final String title, required final double padding})
+  {
+    final List<Widget> items = <Widget>[];
+    items.add(Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center)));
+    for (final CoordinateSetI resolution in sizes)
+    {
+      items.add(SizedBox(width: padding));
+      items.add(Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: resolution.x, height: resolution.y);}, child: Text("${resolution.x}x${resolution.y}"))));
+
+    }
+    return  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, mainAxisSize: MainAxisSize.min, children: items);
+  }
+
+  Row _getInputRow({
+    required final String title,
+    required final ValueNotifier<int> notifier,
+    required final TextEditingController controller,
+    required final FocusNode focusNode,
+    required final Function({required int newVal}) changeFunc,
+  })
+  {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+        ),
+        Expanded(
+          flex: 4,
+          child: ValueListenableBuilder<int>(
+            valueListenable: notifier,
+            builder: (final BuildContext context, final int val, final Widget? child) {
+              return KPixSlider(
+                value: val.toDouble(),
+                trackHeight: 32,
+                min: _sizeOptions.sizeMin.toDouble(),
+                max: _sizeOptions.sizeMax.toDouble(),
+                onChanged: (final double newVal) {changeFunc(newVal: newVal.toInt());},
+                textStyle: Theme.of(context).textTheme.bodyLarge!,
+              );
+            },
+          ),
+        ),
+        SizedBox(
+          width: _options.padding * 2,
+        ),
+        Expanded(
+          child: ValueListenableBuilder<int>(
+            valueListenable: notifier,
+            builder: (final BuildContext context, final int val, final Widget? child) {
+              controller.text = val.toString();
+              controller.selection = TextSelection.collapsed(offset: controller.text.length);
+              return TextField(
+                focusNode: focusNode,
+                textAlign: TextAlign.end,
+                controller: controller,
+                onChanged: (final String newVal) {_sizeInputChanged(newVal: newVal, changeFunc: changeFunc);},
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -119,70 +207,46 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
           SizedBox(height: _options.padding / 2),
           Text("Presets", style: Theme.of(context).textTheme.titleMedium),
           SizedBox(height: _options.padding / 2),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("1:1", style: Theme.of(context).textTheme.titleMedium)),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 16, height: 16);}, child: const Text("16x16"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 32, height: 32);}, child: const Text("32x32"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 64, height: 64);}, child: const Text("64x64"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 100, height: 100);}, child: const Text("100x100"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 128);}, child: const Text("128x128"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 256);}, child: const Text("256x256"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 512, height: 512);}, child: const Text("512x512"))),
+          _getSizeRow(
+              sizes: <CoordinateSetI>[
+                CoordinateSetI(x: 16, y: 16),
+                CoordinateSetI(x: 32, y: 32),
+                CoordinateSetI(x: 64, y: 64),
+                CoordinateSetI(x: 100, y: 100),
+                CoordinateSetI(x: 128, y: 128),
+                CoordinateSetI(x: 256, y: 256),
+                CoordinateSetI(x: 512, y: 512),
               ],
+              title: "1:1",
+              padding: _options.padding,
           ),
           SizedBox(height: _options.padding),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Expanded(child: Text("4:3", style: Theme.of(context).textTheme.titleMedium)),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 96, height: 72);}, child: const Text("96x72"))),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 96);}, child: const Text("128x96"))),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 160, height: 120);}, child: const Text("160x120"))),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 192, height: 144);}, child: const Text("192x144"))),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 192);}, child: const Text("256x192"))),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 320, height: 240);}, child: const Text("320x240"))),
-                SizedBox(width: _options.padding),
-                Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 480, height: 360);}, child: const Text("480x360"))),
+          _getSizeRow(
+              sizes: <CoordinateSetI>[
+                CoordinateSetI(x: 96, y: 72),
+                CoordinateSetI(x: 128, y: 96),
+                CoordinateSetI(x: 160, y: 120),
+                CoordinateSetI(x: 192, y: 144),
+                CoordinateSetI(x: 256, y: 192),
+                CoordinateSetI(x: 320, y: 240),
+                CoordinateSetI(x: 480, y: 360),
               ],
+              title: "4:3",
+              padding: _options.padding,
           ),
           SizedBox(height: _options.padding),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("16:9", style: Theme.of(context).textTheme.titleMedium)),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 128, height: 72);}, child: const Text("128x72"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 160, height: 90);}, child: const Text("160x90"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 192, height: 108);}, child: const Text("192x108"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 256, height: 144);}, child: const Text("256x144"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 320, height: 180);}, child: const Text("320x180"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 384, height: 216);}, child: const Text("384x216"))),
-              SizedBox(width: _options.padding),
-              Expanded(flex: 2, child: OutlinedButton(onPressed: (){_setResolutionViaButton(width: 480, height: 270);}, child: const Text("480x270"))),
-            ],
+          _getSizeRow(
+              sizes: <CoordinateSetI>[
+                CoordinateSetI(x: 128, y: 72),
+                CoordinateSetI(x: 160, y: 90),
+                CoordinateSetI(x: 192, y: 108),
+                CoordinateSetI(x: 256, y: 144),
+                CoordinateSetI(x: 320, y: 180),
+                CoordinateSetI(x: 384, y: 216),
+                CoordinateSetI(x: 480, y: 270),
+              ],
+              title: "16:9",
+              padding: _options.padding,
           ),
           SizedBox(height: _options.padding),
           Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
@@ -200,90 +264,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Expanded(
-                            child: Text("Width", style: Theme.of(context).textTheme.titleSmall),
-                          ),
-                          Expanded(
-                            flex: 4,
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: _width,
-                              builder: (final BuildContext context, final int width, final Widget? child) {
-                                return KPixSlider(
-                                  value: width.toDouble(),
-                                  trackHeight: 32,
-                                  min: _sizeOptions.sizeMin.toDouble(),
-                                  max: _sizeOptions.sizeMax.toDouble(),
-                                  onChanged: (final double newVal) {_changeWidth(newWidth: newVal.toInt());},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: _options.padding * 2,
-                          ),
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: _width,
-                              builder: (final BuildContext context, final int width, final Widget? child) {
-                                final TextEditingController controller = TextEditingController(text: width.toString());
-                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                return TextField(
-                                  focusNode: _hotkeyManager.newProjectWidthTextFocus,
-                                  textAlign: TextAlign.end,
-                                  controller: controller,
-                                  onChanged: (final String newVal) {_widthInputChanged(newVal: newVal);},
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Expanded(
-                              child: Text("Height", style: Theme.of(context).textTheme.titleSmall),
-                          ),
-                          Expanded(
-                            flex: 4,
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: _height,
-                              builder: (final BuildContext context, final int height, final Widget? child) {
-                                return KPixSlider(
-                                  value: height.toDouble(),
-                                  trackHeight: 32,
-                                  min: _sizeOptions.sizeMin.toDouble(),
-                                  max: _sizeOptions.sizeMax.toDouble(),
-                                  onChanged: (final double newVal) {_changeHeight(newHeight: newVal.toInt());},
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: _options.padding * 2,
-                          ),
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: _height,
-                              builder: (final BuildContext context, final int height, final Widget? child) {
-                                final TextEditingController controller = TextEditingController(text: height.toString());
-                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                return TextField(
-                                  focusNode: _hotkeyManager.newProjectHeightTextFocus,
-                                  textAlign: TextAlign.end,
-                                  controller: controller,
-                                  onChanged: (final String newVal) {_heightInputChanged(newVal: newVal);},
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                      _getInputRow(title: "Width", notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.newProjectWidthTextFocus, changeFunc: _changeWidth),
+                      _getInputRow(title: "Height", notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.newProjectHeightTextFocus, changeFunc: _changeHeight),
                     ],
                   ),
                 ),

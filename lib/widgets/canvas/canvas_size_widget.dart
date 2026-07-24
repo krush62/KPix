@@ -61,74 +61,118 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<CoordinateSetI> _size = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
-  final ValueNotifier<CoordinateSetI> _offset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
-  final ValueNotifier<CoordinateSetI> _minOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
-  final ValueNotifier<CoordinateSetI> _maxOffset = ValueNotifier<CoordinateSetI>(CoordinateSetI(x: 0, y: 0));
+  final ValueNotifier<int> _width = ValueNotifier<int>(0);
+  final ValueNotifier<int> _height = ValueNotifier<int>(0);
+  final ValueNotifier<int> _offsetX = ValueNotifier<int>(0);
+  final ValueNotifier<int> _offsetY = ValueNotifier<int>(0);
+  final ValueNotifier<int> _minOffsetX = ValueNotifier<int>(0);
+  final ValueNotifier<int> _maxOffsetX = ValueNotifier<int>(0);
+  final ValueNotifier<int> _minOffsetY = ValueNotifier<int>(0);
+  final ValueNotifier<int> _maxOffsetY = ValueNotifier<int>(0);
   double _scalingFactor = 1.0;
   final ValueNotifier<ui.Image?> _image = ValueNotifier<ui.Image?>(null);
+  final TextEditingController _textControllerWidth = TextEditingController();
+  final TextEditingController _textControllerHeight = TextEditingController();
+  final TextEditingController _textControllerOffsetX = TextEditingController();
+  final TextEditingController _textControllerOffsetY = TextEditingController();
 
   @override
   void initState()
   {
     super.initState();
-    _setSize(newSize: _appState.canvasSize);
+    _width.value = _appState.canvasSize.x;
+    _height.value = _appState.canvasSize.y;
+    _setSize();
     final Frame frame = _appState.timeline.selectedFrame!;
     getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: frame.layerList, selection: _appState.selectionState.selection, frame: frame).then((final ui.Image img){_image.value = img;});
+    _hotkeyManager.canvasSizeWidthTextFocus.addListener(_widthFocusChanged);
+    _hotkeyManager.canvasSizeHeightTextFocus.addListener(_heightFocusChanged);
+    _hotkeyManager.canvasSizeOffsetXTextFocus.addListener(_offsetXFocusChanged);
+    _hotkeyManager.canvasSizeOffsetYTextFocus.addListener(_offsetYFocusChanged);
+  }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _hotkeyManager.canvasSizeWidthTextFocus.removeListener(_widthFocusChanged);
+    _hotkeyManager.canvasSizeHeightTextFocus.removeListener(_heightFocusChanged);
+    _hotkeyManager.canvasSizeOffsetXTextFocus.removeListener(_offsetXFocusChanged);
+    _hotkeyManager.canvasSizeOffsetYTextFocus.removeListener(_offsetYFocusChanged);
+  }
+
+  void _widthFocusChanged()
+  {
+    if (!_hotkeyManager.canvasSizeWidthTextFocus.hasFocus)
+    {
+      _textControllerWidth.text = _width.value.toString();
+    }
+  }
+
+  void _heightFocusChanged()
+  {
+    if (!_hotkeyManager.canvasSizeHeightTextFocus.hasFocus)
+    {
+      _textControllerHeight.text = _height.value.toString();
+    }
+  }
+
+  void _offsetXFocusChanged()
+  {
+    if (!_hotkeyManager.canvasSizeOffsetXTextFocus.hasFocus)
+    {
+      _textControllerOffsetX.text = _offsetX.value.toString();
+    }
+  }
+
+  void _offsetYFocusChanged()
+  {
+    if (!_hotkeyManager.canvasSizeOffsetYTextFocus.hasFocus)
+    {
+      _textControllerOffsetY.text = _offsetY.value.toString();
+    }
   }
 
 
   void _sizeXSliderChanged({required final double newVal})
   {
-    final CoordinateSetI newCoords = CoordinateSetI(x: newVal.round(), y: _size.value.y);
-    _setSize(newSize: newCoords);
+    _width.value = newVal.round();
+    _setSize();
   }
 
   void _sizeXInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null)
+    if (parsedVal != null && parsedVal >= _sizeOptions.sizeMin && parsedVal <= _sizeOptions.sizeMax)
     {
       final int val = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
-      final CoordinateSetI newCoords = CoordinateSetI(x: val, y: _size.value.y);
-      _setSize(newSize: newCoords);
+      _width.value = val;
+
     }
-    else
-    {
-      final CoordinateSetI newCoords = CoordinateSetI.from(other: _size.value);
-      _setSize(newSize: newCoords);
-    }
+    _setSize();
   }
 
   void _sizeYSliderChanged({required final double newVal})
   {
-    final CoordinateSetI newCoords = CoordinateSetI(x: _size.value.x, y: newVal.round());
-    _setSize(newSize: newCoords);
+    _height.value = newVal.round();
+    _setSize();
   }
 
   void _sizeYInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null)
+    if (parsedVal != null && parsedVal >= _sizeOptions.sizeMin && parsedVal <= _sizeOptions.sizeMax)
     {
       final int val = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
-      final CoordinateSetI newCoords = CoordinateSetI(x: _size.value.x, y: val);
-      _setSize(newSize: newCoords);
+      _height.value = val;
     }
-    else
-    {
-      final CoordinateSetI newCoords = CoordinateSetI.from(other: _size.value);
-      _setSize(newSize: newCoords);
-    }
+    _setSize();
   }
 
-  void _setSize({required final CoordinateSetI newSize})
+  void _setSize()
   {
-    _size.value = newSize;
     _calculateOffset();
-    final int xExp = max(newSize.x, _appState.canvasSize.x);
-    final int yExp = max(newSize.y, _appState.canvasSize.y);
+    final int xExp = max(_width.value, _appState.canvasSize.x);
+    final int yExp = max(_height.value, _appState.canvasSize.y);
     _scalingFactor = _sizeOptions.previewSize / max(xExp, yExp);
   }
 
@@ -137,93 +181,179 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     final CoordinateSetI oMin = CoordinateSetI(x: 0, y: 0);
     final CoordinateSetI oMax = CoordinateSetI(x: 0, y: 0);
 
-    if (_size.value.x < _appState.canvasSize.x)
+    if (_width.value < _appState.canvasSize.x)
     {
-      oMin.x = _size.value.x - _appState.canvasSize.x;
+      oMin.x = _width.value - _appState.canvasSize.x;
       oMax.x = 0;
     }
     else
     {
       oMin.x = 0;
-      oMax.x = _size.value.x - _appState.canvasSize.x;
+      oMax.x = _width.value - _appState.canvasSize.x;
     }
 
-    if (_size.value.y < _appState.canvasSize.y)
+    if (_height.value < _appState.canvasSize.y)
     {
-      oMin.y = _size.value.y - _appState.canvasSize.y;
+      oMin.y = _height.value - _appState.canvasSize.y;
       oMax.y = 0;
     }
     else
     {
       oMin.y = 0;
-      oMax.y = _size.value.y - _appState.canvasSize.y;
+      oMax.y = _height.value - _appState.canvasSize.y;
     }
-    _minOffset.value = oMin;
-    _maxOffset.value = oMax;
+    _minOffsetX.value = oMin.x;
+    _minOffsetY.value = oMin.y;
+    _maxOffsetX.value = oMax.x;
+    _maxOffsetY.value = oMax.y;
 
-    final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
-    newOffset.x = newOffset.x.clamp(_minOffset.value.x, _maxOffset.value.x);
-    newOffset.y = newOffset.y.clamp(_minOffset.value.y, _maxOffset.value.y);
-    _offset.value = newOffset;
+    _offsetX.value = _offsetX.value.clamp(_minOffsetX.value, _maxOffsetX.value);
+    _offsetY.value = _offsetY.value.clamp(_minOffsetY.value, _maxOffsetY.value);
 
   }
 
   void _offsetXSliderChanged({required final double newVal})
   {
-    final CoordinateSetI newCoords = CoordinateSetI(x: newVal.round(), y: _offset.value.y);
-    _offset.value = newCoords;
+    _offsetX.value = newVal.round();
   }
 
   void _offsetXInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null)
+    if (parsedVal != null && parsedVal >= _minOffsetX.value && parsedVal <= _maxOffsetX.value)
     {
-      final int val = parsedVal.clamp(_minOffset.value.x, _maxOffset.value.x);
-      final CoordinateSetI newCoords = CoordinateSetI(x: val, y: _offset.value.y);
-      _offset.value = newCoords;
-    }
-    else
-    {
-      final CoordinateSetI newCoords = CoordinateSetI.from(other: _offset.value);
-      _offset.value = newCoords;
+      _offsetX.value = parsedVal.clamp(_minOffsetX.value, _maxOffsetX.value);
     }
   }
 
   void _offsetYSliderChanged({required final double newVal})
   {
-    final CoordinateSetI newCoords = CoordinateSetI(x: _offset.value.x, y: newVal.round());
-    _offset.value = newCoords;
+    _offsetY.value = newVal.round();
   }
 
   void _offsetYInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null)
+    if (parsedVal != null && parsedVal >= _minOffsetY.value && parsedVal <= _maxOffsetY.value)
     {
-      final int val = parsedVal.clamp(_minOffset.value.y, _maxOffset.value.y);
-      final CoordinateSetI newCoords = CoordinateSetI(x: _offset.value.x, y: val);
-      _offset.value = newCoords;
-    }
-    else
-    {
-      final CoordinateSetI newCoords = CoordinateSetI.from(other: _offset.value);
-      _offset.value = newCoords;
+      _offsetY.value = parsedVal.clamp(_minOffsetY.value, _maxOffsetY.value);
     }
   }
 
   void _centerH()
   {
-    final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
-    newOffset.x = (_minOffset.value.x + _maxOffset.value.x) ~/ 2;
-    _offset.value = newOffset;
+    _offsetX.value = (_minOffsetX.value + _maxOffsetX.value) ~/ 2;
   }
 
   void _centerV()
   {
-    final CoordinateSetI newOffset = CoordinateSetI.from(other: _offset.value);
-    newOffset.y = (_minOffset.value.y + _maxOffset.value.y) ~/ 2;
-    _offset.value = newOffset;
+    _offsetY.value = (_minOffsetY.value + _maxOffsetY.value) ~/ 2;
+  }
+
+  Row _getSizeRow({
+    required final String title,
+    required final ValueNotifier<int> notifier,
+    required final Function({required double newVal}) sliderFunc,
+    required final Function({required String newVal}) changeFunc,
+    required final FocusNode focusNode,
+    required final TextEditingController textController,
+  })
+  {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Text(title),
+        ),
+        Expanded(
+          flex: 7,
+          child: ValueListenableBuilder<int>(
+            valueListenable: notifier,
+            builder: (final BuildContext context, final int value, final Widget? child) {
+              return KPixSlider(
+                onChanged: (final double newVal) {sliderFunc(newVal: newVal);},
+                value: value.toDouble(),
+                min: _sizeOptions.sizeMin.toDouble(),
+                max: _sizeOptions.sizeMax.toDouble(),
+                textStyle: Theme.of(context).textTheme.bodyLarge!,
+              );
+            },
+          ),
+        ),
+        SizedBox(width: _options.padding),
+        Expanded(
+          child: ValueListenableBuilder<int>(
+            valueListenable: notifier,
+            builder: (final BuildContext context, final int value, final Widget? child) {
+              textController.text = value.toString();
+              textController.selection = TextSelection.collapsed(offset: textController.text.length);
+              return TextField(
+                focusNode: focusNode,
+                textAlign: TextAlign.end,
+                controller: textController,
+                onChanged: (final String newVal) {changeFunc(newVal: newVal);},
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  ValueListenableBuilder<int> _getOffsetRow({
+    required final String title,
+    required final ValueNotifier<int> notifier,
+    required final TextEditingController textController,
+    required final ValueNotifier<int> minOffsetNotifier,
+    required final ValueNotifier<int> maxOffsetNotifier,
+    required final FocusNode focusNode,
+    required final Function({required double newVal}) sliderFunc,
+    required final Function({required String newVal}) changeFunc,
+})
+  {
+    return ValueListenableBuilder<int>(
+      valueListenable: notifier,
+      builder: (final BuildContext context0, final int offsetVal, final Widget? child0) {
+        textController.text = offsetVal.toString();
+        textController.selection = TextSelection.collapsed(offset: textController.text.length);
+        return ValueListenableBuilder<int>(
+          valueListenable: minOffsetNotifier,
+          builder: (final BuildContext context1, final int minOffset, final Widget? child1) {
+            return ValueListenableBuilder<int>(
+              valueListenable: maxOffsetNotifier,
+              builder: (final BuildContext context2, final int maxOffset, final Widget? child2) {
+                return Row(
+                  children: <Widget>[
+                    Expanded(
+                      child:
+                      Text(title),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: KPixSlider(
+                        min: minOffset.toDouble(),
+                        max: maxOffset.toDouble(),
+                        onChanged: (final double newVal) {sliderFunc(newVal: newVal);},
+                        value: offsetVal.toDouble(),
+                        textStyle: Theme.of(context).textTheme.bodyLarge!,
+                      ),
+                    ),
+                    SizedBox(width: _options.padding),
+                    Expanded(
+                      child: TextField(
+                        focusNode: focusNode,
+                        textAlign: TextAlign.end,
+                        controller: textController,
+                        onChanged: (final String newVal) {changeFunc(newVal: newVal);},
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -254,170 +384,43 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text("Canvas Size", style: Theme.of(context).textTheme.titleLarge),
-                      Row(
-                        children: <Widget>[
-                          const Expanded(
-                            child: Text("Width"),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _size,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                return KPixSlider(
-                                  onChanged: (final double newVal) {_sizeXSliderChanged(newVal: newVal);},
-                                  value: value.x.toDouble(),
-                                  min: _sizeOptions.sizeMin.toDouble(),
-                                  max: _sizeOptions.sizeMax.toDouble(),
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: _options.padding),
-                          Expanded(
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _size,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                final TextEditingController controller = TextEditingController(text: value.x.toString());
-                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                return TextField(
-                                  focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
-                                  textAlign: TextAlign.end,
-                                  controller: controller,
-                                  onChanged: (final String newVal) {_sizeXInputChanged(newVal: newVal);},
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      _getSizeRow(
+                          title: "Width",
+                          notifier: _width,
+                          sliderFunc: _sizeXSliderChanged,
+                          changeFunc: _sizeXInputChanged,
+                          focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
+                          textController: _textControllerWidth,
                       ),
-                      Row(
-                        children: <Widget>[
-                          const Expanded(
-                            child: Text("Height"),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _size,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                return KPixSlider(
-                                  onChanged: (final double newVal) {_sizeYSliderChanged(newVal: newVal);},
-                                  value: value.y.toDouble(),
-                                  min: _sizeOptions.sizeMin.toDouble(),
-                                  max: _sizeOptions.sizeMax.toDouble(),
-                                  textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: _options.padding),
-                          Expanded(
-                            child: ValueListenableBuilder<CoordinateSetI>(
-                              valueListenable: _size,
-                              builder: (final BuildContext context, final CoordinateSetI value, final Widget? child) {
-                                final TextEditingController controller = TextEditingController(text: value.y.toString());
-                                controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                                return TextField(
-                                  focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
-                                  textAlign: TextAlign.end,
-                                  controller: controller,
-                                  onChanged: (final String newVal) {_sizeYInputChanged(newVal: newVal);},
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      _getSizeRow(
+                        title: "Height",
+                        notifier: _height,
+                        sliderFunc: _sizeYSliderChanged,
+                        changeFunc: _sizeYInputChanged,
+                        focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
+                        textController: _textControllerHeight,
                       ),
                       SizedBox(height: _options.padding,),
                       Text("Offset", style: Theme.of(context).textTheme.titleLarge),
-                      ValueListenableBuilder<CoordinateSetI>(
-                        valueListenable: _offset,
-                        builder: (final BuildContext context0, final CoordinateSetI offset, final Widget? child0) {
-                          final TextEditingController controller = TextEditingController(text: offset.x.toString());
-                          controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                          return ValueListenableBuilder<CoordinateSetI>(
-                            valueListenable: _minOffset,
-                            builder: (final BuildContext context1, final CoordinateSetI minOffset, final Widget? child1) {
-                              return ValueListenableBuilder<CoordinateSetI>(
-                                valueListenable: _maxOffset,
-                                builder: (final BuildContext context2, final CoordinateSetI maxOffset, final Widget? child2) {
-                                  return Row(
-                                    children: <Widget>[
-                                      const Expanded(
-                                        child:
-                                        Text("X"),
-                                      ),
-                                      Expanded(
-                                        flex: 7,
-                                        child: KPixSlider(
-                                          min: minOffset.x.toDouble(),
-                                          max: maxOffset.x.toDouble(),
-                                          onChanged: (final double newVal) {_offsetXSliderChanged(newVal: newVal);},
-                                          value: offset.x.toDouble(),
-                                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                        ),
-                                      ),
-                                      SizedBox(width: _options.padding),
-                                      Expanded(
-                                        child: TextField(
-                                          focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
-                                          textAlign: TextAlign.end,
-                                          controller: controller,
-                                          onChanged: (final String newVal) {_offsetXInputChanged(newVal: newVal);},
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
+                      _getOffsetRow(
+                          title: "X",
+                          notifier: _offsetX,
+                          textController: _textControllerOffsetX,
+                          minOffsetNotifier: _minOffsetX,
+                          maxOffsetNotifier: _maxOffsetX,
+                          focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
+                          sliderFunc: _offsetXSliderChanged,
+                          changeFunc: _offsetXInputChanged,
                       ),
-                      ValueListenableBuilder<CoordinateSetI>(
-                        valueListenable: _offset,
-                        builder: (final BuildContext context0, final CoordinateSetI offset, final Widget? child0) {
-                          final TextEditingController controller = TextEditingController(text: offset.y.toString());
-                          controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                          return ValueListenableBuilder<CoordinateSetI>(
-                            valueListenable: _minOffset,
-                            builder: (final BuildContext context1, final CoordinateSetI minOffset, final Widget? child1) {
-                              return ValueListenableBuilder<CoordinateSetI>(
-                                valueListenable: _maxOffset,
-                                builder: (final BuildContext context2, final CoordinateSetI maxOffset, final Widget? child2) {
-                                  return Row(
-                                    children: <Widget>[
-                                      const Expanded(
-                                        child: Text("Y"),
-                                      ),
-                                      Expanded(
-                                        flex: 7,
-                                        child: KPixSlider(
-                                          min: minOffset.y.toDouble(),
-                                          max: maxOffset.y.toDouble(),
-                                          onChanged: (final double newVal) {_offsetYSliderChanged(newVal: newVal);},
-                                          value: offset.y.toDouble(),
-                                          textStyle: Theme.of(context).textTheme.bodyLarge!,
-                                        ),
-                                      ),
-                                      SizedBox(width: _options.padding),
-                                      Expanded(
-                                        child: TextField(
-                                          focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
-                                          textAlign: TextAlign.end,
-                                          controller: controller,
-                                          onChanged: (final String newVal) {_offsetYInputChanged(newVal: newVal);},
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
+                      _getOffsetRow(
+                        title: "Y",
+                        notifier: _offsetY,
+                        textController: _textControllerOffsetY,
+                        minOffsetNotifier: _minOffsetY,
+                        maxOffsetNotifier: _maxOffsetY,
+                        focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
+                        sliderFunc: _offsetYSliderChanged,
+                        changeFunc: _offsetYInputChanged,
                       ),
                     ],
                   ),
@@ -430,72 +433,82 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      ValueListenableBuilder<CoordinateSetI>(
-                        valueListenable: _size,
-                        builder: (final BuildContext context1, final CoordinateSetI size, final Widget? child1) {
-                          return ValueListenableBuilder<CoordinateSetI>(
-                            valueListenable: _offset,
-                            builder: (final BuildContext context2, final CoordinateSetI offset, final Widget? child) {
-                              final CoordinateSetD scaledCanvasSize = CoordinateSetD(x: _appState.canvasSize.x * _scalingFactor, y: _appState.canvasSize.y * _scalingFactor);
-                              final CoordinateSetD scaledNewSize = CoordinateSetD(x: _size.value.x * _scalingFactor, y: _size.value.y * _scalingFactor);
+                      ValueListenableBuilder<int>(
+                        valueListenable: _width,
+                        builder: (final BuildContext context, final int width, final Widget? child) {
+                          return ValueListenableBuilder<int>(
+                            valueListenable: _height,
+                            builder: (final BuildContext context1, final int height, final Widget? child1) {
+                              return ValueListenableBuilder<int>(
+                                valueListenable: _offsetX,
+                                builder: (final BuildContext context, final int offsetX, final Widget? child) {
+                                  return ValueListenableBuilder<int>(
+                                    valueListenable: _offsetY,
+                                    builder: (final BuildContext context2, final int offsetY, final Widget? child) {
+                                      final CoordinateSetD scaledCanvasSize = CoordinateSetD(x: _appState.canvasSize.x * _scalingFactor, y: _appState.canvasSize.y * _scalingFactor);
+                                      final CoordinateSetD scaledNewSize = CoordinateSetD(x: width * _scalingFactor, y: height * _scalingFactor);
 
-                              return Stack(
-                                children: <Widget>[
-                                  SizedBox(
-                                    width: _sizeOptions.previewSize.toDouble(),
-                                    height: _sizeOptions.previewSize.toDouble(),
-                                  ),
-                                  Positioned(
-                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
-                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
-                                    width: scaledCanvasSize.x,
-                                    height: scaledCanvasSize.y,
-                                    child: ValueListenableBuilder<ui.Image?>(
-                                      valueListenable: _image,
-                                      builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
-                                        return RawImage(
-                                          fit: BoxFit.fill,
-                                          filterQuality: ui.FilterQuality.none,
-                                          image: img,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offset.x * _scalingFactor),
-                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offset.y * _scalingFactor),
-                                    width: scaledCanvasSize.x,
-                                    height: scaledCanvasSize.y,
-                                    child: DecoratedBox(
+                                      return Stack(
+                                        children: <Widget>[
+                                          SizedBox(
+                                            width: _sizeOptions.previewSize.toDouble(),
+                                            height: _sizeOptions.previewSize.toDouble(),
+                                          ),
+                                          Positioned(
+                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offsetX * _scalingFactor),
+                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offsetY * _scalingFactor),
+                                            width: scaledCanvasSize.x,
+                                            height: scaledCanvasSize.y,
+                                            child: ValueListenableBuilder<ui.Image?>(
+                                              valueListenable: _image,
+                                              builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
+                                                return RawImage(
+                                                  fit: BoxFit.fill,
+                                                  filterQuality: ui.FilterQuality.none,
+                                                  image: img,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          Positioned(
+                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offsetX * _scalingFactor),
+                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offsetY * _scalingFactor),
+                                            width: scaledCanvasSize.x,
+                                            height: scaledCanvasSize.y,
+                                            child: DecoratedBox(
 
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                    width: scaledNewSize.x,
-                                    height: scaledNewSize.y,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                    top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                    width: scaledNewSize.x,
-                                    height: scaledNewSize.y,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(color:  Theme.of(context).primaryColorLight),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                              decoration: BoxDecoration(
+                                                border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                            width: scaledNewSize.x,
+                                            height: scaledNewSize.y,
+                                            child: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
+                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
+                                            width: scaledNewSize.x,
+                                            height: scaledNewSize.y,
+                                            child: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(color:  Theme.of(context).primaryColorLight),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
                               );
                             },
                           );
@@ -569,7 +582,7 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                       size: _options.iconSize,
                     ),
                     onPressed: () {
-                      widget.accept(size: _size.value, offset: _offset.value);
+                      widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value), offset: CoordinateSetI(x: _offsetX.value, y: _offsetY.value));
                     },
                   ),
                 ),

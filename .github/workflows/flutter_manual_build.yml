@@ -651,6 +651,7 @@ jobs:
     env:
       VERSION: ${{ needs.setup.outputs.version }}
       TIMESTAMP: ${{ needs.setup.outputs.timestamp }}
+      TAG_NAME: v${{ needs.setup.outputs.version }}
 
     steps:
       - name: Download all artifacts

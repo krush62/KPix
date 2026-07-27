@@ -2,17 +2,33 @@ name: Mirror to Codeberg
 
 on:
   push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Mirror repository
+      - name: Configure SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CODEBERG_SSH_KEY }}
+
+      - name: Add Codeberg remote
         run: |
-          git remote add codeberg https://${{ secrets.CODEBERG_TOKEN }}@codeberg.org/krush62/KPix.git
-          git push --mirror codeberg
+          git remote add codeberg git@codeberg.org:krush62/KPix.git
+
+      - name: Push branches
+        run: |
+          git push codeberg --all
+
+      - name: Push tags
+        run: |
+          git push codeberg --tags

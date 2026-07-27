@@ -43,6 +43,11 @@ on:
         description: "Create draft GitHub release"
         type: boolean
         default: false
+      create_codeberg_draft_release:
+        description: "Create draft Codeberg release"
+        type: boolean
+        default: false
+
 
 permissions:
   contents: write
@@ -631,13 +636,17 @@ jobs:
     needs: [ setup, android, desktop, macos, web ]
     runs-on: ubuntu-latest
     if: |
-      inputs.create_draft_release &&
+      always() &&
+      (inputs.create_draft_release || inputs.create_codeberg_draft_release) &&
       (
         needs.android.outputs.has_artifact == 'true' ||
         needs.desktop.outputs.has_artifact == 'true' ||
         needs.web.outputs.has_artifact == 'true' ||
         needs.macos.outputs.has_artifact == 'true'
       )
+
+    outputs:
+      tag_name: ${{ steps.release_info.outputs.tag_name }}
 
     env:
       VERSION: ${{ needs.setup.outputs.version }}
@@ -672,3 +681,160 @@ jobs:
             artifacts/**/*.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Store release info
+        id: release_info
+        shell: bash
+        run: |
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+  codeberg_release:
+    name: Create Draft Codeberg Release
+    needs: [ setup, release ]
+    runs-on: ubuntu-latest
+
+    if: |
+      always() &&
+      inputs.create_codeberg_draft_release &&
+      needs.release.result == 'success'
+
+    env:
+      CODEBERG_OWNER: krush62
+      CODEBERG_REPO: KPix
+      CODEBERG_API: https://codeberg.org/api/v1
+      TAG_NAME: ${{ needs.release.outputs.tag_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Show downloaded release assets
+        shell: bash
+        run: |
+          find release-assets -type f -print
+
+      - name: Configure SSH for Codeberg
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CODEBERG_SSH_KEY }}
+
+      - name: Add Codeberg host key
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan codeberg.org >> ~/.ssh/known_hosts
+
+      - name: Add Codeberg remote
+        shell: bash
+        run: |
+          git remote add codeberg git@codeberg.org:krush62/KPix.git
+
+      - name: Fetch release tag from GitHub
+        shell: bash
+        run: |
+          git fetch origin "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+
+      - name: Push release tag to Codeberg
+        shell: bash
+        run: |
+          git push codeberg "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+
+      - name: Create or reuse Codeberg draft release
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          auth_header="Authorization: token ${{ secrets.CODEBERG_TOKEN }}"
+          repo_api="$CODEBERG_API/repos/$CODEBERG_OWNER/$CODEBERG_REPO"
+          
+          echo "Creating or reusing Codeberg release for tag: $TAG_NAME"
+          
+          existing_release_json="$(curl -sS \
+            -H "$auth_header" \
+            -H "Accept: application/json" \
+            "$repo_api/releases/tags/$TAG_NAME" || true)"
+          
+          release_id="$(echo "$existing_release_json" | jq -r '.id // empty')"
+          
+          if [ -n "$release_id" ]; then
+            echo "Codeberg release already exists with ID: $release_id"
+          else
+            echo "Creating new Codeberg draft release..."
+          
+            create_payload="$(jq -n \
+              --arg tag "$TAG_NAME" \
+              --arg name "KPix $TAG_NAME" \
+              --arg body "Mirrored draft release from GitHub." \
+              '{
+                tag_name: $tag,
+                name: $name,
+                body: $body,
+                draft: true,
+                prerelease: false
+              }')"
+          
+            created_release_json="$(curl -sS -X POST \
+              -H "$auth_header" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json" \
+              -d "$create_payload" \
+              "$repo_api/releases")"
+          
+            release_id="$(echo "$created_release_json" | jq -r '.id // empty')"
+          
+            if [ -z "$release_id" ]; then
+              echo "Failed to create Codeberg release."
+              echo "$created_release_json"
+              exit 1
+            fi
+          
+            echo "Created Codeberg release with ID: $release_id"
+          fi
+          
+          echo "release_id=$release_id" >> "$GITHUB_ENV"
+
+      - name: Upload assets to Codeberg release
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          auth_header="Authorization: token ${{ secrets.CODEBERG_TOKEN }}"
+          repo_api="$CODEBERG_API/repos/$CODEBERG_OWNER/$CODEBERG_REPO"
+          
+          find release-assets -type f | while read -r file; do
+            asset_name="$(basename "$file")"
+            encoded_name="$(python3 -c 'import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))' "$asset_name")"
+          
+            echo "Uploading asset: $asset_name"
+          
+            existing_assets_json="$(curl -sS \
+              -H "$auth_header" \
+              -H "Accept: application/json" \
+              "$repo_api/releases/$release_id/assets")"
+          
+            existing_asset_id="$(echo "$existing_assets_json" | jq -r --arg name "$asset_name" '.[] | select(.name == $name) | .id' | head -n 1)"
+          
+            if [ -n "$existing_asset_id" ]; then
+              echo "Deleting existing Codeberg asset: $asset_name"
+          
+              curl -sS -X DELETE \
+                -H "$auth_header" \
+                "$repo_api/releases/$release_id/assets/$existing_asset_id"
+            fi
+          
+            curl -sS -X POST \
+              -H "$auth_header" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file" \
+              "$repo_api/releases/$release_id/assets?name=$encoded_name"
+          
+            echo
+          done

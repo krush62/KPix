@@ -153,7 +153,7 @@ The complete control table can be found [here](docs/controls.md).
 
 ## 🪟Windows
 ### Download from GitHub
-*Windows Installer (.exe) and Package (.zip) versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
+*Windows Installer (.exe) and Package (.zip) versions can be found in the release section or via [kpix.cloud](https://kpix.andikrusch.com/#downloads).*
 #### Installer
 Download and run the provided Windows installer. The application can be easily uninstalled and a file association is created.
 #### Package
@@ -164,7 +164,7 @@ This is a portable version. Extract the contents of the Windows Zip Package and 
 Open a terminal (cmd or PowerShell) and run the following command: `winget install --id krush62.kpix`
 
 ## 🐧Linux
-*Linux AppImage and Tarball (.tar.gz) versions can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
+*Linux AppImage and Tarball (.tar.gz) versions can be found in the release section or via [kpix.cloud](https://kpix.andikrusch.com/#downloads).*
 
 *This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.*
 
@@ -184,7 +184,7 @@ alt="Get it on Obtainium"
 height="60">](https://apps.obtainium.imranr.dev/redirect.html?r=https://github.com/krush62/kpix)
 
 ### Manual Installation
-*Android .apk version can be found at [latest releases](https://github.com/krush62/KPix/releases/latest).*
+*Android .apk version can be found in the release section or via [kpix.cloud](https://kpix.andikrusch.com/#downloads).*
 
 Download the Android apk file and install it manually (side-loading needs to be enabled).
 

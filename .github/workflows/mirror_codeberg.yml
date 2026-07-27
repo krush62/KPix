@@ -30,4 +30,4 @@ jobs:
 
       - name: Mirror repo
         run: |
-          git push --mirror codeberg --all
+          git push --mirror codeberg

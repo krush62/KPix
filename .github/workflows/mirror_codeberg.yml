@@ -1,0 +1,18 @@
+name: Mirror to Codeberg
+
+on:
+  push:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror repository
+        run: |
+          git remote add codeberg https://${{ secrets.CODEBERG_TOKEN }}@codeberg.org/krush62/KPix.git
+          git push --mirror codeberg

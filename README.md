@@ -152,7 +152,7 @@ The complete control table can be found [here](docs/controls.md).
 # 💾Installation
 
 ## 🪟Windows
-### Download from GitHub
+### Download
 *Windows Installer (.exe) and Package (.zip) versions can be found in the release section or via [kpix.cloud](https://kpix.andikrusch.com/#downloads).*
 #### Installer
 Download and run the provided Windows installer. The application can be easily uninstalled and a file association is created.

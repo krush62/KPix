@@ -899,6 +899,19 @@ class KPixPainter extends CustomPainter
                     effCanvasSize.y,
                   );
 
+                  final ui.Rect imageBounds = ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+                  final ui.Rect clippedSrc = srcRect.intersect(imageBounds);
+                  if (clippedSrc.width <= 0 || clippedSrc.height <= 0)
+                  {
+                    continue;
+                  }
+                  targetRect = ui.Rect.fromLTRB(
+                    targetRect.left + (clippedSrc.left - srcRect.left) / srcRect.width * targetRect.width,
+                    targetRect.top + (clippedSrc.top - srcRect.top) / srcRect.height * targetRect.height,
+                    targetRect.left + (clippedSrc.right - srcRect.left) / srcRect.width * targetRect.width,
+                    targetRect.top + (clippedSrc.bottom - srcRect.top) / srcRect.height * targetRect.height,
+                  );
+                  srcRect = clippedSrc;
                 }
                 final Paint paint = Paint()
                   ..color = Color.fromARGB((refLayer.opacity.toDouble() * 2.55).round(), 255, 255, 255)

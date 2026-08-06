@@ -33,6 +33,14 @@ class ToolsWidgetOptions
   ToolsWidgetOptions({required this.padding, required this.buttonSize, required this.colCount, required this.iconSize});
 }
 
+class SegmentButtonData
+{
+  final ToolType toolType;
+  final String toolTipExtraText;
+  final bool isDisabledDuringShading;
+  SegmentButtonData({required this.toolType, this.isDisabledDuringShading = false, this.toolTipExtraText = ""});
+}
+
 class ToolsWidget extends StatefulWidget
 {
   const ToolsWidget({
@@ -48,12 +56,29 @@ class _ToolsWidgetState extends State<ToolsWidget>
   final AppState _appState = GetIt.I.get<AppState>();
   final ToolsWidgetOptions _toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+  late List<SegmentButtonData> toolDataRow1;
+  late List<SegmentButtonData> toolDataRow2;
 
   @override
   void initState()
   {
     super.initState();
-    _appState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);    
+    _appState.timeline.layerChangeNotifier.addListener(currentLayerTypeChanged);
+    toolDataRow1 =  <SegmentButtonData>[
+      SegmentButtonData(toolType: ToolType.pencil, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil)),
+      SegmentButtonData(toolType: ToolType.erase, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser)),
+      SegmentButtonData(toolType: ToolType.select, isDisabledDuringShading: true, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand)),
+      SegmentButtonData(toolType: ToolType.fill, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill)),
+      SegmentButtonData(toolType: ToolType.pick, isDisabledDuringShading: true),
+      ];
+
+    toolDataRow2 = <SegmentButtonData>[
+      SegmentButtonData(toolType: ToolType.line, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine)),
+      SegmentButtonData(toolType: ToolType.shape, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape)),
+      SegmentButtonData(toolType: ToolType.font, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText)),
+      SegmentButtonData(toolType: ToolType.spraycan, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan)),
+      SegmentButtonData(toolType: ToolType.stamp, toolTipExtraText: _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp)),
+    ];
   }
 
   @override
@@ -70,6 +95,40 @@ class _ToolsWidgetState extends State<ToolsWidget>
     {
       _appState.setToolSelection(tool: ToolType.pencil);
     }
+  }
+
+  SegmentedButton<ToolType> _createSegmentedRow({required final List<SegmentButtonData> buttonDataList, required final bool isShadingLayer, required final ToolType currentTool})
+  {
+    final List<ButtonSegment<ToolType>> segments = <ButtonSegment<ToolType>>[];
+    for (final SegmentButtonData buttonData in buttonDataList)
+    {
+      final bool shouldBeDisabled = buttonData.isDisabledDuringShading && isShadingLayer;
+      final ButtonSegment<ToolType> segment = ButtonSegment<ToolType>(
+        value: buttonData.toolType,
+        enabled: !shouldBeDisabled,
+        label: Tooltip(
+          message: toolList[buttonData.toolType]!.title + buttonData.toolTipExtraText,
+          waitDuration: AppState.toolTipDuration,
+          child: Icon(
+            toolList[buttonData.toolType]!.icon,
+            color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
+            size: _toolsWidgetOptions.iconSize,
+          ),
+        ),
+      );
+      segments.add(segment);
+    }
+
+    return SegmentedButton<ToolType>(
+        style: const ButtonStyle(
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        selected: <ToolType>{currentTool},
+        emptySelectionAllowed: true,
+        showSelectedIcon: false,
+        onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && currentTool != tools.first) _appState.setToolSelection(tool: tools.first);},
+        segments: segments,
+    );
   }
 
   @override
@@ -90,141 +149,16 @@ class _ToolsWidgetState extends State<ToolsWidget>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  SegmentedButton<ToolType>(
-                    style: const ButtonStyle(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    selected: <ToolType>{tool},
-                    emptySelectionAllowed: true,
-                    showSelectedIcon: false,
-                    onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && tool != tools.first) _appState.setToolSelection(tool: tools.first);},
-                    segments: <ButtonSegment<ToolType>>[
-                      ButtonSegment<ToolType>(
-                        value: ToolType.pencil,
-                        label: Tooltip(
-                          message: toolList[ToolType.pencil]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolPencil),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.pencil]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        value: ToolType.erase,
-                        label: Tooltip(
-                          message: toolList[ToolType.erase]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolEraser),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.erase]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        enabled: !isShadingLayer,
-                        value: ToolType.select,
-                        label: Tooltip(
-                          message: toolList[ToolType.select]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectRectangle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectCircle) + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSelectWand),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.select]!.icon,
-                            color: isShadingLayer ? Theme.of(context).primaryColorDark : null,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        value: ToolType.fill,
-                        label: Tooltip(
-                          message: toolList[ToolType.fill]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolFill),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.fill]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        enabled: !isShadingLayer,
-                        value: ToolType.pick,
-                        label: Tooltip(
-                          message: toolList[ToolType.pick]?.title,
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.pick]!.icon,
-                            color: isShadingLayer ? Theme.of(context).primaryColorDark : null,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                    ],
+
+                  _createSegmentedRow(
+                      buttonDataList: toolDataRow1,
+                      isShadingLayer: isShadingLayer,
+                      currentTool: tool,
                   ),
-                  SegmentedButton<ToolType>(
-                    style: const ButtonStyle(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    selected: <ToolType>{tool},
-                    emptySelectionAllowed: true,
-                    showSelectedIcon: false,
-                    onSelectionChanged: (final Set<ToolType> tools) {if (tools.isNotEmpty && tool != tools.first) _appState.setToolSelection(tool: tools.first);},
-                    segments: <ButtonSegment<ToolType>>[
-                      ButtonSegment<ToolType>(
-                        value: ToolType.line,
-                        label: Tooltip(
-                          message: toolList[ToolType.line]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolLine),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.line]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        value: ToolType.shape,
-                        label: Tooltip(
-                          message: toolList[ToolType.shape]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolShape),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.shape]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        value: ToolType.font,
-                        label: Tooltip(
-                          message: toolList[ToolType.font]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolText),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.font]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        value: ToolType.spraycan,
-                        label: Tooltip(
-                          message: toolList[ToolType.spraycan]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolSprayCan),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.spraycan]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                      ButtonSegment<ToolType>(
-                        value: ToolType.stamp,
-                        label: Tooltip(
-                          message: toolList[ToolType.stamp]!.title + _hotkeyManager.getShortcutString(action: HotkeyAction.selectToolStamp),
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                            toolList[ToolType.stamp]!.icon,
-                            size: _toolsWidgetOptions.iconSize,
-                          ),
-                        ),
-                      ),
-                    ],
+                  _createSegmentedRow(
+                    buttonDataList: toolDataRow2,
+                    isShadingLayer: isShadingLayer,
+                    currentTool: tool,
                   ),
                 ],
               );

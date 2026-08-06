@@ -71,6 +71,24 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
     super.dispose();
   }
 
+  Padding _createMenuButton({required final String toolTip, required final IconData icon, required final void Function() onPressedFunc})
+  {
+    return Padding(
+      padding: EdgeInsets.all(_options.buttonSpacing / 2),
+      child: Tooltip(
+        message: toolTip,
+        preferBelow: false,
+        waitDuration: AppState.toolTipDuration,
+        child: IconButton.outlined(
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.all(_options.buttonSpacing),
+          onPressed: onPressedFunc,
+          icon: Icon(icon) ,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -92,89 +110,30 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
-                    preferBelow: false,
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onNewDrawingLayer();},
-                      icon: const Icon(
-                        TablerIcons.brush,
-                        //size: _options.buttonHeight,
-                      ) ,
-                    ),
-                  ),
+                _createMenuButton(
+                  toolTip: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
+                  icon: TablerIcons.brush,
+                  onPressedFunc: widget.onNewDrawingLayer,
                 ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
-                    preferBelow: false,
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onNewShadingLayer();},
-                      icon: const Icon(
-                        TablerIcons.exposure,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
+                _createMenuButton(
+                  toolTip: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
+                  icon: TablerIcons.exposure,
+                  onPressedFunc: widget.onNewShadingLayer,
                 ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Add New Dither Layer",
-                    preferBelow: false,
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onNewDitherLayer();},
-                      icon: const Icon(
-                        Icons.gradient,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
+                _createMenuButton(
+                  toolTip: "Add New Dither Layer",
+                  icon: Icons.gradient,
+                  onPressedFunc: widget.onNewDitherLayer,
                 ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
-                    preferBelow: false,
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onNewReferenceLayer();},
-                      icon: const Icon(
-                        TablerIcons.photo,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
+                _createMenuButton(
+                  toolTip: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
+                  icon: Icons.photo,
+                  onPressedFunc: widget.onNewReferenceLayer,
                 ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onNewGridLayer();},
-                      icon: const Icon(
-                        TablerIcons.grid_4x4,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
+                _createMenuButton(
+                  toolTip: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
+                  icon: Icons.grid_4x4,
+                  onPressedFunc: widget.onNewGridLayer,
                 ),
               ],
             ),

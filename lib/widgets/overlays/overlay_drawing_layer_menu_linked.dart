@@ -82,6 +82,23 @@ class _OverlayDrawingLayerMenuLinkedState extends State<OverlayDrawingLayerMenuL
     super.dispose();
   }
 
+  Tooltip _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
+  {
+    return Tooltip(
+      message: tooltip,
+      waitDuration: AppState.toolTipDuration,
+      child: SizedBox(
+        width: _options.buttonHeight * _buttonToIconRatio,
+        height: _options.buttonHeight * _buttonToIconRatio,
+        child: IconButton.outlined(
+          padding: EdgeInsets.all(_options.buttonSpacing),
+          onPressed: onPressedFunc,
+          icon: Icon(icon),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -103,53 +120,9 @@ class _OverlayDrawingLayerMenuLinkedState extends State<OverlayDrawingLayerMenuL
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Tooltip(
-                  message: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: SizedBox(
-                    width: _options.buttonHeight * _buttonToIconRatio,
-                    height: _options.buttonHeight * _buttonToIconRatio,
-                    child: IconButton.outlined(
-                      padding: EdgeInsets.all(
-                        _options.buttonSpacing,),
-                      onPressed: () {widget.onDelete();},
-                      icon: const Icon(
-                        TablerIcons.trash,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
-                Tooltip(
-                  message: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: SizedBox(
-                    width: _options.buttonHeight * _buttonToIconRatio,
-                    height: _options.buttonHeight * _buttonToIconRatio,
-                    child: IconButton.outlined(
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onDuplicate();},
-                      icon: const Icon(
-                        TablerIcons.squares,
-                      ),
-                    ),
-                  ),
-                ),
-                Tooltip(
-                  message: "Unlink Layer / Make Unique",
-                  waitDuration: AppState.toolTipDuration,
-                  child: SizedBox(
-                    width: _options.buttonHeight * _buttonToIconRatio,
-                    height: _options.buttonHeight * _buttonToIconRatio,
-                    child: IconButton.outlined(
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onUnlink();},
-                      icon: const Icon(
-                        TablerIcons.link_off,
-                      ),
-                    ),
-                  ),
-                ),
+                _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
+                _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
+                _createMenuButton(tooltip: "Unlink Layer / Make Unique", icon: TablerIcons.link_off, onPressedFunc: widget.onUnlink),
               ],
             ),
           ),

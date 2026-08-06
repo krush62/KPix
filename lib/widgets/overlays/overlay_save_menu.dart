@@ -63,6 +63,26 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
     super.dispose();
   }
 
+  Padding _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
+  {
+    return Padding(
+      padding: EdgeInsets.all(_options.buttonSpacing / 2),
+      child: Tooltip(
+        message: tooltip,
+        waitDuration: AppState.toolTipDuration,
+        child: IconButton.outlined(
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.all(_options.buttonSpacing),
+          onPressed: () {widget.onSaveFile();},
+          icon: Icon(
+            icon,
+            size: _options.buttonHeight,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -84,54 +104,9 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onSaveFile();},
-                      icon: Icon(
-                        Icons.save,
-                        size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onSaveAsFile();},
-                      icon: Icon(
-                        Icons.save_as,
-                        size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(_options.buttonSpacing),
-                      onPressed: () {widget.onExportFile();},
-                      icon: Icon(
-                        Icons.share,
-                        size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
+                _createMenuButton(tooltip: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}", icon: Icons.save, onPressedFunc: widget.onSaveFile),
+                _createMenuButton(tooltip: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}", icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
+                _createMenuButton(tooltip: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}", icon: Icons.share, onPressedFunc: widget.onExportFile),
               ],
             ),
           ),

@@ -58,6 +58,23 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
     super.dispose();
   }
 
+  Padding _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
+  {
+    return Padding(
+      padding: EdgeInsets.all(_options.buttonSpacing / 2),
+      child: Tooltip(
+        message: tooltip,
+        waitDuration: AppState.toolTipDuration,
+        child: IconButton.outlined(
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.all(_options.buttonSpacing),
+          onPressed: onPressedFunc,
+          icon: Icon(icon),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -79,57 +96,9 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(
-                        _options.buttonSpacing,),
-                      onPressed: () {widget.onNewFile();},
-                      icon: const Icon(
-                        TablerIcons.file,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(
-                        _options.buttonSpacing,),
-                      onPressed: () {widget.onLoadFile();},
-                      icon: const Icon(
-                        TablerIcons.folder_open,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(_options.buttonSpacing / 2),
-                  child: Tooltip(
-                    message: "Import Image",
-                    waitDuration: AppState.toolTipDuration,
-                    child: IconButton.outlined(
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.all(
-                        _options.buttonSpacing,),
-                      onPressed: () {widget.onImportFile();},
-                      icon: const Icon(
-                        TablerIcons.file_import,
-                        //size: _options.buttonHeight,
-                      ),
-                    ),
-                  ),
-                ),
+                _createMenuButton(tooltip: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}", icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
+                _createMenuButton(tooltip: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}", icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
+                _createMenuButton(tooltip: "Import Image", icon: TablerIcons.file_import, onPressedFunc: widget.onImportFile),
               ],
             ),
           ),

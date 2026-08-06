@@ -149,6 +149,33 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
     _deleteWarningDialog.show(context: context);
   }
 
+  void _loadStampPressed()
+  {
+    final StampManagerEntryWidget? selectedStamp = _selectedWidget.value;
+    if (selectedStamp != null)
+    {
+      widget.fileLoad(data: selectedStamp.entryData);
+    }
+
+  }
+
+  Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
+  {
+    return Expanded(
+      child: Tooltip(
+        message: tooltip,
+        waitDuration: AppState.toolTipDuration,
+        child: Padding(
+          padding: EdgeInsets.all(_alertOptions.padding),
+          child: IconButton.outlined(
+            icon: Icon(icon),
+            onPressed: isEnabled ? onPressedFunc : null,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -226,62 +253,18 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                child: Tooltip(
-                  message: "Close",
-                  waitDuration: AppState.toolTipDuration,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                      ),
-                      onPressed: _dismissPressed,
-                    ),
-                  ),
-                ),
+              _createExpandedButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
+              ValueListenableBuilder<StampManagerEntryWidget?>(
+                valueListenable: _selectedWidget,
+                builder: (final BuildContext context, final StampManagerEntryWidget? selWidget, final Widget? child) {
+                  return _createExpandedButton(tooltip: "Delete Selected Stamp", icon: TablerIcons.trash, onPressedFunc: _deleteStampPressed, isEnabled: selWidget != null && !selWidget.entryData.isLocked);
+                },
               ),
-              Expanded(
-                child: Tooltip(
-                  message: "Delete Selected Stamp",
-                  waitDuration: AppState.toolTipDuration,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: ValueListenableBuilder<StampManagerEntryWidget?>(
-                      valueListenable: _selectedWidget,
-                      builder: (final BuildContext context, final StampManagerEntryWidget? selWidget, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.trash,
-                          ),
-                          onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deleteStampPressed : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Tooltip(
-                  message: "Load Selected Stamp",
-                  waitDuration: AppState.toolTipDuration,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: ValueListenableBuilder<StampManagerEntryWidget?>(
-                      valueListenable: _selectedWidget,
-                      builder: (final BuildContext context, final StampManagerEntryWidget? selWidget, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.check,
-                          ),
-                          onPressed: selWidget != null ? () {
-                            widget.fileLoad(data: selWidget.entryData);
-                          } : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              ValueListenableBuilder<StampManagerEntryWidget?>(
+                valueListenable: _selectedWidget,
+                builder: (final BuildContext context, final StampManagerEntryWidget? selWidget, final Widget? child) {
+                  return _createExpandedButton(tooltip: "Load Selected Stamp", icon: TablerIcons.check, onPressedFunc: _loadStampPressed, isEnabled: selWidget != null);
+                },
               ),
             ],
           ),

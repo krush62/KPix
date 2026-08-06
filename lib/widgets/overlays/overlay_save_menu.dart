@@ -19,17 +19,18 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class OverlaySaveMenu extends StatefulWidget
 {
-  final LayerLink layerLink;
+  final GlobalKey anchorKey;
   final Function() onSaveFile;
   final Function() onSaveAsFile;
   final Function() onExportFile;
   const OverlaySaveMenu({
     super.key,
-    required this.layerLink,
+    required this.anchorKey,
     required this.onSaveFile,
     required this.onSaveAsFile,
     required this.onExportFile,
@@ -73,7 +74,7 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
         child: IconButton.outlined(
           constraints: const BoxConstraints(),
           padding: EdgeInsets.all(_options.buttonSpacing),
-          onPressed: () {widget.onSaveFile();},
+          onPressed: onPressedFunc,
           icon: Icon(
             icon,
             size: _options.buttonHeight,
@@ -86,29 +87,26 @@ class _OverlaySaveMenuState extends State<OverlaySaveMenu> with SingleTickerProv
   @override
   Widget build(final BuildContext context)
   {
-    return Positioned(
+    return AnchoredOverlayBox(
+      anchorKey: widget.anchorKey,
       width: _options.width / 2,
-      child: CompositedTransformFollower(
-        link: widget.layerLink,
-        showWhenUnlinked: false,
-        offset: Offset(
-          _options.offsetX,
-          _options.offsetY + _options.buttonSpacing,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: ScaleTransition(
-            scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                _createMenuButton(tooltip: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}", icon: Icons.save, onPressedFunc: widget.onSaveFile),
-                _createMenuButton(tooltip: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}", icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
-                _createMenuButton(tooltip: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}", icon: Icons.share, onPressedFunc: widget.onExportFile),
-              ],
-            ),
+      offset: Offset(
+        _options.offsetX,
+        _options.offsetY + _options.buttonSpacing,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ScaleTransition(
+          scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _createMenuButton(tooltip: "Save Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSave)}", icon: Icons.save, onPressedFunc: widget.onSaveFile),
+              _createMenuButton(tooltip: "Save Project As${_hotkeyManager.getShortcutString(action: HotkeyAction.generalSaveAs)}", icon: Icons.save_as, onPressedFunc: widget.onSaveAsFile),
+              _createMenuButton(tooltip: "Export Project/Palette${_hotkeyManager.getShortcutString(action: HotkeyAction.generalExport)}", icon: Icons.share, onPressedFunc: widget.onExportFile),
+            ],
           ),
         ),
       ),

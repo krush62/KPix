@@ -21,14 +21,15 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class OverlayReducedLayerMenu extends StatefulWidget
 {
-  final LayerLink layerLink;
+  final GlobalKey anchorKey;
   final Function() onDelete;
   final Function() onDuplicate;
-  const OverlayReducedLayerMenu({super.key, required this.onDelete,  required this.onDuplicate, required this.layerLink});
+  const OverlayReducedLayerMenu({super.key, required this.onDelete,  required this.onDuplicate, required this.anchorKey});
 
   @override
   State<OverlayReducedLayerMenu> createState() => _OverlayReducedLayerMenuState();
@@ -85,28 +86,25 @@ class _OverlayReducedLayerMenuState extends State<OverlayReducedLayerMenu> with 
   @override
   Widget build(final BuildContext context)
   {
-    return Positioned(
+    return AnchoredOverlayBox(
+      anchorKey: widget.anchorKey,
       width: _width,
       height: _height,
-      child: CompositedTransformFollower(
-        link: widget.layerLink,
-        showWhenUnlinked: false,
-        offset: Offset(
-          -_width,
-          _layerWidgetOptions.height/2 - _height/2 - _layerWidgetOptions.innerPadding,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: ScaleTransition(
-            scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
-                _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
-              ],
-            ),
+      offset: Offset(
+        -_width,
+        _layerWidgetOptions.height/2 - _height/2 - _layerWidgetOptions.innerPadding,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ScaleTransition(
+          scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              _createMenuButton(tooltip: "Delete Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDelete)}", icon: TablerIcons.trash, onPressedFunc: widget.onDelete),
+              _createMenuButton(tooltip: "Duplicate Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersDuplicate)}", icon: TablerIcons.squares, onPressedFunc: widget.onDuplicate),
+            ],
           ),
         ),
       ),

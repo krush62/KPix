@@ -46,6 +46,7 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/main/layer_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_add_new_layer_menu.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class RightBarWidget extends StatefulWidget
@@ -66,7 +67,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   final OverlayPortalController _addLayerPortalController = OverlayPortalController();
-  final LayerLink _layerLink = LayerLink();
+  final GlobalKey _addLayerAnchorKey = GlobalKey();
 
 
   @override
@@ -185,8 +186,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
                           children: <Widget>[
                             Padding(
                               padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
-                              child: CompositedTransformTarget(
-                                link: _layerLink,
+                              child: OverlayAnchor(
+                                anchorKey: _addLayerAnchorKey,
                                 child: Tooltip(
                                   message: "Add New Layer...",
                                   waitDuration: AppState.toolTipDuration,
@@ -201,7 +202,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                             onDismiss: _closeLayerMenu,
                                           ),
                                           OverlayAddNewLayerMenu(
-                                            layerLink: _layerLink,
+                                            anchorKey: _addLayerAnchorKey,
                                             onNewDrawingLayer: _newDrawingLayerPressed,
                                             onNewReferenceLayer: _newReferenceLayerPressed,
                                             onNewGridLayer: _newGridLayerPressed,

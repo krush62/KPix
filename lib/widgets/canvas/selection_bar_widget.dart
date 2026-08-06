@@ -22,6 +22,7 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/preferences/behavior_preferences.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
 
@@ -50,7 +51,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   final SelectionState _selectionState = GetIt.I.get<AppState>().selectionState;
   final AppState _appState = GetIt.I.get<AppState>();
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
-  final LayerLink _layerLink = LayerLink();
+  final GlobalKey _alignAnchorKey = GlobalKey();
   final OverlayPortalController _alignmentController = OverlayPortalController();
 
 
@@ -267,8 +268,8 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),
-                child: CompositedTransformTarget(
-                  link: _layerLink,
+                child: OverlayAnchor(
+                  anchorKey: _alignAnchorKey,
                   child: Tooltip(
                     message: "Align...",
                     waitDuration: AppState.toolTipDuration,
@@ -283,7 +284,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                               onDismiss: _alignDismiss,
                             ),
                             OverlaySelectionAlignMenu(
-                              layerLink: _layerLink,
+                              anchorKey: _alignAnchorKey,
                               onDismiss: _alignDismiss,
                               onAlignCenterH: _alignCenterHPressed,
                               onAlignCenterV: _alignCenterVPressed,

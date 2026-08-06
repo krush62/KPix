@@ -20,11 +20,12 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class OverlayAddNewLayerMenu extends StatefulWidget
 {
-  final LayerLink layerLink;
+  final GlobalKey anchorKey;
   final Function() onNewDrawingLayer;
   final Function() onNewReferenceLayer;
   final Function() onNewGridLayer;
@@ -33,7 +34,7 @@ class OverlayAddNewLayerMenu extends StatefulWidget
 
   const OverlayAddNewLayerMenu({
     super.key,
-    required this.layerLink,
+    required this.anchorKey,
     required this.onNewDrawingLayer,
     required this.onNewReferenceLayer,
     required this.onNewGridLayer,
@@ -92,51 +93,48 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
   @override
   Widget build(final BuildContext context)
   {
-    return Positioned(
+    return AnchoredOverlayBox(
+      anchorKey: widget.anchorKey,
       width: _options.width / 2,
-      child: CompositedTransformFollower(
-        link: widget.layerLink,
-        showWhenUnlinked: false,
-        offset: Offset(
-          _options.offsetX,
-          _options.offsetY + _options.buttonSpacing,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: ScaleTransition(
-            scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                _createMenuButton(
-                  toolTip: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
-                  icon: TablerIcons.brush,
-                  onPressedFunc: widget.onNewDrawingLayer,
-                ),
-                _createMenuButton(
-                  toolTip: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
-                  icon: TablerIcons.exposure,
-                  onPressedFunc: widget.onNewShadingLayer,
-                ),
-                _createMenuButton(
-                  toolTip: "Add New Dither Layer",
-                  icon: Icons.gradient,
-                  onPressedFunc: widget.onNewDitherLayer,
-                ),
-                _createMenuButton(
-                  toolTip: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
-                  icon: Icons.photo,
-                  onPressedFunc: widget.onNewReferenceLayer,
-                ),
-                _createMenuButton(
-                  toolTip: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
-                  icon: Icons.grid_4x4,
-                  onPressedFunc: widget.onNewGridLayer,
-                ),
-              ],
-            ),
+      offset: Offset(
+        _options.offsetX,
+        _options.offsetY + _options.buttonSpacing,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ScaleTransition(
+          scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _createMenuButton(
+                toolTip: "Add New Drawing Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewDrawing)}",
+                icon: TablerIcons.brush,
+                onPressedFunc: widget.onNewDrawingLayer,
+              ),
+              _createMenuButton(
+                toolTip: "Add New Shading Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewShading)}",
+                icon: TablerIcons.exposure,
+                onPressedFunc: widget.onNewShadingLayer,
+              ),
+              _createMenuButton(
+                toolTip: "Add New Dither Layer",
+                icon: Icons.gradient,
+                onPressedFunc: widget.onNewDitherLayer,
+              ),
+              _createMenuButton(
+                toolTip: "Add New Reference Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewReference)}",
+                icon: Icons.photo,
+                onPressedFunc: widget.onNewReferenceLayer,
+              ),
+              _createMenuButton(
+                toolTip: "Add New Grid Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.layersNewGrid)}",
+                icon: Icons.grid_4x4,
+                onPressedFunc: widget.onNewGridLayer,
+              ),
+            ],
           ),
         ),
       ),

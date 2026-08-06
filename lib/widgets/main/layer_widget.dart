@@ -30,6 +30,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class LayerWidget extends StatefulWidget {
@@ -83,7 +84,7 @@ class _LayerWidgetState extends State<LayerWidget> {
     LayerLockState.locked: "Locked",
   };
 
-  final LayerLink actionsLink = LayerLink();
+  final GlobalKey actionsAnchorKey = GlobalKey();
   late KPixOverlay actionsMenuDrawing;
   late KPixOverlay actionsMenuDrawingLinked;
   late KPixOverlay actionsMenuReduced;
@@ -96,27 +97,27 @@ class _LayerWidgetState extends State<LayerWidget> {
     super.initState();
     actionsMenuDrawing = getDrawingLayerMenu(
       onDismiss: _closeActionsMenus,
-      layerLink: actionsLink,
+      anchorKey: actionsAnchorKey,
       onDelete: _deletePressed,
       onMergeDown: _mergeDownPressed,
       onDuplicate: _duplicatePressed,
     );
     actionsMenuDrawingLinked = getDrawingLayerMenuLinked(
       onDismiss: _closeActionsMenus,
-      layerLink: actionsLink,
+      anchorKey: actionsAnchorKey,
       onDelete: _deletePressed,
       onUnlink: _unlinkPressed,
       onDuplicate: _duplicatePressed,
     );
     actionsMenuReduced = getReducedLayerMenu(
       onDismiss: _closeActionsMenus,
-      layerLink: actionsLink,
+      anchorKey: actionsAnchorKey,
       onDelete: _deletePressed,
       onDuplicate: _duplicatePressed,
     );
     actionsMenuRaster = getRasterLayerMenu(
       onDismiss: _closeActionsMenus,
-      layerLink: actionsLink,
+      anchorKey: actionsAnchorKey,
       onDelete: _deletePressed,
       onDuplicate: _duplicatePressed,
       onRaster: _rasterPressed,
@@ -468,8 +469,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
-                                    child: CompositedTransformTarget(
-                                      link: actionsLink,
+                                    child: OverlayAnchor(
+                                      anchorKey: actionsAnchorKey,
                                       child: Tooltip(
                                         message: "Layer Actions...",
                                         waitDuration: AppState.toolTipDuration,

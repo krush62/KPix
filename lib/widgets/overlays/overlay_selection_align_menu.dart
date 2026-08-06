@@ -19,11 +19,12 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class OverlaySelectionAlignMenu extends StatefulWidget
  {
-   final LayerLink layerLink;
+   final GlobalKey anchorKey;
    final Function() onDismiss;
    final Function() onAlignLeft;
    final Function() onAlignRight;
@@ -35,7 +36,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
 
    const OverlaySelectionAlignMenu({
      super.key,
-     required this.layerLink,
+     required this.anchorKey,
      required this.onDismiss,
      required this.onAlignLeft,
      required this.onAlignRight,
@@ -95,32 +96,29 @@ class OverlaySelectionAlignMenu extends StatefulWidget
    @override
    Widget build(final BuildContext context)
    {
-     return Positioned(
+     return AnchoredOverlayBox(
+       anchorKey: widget.anchorKey,
        width: _options.width / 3,
-       child: CompositedTransformFollower(
-         link: widget.layerLink,
-         showWhenUnlinked: false,
-         offset: Offset(
-           _options.offsetX,
-           -(_entryCount + 1) *  (_options.offsetY + _options.buttonSpacing) - _options.buttonSpacing,
-         ),
-         child: Material(
-           color: Colors.transparent,
-           child: ScaleTransition(
-             scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
-             child: Column(
-               mainAxisSize: MainAxisSize.min,
-               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-               crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: <Widget>[
-                 _getEntry(toolTipMessage: "Center Horizontally", onPressed: widget.onAlignCenterH, icon: TablerIcons.layout_align_middle),
-                 _getEntry(toolTipMessage: "Center Vertically", onPressed: widget.onAlignCenterV, icon: TablerIcons.layout_align_center),
-                 _getEntry(toolTipMessage: "Left", onPressed: widget.onAlignLeft, icon: TablerIcons.layout_align_left),
-                 _getEntry(toolTipMessage: "Right", onPressed: widget.onAlignRight, icon: TablerIcons.layout_align_right),
-                 _getEntry(toolTipMessage: "Top", onPressed: widget.onAlignTop, icon: TablerIcons.layout_align_top),
-                 _getEntry(toolTipMessage: "Bottom", onPressed: widget.onAlignBottom, icon: TablerIcons.layout_align_bottom),
-               ],
-             ),
+       offset: Offset(
+         _options.offsetX,
+         -(_entryCount + 1) *  (_options.offsetY + _options.buttonSpacing) - _options.buttonSpacing,
+       ),
+       child: Material(
+         color: Colors.transparent,
+         child: ScaleTransition(
+           scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
+           child: Column(
+             mainAxisSize: MainAxisSize.min,
+             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+             crossAxisAlignment: CrossAxisAlignment.stretch,
+             children: <Widget>[
+               _getEntry(toolTipMessage: "Center Horizontally", onPressed: widget.onAlignCenterH, icon: TablerIcons.layout_align_middle),
+               _getEntry(toolTipMessage: "Center Vertically", onPressed: widget.onAlignCenterV, icon: TablerIcons.layout_align_center),
+               _getEntry(toolTipMessage: "Left", onPressed: widget.onAlignLeft, icon: TablerIcons.layout_align_left),
+               _getEntry(toolTipMessage: "Right", onPressed: widget.onAlignRight, icon: TablerIcons.layout_align_right),
+               _getEntry(toolTipMessage: "Top", onPressed: widget.onAlignTop, icon: TablerIcons.layout_align_top),
+               _getEntry(toolTipMessage: "Bottom", onPressed: widget.onAlignBottom, icon: TablerIcons.layout_align_bottom),
+             ],
            ),
          ),
        ),

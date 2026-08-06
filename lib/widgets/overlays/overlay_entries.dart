@@ -133,7 +133,7 @@ class OverlayEntryAlertDialogOptions
     required final Function() onNewFile,
     required final Function() onLoadFile,
     required final Function() onImportFile,
-    required final LayerLink layerLink,
+    required final GlobalKey anchorKey,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -144,7 +144,7 @@ class OverlayEntryAlertDialogOptions
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          OverlayLoadMenu(layerLink: layerLink, onNewFile: onNewFile, onImportFile: onImportFile, onLoadFile: onLoadFile),
+          OverlayLoadMenu(anchorKey: anchorKey, onNewFile: onNewFile, onImportFile: onImportFile, onLoadFile: onLoadFile),
         ],
       ),
     ),);
@@ -156,7 +156,7 @@ class OverlayEntryAlertDialogOptions
     required final Function() onSaveFile,
     required final Function() onSaveAsFile,
     required final Function() onExportFile,
-    required final LayerLink layerLink,
+    required final GlobalKey anchorKey,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -168,7 +168,7 @@ class OverlayEntryAlertDialogOptions
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          OverlaySaveMenu(layerLink: layerLink, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile),
+          OverlaySaveMenu(anchorKey: anchorKey, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile),
         ],
       ),
     ),);
@@ -180,7 +180,7 @@ class OverlayEntryAlertDialogOptions
     required final Function() onDelete,
     required final Function() onMergeDown,
     required final Function() onDuplicate,
-    required final LayerLink layerLink,
+    required final GlobalKey anchorKey,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -192,7 +192,7 @@ class OverlayEntryAlertDialogOptions
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: () {onDismiss();},
             ),
-            OverlayDrawingLayerMenu(onDelete: onDelete, onMergeDown: onMergeDown, onDuplicate: onDuplicate, layerLink: layerLink),
+            OverlayDrawingLayerMenu(onDelete: onDelete, onMergeDown: onMergeDown, onDuplicate: onDuplicate, anchorKey: anchorKey),
           ],
         ),
       ),
@@ -204,7 +204,7 @@ KPixOverlay getDrawingLayerMenuLinked({
   required final Function() onDelete,
   required final Function() onUnlink,
   required final Function() onDuplicate,
-  required final LayerLink layerLink,
+  required final GlobalKey anchorKey,
 })
 {
   final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -216,7 +216,7 @@ KPixOverlay getDrawingLayerMenuLinked({
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          OverlayDrawingLayerMenuLinked(onDelete: onDelete, onUnlink: onUnlink, onDuplicate: onDuplicate, layerLink: layerLink),
+          OverlayDrawingLayerMenuLinked(onDelete: onDelete, onUnlink: onUnlink, onDuplicate: onDuplicate, anchorKey: anchorKey),
         ],
       ),
     ),
@@ -227,7 +227,7 @@ KPixOverlay getDrawingLayerMenuLinked({
     required final Function() onDismiss,
     required final Function() onDelete,
     required final Function() onDuplicate,
-    required final LayerLink layerLink,
+    required final GlobalKey anchorKey,
   })
   {
     final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -239,7 +239,7 @@ KPixOverlay getDrawingLayerMenuLinked({
               color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
               onDismiss: () {onDismiss();},
             ),
-            OverlayReducedLayerMenu(onDelete: onDelete, onDuplicate: onDuplicate, layerLink: layerLink),
+            OverlayReducedLayerMenu(onDelete: onDelete, onDuplicate: onDuplicate, anchorKey: anchorKey),
             ],
           ),
         ),
@@ -251,7 +251,7 @@ KPixOverlay getRasterLayerMenu({
   required final Function() onDelete,
   required final Function() onDuplicate,
   required final Function() onRaster,
-  required final LayerLink layerLink,
+  required final GlobalKey anchorKey,
 })
 {
   final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
@@ -263,7 +263,7 @@ KPixOverlay getRasterLayerMenu({
             color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
-          OverlayRasterLayerMenu(layerLink: layerLink, onDuplicate: onDuplicate, onDelete: onDelete, onRaster: onRaster),
+          OverlayRasterLayerMenu(anchorKey: anchorKey, onDuplicate: onDuplicate, onDelete: onDelete, onRaster: onRaster),
         ],
       ),
     ),

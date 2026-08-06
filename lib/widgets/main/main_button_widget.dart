@@ -33,6 +33,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
@@ -79,8 +80,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _importLoadingDialog;
   late KPixOverlay _exportLoadingDialog;
   late KPixOverlay _openLoadingDialog;
-  final LayerLink _loadMenuLayerLink = LayerLink();
-  final LayerLink _saveMenuLayerLink = LayerLink();
+  final GlobalKey _loadMenuAnchorKey = GlobalKey();
+  final GlobalKey _saveMenuAnchorKey = GlobalKey();
   final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
@@ -89,14 +90,14 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     super.initState();
     _loadMenu = getLoadMenu(
       onDismiss: _closeAllMenus,
-      layerLink: _loadMenuLayerLink,
+      anchorKey: _loadMenuAnchorKey,
       onNewFile: _newFile,
       onLoadFile: _loadFile,
       onImportFile: _importFile,
     );
     _saveMenu = getSaveMenu(
       onDismiss: _closeAllMenus,
-      layerLink: _saveMenuLayerLink,
+      anchorKey: _saveMenuAnchorKey,
       onSaveFile: _saveFile,
       onSaveAsFile: _saveAsFile,
       onExportFile: _exportFile,
@@ -504,8 +505,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Expanded(
-                child: CompositedTransformTarget(
-                  link: _loadMenuLayerLink,
+                child: OverlayAnchor(
+                  anchorKey: _loadMenuAnchorKey,
                   child: Tooltip(
                     message: "New/Open...",
                     waitDuration: AppState.toolTipDuration,
@@ -521,8 +522,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               ),
               SizedBox(width: _options.padding,),
               Expanded(
-                child: CompositedTransformTarget(
-                  link: _saveMenuLayerLink,
+                child: OverlayAnchor(
+                  anchorKey: _saveMenuAnchorKey,
                   child: Tooltip(
                     message: "Save...",
                     waitDuration: AppState.toolTipDuration,

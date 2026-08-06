@@ -20,15 +20,16 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 class OverlayLoadMenu extends StatefulWidget
 {
-  final LayerLink layerLink;
+  final GlobalKey anchorKey;
   final Function() onNewFile;
   final Function() onLoadFile;
   final Function() onImportFile;
-  const OverlayLoadMenu({super.key, required this.layerLink, required this.onNewFile, required this.onImportFile, required this.onLoadFile});
+  const OverlayLoadMenu({super.key, required this.anchorKey, required this.onNewFile, required this.onImportFile, required this.onLoadFile});
 
   @override
   State<OverlayLoadMenu> createState() => _OverlayLoadMenuState();
@@ -78,29 +79,26 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
   @override
   Widget build(final BuildContext context)
   {
-    return Positioned(
+    return AnchoredOverlayBox(
+      anchorKey: widget.anchorKey,
       width: _options.width / 2,
-      child: CompositedTransformFollower(
-        link: widget.layerLink,
-        showWhenUnlinked: false,
-        offset: Offset(
-          _options.offsetX,
-          _options.offsetY + _options.buttonSpacing,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: ScaleTransition(
-            scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                _createMenuButton(tooltip: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}", icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
-                _createMenuButton(tooltip: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}", icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
-                _createMenuButton(tooltip: "Import Image", icon: TablerIcons.file_import, onPressedFunc: widget.onImportFile),
-              ],
-            ),
+      offset: Offset(
+        _options.offsetX,
+        _options.offsetY + _options.buttonSpacing,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ScaleTransition(
+          scale: CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeInOut)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _createMenuButton(tooltip: "New Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalNew)}", icon: TablerIcons.file, onPressedFunc: widget.onNewFile),
+              _createMenuButton(tooltip: "Open Project${_hotkeyManager.getShortcutString(action: HotkeyAction.generalOpen)}", icon: TablerIcons.folder_open, onPressedFunc: widget.onLoadFile),
+              _createMenuButton(tooltip: "Import Image", icon: TablerIcons.file_import, onPressedFunc: widget.onImportFile),
+            ],
           ),
         ),
       ),

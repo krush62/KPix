@@ -24,8 +24,20 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A popup menu with the actions available for a rasterable layer.
+///
+/// The menu scales into view left of the [OverlayAnchor] carrying [anchorKey],
+/// vertically centred on the layer entry, so it has to be inserted into an
+/// overlay [Stack] together with the barrier that dismisses it. Pressing a
+/// button only invokes the matching callback, closing the menu is left to the
+/// owner of the overlay.
+///
+/// Layers whose content is generated, such as shading or grid layers, can be
+/// turned into an ordinary drawing layer, which is what sets this menu apart
+/// from [OverlayReducedLayerMenu].
 class OverlayRasterLayerMenu extends StatefulWidget
 {
+  /// The key of the [OverlayAnchor] the menu is positioned relative to.
   final GlobalKey anchorKey;
   final Function() onDelete;
   final Function() onDuplicate;
@@ -41,10 +53,21 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
   final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+
+  /// The number of entries the menu is sized for, which has to match the number
+  /// of buttons built in [build].
   final int _buttonCount = 3;
+
+  /// The edge length of a menu button relative to the icon it contains.
   final double _buttonToIconRatio = 1.7;
+
+  /// The height of the whole button row, which is the height of a single button.
   late double _height;
+
+  /// The width of the whole button row.
   late double _width;
+
+  /// The driver of the scale animation the menu opens with.
   late AnimationController _controller;
 
   @override
@@ -57,6 +80,7 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
       vsync: this,
       duration: Duration(milliseconds: _options.animationLengthMs),
     );
+    // the menu is built when it is already visible, so the animation starts right away
     _controller.forward();
   }
 
@@ -67,6 +91,10 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
     super.dispose();
   }
 
+  /// A single square menu entry showing [icon].
+  ///
+  /// The [tooltip] is shown after [AppState.toolTipDuration] of hovering,
+  /// pressing the entry calls [onPressedFunc].
   Tooltip _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
   {
     return Tooltip(

@@ -16,14 +16,18 @@
 
 import 'package:flutter/material.dart';
 
-/// Marks the widget a popup menu is anchored to.
+/// A marker for the widget a popup menu is anchored to.
 ///
-/// The [anchorKey] is handed to the corresponding [AnchoredOverlayBox], which
-/// looks up the position of this widget to place itself.
+/// The same [anchorKey] is handed to the [AnchoredOverlayBox] of the menu,
+/// which looks up the position of [child] to place itself.
 class OverlayAnchor extends StatelessWidget
 {
+  /// The key under which the position of [child] is published.
   final GlobalKey anchorKey;
+
+  /// The widget a menu is anchored to, usually the button that opens it.
   final Widget child;
+
   const OverlayAnchor({super.key, required this.anchorKey, required this.child});
 
   @override
@@ -33,8 +37,12 @@ class OverlayAnchor extends StatelessWidget
   }
 }
 
-/// Positions [child] inside an overlay [Stack] relative to the [OverlayAnchor]
-/// carrying [anchorKey].
+/// A [Stack] child that places [child] relative to the [OverlayAnchor] carrying
+/// [anchorKey].
+///
+/// Only usable inside an overlay [Stack], since the anchor position is resolved
+/// against the surrounding [Overlay] and handed on to a [Positioned]. Until the
+/// anchor has been laid out, nothing is shown.
 ///
 /// This is used instead of [CompositedTransformFollower], because a
 /// [RenderFollowerLayer] only establishes its paint transform after the layout
@@ -45,10 +53,20 @@ class OverlayAnchor extends StatelessWidget
 /// of RenderFollowerLayer(s)") instead of showing up.
 class AnchoredOverlayBox extends StatefulWidget
 {
+  /// The key of the [OverlayAnchor] to place [child] relative to.
   final GlobalKey anchorKey;
+
+  /// The distance between the top left corner of the anchor and the top left
+  /// corner of [child].
   final Offset offset;
+
+  /// The width of [child], or `null` to let it size itself.
   final double? width;
+
+  /// The height of [child], or `null` to let it size itself.
   final double? height;
+
+  /// The menu to be placed.
   final Widget child;
 
   const AnchoredOverlayBox({
@@ -88,6 +106,8 @@ class _AnchoredOverlayBoxState extends State<AnchoredOverlayBox> with WidgetsBin
     setState(() {});
   }
 
+  /// The top left corner of the anchor in the coordinate system of the
+  /// surrounding [Overlay], or `null` while the anchor is not laid out.
   Offset? _getAnchorOffset()
   {
     final RenderObject? anchorObject = widget.anchorKey.currentContext?.findRenderObject();

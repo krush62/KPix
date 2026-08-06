@@ -23,8 +23,15 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A popup menu with the buttons for starting, opening and importing a project.
+///
+/// The menu scales into view below the [OverlayAnchor] carrying [anchorKey], so
+/// it has to be inserted into an overlay [Stack] together with the barrier that
+/// dismisses it. Pressing a button only invokes the matching callback, closing
+/// the menu is left to the owner of the overlay.
 class OverlayLoadMenu extends StatefulWidget
 {
+  /// The key of the [OverlayAnchor] the menu is positioned relative to.
   final GlobalKey anchorKey;
   final Function() onNewFile;
   final Function() onLoadFile;
@@ -37,6 +44,7 @@ class OverlayLoadMenu extends StatefulWidget
 
 class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProviderStateMixin
 {
+  /// The driver of the scale animation the menu opens with.
   late AnimationController _controller;
   final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
@@ -49,6 +57,7 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
       vsync: this,
       duration: Duration(milliseconds: _options.animationLengthMs),
     );
+    // the menu is built when it is already visible, so the animation starts right away
     _controller.forward();
   }
 
@@ -59,6 +68,10 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
     super.dispose();
   }
 
+  /// A single menu entry showing [icon], padded to line up with its neighbours.
+  ///
+  /// The [tooltip] is shown after [AppState.toolTipDuration] of hovering,
+  /// pressing the entry calls [onPressedFunc].
   Padding _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
   {
     return Padding(

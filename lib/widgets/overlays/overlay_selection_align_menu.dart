@@ -22,8 +22,16 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A popup menu with the buttons for aligning the current selection.
+///
+/// The menu scales into view above the [OverlayAnchor] carrying [anchorKey],
+/// because it is opened from the selection bar at the bottom of the canvas, so
+/// it has to be inserted into an overlay [Stack] together with the barrier that
+/// dismisses it. Pressing a button only invokes the matching callback, closing
+/// the menu is left to the owner of the overlay.
 class OverlaySelectionAlignMenu extends StatefulWidget
  {
+   /// The key of the [OverlayAnchor] the menu is positioned relative to.
    final GlobalKey anchorKey;
    final Function() onDismiss;
    final Function() onAlignLeft;
@@ -53,7 +61,12 @@ class OverlaySelectionAlignMenu extends StatefulWidget
  class _OverlaySelectionAlignMenuState extends State<OverlaySelectionAlignMenu> with SingleTickerProviderStateMixin
  {
    final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
+
+   /// The driver of the scale animation the menu opens with.
    late AnimationController _controller;
+
+   /// The number of entries the menu is shifted upwards by, which has to match
+   /// the number of buttons built in [build].
    static const int _entryCount = 6;
 
    @override
@@ -64,6 +77,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
        vsync: this,
        duration: Duration(milliseconds: _options.animationLengthMs),
      );
+     // the menu is built when it is already visible, so the animation starts right away
      _controller.forward();
    }
 
@@ -74,6 +88,11 @@ class OverlaySelectionAlignMenu extends StatefulWidget
      super.dispose();
    }
 
+   /// A single menu entry showing [icon], padded to line up with its neighbours.
+   ///
+   /// The [toolTipMessage] is shown after [AppState.toolTipDuration] of
+   /// hovering and is placed above the entry, so it does not cover the entries
+   /// below. Pressing the entry calls [onPressed].
    Widget _getEntry({required final String toolTipMessage, required final Function() onPressed, required final IconData icon})
    {
      return Padding(

@@ -47,13 +47,31 @@ import 'package:kpix/widgets/palette/save_palette_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 
+/// A dismissable layer above the app, such as a popup menu or a dialog.
+///
+/// While an overlay is shown the hotkey callbacks are deactivated, so typing in a
+/// dialog does not trigger tool shortcuts.
 class KPixOverlay
 {
+  /// Whether the entry is currently inserted into an [Overlay].
   bool isVisible;
+
+  /// The entry that is inserted into the [Overlay].
   OverlayEntry entry;
   KPixOverlay({required this.entry, this.isVisible = false});
+
+  /// The action to run after the overlay has been closed, or `null` if there is
+  /// nothing to do.
+  ///
+  /// It is set by [show], but neither invoked nor cleared by [hide], because only
+  /// the caller knows why the overlay was closed.
   Function()? closeCallback;
 
+  /// Inserts the entry into the [Overlay] above [context] and deactivates the
+  /// hotkey callbacks.
+  ///
+  /// The entry is only inserted once, but [callbackFunction] is stored in
+  /// [closeCallback] on every call.
   void show({required final BuildContext context, final Function()? callbackFunction})
   {
     if (!isVisible)
@@ -65,6 +83,9 @@ class KPixOverlay
     closeCallback = callbackFunction;
   }
 
+  /// Removes the entry from the [Overlay] and reactivates the hotkey callbacks.
+  ///
+  /// Does nothing if the overlay is not visible.
   void hide()
   {
     if (isVisible)
@@ -76,15 +97,30 @@ class KPixOverlay
   }
 }
 
+/// The layout values shared by all popup menus.
+///
+/// An instance holding the values from the preferences is available as
+/// `PreferenceManager.overlayEntryOptions`.
 class OverlayEntrySubMenuOptions
 {
+  /// The horizontal distance between a menu and its anchor.
   final double offsetX;
+
+  /// The horizontal distance for menus that open to the left of their anchor.
+  ///
+  /// Currently not read by any menu.
   final double offsetXLeft;
+
+  /// The vertical distance between a menu and its anchor.
   final double offsetY;
   final double buttonSpacing;
   final double width;
   final double buttonHeight;
+
+  /// The alpha value of the barrier that dims the screen behind a menu.
   final int smokeOpacity;
+
+  /// The duration of the opening animation in milliseconds.
   final int animationLengthMs;
 
   OverlayEntrySubMenuOptions({
@@ -99,8 +135,13 @@ class OverlayEntrySubMenuOptions
   });
 }
 
+/// The layout values shared by all dialogs.
+///
+/// An instance holding the values from the preferences is available as
+/// `PreferenceManager.alertDialogOptions`.
 class OverlayEntryAlertDialogOptions
 {
+  /// The alpha value of the barrier that dims the screen behind a dialog.
   final int smokeOpacity;
   final double minWidth;
   final double minHeight;
@@ -128,6 +169,9 @@ class OverlayEntryAlertDialogOptions
 
 
 
+  /// An overlay holding the [OverlayLoadMenu] anchored at [anchorKey].
+  ///
+  /// [onDismiss] is called when the barrier behind the menu is tapped.
   KPixOverlay getLoadMenu({
     required final Function() onDismiss,
     required final Function() onNewFile,
@@ -151,6 +195,9 @@ class OverlayEntryAlertDialogOptions
   }
 
 
+  /// An overlay holding the [OverlaySaveMenu] anchored at [anchorKey].
+  ///
+  /// [onDismiss] is called when the barrier behind the menu is tapped.
   KPixOverlay getSaveMenu({
     required final Function() onDismiss,
     required final Function() onSaveFile,
@@ -175,6 +222,9 @@ class OverlayEntryAlertDialogOptions
   }
 
 
+  /// An overlay holding the [OverlayDrawingLayerMenu] anchored at [anchorKey].
+  ///
+  /// [onDismiss] is called when the barrier behind the menu is tapped.
   KPixOverlay getDrawingLayerMenu({
     required final Function() onDismiss,
     required final Function() onDelete,
@@ -199,6 +249,9 @@ class OverlayEntryAlertDialogOptions
     );
   }
 
+/// An overlay holding the [OverlayDrawingLayerMenuLinked] anchored at [anchorKey].
+///
+/// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getDrawingLayerMenuLinked({
   required final Function() onDismiss,
   required final Function() onDelete,
@@ -223,6 +276,9 @@ KPixOverlay getDrawingLayerMenuLinked({
   );
 }
 
+  /// An overlay holding the [OverlayReducedLayerMenu] anchored at [anchorKey].
+  ///
+  /// [onDismiss] is called when the barrier behind the menu is tapped.
   KPixOverlay getReducedLayerMenu({
     required final Function() onDismiss,
     required final Function() onDelete,
@@ -246,6 +302,9 @@ KPixOverlay getDrawingLayerMenuLinked({
     );
   }
 
+/// An overlay holding the [OverlayRasterLayerMenu] anchored at [anchorKey].
+///
+/// [onDismiss] is called when the barrier behind the menu is tapped.
 KPixOverlay getRasterLayerMenu({
   required final Function() onDismiss,
   required final Function() onDelete,
@@ -272,6 +331,11 @@ KPixOverlay getRasterLayerMenu({
 
 
 
+  /// An overlay holding the editor for [colorRamp].
+  ///
+  /// [onAccept] receives the edited ramp, [onDelete] removes it, and [usedPixels]
+  /// tells the editor how many pixels currently use the ramp. The barrier ignores
+  /// taps, so the editor can only be left through its own buttons.
   KPixOverlay getKPal({
     required final ColorRampUpdateFn onAccept,
     required final ColorRampFn onDelete,
@@ -299,6 +363,10 @@ KPixOverlay getRasterLayerMenu({
     ),);
   }
 
+  /// An overlay holding a dialog with a yes, a no and a cancel button.
+  ///
+  /// [message] is shown above the buttons. Tapping the barrier calls [onCancel]
+  /// when [outsideCancelable] is set and is ignored otherwise.
   KPixOverlay getThreeButtonDialog({
     required final Function() onYes,
     required final Function() onNo,
@@ -390,6 +458,10 @@ KPixOverlay getRasterLayerMenu({
     );
   }
 
+  /// An overlay holding a dialog with a yes and a no button.
+  ///
+  /// [message] is shown above the buttons. Tapping the barrier calls [onNo] when
+  /// [outsideCancelable] is set and is ignored otherwise.
   KPixOverlay getTwoButtonDialog({
     required final Function() onYes,
     required final Function() onNo,
@@ -466,6 +538,10 @@ KPixOverlay getRasterLayerMenu({
     );
   }
 
+/// An overlay holding a dialog with a single confirming button.
+///
+/// [message] is shown above the button. The barrier ignores taps, so [onAction]
+/// is the only way out.
 KPixOverlay getSingleButtonDialog({
   required final Function() onAction,
   required final String message,
@@ -526,8 +602,11 @@ KPixOverlay getSingleButtonDialog({
 }
 
 
-/// Creates a self-closing dialog that asks the user to open the Android
+/// An overlay holding a dialog that asks the user to open the Android
 /// "All files access" system settings page.
+///
+/// [message] is shown above the buttons. Unlike the other dialogs, this one
+/// closes itself, so the caller only has to show it.
 KPixOverlay getAllFilesAccessDialog({required final String message})
 {
   late final KPixOverlay dialog;
@@ -544,6 +623,9 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
   );
 }
 
+  /// An overlay holding the dialog for exporting images, animations and palettes.
+  ///
+  /// The dialog is centred on desktop and aligned to the top everywhere else.
   KPixOverlay getExportDialog({
     required final Function() onDismiss,
     required final ImageExportDataFn onAcceptImage,
@@ -572,6 +654,7 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     );
   }
 
+  /// An overlay holding the dialog for importing an image.
   KPixOverlay getImportDialog({
     required final Function() onDismiss,
     required final ImportImageFn onAcceptImage,
@@ -594,6 +677,9 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     );
   }
 
+  /// An overlay holding the dialog for saving the current palette.
+  ///
+  /// The dialog is centred on desktop and aligned to the top everywhere else.
   KPixOverlay getPaletteSaveDialog({
     required final Function() onDismiss,
     required final PaletteExportDataFn onAccept,
@@ -620,6 +706,10 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     );
   }
 
+  /// An overlay holding the dialog for saving the project under a new name.
+  ///
+  /// [callback] is handed on to the [SaveAsWidget]. The dialog is centred on
+  /// desktop and aligned to the top everywhere else.
   KPixOverlay getSaveAsDialog({
     required final Function() onDismiss,
     required final SaveFileFn onAccept,
@@ -647,6 +737,10 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     );
   }
 
+/// An overlay holding the dialog for editing the text of the text tool.
+///
+/// The input starts out with [initialText] and is limited to [maxLength]
+/// characters, or unlimited when that is `null`.
 KPixOverlay getChangeTextToolDialog({
   required final Function() onDismiss,
   required final ChangeTextToolFn onAccept,
@@ -676,9 +770,10 @@ KPixOverlay getChangeTextToolDialog({
   );
 }
 
+  /// An overlay holding the about screen.
   KPixOverlay getAboutDialog({
     required final Function() onDismiss,
-    required final CoordinateSetI canvasSize,
+    /*required final CoordinateSetI canvasSize,*/
   })
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -698,6 +793,7 @@ KPixOverlay getChangeTextToolDialog({
     );
   }
 
+  /// An overlay holding the licenses of the used packages.
   KPixOverlay getLicensesDialog({
     required final Function() onDismiss,
   })
@@ -719,6 +815,7 @@ KPixOverlay getChangeTextToolDialog({
     );
   }
 
+  /// An overlay holding the credits.
   KPixOverlay getCreditsDialog({
     required final Function() onDismiss,
   })
@@ -740,6 +837,7 @@ KPixOverlay getChangeTextToolDialog({
     );
   }
 
+/// An overlay holding the list of controls and shortcuts.
 KPixOverlay getControlsDialog({
   required final Function() onDismiss,
 })
@@ -761,6 +859,9 @@ KPixOverlay getControlsDialog({
   );
 }
 
+  /// An overlay holding the dialog for changing the canvas size.
+  ///
+  /// The dialog is centred on desktop and aligned to the top everywhere else.
   KPixOverlay getCanvasSizeDialog({
     required final Function() onDismiss,
     required final CanvasSizeFn onAccept,
@@ -787,6 +888,7 @@ KPixOverlay getControlsDialog({
     );
   }
 
+  /// An overlay holding the preferences.
   KPixOverlay getPreferencesDialog({
     required final Function() onDismiss,
     required final Function() onAccept,
@@ -809,6 +911,11 @@ KPixOverlay getControlsDialog({
     );
   }
 
+  /// An overlay holding the dialog for setting up a new project.
+  ///
+  /// [onOpen] switches over to opening an existing project instead. [onDismiss] is
+  /// `null` when there is no project to return to, which leaves the dialog without
+  /// a way to cancel.
   KPixOverlay getNewProjectDialog({
     required final Function()? onDismiss,
     required final NewFileFn onAccept,
@@ -836,6 +943,7 @@ KPixOverlay getControlsDialog({
     );
   }
 
+  /// An overlay holding the palette manager.
   KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -855,6 +963,9 @@ KPixOverlay getControlsDialog({
     );
   }
 
+  /// An overlay holding the project manager.
+  ///
+  /// [onSave] and [onLoad] are handed on to the [ProjectManagerWidget].
   KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -874,6 +985,9 @@ KPixOverlay getControlsDialog({
     );
   }
 
+/// An overlay holding the stamp manager.
+///
+/// [onLoad] is handed on to the [StampManagerWidget].
 KPixOverlay getStampManagerDialog({required final Function() onDismiss, required final StampEntryDataFn onLoad})
 {
   final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -893,6 +1007,10 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
   );
 }
 
+  /// An overlay holding [message] on top of a barrier that ignores taps.
+  ///
+  /// Shown while long running work blocks the app, so it has to be taken down with
+  /// [KPixOverlay.hide].
   KPixOverlay getLoadingDialog({required final String message, final TextStyle? textStyle})
   {
     final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
@@ -923,6 +1041,9 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
     );
   }
 
+/// An overlay holding a color picker for the colors of [ramps].
+///
+/// [title] is shown above the colors.
 KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String title = "SELECT A COLOR"})
 {
   final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;

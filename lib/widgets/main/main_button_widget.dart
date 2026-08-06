@@ -128,7 +128,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
       onAcceptPalette: _paletteSavePressed,);
     _aboutDialog = getAboutDialog(
       onDismiss: _closeAllMenus,
-      canvasSize: _appState.canvasSize,);
+      /*canvasSize: _appState.canvasSize,*/);
     _preferencesDialog = getPreferencesDialog(
       onDismiss: _reloadPreferences,
       onAccept: _savePreferencesPressed,

@@ -23,8 +23,15 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A popup menu with one button per layer type that can be created.
+///
+/// The menu scales into view and places itself below the [OverlayAnchor]
+/// carrying [anchorKey], so it has to be inserted into an overlay [Stack]
+/// together with the barrier that dismisses it. Pressing a button only invokes
+/// the matching callback, closing the menu is left to the owner of the overlay.
 class OverlayAddNewLayerMenu extends StatefulWidget
 {
+  /// The key of the [OverlayAnchor] the menu is positioned relative to.
   final GlobalKey anchorKey;
   final Function() onNewDrawingLayer;
   final Function() onNewReferenceLayer;
@@ -52,6 +59,8 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
 {
   final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+
+  /// The driver of the scale animation the menu opens with.
   late AnimationController _controller;
 
   @override
@@ -62,6 +71,7 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
       vsync: this,
       duration: Duration(milliseconds: _options.animationLengthMs),
     );
+    // the menu is built when it is already visible, so the animation starts right away
     _controller.forward();
   }
 
@@ -72,6 +82,11 @@ class _OverlayAddNewLayerMenuState extends State<OverlayAddNewLayerMenu> with Si
     super.dispose();
   }
 
+  /// A single menu entry showing [icon], padded to line up with its neighbours.
+  ///
+  /// The [toolTip] is shown after [AppState.toolTipDuration] of hovering and is
+  /// placed above the entry, because the menu grows downwards from its anchor.
+  /// Pressing the entry calls [onPressedFunc].
   Padding _createMenuButton({required final String toolTip, required final IconData icon, required final void Function() onPressedFunc})
   {
     return Padding(

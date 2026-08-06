@@ -259,6 +259,23 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
     }
   }
 
+  Expanded _createExpandedButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
+  {
+    return Expanded(
+      child: Tooltip(
+        waitDuration: AppState.toolTipDuration,
+        message: tooltip,
+        child: Padding(
+          padding: EdgeInsets.all(_alertOptions.padding),
+            child: IconButton.outlined(
+              icon: Icon(icon),
+            onPressed: isEnabled ? onPressedFunc : null,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -298,116 +315,26 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Expanded(
-                child: Tooltip(
-                  waitDuration: AppState.toolTipDuration,
-                  message: "Close",
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.x,
-                        //size: _alertOptions.iconSize,
-                      ),
-                      onPressed: _dismissPressed,
-                    ),
-                  ),
-                ),
+              _createExpandedButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
+              _createExpandedButton(tooltip: "Import Palette", icon: TablerIcons.file_import, onPressedFunc: _importPalettePressed, isEnabled: !kIsWeb),
+              _createExpandedButton(tooltip: "Save Current Palette", icon: TablerIcons.device_floppy, onPressedFunc: _addCurrentPalette, isEnabled: !kIsWeb),
+              ValueListenableBuilder<PaletteManagerEntryWidget?>(
+                valueListenable: _selectedWidget,
+                builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
+                  return _createExpandedButton(tooltip: "Delete Selected Palette", icon: TablerIcons.trash, onPressedFunc: _deletePalettePressed, isEnabled: selWidget != null && !selWidget.entryData.isLocked);
+                },
               ),
-              Expanded(
-                  child: Tooltip(
-                    message: "Import Palette",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Padding(
-                      padding: EdgeInsets.all(_alertOptions.padding),
-                      child: IconButton.outlined(
-                        icon: const Icon(
-                          TablerIcons.file_import,
-                          //size: _alertOptions.iconSize,
-                        ),
-                        onPressed: kIsWeb ? null : _importPalettePressed,
-                      ),
-                    ),
-                  ),
+              ValueListenableBuilder<PaletteManagerEntryWidget?>(
+                valueListenable: _selectedWidget,
+                builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
+                  return _createExpandedButton(tooltip: "Append to Current Palette", icon: TablerIcons.plus, onPressedFunc: _appendPalette, isEnabled: selWidget != null);
+                },
               ),
-              Expanded(
-                child: Tooltip(
-                  message: "Save Current Palette",
-                  waitDuration: AppState.toolTipDuration,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: IconButton.outlined(
-                      icon: const Icon(
-                        TablerIcons.device_floppy,
-                        //size: _alertOptions.iconSize,
-                      ),
-                      onPressed: kIsWeb ? null : _addCurrentPalette,
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                  child: Tooltip(
-                    message: "Delete Selected Palette",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Padding(
-                      padding: EdgeInsets.all(_alertOptions.padding),
-                      child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
-                        valueListenable: _selectedWidget,
-                        builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                          return IconButton.outlined(
-                            icon: const Icon(
-                              TablerIcons.trash,
-                              //size: _alertOptions.iconSize,
-                            ),
-                            onPressed: (selWidget != null && !selWidget.entryData.isLocked) ? _deletePalettePressed : null,
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-              ),
-              Expanded(
-                child: Tooltip(
-                  message: "Append to Current Palette",
-                  waitDuration: AppState.toolTipDuration,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
-                      valueListenable: _selectedWidget,
-                      builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.plus,
-                            //size: _alertOptions.iconSize,
-                          ),
-                          onPressed: selWidget != null ? _appendPalette : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Tooltip(
-                  message: "Apply Selected Palette",
-                  waitDuration: AppState.toolTipDuration,
-                  child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
-                    child: ValueListenableBuilder<PaletteManagerEntryWidget?>(
-                      valueListenable: _selectedWidget,
-                      builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
-                        return IconButton.outlined(
-                          icon: const Icon(
-                            TablerIcons.check,
-                            //size: _alertOptions.iconSize,
-                          ),
-                          onPressed: selWidget != null ? _applyPalette : null,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              ValueListenableBuilder<PaletteManagerEntryWidget?>(
+                valueListenable: _selectedWidget,
+                builder: (final BuildContext context, final PaletteManagerEntryWidget? selWidget, final Widget? child) {
+                  return _createExpandedButton(tooltip: "Apply Selected Palette", icon: TablerIcons.check, onPressedFunc: _applyPalette, isEnabled: selWidget != null);
+                },
               ),
             ],
           ),

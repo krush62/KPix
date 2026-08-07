@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 
+/// Layout options for [ProjectManagerEntryWidget].
 class ProjectManagerEntryOptions
 {
   final double borderWidth;
@@ -33,6 +34,7 @@ class ProjectManagerEntryOptions
   });
 }
 
+/// Data structure for a KPix project file.
 class ProjectManagerEntryData
 {
   final ui.Image? thumbnail;
@@ -43,7 +45,7 @@ class ProjectManagerEntryData
   ProjectManagerEntryData({required this.dateTime, required this.path, required this.thumbnail, required this.name});
 }
 
-
+/// Visualization of a project file used for [ProjectManagerEntryWidget].
 class ProjectManagerEntryWidget extends StatefulWidget
 {
   final ProjectManagerEntryData entryData;

@@ -28,6 +28,8 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+
+/// Screen for showing the options when creating a new file.
 class NewProjectWidget extends StatefulWidget
 {
   final Function()? dismiss;

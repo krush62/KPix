@@ -25,6 +25,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A simple widget for entering a project name for saving.
 class SaveAsWidget extends StatefulWidget
 {
   final Function() dismiss;

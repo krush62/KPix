@@ -31,7 +31,7 @@ import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
-
+/// Data structure for import options used in [ImportWidget].
 class ImportData
 {
   final int maxClusters;
@@ -45,6 +45,7 @@ class ImportData
   const ImportData({required this.filePath, required this.maxRamps, required this.maxColors, required this.image, required this.includeReference, required this.maxClusters, required this.createNewPalette, required this.scaledImage});
 }
 
+/// Screen for importing raster images into the application.
 class ImportWidget extends StatefulWidget
 {
   final Function() dismiss;

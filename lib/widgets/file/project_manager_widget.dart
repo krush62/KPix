@@ -27,6 +27,7 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// Layout options for [ProjectManagerWidget].
 class ProjectManagerOptions
 {
   final int colCount;
@@ -37,6 +38,7 @@ class ProjectManagerOptions
   ProjectManagerOptions({required this.colCount, required this.entryAspectRatio, required this.maxWidth, required this.maxHeight, required this.maxFilterTextLength});
 }
 
+/// Displays all project files and gives filter and sorting options.
 class ProjectManagerWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -48,6 +50,7 @@ class ProjectManagerWidget extends StatefulWidget
   State<ProjectManagerWidget> createState() => _ProjectManagerWidgetState();
 }
 
+/// Available sorting options.
 enum ProjectViewOrder
 {
   nameAsc,

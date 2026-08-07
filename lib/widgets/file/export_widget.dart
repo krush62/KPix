@@ -26,7 +26,7 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
-
+/// Supported image export types.
 enum ImageExportType
 {
   png,
@@ -38,6 +38,7 @@ enum ImageExportType
   texturePack
 }
 
+/// Supported animation export types.
 enum AnimationExportType
 {
   gif,
@@ -48,6 +49,7 @@ enum AnimationExportType
   texturePack
 }
 
+/// Supported palette export types.
 enum PaletteExportType
 {
   kpal,
@@ -62,6 +64,7 @@ enum PaletteExportType
   json
 }
 
+/// Supported special export types.
 enum KPixExportType
 {
   kpix,
@@ -69,6 +72,7 @@ enum KPixExportType
   texturePackAnimated
 }
 
+// Available export sections.
 enum ExportSectionType
 {
   image,
@@ -77,6 +81,8 @@ enum ExportSectionType
   kpix
 }
 
+/// Data structure for holding information needed for exporting. Like the
+/// [extension], [directory], ...
 abstract class ExportData
 {
   final String extension;
@@ -86,6 +92,7 @@ abstract class ExportData
   const ExportData({required this.name, required this.extension, this.fileName = "", this.directory = ""});
 }
 
+/// [ExportData] specialization for palettes.
 class PaletteExportData extends ExportData
 {
   const PaletteExportData({required super.name, required super.extension, super.fileName = "", super.directory = ""});
@@ -109,8 +116,10 @@ class PaletteExportData extends ExportData
   };
 }
 
+/// Available export scaling values.
 const List<int> exportScalingValues = <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
+/// [ExportData] specialization for images.
 class ImageExportData extends ExportData
 {
   final int scaling;
@@ -133,8 +142,7 @@ class ImageExportData extends ExportData
   };
 }
 
-
-
+/// [ExportData] specialization for animations.
 class AnimationExportData extends ImageExportData
 {
   final bool loopOnly;
@@ -153,9 +161,7 @@ class AnimationExportData extends ImageExportData
   };
 }
 
-
-
-
+/// The screen for showing all the options for exporting a project.
 class ExportWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -251,6 +257,19 @@ class _ExportWidgetState extends State<ExportWidget>
     _fileNameStatus.value = checkFileName(fileName: _fileName.value, directory: _appState.exportDir, extension: extension);
   }
 
+  ButtonSegment<ExportSectionType> _createExportSection({required final ExportSectionType type, required final String tooltip, required final IconData icon, final bool isEnabled = true})
+  {
+    return ButtonSegment<ExportSectionType>(
+      enabled: isEnabled,
+      value: type,
+      label: Tooltip(
+        message: tooltip,
+        waitDuration: AppState.toolTipDuration,
+        child: Icon(icon),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     return KPixAnimationWidget(
@@ -271,47 +290,10 @@ class _ExportWidgetState extends State<ExportWidget>
               builder: (final BuildContext context, final ExportSectionType section, final Widget? child) {
                 return SegmentedButton<ExportSectionType>(
                   segments:  <ButtonSegment<ExportSectionType>>[
-                    const ButtonSegment<ExportSectionType>(
-                      value: ExportSectionType.image,
-                      label: Tooltip(
-                          message: "Image",
-                          waitDuration: AppState.toolTipDuration,
-                          child: Icon(
-                              TablerIcons.photo,
-                          ),
-                      ),
-                    ),
-                    ButtonSegment<ExportSectionType>(
-                      enabled: _appState.timeline.frames.value.length > 1,
-                      value: ExportSectionType.animation,
-                      label: const Tooltip(
-                        message: "Animation",
-                        waitDuration: AppState.toolTipDuration,
-                        child: Icon(
-                          TablerIcons.movie,
-                        ),
-                      ),
-                    ),
-                    const ButtonSegment<ExportSectionType>(
-                      value: ExportSectionType.palette,
-                      label: Tooltip(
-                        message: "Palette",
-                        waitDuration: AppState.toolTipDuration,
-                        child: Icon(
-                          Icons.palette,
-                        ),
-                      ),
-                    ),
-                    const ButtonSegment<ExportSectionType>(
-                      value: ExportSectionType.kpix,
-                      label: Tooltip(
-                        message: "KPix project",
-                        waitDuration: AppState.toolTipDuration,
-                        child:  Icon(
-                          TablerIcons.file_export,
-                        ),
-                      ),
-                    ),
+                    _createExportSection(type: ExportSectionType.image, tooltip: "Image", icon: TablerIcons.photo),
+                    _createExportSection(type: ExportSectionType.animation, tooltip: "Animation", icon: TablerIcons.movie, isEnabled: _appState.timeline.frames.value.length > 1),
+                    _createExportSection(type: ExportSectionType.palette, tooltip: "Palette", icon: Icons.palette),
+                    _createExportSection(type: ExportSectionType.kpix, tooltip: "KPix project", icon: TablerIcons.file_export),
                   ],
                   selected: <ExportSectionType>{section},
                   showSelectedIcon: false,

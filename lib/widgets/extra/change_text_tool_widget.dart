@@ -23,6 +23,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A widget for entering text for the font tool on mobile devices.
 class ChangeTextToolWidget extends StatefulWidget
 {
   final Function() dismiss;

@@ -23,6 +23,7 @@ import 'package:kpix/oss_licenses.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A widget for displaying all the licenses.
 class LicensesWidget extends StatelessWidget
 {
   final Function() onDismiss;

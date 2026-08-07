@@ -27,6 +27,7 @@ import 'package:kpix/preferences/touch_preferences.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// Different sections of the preferences.
 enum PreferenceSectionType
 {
   gui,
@@ -36,6 +37,7 @@ enum PreferenceSectionType
   controlsTouch
 }
 
+/// Data struct for a preference section.
 class PreferenceSection
 {
   final String title;
@@ -43,6 +45,7 @@ class PreferenceSection
   const PreferenceSection({required this.title, required this.icon});
 }
 
+/// Preference section dictionary.
 const Map<PreferenceSectionType, PreferenceSection> preferenceMap =
 <PreferenceSectionType, PreferenceSection>{
   PreferenceSectionType.gui: PreferenceSection(title: "GUI", icon: TablerIcons.app_window),
@@ -52,6 +55,8 @@ const Map<PreferenceSectionType, PreferenceSection> preferenceMap =
   PreferenceSectionType.controlsTouch: PreferenceSection(title: "Controls Touch", icon: TablerIcons.hand_click),
 };
 
+
+/// The preference screen widget.
 class PreferencesWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -66,6 +71,21 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
 {
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<PreferenceSectionType> _prefSection = ValueNotifier<PreferenceSectionType>(PreferenceSectionType.gui);
+
+
+  ButtonSegment<PreferenceSectionType> _createSegment({required final PreferenceSectionType section})
+  {
+    return ButtonSegment<PreferenceSectionType>(
+      value: section,
+      label: Tooltip(
+        message: preferenceMap[section]!.title,
+        waitDuration: AppState.toolTipDuration,
+        child: Icon(
+          preferenceMap[section]!.icon,
+        ),
+      ),
+    );
+  }
 
 
   @override
@@ -86,56 +106,11 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             builder: (final BuildContext context, final PreferenceSectionType pref, final Widget? child) {
               return SegmentedButton<PreferenceSectionType>(
                 segments: <ButtonSegment<PreferenceSectionType>>[
-                  ButtonSegment<PreferenceSectionType>(
-                    value: PreferenceSectionType.gui,
-                    label: Tooltip(
-                      message: preferenceMap[PreferenceSectionType.gui]!.title,
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                        preferenceMap[PreferenceSectionType.gui]!.icon,
-                      ),
-                    ),
-                  ),
-                  ButtonSegment<PreferenceSectionType>(
-                    value: PreferenceSectionType.behavior,
-                    label: Tooltip(
-                      message: preferenceMap[PreferenceSectionType.behavior]!.title,
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                        preferenceMap[PreferenceSectionType.behavior]!.icon,
-                      ),
-                    ),
-                  ),
-                  //for a future release
-                  ButtonSegment<PreferenceSectionType>(
-                    value: PreferenceSectionType.controlsPC,
-                    label: Tooltip(
-                      message: preferenceMap[PreferenceSectionType.controlsPC]!.title,
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                        preferenceMap[PreferenceSectionType.controlsPC]!.icon,
-                      ),
-                    ),
-                  ),
-                  ButtonSegment<PreferenceSectionType>(
-                    value: PreferenceSectionType.controlsStylus,
-                    label: Tooltip(
-                      message: preferenceMap[PreferenceSectionType.controlsStylus]!.title,
-                      waitDuration: AppState.toolTipDuration,
-                      child: Icon(
-                        preferenceMap[PreferenceSectionType.controlsStylus]!.icon,
-                      ),
-                    ),
-                  ),
-                  ButtonSegment<PreferenceSectionType>(
-                      value: PreferenceSectionType.controlsTouch,
-                      label: Tooltip(
-                        message: preferenceMap[PreferenceSectionType.controlsTouch]!.title,
-                        waitDuration: AppState.toolTipDuration,
-                        child: Icon(preferenceMap[PreferenceSectionType.controlsTouch]!.icon,
-                        ),
-                    ),
-                  ),
+                  _createSegment(section: PreferenceSectionType.gui),
+                  _createSegment(section: PreferenceSectionType.behavior),
+                  _createSegment(section: PreferenceSectionType.controlsPC),
+                  _createSegment(section: PreferenceSectionType.controlsStylus),
+                  _createSegment(section: PreferenceSectionType.controlsTouch),
                 ],
                 selected: <PreferenceSectionType>{pref},
                 showSelectedIcon: false,

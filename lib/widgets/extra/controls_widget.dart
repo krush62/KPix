@@ -24,6 +24,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// A widget to display all shortcuts and hotkeys.
 class ControlsWidget extends StatefulWidget {
   final Function() onDismiss;
   const ControlsWidget({super.key, required this.onDismiss});

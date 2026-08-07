@@ -478,6 +478,11 @@ class SelectionState with ChangeNotifier
     }
   }
 
+  void deselectWithHistory()
+  {
+    deselect(addToHistoryStack: true);
+  }
+
 
   void deselect({final bool notify = true, required final bool addToHistoryStack})
   {

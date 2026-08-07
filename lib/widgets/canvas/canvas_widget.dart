@@ -56,7 +56,7 @@ import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 
-
+/// Layout options for [CanvasWidget].
 class CanvasOptions
 {
   final int historyCheckPollRate;
@@ -69,6 +69,7 @@ class CanvasOptions
     required this.idleTimerRate,});
 }
 
+/// Status of the touch pointer.
 class TouchPointerStatus
 {
   final Offset startPos;
@@ -77,7 +78,10 @@ class TouchPointerStatus
 }
 
 
-
+/// Main Canvas widget for all drawing/displaying purposes.
+///
+/// This widget holds a [CustomPaint] with [KPixPainter] as painter and
+/// handles all input operation.
 class CanvasWidget extends StatefulWidget {
   const CanvasWidget(
       {

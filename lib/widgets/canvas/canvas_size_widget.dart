@@ -31,6 +31,7 @@ import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 
+/// Layout options for the [CanvasSizeWidget]
 class CanvasSizeOptions
 {
   final int sizeMin;
@@ -44,6 +45,7 @@ class CanvasSizeOptions
   });
 }
 
+/// Widget for changing the size of the canvas.
 class CanvasSizeWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -51,11 +53,10 @@ class CanvasSizeWidget extends StatefulWidget
   const CanvasSizeWidget({required this.dismiss, required this.accept, super.key});
 
   @override
-  State<StatefulWidget> createState() => CanvasSizeWidgetState();
-
+  State<StatefulWidget> createState() => _CanvasSizeWidgetState();
 }
 
-class CanvasSizeWidgetState extends State<CanvasSizeWidget>
+class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 {
   final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
@@ -356,6 +357,21 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
     );
   }
 
+  Positioned _getPreviewBorder({required final CoordinateSetD size, required final CoordinateSetI offset, required final CoordinateSetD canvasSize, final double width = 1.0, required final Color color})
+  {
+    return Positioned(
+      left: (_sizeOptions.previewSize / 2) - (size.x / 2) + (offset.x * _scalingFactor),
+      top: (_sizeOptions.previewSize / 2) - (size.y / 2) + (offset.y * _scalingFactor),
+      width: canvasSize.x,
+      height: canvasSize.y,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: color, width: width),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context)
   {
@@ -470,40 +486,9 @@ class CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                               },
                                             ),
                                           ),
-                                          Positioned(
-                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offsetX * _scalingFactor),
-                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offsetY * _scalingFactor),
-                                            width: scaledCanvasSize.x,
-                                            height: scaledCanvasSize.y,
-                                            child: DecoratedBox(
-
-                                              decoration: BoxDecoration(
-                                                border: Border.all(color:  Theme.of(context).primaryColorLight, width: 4),
-                                              ),
-                                            ),
-                                          ),
-                                          Positioned(
-                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                            width: scaledNewSize.x,
-                                            height: scaledNewSize.y,
-                                            child: DecoratedBox(
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(color:  Theme.of(context).primaryColorDark, width: 3),
-                                              ),
-                                            ),
-                                          ),
-                                          Positioned(
-                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2),
-                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2),
-                                            width: scaledNewSize.x,
-                                            height: scaledNewSize.y,
-                                            child: DecoratedBox(
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(color:  Theme.of(context).primaryColorLight),
-                                              ),
-                                            ),
-                                          ),
+                                          _getPreviewBorder(size: scaledNewSize, offset: CoordinateSetI(x: offsetX, y: offsetY), canvasSize: scaledCanvasSize, width: 4, color: Theme.of(context).primaryColorLight),
+                                          _getPreviewBorder(size: scaledNewSize, offset: CoordinateSetI.zero(), canvasSize: scaledNewSize, width: 3, color: Theme.of(context).primaryColorDark),
+                                          _getPreviewBorder(size: scaledNewSize, offset: CoordinateSetI.zero(), canvasSize: scaledNewSize, color: Theme.of(context).primaryColorLight),
                                         ],
                                       );
                                     },

@@ -26,6 +26,7 @@ import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
 
+/// Layout options for the [SelectionBarWidget].
 class SelectionBarWidgetOptions
 {
   final double iconHeight;
@@ -35,6 +36,7 @@ class SelectionBarWidgetOptions
   SelectionBarWidgetOptions({required this.iconHeight, required this.padding, required this.opacityDuration});
 }
 
+/// Widget for all selection related operations (copy, paste, transform, ...).
 class SelectionBarWidget extends StatefulWidget
 {
   const SelectionBarWidget({super.key});
@@ -102,6 +104,21 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
     _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value, content: _appState.selectionState.clipboard);
   }
 
+  Padding _createBarButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
+  {
+    return Padding(
+      padding: EdgeInsets.all(_options.padding),
+      child: Tooltip(
+        message: tooltip,
+        waitDuration: AppState.toolTipDuration,
+        child: IconButton.outlined(
+          onPressed: isEnabled ? onPressedFunc : null,
+          icon: Icon(icon, size: _options.iconHeight),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     return ListenableBuilder(
@@ -112,159 +129,70 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Select All${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selectAll,
-                    icon: Icon(
-                        TablerIcons.select_all,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                  tooltip: "Select All${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionSelectAll)}",
+                  icon: TablerIcons.select_all,
+                  onPressedFunc: _selectionState.selectAll,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Deselect${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                      onPressed: _selectionState.selection.isEmpty ? null : (){return _selectionState.deselect(addToHistoryStack: true);},
-                      icon: Icon(
-                        TablerIcons.deselect,
-                        size: _options.iconHeight,
-                      ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Deselect${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDeselect)}",
+                icon: TablerIcons.deselect,
+                onPressedFunc: _selectionState.deselectWithHistory,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Inverse Selection${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                      onPressed: _selectionState.selection.isEmpty ? null : _selectionState.inverse,
-                      icon: Icon(
-                        TablerIcons.percentage_50,
-                        size: _options.iconHeight,
-                      ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Inverse Selection${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionInvert)}",
+                icon: TablerIcons.percentage_50,
+                onPressedFunc: _selectionState.inverse,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copy,
-                    icon: Icon(
-                      TablerIcons.copy,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Copy${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopy)}",
+                icon: TablerIcons.copy,
+                onPressedFunc: _selectionState.copy,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.copyMerged,
-                    icon: Icon(
-                      TablerIcons.copy_plus,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Copy Merged${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCopyMerged)}",
+                icon: TablerIcons.copy_plus,
+                onPressedFunc: _selectionState.copyMerged,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.cut,
-                    icon: Icon(
-                      TablerIcons.scissors,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Cut${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionCut)}",
+                icon: TablerIcons.scissors,
+                onPressedFunc: _selectionState.cut,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.clipboard == null ? null : _selectionState.paste,
-                    icon: Icon(
-                      TablerIcons.clipboard,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Paste${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPaste)}",
+                icon: TablerIcons.clipboard,
+                onPressedFunc: _selectionState.paste,
+                isEnabled: _selectionState.clipboard != null,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.clipboard == null ? null : _pasteNewPressed,
-                    icon: Icon(
-                      TablerIcons.clipboard_plus,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Paste As New Layer${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionPasteAsNewLayer)}",
+                icon: TablerIcons.clipboard_plus,
+                onPressedFunc: _pasteNewPressed,
+                isEnabled: _selectionState.clipboard != null,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipH,
-                    icon: Icon(
-                      TablerIcons.flip_vertical,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Horizontal Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipH)}",
+                icon: TablerIcons.flip_vertical,
+                onPressedFunc: _selectionState.flipH,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.flipV,
-                    icon: Icon(
-                      TablerIcons.flip_horizontal,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Vertical Flip${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionFlipV)}",
+                icon: TablerIcons.flip_horizontal,
+                onPressedFunc: _selectionState.flipV,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
-              Padding(
-                padding: EdgeInsets.all(_options.padding),
-                child: Tooltip(
-                  message: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate)}",
-                  waitDuration: AppState.toolTipDuration,
-                  child: IconButton.outlined(
-                    onPressed: _selectionState.selection.isEmpty ? null : _selectionState.rotate,
-                    icon: Icon(
-                      TablerIcons.rotate_clockwise_2,
-                      size: _options.iconHeight,
-                    ),
-                  ),
-                ),
+              _createBarButton(
+                tooltip: "Rotate 90° Clockwise${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionRotate)}",
+                icon: TablerIcons.rotate_clockwise_2,
+                onPressedFunc: _selectionState.rotate,
+                isEnabled: !_selectionState.selection.isEmpty,
               ),
               Padding(
                 padding: EdgeInsets.all(_options.padding),

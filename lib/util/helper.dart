@@ -145,6 +145,11 @@ class CoordinateSetI
     return CoordinateSetI(x: other.x, y: other.y);
   }
 
+  factory CoordinateSetI.zero()
+  {
+    return CoordinateSetI(x: 0, y: 0);
+  }
+
   @override
   bool operator ==(final Object other) =>
       identical(this, other) ||

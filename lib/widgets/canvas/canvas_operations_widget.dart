@@ -23,6 +23,7 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// Layout options for the [CanvasOperationsWidget].
 class CanvasOperationsWidgetOptions
 {
   final double iconHeight;
@@ -32,6 +33,7 @@ class CanvasOperationsWidgetOptions
   CanvasOperationsWidgetOptions({required this.iconHeight, required this.padding, required this.buttonHeight});
 }
 
+/// Available canvas transformations.
 enum CanvasTransformation
 {
   rotate,
@@ -39,6 +41,7 @@ enum CanvasTransformation
   flipV
 }
 
+/// Descriptions for the available canvas operations.
 const Map<CanvasTransformation, String> transformationDescriptions =
 <CanvasTransformation, String>{
   CanvasTransformation.rotate: "Rotate Canvas",
@@ -46,7 +49,9 @@ const Map<CanvasTransformation, String> transformationDescriptions =
   CanvasTransformation.flipV: "Flip Canvas Vertically",
 };
 
-
+/// Widget for applying canvas-level transformations.
+///
+/// This includes rotation, flipping and cropping.
 class CanvasOperationsWidget extends StatefulWidget
 {
   const CanvasOperationsWidget({super.key});

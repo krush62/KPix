@@ -22,6 +22,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/kpix_logger.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
@@ -32,8 +33,6 @@ import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/util/logging_extensions.dart';
-import 'package:kpix/util/system_info_helper.dart';
 import 'package:kpix/util/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
@@ -51,7 +50,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:version/version.dart';
 
-
+/// Notifier for theme change.
 class ThemeNotifier extends ChangeNotifier
 {
   ThemeMode _themeMode = ThemeMode.system;
@@ -73,49 +72,23 @@ class ThemeNotifier extends ChangeNotifier
   }
 }
 
+/// Currently used theme (system/light/dark).
 final ThemeNotifier themeSettings = ThemeNotifier();
+/// Default size of the desktop application.
 const Size defaultDesktopSize = Size(1600, 900);
+/// Minimum screen resolution size a device needs to have.
 const Size minimumApplicationSize = Size(1200, 600);
 
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
-Logger _createLogger()
-{
-  final FileLogOutput fileOutput = FileLogOutput();
-  final ThresholdOutput consoleOutput = ThresholdOutput(ConsoleOutput(), minLevel: Level.warning);
-  final SimplePrinter defaultPrinter = SimplePrinter(printTime: true, colors: false);
-  final PrettyPrinter warningPrinter = PrettyPrinter(
-    methodCount: 3,
-    errorMethodCount: 10,
-    printEmojis: false,
-    colors: false,
-    dateTimeFormat: DateTimeFormat.dateAndTime,
-  );
-
-  return Logger(
-    printer: HybridPrinter(defaultPrinter, warning: warningPrinter, error: warningPrinter, fatal: warningPrinter),
-    level: Level.info,
-    output: kIsWeb ?  null : MultiOutput(<LogOutput?>[fileOutput, consoleOutput]),
-  );
-}
-
-Future<void> _logSystemInfo(final Logger logger) async
-{
-  final Map<String, String> info = await readableDeviceInfo();
-  for (final MapEntry<String, String> entry in info.entries)
-  {
-    logger.i("${entry.key}: ${entry.value}");
-  }
-}
-
 void main(final List<String> args)
 {
-  final Logger logger = _createLogger();
+  final KPixLogger logger = KPixLogger();
   GetIt.I.registerSingleton<Logger>(logger);
   logger.i("Starting application");
   cmdLineArgs = args;
   WidgetsFlutterBinding.ensureInitialized();
-  _logSystemInfo(logger);
+  logger.logSystemInfo();
   final HotkeyManager hotkeyManager = HotkeyManager();
   final FocusNode focusNode = FocusNode();
   GetIt.I.registerSingleton<HotkeyManager>(hotkeyManager);

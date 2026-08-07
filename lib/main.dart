@@ -79,6 +79,7 @@ const Size defaultDesktopSize = Size(1600, 900);
 /// Minimum screen resolution size a device needs to have.
 const Size minimumApplicationSize = Size(1200, 600);
 
+/// Command line arguments.
 late List<String> cmdLineArgs; //--dart-entrypoint-args <args>
 
 void main(final List<String> args)
@@ -362,7 +363,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         if (isDesktop())
         {
           getLatestVersionInfo().then((final UpdateInfoPackage? value) {
-            updateDataReceived(updateInfo: value);
+            _updateDataReceived(updateInfo: value);
           });
         }
       }
@@ -391,7 +392,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
 
   }
 
-  void updateDataReceived({required final UpdateInfoPackage? updateInfo})
+  void _updateDataReceived({required final UpdateInfoPackage? updateInfo})
   {
     final Logger logger = GetIt.I.get<Logger>();
     bool hasUpdate = false;
@@ -648,6 +649,9 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   }
 }
 
+/// The main widget holding the application.
+///
+/// The general layout is represented in this class.
 class MainWidget extends StatelessWidget
 {
   const MainWidget({super.key, required this.closePressed});

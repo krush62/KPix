@@ -15,9 +15,12 @@
  */
 
 import 'package:flutter/widgets.dart';
+
+/// Collection of custom font based icons.
 class KPixIcons {
   KPixIcons._();
 
+  /// Font family name.
   static const String _kFontFam = 'KPixIcons';
 
   static const IconData linear = IconData(0xe800, fontFamily: _kFontFam);

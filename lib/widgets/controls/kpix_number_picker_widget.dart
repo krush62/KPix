@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
+/// A widget for selecting a number using up/down arrows.
 class KPixNumberPickerWidget extends StatefulWidget {
   final Function(int newValue)? onValueChanged;
   final ValueNotifier<int> valueNotifier;

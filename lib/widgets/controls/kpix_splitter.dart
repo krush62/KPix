@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 
+/// A ratio-based layout splitter.
 class KPixSplitter extends StatefulWidget {
   final Widget left;
   final Widget right;

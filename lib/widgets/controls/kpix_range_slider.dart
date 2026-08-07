@@ -18,6 +18,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+/// A ranged slider with the value displayed inside the bar.
 class KPixRangeSlider extends StatefulWidget {
   final RangeValues values;
   final ValueChanged<RangeValues>? onChanged;

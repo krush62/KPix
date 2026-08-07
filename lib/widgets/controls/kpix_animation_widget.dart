@@ -20,6 +20,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
+/// The default animation container for "zoom in" animation for overlays.
 class KPixAnimationWidget extends StatefulWidget
 {
   final Widget child;

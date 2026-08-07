@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 
 final LinkedHashSet<Alignment> allAlignments = LinkedHashSet<Alignment>.from(<Alignment>[Alignment.topLeft, Alignment.topCenter, Alignment.topRight, Alignment.centerRight, Alignment.bottomRight, Alignment.bottomCenter, Alignment.bottomLeft, Alignment.centerLeft]);
 
+/// A widget for selecting the cardinal and diagonal directions.
 class KPixDirectionWidget extends StatelessWidget
 {
   final bool isExclusive;

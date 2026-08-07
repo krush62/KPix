@@ -20,6 +20,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
+/// A simple widget showing all palette colors for selecting a specific one.
 class KPixColorPickerWidget extends StatelessWidget
 {
   final double padding;

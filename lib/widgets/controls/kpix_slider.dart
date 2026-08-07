@@ -18,6 +18,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:kpix/util/helper.dart';
 
+/// A slider with the value displayed inside the bar.
 class KPixSlider extends StatefulWidget {
   final double value;
   final ValueChanged<double>? onChanged;

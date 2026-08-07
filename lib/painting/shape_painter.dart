@@ -37,12 +37,12 @@ class ShapePainter extends IToolPainter
   final ShapeOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.shapeOptions;
   final BehaviorPreferenceContent _behaviorPreferenceContent = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final CoordinateSetI _selectionStart = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _selectionEnd = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _selectionStart = CoordinateSetI.zero();
+  final CoordinateSetI _selectionEnd = CoordinateSetI.zero();
   Offset _lastStartPos = Offset.zero;
-  final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _lastNormStartPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _lastNormEndPos = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _normStartPos = CoordinateSetI.zero();
+  final CoordinateSetI _lastNormStartPos = CoordinateSetI.zero();
+  final CoordinateSetI _lastNormEndPos = CoordinateSetI.zero();
   bool _isStarted = false;
   bool _waitingForRasterization = false;
   CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();

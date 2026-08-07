@@ -34,7 +34,7 @@ import 'package:kpix/util/typedefs.dart';
 class EraserPainter extends IToolPainter
 {
   final EraserOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
-  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI.zero();
   bool _isDown = false;
   bool _hasErasedPixels = false;
 

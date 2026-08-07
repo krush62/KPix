@@ -23,8 +23,8 @@ import 'package:kpix/util/helper.dart';
 class ColorPickPainter extends IToolPainter
 {
   ColorPickPainter({required super.painterOptions});
-  final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
-  final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetD _cursorStartPos = CoordinateSetD.zero();
+  final CoordinateSetI _oldCursorPos = CoordinateSetI.zero();
   ColorReference? selectedColor;
 
   static const List<MapEntry<int, int>> _symbolPathOutline = <MapEntry<int, int>>[

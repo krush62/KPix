@@ -31,8 +31,8 @@ import 'package:kpix/util/helper.dart';
 
 class SelectionPainter extends IToolPainter
 {
-  final CoordinateSetI selectionStart = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI selectionEnd = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI selectionStart = CoordinateSetI.zero();
+  final CoordinateSetI selectionEnd = CoordinateSetI.zero();
   bool hasNewSelection = false;
   final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
   final LineOptions _lineOptions = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
@@ -40,7 +40,7 @@ class SelectionPainter extends IToolPainter
   bool movementStarted = false;
   List<CoordinateSetI> polygonPoints = <CoordinateSetI>[];
   bool polygonDown = false;
-  final CoordinateSetI _normStartPos = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _normStartPos = CoordinateSetI.zero();
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: -1, y: -1);
   Offset _lastStartPos = Offset.zero;
   bool _isStartOnCanvas = false;

@@ -179,8 +179,8 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 
   void _calculateOffset()
   {
-    final CoordinateSetI oMin = CoordinateSetI(x: 0, y: 0);
-    final CoordinateSetI oMax = CoordinateSetI(x: 0, y: 0);
+    final CoordinateSetI oMin = CoordinateSetI.zero();
+    final CoordinateSetI oMax = CoordinateSetI.zero();
 
     if (_width.value < _appState.canvasSize.x)
     {

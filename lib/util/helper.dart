@@ -116,6 +116,11 @@ class CoordinateSetD
 
   CoordinateSetD({required this.x, required this.y});
 
+  factory CoordinateSetD.zero()
+  {
+    return CoordinateSetD(x: 0.0, y: 0.0);
+  }
+
   @override
   bool operator ==(final Object other) =>
       identical(this, other) ||

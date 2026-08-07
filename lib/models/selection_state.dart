@@ -921,7 +921,7 @@ class SelectionList
     return isEmptyNotifer.value;
   }
 
-  final CoordinateSetI _lastOffset = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _lastOffset = CoordinateSetI.zero();
 
   void changeLayer({required final LayerState? oldLayer, required final LayerState newLayer})
   {
@@ -1105,7 +1105,7 @@ class SelectionList
   void rotate90cw()
   {
     final CoordinateSetI minCoords = _appState.canvasSize;
-    final CoordinateSetI maxCoords = CoordinateSetI(x: 0, y: 0);
+    final CoordinateSetI maxCoords = CoordinateSetI.zero();
     for (final CoordinateSetI coord in _content.keys)
     {
       minCoords.x = min(coord.x, minCoords.x);

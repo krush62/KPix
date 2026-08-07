@@ -36,13 +36,13 @@ class LinePainter extends IToolPainter
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
   Set<CoordinateSetI> _linePoints = <CoordinateSetI>{};
-  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _previousCursorPosNorm = CoordinateSetI.zero();
   int _previousSize = -1;
   bool _lineStarted = false;
   bool _dragStarted = false;
-  final CoordinateSetI _lineStartPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _lineEndPos1 = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _lineEndPos2 = CoordinateSetI(x: 0, y: 0);
+  final CoordinateSetI _lineStartPos = CoordinateSetI.zero();
+  final CoordinateSetI _lineEndPos1 = CoordinateSetI.zero();
+  final CoordinateSetI _lineEndPos2 = CoordinateSetI.zero();
   bool _isDown = false;
   //keeps the committed line preview visible until the target layer has
   //rasterized it (otherwise the line vanishes for one raster cycle)

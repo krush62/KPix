@@ -141,7 +141,7 @@ class KPixPainter extends CustomPainter
   late Size latestSize = Size.zero;
   late int _latestRasterSize = 8;
   late int _latestContrast = 50;
-  late CoordinateSetI _latestCanvasSize = CoordinateSetI(x: 0, y: 0);
+  late CoordinateSetI _latestCanvasSize = CoordinateSetI.zero();
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
   ui.Image? _backupImage;
@@ -150,10 +150,10 @@ class KPixPainter extends CustomPainter
 
   // status for reference layer movements
   bool _referenceImgMovementStarted = false;
-  final CoordinateSetD _referenceImgNormStartPos = CoordinateSetD(x: 0, y: 0);
-  final CoordinateSetD _referenceImgcursorPosNorm = CoordinateSetD(x: 0, y: 0);
+  final CoordinateSetD _referenceImgNormStartPos = CoordinateSetD.zero();
+  final CoordinateSetD _referenceImgcursorPosNorm = CoordinateSetD.zero();
   Offset _referenceImglastStartPos = Offset.zero;
-  final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD(x: 0, y: 0);
+  final CoordinateSetD _referenceImgLastReferenceOffset = CoordinateSetD.zero();
 
   KPixPainter({
     required final AppState appState,

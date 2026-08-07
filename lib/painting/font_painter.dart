@@ -34,8 +34,8 @@ class FontPainter extends IToolPainter
   FontPainter({required super.painterOptions});
 
   final TextOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.textOptions;
-  final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
+  final CoordinateSetI _oldCursorPos = CoordinateSetI.zero();
+  final CoordinateSetD _cursorStartPos = CoordinateSetD.zero();
   int _previousSize = -1;
   String _currentText = "";
   final Set<CoordinateSetI> _textContent = <CoordinateSetI>{};

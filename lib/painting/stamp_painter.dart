@@ -38,10 +38,10 @@ class StampPainter extends IToolPainter
 
   final StampOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.stampOptions;
   final StampManager _manager = GetIt.I.get<StampManager>();
-  final CoordinateSetI _cursorPosNorm = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _gridPosNorm = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetI _oldCursorPos = CoordinateSetI(x: 0, y: 0);
-  final CoordinateSetD _cursorStartPos = CoordinateSetD(x: 0.0, y: 0.0);
+  final CoordinateSetI _cursorPosNorm = CoordinateSetI.zero();
+  final CoordinateSetI _gridPosNorm = CoordinateSetI.zero();
+  final CoordinateSetI _oldCursorPos = CoordinateSetI.zero();
+  final CoordinateSetD _cursorStartPos = CoordinateSetD.zero();
   bool _down = false;
   final HashMap<CoordinateSetI, int> _stampData = HashMap<CoordinateSetI, int>();
   int _previousSize = -1;

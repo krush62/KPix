@@ -28,6 +28,7 @@ import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+/// Widget that shows information about the application.
 class AboutScreenWidget extends StatefulWidget
 {
   final Function() onDismiss;
@@ -79,6 +80,20 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
     _licenseScreen.hide();
     _creditsScreen.hide();
     _controlsScreen.hide();
+  }
+
+  Expanded _createButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
+  {
+    return Expanded(
+      child: Tooltip(
+        message: tooltip,
+        waitDuration: AppState.toolTipDuration,
+        child: IconButton.outlined(
+          icon: Icon(icon),
+          onPressed: onPressedFunc,
+        ),
+      ),
+    );
   }
 
   @override
@@ -171,57 +186,13 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Expanded(
-                        child: Tooltip(
-                          message: "Credits",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            icon: const Icon(
-                              TablerIcons.users,
-                            ),
-                            onPressed: _creditsPressed,
-                          ),
-                        ),
-                      ),
+                      _createButton(tooltip: "Credits", icon: TablerIcons.users, onPressedFunc: _creditsPressed),
                       SizedBox(width: _options.padding),
-                      Expanded(
-                        child: Tooltip(
-                          message: "Licenses",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            icon: const Icon(
-                              TablerIcons.license,
-                            ),
-                            onPressed: _licensesPressed,
-                          ),
-                        ),
-                      ),
+                      _createButton(tooltip: "Licenses", icon: TablerIcons.license, onPressedFunc: _licensesPressed),
                       SizedBox(width: _options.padding),
-                      Expanded(
-                        child: Tooltip(
-                          message: "Controls/Shortcuts",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            icon: const Icon(
-                              TablerIcons.keyboard,
-                            ),
-                            onPressed: _controlsPressed,
-                          ),
-                        ),
-                      ),
+                      _createButton(tooltip: "Controls/Shortcuts", icon: TablerIcons.keyboard, onPressedFunc: _controlsPressed),
                       SizedBox(width: _options.padding),
-                      Expanded(
-                        child: Tooltip(
-                          message: "Close",
-                          waitDuration: AppState.toolTipDuration,
-                          child: IconButton.outlined(
-                            icon: const Icon(
-                              TablerIcons.x,
-                            ),
-                            onPressed: _dismissPressed,
-                          ),
-                        ),
-                      ),
+                      _createButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
                     ],
                   ),
                 ],

@@ -26,25 +26,25 @@
 - [Feedback](#feedback)
 - [License](#license-and-privacy)
 
-# 🚀About
-KPix is a pixel art editor for still images and animations with a focus on generative color ramps and shading. The key aspects are:
+# About
+### KPix is a multi-platform pixel art editor for still images and animations with a focus on generative color ramps and shading.
 
 ## Highlights
-⭐ exclusive use of indexed colors\
-⭐ generative color ramps based on parameters\
-⭐ hsv based color representation\
-⭐ shading capabilities for all tools\
-⭐ reference layers\
-⭐ grid/perspective aid layers\
-⭐ shading layers\
-⭐ dithering layers\
-⭐ non-destructive layer effects (outer/inner strokes, shadow, glow, ...)\
-⭐ extensive animation capabilities\
-⭐ image importing including automatic palette creation\
-⭐ image export including layers to Aseprite, Pixelorama, Gimp and Photoshop\
-⭐ multi-platform support (Windows, Linux, Android, macOS, Web)\
-⭐ stylus and touch support\
-⭐ automatic light/dark theme
+🟣 **exclusive use of indexed colors**\
+🟣 **generative color ramps based on parameters**\
+🟣 **hsv based color representation**\
+🟣 **shading capabilities for all tools**\
+🟣 **reference layers**\
+🟣 **grid/perspective aid layers**\
+🟣 **shading layers**\
+🟣 **dithering layers**\
+🟣 **non-destructive layer effects (outer/inner strokes, shadow, glow, ...)**\
+🟣 **extensive animation capabilities**\
+🟣 **image importing including automatic palette creation**\
+🟣 **image export including layers to Aseprite, Pixelorama, Gimp and Photoshop**\
+🟣 **multi-platform support (Windows, Linux, Android, macOS, Web)**\
+🟣 **stylus and touch support**\
+🟣 **automatic light/dark theme**
 
 ## Developer Statement
 KPix began as a personal project designed around my own pixel art workflow. I also used it as an opportunity to learn Flutter for desktop and tablet development. Because of this, some UI and workflow choices might feel unconventional - but these restrictions are entirely by design.
@@ -56,7 +56,7 @@ I am a professional developer and frequently use AI in my daily work, but KPix i
 ## More Information
 You might also want to read the [F.A.Q.](faq.md) or watch the (slightly outdated) [feature overview video](https://youtu.be/Vcz6QdcY5tY).
 
-# 🔥Features
+# Features
 ## Drawing Tools
 🖌️ Pen\
 💠 Shape\
@@ -98,10 +98,10 @@ Displaying a highly-customizable grid (rectangular, diagonal, hexagonal, triangu
 ## File Format Support
 KPix uses its own kpix format for storing project files. The file format documentation can be found [here](docs/kpix_file_format.md).
 ### Export Formats
-#### 🖼️ Image Formats
+#### 🖼Image Formats
 Projects can be exported to lossless images including transparency. Integer scaling is supported.
 - png
-#### 📱 Application Formats
+#### Application Formats
 Projects can be exported for usage in other applications. Special Layers will be either omitted (reference, grid) or merged (shading, dither).
 
 | Application | Extension  | Color Mode | Layers | Palette Inclusion |
@@ -113,7 +113,7 @@ Projects can be exported for usage in other applications. Special Layers will be
 
 *\* Note: Pixelorama and Photoshop do not support indexed color mode with layers.*
 
-### 🎨 Palette Formats
+### Palette Formats
 Palettes can be exported for usage in other applications.
 - png
 - aseprite (Aseprite)
@@ -125,7 +125,7 @@ Palettes can be exported for usage in other applications.
 - soc (Star/Open/Libre Office)
 - json (Pixelorama)
 
-### 🎥 Animation Formats
+### Animation Formats
 Animation projects can be exported to the following formats
 - apng
 - gif
@@ -136,7 +136,7 @@ Due to its unique way of having parameterized color ramps, an import of other fo
 Any import is an approximation and will never exactly match the colors given in the original image.
 The following raster image formats are supported: bmp, jpg, gif (first frame), webp and png.
 
-# 🎮Controls
+# Controls
 This application supports input by mouse/keyboard, touch screen and stylus.
 The complete control table can be found [here](docs/controls.md).
 
@@ -149,9 +149,9 @@ The complete control table can be found [here](docs/controls.md).
 | color pick / <br> switch shading direction | right click         | ---              | quick button down and up         |
 
 
-# 💾Installation
+# Installation
 
-## 🪟Windows
+## Windows
 ### Download
 *Windows Installer (.exe) and Package (.zip) versions can be found in the release section or via [kpix.cloud](https://kpix.andikrusch.com/#downloads).*
 #### Installer
@@ -163,7 +163,7 @@ This is a portable version. Extract the contents of the Windows Zip Package and 
 ![WinGet Package Version](https://img.shields.io/winget/v/krush62.KPix) \
 Open a terminal (cmd or PowerShell) and run the following command: `winget install --id krush62.kpix`
 
-## 🐧Linux
+## Linux
 *Linux AppImage and Tarball (.tar.gz) versions can be found in the release section or via [kpix.cloud](https://kpix.andikrusch.com/#downloads).*
 
 *This version needs to have `libgtk-3-0`, `libblkid1` and `liblzma5` installed and for file/directory selection, `zenity`, `qarma` or `kdialog` is needed.*
@@ -178,7 +178,7 @@ Install the Flatpak from Desktop or Terminal.
 Extract the contents of the tar.gz Package and run `./kpix` to start the application. 
 
 
-## 🤖Android
+## Android
 [<img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png"
 alt="Get it on Obtainium"
 height="60">](https://apps.obtainium.imranr.dev/redirect.html?r=https://github.com/krush62/kpix)
@@ -190,7 +190,7 @@ Download the Android apk file and install it manually (side-loading needs to be 
 
 *Even though, the apk can be installed on any device with the minimum required Android version, the application is designed for tablets (preferably with a stylus). [The manifest file](android/app/src/main/AndroidManifest.xml) specifies the supported screen sizes and densities.* 
 
-## 🍎macOS
+## macOS
 ❗ **The support for macOS is highly experimental and completely untested.**
 - Download the provided dmg file
 - Double-click the downloaded dmg file
@@ -208,7 +208,7 @@ A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The 
 - No palette import
 - Limited stylus and keyboard shortcut support
 
-# 💻Build
+# Build
 ![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?logo=dart&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=fff)
 - Clone the repository
@@ -216,13 +216,13 @@ A html/javascript version can be found at [kpix.cloud](https://kpix.cloud). The 
 - Open the project in your configured IDE (Android Studio or VSCode recommended) or use gradle directly to build your variant
 - you might use the scripts in the release_tools folder to create custom Linux/Windows/Android/Web versions
 
-# 🔜Roadmap
+# Roadmap
 A list of ideas and features for future versions can be found here: [#53](https://github.com/krush62/KPix/issues/53).
 
-# 🤝Feedback
+# Feedback
 Feedback can be shared via the [discussions page](https://github.com/krush62/KPix/discussions). Please make sure to check if your idea/bug already exists.
 
-# 📃License and Privacy
+# License and Privacy
 This project is licensed under [AGPLv3](LICENSE).\
 Please read the [privacy statement](PRIVACY.md).
 

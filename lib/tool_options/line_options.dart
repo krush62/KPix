@@ -20,8 +20,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class AngleData
@@ -124,35 +124,13 @@ class LineOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Width",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: lineOptions.width,
-                builder: (final BuildContext context, final int width, final Widget? child){
-                    return KPixSlider(
-                    value: width.toDouble(),
-                    min: lineOptions.widthMin.toDouble(),
-                    max: lineOptions.widthMax.toDouble(),
-                    //divisions: lineOptions.widthMax - lineOptions.widthMin,
-                    onChanged: (final double newVal) {lineOptions.width.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolSliderRow<int>(
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          label: "Width",
+          notifier: lineOptions.width,
+          minVal: lineOptions.widthMin.toDouble(),
+          maxVal: lineOptions.widthMax.toDouble(),
+          //divisions: lineOptions.widthMax - lineOptions.widthMin,
         ),
         Row(
           children: <Widget>[

@@ -19,9 +19,9 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
@@ -107,37 +107,13 @@ class TextOptions extends IToolOptions
           ),
         ),
         ExcludeFocus(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Scale",
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                ),
-              ),
-              Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: textOptions.size,
-                  builder: (final BuildContext context, final int size, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: size.toDouble(),
-                      min: textOptions.sizeMin.toDouble(),
-                      max: textOptions.sizeMax.toDouble(),
-                      //divisions: textOptions.sizeMax - textOptions.sizeMin,
-                      onChanged: (final double newVal) {textOptions.size.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-
-            ],
+          child: ToolSliderRow<int>(
+            label: "Scale",
+            notifier: textOptions.size,
+            flex: toolSettingsWidgetOptions.columnWidthRatio,
+            minVal: textOptions.sizeMin.toDouble(),
+            maxVal: textOptions.sizeMax.toDouble(),
+            //divisions: textOptions.sizeMax - textOptions.sizeMin,
           ),
         ),
         Row(

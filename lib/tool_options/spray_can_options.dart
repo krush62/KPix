@@ -16,8 +16,8 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class SprayCanOptions extends IToolOptions
@@ -62,98 +62,29 @@ class SprayCanOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Radius",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: sprayCanOptions.radius,
-                builder: (final BuildContext context, final int radius, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: radius.toDouble(),
-                    min: sprayCanOptions.radiusMin.toDouble(),
-                    max: sprayCanOptions.radiusMax.toDouble(),
-                    //divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
-                    onChanged: (final double newVal) {sprayCanOptions.radius.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolSliderRow<int>(
+          label: "Radius",
+          notifier: sprayCanOptions.radius,
+          minVal: sprayCanOptions.radiusMin.toDouble(),
+          maxVal: sprayCanOptions.radiusMax.toDouble(),
+          //divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Blob Size",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: sprayCanOptions.blobSize,
-                builder: (final BuildContext context, final int blobSize, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: blobSize.toDouble(),
-                    min: sprayCanOptions.blobSizeMin.toDouble(),
-                    max: sprayCanOptions.blobSizeMax.toDouble(),
-                    //divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
-                    onChanged: (final double newVal) {sprayCanOptions.blobSize.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolSliderRow<int>(
+          label:  "Blob Size",
+          notifier: sprayCanOptions.blobSize,
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          minVal: sprayCanOptions.blobSizeMin.toDouble(),
+          maxVal: sprayCanOptions.blobSizeMax.toDouble(),
+          //divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Intensity",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: sprayCanOptions.intensity,
-                builder: (final BuildContext context, final int intensity, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: intensity.toDouble(),
-                    min: sprayCanOptions.intensityMin.toDouble(),
-                    max: sprayCanOptions.intensityMax.toDouble(),
-                    //divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
-                    onChanged: (final double newVal) {sprayCanOptions.intensity.value = newVal.round();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolSliderRow<int>(
+          label: "Intensity",
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          notifier: sprayCanOptions.intensity,
+          minVal: sprayCanOptions.intensityMin.toDouble(),
+          maxVal: sprayCanOptions.intensityMax.toDouble(),
+          //divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
         ),
       ],
     );

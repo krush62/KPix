@@ -16,8 +16,8 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 enum PencilShape
@@ -74,108 +74,24 @@ class PencilOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Size",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: pencilOptions.size,
-                builder: (final BuildContext context, final int size, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: size.toDouble(),
-                    min: pencilOptions.sizeMin.toDouble(),
-                    max: pencilOptions.sizeMax.toDouble(),
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
-                    onChanged: (final double newVal) {pencilOptions.size.value = newVal.round();},
-                  );
-                },
-              ),
-            ),
-
-          ],
+        ToolSliderRow<int>(
+          label: "Size",
+          notifier: pencilOptions.size,
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          minVal: pencilOptions.sizeMin.toDouble(),
+          maxVal: pencilOptions.sizeMax.toDouble(),
+          //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Shape",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<PencilShape>(
-                valueListenable: pencilOptions.shape,
-                builder: (final BuildContext context, final PencilShape shape, final Widget? child)
-                {
-                  return DropdownButton<PencilShape>(
-                    value: shape,
-                    dropdownColor: Theme.of(context).primaryColorDark,
-                    focusColor: Theme.of(context).primaryColor,
-                    isExpanded: true,
-                    onChanged: (final PencilShape? pShape) {pencilOptions.shape.value = pShape!;},
-                    items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((final PencilShape value) {
-                      return DropdownMenuItem<PencilShape>(
-                        value: value,
-                        child: Text(pencilShapeStringMap[value]!),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolDropdownRow<PencilShape>(
+          label: "Shape",
+          notifier: pencilOptions.shape,
+          valueMap: pencilShapeStringMap,
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
         ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Smooth",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: pencilOptions.size,
-                  builder: (final BuildContext context, final int size, final Widget? child)
-                  {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: pencilOptions.pixelPerfect,
-                      builder: (final BuildContext context, final bool isPixelPerfect, final Widget? child)
-                      {
-                        return Switch(
-                          onChanged: (final bool newVal) {pencilOptions.pixelPerfect.value = newVal;},
-                          value: isPixelPerfect,
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+        ToolSwitchRow(
+          notifier: pencilOptions.pixelPerfect,
+          label: "Smooth",
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
         ),
       ],
     );

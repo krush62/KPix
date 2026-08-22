@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
@@ -42,63 +43,15 @@ class FillOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Fill Adjacent",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: fillOptions.fillAdjacent,
-                  builder: (final BuildContext context, final bool fill, final Widget? child)
-                  {
-                    return Switch(
-                      onChanged: (final bool newVal) {fillOptions.fillAdjacent.value = newVal;},
-                      value: fill,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+        ToolSwitchRow(
+          //flex: toolSettingsWidgetOptions.columnWidthRatio,
+          notifier: fillOptions.fillAdjacent,
+          label: "Fill Adjacent",
         ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Fill whole ramp",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: fillOptions.fillWholeRamp,
-                  builder: (final BuildContext context, final bool fill, final Widget? child)
-                  {
-                    return Switch(
-                      onChanged: (final bool newVal) {fillOptions.fillWholeRamp.value = newVal;},
-                      value: fill,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+        ToolSwitchRow(
+          //flex: toolSettingsWidgetOptions.columnWidthRatio,
+          notifier: fillOptions.fillWholeRamp,
+          label: "Fill whole ramp",
         ),
       ],
     );

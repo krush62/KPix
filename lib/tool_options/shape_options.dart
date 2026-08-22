@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/models/app_state.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
@@ -33,16 +33,14 @@ enum ShapeShape
   star
 }
 
-const List<ShapeShape> shapeShapeList =
-<ShapeShape>[
-  ShapeShape.triangle,
-  ShapeShape.rectangle,
-  ShapeShape.diamond,
-  ShapeShape.ellipse,
-  ShapeShape.ngon,
-  ShapeShape.star,
-
-];
+const Map<ShapeShape, IconStringData> shapeData = <ShapeShape, IconStringData>{
+  ShapeShape.triangle: IconStringData(name: "Triangle", icon: TablerIcons.triangle),
+  ShapeShape.rectangle: IconStringData(name: "Rectangle", icon: TablerIcons.square),
+  ShapeShape.diamond: IconStringData(name: "Mid-Angle Rectangle", icon: TablerIcons.diamonds),
+  ShapeShape.ellipse: IconStringData(name: "Ellipse", icon: TablerIcons.circle),
+  ShapeShape.ngon: IconStringData(name: "Regular Polygon", icon: TablerIcons.pentagon),
+  ShapeShape.star: IconStringData(name: "Star", icon: TablerIcons.star),
+};
 
 const Map<int, ShapeShape> _shapeShapeIndexMap =
 <int, ShapeShape>{
@@ -122,84 +120,12 @@ class ShapeOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        ValueListenableBuilder<ShapeShape>(
-          valueListenable: shapeOptions.shape,
-          builder: (final BuildContext context, final ShapeShape shape, final Widget? child)
-          {
-            return SegmentedButton<ShapeShape>(
-              segments: <ButtonSegment<ShapeShape>>[
-                ButtonSegment<ShapeShape>(
-                  value: ShapeShape.triangle,
-                  label: Tooltip(
-                    message: "Triangle",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Icon(
-                      TablerIcons.triangle,
-                      size: toolSettingsWidgetOptions.smallIconSize,
-                    ),
-                  ),
-                ),
-                ButtonSegment<ShapeShape>(
-                  value: ShapeShape.rectangle,
-                  label: Tooltip(
-                    message: "Rectangle",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Icon(
-                      TablerIcons.square,
-                      size: toolSettingsWidgetOptions.smallIconSize,
-                    ),
-                  ),
-                ),
-                ButtonSegment<ShapeShape>(
-                  value: ShapeShape.diamond,
-                  label: Tooltip(
-                    message: "Mid-Angle Rectangle",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Icon(
-                      TablerIcons.diamonds,
-                      size: toolSettingsWidgetOptions.smallIconSize,
-                    ),
-                  ),
-                ),
-                ButtonSegment<ShapeShape>(
-                  value: ShapeShape.ellipse,
-                  label: Tooltip(
-                    message: "Ellipse",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Icon(
-                      TablerIcons.circle,
-                      size: toolSettingsWidgetOptions.smallIconSize,
-                    ),
-                  ),
-                ),
-                ButtonSegment<ShapeShape>(
-                  value: ShapeShape.ngon,
-                  label: Tooltip(
-                    message: "Regular Polygon",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Icon(
-                      TablerIcons.pentagon,
-                      size: toolSettingsWidgetOptions.smallIconSize,
-                    ),
-                  ),
-                ),
-                ButtonSegment<ShapeShape>(
-                  value: ShapeShape.star,
-                  label: Tooltip(
-                    message: "Star",
-                    waitDuration: AppState.toolTipDuration,
-                    child: Icon(
-                      TablerIcons.star,
-                      size: toolSettingsWidgetOptions.smallIconSize,
-                    ),
-                  ),
-                ),
-              ],
-              selected: <ShapeShape>{shape},
-              showSelectedIcon: false,
-              onSelectionChanged: (final Set<ShapeShape> shapes) {shapeOptions.shape.value = shapes.first;},
-            );
-          },
+        ToolSegmentedIconButtonRow<ShapeShape>(
+          label: "Test",
+          notifier: shapeOptions.shape,
+          iconData: shapeData,
+          iconSize: toolSettingsWidgetOptions.smallIconSize,
+          hideLabel: true,
         ),
         Row(
           children: <Widget>[
@@ -305,106 +231,36 @@ class ShapeOptions extends IToolOptions
                 Visibility(
                   //TODO this might be an option for triangle and diamond as well
                   visible: shape == ShapeShape.rectangle,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Corner Radius",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: toolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: shapeOptions.cornerRadius,
-                          builder: (final BuildContext context, final int cornerRadius, final Widget? child)
-                          {
-                            return KPixSlider(
-                              value: cornerRadius.toDouble(),
-                              min: shapeOptions.cornerRadiusMin.toDouble(),
-                              max: shapeOptions.cornerRadiusMax.toDouble(),
-                              //divisions: shapeOptions.cornerRadiusMax - shapeOptions.cornerRadiusMin,
-                              onChanged: (final double newVal) {shapeOptions.cornerRadius.value = newVal.round();},
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  child: ToolSliderRow<int>(
+                    label: "Corner Radius",
+                    notifier: shapeOptions.cornerRadius,
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    minVal: shapeOptions.cornerRadiusMin.toDouble(),
+                    maxVal: shapeOptions.cornerRadiusMax.toDouble(),
                   ),
                 ),
                 Visibility(
                   //TODO this is a feature for the future
                   /*visible: (shape == ShapeShape.ellipse),*/
                   visible: false,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Angle",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: toolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: shapeOptions.ellipseAngle,
-                          builder: (final BuildContext context, final int angle, final Widget? child)
-                          {
-                            return KPixSlider(
-                              value: angle.toDouble(),
-                              min: shapeOptions.ellipseAngleMin.toDouble(),
-                              max: shapeOptions.ellipseAngleMax.toDouble(),
-                              //divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
-                              onChanged: (final double newVal) {shapeOptions.ellipseAngle.value = newVal.round();},
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  child: ToolSliderRow<int>(
+                    notifier: shapeOptions.ellipseAngle,
+                    label: "Angle",
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    minVal: shapeOptions.ellipseAngleMin.toDouble(),
+                    maxVal: shapeOptions.ellipseAngleMax.toDouble(),
+                    //divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
                   ),
                 ),
                 Visibility(
                   visible: shape == ShapeShape.ngon || shape == ShapeShape.star,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Corner Count",
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: toolSettingsWidgetOptions.columnWidthRatio,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: shapeOptions.cornerCount,
-                          builder: (final BuildContext context, final int corners, final Widget? child)
-                          {
-                            return KPixSlider(
-                              value: corners.toDouble(),
-                              min: shapeOptions.cornerCountMin.toDouble(),
-                              max: shapeOptions.cornerCountMax.toDouble(),
-                              //divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
-                              onChanged: (final double newVal) {shapeOptions.cornerCount.value = newVal.round();},
-                              textStyle: Theme.of(context).textTheme.bodyLarge!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  child: ToolSliderRow<int>(
+                    notifier: shapeOptions.cornerCount,
+                    label: "Corner Count",
+                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    minVal: shapeOptions.cornerCountMin.toDouble(),
+                    maxVal: shapeOptions.cornerCountMax.toDouble(),
+                    //divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
                   ),
                 ),
               ],

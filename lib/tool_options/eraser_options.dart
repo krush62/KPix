@@ -17,8 +17,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class EraserOptions extends IToolOptions
@@ -51,72 +51,18 @@ class EraserOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Size",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<int>(
-                valueListenable: eraserOptions.size,
-                builder: (final BuildContext context, final int size, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: size.toDouble(),
-                    min: eraserOptions.sizeMin.toDouble(),
-                    max: eraserOptions.sizeMax.toDouble(),
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    //divisions: eraserOptions.sizeMax - eraserOptions.sizeMin,
-                    onChanged: (final double newVal) {eraserOptions.size.value = newVal.round();},
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolSliderRow<int>(
+          label: "Size",
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          notifier: eraserOptions.size,
+          minVal: eraserOptions.sizeMin.toDouble(),
+          maxVal: eraserOptions.sizeMax.toDouble(),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Shape",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: ValueListenableBuilder<PencilShape>(
-                valueListenable: eraserOptions.shape,
-                builder: (final BuildContext context, final PencilShape shape, final Widget? child)
-                {
-                  return DropdownButton<PencilShape>(
-                    value: shape,
-                    dropdownColor: Theme.of(context).primaryColorDark,
-                    focusColor: Theme.of(context).primaryColor,
-                    isExpanded: true,
-                    onChanged: (final PencilShape? eShape) {eraserOptions.shape.value = eShape!;},
-                    items: pencilShapeList.map<DropdownMenuItem<PencilShape>>((final PencilShape value) {
-                      return DropdownMenuItem<PencilShape>(
-                        value: value,
-                        child: Text(pencilShapeStringMap[value]!),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-            ),
-          ],
+        ToolDropdownRow<PencilShape>(
+          label: "Shape",
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          notifier: eraserOptions.shape,
+          valueMap: pencilShapeStringMap,
         ),
       ],
     );

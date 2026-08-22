@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
@@ -30,13 +31,14 @@ enum SelectShape
 
 }
 
-const List<SelectShape> selectShapeList =
-<SelectShape>[
-  SelectShape.rectangle,
-  SelectShape.ellipse,
-  SelectShape.polygon,
-  SelectShape.wand,
-];
+
+
+const Map<SelectShape, IconStringData> shapeDataMap = <SelectShape, IconStringData>{
+  SelectShape.rectangle: IconStringData(name: "Rectangle", icon: TablerIcons.square),
+  SelectShape.ellipse: IconStringData(name: "Ellipse", icon: TablerIcons.circle),
+  SelectShape.polygon: IconStringData(name: "Polygon", icon: TablerIcons.polygon),
+  SelectShape.wand: IconStringData(name: "Wand", icon: TablerIcons.wand),
+};
 
 const Map<int, SelectShape> _selectShapeIndexMap =
 <int, SelectShape>{
@@ -176,65 +178,15 @@ class SelectOptions extends IToolOptions
         ),
         Padding(
           padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Shape",
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                ),
-              ),
-              Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: ValueListenableBuilder<SelectShape>(
-                  valueListenable: selectOptions.shape,
-                  builder: (final BuildContext context, final SelectShape shape, final Widget? child){
-                    return SegmentedButton<SelectShape>
-                      (
-                      segments: <ButtonSegment<SelectShape>>[
-                        ButtonSegment<SelectShape>(
-                            value: SelectShape.rectangle,
-                            tooltip: "Rectangle",
-                            label: Icon(
-                              TablerIcons.square,
-                              size: toolSettingsWidgetOptions.smallIconSize,
-                            ),),
-                        ButtonSegment<SelectShape>(
-                            value: SelectShape.ellipse,
-                            tooltip: "Ellipse",
-                            label: Icon(
-                              TablerIcons.circle,
-                              size: toolSettingsWidgetOptions.smallIconSize,
-                            ),),
-                        ButtonSegment<SelectShape>(
-                            value: SelectShape.polygon,
-                            tooltip: "Polygon",
-                            label: Icon(
-                              TablerIcons.polygon,
-                              size: toolSettingsWidgetOptions.smallIconSize,
-                            ),),
-                        ButtonSegment<SelectShape>(
-                            value: SelectShape.wand,
-                            tooltip: "Wand",
-                            label: Icon(
-                              TablerIcons.wand,
-                              size: toolSettingsWidgetOptions.smallIconSize,
-                            ),),
-                      ],
-                      selected: <SelectShape>{shape},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (final Set<SelectShape> shapes) {selectOptions.shape.value = shapes.first;},
-                    );
-                  },
-                ),
-              ),
-            ],
+          child: ToolSegmentedIconButtonRow<SelectShape>(
+            iconData: shapeDataMap,
+            label: "Shape",
+            notifier: selectOptions.shape,
+            flex: toolSettingsWidgetOptions.columnWidthRatio,
+            iconSize: toolSettingsWidgetOptions.smallIconSize,
           ),
         ),
+
         ValueListenableBuilder<SelectShape>(
           valueListenable: selectOptions.shape,
           builder: (final BuildContext context, final SelectShape shape, final Widget? child){
@@ -295,34 +247,10 @@ class SelectOptions extends IToolOptions
           builder: (final BuildContext context, final SelectShape shape, final Widget? child){
             return Visibility(
               visible: shape == SelectShape.wand,
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Whole Ramp",
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
-                    ),
-                  ),
-                  Expanded(
-                      flex: toolSettingsWidgetOptions.columnWidthRatio,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: selectOptions.wandWholeRamp,
-                          builder: (final BuildContext context, final bool wholeRamp, final Widget? child)
-                          {
-                            return Switch(
-                              value: wholeRamp,
-                              onChanged: (final bool newVal) {selectOptions.wandWholeRamp.value = newVal;},
-                            );
-                          },
-                        ),
-                      ),
-                  ),
-                ],
+              child: ToolSwitchRow(
+                notifier: selectOptions.wandWholeRamp,
+                label: "Whole Ramp",
+                flex: toolSettingsWidgetOptions.columnWidthRatio,
               ),
             );
           },

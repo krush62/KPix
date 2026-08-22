@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
@@ -188,68 +189,19 @@ class StampOptions extends IToolOptions
         ),
         Visibility(
           visible: false,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Scale",
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                ),
-              ),
-              Expanded
-              (
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: ValueListenableBuilder<int>(
-                    valueListenable: stampOptions.scale,
-                    builder: (final BuildContext context, final int scale, final Widget? child)
-                    {
-                      return KPixSlider(
-                        value: scale.toDouble(),
-                        min: stampOptions.scaleMin.toDouble(),
-                        max: stampOptions.scaleMax.toDouble(),
-                        //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
-                        onChanged: (final double newVal) {stampOptions.scale.value = newVal.round();},
-                        textStyle: Theme.of(context).textTheme.bodyLarge!,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
+          child: ToolSliderRow<int>(
+            label: "Scale",
+            notifier: stampOptions.scale,
+            flex: toolSettingsWidgetOptions.columnWidthRatio,
+            minVal: stampOptions.scaleMin.toDouble(),
+            maxVal: stampOptions.scaleMax.toDouble(),
+            //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
           ),
         ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Grid Align",
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: stampOptions.gridAlign,
-                  builder: (final BuildContext context, final bool gridAlign, final Widget? child){
-                    return Switch(
-                      onChanged: (final bool newVal) {stampOptions.gridAlign.value = newVal;},
-                      value: gridAlign,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+        ToolSwitchRow(
+          notifier: stampOptions.gridAlign,
+          label: "Grid Align",
+          flex: toolSettingsWidgetOptions.columnWidthRatio,
         ),
         ValueListenableBuilder<bool>(
           valueListenable: stampOptions.gridAlign,

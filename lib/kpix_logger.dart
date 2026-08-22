@@ -56,7 +56,7 @@ class KPixLogger extends Logger {
       return null;
     }
 
-    return MultiOutput([
+    return MultiOutput(<LogOutput?>[
       FileLogOutput(),
       ThresholdOutput(
         ConsoleOutput(),

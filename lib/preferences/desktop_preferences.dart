@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kpix/preferences/preference_gui.dart';
 
 enum CursorType
 {
@@ -79,39 +80,10 @@ class _DesktopPreferencesState extends State<DesktopPreferences>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Mouse Cursor", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<CursorType>(
-                valueListenable: widget.prefs.cursorType,
-                builder: (final BuildContext context, final CursorType cursor, final Widget? child)
-                {
-                  return SegmentedButton<CursorType>(
-                    selected: <CursorType>{cursor},
-                    showSelectedIcon: false,
-                    onSelectionChanged: (final Set<CursorType> cursorList) {widget.prefs.cursorType.value = cursorList.first;},
-                    segments: <ButtonSegment<CursorType>>[
-                      ButtonSegment<CursorType>(
-                        value: CursorType.none,
-                        label: Text(cursorTypeStringMap[CursorType.none]!),
-                      ),
-                      ButtonSegment<CursorType>(
-                        value: CursorType.crossHair,
-                        label: Text(cursorTypeStringMap[CursorType.crossHair]!),
-                      ),
-                      ButtonSegment<CursorType>(
-                        value: CursorType.arrow,
-                        label: Text(cursorTypeStringMap[CursorType.arrow]!),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+        PrefSegmentedButtonRow<CursorType>(
+          label: "Mouse Cursor",
+          notifier: widget.prefs.cursorType,
+          labels: cursorTypeStringMap,
         ),
       ],
     );

@@ -22,8 +22,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
+import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //UNDO STEPS
 const int undoStepsMin = 10;
@@ -91,8 +91,8 @@ class BehaviorPreferences extends StatefulWidget
   State<BehaviorPreferences> createState() => _BehaviorPreferencesState();
 }
 
-class _BehaviorPreferencesState extends State<BehaviorPreferences> {
-
+class _BehaviorPreferencesState extends State<BehaviorPreferences>
+{
   void _projectDirectoryModeChanged({required final bool useCustom})
   {
     if (useCustom)
@@ -140,27 +140,11 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Undo Steps", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<int>(
-                valueListenable: widget.prefs.undoSteps,
-                builder: (final BuildContext context, final int undoSteps, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: undoSteps.toDouble(),
-                    min: widget.prefs.undoStepsMin.toDouble(),
-                    max: widget.prefs.undoStepsMax.toDouble(),
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    onChanged: (final double newVal) {widget.prefs.undoSteps.value = newVal.round();},
-                  );
-                },
-              ),
-            ),
-          ],
+        PrefSliderRow<int>(
+            text: "Undo Steps",
+            minVal: widget.prefs.undoStepsMin.toDouble(),
+            maxVal: widget.prefs.undoStepsMax.toDouble(),
+            notifier: widget.prefs.undoSteps,
         ),
         /*Row(
           mainAxisSize: MainAxisSize.min,
@@ -183,30 +167,11 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
             ),
           ],
         ),*/
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Select Inserted Layers", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: Row(
-                children: <Widget>[
-                  ValueListenableBuilder<bool>(
-                    valueListenable: widget.prefs.selectLayerAfterInsert,
-                    builder: (final BuildContext context, final bool select, final Widget? child)
-                    {
-                      return Switch(
-                        value: select,
-                        onChanged: (final bool newVal){widget.prefs.selectLayerAfterInsert.value = newVal;},
-                      );
-                    },
-                  ),
-                  const Spacer(),
-                ],
-              ),
-            ),
-          ],
+        PrefSwitchRow(
+            label: "Select Inserted Layers",
+            notifier: widget.prefs.selectLayerAfterInsert,
         ),
+
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -215,104 +180,35 @@ class _BehaviorPreferencesState extends State<BehaviorPreferences> {
               flex: 2,
               child: Column(
                 children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      const Expanded(child: Text("Max Darken")),
-                      Expanded(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.prefs.shadingStepsMinus,
-                          builder: (final BuildContext context1, final int shadingLow, final Widget? child1)
-                          {
-                            return KPixSlider(
-                              value: shadingLow.toDouble(),
-                              min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
-                              max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
-                              onChanged: (final double value) {
-                                widget.prefs.shadingStepsMinus.value = value.round();
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyMedium!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  PrefSliderRow<int>(
+                    text: "Max Darken",
+                    minVal: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
+                    maxVal: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
+                    notifier: widget.prefs.shadingStepsMinus,
+                    textStyle:  Theme.of(context).textTheme.labelMedium,
                   ),
-                  Row(
-                    children: <Widget>[
-                      const Expanded(child: Text("Max Brighten")),
-                      Expanded(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.prefs.shadingStepsPlus,
-                          builder: (final BuildContext context1, final int shadingHigh, final Widget? child1)
-                          {
-                            return KPixSlider(
-                              value: shadingHigh.toDouble(),
-                              min: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
-                              max: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
-                              onChanged: (final double value) {
-                                widget.prefs.shadingStepsPlus.value = value.round();
-                              },
-                              textStyle: Theme.of(context).textTheme.bodyMedium!,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  PrefSliderRow<int>(
+                    text: "Max Brighten",
+                    minVal: widget.prefs.shadingConstraints.shadingStepsMin.toDouble(),
+                    maxVal: widget.prefs.shadingConstraints.shadingStepsMax.toDouble(),
+                    notifier: widget.prefs.shadingStepsPlus,
+                    textStyle:  Theme.of(context).textTheme.labelMedium,
                   ),
                 ],
               ),
             ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Default Frame Time", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<int>(
-                valueListenable: widget.prefs.fps,
-                builder: (final BuildContext context, final int fps, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: fps.toDouble(),
-                    min: widget.prefs.frameConstraints.minFps.toDouble(),
-                    max: widget.prefs.frameConstraints.maxFps.toDouble(),
-                    onChanged: (final double value) {
-                      widget.prefs.fps.value = value.round();
-                    },
-                    label: "$fps fps",
-                    textStyle: Theme.of(context).textTheme.bodyMedium!,
-                  );
-                },
-              ),
-            ),
-          ],
+        PrefSliderRow<int>(
+            text: "Default Frame Time",
+            minVal: widget.prefs.frameConstraints.minFps.toDouble(),
+            maxVal: widget.prefs.frameConstraints.maxFps.toDouble(),
+            notifier: widget.prefs.fps,
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Show Reference Layers outside of canvas", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-                flex: 2,
-                child: Row(
-                    children: <Widget>[
-                      ValueListenableBuilder<bool>(
-                        valueListenable: widget.prefs.showReferenceOutsideCanvas,
-                        builder: (final BuildContext context, final bool select, final Widget? child)
-                        {
-                          return Switch(
-                            value: select,
-                            onChanged: (final bool newVal){widget.prefs.showReferenceOutsideCanvas.value = newVal;},
-                          );
-                        },
-                      ),
-                      const Spacer(),
-                    ],
-                ),
-            ),
-          ],
-        ),
+       PrefSwitchRow(
+           label: "Show Reference Layers outside of canvas",
+           notifier: widget.prefs.showReferenceOutsideCanvas,
+       ),
         if (!kIsWeb)
           Row(
             mainAxisSize: MainAxisSize.min,

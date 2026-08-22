@@ -16,7 +16,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/preferences/preference_gui.dart';
 
 class TouchPreferenceContent
 {
@@ -88,51 +88,20 @@ class _TouchPreferencesState extends State<TouchPreferences>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Touch Delay", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<int>(
-                valueListenable: widget.prefs.singleTouchDelay,
-                builder: (final BuildContext context, final int singleTouchDelay, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: singleTouchDelay.toDouble(),
-                    min: widget.prefs.singleTouchDelayMin.toDouble(),
-                    max: widget.prefs.singleTouchDelayMax.toDouble(),
-                    label: "${singleTouchDelay}ms",
-                    onChanged: (final double newVal) {widget.prefs.singleTouchDelay.value = newVal.toInt();},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
-              ),
-            ),
-          ],
+        PrefSliderRow<int>(
+          text: "Touch Delay",
+          notifier: widget.prefs.singleTouchDelay,
+          minVal: widget.prefs.singleTouchDelayMin.toDouble(),
+          maxVal: widget.prefs.singleTouchDelayMax.toDouble(),
+          labelBuilder: (final int val) => "${val}ms",
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(child: Text("Zoom Step Distance", style: Theme.of(context).textTheme.titleSmall)),
-            Expanded(
-              flex: 2,
-              child: ValueListenableBuilder<double>(
-                valueListenable: widget.prefs.zoomStepDistance,
-                builder: (final BuildContext context, final double zoomDistance, final Widget? child)
-                {
-                  return KPixSlider(
-                    value: zoomDistance,
-                    min: widget.prefs.zoomStepDistanceMin,
-                    max: widget.prefs.zoomStepDistanceMax,
-                    label: "${zoomDistance.round()}px",
-                    onChanged: (final double newVal) {widget.prefs.zoomStepDistance.value = newVal;},
-                    textStyle: Theme.of(context).textTheme.bodyLarge!,
-                  );
-                },
-              ),
-            ),
-          ],
+        PrefSliderRow<double>(
+          text: "Zoom Step Distance",
+          notifier: widget.prefs.zoomStepDistance,
+          minVal: widget.prefs.zoomStepDistanceMin,
+          maxVal: widget.prefs.zoomStepDistanceMax,
+          divisions: (widget.prefs.zoomStepDistanceMax - widget.prefs.zoomStepDistanceMin).round(),
+          labelBuilder: (final double val) => "${val.round()}px",
         ),
       ],
     );

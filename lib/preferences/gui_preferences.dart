@@ -17,8 +17,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:kpix/preferences/preference_gui.dart';
 import 'package:kpix/util/color_names.dart';
-import 'package:kpix/widgets/controls/kpix_slider.dart';
 
 //THEME
 const Map<int, ThemeMode> themeTypeIndexMap =
@@ -54,7 +54,6 @@ const Map<ColorNameScheme, String> colorNameSchemeStringMap =
   ColorNameScheme.ralComplete:"RAL Complete",
   ColorNameScheme.dmc:"DMC",
 };
-
 
 
 class GuiPreferenceContent
@@ -99,11 +98,8 @@ class GuiPreferenceContent
     canvasBorderOpacity.value = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
     selectionOpacity.value = selectionOpacityValue.clamp(opacityMin, opacityMax);
     toolOpacity.value = toolOpacityValue.clamp(opacityMin, opacityMax);
-
-
   }
 }
-
 
 class GuiPreferences extends StatefulWidget
 {
@@ -126,227 +122,57 @@ class _GuiPreferencesState extends State<GuiPreferences>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text("Theme Preferences", style: Theme.of(context).textTheme.titleLarge),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Theme", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<ThemeMode>(
-                  valueListenable: widget.prefs.themeType,
-                  builder: (final BuildContext context, final ThemeMode theme, final Widget? child)
-                  {
-                    return SegmentedButton<ThemeMode>(
-                      selected: <ThemeMode>{theme},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (final Set<ThemeMode> themeList) {widget.prefs.themeType.value = themeList.first;},
-                      segments: <ButtonSegment<ThemeMode>>[
-                        ButtonSegment<ThemeMode>(
-                          value: ThemeMode.system,
-                          label: Text(themeTypeStringMap[ThemeMode.system]!),
-                        ),
-                        ButtonSegment<ThemeMode>(
-                            value: ThemeMode.light,
-                            label: Text(themeTypeStringMap[ThemeMode.light]!),
-                        ),
-                        ButtonSegment<ThemeMode>(
-                            value: ThemeMode.dark,
-                            label: Text(themeTypeStringMap[ThemeMode.dark]!),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSegmentedButtonRow<ThemeMode>(
+              label: "Theme",
+              notifier: widget.prefs.themeType,
+              labels: themeTypeStringMap,
           ),
+
           SizedBox(height: widget.itemPadding),
+
           Text("Raster Preferences", style: Theme.of(context).textTheme.titleLarge),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Raster Size", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: widget.prefs.rasterSizeIndex,
-                  builder: (final BuildContext context, final int rasterSizeIndex, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: rasterSizeIndex.toDouble(),
-                      max: rasterSizes.length.toDouble() - 1,
-                      //divisions: rasterSizes.length,
-                      label: rasterSizes[rasterSizeIndex].toString(),
-                      onChanged: (final double newVal) {widget.prefs.rasterSizeIndex.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSliderRowIndexed(
+              text: "Raster Size",
+              valueList: rasterSizes,
+              notifier: widget.prefs.rasterSizeIndex,
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Raster Contrast", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: widget.prefs.rasterContrast,
-                  builder: (final BuildContext context, final int rasterContrast, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: rasterContrast.toDouble(),
-                      min: rasterContrastMin.toDouble(),
-                      max: rasterContrastMax.toDouble(),
-                      //divisions: rasterContrastDivisions,
-                      onChanged: (final double newVal) {widget.prefs.rasterContrast.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSliderRow<int>(
+              text: "Raster Contrast",
+              notifier: widget.prefs.rasterContrast,
+              minVal: rasterContrastMin.toDouble(),
+              maxVal: rasterContrastMax.toDouble(),
           ),
+
           SizedBox(height: widget.itemPadding),
+
           Text("Palette Preferences", style: Theme.of(context).textTheme.titleLarge),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Color Naming", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<ColorNameScheme>(
-                  valueListenable: widget.prefs.colorNameScheme,
-                  builder: (final BuildContext context, final ColorNameScheme scheme, final Widget? child)
-                  {
-
-
-                    return SegmentedButton<ColorNameScheme>(
-                      selected: <ColorNameScheme>{scheme},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (final Set<ColorNameScheme> schemeList) {widget.prefs.colorNameScheme.value = schemeList.first;},
-
-                      segments: <ButtonSegment<ColorNameScheme>>[
-                        ButtonSegment<ColorNameScheme>(
-                            value: ColorNameScheme.general,
-                            label: Text(
-                              colorNameSchemeStringMap[ColorNameScheme.general]!,
-                              style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.general ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                            ),
-                        ),
-                        ButtonSegment<ColorNameScheme>(
-                          value: ColorNameScheme.pms,
-                          label: Text(
-                            colorNameSchemeStringMap[ColorNameScheme.pms]!,
-                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.pms ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                          ),
-                        ),
-                        ButtonSegment<ColorNameScheme>(
-                          value: ColorNameScheme.ralClassic,
-                          label: Text(
-                            colorNameSchemeStringMap[ColorNameScheme.ralClassic]!,
-                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.ralClassic ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                          ),
-                        ),
-                        ButtonSegment<ColorNameScheme>(
-                          value: ColorNameScheme.ralDsp,
-                          label: Text(
-                            colorNameSchemeStringMap[ColorNameScheme.ralDsp]!,
-                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.ralDsp ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                          ),
-                        ),
-                        ButtonSegment<ColorNameScheme>(
-                          value: ColorNameScheme.ralComplete,
-                          label: Text(
-                            colorNameSchemeStringMap[ColorNameScheme.ralComplete]!,
-                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.ralComplete ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                          ),
-                        ),
-                        ButtonSegment<ColorNameScheme>(
-                          value: ColorNameScheme.dmc,
-                          label: Text(
-                            colorNameSchemeStringMap[ColorNameScheme.dmc]!,
-                            style: Theme.of(context).textTheme.bodySmall!.apply(color: scheme == ColorNameScheme.dmc ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSegmentedButtonRow<ColorNameScheme>(
+            label: "Color Naming",
+            notifier: widget.prefs.colorNameScheme,
+            labels: colorNameSchemeStringMap,
+            buttonTextStyle: Theme.of(context).textTheme.bodySmall,
           ),
+
           SizedBox(height: widget.itemPadding),
+
           Text("Border Preferences", style: Theme.of(context).textTheme.titleLarge),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Tool Outline Opacity", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: widget.prefs.toolOpacity,
-                  builder: (final BuildContext context, final int toolOutlineOpacity, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: toolOutlineOpacity.toDouble(),
-                      min: opacityMin.toDouble(),
-                      max: opacityMax.toDouble(),
-                      //divisions: opacityMax - opacityMin,
-                      onChanged: (final double newVal) {widget.prefs.toolOpacity.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSliderRow<int>(
+              text: "Tool Outline Opacity",
+              minVal: opacityMin.toDouble(),
+              maxVal: opacityMax.toDouble(),
+              notifier: widget.prefs.toolOpacity,
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Selection Outline Opacity", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: widget.prefs.selectionOpacity,
-                  builder: (final BuildContext context, final int selectionOpacity, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: selectionOpacity.toDouble(),
-                      min: opacityMin.toDouble(),
-                      max: opacityMax.toDouble(),
-                      //divisions: opacityMax - opacityMin,
-                      onChanged: (final double newVal) {widget.prefs.selectionOpacity.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSliderRow<int>(
+              text: "Selection Outline Opacity",
+              minVal: opacityMin.toDouble(),
+              maxVal: opacityMax.toDouble(),
+              notifier: widget.prefs.selectionOpacity,
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(child: Text("Canvas Border Opacity", style: Theme.of(context).textTheme.titleSmall)),
-              Expanded(
-                flex: 2,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: widget.prefs.canvasBorderOpacity,
-                  builder: (final BuildContext context, final int canvasBorderOpacity, final Widget? child)
-                  {
-                    return KPixSlider(
-                      value: canvasBorderOpacity.toDouble(),
-                      min: opacityMin.toDouble(),
-                      max: opacityMax.toDouble(),
-                      //divisions: opacityMax - opacityMin,
-                      onChanged: (final double newVal) {widget.prefs.canvasBorderOpacity.value = newVal.round();},
-                      textStyle: Theme.of(context).textTheme.bodyLarge!,
-                    );
-                  },
-                ),
-              ),
-            ],
+          PrefSliderRow<int>(
+            text: "Canvas Border Opacity",
+            minVal: opacityMin.toDouble(),
+            maxVal: opacityMax.toDouble(),
+            notifier: widget.prefs.canvasBorderOpacity,
           ),
         ],
       ),

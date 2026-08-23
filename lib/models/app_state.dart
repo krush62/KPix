@@ -826,7 +826,7 @@ class AppState
 
   Future<void> _restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup, final int? restoreLayerIndex}) async
   {
-    const String failMessage = "History restore feiled!";
+    const String failMessage = "History restore failed!";
 
     if (historyState != null)
     {

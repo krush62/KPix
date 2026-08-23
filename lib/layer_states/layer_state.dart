@@ -16,7 +16,9 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
+
 
 
 class LayerWidgetOptions

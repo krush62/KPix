@@ -19,8 +19,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 class ColorEntryWidgetOptions {
   final double unselectedMargin;

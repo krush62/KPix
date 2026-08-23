@@ -22,6 +22,7 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';

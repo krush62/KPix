@@ -33,6 +33,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_state.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/file_handler.dart';

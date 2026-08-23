@@ -43,6 +43,7 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
 import 'package:kpix/models/time_line_state.dart';

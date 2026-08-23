@@ -28,6 +28,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';

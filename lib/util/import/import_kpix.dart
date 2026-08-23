@@ -742,7 +742,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
         //zoom ``ushort (1)``
         int zoom = reader.getUint16();
-        if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax)
+        if (zoom < referenceLayerSettings.zoomMin || zoom > referenceLayerSettings.zoomMax)
         {
           final String msg = "Zoom for reference layer is out of range: $zoom";
           if (strict) {

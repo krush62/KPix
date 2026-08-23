@@ -73,67 +73,65 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
 Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints, required final KPalSliderConstraints sliderConstraints}) async
 {
   fileData ??= await File(path).readAsBytes();
-  final ByteData byteData = fileData.buffer.asByteData();
-  int offset = 0;
+  final FileByteReader reader = FileByteReader(fileData);
 
   //skip options
-  final int optionCount = byteData.getUint8(offset++);
-  offset += optionCount * 2;
+  final int optionCount = reader.getUint8();
+  reader.moveOffset(optionCount * 2);
 
-  final int rampCount = byteData.getUint8(offset++);
+  final int rampCount = reader.getUint8();
   if (rampCount <= 0) return LoadPaletteSet(status: "no ramp found");
   final List<KPalRampData> rampList = <KPalRampData>[];
   for (int i = 0; i < rampCount; i++)
   {
     final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
-    final int nameLength = byteData.getUint8(offset++);
-    offset += nameLength;
-    kPalRampSettings.colorCount = byteData.getUint8(offset++);
+    final int nameLength = reader.getUint8();
+    reader.moveOffset(nameLength);
+    kPalRampSettings.colorCount = reader.getUint8();
     if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadPaletteSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
-    kPalRampSettings.baseHue = byteData.getInt16(offset, Endian.little);
-    offset+=2;
+    kPalRampSettings.baseHue = reader.getInt16(Endian.little);
     if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax) return LoadPaletteSet(status: "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}");
-    kPalRampSettings.baseSat = byteData.getInt16(offset, Endian.little);
-    offset+=2;
+    kPalRampSettings.baseSat = reader.getInt16(Endian.little);
     if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax) return LoadPaletteSet(status: "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}");
-    kPalRampSettings.hueShift = byteData.getInt8(offset++);
+    kPalRampSettings.hueShift = reader.getInt8();
     if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax) return LoadPaletteSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
-    kPalRampSettings.hueShiftExp = byteData.getFloat32(offset, Endian.little);
-    offset += 4;
+    kPalRampSettings.hueShiftExp = reader.getFloat32(Endian.little);
     if (kPalRampSettings.hueShiftExp < (constraints.hueShiftExpMin - _floatDelta) || kPalRampSettings.hueShiftExp > (constraints.hueShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
     kPalRampSettings.hueShiftExp = kPalRampSettings.hueShiftExp.clamp(constraints.hueShiftExpMin, constraints.hueShiftExpMax);
-    kPalRampSettings.satShift = byteData.getInt8(offset++);
+    kPalRampSettings.satShift = reader.getInt8();
     if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax) return LoadPaletteSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
-    kPalRampSettings.satShiftExp = byteData.getFloat32(offset, Endian.little);
-    offset += 4;
+    kPalRampSettings.satShiftExp = reader.getFloat32(Endian.little);
     if (kPalRampSettings.satShiftExp < (constraints.satShiftExpMin - _floatDelta) || kPalRampSettings.satShiftExp > (constraints.satShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
     kPalRampSettings.satShiftExp = kPalRampSettings.satShiftExp.clamp(constraints.satShiftExpMin, constraints.satShiftExpMax);
-    kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
-    kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
+    kPalRampSettings.valueRangeMin = reader.getUint8();
+    kPalRampSettings.valueRangeMax = reader.getUint8();
     if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
 
     final List<HistoryShiftSet> shifts = <HistoryShiftSet>[];
     for (int j = 0; j < kPalRampSettings.colorCount; j++)
     {
-      final int hueShift = byteData.getInt8(offset++);
-      final int satShift = byteData.getInt8(offset++);
-      final int valShift = byteData.getInt8(offset++);
+      final int hueShift = reader.getInt8();
+      final int satShift = reader.getInt8();
+      final int valShift = reader.getInt8();
       if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue) return LoadPaletteSet(status: "Invalid Hue Shift in Ramp $i, color $j: $hueShift");
       if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat) return LoadPaletteSet(status: "Invalid Sat Shift in Ramp $i, color $j: $satShift");
       if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) return LoadPaletteSet(status: "Invalid Val Shift in Ramp $i, color $j: $valShift");
       final HistoryShiftSet shiftSet = HistoryShiftSet(hueShift: hueShift, satShift: satShift, valShift: valShift);
       shifts.add(shiftSet);
     }
-    final int rampOptionCount = byteData.getInt8(offset++);
+    final int rampOptionCount = reader.getInt8();
     for (int j = 0; j < rampOptionCount; j++)
     {
-      final int optionType = byteData.getInt8(offset++);
+      final int optionType = reader.getInt8();
       if (optionType == 1) //sat curve
-          {
-        final int satCurveVal = byteData.getInt8(offset);
+      {
+        final int satCurveVal = reader.getInt8();
         kPalRampSettings.satCurve = _kpalKpixSatCurveMap[satCurveVal]?? SatCurve.noFlat;
       }
-      offset++;
+      else
+      {
+        reader.moveOffset(1);
+      }
     }
     rampList.add(KPalRampData(uuid: const Uuid().v1(), settings: kPalRampSettings, historyShifts: shifts));
   }

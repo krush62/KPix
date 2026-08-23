@@ -45,26 +45,23 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
   try
   {
     fileData ??= await File(path).readAsBytes();
-    final ByteData byteData = fileData.buffer.asByteData();
-    int offset = 0;
-    final int mNumber = byteData.getUint32(offset);
-    offset+=4;
-    final int fVersion = byteData.getUint8(offset++);
+    final FileByteReader reader = FileByteReader(fileData);
+    final int mNumber = reader.getUint32();
+    final int fVersion = reader.getUint8();
 
     if (mNumber != int.parse(magicNumber, radix: 16)) return LoadFileSet(status: "Wrong magic number: $mNumber");
     if (fVersion > fileVersion) return LoadFileSet(status: "File Version: $fVersion");
 
-    final int rampCount = byteData.getUint8(offset++);
+    final int rampCount = reader.getUint8();
     if (rampCount < 1) return LoadFileSet(status: "No color ramp found");
     final List<HistoryRampData> rampList = <HistoryRampData>[];
     for (int i = 0; i < rampCount; i++)
     {
       final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
 
-      kPalRampSettings.colorCount = byteData.getUint8(offset++);
+      kPalRampSettings.colorCount = reader.getUint8();
       if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
-      kPalRampSettings.baseHue = byteData.getInt16(offset);
-      offset+=2;
+      kPalRampSettings.baseHue = reader.getInt16();
 
       // BASE HUE
       if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax)
@@ -82,7 +79,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // BASE SAT
-      kPalRampSettings.baseSat = byteData.getUint8(offset++);
+      kPalRampSettings.baseSat = reader.getUint8();
       if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax)
       {
         final String msg = "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}";
@@ -98,7 +95,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // HUE SHIFT
-      kPalRampSettings.hueShift = byteData.getInt8(offset++);
+      kPalRampSettings.hueShift = reader.getInt8();
       if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax)
       {
         final String msg = "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}";
@@ -114,7 +111,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // HUE SHIFT EXP
-      kPalRampSettings.hueShiftExp =  byteData.getUint8(offset++).toDouble() / 100.0;
+      kPalRampSettings.hueShiftExp =  reader.getUint8().toDouble() / 100.0;
       if (kPalRampSettings.hueShiftExp < constraints.hueShiftExpMin || kPalRampSettings.hueShiftExp > constraints.hueShiftExpMax)
       {
         final String msg = "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}";
@@ -131,7 +128,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // SAT SHIFT
-      kPalRampSettings.satShift = byteData.getInt8(offset++);
+      kPalRampSettings.satShift = reader.getInt8();
       if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax)
       {
         final String msg = "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}";
@@ -147,7 +144,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // SAT SHIFT EXP
-      kPalRampSettings.satShiftExp =  byteData.getUint8(offset++).toDouble() / 100.0;
+      kPalRampSettings.satShiftExp =  reader.getUint8().toDouble() / 100.0;
       if (kPalRampSettings.satShiftExp < constraints.satShiftExpMin || kPalRampSettings.satShiftExp > constraints.satShiftExpMax)
       {
         final String msg = "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}";
@@ -163,7 +160,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // CURVE
-      final int curveVal = byteData.getUint8(offset++);
+      final int curveVal = reader.getUint8();
       final SatCurve? satCurve = satCurveMap[curveVal];
       if (satCurve == null)
       {
@@ -183,10 +180,10 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         kPalRampSettings.satCurve = satCurve;
       }
 
-      kPalRampSettings.valueRangeMin = byteData.getUint8(offset++);
+      kPalRampSettings.valueRangeMin = reader.getUint8();
 
       // VALUE RANGE
-      kPalRampSettings.valueRangeMax = byteData.getUint8(offset++);
+      kPalRampSettings.valueRangeMax = reader.getUint8();
       if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin)
       {
         final String msg = "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}";
@@ -207,7 +204,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       for (int j = 0; j < kPalRampSettings.colorCount; j++)
       {
         //COLOR SHIFT HUE
-        int hueShift = byteData.getInt8(offset++);
+        int hueShift = reader.getInt8();
         if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue)
         {
           final String msg = "Invalid Hue Shift in Ramp $i, color $j: $hueShift";
@@ -223,7 +220,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //COLOR SHIFT SAT
-        int satShift = byteData.getInt8(offset++);
+        int satShift = reader.getInt8();
         if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat)
         {
           final String msg = "Invalid Sat Shift in Ramp $i, color $j: $satShift";
@@ -239,7 +236,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         // COLOR SHIFT VAL
-        int valShift = byteData.getInt8(offset++);
+        int valShift = reader.getInt8();
         if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) {
           final String msg = "Invalid Val Shift in Ramp $i, color $j: $valShift";
           if (strict)
@@ -259,27 +256,24 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       rampList.add(HistoryRampData(otherSettings: kPalRampSettings, uuid: const Uuid().v1(), notifierShifts: shifts));
     }
 
-    final int width = byteData.getUint16(offset);
-    offset+=2;
-    final int height = byteData.getUint16(offset);
-    offset+=2;
+    final int width = reader.getUint16();
+    final int height = reader.getUint16();
     final CoordinateSetI canvasSize = CoordinateSetI(x: width, y: height);
     int layerCount = 0;
     if (fVersion >= 3)
     {
-      layerCount = byteData.getUint16(offset);
-      offset+=2;
+      layerCount = reader.getUint16();
     }
     else
     {
-      layerCount = byteData.getUint8(offset++);
+      layerCount = reader.getUint8();
     }
     if (layerCount < 1) return LoadFileSet(status: "No layer found");
     final LinkedHashSet<HistoryLayer> layerList = LinkedHashSet<HistoryLayer>();
     for (int i = 0; i < layerCount; i++)
     {
       // LAYER TYPE
-      final int layerType = byteData.getUint8(offset++);
+      final int layerType = reader.getUint8();
       if (!_historyLayerValueMap.keys.contains(layerType))
       {
         final String msg = "Invalid layer type for layer $i: $layerType";
@@ -295,7 +289,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       }
 
       // VISIBILITY STATE
-      final int visibilityStateVal = byteData.getUint8(offset++);
+      final int visibilityStateVal = reader.getUint8();
       LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
       if (visibilityState == null)
       {
@@ -317,7 +311,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: const HistoryColorReference(colorIndex: 0, rampIndex: 0));
 
         // LOCK STATE
-        final int lockStateVal = byteData.getUint8(offset++);
+        final int lockStateVal = reader.getUint8();
         LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
         if (lockState == null)
         {
@@ -336,7 +330,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         if (fVersion >= 2)
         {
           // OUTER STROKE STYLE
-          final int outerStrokeStyleVal = byteData.getUint8(offset++);
+          final int outerStrokeStyleVal = reader.getUint8();
           OuterStrokeStyle? outerStrokeStyle = outerStrokeStyleValueMap[outerStrokeStyleVal];
           if (outerStrokeStyle == null)
           {
@@ -353,11 +347,11 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // OUTER STROKE ALIGNMENT
-          final int outerAlignmentMask = byteData.getUint8(offset++);
+          final int outerAlignmentMask = reader.getUint8();
           final HashMap<Alignment, bool> outerStrokeDirections = _unPackAlignments(byte: outerAlignmentMask);
 
           // OUTER STROKE COLOR RAMP INDEX
-          int outerStrokeColorRampIndex = byteData.getUint8(offset++);
+          int outerStrokeColorRampIndex = reader.getUint8();
           if (outerStrokeColorRampIndex >= rampList.length)
           {
             final String msg = "Outer Stroke Color Ramp index out of range for layer $i : $outerStrokeColorRampIndex";
@@ -373,7 +367,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // OUTER STROKE COLOR INDEX
-          int outerStrokeColorIndex = byteData.getUint8(offset++);
+          int outerStrokeColorIndex = reader.getUint8();
           if (outerStrokeColorIndex >= rampList[outerStrokeColorRampIndex].settings.colorCount)
           {
             final String msg = "Outer Stroke Color index out of range for layer $i: $outerStrokeColorIndex";
@@ -391,7 +385,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           final HistoryColorReference outerColorReference = HistoryColorReference(colorIndex: outerStrokeColorIndex, rampIndex: outerStrokeColorRampIndex);
 
           // OUTER STROKE DARKEN/BRIGHTEN
-          int outerStrokeDarkenBrighten = byteData.getInt8(offset++);
+          int outerStrokeDarkenBrighten = reader.getInt8();
           if (outerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || outerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax)
           {
             final String msg = "Darken/Brighten for outer stroke is out of range for layer $i: $outerStrokeDarkenBrighten";
@@ -407,7 +401,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // OUTER STROKE GLOW DEPTH
-          int outerStrokeGlowDepth = byteData.getInt8(offset++);
+          int outerStrokeGlowDepth = reader.getInt8();
           if (outerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || outerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax)
           {
             final String msg = "Glow Depth for outer stroke is out of range for layer $i: $outerStrokeGlowDepth";
@@ -423,7 +417,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // OUTER STROKE GLOW RECURSIVE
-          int outerStrokeGlowRecursiveValue = byteData.getUint8(offset++);
+          int outerStrokeGlowRecursiveValue = reader.getUint8();
           if (outerStrokeGlowRecursiveValue != 0 && outerStrokeGlowRecursiveValue != 1)
           {
             final String msg = "Invalid glow recursive value for outer stroke for layer $i: $outerStrokeGlowRecursiveValue";
@@ -441,7 +435,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
 
           //INNER STROKE STYLE
-          final int innerStrokeStyleVal = byteData.getUint8(offset++);
+          final int innerStrokeStyleVal = reader.getUint8();
           InnerStrokeStyle? innerStrokeStyle = innerStrokeStyleValueMap[innerStrokeStyleVal];
           if (innerStrokeStyle == null)
           {
@@ -458,11 +452,11 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // INNER STROKE ALIGNMENT
-          final int innerAlignmentMask = byteData.getUint8(offset++);
+          final int innerAlignmentMask = reader.getUint8();
           final HashMap<Alignment, bool> innerStrokeDirections = _unPackAlignments(byte: innerAlignmentMask);
 
           // INNER STROKE COLOR RAMP INDEX
-          int innerStrokeColorRampIndex = byteData.getUint8(offset++);
+          int innerStrokeColorRampIndex = reader.getUint8();
           if (innerStrokeColorRampIndex >= rampList.length)
           {
             final String msg = "Inner Stroke Color Ramp index out of range for layer $i : $innerStrokeColorRampIndex";
@@ -479,7 +473,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // INNER STROKE COLOR INDEX
-          int innerStrokeColorIndex = byteData.getUint8(offset++);
+          int innerStrokeColorIndex = reader.getUint8();
           if (innerStrokeColorIndex >= rampList[innerStrokeColorRampIndex].settings.colorCount)
           {
             final String msg = "Inner Stroke Color index out of range for layer $i: $innerStrokeColorIndex";
@@ -497,7 +491,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           final HistoryColorReference innerColorReference = HistoryColorReference(colorIndex: innerStrokeColorIndex, rampIndex: innerStrokeColorRampIndex);
 
           // INNER STROKE DARKEN/BRIGHTEN
-          int innerStrokeDarkenBrighten = byteData.getInt8(offset++);
+          int innerStrokeDarkenBrighten = reader.getInt8();
           if (innerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || innerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax)
           {
             final String msg = "Darken/Brighten for inner stroke is out of range for layer $i: $innerStrokeDarkenBrighten";
@@ -513,7 +507,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // INNER STROKE GLOW DEPTH
-          int innerStrokeGlowDepth = byteData.getInt8(offset++);
+          int innerStrokeGlowDepth = reader.getInt8();
           if (innerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || innerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax)
           {
             final String msg = "Glow Depth for inner stroke is out of range for layer $i: $innerStrokeGlowDepth";
@@ -529,7 +523,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // INNER STROKE GLOW RECURSIVE
-          int innerStrokeGlowRecursiveValue = byteData.getUint8(offset++);
+          int innerStrokeGlowRecursiveValue = reader.getUint8();
           if (innerStrokeGlowRecursiveValue != 0 && innerStrokeGlowRecursiveValue != 1)
           {
             final String msg = "Invalid glow recursive value for inner stroke for layer $i: $innerStrokeGlowRecursiveValue";
@@ -547,7 +541,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           final bool innerStrokeGlowRecursive = innerStrokeGlowRecursiveValue != 0;
 
           // INNER STROKE BEVEL DISTANCE
-          int innerStrokeBevelDistance = byteData.getUint8(offset++);
+          int innerStrokeBevelDistance = reader.getUint8();
           if (innerStrokeBevelDistance < drawingLayerSettingsConstraints.bevelDistanceMin || innerStrokeBevelDistance > drawingLayerSettingsConstraints.bevelDistanceMax)
           {
             final String msg = "Bevel Distance out of range for layer $i: $innerStrokeBevelDistance";
@@ -563,7 +557,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // INNER STROKE BEVEL STRENGTH
-          int innerStrokeBevelStrength = byteData.getUint8(offset++);
+          int innerStrokeBevelStrength = reader.getUint8();
           if (innerStrokeBevelStrength < drawingLayerSettingsConstraints.bevelStrengthMin || innerStrokeBevelStrength > drawingLayerSettingsConstraints.bevelStrengthMax)
           {
             final String msg = "Bevel Strength out of range for layer $i: $innerStrokeBevelStrength";
@@ -580,7 +574,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
 
           // DROP SHADOW STYLE
-          final int dropShadowStyleVal = byteData.getUint8(offset++);
+          final int dropShadowStyleVal = reader.getUint8();
           DropShadowStyle? dropShadowStyle = dropShadowStyleValueMap[dropShadowStyleVal];
           if (dropShadowStyle == null)
           {
@@ -597,7 +591,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // DROP SHADOW COLOR RAMP INDEX
-          int dropShadowColorRampIndex = byteData.getUint8(offset++);
+          int dropShadowColorRampIndex = reader.getUint8();
           if (dropShadowColorRampIndex >= rampList.length)
           {
             final String msg = "Drop Shadow Color Ramp index out of range for layer $i : $dropShadowColorRampIndex";
@@ -614,7 +608,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // DROP SHADOW COLOR INDEX
-          int dropShadowColorIndex = byteData.getUint8(offset++);
+          int dropShadowColorIndex = reader.getUint8();
           if (dropShadowColorIndex >= rampList[dropShadowColorRampIndex].settings.colorCount)
           {
             final String msg = "Drop Shadow Color index out of range for layer $i: $dropShadowColorIndex";
@@ -633,7 +627,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
 
           // DROP SHADOW OFFSET X
-          int dropShadowOffsetX = byteData.getInt8(offset++);
+          int dropShadowOffsetX = reader.getInt8();
           if (dropShadowOffsetX < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetX > drawingLayerSettingsConstraints.dropShadowOffsetMax)
           {
             final String msg = "Drop Shadow offset x is out of range for layer $i: $dropShadowOffsetX";
@@ -649,7 +643,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // DROP SHADOW OFFSET Y
-          int dropShadowOffsetY = byteData.getInt8(offset++);
+          int dropShadowOffsetY = reader.getInt8();
           if (dropShadowOffsetY < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetY > drawingLayerSettingsConstraints.dropShadowOffsetMax)
           {
             final String msg = "Drop Shadow offset y is out of range for layer $i: $dropShadowOffsetY";
@@ -665,7 +659,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // DROP SHADOW DARKEN/BRIGHTEN
-          int dropShadowDarkenBrighten = byteData.getInt8(offset++);
+          int dropShadowDarkenBrighten = reader.getInt8();
           if (dropShadowDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || dropShadowDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax)
           {
             final String msg = "Darken/Brighten for drop shadow is out of range for layer $i: $dropShadowDarkenBrighten";
@@ -701,18 +695,15 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
             dropShadowOffset: CoordinateSetI(x: dropShadowOffsetX, y: dropShadowOffsetY),
             dropShadowDarkenBrighten: dropShadowDarkenBrighten,);
         }
-        final int dataCount = byteData.getUint32(offset);
-        offset+=4;
+        final int dataCount = reader.getUint32();
         final HashMap<CoordinateSetI, HistoryColorReference> data = HashMap<CoordinateSetI, HistoryColorReference>();
         for (int j = 0; j < dataCount; j++)
         {
-          final int x = byteData.getUint16(offset);
-          offset+=2;
-          final int y = byteData.getUint16(offset);
-          offset+=2;
-          final int colorRampIndex = byteData.getUint8(offset++);
+          final int x = reader.getUint16();
+          final int y = reader.getUint16();
+          final int colorRampIndex = reader.getUint8();
           if (colorRampIndex >= rampList.length) return LoadFileSet(status: "Color Ramp index out of range for layer $i : $colorRampIndex");
-          final int colorIndex = byteData.getUint8(offset++);
+          final int colorIndex = reader.getUint8();
           if (colorIndex >= rampList[colorRampIndex].settings.colorCount) return LoadFileSet(status: "Color index out of range for layer $i: $colorIndex");
           data[CoordinateSetI(x: x, y: y)] = HistoryColorReference(colorIndex: colorIndex, rampIndex: colorRampIndex);
         }
@@ -721,16 +712,15 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       else if (_historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
           {
         //path (string)
-        final int pathLength = byteData.getInt16(offset);
-        offset += 2;
+        final int pathLength = reader.getInt16();
         final List<int> pathBytes = <int>[];
         for (int i = 0; i < pathLength; i++)
         {
-          pathBytes.add(byteData.getUint8(offset++));
+          pathBytes.add(reader.getUint8());
         }
         final String pathString = utf8.decode(pathBytes);
         //opacity ``ubyte (1)`` // 0...100
-        int opacity = byteData.getUint8(offset++);
+        int opacity = reader.getUint8();
         if (opacity < referenceLayerSettings.opacityMin || opacity > referenceLayerSettings.opacityMax)
         {
           final String msg = "Opacity for reference layer is out of range: $opacity";
@@ -746,15 +736,12 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //offset_x ``float (1)``
-        final double offsetX = byteData.getFloat32(offset);
-        offset += 4;
+        final double offsetX = reader.getFloat32();
         //offset_y ``float (1)``
-        final double offsetY = byteData.getFloat32(offset);
-        offset += 4;
+        final double offsetY = reader.getFloat32();
 
         //zoom ``ushort (1)``
-        int zoom = byteData.getUint16(offset);
-        offset += 2;
+        int zoom = reader.getUint16();
         if (zoom < referenceLayerSettings.zoomMin || opacity > referenceLayerSettings.zoomMax)
         {
           final String msg = "Zoom for reference layer is out of range: $zoom";
@@ -769,7 +756,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //aspect_ratio ``float (1)``
-        double aspectRatio = byteData.getFloat32(offset);
+        double aspectRatio = reader.getFloat32();
         if (aspectRatio < (referenceLayerSettings.aspectRatioMin - _floatDelta) || aspectRatio > (referenceLayerSettings.aspectRatioMax + _floatDelta))
         {
           final String msg = "Aspect ratio for reference layer is out of range: $aspectRatio";
@@ -784,7 +771,6 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         aspectRatio = aspectRatio.clamp(referenceLayerSettings.aspectRatioMin, referenceLayerSettings.aspectRatioMax);
-        offset+=4;
 
 
         double brightness = referenceLayerSettings.brightnessDefault;
@@ -795,7 +781,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         if (fVersion >= 4)
         {
           //brightness ``float (1)`` // -1...1
-          brightness = byteData.getFloat32(offset);
+          brightness = reader.getFloat32();
           if (brightness < referenceLayerSettings.brightnessMin || brightness > referenceLayerSettings.brightnessMax)
           {
             final String msg = "Brightness for reference layer is out of range: $brightness";
@@ -809,10 +795,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
               returnString.write("\n$msg");
             }
           }
-          offset+=4;
 
           //contrast ``float (1)`` // 0...2
-          contrast = byteData.getFloat32(offset);
+          contrast = reader.getFloat32();
           if (contrast < referenceLayerSettings.contrastMin || contrast > referenceLayerSettings.contrastMax)
           {
             final String msg = "Contrast for reference layer is out of range: $contrast";
@@ -826,10 +811,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
               returnString.write("\n$msg");
             }
           }
-          offset+=4;
 
           //saturation ``float (1)`` // 0...2
-          saturation = byteData.getFloat32(offset);
+          saturation = reader.getFloat32();
           if (saturation < referenceLayerSettings.saturationMin || saturation > referenceLayerSettings.saturationMax)
           {
             final String msg = "Saturation for reference layer is out of range: $saturation";
@@ -843,10 +827,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
               returnString.write("\n$msg");
             }
           }
-          offset+=4;
 
           //warmth ``float (1)`` // -1...1
-          warmth = byteData.getFloat32(offset);
+          warmth = reader.getFloat32();
           if (warmth < referenceLayerSettings.warmthMin || warmth > referenceLayerSettings.warmthMax)
           {
             final String msg = "Warmth for reference layer is out of range: $warmth";
@@ -860,7 +843,6 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
               returnString.write("\n$msg");
             }
           }
-          offset+=4;
         }
 
 
@@ -885,7 +867,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       else if (_historyLayerValueMap[layerType] == HistoryGridLayer) //GRID LAYER
           {
         //opacity ``ubyte (1)`` // 0...100
-        int opacity = byteData.getUint8(offset++);
+        int opacity = reader.getUint8();
         if (opacity < gridLayerSettings.opacityMin || opacity > gridLayerSettings.opacityMax)
         {
           final String msg = "Opacity for grid layer is out of range: $opacity";
@@ -901,7 +883,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //brightness ``ubyte (1)`` // 0...100
-        int brightness = byteData.getUint8(offset++);
+        int brightness = reader.getUint8();
         if (brightness < gridLayerSettings.brightnessMin || brightness > gridLayerSettings.brightnessMax)
         {
           final String msg = "Brightness for grid layer is out of range: $brightness";
@@ -918,7 +900,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //grid_type
-        final int gridTypeValue = byteData.getUint8(offset++);
+        final int gridTypeValue = reader.getUint8();
         GridType? gridType = gridValueTypeMap[gridTypeValue];
         if (gridType == null)
         {
@@ -935,7 +917,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //interval_x ``ubyte (1)`` // 2...64
-        int intervalX = byteData.getUint8(offset++);
+        int intervalX = reader.getUint8();
         if (intervalX < gridLayerSettings.intervalXMin || intervalX > gridLayerSettings.intervalXMax)
         {
           final String msg = "Interval X for grid layer is out of range: $intervalX";
@@ -951,7 +933,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //interval_y ``ubyte (1)`` // 2...64
-        int intervalY = byteData.getUint8(offset++);
+        int intervalY = reader.getUint8();
         if (intervalY < gridLayerSettings.intervalYMin || intervalY > gridLayerSettings.intervalYMax)
         {
           final String msg = "Interval Y for grid layer is out of range: $intervalY";
@@ -968,7 +950,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
 
         //horizon_position ``float (1)``// 0...1 (vertical horizon position)
-        double horizon = byteData.getFloat32(offset);
+        double horizon = reader.getFloat32();
         if (horizon < (gridLayerSettings.vanishingPointMin - _floatDelta) || horizon > (gridLayerSettings.vanishingPointMax + _floatDelta))
         {
           final String msg = "Horizon for grid layer is out of range: $horizon";
@@ -983,10 +965,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
         }
         horizon = horizon.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
-        offset += 4;
 
         //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-        double vanishingPoint1 = byteData.getFloat32(offset);
+        double vanishingPoint1 = reader.getFloat32();
         if (vanishingPoint1 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint1 > (gridLayerSettings.vanishingPointMax + _floatDelta))
         {
           final String msg = "Vanishing Point 1 for grid layer is out of range: $vanishingPoint1";
@@ -1001,10 +982,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
         }
         vanishingPoint1 = vanishingPoint1.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
-        offset += 4;
 
         //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-        double vanishingPoint2 = byteData.getFloat32(offset);
+        double vanishingPoint2 = reader.getFloat32();
         if (vanishingPoint2 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint2 > (gridLayerSettings.vanishingPointMax + _floatDelta))
         {
           final String msg = "Vanishing Point 2 for grid layer is out of range: $vanishingPoint2";
@@ -1019,10 +999,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
         }
         vanishingPoint2 = vanishingPoint2.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
-        offset += 4;
 
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-        double vanishingPoint3 = byteData.getFloat32(offset);
+        double vanishingPoint3 = reader.getFloat32();
         if (vanishingPoint3 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint3 > (gridLayerSettings.vanishingPointMax + _floatDelta))
         {
           final String msg = "Vanishing Point 3 for grid layer is out of range: $vanishingPoint3";
@@ -1037,14 +1016,13 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
         }
         vanishingPoint3 = vanishingPoint3.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
-        offset += 4;
 
         layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3, layerIdentity: i));
       }
       else if (_historyLayerValueMap[layerType] == HistoryShadingLayer || _historyLayerValueMap[layerType] == HistoryDitherLayer) //SHADING/DITHER LAYER
           {
         // LOCK STATE
-        final int lockStateVal = byteData.getUint8(offset++);
+        final int lockStateVal = reader.getUint8();
         LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
         if (lockState == null)
         {
@@ -1066,7 +1044,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           final int topLimit = _historyLayerValueMap[layerType] == HistoryDitherLayer ? shadingLayerSettingsConstraints.ditherStepsMax : shadingLayerSettingsConstraints.shadingStepsMax;
 
           // SHADING LIMIT LOW
-          int shadingStepLimitLow = byteData.getUint8(offset++);
+          int shadingStepLimitLow = reader.getUint8();
           if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitLow > topLimit)
           {
             final String msg = "Shading step limit low is out of range for layer $i: $shadingStepLimitLow";
@@ -1082,7 +1060,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           }
 
           // SHADING LIMIT HIGH
-          int shadingStepLimitHigh = byteData.getUint8(offset++);
+          int shadingStepLimitHigh = reader.getUint8();
           if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitHigh > topLimit)
           {
             final String msg = "Shading step limit high is out of range for layer $i: $shadingStepLimitHigh";
@@ -1100,16 +1078,13 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
         }
 
-        final int dataCount = byteData.getUint32(offset);
-        offset+=4;
+        final int dataCount = reader.getUint32();
         final HashMap<CoordinateSetI, int> data = HashMap<CoordinateSetI, int>();
         for (int j = 0; j < dataCount; j++)
         {
-          final int x = byteData.getUint16(offset);
-          offset+=2;
-          final int y = byteData.getUint16(offset);
-          offset+=2;
-          final int shading = byteData.getInt8(offset++);
+          final int x = reader.getUint16();
+          final int y = reader.getUint16();
+          final int shading = reader.getInt8();
           data[CoordinateSetI(x: x, y: y)] = shading;
         }
 
@@ -1139,19 +1114,19 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     }
     else
     {
-      final int framesCount = byteData.getUint8(offset++);
-      final int startFrame = byteData.getUint8(offset++);
-      final int endFrame = byteData.getUint8(offset++);
+      final int framesCount = reader.getUint8();
+      final int startFrame = reader.getUint8();
+      final int endFrame = reader.getUint8();
 
       final List<HistoryFrame> hFrames = <HistoryFrame>[];
       for (int i = 0; i < framesCount; i++)
       {
         final LinkedHashSet<int> indices = LinkedHashSet<int>();
-        final int fps = byteData.getUint8(offset++);
-        final int layerCount = byteData.getUint8(offset++);
+        final int fps = reader.getUint8();
+        final int layerCount = reader.getUint8();
         for (int j = 0; j < layerCount; j++)
         {
-          final int layerIndex = byteData.getUint8(offset++);
+          final int layerIndex = reader.getUint8();
           indices.add(layerIndex);
         }
         hFrames.add(HistoryFrame(fps: fps, layerIndices: indices, selectedLayerIndex: 0));

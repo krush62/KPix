@@ -38,10 +38,105 @@ HashMap<Alignment, bool> _unPackAlignments({required final int byte})
   return alignments;
 }
 
+class _ImportRejected implements Exception
+{
+  const _ImportRejected(this.message);
+  final String message;
+}
+
+class _ImportGuard
+{
+  _ImportGuard({required this.strict, required this.warnings});
+
+  final bool strict;
+  final StringBuffer warnings;
+
+  T ranged<T extends num>({
+    required final T value,
+    required final T min,
+    required final T max,
+    required final String label,
+    required final T fallback,
+  })
+  {
+    if (value < min || value > max)
+    {
+      return _reject(label: label, raw: value, fallback: fallback);
+    }
+    return value;
+  }
+
+  double approx({
+    required final double value,
+    required final double min,
+    required final double max,
+    required final String label,
+    required final double fallback,
+    final double delta = _floatDelta,
+  })
+  {
+    final double checked = ranged(
+      value: value,
+      min: min - delta,
+      max: max + delta,
+      label: label,
+      fallback: fallback,
+    );
+    return checked.clamp(min, max);
+  }
+
+  T mapped<T extends Object>({
+    required final T? value,
+    required final T? fallback,
+    required final Object raw,
+    required final String label,
+  })
+  {
+    if (value == null)
+    {
+      if (fallback == null)
+      {
+        throw _ImportRejected("$label: $raw");
+      }
+      return _reject(label: label, raw: raw, fallback: fallback);
+    }
+    return value;
+  }
+
+  bool flag({
+    required final int value,
+    required final String label,
+    final bool fallback = false,
+  })
+  {
+    if (value != 0 && value != 1)
+    {
+      return _reject(label: label, raw: value, fallback: fallback);
+    }
+    return value == 1;
+  }
+
+  T _reject<T>({
+    required final String label,
+    required final Object raw,
+    required final T fallback,
+  })
+  {
+    final String message = "$label: $raw";
+    if (strict)
+    {
+      throw _ImportRejected(message);
+    }
+    warnings.write("\n$message");
+    return fallback;
+  }
+}
+
 //TODO strict parameter could be a (dev) setting
 Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
 {
   final StringBuffer returnString = StringBuffer();
+  final _ImportGuard guard = _ImportGuard(strict: strict, warnings: returnString);
   try
   {
     fileData ??= await File(path).readAsBytes();
@@ -61,195 +156,118 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
 
       kPalRampSettings.colorCount = reader.getUint8();
       if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
-      kPalRampSettings.baseHue = reader.getInt16();
 
       // BASE HUE
-      if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax)
-      {
-        final String msg = "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.baseHue = constraints.baseHueMin;
-          returnString.write("\n$msg");
-        }
-      }
+      kPalRampSettings.baseHue = guard.ranged(
+        value: reader.getInt16(),
+        min: constraints.baseHueMin,
+        max: constraints.baseHueMax,
+        fallback: constraints.baseHueMin,
+        label: "Invalid base hue in ramp $i",
+      );
 
       // BASE SAT
-      kPalRampSettings.baseSat = reader.getUint8();
-      if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax)
-      {
-        final String msg = "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.baseSat = constraints.baseSatMin;
-          returnString.write("\n$msg");
-        }
-      }
+      kPalRampSettings.baseSat = guard.ranged(
+        value: reader.getUint8(),
+        min: constraints.baseSatMin,
+        max: constraints.baseSatMax,
+        fallback: constraints.baseSatMin,
+        label: "Invalid base sat in ramp $i",
+      );
 
       // HUE SHIFT
-      kPalRampSettings.hueShift = reader.getInt8();
-      if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax)
-      {
-        final String msg = "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.hueShift = constraints.hueShiftMin;
-          returnString.write("\n$msg");
-        }
-      }
+      kPalRampSettings.hueShift = guard.ranged(
+        value: reader.getInt8(),
+        min: constraints.hueShiftMin,
+        max: constraints.hueShiftMax,
+        fallback: constraints.hueShiftMin,
+        label: "Invalid hue shift value in ramp $i",
+      );
 
       // HUE SHIFT EXP
-      kPalRampSettings.hueShiftExp =  reader.getUint8().toDouble() / 100.0;
-      if (kPalRampSettings.hueShiftExp < constraints.hueShiftExpMin || kPalRampSettings.hueShiftExp > constraints.hueShiftExpMax)
-      {
-        final String msg = "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.hueShiftExp = constraints.hueShiftExpMin;
-          returnString.write("\n$msg");
-
-        }
-      }
+      kPalRampSettings.hueShiftExp = guard.ranged(
+        value: reader.getUint8().toDouble() / 100.0,
+        min: constraints.hueShiftExpMin,
+        max: constraints.hueShiftExpMax,
+        fallback: constraints.hueShiftExpMin,
+        label: "Invalid hue shift exp in ramp $i",
+      );
 
       // SAT SHIFT
-      kPalRampSettings.satShift = reader.getInt8();
-      if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax)
-      {
-        final String msg = "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.satShift = constraints.satShiftMin;
-          returnString.write("\n$msg");
-        }
-      }
+      kPalRampSettings.satShift = guard.ranged(
+        value: reader.getInt8(),
+        min: constraints.satShiftMin,
+        max: constraints.satShiftMax,
+        fallback: constraints.satShiftMin,
+        label: "Invalid sat shift in ramp $i",
+      );
 
       // SAT SHIFT EXP
-      kPalRampSettings.satShiftExp =  reader.getUint8().toDouble() / 100.0;
-      if (kPalRampSettings.satShiftExp < constraints.satShiftExpMin || kPalRampSettings.satShiftExp > constraints.satShiftExpMax)
-      {
-        final String msg = "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.satShiftExp = constraints.satShiftExpMin;
-          returnString.write("\n$msg");
-        }
-      }
+      kPalRampSettings.satShiftExp = guard.ranged(
+        value: reader.getUint8().toDouble() / 100.0,
+        min: constraints.satShiftExpMin,
+        max: constraints.satShiftExpMax,
+        fallback: constraints.satShiftExpMin,
+        label: "Invalid sat shift exp in ramp $i",
+      );
 
       // CURVE
       final int curveVal = reader.getUint8();
-      final SatCurve? satCurve = satCurveMap[curveVal];
-      if (satCurve == null)
-      {
-        final String msg = "Invalid sat curve for palette $i: $curveVal";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.satCurve = SatCurve.noFlat;
-          returnString.write("\n$msg");
-        }
-      }
-      else
-      {
-        kPalRampSettings.satCurve = satCurve;
-      }
+      kPalRampSettings.satCurve = guard.mapped(
+        value: satCurveMap[curveVal],
+        raw: curveVal,
+        fallback: SatCurve.noFlat,
+        label: "Invalid sat curve for palette $i",
+      );
 
-      kPalRampSettings.valueRangeMin = reader.getUint8();
+      // VALUE RANGE MIN
+      kPalRampSettings.valueRangeMin = guard.ranged(
+        value: reader.getUint8(),
+        min: constraints.valueRangeMin,
+        max: constraints.valueRangeMax,
+        fallback: constraints.valueRangeMin,
+        label: "Invalid min value range in ramp $i",
+      );
 
-      // VALUE RANGE
-      kPalRampSettings.valueRangeMax = reader.getUint8();
-      if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin)
-      {
-        final String msg = "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          kPalRampSettings.valueRangeMin = constraints.valueRangeMin;
-          kPalRampSettings.valueRangeMax = constraints.valueRangeMax;
-          returnString.write("\n$msg");
-        }
-      }
+      kPalRampSettings.valueRangeMax = guard.ranged(
+        value: reader.getUint8(),
+        min: kPalRampSettings.valueRangeMin,
+        max: constraints.valueRangeMax,
+        fallback: constraints.valueRangeMax,
+        label: "Invalid max value range in ramp $i",
+      );
+
 
       //COLOR SHIFTS
       final List<ShiftSet> shifts = <ShiftSet>[];
       for (int j = 0; j < kPalRampSettings.colorCount; j++)
       {
         //COLOR SHIFT HUE
-        int hueShift = reader.getInt8();
-        if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue)
-        {
-          final String msg = "Invalid Hue Shift in Ramp $i, color $j: $hueShift";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            hueShift = 0;
-            returnString.write("\n$msg");
-          }
-        }
+        final int hueShift = guard.ranged(
+          value: reader.getInt8(),
+          min: sliderConstraints.minHue,
+          max: sliderConstraints.maxHue,
+          fallback: 0,
+          label: "Invalid Hue Shift in Ramp $i, color $j",
+        );
 
         //COLOR SHIFT SAT
-        int satShift = reader.getInt8();
-        if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat)
-        {
-          final String msg = "Invalid Sat Shift in Ramp $i, color $j: $satShift";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            satShift = 0;
-            returnString.write("\n$msg");
-          }
-        }
+        final int satShift = guard.ranged(
+          value: reader.getInt8(),
+          min: sliderConstraints.minSat,
+          max: sliderConstraints.maxSat,
+          fallback: 0,
+          label: "Invalid Sat Shift in Ramp $i, color $j",
+        );
 
         // COLOR SHIFT VAL
-        int valShift = reader.getInt8();
-        if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) {
-          final String msg = "Invalid Val Shift in Ramp $i, color $j: $valShift";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            valShift = 0;
-            returnString.write("\n$msg");
-          }
-        }
-
+        final int valShift = guard.ranged(
+          value: reader.getInt8(),
+          min: sliderConstraints.minVal,
+          max: sliderConstraints.maxVal,
+          fallback: 0,
+          label: "Invalid Val Shift in Ramp $i, color $j",
+        );
         final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: ValueNotifier<int>(hueShift), satShiftNotifier: ValueNotifier<int>(satShift), valShiftNotifier: ValueNotifier<int>(valShift));
         shifts.add(shiftSet);
       }
@@ -273,406 +291,230 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     for (int i = 0; i < layerCount; i++)
     {
       // LAYER TYPE
-      final int layerType = reader.getUint8();
-      if (!_historyLayerValueMap.keys.contains(layerType))
-      {
-        final String msg = "Invalid layer type for layer $i: $layerType";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          returnString.write("\n$msg");
-          continue;
-        }
-      }
+      // An unknown layer type is never recoverable: layer records carry no
+      // length prefix, so skipping one desynchronises the byte stream, and
+      // frame layer indices are positional. Hence the null fallback.
+      final int layerTypeVal = reader.getUint8();
+      final Type layerType = guard.mapped(
+        value: _historyLayerValueMap[layerTypeVal],
+        raw: layerTypeVal,
+        fallback: null,
+        label: "Invalid layer type for layer $i",
+      );
 
       // VISIBILITY STATE
       final int visibilityStateVal = reader.getUint8();
-      LayerVisibilityState? visibilityState = layerVisibilityStateValueMap[visibilityStateVal];
-      if (visibilityState == null)
-      {
-        final String msg = "Invalid visibility type for layer $i: $visibilityStateVal";
-        if (strict)
-        {
-          return LoadFileSet(status: msg);
-        }
-        else
-        {
-          visibilityState = LayerVisibilityState.visible;
-          returnString.write("\nmsg");
-        }
-      }
+      final LayerVisibilityState visibilityState = guard.mapped(
+        value: layerVisibilityStateValueMap[visibilityStateVal],
+        raw: visibilityStateVal,
+        fallback: LayerVisibilityState.visible,
+        label: "Invalid visibility type for layer $i",
+      );
 
 
-      if (_historyLayerValueMap[layerType] == HistoryDrawingLayer) //DRAWING LAYER
+      if (layerType == HistoryDrawingLayer) //DRAWING LAYER
       {
         HistoryDrawingLayerSettings drawingLayerSettings = HistoryDrawingLayerSettings.defaultValues(constraints: drawingLayerSettingsConstraints, colRef: const HistoryColorReference(colorIndex: 0, rampIndex: 0));
 
         // LOCK STATE
         final int lockStateVal = reader.getUint8();
-        LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
-        if (lockState == null)
-        {
-          final String msg = "Invalid lock type for layer $i: $lockStateVal";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            lockState = LayerLockState.unlocked;
-            returnString.write("\n$msg");
-          }
-        }
+        final LayerLockState lockState = guard.mapped(
+          value: layerLockStateValueMap[lockStateVal],
+          raw: lockStateVal,
+          fallback: LayerLockState.unlocked,
+          label: "Invalid lock type for layer $i",
+        );
 
         if (fVersion >= 2)
         {
           // OUTER STROKE STYLE
           final int outerStrokeStyleVal = reader.getUint8();
-          OuterStrokeStyle? outerStrokeStyle = outerStrokeStyleValueMap[outerStrokeStyleVal];
-          if (outerStrokeStyle == null)
-          {
-            final String msg = "Invalid outer stroke style for layer $i: $outerStrokeStyleVal";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              outerStrokeStyle = OuterStrokeStyle.off;
-              returnString.write("\n$msg");
-            }
-          }
+          final OuterStrokeStyle outerStrokeStyle = guard.mapped(
+            value: outerStrokeStyleValueMap[outerStrokeStyleVal],
+            raw: outerStrokeStyleVal,
+            fallback: OuterStrokeStyle.off,
+            label: "Invalid outer stroke style for layer $i",
+          );
+
 
           // OUTER STROKE ALIGNMENT
           final int outerAlignmentMask = reader.getUint8();
           final HashMap<Alignment, bool> outerStrokeDirections = _unPackAlignments(byte: outerAlignmentMask);
 
           // OUTER STROKE COLOR RAMP INDEX
-          int outerStrokeColorRampIndex = reader.getUint8();
-          if (outerStrokeColorRampIndex >= rampList.length)
-          {
-            final String msg = "Outer Stroke Color Ramp index out of range for layer $i : $outerStrokeColorRampIndex";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              outerStrokeColorRampIndex = 0;
-              returnString.write("\n$msg");
-            }
-          }
+          final int outerStrokeColorRampIndex = guard.ranged(
+            value: reader.getUint8(),
+            min: 0,
+            max: rampList.length - 1,
+            fallback: 0,
+            label:  "Outer Stroke Color Ramp index out of range for layer $i",
+          );
 
           // OUTER STROKE COLOR INDEX
-          int outerStrokeColorIndex = reader.getUint8();
-          if (outerStrokeColorIndex >= rampList[outerStrokeColorRampIndex].settings.colorCount)
-          {
-            final String msg = "Outer Stroke Color index out of range for layer $i: $outerStrokeColorIndex";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              outerStrokeColorIndex = 0;
-              returnString.write("\n$msg");
-            }
-          }
+          final int outerStrokeColorIndex = guard.ranged(
+            value: reader.getUint8(),
+            min: 0,
+            max: rampList[outerStrokeColorRampIndex].settings.colorCount - 1,
+            fallback: 0,
+            label: "Outer Stroke Color index out of range for layer $i",
+          );
 
           final HistoryColorReference outerColorReference = HistoryColorReference(colorIndex: outerStrokeColorIndex, rampIndex: outerStrokeColorRampIndex);
 
           // OUTER STROKE DARKEN/BRIGHTEN
-          int outerStrokeDarkenBrighten = reader.getInt8();
-          if (outerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || outerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax)
-          {
-            final String msg = "Darken/Brighten for outer stroke is out of range for layer $i: $outerStrokeDarkenBrighten";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              outerStrokeDarkenBrighten = drawingLayerSettingsConstraints.darkenBrightenDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int outerStrokeDarkenBrighten = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.darkenBrightenMin,
+            max: drawingLayerSettingsConstraints.darkenBrightenMax,
+            fallback: drawingLayerSettingsConstraints.darkenBrightenDefault,
+            label: "Darken/Brighten for outer stroke is out of range for layer $i",
+          );
 
           // OUTER STROKE GLOW DEPTH
-          int outerStrokeGlowDepth = reader.getInt8();
-          if (outerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || outerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax)
-          {
-            final String msg = "Glow Depth for outer stroke is out of range for layer $i: $outerStrokeGlowDepth";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              outerStrokeGlowDepth = drawingLayerSettingsConstraints.glowDepthDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int outerStrokeGlowDepth = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.glowDepthMin,
+            max: drawingLayerSettingsConstraints.glowDepthMax,
+            fallback: drawingLayerSettingsConstraints.glowDepthDefault,
+            label: "Glow Depth for outer stroke is out of range for layer $i",
+          );
 
           // OUTER STROKE GLOW RECURSIVE
-          int outerStrokeGlowRecursiveValue = reader.getUint8();
-          if (outerStrokeGlowRecursiveValue != 0 && outerStrokeGlowRecursiveValue != 1)
-          {
-            final String msg = "Invalid glow recursive value for outer stroke for layer $i: $outerStrokeGlowRecursiveValue";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              outerStrokeGlowRecursiveValue = 0;
-              returnString.write("\n$msg");
-            }
-          }
-          final bool outerStrokeGlowRecursive = outerStrokeGlowRecursiveValue != 0;
-
+          final bool outerStrokeGlowRecursive = guard.flag(
+            value: reader.getUint8(),
+            label: "Invalid outer stroke glow recursive value for layer $i",
+          );
 
           //INNER STROKE STYLE
           final int innerStrokeStyleVal = reader.getUint8();
-          InnerStrokeStyle? innerStrokeStyle = innerStrokeStyleValueMap[innerStrokeStyleVal];
-          if (innerStrokeStyle == null)
-          {
-            final String msg = "Invalid inner stroke style for layer $i: $outerStrokeStyleVal";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeStyle = InnerStrokeStyle.off;
-              returnString.write("\n$msg");
-            }
-          }
+          final InnerStrokeStyle innerStrokeStyle = guard.mapped(
+            value: innerStrokeStyleValueMap[innerStrokeStyleVal],
+            raw: innerStrokeStyleVal,
+            fallback: InnerStrokeStyle.off,
+            label: "Invalid inner stroke style for layer $i",
+          );
 
           // INNER STROKE ALIGNMENT
           final int innerAlignmentMask = reader.getUint8();
           final HashMap<Alignment, bool> innerStrokeDirections = _unPackAlignments(byte: innerAlignmentMask);
 
           // INNER STROKE COLOR RAMP INDEX
-          int innerStrokeColorRampIndex = reader.getUint8();
-          if (innerStrokeColorRampIndex >= rampList.length)
-          {
-            final String msg = "Inner Stroke Color Ramp index out of range for layer $i : $innerStrokeColorRampIndex";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeColorRampIndex = 0;
-              returnString.write("\n$msg");
-
-            }
-          }
+          final int innerStrokeColorRampIndex = guard.ranged(
+            value: reader.getUint8(),
+            min: 0,
+            max: rampList.length - 1,
+            fallback: 0,
+            label:  "Inner Stroke Color Ramp index out of range for layer $i",
+          );
 
           // INNER STROKE COLOR INDEX
-          int innerStrokeColorIndex = reader.getUint8();
-          if (innerStrokeColorIndex >= rampList[innerStrokeColorRampIndex].settings.colorCount)
-          {
-            final String msg = "Inner Stroke Color index out of range for layer $i: $innerStrokeColorIndex";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeColorIndex = 0;
-              returnString.write("\n$msg");
-            }
-          }
+          final int innerStrokeColorIndex = guard.ranged(
+            value: reader.getUint8(),
+            min: 0,
+            max: rampList[innerStrokeColorRampIndex].settings.colorCount - 1,
+            fallback: 0,
+            label: "Inner Stroke Color index out of range for layer $i",
+          );
 
           final HistoryColorReference innerColorReference = HistoryColorReference(colorIndex: innerStrokeColorIndex, rampIndex: innerStrokeColorRampIndex);
 
           // INNER STROKE DARKEN/BRIGHTEN
-          int innerStrokeDarkenBrighten = reader.getInt8();
-          if (innerStrokeDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || innerStrokeDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax)
-          {
-            final String msg = "Darken/Brighten for inner stroke is out of range for layer $i: $innerStrokeDarkenBrighten";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeDarkenBrighten = drawingLayerSettingsConstraints.darkenBrightenDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int innerStrokeDarkenBrighten = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.darkenBrightenMin,
+            max: drawingLayerSettingsConstraints.darkenBrightenMax,
+            fallback: drawingLayerSettingsConstraints.darkenBrightenDefault,
+            label: "Darken/Brighten for inner stroke is out of range for layer $i",
+          );
 
           // INNER STROKE GLOW DEPTH
-          int innerStrokeGlowDepth = reader.getInt8();
-          if (innerStrokeGlowDepth < drawingLayerSettingsConstraints.glowDepthMin || innerStrokeGlowDepth > drawingLayerSettingsConstraints.glowDepthMax)
-          {
-            final String msg = "Glow Depth for inner stroke is out of range for layer $i: $innerStrokeGlowDepth";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeGlowDepth = drawingLayerSettingsConstraints.glowDepthDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int innerStrokeGlowDepth = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.glowDepthMin,
+            max: drawingLayerSettingsConstraints.glowDepthMax,
+            fallback: drawingLayerSettingsConstraints.glowDepthDefault,
+            label: "Glow Depth for inner stroke is out of range for layer $i",
+          );
 
           // INNER STROKE GLOW RECURSIVE
-          int innerStrokeGlowRecursiveValue = reader.getUint8();
-          if (innerStrokeGlowRecursiveValue != 0 && innerStrokeGlowRecursiveValue != 1)
-          {
-            final String msg = "Invalid glow recursive value for inner stroke for layer $i: $innerStrokeGlowRecursiveValue";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeGlowRecursiveValue = 0;
-              returnString.write("\n$msg");
-            }
-          }
-
-          final bool innerStrokeGlowRecursive = innerStrokeGlowRecursiveValue != 0;
+          final bool innerStrokeGlowRecursive = guard.flag(
+            value: reader.getUint8(),
+            label: "Invalid inner stroke glow recursive value for layer $i",
+          );
 
           // INNER STROKE BEVEL DISTANCE
-          int innerStrokeBevelDistance = reader.getUint8();
-          if (innerStrokeBevelDistance < drawingLayerSettingsConstraints.bevelDistanceMin || innerStrokeBevelDistance > drawingLayerSettingsConstraints.bevelDistanceMax)
-          {
-            final String msg = "Bevel Distance out of range for layer $i: $innerStrokeBevelDistance";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeBevelDistance = drawingLayerSettingsConstraints.bevelDistanceDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int innerStrokeBevelDistance = guard.ranged(
+            value: reader.getUint8(),
+            min: drawingLayerSettingsConstraints.bevelDistanceMin,
+            max: drawingLayerSettingsConstraints.bevelDistanceMax,
+            fallback: drawingLayerSettingsConstraints.bevelDistanceDefault,
+            label: "Bevel Distance out of range for layer $i",
+          );
 
           // INNER STROKE BEVEL STRENGTH
-          int innerStrokeBevelStrength = reader.getUint8();
-          if (innerStrokeBevelStrength < drawingLayerSettingsConstraints.bevelStrengthMin || innerStrokeBevelStrength > drawingLayerSettingsConstraints.bevelStrengthMax)
-          {
-            final String msg = "Bevel Strength out of range for layer $i: $innerStrokeBevelStrength";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              innerStrokeBevelStrength = drawingLayerSettingsConstraints.bevelStrengthDefault;
-              returnString.write("\n$msg");
-            }
-          }
-
+          final int innerStrokeBevelStrength = guard.ranged(
+            value: reader.getUint8(),
+            min: drawingLayerSettingsConstraints.bevelStrengthMin,
+            max: drawingLayerSettingsConstraints.bevelStrengthMax,
+            fallback: drawingLayerSettingsConstraints.bevelStrengthDefault,
+            label: "Bevel Strength out of range for layer $i",
+          );
 
           // DROP SHADOW STYLE
           final int dropShadowStyleVal = reader.getUint8();
-          DropShadowStyle? dropShadowStyle = dropShadowStyleValueMap[dropShadowStyleVal];
-          if (dropShadowStyle == null)
-          {
-            final String msg = "Invalid drop shadow style for layer $i: $dropShadowStyleVal";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              dropShadowStyle = DropShadowStyle.off;
-              returnString.write("\n$msg");
-            }
-          }
+          final DropShadowStyle dropShadowStyle = guard.mapped(
+            value: dropShadowStyleValueMap[dropShadowStyleVal],
+            raw: dropShadowStyleVal,
+            fallback: DropShadowStyle.off,
+            label: "Invalid drop shadow style for layer $i",
+          );
 
           // DROP SHADOW COLOR RAMP INDEX
-          int dropShadowColorRampIndex = reader.getUint8();
-          if (dropShadowColorRampIndex >= rampList.length)
-          {
-            final String msg = "Drop Shadow Color Ramp index out of range for layer $i : $dropShadowColorRampIndex";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              dropShadowColorRampIndex = 0;
-              returnString.write("\n$msg");
-
-            }
-          }
+          final int dropShadowColorRampIndex = guard.ranged(
+            value: reader.getUint8(),
+            min: 0,
+            max: rampList.length - 1,
+            fallback: 0,
+            label: "Drop Shadow Color Ramp index out of range for layer $i",
+          );
 
           // DROP SHADOW COLOR INDEX
-          int dropShadowColorIndex = reader.getUint8();
-          if (dropShadowColorIndex >= rampList[dropShadowColorRampIndex].settings.colorCount)
-          {
-            final String msg = "Drop Shadow Color index out of range for layer $i: $dropShadowColorIndex";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              dropShadowColorIndex = 0;
-              returnString.write("\n$msg");
-            }
-          }
+          final int dropShadowColorIndex = guard.ranged(
+            value: reader.getUint8(),
+            min: 0,
+            max: rampList[dropShadowColorRampIndex].settings.colorCount - 1,
+            fallback: 0,
+            label: "Drop Shadow Color index out of range for layer $i",
+          );
 
           final HistoryColorReference dropShadowColorReference = HistoryColorReference(colorIndex: dropShadowColorIndex, rampIndex: dropShadowColorRampIndex);
 
-
           // DROP SHADOW OFFSET X
-          int dropShadowOffsetX = reader.getInt8();
-          if (dropShadowOffsetX < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetX > drawingLayerSettingsConstraints.dropShadowOffsetMax)
-          {
-            final String msg = "Drop Shadow offset x is out of range for layer $i: $dropShadowOffsetX";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              dropShadowOffsetX = drawingLayerSettingsConstraints.dropShadowOffsetDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int dropShadowOffsetX = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.dropShadowOffsetMin,
+            max: drawingLayerSettingsConstraints.dropShadowOffsetMax,
+            fallback: drawingLayerSettingsConstraints.dropShadowOffsetDefault,
+            label: "Drop Shadow offset x is out of range for layer $i",
+          );
 
           // DROP SHADOW OFFSET Y
-          int dropShadowOffsetY = reader.getInt8();
-          if (dropShadowOffsetY < drawingLayerSettingsConstraints.dropShadowOffsetMin || dropShadowOffsetY > drawingLayerSettingsConstraints.dropShadowOffsetMax)
-          {
-            final String msg = "Drop Shadow offset y is out of range for layer $i: $dropShadowOffsetY";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              dropShadowOffsetY = drawingLayerSettingsConstraints.dropShadowOffsetDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int dropShadowOffsetY = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.dropShadowOffsetMin,
+            max: drawingLayerSettingsConstraints.dropShadowOffsetMax,
+            fallback: drawingLayerSettingsConstraints.dropShadowOffsetDefault,
+            label: "Drop Shadow offset y is out of range for layer $i",
+          );
 
           // DROP SHADOW DARKEN/BRIGHTEN
-          int dropShadowDarkenBrighten = reader.getInt8();
-          if (dropShadowDarkenBrighten < drawingLayerSettingsConstraints.darkenBrightenMin || dropShadowDarkenBrighten > drawingLayerSettingsConstraints.darkenBrightenMax)
-          {
-            final String msg = "Darken/Brighten for drop shadow is out of range for layer $i: $dropShadowDarkenBrighten";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              dropShadowDarkenBrighten = drawingLayerSettingsConstraints.darkenBrightenDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          final int dropShadowDarkenBrighten = guard.ranged(
+            value: reader.getInt8(),
+            min: drawingLayerSettingsConstraints.darkenBrightenMin,
+            max: drawingLayerSettingsConstraints.darkenBrightenMax,
+            fallback: drawingLayerSettingsConstraints.darkenBrightenDefault,
+            label: "Darken/Brighten for drop shadow is out of range for layer $i",
+          );
 
           drawingLayerSettings = HistoryDrawingLayerSettings(
             constraints: drawingLayerSettingsConstraints,
@@ -709,7 +551,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
         layerList.add(HistoryDrawingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: drawingLayerSettings, layerIdentity: i));
       }
-      else if (_historyLayerValueMap[layerType] == HistoryReferenceLayer) //REFERENCE LAYER
+      else if (layerType == HistoryReferenceLayer) //REFERENCE LAYER
           {
         //path (string)
         final int pathLength = reader.getInt16();
@@ -720,20 +562,13 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         }
         final String pathString = utf8.decode(pathBytes);
         //opacity ``ubyte (1)`` // 0...100
-        int opacity = reader.getUint8();
-        if (opacity < referenceLayerSettings.opacityMin || opacity > referenceLayerSettings.opacityMax)
-        {
-          final String msg = "Opacity for reference layer is out of range: $opacity";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            opacity = referenceLayerSettings.opacityDefault;
-            returnString.write("\n$msg");
-          }
-        }
+        final int opacity = guard.ranged(
+          value: reader.getUint8(),
+          min: referenceLayerSettings.opacityMin,
+          max: referenceLayerSettings.opacityMax,
+          fallback: referenceLayerSettings.opacityDefault,
+          label: "Opacity for reference layer is out of range",
+        );
 
         //offset_x ``float (1)``
         final double offsetX = reader.getFloat32();
@@ -741,37 +576,22 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         final double offsetY = reader.getFloat32();
 
         //zoom ``ushort (1)``
-        int zoom = reader.getUint16();
-        if (zoom < referenceLayerSettings.zoomMin || zoom > referenceLayerSettings.zoomMax)
-        {
-          final String msg = "Zoom for reference layer is out of range: $zoom";
-          if (strict) {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            zoom = referenceLayerSettings.zoomDefault;
-            returnString.write("\n$msg");
-          }
-        }
+        final int zoom = guard.ranged(
+          value: reader.getUint16(),
+          min: referenceLayerSettings.zoomMin,
+          max: referenceLayerSettings.zoomMax,
+          fallback: referenceLayerSettings.zoomDefault,
+          label: "Zoom for reference layer is out of range",
+        );
 
         //aspect_ratio ``float (1)``
-        double aspectRatio = reader.getFloat32();
-        if (aspectRatio < (referenceLayerSettings.aspectRatioMin - _floatDelta) || aspectRatio > (referenceLayerSettings.aspectRatioMax + _floatDelta))
-        {
-          final String msg = "Aspect ratio for reference layer is out of range: $aspectRatio";
-          if (strict) {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            aspectRatio = referenceLayerSettings.aspectRatioDefault;
-            returnString.write("\n$msg");
-          }
-        }
-
-        aspectRatio = aspectRatio.clamp(referenceLayerSettings.aspectRatioMin, referenceLayerSettings.aspectRatioMax);
-
+        final double aspectRatio = guard.approx(
+          value: reader.getFloat32(),
+          min: referenceLayerSettings.aspectRatioMin,
+          max: referenceLayerSettings.aspectRatioMax,
+          fallback: referenceLayerSettings.aspectRatioDefault,
+          label: "Aspect ratio for reference layer is out of range",
+        );
 
         double brightness = referenceLayerSettings.brightnessDefault;
         double contrast = referenceLayerSettings.contrastDefault;
@@ -781,72 +601,41 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         if (fVersion >= 4)
         {
           //brightness ``float (1)`` // -1...1
-          brightness = reader.getFloat32();
-          if (brightness < referenceLayerSettings.brightnessMin || brightness > referenceLayerSettings.brightnessMax)
-          {
-            final String msg = "Brightness for reference layer is out of range: $brightness";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              brightness = referenceLayerSettings.brightnessDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          brightness = guard.ranged(
+            value: reader.getFloat32(),
+            min: referenceLayerSettings.brightnessMin,
+            max: referenceLayerSettings.brightnessMax,
+            fallback: referenceLayerSettings.brightnessDefault,
+            label: "Brightness for reference layer is out of range",
+          );
 
           //contrast ``float (1)`` // 0...2
-          contrast = reader.getFloat32();
-          if (contrast < referenceLayerSettings.contrastMin || contrast > referenceLayerSettings.contrastMax)
-          {
-            final String msg = "Contrast for reference layer is out of range: $contrast";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              contrast = referenceLayerSettings.contrastDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          contrast = guard.ranged(
+            value: reader.getFloat32(),
+            min: referenceLayerSettings.contrastMin,
+            max: referenceLayerSettings.contrastMax,
+            fallback: referenceLayerSettings.contrastDefault,
+            label: "Contrast for reference layer is out of range",
+          );
 
           //saturation ``float (1)`` // 0...2
-          saturation = reader.getFloat32();
-          if (saturation < referenceLayerSettings.saturationMin || saturation > referenceLayerSettings.saturationMax)
-          {
-            final String msg = "Saturation for reference layer is out of range: $saturation";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              saturation = referenceLayerSettings.saturationDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          saturation = guard.ranged(
+            value: reader.getFloat32(),
+            min: referenceLayerSettings.saturationMin,
+            max: referenceLayerSettings.saturationMax,
+            fallback: referenceLayerSettings.saturationDefault,
+            label: "Saturation for reference layer is out of range",
+          );
 
           //warmth ``float (1)`` // -1...1
-          warmth = reader.getFloat32();
-          if (warmth < referenceLayerSettings.warmthMin || warmth > referenceLayerSettings.warmthMax)
-          {
-            final String msg = "Warmth for reference layer is out of range: $warmth";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              warmth = referenceLayerSettings.warmthDefault;
-              returnString.write("\n$msg");
-            }
-          }
+          warmth = guard.ranged(
+            value: reader.getFloat32(),
+            min: referenceLayerSettings.warmthMin,
+            max: referenceLayerSettings.warmthMax,
+            fallback: referenceLayerSettings.warmthDefault,
+            label: "Warmth for reference layer is out of range",
+          );
         }
-
-
-
         layerList.add(
             HistoryReferenceLayer(
                 visibilityState: visibilityState,
@@ -864,216 +653,124 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
             ),
         );
       }
-      else if (_historyLayerValueMap[layerType] == HistoryGridLayer) //GRID LAYER
+      else if (layerType == HistoryGridLayer) //GRID LAYER
           {
         //opacity ``ubyte (1)`` // 0...100
-        int opacity = reader.getUint8();
-        if (opacity < gridLayerSettings.opacityMin || opacity > gridLayerSettings.opacityMax)
-        {
-          final String msg = "Opacity for grid layer is out of range: $opacity";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            opacity = gridLayerSettings.opacityDefault;
-            returnString.write("\n$msg");
-          }
-        }
+        final int opacity = guard.ranged(
+          value: reader.getUint8(),
+          min: gridLayerSettings.opacityMin,
+          max: gridLayerSettings.opacityMax,
+          fallback: gridLayerSettings.opacityDefault,
+          label: "Opacity for grid layer is out of range",
+        );
 
         //brightness ``ubyte (1)`` // 0...100
-        int brightness = reader.getUint8();
-        if (brightness < gridLayerSettings.brightnessMin || brightness > gridLayerSettings.brightnessMax)
-        {
-          final String msg = "Brightness for grid layer is out of range: $brightness";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            brightness = gridLayerSettings.brightnessDefault;
-            returnString.write("\n$msg");
-          }
-
-        }
+        final int brightness = guard.ranged(
+          value:  reader.getUint8(),
+          min: gridLayerSettings.brightnessMin,
+          max: gridLayerSettings.brightnessMax,
+          fallback: gridLayerSettings.brightnessDefault,
+          label: "Brightness for grid layer is out of range",
+        );
 
         //grid_type
         final int gridTypeValue = reader.getUint8();
-        GridType? gridType = gridValueTypeMap[gridTypeValue];
-        if (gridType == null)
-        {
-          final String msg = "Invalid grid type for layer $i: $gridTypeValue";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            gridType = GridType.rectangular;
-            returnString.write("\n$msg");
-          }
-        }
+        final GridType gridType = guard.mapped(
+          value: gridValueTypeMap[gridTypeValue],
+          raw: gridTypeValue,
+          fallback: GridType.rectangular,
+          label: "Invalid grid type for layer $i",
+        );
 
         //interval_x ``ubyte (1)`` // 2...64
-        int intervalX = reader.getUint8();
-        if (intervalX < gridLayerSettings.intervalXMin || intervalX > gridLayerSettings.intervalXMax)
-        {
-          final String msg = "Interval X for grid layer is out of range: $intervalX";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            intervalX = gridLayerSettings.intervalXDefault;
-            returnString.write("\n$msg");
-          }
-        }
+        final int intervalX = guard.ranged(
+          value: reader.getUint8(),
+          min: gridLayerSettings.intervalXMin,
+          max: gridLayerSettings.intervalXMax,
+          fallback: gridLayerSettings.intervalXDefault,
+          label: "Interval X for grid layer is out of range",
+        );
 
         //interval_y ``ubyte (1)`` // 2...64
-        int intervalY = reader.getUint8();
-        if (intervalY < gridLayerSettings.intervalYMin || intervalY > gridLayerSettings.intervalYMax)
-        {
-          final String msg = "Interval Y for grid layer is out of range: $intervalY";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            intervalY = gridLayerSettings.intervalYDefault;
-            returnString.write("\n$msg");
-          }
-
-        }
+        final int intervalY = guard.ranged(
+          value: reader.getUint8(),
+          min: gridLayerSettings.intervalYMin,
+          max: gridLayerSettings.intervalYMax,
+          fallback: gridLayerSettings.intervalYDefault,
+          label: "Interval Y for grid layer is out of range",
+        );
 
         //horizon_position ``float (1)``// 0...1 (vertical horizon position)
-        double horizon = reader.getFloat32();
-        if (horizon < (gridLayerSettings.vanishingPointMin - _floatDelta) || horizon > (gridLayerSettings.vanishingPointMax + _floatDelta))
-        {
-          final String msg = "Horizon for grid layer is out of range: $horizon";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            horizon = gridLayerSettings.horizonDefault;
-            returnString.write("\n$msg");
-          }
-        }
-        horizon = horizon.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
+        final double horizon = guard.approx(
+          value: reader.getFloat32(),
+          min: gridLayerSettings.vanishingPointMin,
+          max: gridLayerSettings.vanishingPointMax,
+          fallback: gridLayerSettings.horizonDefault,
+          label: "Horizon for grid layer is out of range",
+        );
 
         //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
-        double vanishingPoint1 = reader.getFloat32();
-        if (vanishingPoint1 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint1 > (gridLayerSettings.vanishingPointMax + _floatDelta))
-        {
-          final String msg = "Vanishing Point 1 for grid layer is out of range: $vanishingPoint1";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            vanishingPoint1 = gridLayerSettings.vanishingPoint1Default;
-            returnString.write("\n$msg");
-          }
-        }
-        vanishingPoint1 = vanishingPoint1.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
+        final double vanishingPoint1 = guard.approx(
+          value: reader.getFloat32(),
+          min: gridLayerSettings.vanishingPointMin,
+          max: gridLayerSettings.vanishingPointMax,
+          fallback: gridLayerSettings.vanishingPoint1Default,
+          label: "Vanishing Point 1 for grid layer is out of range",
+        );
 
         //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
-        double vanishingPoint2 = reader.getFloat32();
-        if (vanishingPoint2 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint2 > (gridLayerSettings.vanishingPointMax + _floatDelta))
-        {
-          final String msg = "Vanishing Point 2 for grid layer is out of range: $vanishingPoint2";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            vanishingPoint2 = gridLayerSettings.vanishingPoint1Default;
-            returnString.write("\n$msg");
-          }
-        }
-        vanishingPoint2 = vanishingPoint2.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
+        final double vanishingPoint2 = guard.approx(
+          value: reader.getFloat32(),
+          min: gridLayerSettings.vanishingPointMin,
+          max: gridLayerSettings.vanishingPointMax,
+          fallback: gridLayerSettings.vanishingPoint2Default,
+          label: "Vanishing Point 2 for grid layer is out of range",
+        );
 
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
-        double vanishingPoint3 = reader.getFloat32();
-        if (vanishingPoint3 < (gridLayerSettings.vanishingPointMin - _floatDelta) || vanishingPoint3 > (gridLayerSettings.vanishingPointMax + _floatDelta))
-        {
-          final String msg = "Vanishing Point 3 for grid layer is out of range: $vanishingPoint3";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            vanishingPoint3 = gridLayerSettings.vanishingPoint1Default;
-            returnString.write("\n$msg");
-          }
-        }
-        vanishingPoint3 = vanishingPoint3.clamp(gridLayerSettings.vanishingPointMin, gridLayerSettings.vanishingPointMax);
+        final double vanishingPoint3 = guard.approx(
+          value: reader.getFloat32(),
+          min: gridLayerSettings.vanishingPointMin,
+          max: gridLayerSettings.vanishingPointMax,
+          fallback: gridLayerSettings.vanishingPoint3Default,
+          label: "Vanishing Point 3 for grid layer is out of range",
+        );
 
         layerList.add(HistoryGridLayer(visibilityState: visibilityState, opacity: opacity, gridType: gridType, brightness: brightness, intervalX: intervalX, intervalY: intervalY, horizonPosition: horizon, vanishingPoint1: vanishingPoint1, vanishingPoint2: vanishingPoint2, vanishingPoint3: vanishingPoint3, layerIdentity: i));
       }
-      else if (_historyLayerValueMap[layerType] == HistoryShadingLayer || _historyLayerValueMap[layerType] == HistoryDitherLayer) //SHADING/DITHER LAYER
+      else if (layerType == HistoryShadingLayer || layerType == HistoryDitherLayer) //SHADING/DITHER LAYER
           {
         // LOCK STATE
         final int lockStateVal = reader.getUint8();
-        LayerLockState? lockState = layerLockStateValueMap[lockStateVal];
-        if (lockState == null)
-        {
-          final String msg = "Invalid lock type for layer $i: $lockStateVal";
-          if (strict)
-          {
-            return LoadFileSet(status: msg);
-          }
-          else
-          {
-            lockState = LayerLockState.unlocked;
-            returnString.write("\n$msg");
-          }
-        }
+        final LayerLockState lockState = guard.mapped(
+          value: layerLockStateValueMap[lockStateVal],
+          raw: lockStateVal,
+          fallback: LayerLockState.unlocked,
+          label: "Invalid lock type for layer $i",
+        );
 
         HistoryShadingLayerSettings shadingLayerSettings = HistoryShadingLayerSettings.defaultValue(constraints: shadingLayerSettingsConstraints);
         if (fVersion >= 2)
         {
-          final int topLimit = _historyLayerValueMap[layerType] == HistoryDitherLayer ? shadingLayerSettingsConstraints.ditherStepsMax : shadingLayerSettingsConstraints.shadingStepsMax;
+          final int topLimit = layerType == HistoryDitherLayer ? shadingLayerSettingsConstraints.ditherStepsMax : shadingLayerSettingsConstraints.shadingStepsMax;
 
           // SHADING LIMIT LOW
-          int shadingStepLimitLow = reader.getUint8();
-          if (shadingStepLimitLow < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitLow > topLimit)
-          {
-            final String msg = "Shading step limit low is out of range for layer $i: $shadingStepLimitLow";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              shadingStepLimitLow = shadingLayerSettingsConstraints.shadingStepsDefaultDarken;
-              returnString.write("\n$msg");
-            }
-          }
+          final int shadingStepLimitLow = guard.ranged(
+            value: reader.getUint8(),
+            min: shadingLayerSettingsConstraints.shadingStepsMin,
+            max: topLimit,
+            fallback: shadingLayerSettingsConstraints.shadingStepsDefaultDarken,
+            label: "Shading step limit low is out of range for layer $i",
+          );
 
           // SHADING LIMIT HIGH
-          int shadingStepLimitHigh = reader.getUint8();
-          if (shadingStepLimitHigh < shadingLayerSettingsConstraints.shadingStepsMin || shadingStepLimitHigh > topLimit)
-          {
-            final String msg = "Shading step limit high is out of range for layer $i: $shadingStepLimitHigh";
-            if (strict)
-            {
-              return LoadFileSet(status: msg);
-            }
-            else
-            {
-              shadingStepLimitHigh = shadingLayerSettingsConstraints.shadingStepsDefaultBrighten;
-              returnString.write("\n$msg");
-            }
-          }
+          final int shadingStepLimitHigh = guard.ranged(
+            value: reader.getUint8(),
+            min: shadingLayerSettingsConstraints.shadingStepsMin,
+            max: topLimit,
+            fallback: shadingLayerSettingsConstraints.shadingStepsDefaultBrighten,
+            label: "Shading step limit high is out of range for layer $i",
+          );
 
           shadingLayerSettings = HistoryShadingLayerSettings(constraints: shadingLayerSettingsConstraints, shadingLow: shadingStepLimitLow, shadingHigh: shadingStepLimitHigh);
         }
@@ -1088,17 +785,16 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           data[CoordinateSetI(x: x, y: y)] = shading;
         }
 
-        if (_historyLayerValueMap[layerType] == HistoryShadingLayer)
+        if (layerType == HistoryShadingLayer)
         {
           layerList.add(HistoryShadingLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
         }
-        else if (_historyLayerValueMap[layerType] == HistoryDitherLayer)
+        else if (layerType == HistoryDitherLayer)
         {
           layerList.add(HistoryDitherLayer.full(visibilityState: visibilityState, lockState: lockState, fullData: data, settings: shadingLayerSettings, layerIdentity: i));
         }
       }
     }
-
 
     HistoryTimeline hTimeline;
     if (fVersion < 3)
@@ -1138,6 +834,10 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     final HistoryState historyState = HistoryState(timeline: hTimeline, selectedColor: const HistoryColorReference(colorIndex: 0, rampIndex: 0), selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: const HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave));
 
     return LoadFileSet(status: returnString.toString(), historyState: historyState, path: path);
+  }
+  on _ImportRejected catch (e)
+  {
+    return LoadFileSet(status: e.message);
   }
   catch (pnfe)
   {

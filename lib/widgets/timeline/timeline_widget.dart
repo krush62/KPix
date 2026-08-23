@@ -21,13 +21,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -38,14 +33,6 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_drag_target_widget.dart';
-
-const Map<Type, IconData> layerIconMap = <Type, IconData>{
-  ReferenceLayerState: TablerIcons.photo,
-  GridLayerState: TablerIcons.grid_4x4,
-  ShadingLayerState: TablerIcons.exposure,
-  DitherLayerState: Icons.gradient,
-  DrawingLayerState: TablerIcons.brush,
-};
 
 class LayerFrameDragData
 {
@@ -537,7 +524,7 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
       ),
       width: _cellWidth - (_cellPadding * 2),
       height: _cellHeight - _cellPadding,
-      child: Center(child: Icon(layerIconMap[layer.runtimeType], size: _layerIconSize, color: frameIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
+      child: Center(child: Icon(layer.icon, size: _layerIconSize, color: frameIsSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor)),
     );
   }
 

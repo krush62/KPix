@@ -16,22 +16,13 @@
 
 import 'dart:collection';
 
-import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
-import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
-import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_frame.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';
-import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/models/app_state.dart';
@@ -161,11 +152,7 @@ class HistoryState
             previousTypedLayer = previousLayerMap[identity];
           }
 
-          historyLayerSet.add(_createHistoryLayer(
-            layerState:        l,
-            rampList:          rampList,
-            previousLayer:     previousTypedLayer,
-          )!,);
+          historyLayerSet.add(l.toHistoryLayer(ramps: rampList, previousLayer: previousTypedLayer));
         }
         else
         {
@@ -205,73 +192,5 @@ class HistoryState
     }
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
-  }
-
-  static HistoryLayer? _createHistoryLayer({
-    required final LayerState            layerState,
-    required final List<HistoryRampData> rampList,
-    final HistoryLayer?                  previousLayer,
-  })
-  {
-    if (layerState.runtimeType == DrawingLayerState)
-    {
-      final HistoryDrawingLayer? prevDrawing =
-      previousLayer is HistoryDrawingLayer ? previousLayer : null;
-
-      return prevDrawing != null
-          ? HistoryDrawingLayer.deltaFrom(
-        layerState:    layerState as DrawingLayerState,
-        ramps:         rampList,
-        previousLayer: prevDrawing,
-      )
-          : HistoryDrawingLayer.fromDrawingLayerState(
-        layerState: layerState as DrawingLayerState,
-        ramps:      rampList,
-      );
-    }
-
-    if (layerState.runtimeType == ShadingLayerState)
-    {
-      final HistoryShadingLayer? prevShading =
-      previousLayer is HistoryShadingLayer ? previousLayer : null;
-
-      return prevShading != null
-          ? HistoryShadingLayer.deltaFrom(
-        layerState:    layerState as ShadingLayerState,
-        previousLayer: prevShading,
-      )
-          : HistoryShadingLayer.fromShadingLayerState(
-        layerState: layerState as ShadingLayerState,
-      );
-    }
-
-    if (layerState.runtimeType == DitherLayerState)
-    {
-      final HistoryDitherLayer? prevDither =
-      previousLayer is HistoryDitherLayer ? previousLayer : null;
-
-      return prevDither != null
-          ? HistoryDitherLayer.deltaFrom(
-        layerState:    layerState as DitherLayerState,
-        previousLayer: prevDither,
-      )
-          : HistoryDitherLayer.fromDitherLayerState(
-        layerState: layerState as DitherLayerState,
-      );
-    }
-
-    if (layerState.runtimeType == ReferenceLayerState)
-    {
-      return HistoryReferenceLayer.fromReferenceLayer(
-          referenceState: layerState as ReferenceLayerState,);
-    }
-
-    if (layerState.runtimeType == GridLayerState)
-    {
-      return HistoryGridLayer.fromGridLayer(
-          gridState: layerState as GridLayerState,);
-    }
-
-    return null;
   }
 }

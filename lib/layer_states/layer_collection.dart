@@ -183,20 +183,12 @@ class LayerCollection with ChangeNotifier {
     }
     else
     {
-      final LayerState? addLayer = _createDuplicateLayer(layerToDuplicate: layer);
-      if (addLayer != null)
-      {
-        _layers.insert(position, addLayer);
-        _rebuildDependencies();
-        _triggerNewLayerRender(layer: addLayer);
-        notifyListeners();
-        return addLayer;
-      }
-      else
-      {
-        GetIt.I.get<AppState>().showMessage(text: "Could not add layer.");
-        return null;
-      }
+      final LayerState addLayer = layer.copy();
+      _layers.insert(position, addLayer);
+      _rebuildDependencies();
+      _triggerNewLayerRender(layer: addLayer);
+      notifyListeners();
+      return addLayer;
     }
   }
 
@@ -427,20 +419,19 @@ class LayerCollection with ChangeNotifier {
   String? layerIsMergeable({required final LayerState mergeLayer})
   {
     String? message;
-    if (mergeLayer.runtimeType == DrawingLayerState)
+    if (mergeLayer is DrawingLayerState)
     {
       final AppState appState = GetIt.I.get<AppState>();
-      final DrawingLayerState drawingMergeLayer = mergeLayer as DrawingLayerState;
       final int mergeLayerIndex = _layers.indexOf(mergeLayer);
       if (mergeLayerIndex == _layers.length - 1)
       {
         message = "No layer below!";
       }
-      else if (appState.timeline.isLayerLinked(layer: drawingMergeLayer))
+      else if (appState.timeline.isLayerLinked(layer: mergeLayer))
       {
         message = "Cannot merge a linked layer!";
       }
-      else if (drawingMergeLayer.visibilityState.value == LayerVisibilityState.hidden)
+      else if (mergeLayer.visibilityState.value == LayerVisibilityState.hidden)
       {
         message = "Cannot merge from an invisible layer!";
       }
@@ -448,7 +439,7 @@ class LayerCollection with ChangeNotifier {
       {
         message = "Cannot merge with an invisible layer!";
       }
-      else if (drawingMergeLayer.lockState.value == LayerLockState.locked)
+      else if (mergeLayer.lockState.value == LayerLockState.locked)
       {
         message = "Cannot merge from a locked layer!";
       }
@@ -464,7 +455,7 @@ class LayerCollection with ChangeNotifier {
       {
         message = "Cannot merge with a linked layer!";
       }
-      else if (drawingMergeLayer.layerSettings.hasActiveSettings() || _layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).layerSettings.hasActiveSettings())
+      else if (mergeLayer.layerSettings.hasActiveSettings() || _layers[mergeLayerIndex + 1].runtimeType == DrawingLayerState && (_layers[mergeLayerIndex + 1] as DrawingLayerState).layerSettings.hasActiveSettings())
       {
         message = "Cannot merge layers with active effects!";
       }
@@ -505,39 +496,6 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
-  LayerState? _createDuplicateLayer({required final LayerState layerToDuplicate,})
-  {
-    if (layerToDuplicate.runtimeType == DrawingLayerState)
-    {
-      final DrawingLayerState drawingLayer = layerToDuplicate as DrawingLayerState;
-      return DrawingLayerState.from(other: drawingLayer);
-    }
-    else if (layerToDuplicate.runtimeType == ReferenceLayerState)
-    {
-      final ReferenceLayerState referenceLayer = layerToDuplicate as ReferenceLayerState;
-      return ReferenceLayerState.from(other: referenceLayer);
-    }
-    else if (layerToDuplicate.runtimeType == GridLayerState)
-    {
-      final GridLayerState gridLayer = layerToDuplicate as GridLayerState;
-      return GridLayerState.from(other: gridLayer);
-    }
-    else if (layerToDuplicate.runtimeType == ShadingLayerState)
-    {
-      final ShadingLayerState shadingLayer = layerToDuplicate as ShadingLayerState;
-      return ShadingLayerState.from(other: shadingLayer);
-    }
-    else if (layerToDuplicate.runtimeType == DitherLayerState)
-    {
-      final DitherLayerState ditherLayer = layerToDuplicate as DitherLayerState;
-      return DitherLayerState.from(other: ditherLayer);
-    }
-    else
-    {
-      return null;
-    }
-  }
-
   LayerState? duplicateLayer({required final LayerState duplicateLayer, final bool insertAtEnd = false,})
   {
     if (_layers.length >= maxLayers)
@@ -547,27 +505,22 @@ class LayerCollection with ChangeNotifier {
     }
     else
     {
-      final LayerState? addLayer = _createDuplicateLayer(
-          layerToDuplicate: duplicateLayer,);
-
-      if (addLayer != null)
+      final LayerState addLayer = duplicateLayer.copy();
+      if (insertAtEnd)
       {
-        if (insertAtEnd)
-        {
-          _layers.add(addLayer);
-        }
-        else
-        {
-          final int? currentIndex = getLayerPosition(state: duplicateLayer);
-          if (currentIndex != null)
-          {
-            _layers.insert(currentIndex, addLayer);
-          }
-        }
-        _rebuildDependencies();
-        _triggerNewLayerRender(layer: addLayer);
-        notifyListeners();
+        _layers.add(addLayer);
       }
+      else
+      {
+        final int? currentIndex = getLayerPosition(state: duplicateLayer);
+        if (currentIndex != null)
+        {
+          _layers.insert(currentIndex, addLayer);
+        }
+      }
+      _rebuildDependencies();
+      _triggerNewLayerRender(layer: addLayer);
+      notifyListeners();
       return addLayer;
     }
   }
@@ -613,10 +566,9 @@ class LayerCollection with ChangeNotifier {
   void rasterLayer(
       {required final LayerState rasterLayer, required final CoordinateSetI canvasSize, required final List<KPalRampData> ramps,})
   {
-    if (rasterLayer.runtimeType == GridLayerState)
+    if (rasterLayer is GridLayerState)
     {
-      final GridLayerState gridLayer = rasterLayer as GridLayerState;
-      gridLayer.getHashMap().then((final CoordinateColorMap data)
+      rasterLayer.getHashMap().then((final CoordinateColorMap data)
       {
         _replaceCurrentLayerWithDrawingLayer(data: data,
             originalLayer: rasterLayer,
@@ -651,11 +603,11 @@ class LayerCollection with ChangeNotifier {
 
       for (int i = layerIndex; i < _layers.length; i++)
       {
-        if (_layers[i].runtimeType == DrawingLayerState && _layers[i].visibilityState.value == LayerVisibilityState.visible)
+        final LayerState layer = _layers[i];
+        if (layer is DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          final DrawingLayerState drawingLayer = _layers[i] as DrawingLayerState;
-          drawingLayers.add(drawingLayer);
-          shadeLayerMap[drawingLayer] = HashMap<CoordinateSetI, ColorReference?>();
+          drawingLayers.add(layer);
+          shadeLayerMap[layer] = HashMap<CoordinateSetI, ColorReference?>();
         }
       }
 
@@ -818,11 +770,10 @@ class LayerCollection with ChangeNotifier {
   {
     for (final LayerState layer in _layers)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer is DrawingLayerState)
       {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.remapSingleRamp(newData: newData, map: map);
-        drawingLayer.remapSingleRampLayerEffects(newData: newData, map: map);
+        layer.remapSingleRamp(newData: newData, map: map);
+        layer.remapSingleRampLayerEffects(newData: newData, map: map);
       }
     }
   }
@@ -831,10 +782,9 @@ class LayerCollection with ChangeNotifier {
   {
     for (final LayerState layer in _layers)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer is DrawingLayerState)
       {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.transformLayer(transformation: transformation, oldSize: oldSize,);
+        layer.transformLayer(transformation: transformation, oldSize: oldSize,);
       }
     }
     notifyListeners();
@@ -843,10 +793,9 @@ class LayerCollection with ChangeNotifier {
   void deleteRampFromLayers(
       {required final KPalRampData ramp, required final ColorReference backupColor,}) {
     for (final LayerState layer in _layers) {
-      if (layer.runtimeType == DrawingLayerState) {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        drawingLayer.deleteRamp(ramp: ramp);
-        drawingLayer.deleteRampFromLayerEffects(
+      if (layer is DrawingLayerState) {
+        layer.deleteRamp(ramp: ramp);
+        layer.deleteRampFromLayerEffects(
             ramp: ramp, backupColor: backupColor,);
       }
     }
@@ -888,21 +837,20 @@ class LayerCollection with ChangeNotifier {
         final int valueAtCoord = layer.getDisplayValueAt(coord: normPos) ?? 0;
         shading += valueAtCoord;
       }
-      else if (layer.visibilityState.value == LayerVisibilityState.visible && layer.runtimeType == DrawingLayerState)
+      else if (layer.visibilityState.value == LayerVisibilityState.visible && layer is DrawingLayerState)
       {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        if (selectedLayerIndex != null && _layers[selectedLayerIndex!] == drawingLayer && selectionReference != null)
+        if (selectedLayerIndex != null && _layers[selectedLayerIndex!] == layer && selectionReference != null)
         {
           colRef = selectionReference;
-          if (!rawMode && drawingLayer.getSettingsPixel(coord: normPos) != null)
+          if (!rawMode && layer.getSettingsPixel(coord: normPos) != null)
           {
-            colRef = drawingLayer.getSettingsPixel(coord: normPos);
+            colRef = layer.getSettingsPixel(coord: normPos);
           }
           break;
         }
         else
         {
-          final ColorReference? coordAtPos = drawingLayer.getDataEntry(coord: normPos, withSettingsPixels: !rawMode,);
+          final ColorReference? coordAtPos = layer.getDataEntry(coord: normPos, withSettingsPixels: !rawMode,);
           if (coordAtPos != null)
           {
             colRef = coordAtPos;

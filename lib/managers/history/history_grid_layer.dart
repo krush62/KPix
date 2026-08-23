@@ -16,6 +16,8 @@
 
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
+import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
 class HistoryGridLayer extends HistoryLayer
@@ -33,5 +35,23 @@ class HistoryGridLayer extends HistoryLayer
   factory HistoryGridLayer.fromGridLayer({required final GridLayerState gridState})
   {
     return HistoryGridLayer(opacity: gridState.opacity, brightness: gridState.brightness, gridType: gridState.gridType, visibilityState: gridState.visibilityState.value, layerIdentity: identityHashCode(gridState), intervalX: gridState.intervalX, intervalY: gridState.intervalY, horizonPosition: gridState.horizonPosition, vanishingPoint1: gridState.vanishingPoint1, vanishingPoint2: gridState.vanishingPoint2, vanishingPoint3: gridState.vanishingPoint3);
+  }
+  @override
+  Future<GridLayerState> toLayerState({
+    required final CoordinateSetI canvasSize,
+    required final RampResolver ramps,
+  }) async
+  {
+    return GridLayerState(
+      opacity: opacity,
+      brightness: brightness,
+      gridType: gridType,
+      intervalX: intervalX,
+      intervalY: intervalY,
+      horizonPosition: horizonPosition,
+      vanishingPoint1: vanishingPoint1,
+      vanishingPoint2: vanishingPoint2,
+      vanishingPoint3: vanishingPoint3,
+    );
   }
 }

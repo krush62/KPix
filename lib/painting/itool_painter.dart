@@ -284,10 +284,9 @@ abstract class IToolPainter
         iterations++;
       }
     }
-    else if (currentLayer.runtimeType == GridLayerState)
+    else if (currentLayer is GridLayerState)
     {
-      final GridLayerState gLayer = currentLayer as GridLayerState;
-      while (gLayer.isRendering && iterations < maxWaitingIterations)
+      while (currentLayer.isRendering && iterations < maxWaitingIterations)
       {
         await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
         iterations++;
@@ -342,16 +341,7 @@ abstract class IToolPainter
                   final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
                   colRef = colRef.ramp.references[targetShading];
                 }
-                else if (currentLayer is DitherLayerState)
-                {
-                  final int currentVal = currentLayer.getDisplayValueAt(coord: entry.key);
-                  if (currentVal != 0)
-                  {
-                    final int newColorIndex = (colRef.colorIndex + currentVal).clamp(0, colRef.ramp.references.length - 1);
-                    colRef = colRef.ramp.references[newColorIndex];
-                  }
 
-                }
               }
 
             }
@@ -724,10 +714,9 @@ abstract class IToolPainter
               final LayerState layer = frame.layerList.getLayer(index: i);
               if (layer.visibilityState.value == LayerVisibilityState.visible)
               {
-                if (layer.runtimeType == DrawingLayerState)
+                if (layer is DrawingLayerState)
                 {
-                  final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-                  final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
+                  final ColorReference? col = layer.getDataEntry(coord: coord, withSettingsPixels: true);
                   if (col != null)
                   {
                     currentColor = col;
@@ -863,10 +852,9 @@ abstract class IToolPainter
             for (int i = frame.layerList.length - 1; i >= currentLayerPos; i--)
             {
               final LayerState layer = frame.layerList.getLayer(index: i);
-              if (layer.runtimeType == DrawingLayerState)
+              if (layer is DrawingLayerState)
               {
-                final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-                final ColorReference? col = drawingLayer.getDataEntry(coord: coord, withSettingsPixels: true);
+                final ColorReference? col = layer.getDataEntry(coord: coord, withSettingsPixels: true);
                 if (col != null)
                 {
                   currentColor = col;

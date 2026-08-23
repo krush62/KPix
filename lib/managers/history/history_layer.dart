@@ -15,6 +15,8 @@
  */
 
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
+import 'package:kpix/util/helper.dart';
 
 abstract class HistoryLayer
 {
@@ -22,4 +24,8 @@ abstract class HistoryLayer
   final int layerIdentity;
 
   HistoryLayer({required this.visibilityState, required this.layerIdentity});
+  Future<LayerState> toLayerState({
+    required final CoordinateSetI canvasSize,
+    required final RampResolver ramps,
+  });
 }

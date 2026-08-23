@@ -20,8 +20,13 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/managers/history/history_grid_layer.dart';
+import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
@@ -42,6 +47,22 @@ class GridLayerState extends LayerState
   bool isRendering = false;
   bool _shouldRender = true;
   ui.Image? raster;
+
+  @override IconData get icon => TablerIcons.grid_4x4;
+  @override LayerMenuKind get menuKind => LayerMenuKind.raster;
+
+  @override
+  GridLayerState copy({final List<RasterableLayerState>? layerStack}) =>
+      GridLayerState.from(other: this);
+
+  @override
+  HistoryGridLayer toHistoryLayer({
+    required final List<HistoryRampData> ramps,
+    final HistoryLayer? previousLayer,
+  })
+  {
+    return HistoryGridLayer.fromGridLayer(gridState: this);
+  }
 
   GridLayerState({
     required final int opacity,

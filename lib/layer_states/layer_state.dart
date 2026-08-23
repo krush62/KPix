@@ -16,6 +16,9 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
@@ -104,9 +107,25 @@ class ColorReference
   int get hashCode => ramp.hashCode ^ colorIndex.hashCode;
 }
 
+enum LayerMenuKind
+{
+  drawing,
+  raster,
+  reference
+}
+
 abstract class LayerState
 {
   final ValueNotifier<bool> selectedInCurrentFrameNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<LayerVisibilityState> visibilityState = ValueNotifier<LayerVisibilityState>(LayerVisibilityState.visible);
   final ValueNotifier<ui.Image?> thumbnail = ValueNotifier<ui.Image?>(null);
+  IconData get icon;
+  LayerMenuKind get menuKind;
+  bool get thumbnailIsContent => false;
+
+  LayerState copy({final List<RasterableLayerState>? layerStack});
+  HistoryLayer toHistoryLayer({
+    required final List<HistoryRampData> ramps,
+    final HistoryLayer? previousLayer,
+  });
 }

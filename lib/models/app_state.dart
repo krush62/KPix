@@ -20,29 +20,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_frame.dart';
-import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
-import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/status_bar_state.dart';
@@ -179,13 +175,9 @@ class AppState
 
     for (final LayerState layer in originalLayerSet)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer is DrawingLayerState && (includeInvisible || layer.visibilityState.value == LayerVisibilityState.visible))
       {
-        final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-        if (includeInvisible || drawingLayer.visibilityState.value == LayerVisibilityState.visible)
-        {
-          pixelCount += drawingLayer.getPixelCountForRamp(ramp: ramp);
-        }
+        pixelCount += layer.getPixelCountForRamp(ramp: ramp);
       }
     }
     return pixelCount;
@@ -763,23 +755,22 @@ class AppState
 
         for (final LayerState layer in collectedLayers)
         {
-          if (layer.runtimeType == DrawingLayerState)
+          if (layer is DrawingLayerState)
           {
-            final DrawingLayerState drawingLayer = layer as DrawingLayerState;
             if (paletteReplaceBehavior == PaletteReplaceBehavior.replace)
             {
               for (final KPalRampData kPalRampData in colorRamps)
               {
-                drawingLayer.deleteRamp(ramp: kPalRampData);
+                layer.deleteRamp(ramp: kPalRampData);
               }
-              drawingLayer.resetLayerEffectColors(newColor: loadPaletteSet.rampData!.first.references.first);
+              layer.resetLayerEffectColors(newColor: loadPaletteSet.rampData!.first.references.first);
             }
             else
             {
-              drawingLayer.remapAllColors(rampMap: rampMap);
-              drawingLayer.remapLayerEffectColors(rampMap: rampMap);
+              layer.remapAllColors(rampMap: rampMap);
+              layer.remapLayerEffectColors(rampMap: rampMap);
             }
-            drawingLayer.doManualRaster = true;
+            layer.doManualRaster = true;
           }
         }
         _selectedColor.value = loadPaletteSet.rampData![0].references[0];
@@ -856,7 +847,7 @@ class AppState
         final CoordinateSetI canvSize = CoordinateSetI.from(other: historyState.canvasSize);
 
         //COLORS
-            {
+        {
           final List<KPalRampData> ramps = <KPalRampData>[];
           for (final HistoryRampData hRampData in historyState.rampList)
           {
@@ -867,9 +858,13 @@ class AppState
           {
             _colorRamps.value = ramps;
           }
-          final ColorReference selCol = _colorRamps.value[historyState.selectedColor.rampIndex].references[historyState.selectedColor.colorIndex];
-          _selectedColor.value = selCol;
         }
+
+        final RampResolver rampResolver = RampResolver(
+          liveRamps: _colorRamps.value,
+          historyRamps: historyState.rampList,
+        );
+        _selectedColor.value = rampResolver.byIndex(ref: historyState.selectedColor);
 
         if (typeGroup == HistoryStateTypeGroup.full || typeGroup == HistoryStateTypeGroup.layerFull)
         {
@@ -895,89 +890,12 @@ class AppState
             }
             else
             {
-              LayerState? layerState;
-              if (hLayer is HistoryDrawingLayer)
-              {
-                final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
-                for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in hLayer.data.entries)
-                {
-                  KPalRampData? ramp;
-                  for (int i = 0; i < colorRamps.length; i++)
-                  {
-                    if (colorRamps[i].uuid == historyState.rampList[entry.value.rampIndex].uuid)
-                    {
-                      ramp = colorRamps[i];
-                      break;
-                    }
-                  }
-                  if (ramp != null)
-                  {
-                    content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
-                  }
-                }
-                final DrawingLayerSettings drawingLayerSettings = DrawingLayerSettings(
-                  constraints: hLayer.settings.constraints,
-                  outerStrokeStyle: hLayer.settings.outerStrokeStyle,
-                  outerSelectionMap: hLayer.settings.outerSelectionMap,
-                  outerColorReference: _colorRamps.value[hLayer.settings.outerColorReference.rampIndex].references[hLayer.settings.outerColorReference.colorIndex],
-                  outerDarkenBrighten: hLayer.settings.outerDarkenBrighten,
-                  outerGlowDepth: hLayer.settings.outerGlowDepth,
-                  outerGlowRecursive: hLayer.settings.outerGlowRecursive,
-                  innerStrokeStyle: hLayer.settings.innerStrokeStyle,
-                  innerSelectionMap: hLayer.settings.innerSelectionMap,
-                  innerColorReference: _colorRamps.value[hLayer.settings.innerColorReference.rampIndex].references[hLayer.settings.innerColorReference.colorIndex],
-                  innerDarkenBrighten: hLayer.settings.innerDarkenBrighten,
-                  innerGlowDepth: hLayer.settings.innerGlowDepth,
-                  innerGlowRecursive: hLayer.settings.innerGlowRecursive,
-                  bevelDistance: hLayer.settings.bevelDistance,
-                  bevelStrength: hLayer.settings.bevelStrength,
-                  dropShadowStyle: hLayer.settings.dropShadowStyle,
-                  dropShadowColorReference: _colorRamps.value[hLayer.settings.dropShadowColorReference.rampIndex].references[hLayer.settings.dropShadowColorReference.colorIndex],
-                  dropShadowOffset: hLayer.settings.dropShadowOffset,
-                  dropShadowDarkenBrighten: hLayer.settings.dropShadowDarkenBrighten,);
-                final DrawingLayerState drawingLayer = DrawingLayerState(size: canvSize, content: content, drawingLayerSettings: drawingLayerSettings, ramps: colorRamps);
-                drawingLayer.lockState.value = hLayer.lockState;
-                layerState = drawingLayer;
-              }
-              else if (hLayer.runtimeType == HistoryReferenceLayer)
-              {
-                final HistoryReferenceLayer referenceLayer = hLayer as HistoryReferenceLayer;
-                layerState = ReferenceLayerState(
-                    zoom: referenceLayer.zoom,
-                    opacity: referenceLayer.opacity,
-                    offsetX: referenceLayer.offsetX,
-                    offsetY: referenceLayer.offsetY,
-                    image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: referenceLayer.path),
-                    aspectRatio: referenceLayer.aspectRatio,
-                    brightness: referenceLayer.brightness,
-                    contrast: referenceLayer.contrast,
-                    saturation: referenceLayer.saturation,
-                    warmth: referenceLayer.warmth,
-                );
-              }
-              else if (hLayer.runtimeType == HistoryGridLayer)
-              {
-                final HistoryGridLayer gridLayer = hLayer as HistoryGridLayer;
-                layerState = GridLayerState(opacity: gridLayer.opacity, brightness: gridLayer.brightness, gridType: gridLayer.gridType, intervalX: gridLayer.intervalX, intervalY: gridLayer.intervalY, horizonPosition: gridLayer.horizonPosition, vanishingPoint1: gridLayer.vanishingPoint1, vanishingPoint2: gridLayer.vanishingPoint2, vanishingPoint3: gridLayer.vanishingPoint3 );
-              }
-              else if (hLayer.runtimeType == HistoryShadingLayer)
-              {
-                final HistoryShadingLayer shadingLayer = hLayer as HistoryShadingLayer;
-                final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: shadingLayer.settings.constraints, shadingLow: shadingLayer.settings.shadingLow, shadingHigh: shadingLayer.settings.shadingHigh,);
-                layerState = ShadingLayerState.withData(data: shadingLayer.data, lState: shadingLayer.lockState, newSettings: shadingLayerSettings);
-              }
-              else if (hLayer.runtimeType == HistoryDitherLayer)
-              {
-                final HistoryDitherLayer ditherLayer = hLayer as HistoryDitherLayer;
-                final ShadingLayerSettings shadingLayerSettings = ShadingLayerSettings(constraints: ditherLayer.settings.constraints, shadingLow: ditherLayer.settings.shadingLow, shadingHigh: ditherLayer.settings.shadingHigh,);
-                layerState = DitherLayerState.withData(data: ditherLayer.data, lState: ditherLayer.lockState, newSettings: shadingLayerSettings);
-              }
-
-              if (layerState != null)
-              {
-                layerState.visibilityState.value = hLayer.visibilityState;
-                allLayers.add(layerState);
-              }
+              final LayerState layerState = await hLayer.toLayerState(
+                canvasSize: canvSize,
+                ramps: rampResolver,
+              );
+              layerState.visibilityState.value = hLayer.visibilityState;
+              allLayers.add(layerState);
             }
 
             layerCounter++;
@@ -1003,14 +921,8 @@ class AppState
           final CoordinateColorMapNullable selectionContent = HashMap<CoordinateSetI, ColorReference?>();
           for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in historyState.selectionState.content.entries)
           {
-            if (entry.value != null)
-            {
-              selectionContent[CoordinateSetI.from(other: entry.key)] = _colorRamps.value[entry.value!.rampIndex].references[entry.value!.colorIndex];
-            }
-            else
-            {
-              selectionContent[CoordinateSetI.from(other: entry.key)] = null;
-            }
+            final HistoryColorReference? ref = entry.value;
+            selectionContent[CoordinateSetI.from(other: entry.key)] = ref == null ? null : rampResolver.byIndex(ref: ref);
           }
           selectionState.selection.delete(keepSelection: false);
           selectionState.selection.addDirectlyAll(list: selectionContent);
@@ -1272,20 +1184,19 @@ class AppState
     if (layerState != null)
     {
       bool lockStateChanged = false;
-      if (layerState.runtimeType == DrawingLayerState)
+      if (layerState is DrawingLayerState)
       {
-        final DrawingLayerState drawingLayerState = layerState as DrawingLayerState;
-        if (drawingLayerState.lockState.value == LayerLockState.unlocked)
+        if (layerState.lockState.value == LayerLockState.unlocked)
         {
-          drawingLayerState.lockState.value = LayerLockState.transparency;
+          layerState.lockState.value = LayerLockState.transparency;
         }
-        else if (drawingLayerState.lockState.value == LayerLockState.transparency)
+        else if (layerState.lockState.value == LayerLockState.transparency)
         {
-          drawingLayerState.lockState.value = LayerLockState.locked;
+          layerState.lockState.value = LayerLockState.locked;
         }
-        else if (drawingLayerState.lockState.value == LayerLockState.locked)
+        else if (layerState.lockState.value == LayerLockState.locked)
         {
-          drawingLayerState.lockState.value = LayerLockState.unlocked;
+          layerState.lockState.value = LayerLockState.unlocked;
         }
         lockStateChanged = true;
       }

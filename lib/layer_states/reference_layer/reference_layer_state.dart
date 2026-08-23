@@ -17,8 +17,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
@@ -36,6 +41,21 @@ class ReferenceLayerState extends LayerState
   final ValueNotifier<double> contrastNotifier;
   final ValueNotifier<double> saturationNotifier;
   final ValueNotifier<double> warmthNotifier;
+
+  @override IconData get icon => TablerIcons.photo;
+  @override LayerMenuKind get menuKind => LayerMenuKind.reference;
+  @override
+  ReferenceLayerState copy({final List<RasterableLayerState>? layerStack}) =>
+      ReferenceLayerState.from(other: this);
+
+  @override
+  HistoryReferenceLayer toHistoryLayer({
+    required final List<HistoryRampData> ramps,
+    final HistoryLayer? previousLayer,
+  })
+  {
+    return HistoryReferenceLayer.fromReferenceLayer(referenceState: this);
+  }
 
   ReferenceLayerState({
     required final int opacity,

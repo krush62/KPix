@@ -19,12 +19,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
-import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -44,13 +41,6 @@ class LayerWidget extends StatefulWidget {
   @override
   State<LayerWidget> createState() => _LayerWidgetState();
 }
-
-const Map<Type, IconData> layerIconMap = <Type, IconData>{
-  ReferenceLayerState: TablerIcons.photo,
-  GridLayerState: TablerIcons.grid_4x4,
-  ShadingLayerState: TablerIcons.exposure,
-  DitherLayerState: Icons.gradient,
-};
 
 class _LayerWidgetState extends State<LayerWidget> {
   final AppState _appState = GetIt.I.get<AppState>();
@@ -170,41 +160,16 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   void _actionsButtonPressed()
   {
-    final Type layerType = widget.layerState.runtimeType;
-    final bool isLinked = _appState.timeline.isLayerLinked(layer: widget.layerState);
-    if (layerType == DrawingLayerState)
+    if (_appState.timeline.isLayerLinked(layer: widget.layerState))
     {
-      if (isLinked)
-      {
-        actionsMenuDrawingLinked.show(context: context);
-      }
-      else
-      {
-        actionsMenuDrawing.show(context: context);
-      }
+      actionsMenuDrawingLinked.show(context: context);
+      return;
     }
-    else if (layerType == GridLayerState || layerType == ShadingLayerState || layerType == DitherLayerState)
+    switch (widget.layerState.menuKind)
     {
-      if (isLinked)
-      {
-        actionsMenuDrawingLinked.show(context: context);
-      }
-      else
-      {
-        actionsMenuRaster.show(context: context);
-      }
-    }
-    else //Reference Layers
-    {
-      if (isLinked)
-      {
-        actionsMenuDrawingLinked.show(context: context);
-      }
-      else
-      {
-        actionsMenuReduced.show(context: context);
-      }
-
+      case LayerMenuKind.drawing:   actionsMenuDrawing.show(context: context);
+      case LayerMenuKind.raster:    actionsMenuRaster.show(context: context);
+      case LayerMenuKind.reference: actionsMenuReduced.show(context: context);
     }
   }
 
@@ -440,20 +405,21 @@ class _LayerWidgetState extends State<LayerWidget> {
                                     );
                                   },
                                 ),
-                                Center(
-                                  child: Icon(
-                                    layerIconMap[widget.layerState.runtimeType],
-                                    size: _options.height / 2,
-                                    color: Theme.of(context).primaryColorLight,
-                                    shadows: <Shadow>[
-                                      Shadow(
-                                        offset: const Offset(0.0, 1.0),
-                                        blurRadius: 2.0,
-                                        color: Theme.of(context).primaryColorDark,
-                                      ),
-                                    ],
+                                if (!widget.layerState.thumbnailIsContent)
+                                  Center(
+                                    child: Icon(
+                                      widget.layerState.icon,
+                                      size: _options.height / 2,
+                                      color: Theme.of(context).primaryColorLight,
+                                      shadows: <Shadow>[
+                                        Shadow(
+                                          offset: const Offset(0.0, 1.0),
+                                          blurRadius: 2.0,
+                                          color: Theme.of(context).primaryColorDark,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

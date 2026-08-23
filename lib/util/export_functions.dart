@@ -110,10 +110,9 @@ int _getShadeForCoord({required final int currentLayerIndex, required final Coor
     final LayerState layer = layerCollection.getLayer(index: i);
     if (layer.visibilityState.value == LayerVisibilityState.visible)
     {
-      if (layer.runtimeType == DrawingLayerState)
+      if (layer is DrawingLayerState)
       {
-        final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
-        if (drawingLayerState.getDataEntry(coord: coord) != null)
+        if (layer.getDataEntry(coord: coord) != null)
         {
           return 0;
         }

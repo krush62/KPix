@@ -14,8 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
+import 'package:kpix/managers/reference_image_manager.dart';
+import 'package:kpix/util/helper.dart';
 
 class HistoryReferenceLayer extends HistoryLayer
 {
@@ -58,6 +62,25 @@ class HistoryReferenceLayer extends HistoryLayer
         saturation: referenceState.saturationNotifier.value,
         contrast: referenceState.contrastNotifier.value,
         warmth: referenceState.warmthNotifier.value,
+    );
+  }
+  @override
+  Future<ReferenceLayerState> toLayerState({
+    required final CoordinateSetI canvasSize,
+    required final RampResolver ramps,
+  }) async
+  {
+    return ReferenceLayerState(
+      zoom: zoom,
+      opacity: opacity,
+      offsetX: offsetX,
+      offsetY: offsetY,
+      image: await GetIt.I.get<ReferenceImageManager>().loadImageFile(path: path),
+      aspectRatio: aspectRatio,
+      brightness: brightness,
+      contrast: contrast,
+      saturation: saturation,
+      warmth: warmth,
     );
   }
 }

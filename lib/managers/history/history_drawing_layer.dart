@@ -16,6 +16,7 @@
 
 import 'dart:collection';
 
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
@@ -23,6 +24,7 @@ import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_pixel_change.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
@@ -269,5 +271,52 @@ class HistoryDrawingLayer extends HistoryLayer
       }
     }
     return result;
+  }
+  @override
+  Future<DrawingLayerState> toLayerState({
+    required final CoordinateSetI canvasSize,
+    required final RampResolver ramps,
+  }) async
+  {
+    final CoordinateColorMap content = CoordinateColorMap();
+    for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in data.entries)
+    {
+      final ColorReference? colorRef = ramps.byUuid(ref: entry.value);
+      if (colorRef != null)
+      {
+        content[CoordinateSetI.from(other: entry.key)] = colorRef;
+      }
+    }
+
+    final DrawingLayerSettings drawingLayerSettings = DrawingLayerSettings(
+      constraints: settings.constraints,
+      outerStrokeStyle: settings.outerStrokeStyle,
+      outerSelectionMap: settings.outerSelectionMap,
+      outerColorReference: ramps.byIndex(ref: settings.outerColorReference),
+      outerDarkenBrighten: settings.outerDarkenBrighten,
+      outerGlowDepth: settings.outerGlowDepth,
+      outerGlowRecursive: settings.outerGlowRecursive,
+      innerStrokeStyle: settings.innerStrokeStyle,
+      innerSelectionMap: settings.innerSelectionMap,
+      innerColorReference: ramps.byIndex(ref: settings.innerColorReference),
+      innerDarkenBrighten: settings.innerDarkenBrighten,
+      innerGlowDepth: settings.innerGlowDepth,
+      innerGlowRecursive: settings.innerGlowRecursive,
+      bevelDistance: settings.bevelDistance,
+      bevelStrength: settings.bevelStrength,
+      dropShadowStyle: settings.dropShadowStyle,
+      dropShadowColorReference: ramps.byIndex(ref: settings.dropShadowColorReference),
+      dropShadowOffset: settings.dropShadowOffset,
+      dropShadowDarkenBrighten: settings.dropShadowDarkenBrighten,
+    );
+
+    final DrawingLayerState drawingLayer = DrawingLayerState(
+      size: canvasSize,
+      content: content,
+      drawingLayerSettings: drawingLayerSettings,
+      ramps: ramps.liveRamps,
+    );
+    drawingLayer.lockState.value = lockState;
+    return drawingLayer;
   }
 }

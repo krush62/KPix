@@ -20,6 +20,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings_widget.dart';
@@ -27,6 +28,9 @@ import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/rendering_helper.dart';
+import 'package:kpix/managers/history/history_drawing_layer.dart';
+import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
@@ -51,6 +55,25 @@ class DrawingLayerState extends RasterableLayerState
 
   final List<DirtyRegion> dirtyRegions = <DirtyRegion>[];
   bool _forceFullRender = false;
+
+  @override IconData get icon => TablerIcons.brush;
+  @override LayerMenuKind get menuKind => LayerMenuKind.drawing;
+  @override bool get thumbnailIsContent => true;
+
+  @override
+  DrawingLayerState copy({final List<RasterableLayerState>? layerStack}) =>
+      DrawingLayerState.from(other: this, layerStack: layerStack);
+
+  @override
+  HistoryDrawingLayer toHistoryLayer({
+    required final List<HistoryRampData> ramps,
+    final HistoryLayer? previousLayer,
+  })
+  {
+    final HistoryDrawingLayer? prev =
+    previousLayer is HistoryDrawingLayer ? previousLayer : null;
+    return prev != null ? HistoryDrawingLayer.deltaFrom(layerState: this, ramps: ramps, previousLayer: prev) : HistoryDrawingLayer.fromDrawingLayerState(layerState: this, ramps: ramps);
+  }
 
   factory DrawingLayerState({required final CoordinateSetI size, final CoordinateColorMapNullable? content, final DrawingLayerSettings? drawingLayerSettings, required final List<KPalRampData> ramps})
   {

@@ -716,10 +716,9 @@ class DrawingLayerSettings extends LayerSettings {
       for (int i = layers.length - 1; i > currentIndex; i--)
       {
         final LayerState layer = layers[i];
-        if (layer.runtimeType == DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+        if (layer is DrawingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          final DrawingLayerState drawingLayerState = layer as DrawingLayerState;
-          final ColorReference? colRef = drawingLayerState.getDataEntry(coord: coord, withSettingsPixels: withSettingsPixels);
+          final ColorReference? colRef = layer.getDataEntry(coord: coord, withSettingsPixels: withSettingsPixels);
 
           if (colRef != null)
           {

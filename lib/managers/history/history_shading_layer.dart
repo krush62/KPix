@@ -18,10 +18,12 @@ import 'dart:collection';
 
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_shading_change.dart';
 import 'package:kpix/managers/history/history_shading_layer_settings.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/util/helper.dart';
 
 class HistoryShadingLayer extends HistoryLayer
@@ -225,6 +227,29 @@ class HistoryShadingLayer extends HistoryLayer
     }
     return result;
   }
+
+  /// Rebuilds the live settings object shared by shading and dither layers.
+  ShadingLayerSettings _toShadingSettings()
+  {
+    return ShadingLayerSettings(
+      constraints: settings.constraints,
+      shadingLow: settings.shadingLow,
+      shadingHigh: settings.shadingHigh,
+    );
+  }
+
+  @override
+  Future<ShadingLayerState> toLayerState({
+    required final CoordinateSetI canvasSize,
+    required final RampResolver ramps,
+  }) async
+  {
+    return ShadingLayerState.withData(
+      data: data,
+      lState: lockState,
+      newSettings: _toShadingSettings(),
+    );
+  }
 }
 
 class HistoryDitherLayer extends HistoryShadingLayer
@@ -295,6 +320,18 @@ class HistoryDitherLayer extends HistoryShadingLayer
       depth:           previousLayer._depth + 1,
       cumulativeDelta: newCumulative,
       parent:          parent,
+    );
+  }
+  @override
+  Future<DitherLayerState> toLayerState({
+    required final CoordinateSetI canvasSize,
+    required final RampResolver ramps,
+  }) async
+  {
+    return DitherLayerState.withData(
+      data: data,
+      lState: lockState,
+      newSettings: _toShadingSettings(),
     );
   }
 }

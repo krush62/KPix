@@ -180,9 +180,9 @@ class SelectionState with ChangeNotifier
 
   void newSelectionFromWand({required final CoordinateSetI coord, required final SelectionMode mode, required final bool continuous, required final bool selectFromWholeRamp, final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
       if (selectionOptions.mode.value == SelectionMode.replace)
       {
         deselect(notify: false, addToHistoryStack: false);
@@ -191,8 +191,8 @@ class SelectionState with ChangeNotifier
       if (!selection.contains(coord: coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
       {
         final Set<CoordinateSetI> selectData = continuous ?
-        _getFloodReferences(layer: drawingLayer, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
-        _getSameReferences(layer: drawingLayer, start: coord, selectFromWholeRamp: selectFromWholeRamp);
+        _getFloodReferences(layer: layer, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
+        _getSameReferences(layer: layer, start: coord, selectFromWholeRamp: selectFromWholeRamp);
         _addPixelsWithMode(coords: selectData, mode: mode);
         createSelectionLines();
         if (notify)
@@ -526,14 +526,14 @@ class SelectionState with ChangeNotifier
 
   void delete({final bool notify = true, final bool keepSelection = true, final bool addToHistoryStack = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
+      if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot delete from hidden layer!");
       }
-      else if (drawingLayer.lockState.value == LayerLockState.locked)
+      else if (layer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot delete from locked layer!");
       }
@@ -552,21 +552,21 @@ class SelectionState with ChangeNotifier
       if (notify)
       {
         notifyRepaint();
-        drawingLayer.doManualRaster = true;
+        layer.doManualRaster = true;
       }
     }
   }
 
   void cut({final bool notify = true, final bool keepSelection = false, final bool addToHistoryStack = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
+      if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot cut from hidden layer!");
       }
-      else if (drawingLayer.lockState.value == LayerLockState.locked)
+      else if (layer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot cut from locked layer!");
       }
@@ -580,7 +580,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
-          drawingLayer.doManualRaster = true;
+          layer.doManualRaster = true;
         }
       }
     }
@@ -629,11 +629,10 @@ class SelectionState with ChangeNotifier
         bool pixelFound = false;
         for (final LayerState layer in visibleLayers)
         {
-          if (layer.runtimeType == DrawingLayerState)
+          if (layer is DrawingLayerState)
           {
-            final DrawingLayerState drawingLayer = layer as DrawingLayerState;
-            ColorReference? colRef = drawingLayer.getDataEntry(coord: coord);
-            if (drawingLayer == _appState.timeline.getCurrentLayer())
+            ColorReference? colRef = layer.getDataEntry(coord: coord);
+            if (layer == _appState.timeline.getCurrentLayer())
             {
               final ColorReference? selColRef = selection.getColorReference(coord: coord);
               if (selColRef != null)
@@ -678,14 +677,14 @@ class SelectionState with ChangeNotifier
 
   void paste({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (clipboard != null && _appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState) //should always be the case
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (clipboard != null && layer != null && layer is DrawingLayerState) //should always be the case
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      if (drawingLayer.lockState.value == LayerLockState.locked)
+      if (layer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot paste to a locked layer!");
       }
-      else if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
+      else if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot paste to a hidden layer!");
       }
@@ -702,7 +701,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
-          drawingLayer.doManualRaster = true;
+          layer.doManualRaster = true;
         }
       }
     }
@@ -710,14 +709,14 @@ class SelectionState with ChangeNotifier
 
   void flipH({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
+      if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot transform on a hidden layer!");
       }
-      else if (drawingLayer.lockState.value == LayerLockState.locked)
+      else if (layer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot transform on a locked layer!");
       }
@@ -733,7 +732,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
-          drawingLayer.doManualRaster = true;
+          layer.doManualRaster = true;
         }
       }
     }
@@ -741,14 +740,14 @@ class SelectionState with ChangeNotifier
 
   void flipV({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
+      if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot transform on a hidden layer!");
       }
-      else if (drawingLayer.lockState.value == LayerLockState.locked)
+      else if (layer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot transform on a locked layer!");
       }
@@ -764,7 +763,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
-          drawingLayer.doManualRaster = true;
+          layer.doManualRaster = true;
         }
       }
     }
@@ -772,14 +771,14 @@ class SelectionState with ChangeNotifier
 
   void rotate({final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      if (drawingLayer.visibilityState.value == LayerVisibilityState.hidden)
+      if (layer.visibilityState.value == LayerVisibilityState.hidden)
       {
         _appState.showMessage(text: "Cannot transform on a hidden layer!");
       }
-      else if (drawingLayer.lockState.value == LayerLockState.locked)
+      else if (layer.lockState.value == LayerLockState.locked)
       {
         _appState.showMessage(text: "Cannot transform on a locked layer!");
       }
@@ -795,7 +794,7 @@ class SelectionState with ChangeNotifier
         if (notify)
         {
           notifyRepaint();
-          drawingLayer.doManualRaster = true;
+          layer.doManualRaster = true;
         }
       }
     }
@@ -817,10 +816,10 @@ class SelectionState with ChangeNotifier
   {
     selection.resetLastOffset();
     GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove, originLayer: _appState.timeline.getCurrentLayer());
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      drawingLayer.doManualRaster = true;
+      layer.doManualRaster = true;
     }
   }
 
@@ -935,41 +934,38 @@ class SelectionList
         //oldLayer.setData(key, curVal);
         refsOld[key] = curVal;
       }
-      if (newLayer.runtimeType == DrawingLayerState)
+      if (newLayer is DrawingLayerState)
       {
-        final DrawingLayerState newDrawingLayer = newLayer as DrawingLayerState;
-        if (newDrawingLayer.lockState.value != LayerLockState.locked)
+        if (newLayer.lockState.value != LayerLockState.locked)
         {
-          _content[key] = newDrawingLayer.getDataEntry(coord: key);
+          _content[key] = newLayer.getDataEntry(coord: key);
           //newLayer.setData(key, null);
           refsNew[key] = null;
         }
       }
     }
-    if (oldLayer != null && oldLayer.runtimeType == DrawingLayerState)
+    if (oldLayer != null && oldLayer is DrawingLayerState)
     {
-      final DrawingLayerState oldDrawingLayer = oldLayer as DrawingLayerState;
-      oldDrawingLayer.setDataAll(list: refsOld);
+      oldLayer.setDataAll(list: refsOld);
     }
 
-    if (newLayer.runtimeType == DrawingLayerState)
+    if (newLayer is DrawingLayerState)
     {
-      final DrawingLayerState newDrawingLayer = newLayer as DrawingLayerState;
-      newDrawingLayer.setDataAll(list: refsNew);
+      newLayer.setDataAll(list: refsNew);
     }
     isEmptyNotifer.value = _content.isEmpty;
   }
 
   void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
   {
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
       for (final CoordinateSetI coord in coords)
       {
-        _content[coord] = drawingLayer.getDataEntry(coord: coord);
+        _content[coord] = layer.getDataEntry(coord: coord);
       }
-      drawingLayer.removeDataAll(removeCoordList: coords);
+      layer.removeDataAll(removeCoordList: coords);
     }
     if (notifyEmpty)
     {
@@ -987,10 +983,10 @@ class SelectionList
   {
     _content[coord] = colRef;
     isEmptyNotifer.value = _content.isEmpty;
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      drawingLayer.doManualRaster = true;
+      layer.doManualRaster = true;
     }
   }
 
@@ -998,10 +994,10 @@ class SelectionList
   {
     _content.addAll(list);
     isEmptyNotifer.value = _content.isEmpty;
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      drawingLayer.doManualRaster = true;
+      layer.doManualRaster = true;
     }
   }
 
@@ -1019,10 +1015,10 @@ class SelectionList
         _content.remove(coord);
       }
     }
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      drawingLayer.setDataAll(list: refs);
+      layer.setDataAll(list: refs);
     }
     isEmptyNotifer.value = _content.isEmpty;
   }
@@ -1037,10 +1033,10 @@ class SelectionList
         refs[entry.key] = entry.value;
       }
     }
-    if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+    final LayerState? layer = _appState.timeline.getCurrentLayer();
+    if (layer != null && layer is DrawingLayerState)
     {
-      final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-      drawingLayer.setDataAll(list: refs);
+      layer.setDataAll(list: refs);
     }
     _content.clear();
     if (notifyEmpty)
@@ -1161,10 +1157,10 @@ class SelectionList
         _lastOffset.x = offset.x;
         _lastOffset.y = offset.y;
 
-        if (_appState.timeline.getCurrentLayer() != null && _appState.timeline.getCurrentLayer().runtimeType == DrawingLayerState)
+        final LayerState? layer = _appState.timeline.getCurrentLayer();
+        if (layer != null && layer is DrawingLayerState)
         {
-          final DrawingLayerState drawingLayer = _appState.timeline.getCurrentLayer()! as DrawingLayerState;
-          drawingLayer.doManualRaster = true;
+          layer.doManualRaster = true;
         }
       }
       else

@@ -583,85 +583,16 @@ enum PreferenceString
 }
 
 
-class _DoublePair
+class _Pair<E>
 {
-  double _value;
+  E _value;
   bool _changed = false;
-  _DoublePair({required final double val}) : _value=val;
-  double get value
+  _Pair({required final E val}) : _value=val;
+  E get value
   {
     return _value;
   }
-  set value(final double newVal)
-  {
-    if (value != newVal)
-    {
-      _changed = true;
-      _value = newVal;
-    }
-  }
-  bool get changed
-  {
-    return _changed;
-  }
-}
-
-class _IntPair
-{
-  int _value;
-  bool _changed = false;
-  _IntPair({required final int val}) : _value=val;
-  int get value
-  {
-    return _value;
-  }
-  set value(final int newVal)
-  {
-    if (value != newVal)
-    {
-      _changed = true;
-      _value = newVal;
-    }
-  }
-  bool get changed
-  {
-    return _changed;
-  }
-}
-
-class _BoolPair
-{
-  bool _value;
-  bool _changed = false;
-  _BoolPair({required final bool val}) : _value=val;
-  bool get value
-  {
-    return _value;
-  }
-  set value(final bool newVal)
-  {
-    if (value != newVal)
-    {
-      _changed = true;
-      _value = newVal;
-    }
-  }
-  bool get changed
-  {
-    return _changed;
-  }
-}
-
-class _StringPair
-{
-  String _value;
-  bool _changed = false;
-  _StringPair({required final String val}) : _value=val;
-  String get value
-  {
-    return _value;
-  }
-  set value(final String newVal)
+  set value(final E newVal)
   {
     if (value != newVal)
     {
@@ -687,10 +618,10 @@ class PreferenceManager
 
 
   final SharedPreferences _prefs;
-  final Map<PreferenceDouble, _DoublePair> _doubleMap = <PreferenceDouble, _DoublePair>{};
-  final Map<PreferenceInt, _IntPair> _intMap = <PreferenceInt, _IntPair>{};
-  final Map<PreferenceBool, _BoolPair> _boolMap = <PreferenceBool, _BoolPair>{};
-  final Map<PreferenceString, _StringPair> _stringMap = <PreferenceString, _StringPair>{};
+  final Map<PreferenceDouble, _Pair<double>> _doubleMap = <PreferenceDouble, _Pair<double>>{};
+  final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
+  final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
+  final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
   late MainLayoutOptions mainLayoutOptions;
   late CanvasOptions canvasWidgetOptions;
   late ToolsWidgetOptions toolsWidgetOptions;
@@ -760,22 +691,22 @@ class PreferenceManager
   {
     for (final PreferenceDouble dblEnum in PreferenceDouble.values)
     {
-      _doubleMap[dblEnum] = _DoublePair(val: _prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
+      _doubleMap[dblEnum] = _Pair<double>(val: _prefs.getDouble(dblEnum.name) ?? dblEnum.defaultValue);
     }
 
     for (final PreferenceInt intEnum in PreferenceInt.values)
     {
-      _intMap[intEnum] = _IntPair(val: _prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
+      _intMap[intEnum] = _Pair<int>(val: _prefs.getInt(intEnum.name) ?? intEnum.defaultValue);
     }
 
     for (final PreferenceBool boolEnum in PreferenceBool.values)
     {
-      _boolMap[boolEnum] = _BoolPair(val: _prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
+      _boolMap[boolEnum] = _Pair<bool>(val: _prefs.getBool(boolEnum.name) ?? boolEnum.defaultValue);
     }
 
     for (final PreferenceString stringEnum in PreferenceString.values)
     {
-      _stringMap[stringEnum] = _StringPair(val: _prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
+      _stringMap[stringEnum] = _Pair<String>(val: _prefs.getString(stringEnum.name) ?? stringEnum.defaultValue);
     }
   }
 
@@ -802,28 +733,28 @@ class PreferenceManager
 
    Future<void> _savePreferences() async
    {
-    _doubleMap.forEach((final PreferenceDouble key, final _DoublePair value)
+    _doubleMap.forEach((final PreferenceDouble key, final _Pair<double> value)
     {
       if (value.changed)
       {
         _prefs.setDouble(key.name, value.value);
       }
     });
-    _intMap.forEach((final PreferenceInt key, final _IntPair value)
+    _intMap.forEach((final PreferenceInt key, final _Pair<int> value)
     {
       if (value.changed)
       {
         _prefs.setInt(key.name, value.value);
       }
     });
-    _boolMap.forEach((final PreferenceBool key, final _BoolPair value)
+    _boolMap.forEach((final PreferenceBool key, final _Pair<bool> value)
     {
       if (value.changed)
       {
         _prefs.setBool(key.name, value.value);
       }
     });
-    _stringMap.forEach((final PreferenceString key, final _StringPair value)
+    _stringMap.forEach((final PreferenceString key, final _Pair<String> value)
     {
       if (value.changed)
       {

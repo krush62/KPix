@@ -170,7 +170,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       _lastAppLifeCycleState = AppLifecycleState.resumed;
       if (!kIsWeb)
       {
-        _recoverTimer = Timer.periodic(Duration(minutes: GetIt.I.get<PreferenceManager>().mainLayoutOptions.recoverCheckIntervalMinutes), (final Timer _) {_recoverCheck();});
+        _recoverTimer = Timer.periodic(const Duration(minutes: _MainLayoutOptions.recoverCheckIntervalMinutes), (final Timer _) {_recoverCheck();});
       }
     },);
 
@@ -625,8 +625,8 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         }
         else
         {
-          return  Padding(
-            padding: EdgeInsets.all(GetIt.I.isRegistered<PreferenceManager>() ? GetIt.I.get<PreferenceManager>().mainLayoutOptions.loadingScreenPadding : 32.0),
+          return Padding(
+            padding: const EdgeInsets.all(_MainLayoutOptions.loadingScreenPadding),
             child: Stack(
               children: <Widget>[
                 Center(child: Image.asset(PreferenceManager.ASSET_ICON),),
@@ -678,7 +678,7 @@ class MainWidget extends StatelessWidget
                       children: <Widget>[
                         WindowTitleBarBox(child: MoveWindow()),
                         Padding(
-                          padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().mainLayoutOptions.titleBarPadding),
+                          padding: const EdgeInsets.all(_MainLayoutOptions.titleBarPadding),
                           child: ValueListenableBuilder<bool>(
                             valueListenable: GetIt.I.get<AppState>().hasChanges,
                               builder: (final BuildContext context, final bool __, final Widget? ___) {
@@ -758,13 +758,13 @@ class MainWidget extends StatelessWidget
                 },
               ),
             ),
-            dividerWidth: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewDividerWidth, //8.0
-            ratioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftDefault, //0.2
-            minRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMin, //0.15
-            maxRatioLeft: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexLeftMax, //0.25
-            ratioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightDefault, //0.15
-            minRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMin, //0.1
-            maxRatioRight: GetIt.I.get<PreferenceManager>().mainLayoutOptions.splitViewFlexRightMax, //0.2
+            //dividerWidth: _MainLayoutOptions.splitViewDividerWidth, //8.0
+            ratioLeft: _MainLayoutOptions.splitViewFlexLeftDefault, //0.2
+            minRatioLeft: _MainLayoutOptions.splitViewFlexLeftMin, //0.15
+            maxRatioLeft: _MainLayoutOptions.splitViewFlexLeftMax, //0.25
+            ratioRight: _MainLayoutOptions.splitViewFlexRightDefault, //0.15
+            minRatioRight: _MainLayoutOptions.splitViewFlexRightMin, //0.1
+            maxRatioRight: _MainLayoutOptions.splitViewFlexRightMax, //0.2
           ),
         ),
       ],
@@ -772,31 +772,19 @@ class MainWidget extends StatelessWidget
   }
 }
 
-class MainLayoutOptions
+abstract final class _MainLayoutOptions
 {
-  final double splitViewDividerWidth;
-  final double splitViewFlexLeftMin;
-  final double splitViewFlexLeftMax;
-  final double splitViewFlexRightMin;
-  final double splitViewFlexRightMax;
-  final double splitViewFlexLeftDefault;
-  final double splitViewFlexRightDefault;
-  final int recoverCheckIntervalMinutes;
-  final double titleBarPadding;
-  final double loadingScreenPadding;
+  //static const double splitViewDividerWidth = 8.0;
 
+  static const double splitViewFlexLeftMin = 0.15;
+  static const double splitViewFlexLeftDefault = 0.2;
+  static const double splitViewFlexLeftMax = 0.25;
 
-  // ignore: unreachable_from_main
-  MainLayoutOptions({
-    required this.splitViewDividerWidth,
-    required this.splitViewFlexLeftMin,
-    required this.splitViewFlexLeftMax,
-    required this.splitViewFlexRightMin,
-    required this.splitViewFlexRightMax,
-    required this.splitViewFlexLeftDefault,
-    required this.splitViewFlexRightDefault,
-    required this.recoverCheckIntervalMinutes,
-    required this.loadingScreenPadding,
-    required this.titleBarPadding,
-  });
+  static const double splitViewFlexRightMin = 0.1;
+  static const double splitViewFlexRightDefault = 0.15;
+  static const double splitViewFlexRightMax = 0.2;
+
+  static const int recoverCheckIntervalMinutes = 2;
+  static const double titleBarPadding = 4.0;
+  static const double loadingScreenPadding = 32.0;
 }

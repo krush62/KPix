@@ -33,27 +33,16 @@
 part of 'kpal_widget.dart';
 
 
-class KPalColorCardWidgetOptions
+abstract final class _KPalColorCardWidgetOptions
 {
-  final double borderRadius;
-  final double borderWidth;
-  final double outsidePadding;
-  final int colorNameFlex;
-  final int colorFlex;
-  final int colorNumbersFlex;
-  final int editAnimationDuration;
-  final int touchTimeout;
-
-  KPalColorCardWidgetOptions({
-    required this.borderRadius,
-    required this.borderWidth,
-    required this.outsidePadding,
-    required this.colorFlex,
-    required this.colorNameFlex,
-    required this.colorNumbersFlex,
-    required this.editAnimationDuration,
-    required this.touchTimeout,
-  });
+  static const double borderRadius = 8.0;
+  static const double borderWidth = 2.0;
+  static const double outsidePadding = 8.0;
+  static const int colorNameFlex = 3;
+  static const int colorFlex = 9;
+  static const int colorNumbersFlex = 3;
+  static const int editAnimationDuration = 250;
+  static const int touchTimeout = 1500;
 }
 
 
@@ -78,7 +67,6 @@ class KPalColorCardWidget extends StatefulWidget
 
 class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
 {
-  final KPalColorCardWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions.rampOptions.colorCardWidgetOptions;
   final KPalSliderConstraints _constraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
   final ColorNames _colorNames = GetIt.I.get<PreferenceManager>().colorNames;
   final ValueNotifier<bool> _shouldShowSliders = ValueNotifier<bool>(false);
@@ -107,7 +95,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
     {
       pressTimer!.cancel();
     }
-    pressTimer = Timer(Duration(milliseconds: _options.touchTimeout), _hide);
+    pressTimer = Timer(const Duration(milliseconds: _KPalColorCardWidgetOptions.touchTimeout), _hide);
   }
 
   void _hide()
@@ -123,15 +111,15 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
    return Expanded(
      child: Padding(
        padding: EdgeInsets.only(
-         left: _options.outsidePadding,
-         right: widget._isLast ? _options.outsidePadding : 0.0,
-         top: _options.outsidePadding,
-         bottom: _options.outsidePadding,
+         left: _KPalColorCardWidgetOptions.outsidePadding,
+         right: widget._isLast ? _KPalColorCardWidgetOptions.outsidePadding : 0.0,
+         top: _KPalColorCardWidgetOptions.outsidePadding,
+         bottom: _KPalColorCardWidgetOptions.outsidePadding,
        ),
        child: DecoratedBox(
          decoration: BoxDecoration(
            color: Theme.of(context).primaryColor,
-           borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+           borderRadius: const BorderRadius.all(Radius.circular(_KPalColorCardWidgetOptions.borderRadius)),
          ),
 
          child: ValueListenableBuilder<IdColor>(
@@ -142,7 +130,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                mainAxisAlignment: MainAxisAlignment.end,
                children: <Widget>[
                  Expanded(
-                   flex: _options.colorNameFlex,
+                   flex: _KPalColorCardWidgetOptions.colorNameFlex,
                    child: Column(
                      mainAxisSize: MainAxisSize.min,
                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -162,11 +150,11 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                  ),
                  Divider(
                    color: Theme.of(context).primaryColorDark,
-                   thickness: _options.borderWidth,
-                   height: _options.borderWidth,
+                   thickness: _KPalColorCardWidgetOptions.borderWidth,
+                   height: _KPalColorCardWidgetOptions.borderWidth,
                  ),
                  Expanded(
-                   flex: _options.colorFlex,
+                   flex: _KPalColorCardWidgetOptions.colorFlex,
                    child: MouseRegion(
                      onEnter: (final PointerEnterEvent? event) {
                        _isInside = true;
@@ -187,7 +175,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                              valueListenable: _shouldShowSliders,
                              builder: (final BuildContext context1, final bool shouldShow, final Widget? child1) {
                                return AnimatedOpacity(
-                                 duration: Duration(milliseconds: _options.editAnimationDuration),
+                                 duration: const Duration(milliseconds: _KPalColorCardWidgetOptions.editAnimationDuration),
                                  curve: Curves.easeInOut,
                                  opacity: shouldShow ? 1 : 0,
                                  child: IgnorePointer(
@@ -218,11 +206,11 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                          builder: (final BuildContext context4, final int valShift, final Widget? child4) {
                                            final bool editIsVisible = !shouldShow && (hueShift != _constraints.defaultHue || satShift != _constraints.defaultSat || valShift != _constraints.defaultVal);
                                            return AnimatedOpacity(
-                                             duration: Duration(milliseconds: _options.editAnimationDuration),
+                                             duration: const Duration(milliseconds: _KPalColorCardWidgetOptions.editAnimationDuration),
                                              curve: Curves.easeInOut,
                                              opacity: editIsVisible ? 1 : 0,
                                              child: Padding(
-                                               padding:  EdgeInsets.all(_options.outsidePadding),
+                                               padding:  const EdgeInsets.all(_KPalColorCardWidgetOptions.outsidePadding),
                                                child: Icon(
                                                  TablerIcons.pencil,
                                                  shadows: <Shadow>[
@@ -250,11 +238,11 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                  ),
                  Divider(
                    color: Theme.of(context).primaryColorDark,
-                   thickness: _options.borderWidth,
-                   height: _options.borderWidth,
+                   thickness: _KPalColorCardWidgetOptions.borderWidth,
+                   height: _KPalColorCardWidgetOptions.borderWidth,
                  ),
                  Expanded(
-                   flex: _options.colorNumbersFlex,
+                   flex: _KPalColorCardWidgetOptions.colorNumbersFlex,
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                      children: <Widget>[

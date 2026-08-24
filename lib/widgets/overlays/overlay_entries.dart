@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -299,10 +298,10 @@ KPixOverlay getRasterLayerMenu({
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(KPalWidgetOptions.smokeOpacity),
           ),
           Padding(
-            padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().kPalWidgetOptions.outsidePadding),
+            padding: const EdgeInsets.all(KPalWidgetOptions.outsidePadding),
             child: KPal(
               accept: onAccept,
               delete: onDelete,

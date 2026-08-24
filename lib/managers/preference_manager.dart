@@ -39,7 +39,6 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
@@ -81,21 +80,6 @@ enum PreferenceDouble
   KPal_Constraints_satShiftExpMin(defaultValue: 0.5),
   KPal_Constraints_satShiftExpMax(defaultValue: 2.0),
   KPal_Constraints_staShiftExpDefault(defaultValue: 1.0),
-
-  KPal_Layout_BorderRadius(defaultValue: 8.0),
-  KPal_Layout_BorderWidth(defaultValue: 2.0),
-  KPal_Layout_OutsidePadding(defaultValue: 16.0),
-  KPal_Layout_InsidePadding(defaultValue: 8.0),
-  KPal_Layout_IconSize(defaultValue: 32.0),
-
-  KPalRamp_Layout_OutsidePadding(defaultValue: 8.0),
-  KPalRamp_Layout_BorderWidth(defaultValue: 4.0),
-  KPalRamp_Layout_DividerThickness(defaultValue: 2.0),
-  KPalRamp_Layout_BorderRadius(defaultValue: 8.0),
-
-  KPalColorCard_Layout_BorderRadius(defaultValue: 8.0),
-  KPalColorCard_Layout_BorderWidth(defaultValue: 2.0),
-  KPalColorCard_Layout_OutsidePadding(defaultValue: 8.0),
 
   Painter_CursorSize(defaultValue: 4.0),
   Painter_CursorBorderWidth(defaultValue: 2.0),
@@ -253,22 +237,6 @@ enum PreferenceInt
   KPal_Constraints_RampCountMax(defaultValue: 64),
   KPal_Constraints_RampCountDefault(defaultValue: 8),
   KPal_Constraints_MaxClusters(defaultValue: 16),
-
-  KPal_Layout_SmokeOpacity(defaultValue: 128),
-
-  KPalRamp_Layout_CenterFlex(defaultValue: 6),
-  KPalRamp_Layout_RightFlex(defaultValue: 2),
-  KPalRamp_Layout_RowLabelFlex(defaultValue: 4),
-  KPalRamp_Layout_RowControlFlex(defaultValue: 25),
-  KPalRamp_Layout_RowValueFlex(defaultValue: 3),
-  KPalRamp_Layout_ColorShowThreshold(defaultValue: 10),
-  KPalRamp_Layout_RenderIntervalMs(defaultValue: 100),
-
-  KPalColorCard_Layout_ColorNameFlex(defaultValue: 3),
-  KPalColorCard_Layout_ColorFlex(defaultValue: 9),
-  KPalColorCard_Layout_ColorNumbersFlex(defaultValue: 3),
-  KPalColorCard_Layout_EditAnimationDuration(defaultValue: 250),
-  KPalColorCard_Layout_TouchTimeout(defaultValue: 1500),
 
   KPalSliderConstraints_MinHue(defaultValue: -50),
   KPalSliderConstraints_MinSat(defaultValue: -25),
@@ -471,7 +439,6 @@ class PreferenceManager
   late ShaderOptions shaderOptions;
 
   late KPalConstraints kPalConstraints;
-  late KPalWidgetOptions kPalWidgetOptions;
   late KPalSliderConstraints kPalSliderConstraints;
 
   late ReferenceLayerSettings referenceLayerSettings;
@@ -828,38 +795,6 @@ class PreferenceManager
         defaultVal: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultVal),
     );
 
-    final KPalColorCardWidgetOptions colorCardWidgetOptions = KPalColorCardWidgetOptions(
-        borderRadius: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderRadius),
-        borderWidth: _getValueD(PreferenceDouble.KPalColorCard_Layout_BorderWidth),
-        outsidePadding: _getValueD(PreferenceDouble.KPalColorCard_Layout_OutsidePadding),
-        colorFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorFlex),
-        colorNameFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNameFlex),
-        colorNumbersFlex: _getValueI(PreferenceInt.KPalColorCard_Layout_ColorNumbersFlex),
-        editAnimationDuration: _getValueI(PreferenceInt.KPalColorCard_Layout_EditAnimationDuration),
-        touchTimeout: _getValueI(PreferenceInt.KPalColorCard_Layout_TouchTimeout),);
-
-    final KPalRampWidgetOptions rampWidgetOptions = KPalRampWidgetOptions(
-        padding: _getValueD(PreferenceDouble.KPalRamp_Layout_OutsidePadding),
-        centerFlex: _getValueI(PreferenceInt.KPalRamp_Layout_CenterFlex),
-        rightFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RightFlex),
-        borderWidth: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderWidth),
-        borderRadius: _getValueD(PreferenceDouble.KPalRamp_Layout_BorderRadius),
-        dividerThickness: _getValueD(PreferenceDouble.KPalRamp_Layout_DividerThickness),
-        rowControlFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowControlFlex),
-        rowLabelFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowLabelFlex),
-        rowValueFlex: _getValueI(PreferenceInt.KPalRamp_Layout_RowValueFlex),
-        colorNameShowThreshold: _getValueI(PreferenceInt.KPalRamp_Layout_ColorShowThreshold),
-        colorCardWidgetOptions: colorCardWidgetOptions,
-        renderIntervalMs: _getValueI(PreferenceInt.KPalRamp_Layout_RenderIntervalMs),);
-
-    kPalWidgetOptions = KPalWidgetOptions(
-        borderWidth: _getValueD(PreferenceDouble.KPal_Layout_BorderWidth),
-        outsidePadding: _getValueD(PreferenceDouble.KPal_Layout_OutsidePadding),
-        smokeOpacity: _getValueI(PreferenceInt.KPal_Layout_SmokeOpacity),
-        borderRadius: _getValueD(PreferenceDouble.KPal_Layout_BorderRadius),
-        iconSize: _getValueD(PreferenceDouble.KPal_Layout_IconSize),
-        insidePadding: _getValueD(PreferenceDouble.KPal_Layout_InsidePadding),
-        rampOptions: rampWidgetOptions,);
   }
 
   void _loadColorNames()

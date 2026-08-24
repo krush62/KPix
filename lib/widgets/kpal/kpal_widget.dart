@@ -62,25 +62,15 @@ part 'kpal_color_card_widget.dart';
 part 'kpal_ramp_widget.dart';
 part 'kpal_vertical_slider_widget.dart';
 
-class KPalWidgetOptions
+abstract final class KPalWidgetOptions
 {
-  final KPalRampWidgetOptions rampOptions;
-  final double borderWidth;
-  final double outsidePadding;
-  final double insidePadding;
-  final double borderRadius;
-  final int smokeOpacity;
-  final double iconSize;
-
-  KPalWidgetOptions({
-    required this.borderWidth,
-    required this.outsidePadding,
-    required this.smokeOpacity,
-    required this.rampOptions,
-    required this.borderRadius,
-    required this.insidePadding,
-    required this.iconSize,
-  });
+  //static const KPalRampWidgetOptions rampOptions;
+  static const double borderWidth = 2.0;
+  static const double outsidePadding = 16.0;
+  static const double insidePadding = 8.0;
+  static const double borderRadius = 8.0;
+  static const int smokeOpacity = 128;
+  static const double iconSize = 32.0;
 }
 
 class KPal extends StatefulWidget
@@ -105,7 +95,6 @@ class KPal extends StatefulWidget
 class _KPalState extends State<KPal>
 {
   late KPixOverlay _alertDialog;
-  final KPalWidgetOptions _options = GetIt.I.get<PreferenceManager>().kPalWidgetOptions;
   late KPalRampData _originalData;
 
   @override
@@ -169,7 +158,7 @@ class _KPalState extends State<KPal>
               children: <Widget>[
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.insidePadding),
+                    padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.x,
@@ -181,7 +170,7 @@ class _KPalState extends State<KPal>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.insidePadding),
+                    padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.trash,
@@ -195,7 +184,7 @@ class _KPalState extends State<KPal>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.insidePadding),
+                    padding: const EdgeInsets.all(KPalWidgetOptions.insidePadding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.check,

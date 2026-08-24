@@ -177,6 +177,7 @@ class CoordinateSetI
     return (x - other.x).abs() == 1 && (y - other.y).abs() == 1;
   }
 
+  /// Checks if the given coordinates are between 0 and the current value.
   bool contains({required final CoordinateSetI coord})
   {
     return coord.x >= 0 && coord.y >= 0 && coord.x < x && coord.y < y;

@@ -15,22 +15,14 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/color_helper.dart';
 
-class PaletteManagerEntryOptions
+abstract final class _PaletteManagerEntryOptions
 {
-  final double borderWidth;
-  final double borderRadius;
-  final int layoutFlex;
-
-  PaletteManagerEntryOptions({
-    required this.borderWidth,
-    required this.borderRadius,
-    required this.layoutFlex,
-  });
+  static const double borderWidth = 2.0;
+  static const double borderRadius = 3.0;
+  static const int layoutFlex = 6;
 }
 
 class PaletteManagerEntryData
@@ -70,7 +62,6 @@ class PaletteManagerEntryWidget extends StatefulWidget
 
 class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
 {
-  final PaletteManagerEntryOptions _options = GetIt.I.get<PreferenceManager>().paletteManagerEntryOptions;
 
   void _onTap()
   {
@@ -104,9 +95,9 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
               color: Theme.of(context).primaryColor,
               border: Border.all(
                 color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
-                width: _options.borderWidth,
+                width: _PaletteManagerEntryOptions.borderWidth,
               ),
-              borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+              borderRadius: const BorderRadius.all(Radius.circular(_PaletteManagerEntryOptions.borderRadius)),
             ),
             child: Column(
               children: <Widget>[
@@ -119,9 +110,9 @@ class _PaletteManagerEntryWidgetState extends State<PaletteManagerEntryWidget>
                   ),
                 ),
                 Expanded(
-                  flex: _options.layoutFlex,
+                  flex: _PaletteManagerEntryOptions.layoutFlex,
                   child: Padding(
-                    padding: EdgeInsets.all(_options.borderWidth),
+                    padding: const EdgeInsets.all(_PaletteManagerEntryOptions.borderWidth),
                     child: Column(
                       children: colorColumn,
                     ),

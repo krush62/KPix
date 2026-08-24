@@ -43,8 +43,6 @@ import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
-import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
-import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
@@ -55,11 +53,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_PaletteManagerEntry_BorderWidth(defaultValue: 2.0),
-  Layout_PaletteManagerEntry_BorderRadius(defaultValue: 3.0),
-
-  Layout_PaletteManager_EntryAspectRatio(defaultValue: 0.75),
 
   Layout_ProjectManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_ProjectManagerEntry_BorderRadius(defaultValue: 3.0),
@@ -175,8 +168,6 @@ enum PreferenceInt
   Layout_CanvasSize_SizeMax(defaultValue: 640),
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
-  Layout_PaletteManagerEntry_LayoutFlex(defaultValue: 6),
-  Layout_PaletteManager_ColCount(defaultValue: 4),
   Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
   Layout_ProjectManager_ColCount(defaultValue: 5),
   Layout_ProjectManager_FilterTextLength(defaultValue: 16),
@@ -494,8 +485,6 @@ class PreferenceManager
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
   late CanvasSizeOptions canvasSizeOptions;
-  late PaletteManagerEntryOptions paletteManagerEntryOptions;
-  late PaletteManagerOptions paletteManagerOptions;
   late ProjectManagerEntryOptions projectManagerEntryOptions;
   late ProjectManagerOptions projectManagerOptions;
   late StampManagerEntryOptions stampManagerEntryOptions;
@@ -653,13 +642,6 @@ class PreferenceManager
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
         previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize),);
-    paletteManagerEntryOptions = PaletteManagerEntryOptions(
-        borderRadius: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderRadius),
-        borderWidth: _getValueD(PreferenceDouble.Layout_PaletteManagerEntry_BorderWidth),
-        layoutFlex: _getValueI(PreferenceInt.Layout_PaletteManagerEntry_LayoutFlex),);
-    paletteManagerOptions = PaletteManagerOptions(
-      colCount: _getValueI(PreferenceInt.Layout_PaletteManager_ColCount),
-      entryAspectRatio: _getValueD(PreferenceDouble.Layout_PaletteManager_EntryAspectRatio),);
     projectManagerEntryOptions = ProjectManagerEntryOptions(
         borderRadius: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderRadius),
         borderWidth: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderWidth),

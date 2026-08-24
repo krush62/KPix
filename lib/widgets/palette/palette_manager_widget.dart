@@ -31,11 +31,10 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:path/path.dart' as p;
 
-class PaletteManagerOptions
+abstract final class _PaletteManagerOptions
 {
-  final int colCount;
-  final double entryAspectRatio;
-  PaletteManagerOptions({required this.colCount, required this.entryAspectRatio});
+  static const int colCount = 4;
+  static const double entryAspectRatio = 0.75;
 }
 
 class PaletteManagerWidget extends StatefulWidget
@@ -49,7 +48,6 @@ class PaletteManagerWidget extends StatefulWidget
 
 class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 {
-  final PaletteManagerOptions _options = GetIt.I.get<PreferenceManager>().paletteManagerOptions;
   final ValueNotifier<List<PaletteManagerEntryWidget>> _paletteEntries = ValueNotifier<List<PaletteManagerEntryWidget>>(<PaletteManagerEntryWidget>[]);
   final ValueNotifier<PaletteManagerEntryWidget?> _selectedWidget = ValueNotifier<PaletteManagerEntryWidget?>(null);
 
@@ -299,9 +297,9 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
                 valueListenable: _paletteEntries,
                 builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
                   return GridView.extent(
-                    maxCrossAxisExtent: OverlayEntryAlertDialogOptions.maxWidth / _options.colCount,
+                    maxCrossAxisExtent: OverlayEntryAlertDialogOptions.maxWidth / _PaletteManagerOptions.colCount,
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    childAspectRatio: _options.entryAspectRatio,
+                    childAspectRatio: _PaletteManagerOptions.entryAspectRatio,
                     mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                     crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                     children: pList,

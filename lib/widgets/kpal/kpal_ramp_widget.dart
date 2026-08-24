@@ -157,7 +157,7 @@ class _KPalRampState extends State<KPalRamp>
   void _settingsChanged({final bool colorCountChanged = false})
   {
     setState(() {
-      widget.rampData._updateColors(colorCountChanged: colorCountChanged);
+      widget.rampData.updateColors(colorCountChanged: colorCountChanged);
       if (colorCountChanged)
       {
         _drawingLayers = _copyLayers(originalLayers: _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());

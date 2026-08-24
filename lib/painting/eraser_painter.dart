@@ -28,6 +28,7 @@ import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
+import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 

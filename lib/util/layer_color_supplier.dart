@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/color_helper.dart';
 
 const double _goldenAngle = 137.50776405003785;
 const double _saturation = 0.3;

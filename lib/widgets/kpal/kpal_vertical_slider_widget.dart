@@ -16,33 +16,6 @@
 
 part of 'kpal_widget.dart';
 
-class KPalSliderConstraints
-{
-  final int minHue;
-  final int minSat;
-  final int minVal;
-
-  final int maxHue;
-  final int maxSat;
-  final int maxVal;
-
-  final int defaultHue;
-  final int defaultSat;
-  final int defaultVal;
-
-  KPalSliderConstraints({
-    required this.minHue,
-    required this.minSat,
-    required this.minVal,
-    required this.maxHue,
-    required this.maxSat,
-    required this.maxVal,
-    required this.defaultHue,
-    required this.defaultSat,
-    required this.defaultVal,
-  });
-}
-
 class KPalVerticalSliderWidget extends StatefulWidget
 {
   final String name;

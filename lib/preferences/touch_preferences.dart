@@ -17,58 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/preferences/preference_gui.dart';
-
-class TouchPreferenceContent
-{
-  final ValueNotifier<double> zoomStepDistance;
-  final ValueNotifier<int> singleTouchDelay;
-
-  final double zoomStepDistanceMin;
-  final double zoomStepDistanceMax;
-  final int singleTouchDelayMin;
-  final int singleTouchDelayMax;
-
-  factory TouchPreferenceContent({
-    required final int singleTouchDelay,
-    required final int singleTouchDelayMin,
-    required final int singleTouchDelayMax,
-    required final double zoomStepDistance,
-    required final double zoomStepDistanceMin,
-    required final double zoomStepDistanceMax,
-  })
-  {
-    return TouchPreferenceContent._(
-      singleTouchDelay: ValueNotifier<int>(singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax)),
-      singleTouchDelayMin: singleTouchDelayMin,
-      singleTouchDelayMax: singleTouchDelayMax,
-      zoomStepDistance: ValueNotifier<double>(zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax)),
-      zoomStepDistanceMin: zoomStepDistanceMin,
-      zoomStepDistanceMax: zoomStepDistanceMax,
-    );
-  }
-
-  TouchPreferenceContent._({
-    required this.singleTouchDelay,
-    required this.singleTouchDelayMin,
-    required this.singleTouchDelayMax,
-    required this.zoomStepDistance,
-    required this.zoomStepDistanceMin,
-    required this.zoomStepDistanceMax,
-  });
-
-  void update({
-    required final int singleTouchDelay,
-    required final int singleTouchDelayMin,
-    required final int singleTouchDelayMax,
-    required final double zoomStepDistance,
-    required final double zoomStepDistanceMin,
-    required final double zoomStepDistanceMax,
-  })
-  {
-    this.singleTouchDelay.value = singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax);
-    this.zoomStepDistance.value = zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax);
-  }
-}
+import 'package:kpix/preferences/preference_values.dart';
 
 class TouchPreferences extends StatefulWidget
 {

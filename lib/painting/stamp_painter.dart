@@ -27,6 +27,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
+import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';

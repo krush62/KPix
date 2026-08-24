@@ -15,51 +15,8 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:kpix/preferences/preference_gui.dart';
-
-enum CursorType
-{
-  none(0, "None", SystemMouseCursors.none),
-  crossHair(1, "CrossHair", SystemMouseCursors.precise),
-  arrow(2, "Arrow", SystemMouseCursors.basic);
-
-  final int id;
-  final String name;
-  final SystemMouseCursor systemCursor;
-
-  const CursorType(this.id, this.name, this.systemCursor);
-
-  static Map<CursorType, String> getNameMap()
-  {
-    final Map<CursorType, String> map = <CursorType, String>{};
-    for (final CursorType curs in CursorType.values) {
-      map[curs] = curs.name;
-    }
-    return map;
-  }
-
-  static CursorType fromId(final int id) {
-    return CursorType.values.firstWhere((final CursorType curs) => curs.id == id);
-  }
-
-}
-
-class DesktopPreferenceContent
-{
-  final ValueNotifier<CursorType> cursorType;
-  factory DesktopPreferenceContent({required final int cursorTypeValue})
-  {
-    final CursorType cursorType = CursorType.fromId(cursorTypeValue);
-    return DesktopPreferenceContent._(cursorType: ValueNotifier<CursorType>(cursorType));
-  }
-
-  DesktopPreferenceContent._({required this.cursorType});
-  void update({required final int cursorTypeValue})
-  {
-    cursorType.value = CursorType.fromId(cursorTypeValue);
-  }
-}
+import 'package:kpix/preferences/preference_values.dart';
 
 class DesktopPreferences extends StatefulWidget
 {

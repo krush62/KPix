@@ -33,7 +33,6 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
@@ -45,18 +44,18 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:uuid/uuid.dart';
 
 part '../../util/kpal_ramp_data.dart';
 part 'kpal_color_card_widget.dart';

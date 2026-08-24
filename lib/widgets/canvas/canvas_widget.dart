@@ -49,10 +49,9 @@ import 'package:kpix/painting/color_pick_painter.dart';
 import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
-import 'package:kpix/preferences/desktop_preferences.dart';
-import 'package:kpix/preferences/stylus_preferences.dart';
-import 'package:kpix/preferences/touch_preferences.dart';
+import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/select_options.dart';
+import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 

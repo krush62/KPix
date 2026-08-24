@@ -60,7 +60,7 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
+import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';

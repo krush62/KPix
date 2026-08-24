@@ -19,67 +19,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/preferences/preference_gui.dart';
+import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/file_handler.dart';
 
-//UNDO STEPS
-const int undoStepsMin = 10;
-const int undoStepsMax = 256;
-
-class BehaviorPreferenceContent
-{
-  final ValueNotifier<int> undoSteps;
-  final ValueNotifier<bool> selectShapeAfterInsert;
-  final ValueNotifier<bool> selectLayerAfterInsert;
-  final ValueNotifier<bool> showReferenceOutsideCanvas;
-  final ValueNotifier<int> shadingStepsMinus;
-  final ValueNotifier<int> shadingStepsPlus;
-  final int undoStepsMax;
-  final int undoStepsMin;
-  final ShadingLayerSettingsConstraints shadingConstraints;
-  final FrameConstraints frameConstraints;
-  final ValueNotifier<int> fps;
-  final ValueNotifier<bool> useCustomProjectDirectory;
-  final ValueNotifier<String> customProjectDirectory;
-
-  factory BehaviorPreferenceContent({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
-  {
-      return BehaviorPreferenceContent._(
-        undoSteps: ValueNotifier<int>(undoSteps.clamp(undoStepsMin, undoStepsMax)),
-        selectShapeAfterInsert: ValueNotifier<bool>(selectAfterInsert),
-        selectLayerAfterInsert: ValueNotifier<bool>(selectLayerAfterInsert),
-        frameConstraints: frameConstraints,
-        fps: ValueNotifier<int>(frameConstraints.defaultFps),
-        shadingStepsMinus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultDarken),
-        shadingStepsPlus: ValueNotifier<int>(shadingConstraints.shadingStepsDefaultBrighten),
-        shadingConstraints: shadingConstraints,
-        undoStepsMax: undoStepsMax,
-        undoStepsMin: undoStepsMin,
-        showReferenceOutsideCanvas: ValueNotifier<bool>(showReferenceOutsideCanvas),
-        useCustomProjectDirectory: ValueNotifier<bool>(useCustomProjectDirectory),
-        customProjectDirectory: ValueNotifier<String>(customProjectDirectory),
-      );
-  }
-
-  BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
-
-  void update({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
-  {
-    this.undoSteps.value = undoSteps.clamp(undoStepsMin, undoStepsMax);
-    selectShapeAfterInsert.value = selectAfterInsert;
-    this.selectLayerAfterInsert.value = selectLayerAfterInsert;
-    fps.value = frameConstraints.defaultFps;
-    shadingStepsMinus.value = shadingConstraints.shadingStepsDefaultDarken;
-    shadingStepsPlus.value = shadingConstraints.shadingStepsDefaultBrighten;
-    this.showReferenceOutsideCanvas.value = showReferenceOutsideCanvas;
-    this.useCustomProjectDirectory.value = useCustomProjectDirectory;
-    this.customProjectDirectory.value = customProjectDirectory;
-  }
-
-}
 
 
 class BehaviorPreferences extends StatefulWidget

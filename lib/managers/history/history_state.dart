@@ -26,9 +26,9 @@ import 'package:kpix/managers/history/history_selection_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 class HistoryState
 {

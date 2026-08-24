@@ -14,82 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:kpix/preferences/preference_gui.dart';
+import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_names.dart';
-
-//THEME
-const Map<int, ThemeMode> themeTypeIndexMap =
-<int, ThemeMode>{
-  0:ThemeMode.system,
-  1:ThemeMode.light,
-  2:ThemeMode.dark,
-};
-const Map<ThemeMode, String> themeTypeStringMap =
-<ThemeMode, String>{
-  ThemeMode.system:"System",
-  ThemeMode.light:"Light",
-  ThemeMode.dark:"Dark",
-};
-
-//RASTER SIZE
-const List<int> rasterSizes = <int>[2, 4, 8, 12, 16, 24, 36, 48, 64];
-
-//RASTER CONTRAST
-const int rasterContrastMin = 0;
-const int rasterContrastMax = 100;
-const int rasterContrastDivisions = 20;
-
-const int opacityMin = 0;
-const int opacityMax = 100;
-
-
-class GuiPreferenceContent
-{
-  final ValueNotifier<ThemeMode> themeType;
-  final ValueNotifier<int> rasterSizeIndex;
-  final ValueNotifier<int> rasterContrast;
-  final ValueNotifier<int> toolOpacity;
-  final ValueNotifier<int> selectionOpacity;
-  final ValueNotifier<int> canvasBorderOpacity;
-  final ValueNotifier<ColorNameScheme> colorNameScheme;
-
-  factory GuiPreferenceContent({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final int toolOpacityValue})
-  {
-    final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
-    final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
-    final int rasterContrastNormalized = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
-    final ColorNameScheme colorNameScheme = ColorNameScheme.fromId(colorNameSchemeValue);
-    final int toolOpacity = toolOpacityValue.clamp(opacityMin, opacityMax);
-    final int selectionOpacity = selectionOpacityValue.clamp(opacityMin, opacityMax);
-    final int canvasBorderOpacity = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
-
-    return GuiPreferenceContent._(
-      themeType: ValueNotifier<ThemeMode>(themeType),
-      rasterSizeIndex: ValueNotifier<int>(rasterSizeIndex),
-      rasterContrast: ValueNotifier<int>(rasterContrastNormalized),
-      colorNameScheme:ValueNotifier<ColorNameScheme>(colorNameScheme),
-      canvasBorderOpacity: ValueNotifier<int>(canvasBorderOpacity),
-      selectionOpacity: ValueNotifier<int>(selectionOpacity),
-      toolOpacity: ValueNotifier<int>(toolOpacity),
-    );
-  }
-
-  GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
-
-  void update({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final int toolOpacityValue})
-  {
-    themeType.value = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
-    rasterSizeIndex.value = max(rasterSizes.indexOf(rasterSizeValue), 0);
-    this.rasterContrast.value = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
-    colorNameScheme.value = ColorNameScheme.fromId(colorNameSchemeValue);
-    canvasBorderOpacity.value = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
-    selectionOpacity.value = selectionOpacityValue.clamp(opacityMin, opacityMax);
-    toolOpacity.value = toolOpacityValue.clamp(opacityMin, opacityMax);
-  }
-}
 
 class GuiPreferences extends StatefulWidget
 {

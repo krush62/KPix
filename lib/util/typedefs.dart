@@ -16,12 +16,11 @@
 
 import 'dart:collection';
 
-import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 
 typedef IdColorSelectedFn = void Function({required IdColor newColor});

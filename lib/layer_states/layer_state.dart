@@ -20,45 +20,6 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/models/color_types.dart';
-import 'package:kpix/widgets/kpal/kpal_widget.dart';
-
-
-
-class LayerWidgetOptions
-{
-  final double outerPadding;
-  final double innerPadding;
-  final double borderRadius;
-  final double buttonSizeMin;
-  final double buttonSizeMax;
-  final double iconSize;
-  final double height;
-  final double dragOpacity;
-  final double borderWidth;
-  final double dragFeedbackSize;
-  final double dragTargetHeight;
-  final int dragTargetShowDuration;
-  final int thumbUpdateTimerMsec;
-  final int addButtonSize;
-
-  LayerWidgetOptions({
-    required this.outerPadding,
-    required this.innerPadding,
-    required this.borderRadius,
-    required this.buttonSizeMin,
-    required this.buttonSizeMax,
-    required this.iconSize,
-    required this.height,
-    required this.dragOpacity,
-    required this.borderWidth,
-    required this.dragFeedbackSize,
-    required this.dragTargetHeight,
-    required this.dragTargetShowDuration,
-    required this.thumbUpdateTimerMsec,
-    required this.addButtonSize,
-  });
-}
 
 enum LayerVisibilityState
 {
@@ -92,27 +53,7 @@ enum LayerLockState
   }
 }
 
-class ColorReference
-{
-  final KPalRampData ramp;
-  final int colorIndex;
-  ColorReference({required this.colorIndex, required this.ramp});
-  IdColor getIdColor()
-  {
-    return ramp.shiftedColors[colorIndex.clamp(0, ramp.shiftedColors.length - 1)].value;
-  }
 
-  @override
-  bool operator == (final Object other) =>
-      identical(this, other) ||
-          other is ColorReference &&
-              runtimeType == other.runtimeType &&
-              ramp == other.ramp &&
-              colorIndex == other.colorIndex;
-
-  @override
-  int get hashCode => ramp.hashCode ^ colorIndex.hashCode;
-}
 
 enum LayerMenuKind
 {

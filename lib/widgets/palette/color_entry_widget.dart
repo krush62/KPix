@@ -16,10 +16,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/models/color_types.dart';
+import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class ColorEntryWidgetOptions {

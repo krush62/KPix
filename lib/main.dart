@@ -341,10 +341,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           }
         }
 
-        if (!kIsWeb)
-        {
-          await _handleInitialFile();
-        }
+        await _handleInitialFile();
 
         if (projectDirResult.useCustom && !projectDirResult.customValid)
         {

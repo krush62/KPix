@@ -25,9 +25,8 @@ import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 
-class ShaderWidgetOptions {
-  final double outSidePadding;
-  const ShaderWidgetOptions({required this.outSidePadding});
+abstract final class _ShaderWidgetOptions {
+  static const double outsidePadding = 8.0;
 }
 
 class ShaderWidget extends StatefulWidget {
@@ -48,7 +47,6 @@ class ShaderWidget extends StatefulWidget {
 class _ShaderWidgetState extends State<ShaderWidget>
 {
   final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
-  final ShaderWidgetOptions _shaderWidgetOptions = GetIt.I.get<PreferenceManager>().shaderWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override
@@ -65,7 +63,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
   Widget build(final BuildContext context)
   {
     return Padding (
-      padding: EdgeInsets.only(left: _shaderWidgetOptions.outSidePadding, right: _shaderWidgetOptions.outSidePadding, bottom: _shaderWidgetOptions.outSidePadding),
+      padding: const EdgeInsets.only(left: _ShaderWidgetOptions.outsidePadding, right: _ShaderWidgetOptions.outsidePadding, bottom: _ShaderWidgetOptions.outsidePadding),
       child: ListenableBuilder(
         listenable: GetIt.I.get<AppState>().timeline.layerChangeNotifier,
         builder: (final BuildContext context0, final Widget? child0) {
@@ -106,7 +104,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
+                          padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
                           child: Text("Enabled",
                             textAlign: TextAlign.end, style: widget.labelStyle,),
                         ),
@@ -131,7 +129,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
+                          padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
                           child: Text("Current Ramp Only",
                             textAlign: TextAlign.start, style: widget.labelStyle,),
                         ),
@@ -158,7 +156,7 @@ class _ShaderWidgetState extends State<ShaderWidget>
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: EdgeInsets.only(right: _shaderWidgetOptions.outSidePadding),
+                          padding: const EdgeInsets.only(right: _ShaderWidgetOptions.outsidePadding),
                           child: Text("Direction",
                             textAlign: TextAlign.end, style: widget.labelStyle,),
                         ),

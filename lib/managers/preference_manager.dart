@@ -55,14 +55,11 @@ import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
-import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 enum PreferenceDouble
 {
-
-  Layout_Shader_OutsidePadding(defaultValue: 8.0),
 
   Layout_OverlayEntrySubMenu_OffsetX(defaultValue: 0),
   Layout_OverlayEntrySubMenu_OffsetXLeft(defaultValue: -128.0),
@@ -549,7 +546,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late ShaderWidgetOptions shaderWidgetOptions;
   late OverlayEntrySubMenuOptions overlayEntryOptions;
   late OverlayEntryAlertDialogOptions alertDialogOptions;
   late MainButtonWidgetOptions mainButtonWidgetOptions;
@@ -683,8 +679,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    shaderWidgetOptions = ShaderWidgetOptions(
-        outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding),);
     shaderOptions = ShaderOptions(
         shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),

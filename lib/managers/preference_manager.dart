@@ -51,7 +51,6 @@ import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
-import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
@@ -66,13 +65,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-  Layout_ColorRampRow_BorderRadius(defaultValue: 10.0),
-  Layout_ColorRampRow_BorderWidth(defaultValue: 2.0),
-  Layout_ColorRampRow_ButtonPadding(defaultValue: 8.0),
-  Layout_ColorRampRow_ButtonScaleFactor(defaultValue: 0.8),
-  Layout_ColorRampRow_DragFeedbackSquareSize(defaultValue: 16.0),
-  Layout_ColorRampRow_DragFeedbackSquarePadding(defaultValue: 1.0),
-
   Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
   Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
   Layout_ColorEntry_UnselectedMargin(defaultValue: 2.0),
@@ -608,7 +600,6 @@ class PreferenceManager
   late StampManagerEntryOptions stampManagerEntryOptions;
   late StampManagerOptions stampManagerOptions;
   late KPixPainterOptions kPixPainterOptions;
-  late ColorRampRowWidgetOptions colorRampRowOptions;
   late SymmetryWidgetOptions symmetryWidgetOptions;
   late FrameConstraints frameConstraints;
   late FrameBlendingOptions frameBlendingOptions;
@@ -726,13 +717,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    colorRampRowOptions = ColorRampRowWidgetOptions(
-      borderRadius: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderRadius),
-      borderWidth: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderWidth),
-      buttonPadding: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonPadding),
-      buttonScaleFactor: _getValueD(PreferenceDouble.Layout_ColorRampRow_ButtonScaleFactor),
-      dragFeedbackSquareSize: _getValueD(PreferenceDouble.Layout_ColorRampRow_DragFeedbackSquareSize),
-      dragFeedbackSquarePadding: _getValueD(PreferenceDouble.Layout_ColorRampRow_DragFeedbackSquarePadding),);
     colorEntryOptions = ColorEntryWidgetOptions(
         unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
         selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),

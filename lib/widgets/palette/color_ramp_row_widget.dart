@@ -40,23 +40,14 @@ import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 
-class ColorRampRowWidgetOptions
+abstract final class _ColorRampRowWidgetOptions
 {
-  final double borderRadius;
-  final double borderWidth;
-  final double buttonPadding;
-  final double buttonScaleFactor;
-  final double dragFeedbackSquareSize;
-  final double dragFeedbackSquarePadding;
-
-  const ColorRampRowWidgetOptions({
-    required this.borderRadius,
-    required this.borderWidth,
-    required this.buttonPadding,
-    required this.buttonScaleFactor,
-    required this.dragFeedbackSquareSize,
-    required this.dragFeedbackSquarePadding,
-  });
+  static const double borderRadius = 10.0;
+  static const double borderWidth = 2.0;
+  static const double buttonPadding = 8.0;
+  //static const double buttonScaleFactor = 0.8;
+  static const double dragFeedbackSquareSize = 16.0;
+  static const double dragFeedbackSquarePadding = 1.0;
 }
 
 class ColorRampRowWidget extends StatefulWidget {
@@ -99,7 +90,6 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
 {
   final List<Widget> _widgetList = <Widget>[];
   final AppState _appState = GetIt.I.get<AppState>();
-  final ColorRampRowWidgetOptions _options = GetIt.I.get<PreferenceManager>().colorRampRowOptions;
 
   @override
   void initState()
@@ -118,13 +108,13 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
             final List<Widget> widgetList = <Widget>[];
             for (int i = 0; i < widget.rampData.shiftedColors.length; i++)
             {
-              widgetList.add(Padding(padding: EdgeInsets.all(_options.dragFeedbackSquarePadding), child: Icon(TablerIcons.square, size: _options.dragFeedbackSquareSize)));
+              widgetList.add(const Padding(padding: EdgeInsets.all(_ColorRampRowWidgetOptions.dragFeedbackSquarePadding), child: Icon(TablerIcons.square, size: _ColorRampRowWidgetOptions.dragFeedbackSquareSize)));
             }
             return Row(children: widgetList,);
           },
         ),
         child: Padding(
-          padding: EdgeInsets.only(left: _options.buttonPadding, right: _options.buttonPadding,),
+          padding: const EdgeInsets.only(left: _ColorRampRowWidgetOptions.buttonPadding, right: _ColorRampRowWidgetOptions.buttonPadding,),
           child: ClipRect(
             child: Align(
               widthFactor: 0.5,
@@ -151,11 +141,11 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
         message: "Edit Color Ramp",
         waitDuration: AppState.toolTipDuration,
         child: Padding(
-          padding: EdgeInsets.only(left: _options.buttonPadding / 2, right: _options.borderWidth) ,
+          padding: const EdgeInsets.only(left: _ColorRampRowWidgetOptions.buttonPadding / 2, right: _ColorRampRowWidgetOptions.borderWidth) ,
           child: IconButton(
-            style: Theme.of(context).iconButtonTheme.style!.copyWith(tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.all(_options.buttonPadding))),
-            padding: EdgeInsets.all(_options.buttonPadding),
-            iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize - _options.buttonPadding,
+            style: Theme.of(context).iconButtonTheme.style!.copyWith(tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding))),
+            padding: const EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding),
+            iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize - _ColorRampRowWidgetOptions.buttonPadding,
             constraints: const BoxConstraints(),
             icon: const Icon(TablerIcons.adjustments_horizontal),
             onPressed: () {createKPal(ramp: widget.rampData);
@@ -176,12 +166,12 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
         final bool isSelected = selectedColor?.ramp == widget.rampData;
         return DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+            borderRadius: const BorderRadius.all(Radius.circular(_ColorRampRowWidgetOptions.borderRadius)),
             border: Border.all(
               color: isSelected
                   ? Theme.of(context).primaryColor
                   : Theme.of(context).primaryColorDark,
-              width: _options.borderWidth,
+              width: _ColorRampRowWidgetOptions.borderWidth,
             ),
           ),
           child: Row(

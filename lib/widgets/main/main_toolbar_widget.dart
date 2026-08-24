@@ -36,7 +36,6 @@ import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
@@ -45,19 +44,12 @@ import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:kpix/widgets/tools/tools_widget.dart';
 
-class MainToolbarWidgetOptions {
-  final int paletteFlex;
-  final int toolSettingsFlex;
-  final double dividerHeight;
-  final double dividerPadding;
-  final int toolHeight;
-
-  const MainToolbarWidgetOptions({
-    required this.paletteFlex,
-    required this.dividerPadding,
-    required this.toolSettingsFlex,
-    required this.dividerHeight,
-    required this.toolHeight,});
+abstract final class _MainToolbarWidgetOptions {
+  //static const int paletteFlex = 2;
+  //static const int toolSettingsFlex = 1;
+  //static const double dividerHeight = 2.0;
+  //static const double dividerPadding = 8.0;
+  static const int toolHeight = 300;
 }
 
 
@@ -121,7 +113,7 @@ class MainToolbarWidget extends StatelessWidget
 
                 return SizedBox(
                   width: double.infinity,
-                  height: GetIt.I.get<PreferenceManager>().mainToolbarWidgetOptions.toolHeight.toDouble(),
+                  height: _MainToolbarWidgetOptions.toolHeight.toDouble(),
                   child: contentWidget,
 
                 );

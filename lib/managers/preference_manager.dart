@@ -46,8 +46,6 @@ import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
-import 'package:kpix/widgets/main/main_toolbar_widget.dart';
-import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
@@ -63,14 +61,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-  Layout_MainToolbar_DividerHeight(defaultValue: 2.0),
-  Layout_MainToolbar_DividerPadding(defaultValue: 8.0),
 
   Layout_Shader_OutsidePadding(defaultValue: 8.0),
-
-  Layout_StatusBar_Height(defaultValue: 20.0),
-  Layout_StatusBar_Padding(defaultValue: 2.0),
-  Layout_StatusBar_DividerWidth(defaultValue: 2.0),
 
   Layout_OverlayEntrySubMenu_OffsetX(defaultValue: 0),
   Layout_OverlayEntrySubMenu_OffsetXLeft(defaultValue: -128.0),
@@ -226,10 +218,6 @@ enum PreferenceInt
 {
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
-
-  Layout_MainToolbar_PaletteFlex(defaultValue: 2),
-  Layout_MainToolbar_ToolSettingsFlex(defaultValue: 1),
-  Layout_MainToolbar_ToolHeight(defaultValue: 300),
 
   Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
 
@@ -561,9 +549,7 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late MainToolbarWidgetOptions mainToolbarWidgetOptions;
   late ShaderWidgetOptions shaderWidgetOptions;
-  late StatusBarWidgetOptions statusBarWidgetOptions;
   late OverlayEntrySubMenuOptions overlayEntryOptions;
   late OverlayEntryAlertDialogOptions alertDialogOptions;
   late MainButtonWidgetOptions mainButtonWidgetOptions;
@@ -697,18 +683,8 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    mainToolbarWidgetOptions = MainToolbarWidgetOptions(
-        paletteFlex: _getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
-        toolSettingsFlex: _getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),
-        dividerHeight: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerHeight),
-        dividerPadding: _getValueD(PreferenceDouble.Layout_MainToolbar_DividerPadding),
-        toolHeight: _getValueI(PreferenceInt.Layout_MainToolbar_ToolHeight),);
     shaderWidgetOptions = ShaderWidgetOptions(
         outSidePadding: _getValueD(PreferenceDouble.Layout_Shader_OutsidePadding),);
-    statusBarWidgetOptions = StatusBarWidgetOptions(
-      height: _getValueD(PreferenceDouble.Layout_StatusBar_Height),
-      padding: _getValueD(PreferenceDouble.Layout_StatusBar_Padding),
-      dividerWidth: _getValueD(PreferenceDouble.Layout_StatusBar_DividerWidth),);
     shaderOptions = ShaderOptions(
         shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),

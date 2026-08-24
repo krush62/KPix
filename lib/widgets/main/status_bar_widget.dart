@@ -19,21 +19,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 
-class StatusBarWidgetOptions
+abstract final class _StatusBarWidgetOptions
 {
-  final double height;
-  final double padding;
-  final double dividerWidth;
-
-
-  StatusBarWidgetOptions({
-    required this.height,
-    required this.padding,
-    required this.dividerWidth,
-  });
+  static const double height = 20.0;
+  static const double padding = 2.0;
+  static const double dividerWidth = 2.0;
 }
 
 class StatusBarWidget extends StatefulWidget
@@ -48,7 +40,6 @@ class StatusBarWidget extends StatefulWidget
 
   final double iconSize;
 
-  final StatusBarWidgetOptions options;
   @override
   State<StatusBarWidget> createState() => _StatusBarWidgetState();
 
@@ -56,12 +47,10 @@ class StatusBarWidget extends StatefulWidget
     final Key? key,
   })
   {
-    final StatusBarWidgetOptions options = GetIt.I.get<PreferenceManager>().statusBarWidgetOptions;
     final AppState appState = GetIt.I.get<AppState>();
-    final double fIconSize = options.height - 2 * options.padding;
+    const double fIconSize = _StatusBarWidgetOptions.height - 2 * _StatusBarWidgetOptions.padding;
     return StatusBarWidget._(
         key: key,
-        options: options,
         dimensionString: appState.statusBarState.statusBarDimensionString,
         cursorPositionString: appState.statusBarState.statusBarCursorPositionString,
         zoomFactorString: appState.statusBarState.statusBarZoomFactorString,
@@ -74,7 +63,6 @@ class StatusBarWidget extends StatefulWidget
 
   const StatusBarWidget._({
     super.key,
-    required this.options,
     required this.dimensionString,
     required this.cursorPositionString,
     required this.zoomFactorString,
@@ -97,15 +85,15 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
     return Column(
       children: <Widget>[
         Container(
-          height: widget.options.padding,
+          height: _StatusBarWidgetOptions.padding,
           color: Theme.of(context).primaryColor,
         ),
         ColoredBox(
           color: Theme.of(context).primaryColorDark,
           child: Padding(
-            padding: EdgeInsets.all(widget.options.padding),
+            padding: const EdgeInsets.all(_StatusBarWidgetOptions.padding),
             child: LimitedBox(
-              maxHeight: widget.options.height,
+              maxHeight: _StatusBarWidgetOptions.height,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -114,72 +102,72 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                       listenable: widget.dimensionString,
                       icon: TablerIcons.dimensions,
                       iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                      padding: _StatusBarWidgetOptions.padding,
                     ),
                   ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
+                  const VerticalDivider(
+                    width: _StatusBarWidgetOptions.dividerWidth,
+                    thickness: _StatusBarWidgetOptions.dividerWidth,
                   ),
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.cursorPositionString,
                       icon: TablerIcons.crosshair,
                       iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                      padding: _StatusBarWidgetOptions.padding,
                     ),
                   ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
+                  const VerticalDivider(
+                    width: _StatusBarWidgetOptions.dividerWidth,
+                    thickness: _StatusBarWidgetOptions.dividerWidth,
                   ),
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolDimensionString,
                       icon: TablerIcons.ruler,
                       iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                      padding: _StatusBarWidgetOptions.padding,
                     ),
                   ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
+                  const VerticalDivider(
+                    width: _StatusBarWidgetOptions.dividerWidth,
+                    thickness: _StatusBarWidgetOptions.dividerWidth,
                   ),
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolDiagonalString,
                       icon: TablerIcons.ruler_measure,
                       iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                      padding: _StatusBarWidgetOptions.padding,
                     ),
                   ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
+                  const VerticalDivider(
+                    width: _StatusBarWidgetOptions.dividerWidth,
+                    thickness: _StatusBarWidgetOptions.dividerWidth,
                   ),
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolAspectRatioString,
                       icon: TablerIcons.percentage,
                       iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                      padding: _StatusBarWidgetOptions.padding,
                     ),
                   ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
+                  const VerticalDivider(
+                    width: _StatusBarWidgetOptions.dividerWidth,
+                    thickness: _StatusBarWidgetOptions.dividerWidth,
                   ),
                   Expanded(
                     child: _StatusBarWidgetEntry(
                       listenable: widget.toolAngleString,
                       icon: TablerIcons.angle,
                       iconSize: widget.iconSize,
-                      padding: widget.options.padding,
+                      padding: _StatusBarWidgetOptions.padding,
                     ),
                   ),
-                  VerticalDivider(
-                    width: widget.options.dividerWidth,
-                    thickness: widget.options.dividerWidth,
+                  const VerticalDivider(
+                    width: _StatusBarWidgetOptions.dividerWidth,
+                    thickness: _StatusBarWidgetOptions.dividerWidth,
                   ),
                   Expanded(
                     child: GestureDetector(
@@ -188,7 +176,7 @@ class _StatusBarWidgetState extends State<StatusBarWidget>
                         listenable: widget.zoomFactorString,
                         icon: TablerIcons.zoom,
                         iconSize: widget.iconSize,
-                        padding: widget.options.padding,
+                        padding: _StatusBarWidgetOptions.padding,
                       ),
                     ),
                   ),

@@ -56,16 +56,11 @@ import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 
 /// Layout options for [CanvasWidget].
-class CanvasOptions
+abstract final class _CanvasOptions
 {
-  final int historyCheckPollRate;
-  final double minVisibilityFactor;
-  final int idleTimerRate;
-
-  CanvasOptions({
-    required this.historyCheckPollRate,
-    required this.minVisibilityFactor,
-    required this.idleTimerRate,});
+  static const int historyCheckPollRate = 250;
+  static const double minVisibilityFactor = 0.1;
+  static const int idleTimerRate = 15;
 }
 
 /// Status of the touch pointer.
@@ -93,7 +88,6 @@ class CanvasWidget extends StatefulWidget {
 
 class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderStateMixin
 {
-  final CanvasOptions _options = GetIt.I.get<PreferenceManager>().canvasWidgetOptions;
   final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
@@ -179,8 +173,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       _setDefaultCursor();
     });
     Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);});
-    Timer.periodic(Duration(milliseconds: _options.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
-    Timer.periodic(Duration(milliseconds: _options.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
+    Timer.periodic(const Duration(milliseconds: _CanvasOptions.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
+    Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
     _appState.flushHistoryData = _flushHistoryData;
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((final _)
@@ -829,7 +823,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
     final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio);
-    final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * _options.minVisibilityFactor, y: kPixPainter.latestSize.height * _options.minVisibilityFactor);
+    final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * _CanvasOptions.minVisibilityFactor, y: kPixPainter.latestSize.height * _CanvasOptions.minVisibilityFactor);
 
     coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, kPixPainter.latestSize.width - minVisibility.x);
     coords.y = coords.y.clamp(-scaledCanvas.y + minVisibility.y, kPixPainter.latestSize.height - minVisibility.y);

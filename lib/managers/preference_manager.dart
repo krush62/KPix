@@ -40,7 +40,6 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
-import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
@@ -69,8 +68,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-  Layout_Canvas_MinVisibilityFactor(defaultValue: 0.1),
-
   Layout_Tools_Padding(defaultValue: 8.0),
   Layout_Tools_IconSize(defaultValue: 22.0),
   Layout_Tools_ButtonSize(defaultValue: 48.0),
@@ -261,9 +258,6 @@ enum PreferenceDouble
 
 enum PreferenceInt
 {
-
-  Layout_Canvas_HistoryCheck_PollRate(defaultValue: 250),
-  Layout_Canvas_IdleTimerRate(defaultValue: 15),
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
@@ -607,7 +601,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late CanvasOptions canvasWidgetOptions;
   late ToolsWidgetOptions toolsWidgetOptions;
   late PaletteWidgetOptions paletteWidgetOptions;
   late ColorEntryWidgetOptions colorEntryOptions;
@@ -749,10 +742,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    canvasWidgetOptions = CanvasOptions(
-        historyCheckPollRate: _getValueI(PreferenceInt.Layout_Canvas_HistoryCheck_PollRate),
-        minVisibilityFactor: _getValueD(PreferenceDouble.Layout_Canvas_MinVisibilityFactor),
-        idleTimerRate: _getValueI(PreferenceInt.Layout_Canvas_IdleTimerRate),);
     toolsWidgetOptions = ToolsWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_Tools_Padding),
         colCount: _getValueI(PreferenceInt.Layout_Tools_ColCount),

@@ -16,31 +16,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
-class ColorEntryWidgetOptions {
-  final double unselectedMargin;
-  final double selectedMargin;
-  final double roundRadius;
-  final double settingsIconSize;
-  final double addIconSize;
-  final double buttonPadding;
-  final double minSize;
-  final double maxSize;
+abstract final class ColorEntryWidgetOptions {
+  static const double unselectedMargin = 2.0;
+  static const double selectedMargin = 0.0;
+  static const double roundRadius = 4.0;
+  static const double settingsIconSize = 24.0;
+  static const double addIconSize = 24.0;
+  static const double buttonPadding = 4.0;
+  static const double minSize = 8.0;
+  static const double maxSize = 32.0;
 
-  ColorEntryWidgetOptions({
-    required this.unselectedMargin,
-    required this.selectedMargin,
-    required this.roundRadius,
-    required this.settingsIconSize,
-    required this.addIconSize,
-    required this.buttonPadding,
-    required this.minSize,
-    required this.maxSize,
-  });
 }
 
 class ColorEntryWidget extends StatefulWidget
@@ -73,7 +62,6 @@ class ColorEntryWidget extends StatefulWidget
 
 class _ColorEntryWidgetState extends State<ColorEntryWidget>
 {
-  final ColorEntryWidgetOptions _options = GetIt.I.get<PreferenceManager>().colorEntryOptions;
   final AppState _appState = GetIt.I.get<AppState>();
 
   @override
@@ -104,25 +92,25 @@ class _ColorEntryWidgetState extends State<ColorEntryWidget>
                   waitDuration: AppState.toolTipDuration,
                   textAlign: TextAlign.center,
                   child: Container(
-                    constraints: BoxConstraints(
-                      minHeight: _options.minSize,
-                      minWidth: _options.minSize,
-                      maxHeight: _options.maxSize,
-                      maxWidth: _options.maxSize,
+                    constraints: const BoxConstraints(
+                      minHeight: ColorEntryWidgetOptions.minSize,
+                      minWidth: ColorEntryWidgetOptions.minSize,
+                      maxHeight: ColorEntryWidgetOptions.maxSize,
+                      maxWidth: ColorEntryWidgetOptions.maxSize,
                     ),
                     margin: EdgeInsets.all(widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
-                        ? _options.selectedMargin
-                        : _options.unselectedMargin,),
+                        ? ColorEntryWidgetOptions.selectedMargin
+                        : ColorEntryWidgetOptions.unselectedMargin,),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: widget.colorData.value.uuid == selectedColor?.getIdColor().uuid
                           ? Theme.of(context).primaryColorLight
                           : Colors.transparent,
-                        width: _options.unselectedMargin -_options.selectedMargin,),
+                        width: ColorEntryWidgetOptions.unselectedMargin -ColorEntryWidgetOptions.selectedMargin,),
                       color: value.color,
-                      borderRadius: BorderRadius.all(
+                      borderRadius: const BorderRadius.all(
                         Radius.circular(
-                            _options.roundRadius,
+                          ColorEntryWidgetOptions.roundRadius,
                         ),
                       ),
                     ),

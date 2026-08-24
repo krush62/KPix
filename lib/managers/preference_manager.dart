@@ -50,7 +50,6 @@ import 'package:kpix/widgets/main/main_toolbar_widget.dart';
 import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
-import 'package:kpix/widgets/palette/color_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
@@ -65,15 +64,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-  Layout_ColorEntry_AddIconSize(defaultValue: 24.0),
-  Layout_ColorEntry_SettingsIconSize(defaultValue: 24.0),
-  Layout_ColorEntry_UnselectedMargin(defaultValue: 2.0),
-  Layout_ColorEntry_SelectedMargin(defaultValue: 0.0),
-  Layout_ColorEntry_RoundRadius(defaultValue: 4.0),
-  Layout_ColorEntry_ButtonPadding(defaultValue: 4.0),
-  Layout_ColorEntry_MinSize(defaultValue: 8.0),
-  Layout_ColorEntry_MaxSize(defaultValue: 32.0),
-
   Layout_ToolsSettings_Padding(defaultValue: 8.0),
   Layout_ToolSettings_SmallButtonSize(defaultValue: 36.0),
   Layout_ToolSettings_SmallIconSize(defaultValue: 20),
@@ -579,7 +569,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late ColorEntryWidgetOptions colorEntryOptions;
   late ToolSettingsWidgetOptions toolSettingsWidgetOptions;
   late MainToolbarWidgetOptions mainToolbarWidgetOptions;
   late ShaderWidgetOptions shaderWidgetOptions;
@@ -717,15 +706,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    colorEntryOptions = ColorEntryWidgetOptions(
-        unselectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_UnselectedMargin),
-        selectedMargin: _getValueD(PreferenceDouble.Layout_ColorEntry_SelectedMargin),
-        roundRadius: _getValueD(PreferenceDouble.Layout_ColorEntry_RoundRadius),
-        addIconSize: _getValueD(PreferenceDouble.Layout_ColorEntry_AddIconSize),
-        settingsIconSize: _getValueD(PreferenceDouble.Layout_ColorEntry_SettingsIconSize),
-        buttonPadding: _getValueD(PreferenceDouble.Layout_ColorEntry_ButtonPadding),
-        minSize: _getValueD(PreferenceDouble.Layout_ColorEntry_MinSize),
-        maxSize: _getValueD(PreferenceDouble.Layout_ColorEntry_MaxSize),);
     toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
         columnWidthRatio: _getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
         padding: _getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),

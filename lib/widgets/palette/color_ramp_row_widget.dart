@@ -33,7 +33,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/color_helper.dart';
@@ -145,7 +144,7 @@ class _ColorRampRowWidgetState extends State<ColorRampRowWidget>
           child: IconButton(
             style: Theme.of(context).iconButtonTheme.style!.copyWith(tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding))),
             padding: const EdgeInsets.all(_ColorRampRowWidgetOptions.buttonPadding),
-            iconSize: GetIt.I.get<PreferenceManager>().colorEntryOptions.settingsIconSize - _ColorRampRowWidgetOptions.buttonPadding,
+            iconSize: ColorEntryWidgetOptions.settingsIconSize - _ColorRampRowWidgetOptions.buttonPadding,
             constraints: const BoxConstraints(),
             icon: const Icon(TablerIcons.adjustments_horizontal),
             onPressed: () {createKPal(ramp: widget.rampData);

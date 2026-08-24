@@ -38,8 +38,6 @@ import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
-import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
-import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
@@ -53,13 +51,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_ProjectManagerEntry_BorderWidth(defaultValue: 2.0),
-  Layout_ProjectManagerEntry_BorderRadius(defaultValue: 3.0),
-  Layout_ProjectManager_EntryAspectRatio(defaultValue: 0.75),
-  Layout_ProjectManager_MaxWidth(defaultValue: 800.0),
-  Layout_ProjectManager_MaxHeight(defaultValue: 600.0),
-
   Layout_StampManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_StampManagerEntry_BorderRadius(defaultValue: 3.0),
   Layout_StampManager_EntryAspectRatio(defaultValue: 0.75),
@@ -168,9 +159,6 @@ enum PreferenceInt
   Layout_CanvasSize_SizeMax(defaultValue: 640),
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
 
-  Layout_ProjectManagerEntry_LayoutFlex(defaultValue: 6),
-  Layout_ProjectManager_ColCount(defaultValue: 5),
-  Layout_ProjectManager_FilterTextLength(defaultValue: 16),
   Layout_StampManagerEntry_LayoutFlex(defaultValue: 6),
   Layout_StampManager_ColCount(defaultValue: 6),
 
@@ -485,8 +473,6 @@ class PreferenceManager
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
   late CanvasSizeOptions canvasSizeOptions;
-  late ProjectManagerEntryOptions projectManagerEntryOptions;
-  late ProjectManagerOptions projectManagerOptions;
   late StampManagerEntryOptions stampManagerEntryOptions;
   late StampManagerOptions stampManagerOptions;
   late KPixPainterOptions kPixPainterOptions;
@@ -642,16 +628,6 @@ class PreferenceManager
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
         previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize),);
-    projectManagerEntryOptions = ProjectManagerEntryOptions(
-        borderRadius: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderRadius),
-        borderWidth: _getValueD(PreferenceDouble.Layout_ProjectManagerEntry_BorderWidth),
-        layoutFlex: _getValueI(PreferenceInt.Layout_ProjectManagerEntry_LayoutFlex),);
-    projectManagerOptions = ProjectManagerOptions(
-        colCount: _getValueI(PreferenceInt.Layout_ProjectManager_ColCount),
-        entryAspectRatio: _getValueD(PreferenceDouble.Layout_ProjectManager_EntryAspectRatio),
-        maxWidth: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxWidth),
-        maxHeight: _getValueD(PreferenceDouble.Layout_ProjectManager_MaxHeight),
-        maxFilterTextLength: _getValueI(PreferenceInt.Layout_ProjectManager_FilterTextLength),);
     stampManagerEntryOptions = StampManagerEntryOptions(
       borderRadius: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderRadius),
       borderWidth: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderWidth),

@@ -16,22 +16,14 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 
 /// Layout options for [ProjectManagerEntryWidget].
-class ProjectManagerEntryOptions
+abstract final class _ProjectManagerEntryOptions
 {
-  final double borderWidth;
-  final double borderRadius;
-  final int layoutFlex;
-
-  ProjectManagerEntryOptions({
-    required this.borderWidth,
-    required this.borderRadius,
-    required this.layoutFlex,
-  });
+  static const double borderWidth = 2.0;
+  static const double borderRadius = 3.0;
+  static const int layoutFlex = 6;
 }
 
 /// Data structure for a KPix project file.
@@ -58,7 +50,6 @@ class ProjectManagerEntryWidget extends StatefulWidget
 
 class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
 {
-  final ProjectManagerEntryOptions _options = GetIt.I.get<PreferenceManager>().projectManagerEntryOptions;
 
   void _onTap()
   {
@@ -79,9 +70,9 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
               color: Theme.of(context).primaryColor,
               border: Border.all(
                 color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
-                width: _options.borderWidth,
+                width: _ProjectManagerEntryOptions.borderWidth,
               ),
-              borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+              borderRadius: const BorderRadius.all(Radius.circular(_ProjectManagerEntryOptions.borderRadius)),
             ),
             child: Column(
               children: <Widget>[
@@ -94,9 +85,9 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
                   ),
                 ),
                 Expanded(
-                  flex: _options.layoutFlex,
+                  flex: _ProjectManagerEntryOptions.layoutFlex,
                   child: Padding(
-                    padding: EdgeInsets.all(_options.borderWidth),
+                    padding: const EdgeInsets.all(_ProjectManagerEntryOptions.borderWidth),
                     child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,),
                   ),
                 ),

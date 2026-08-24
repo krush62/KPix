@@ -28,14 +28,13 @@ import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for [ProjectManagerWidget].
-class ProjectManagerOptions
+abstract final class _ProjectManagerOptions
 {
-  final int colCount;
-  final double entryAspectRatio;
-  final double maxWidth;
-  final double maxHeight;
-  final int maxFilterTextLength;
-  ProjectManagerOptions({required this.colCount, required this.entryAspectRatio, required this.maxWidth, required this.maxHeight, required this.maxFilterTextLength});
+  static const int colCount = 5;
+  static const double entryAspectRatio = 0.75;
+  static const double maxWidth = 800.0;
+  static const double maxHeight = 600.0;
+  static const int maxFilterTextLength = 16;
 }
 
 /// Displays all project files and gives filter and sorting options.
@@ -61,7 +60,6 @@ enum ProjectViewOrder
 
 class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 {
-  final ProjectManagerOptions _options = GetIt.I.get<PreferenceManager>().projectManagerOptions;
   final List<ProjectManagerEntryWidget> _allFileEntries = <ProjectManagerEntryWidget>[];
   final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier<List<ProjectManagerEntryWidget>>(<ProjectManagerEntryWidget>[]);
   final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier<ProjectManagerEntryWidget?>(null);
@@ -255,11 +253,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   Widget build(final BuildContext context) {
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
         minWidth: OverlayEntryAlertDialogOptions.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth,
+        maxHeight: _ProjectManagerOptions.maxHeight,
+        maxWidth: _ProjectManagerOptions.maxWidth,
       ),
       child: Column(
         children: <Widget>[
@@ -290,7 +288,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                               controller: controller,
                               focusNode: hotkeyManager.projectFilterTextFocus,
                               onChanged: (final String newText) {_filterTextChanged(newText: newText);},
-                              maxLength: _options.maxFilterTextLength,
+                              maxLength: _ProjectManagerOptions.maxFilterTextLength,
                             );
                           },
                         ),
@@ -400,9 +398,9 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   else
                   {
                     return GridView.extent(
-                      maxCrossAxisExtent: _options.maxWidth / _options.colCount,
+                      maxCrossAxisExtent: _ProjectManagerOptions.maxWidth / _ProjectManagerOptions.colCount,
                       padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                      childAspectRatio: _options.entryAspectRatio,
+                      childAspectRatio: _ProjectManagerOptions.entryAspectRatio,
                       mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                       crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                       children: pList.toList(),

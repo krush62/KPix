@@ -24,13 +24,11 @@ import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for the [CanvasOperationsWidget].
-class CanvasOperationsWidgetOptions
+abstract final class _CanvasOperationsWidgetOptions
 {
-  final double iconHeight;
-  final double buttonHeight;
-  final double padding;
-
-  CanvasOperationsWidgetOptions({required this.iconHeight, required this.padding, required this.buttonHeight});
+  static const double iconHeight = 20.0;
+  static const double buttonHeight = 36.0;
+  static const double padding = 4.0;
 }
 
 /// Available canvas transformations.
@@ -63,7 +61,6 @@ class CanvasOperationsWidget extends StatefulWidget
 
 class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
-  final CanvasOperationsWidgetOptions _options = GetIt.I.get<PreferenceManager>().canvasOperationsWidgetOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final AppState _appState = GetIt.I.get<AppState>();
   late KPixOverlay _canvasSizeOverlay;
@@ -103,9 +100,9 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
     return Material(
       color: Theme.of(context).primaryColor,
       child: SizedBox(
-        height: _options.buttonHeight,
+        height: _CanvasOperationsWidgetOptions.buttonHeight,
         child: Padding(
-          padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding, right: _options.padding * 2, left: _options.padding * 2),
+          padding: const EdgeInsets.only(top: _CanvasOperationsWidgetOptions.padding, bottom: _CanvasOperationsWidgetOptions.padding, right: _CanvasOperationsWidgetOptions.padding * 2, left: _CanvasOperationsWidgetOptions.padding * 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
@@ -115,41 +112,41 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.rotate);},
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.rotate_clockwise_2,
-                      size: _options.iconHeight,
+                      size: _CanvasOperationsWidgetOptions.iconHeight,
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding),
+              const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: Tooltip(
                   message: transformationDescriptions[CanvasTransformation.flipH],
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipH);},
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.flip_vertical,
-                      size: _options.iconHeight,
+                      size: _CanvasOperationsWidgetOptions.iconHeight,
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding),
+              const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: Tooltip(
                   message: transformationDescriptions[CanvasTransformation.flipV],
                   child: IconButton.outlined(
                     onPressed: (){_appState.canvasTransform(transformation: CanvasTransformation.flipV);},
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.flip_horizontal,
-                      size: _options.iconHeight,
+                      size: _CanvasOperationsWidgetOptions.iconHeight,
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding),
+              const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: ListenableBuilder(
                   listenable: _appState.selectionState,
@@ -171,25 +168,25 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       waitDuration: AppState.toolTipDuration,
                       child: IconButton.outlined(
                         onPressed: cropEnabled ? _crop : null,
-                        icon: Icon(
+                        icon: const Icon(
                           TablerIcons.crop,
-                          size: _options.iconHeight,
+                          size: _CanvasOperationsWidgetOptions.iconHeight,
                         ),
                       ),
                     );
                   },
                 ),
               ),
-              SizedBox(width: _options.padding),
+              const SizedBox(width: _CanvasOperationsWidgetOptions.padding),
               Expanded(
                 child: Tooltip(
                   message: "Set Size",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _setSize,
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.resize,
-                      size: _options.iconHeight,
+                      size: _CanvasOperationsWidgetOptions.iconHeight,
                     ),
                   ),
                 ),

@@ -37,7 +37,6 @@ import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
-import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
@@ -56,10 +55,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_CanvasOperations_IconHeight(defaultValue: 20.0),
-  Layout_CanvasOperations_ButtonHeight(defaultValue: 36.0),
-  Layout_CanvasOperations_Padding(defaultValue: 4.0),
 
   Layout_PaletteManagerEntry_BorderWidth(defaultValue: 2.0),
   Layout_PaletteManagerEntry_BorderRadius(defaultValue: 3.0),
@@ -498,7 +493,6 @@ class PreferenceManager
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
-  late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
   late CanvasSizeOptions canvasSizeOptions;
   late PaletteManagerEntryOptions paletteManagerEntryOptions;
   late PaletteManagerOptions paletteManagerOptions;
@@ -655,10 +649,6 @@ class PreferenceManager
       minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
       maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
       defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),);
-    canvasOperationsWidgetOptions = CanvasOperationsWidgetOptions(
-        iconHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_IconHeight),
-        buttonHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_ButtonHeight),
-        padding: _getValueD(PreferenceDouble.Layout_CanvasOperations_Padding),);
     canvasSizeOptions = CanvasSizeOptions(
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),

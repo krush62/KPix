@@ -33,9 +33,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
+import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
+import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/preference_manager.dart';
@@ -83,31 +88,31 @@ class _RightBarWidgetState extends State<RightBarWidget>
 
   void _newDrawingLayerPressed()
   {
-    _appState.addNewDrawingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _appState.addNewLayer(layerType: DrawingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newReferenceLayerPressed()
   {
-    _appState.addNewReferenceLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _appState.addNewLayer(layerType: ReferenceLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newGridLayerPressed()
   {
-    _appState.addNewGridLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _appState.addNewLayer(layerType: GridLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newShadingLayerPressed()
   {
-    _appState.addNewShadingLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _appState.addNewLayer(layerType: ShadingLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 
   void _newDitherLayerPressed()
   {
-    _appState.addNewDitherLayer(select: _behaviorOptions.selectLayerAfterInsert.value);
+    _appState.addNewLayer(layerType: DitherLayerState, select: _behaviorOptions.selectLayerAfterInsert.value);
     _closeLayerMenu();
   }
 

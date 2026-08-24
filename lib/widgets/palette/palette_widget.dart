@@ -33,28 +33,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 
-class PaletteWidgetOptions
+abstract final class _PaletteWidgetOptions
 {
-  final double padding;
-  final double managerButtonSize;
-  final double borderRadius;
-  final double dropTargetHeight;
-  final int dropTargetAnimationLength;
-
-  PaletteWidgetOptions({
-    required this.padding,
-    required this.managerButtonSize,
-    required this.borderRadius,
-    required this.dropTargetHeight,
-    required this.dropTargetAnimationLength,
-  });
-
+  static const double padding = 8.0;
+  static const double managerButtonSize = 32.0;
+  static const double borderRadius = 8.0;
+  static const double dropTargetHeight = 32.0;
+  static const int dropTargetAnimationLength = 100;
 }
 
 class PaletteWidget extends StatefulWidget
@@ -117,15 +107,15 @@ class _PaletteWidgetState extends State<PaletteWidget>
     _kPal.show(context: context);
   }
 
-  Widget _getDropContainer({required final PaletteWidgetOptions paletteWidgetOptions, required final int index})
+  Widget _getDropContainer({required final int index})
   {
     return DragTarget<KPalRampData>(
       builder: (final BuildContext context, final List<KPalRampData?> candidateItems, final List<dynamic> rejectedItems)
       {
         return AnimatedContainer(
-          height: candidateItems.isEmpty ? paletteWidgetOptions.padding / 2 : paletteWidgetOptions.dropTargetHeight,
+          height: candidateItems.isEmpty ? _PaletteWidgetOptions.padding / 2 : _PaletteWidgetOptions.dropTargetHeight,
           color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
-          duration: Duration(milliseconds: paletteWidgetOptions.dropTargetAnimationLength),
+          duration: const Duration(milliseconds: _PaletteWidgetOptions.dropTargetAnimationLength),
         );
       },
       onAcceptWithDetails: (final DragTargetDetails<KPalRampData> details) {
@@ -138,7 +128,6 @@ class _PaletteWidgetState extends State<PaletteWidget>
   @override
   Widget build(final BuildContext context) {
     final AppState appState = GetIt.I.get<AppState>();
-    final PaletteWidgetOptions paletteWidgetOptions = GetIt.I.get<PreferenceManager>().paletteWidgetOptions;
     return Expanded(
       child: ValueListenableBuilder<List<KPalRampData>>(
         valueListenable: appState.colorRampNotifier,
@@ -146,7 +135,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
         {
           int dropTargetIndex = 0;
           final List<Widget> widgetList = <Widget>[];
-          widgetList.add(_getDropContainer(paletteWidgetOptions: paletteWidgetOptions, index: dropTargetIndex++));
+          widgetList.add(_getDropContainer(index: dropTargetIndex++));
           for (final KPalRampData rampData in rampDataSet)
           {
             widgetList.add(
@@ -156,14 +145,14 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   showKPalFn: _createKPal,
                 ),
             );
-            widgetList.add(_getDropContainer(paletteWidgetOptions: paletteWidgetOptions, index: dropTargetIndex++));
+            widgetList.add(_getDropContainer(index: dropTargetIndex++));
           }
           return Container(
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColorDark,
-              borderRadius: BorderRadius.only(topRight: Radius.circular(paletteWidgetOptions.borderRadius), bottomRight: Radius.circular(paletteWidgetOptions.borderRadius)),
+              borderRadius: const BorderRadius.only(topRight: Radius.circular(_PaletteWidgetOptions.borderRadius), bottomRight: Radius.circular(_PaletteWidgetOptions.borderRadius)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,15 +162,15 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   message: "Palette Manager",
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
-                    padding: EdgeInsets.only(top: paletteWidgetOptions.padding, left: paletteWidgetOptions.padding, right: paletteWidgetOptions.padding),
+                    padding: const EdgeInsets.only(top: _PaletteWidgetOptions.padding, left: _PaletteWidgetOptions.padding, right: _PaletteWidgetOptions.padding),
                     child: IconButton.outlined(
                       onPressed: _paletteManagerPressed,
                       icon: const Icon(Icons.palette),
                       style: IconButton.styleFrom(
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                        maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                        iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
+                        minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                        maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                        iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
                         padding: EdgeInsets.zero,
                       ),
                     ),
@@ -190,7 +179,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: EdgeInsets.all(GetIt.I.get<PreferenceManager>().paletteWidgetOptions.padding / 2.0),
+                      padding: const EdgeInsets.all(_PaletteWidgetOptions.padding / 2.0),
                       child: Column(
                         children: <Widget>[
                           ...widgetList,
@@ -203,7 +192,7 @@ class _PaletteWidgetState extends State<PaletteWidget>
                   message: "Add New Color Ramp",
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
-                    padding: EdgeInsets.all(paletteWidgetOptions.padding),
+                    padding: const EdgeInsets.all(_PaletteWidgetOptions.padding),
                     child: IconButton.outlined(
                       onPressed: () {
                         appState.addNewRamp().then
@@ -218,9 +207,9 @@ class _PaletteWidgetState extends State<PaletteWidget>
                       icon: const Icon(TablerIcons.plus),
                       style: IconButton.styleFrom(
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minimumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                        maximumSize: Size(paletteWidgetOptions.managerButtonSize, paletteWidgetOptions.managerButtonSize),
-                        iconSize: paletteWidgetOptions.managerButtonSize - paletteWidgetOptions.padding,
+                        minimumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                        maximumSize: const Size(_PaletteWidgetOptions.managerButtonSize, _PaletteWidgetOptions.managerButtonSize),
+                        iconSize: _PaletteWidgetOptions.managerButtonSize - _PaletteWidgetOptions.padding,
                         padding: EdgeInsets.zero,
                       ),
                     ),

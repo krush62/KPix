@@ -19,18 +19,16 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 
 
-class ToolsWidgetOptions
+abstract final class _ToolsWidgetOptions
 {
-  final double padding;
-  final double buttonSize;
-  final int colCount;
-  final double iconSize;
-  ToolsWidgetOptions({required this.padding, required this.buttonSize, required this.colCount, required this.iconSize});
+  static const double padding = 8.0;
+  //static const double buttonSize = 48.0;
+  //static const int colCount = 6;
+  static const double iconSize = 22.0;
 }
 
 class SegmentButtonData
@@ -54,7 +52,6 @@ class ToolsWidget extends StatefulWidget
 class _ToolsWidgetState extends State<ToolsWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
-  final ToolsWidgetOptions _toolsWidgetOptions = GetIt.I.get<PreferenceManager>().toolsWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   late List<SegmentButtonData> toolDataRow1;
   late List<SegmentButtonData> toolDataRow2;
@@ -112,7 +109,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
           child: Icon(
             buttonData.toolType.icon,
             color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
-            size: _toolsWidgetOptions.iconSize,
+            size: _ToolsWidgetOptions.iconSize,
           ),
         ),
       );
@@ -135,7 +132,7 @@ class _ToolsWidgetState extends State<ToolsWidget>
   Widget build(final BuildContext context)
   {
     return Padding(
-      padding: EdgeInsets.all(_toolsWidgetOptions.padding),
+      padding: const EdgeInsets.all(_ToolsWidgetOptions.padding),
       child: ListenableBuilder(
         listenable: _appState.timeline.layerChangeNotifier,
         builder: (final BuildContext context, final Widget? child)

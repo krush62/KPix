@@ -54,7 +54,6 @@ import 'package:kpix/widgets/palette/color_entry_widget.dart';
 import 'package:kpix/widgets/palette/color_ramp_row_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
-import 'package:kpix/widgets/palette/palette_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
@@ -62,21 +61,11 @@ import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
-import 'package:kpix/widgets/tools/tools_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 enum PreferenceDouble
 {
-  Layout_Tools_Padding(defaultValue: 8.0),
-  Layout_Tools_IconSize(defaultValue: 22.0),
-  Layout_Tools_ButtonSize(defaultValue: 48.0),
-
-  Layout_Palette_Padding(defaultValue: 8.0),
-  Layout_Palette_ManagerButtonSize(defaultValue: 32.0),
-  Layout_Palette_BorderRadius(defaultValue: 8.0),
-  Layout_Palette_DropTargetHeight(defaultValue: 32.0),
-
   Layout_ColorRampRow_BorderRadius(defaultValue: 10.0),
   Layout_ColorRampRow_BorderWidth(defaultValue: 2.0),
   Layout_ColorRampRow_ButtonPadding(defaultValue: 8.0),
@@ -261,9 +250,6 @@ enum PreferenceInt
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
-  Layout_Tools_ColCount(defaultValue: 6),
-
-  Layout_Palette_DropTargetAnimationLength(defaultValue: 100),
 
   Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
 
@@ -601,8 +587,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late ToolsWidgetOptions toolsWidgetOptions;
-  late PaletteWidgetOptions paletteWidgetOptions;
   late ColorEntryWidgetOptions colorEntryOptions;
   late ToolSettingsWidgetOptions toolSettingsWidgetOptions;
   late MainToolbarWidgetOptions mainToolbarWidgetOptions;
@@ -742,17 +726,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    toolsWidgetOptions = ToolsWidgetOptions(
-        padding: _getValueD(PreferenceDouble.Layout_Tools_Padding),
-        colCount: _getValueI(PreferenceInt.Layout_Tools_ColCount),
-        buttonSize: _getValueD(PreferenceDouble.Layout_Tools_ButtonSize),
-        iconSize: _getValueD(PreferenceDouble.Layout_Tools_IconSize),);
-    paletteWidgetOptions = PaletteWidgetOptions(
-        padding: _getValueD(PreferenceDouble.Layout_Palette_Padding),
-        managerButtonSize: _getValueD(PreferenceDouble.Layout_Palette_ManagerButtonSize),
-        borderRadius: _getValueD(PreferenceDouble.Layout_Palette_BorderRadius),
-        dropTargetHeight: _getValueD(PreferenceDouble.Layout_Palette_DropTargetHeight),
-        dropTargetAnimationLength: _getValueI(PreferenceInt.Layout_Palette_DropTargetAnimationLength),);
     colorRampRowOptions = ColorRampRowWidgetOptions(
       borderRadius: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderRadius),
       borderWidth: _getValueD(PreferenceDouble.Layout_ColorRampRow_BorderWidth),

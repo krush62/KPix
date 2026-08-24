@@ -643,7 +643,7 @@ class DrawingLayerSettings extends LayerSettings {
       for (final MapEntry<Alignment, CoordinateSetI> surroundEntry in surroundingPixels.entries)
       {
         if (selectionMap[surroundEntry.key] != null && (selectionMap[surroundEntry.key] ?? false == true) && !dataPositions.contains(surroundEntry.value) &&
-            surroundEntry.value.x >= 0 && surroundEntry.value.x < canvasSize.x && surroundEntry.value.y >= 0 && surroundEntry.value.y < canvasSize.y &&
+            canvasSize.contains(coord: surroundEntry.value) &&
             (outerStrokePixels[surroundEntry.value] == null || _isAdjacentAlignment(alignment: surroundEntry.key)))
         {
           outerStrokePixels[surroundEntry.value] = dataPosition;
@@ -663,7 +663,7 @@ class DrawingLayerSettings extends LayerSettings {
       for (final MapEntry<Alignment, CoordinateSetI> surroundEntry in surroundingPixels.entries)
       {
         if (selectionMap[surroundEntry.key] != null && (selectionMap[surroundEntry.key] ?? false == true) && !dataPositions.contains(surroundEntry.value) &&
-            surroundEntry.value.x >= 0 && surroundEntry.value.x < canvasSize.x && surroundEntry.value.y >= 0 && surroundEntry.value.y < canvasSize.y)
+            canvasSize.contains(coord: surroundEntry.value))
         {
           if (outerStrokePixels.containsKey(surroundEntry.value))
           {
@@ -756,7 +756,7 @@ class DrawingLayerSettings extends LayerSettings {
     for (final CoordinateSetI dataCoord in dataPositions)
     {
       final CoordinateSetI coord = CoordinateSetI(x: dataCoord.x + offset.x, y: dataCoord.y + offset.y);
-      if (!dataPositions.contains(coord) && coord.x >= 0 && coord.x < canvasSize.x && coord.y >= 0 && coord.y < canvasSize.y)
+      if (!dataPositions.contains(coord) && canvasSize.contains(coord: coord))
       {
         coords.add(coord);
       }

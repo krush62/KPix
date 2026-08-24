@@ -613,9 +613,7 @@ abstract class IToolPainter
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     for (final CoordinateSetI coord in coords)
     {
-      if (coord.x >= 0 && coord.y >= 0 &&
-          coord.x < canvasSize.x &&
-          coord.y < canvasSize.y)
+      if (canvasSize.contains(coord: coord))
       {
         if (!shaderOptions.isEnabled.value) //without shading
         {
@@ -701,9 +699,7 @@ abstract class IToolPainter
     {
       for (final CoordinateSetI coord in coords)
       {
-        if (coord.x >= 0 && coord.y >= 0 &&
-            coord.x < canvasSize.x &&
-            coord.y < canvasSize.y)
+        if (canvasSize.contains(coord: coord))
         {
           final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
           if (currentLayerPos != null && currentLayerPos >= 0)
@@ -771,10 +767,7 @@ abstract class IToolPainter
     for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
     {
       final CoordinateSetI coord = stampEntry.key;
-
-      if (coord.x >= 0 && coord.y >= 0 &&
-          coord.x < canvasSize.x &&
-          coord.y < canvasSize.y)
+      if (canvasSize.contains(coord: coord))
       {
         if (!shaderOptions.isEnabled.value) //without shading
         {
@@ -840,10 +833,7 @@ abstract class IToolPainter
       for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
       {
         final CoordinateSetI coord = stampEntry.key;
-
-        if (coord.x >= 0 && coord.y >= 0 &&
-            coord.x < canvasSize.x &&
-            coord.y < canvasSize.y)
+        if (canvasSize.contains(coord: coord))
         {
           final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
           if (currentLayerPos != null && currentLayerPos >= 0)

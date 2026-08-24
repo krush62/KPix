@@ -176,6 +176,11 @@ class CoordinateSetI
   {
     return (x - other.x).abs() == 1 && (y - other.y).abs() == 1;
   }
+
+  bool contains({required final CoordinateSetI coord})
+  {
+    return coord.x >= 0 && coord.y >= 0 && coord.x < x && coord.y < y;
+  }
 }
 
 class KHSV

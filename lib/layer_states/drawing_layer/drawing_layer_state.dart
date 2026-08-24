@@ -438,7 +438,7 @@ class DrawingLayerState extends RasterableLayerState
     for (final CoordinateColor entry in rasterPixels.entries)
     {
       //just to make sure
-      if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasSize.x && entry.key.y < canvasSize.y)
+      if (canvasSize.contains(coord: entry.key))
       {
         final Color originalColor = entry.value.getIdColor().color;
         final int index = (entry.key.y * canvasSize.x + entry.key.x) * 4;

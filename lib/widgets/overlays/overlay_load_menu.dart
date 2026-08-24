@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -46,7 +45,6 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
 {
   /// The driver of the scale animation the menu opens with.
   late AnimationController _controller;
-  final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override
@@ -55,7 +53,7 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: _options.animationLengthMs),
+      duration: const Duration(milliseconds: OverlayEntrySubMenuOptions.animationLengthMs),
     );
     // the menu is built when it is already visible, so the animation starts right away
     _controller.forward();
@@ -75,13 +73,13 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
   Padding _createMenuButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc})
   {
     return Padding(
-      padding: EdgeInsets.all(_options.buttonSpacing / 2),
+      padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
       child: Tooltip(
         message: tooltip,
         waitDuration: AppState.toolTipDuration,
         child: IconButton.outlined(
           constraints: const BoxConstraints(),
-          padding: EdgeInsets.all(_options.buttonSpacing),
+          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
           onPressed: onPressedFunc,
           icon: Icon(icon),
         ),
@@ -94,10 +92,10 @@ class _OverlayLoadMenuState extends State<OverlayLoadMenu> with SingleTickerProv
   {
     return AnchoredOverlayBox(
       anchorKey: widget.anchorKey,
-      width: _options.width / 2,
-      offset: Offset(
-        _options.offsetX,
-        _options.offsetY + _options.buttonSpacing,
+      width: OverlayEntrySubMenuOptions.width / 2,
+      offset: const Offset(
+        OverlayEntrySubMenuOptions.offsetX,
+        OverlayEntrySubMenuOptions.offsetY + OverlayEntrySubMenuOptions.buttonSpacing,
       ),
       child: Material(
         color: Colors.transparent,

@@ -47,7 +47,6 @@ import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
-import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
@@ -60,23 +59,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_OverlayEntrySubMenu_OffsetX(defaultValue: 0),
-  Layout_OverlayEntrySubMenu_OffsetXLeft(defaultValue: -128.0),
-  Layout_OverlayEntrySubMenu_OffsetY(defaultValue: 32.0),
-  Layout_OverlayEntrySubMenu_ButtonSpacing(defaultValue: 8.0),
-  Layout_OverlayEntrySubMenu_Width(defaultValue: 160.0),
-  Layout_OverlayEntrySubMenu_ButtonHeight(defaultValue: 24.0),
-
-  Layout_OverlayAlertDialog_MinWidth(defaultValue: 200.0),
-  Layout_OverlayAlertDialog_MinHeight(defaultValue: 150.0),
-  Layout_OverlayAlertDialog_MaxWidth(defaultValue: 600.0),
-  Layout_OverlayAlertDialog_MaxHeight(defaultValue: 500.0),
-  Layout_OverlayAlertDialog_Padding(defaultValue: 8.0),
-  Layout_OverlayAlertDialog_BorderWidth(defaultValue: 2.0),
-  Layout_OverlayAlertDialog_BorderRadius(defaultValue: 8.0),
-  Layout_OverlayAlertDialog_IconSize(defaultValue: 32.0),
-  Layout_OverlayAlertDialog_Elevation(defaultValue: 8.0),
 
   Layout_MainButton_Padding(defaultValue: 8.0),
   Layout_MainButton_MenuIconSize(defaultValue: 16.0),
@@ -215,10 +197,6 @@ enum PreferenceInt
 {
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
-
-  Layout_OverlayEntry_SmokeOpacity(defaultValue: 128),
-
-  Layout_OverlayEntrySubMenu_AnimationLengthMs(defaultValue: 150),
 
   Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
   Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 20),
@@ -546,8 +524,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late OverlayEntrySubMenuOptions overlayEntryOptions;
-  late OverlayEntryAlertDialogOptions alertDialogOptions;
   late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
@@ -683,26 +659,6 @@ class PreferenceManager
         shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),
         isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled),);
-    overlayEntryOptions = OverlayEntrySubMenuOptions(
-        offsetX: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetX),
-        offsetXLeft: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetXLeft),
-        offsetY: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_OffsetY),
-        buttonSpacing: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonSpacing),
-        width: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_Width),
-        buttonHeight: _getValueD(PreferenceDouble.Layout_OverlayEntrySubMenu_ButtonHeight),
-        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
-        animationLengthMs: _getValueI(PreferenceInt.Layout_OverlayEntrySubMenu_AnimationLengthMs),);
-    alertDialogOptions = OverlayEntryAlertDialogOptions(
-        smokeOpacity: _getValueI(PreferenceInt.Layout_OverlayEntry_SmokeOpacity),
-        minWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinWidth),
-        minHeight: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MinHeight),
-        maxWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxWidth),
-        maxHeight: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_MaxHeight),
-        padding: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Padding),
-        borderWidth: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderWidth),
-        borderRadius: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_BorderRadius),
-        iconSize: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_IconSize),
-        elevation: _getValueD(PreferenceDouble.Layout_OverlayAlertDialog_Elevation),);
     mainButtonWidgetOptions = MainButtonWidgetOptions(
         padding: _getValueD(PreferenceDouble.Layout_MainButton_Padding),
         menuIconSize: _getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),

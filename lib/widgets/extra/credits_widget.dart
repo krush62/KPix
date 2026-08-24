@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -35,9 +34,7 @@ class CreditsWidget extends StatefulWidget
 
 class _CreditsWidgetState extends State<CreditsWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<String> _creditsContent = ValueNotifier<String>("");
-
 
   @override
   void initState()
@@ -62,11 +59,11 @@ class _CreditsWidgetState extends State<CreditsWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight * 2,
-        maxWidth: _options.maxWidth * 2,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight * 2,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth * 2,
       ),
       child: Column(
         children: <Widget>[

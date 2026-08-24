@@ -50,7 +50,6 @@ class OverlayRasterLayerMenu extends StatefulWidget
 
 class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with SingleTickerProviderStateMixin
 {
-  final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
@@ -74,11 +73,11 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
   void initState()
   {
     super.initState();
-    _width = ((_options.buttonHeight * _buttonToIconRatio) + (_options.buttonSpacing / 2)) * _buttonCount;
-    _height = _options.buttonHeight * _buttonToIconRatio;
+    _width = ((OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio) + (OverlayEntrySubMenuOptions.buttonSpacing / 2)) * _buttonCount;
+    _height = OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio;
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: _options.animationLengthMs),
+      duration: const Duration(milliseconds: OverlayEntrySubMenuOptions.animationLengthMs),
     );
     // the menu is built when it is already visible, so the animation starts right away
     _controller.forward();
@@ -101,10 +100,10 @@ class _OverlayRasterLayerMenuState extends State<OverlayRasterLayerMenu> with Si
       message: tooltip,
       waitDuration: AppState.toolTipDuration,
       child: SizedBox(
-        width: _options.buttonHeight * _buttonToIconRatio,
-        height: _options.buttonHeight * _buttonToIconRatio,
+        width: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
+        height: OverlayEntrySubMenuOptions.buttonHeight * _buttonToIconRatio,
         child: IconButton.outlined(
-          padding: EdgeInsets.all(_options.buttonSpacing),
+          padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
           onPressed: onPressedFunc,
           icon: Icon(icon),
         ),

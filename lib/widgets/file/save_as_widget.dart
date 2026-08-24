@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -40,7 +39,6 @@ class SaveAsWidget extends StatefulWidget
 class _SaveAsWidgetState extends State<SaveAsWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<String> _fileName = ValueNotifier<String>("");
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<FileNameStatus> _fileNameStatus = ValueNotifier<FileNameStatus>(FileNameStatus.available);
@@ -64,20 +62,20 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text("SAVE PROJECT AS", style: Theme.of(context).textTheme.titleLarge),
-          SizedBox(height: _options.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Padding(
-            padding:  EdgeInsets.all(_options.padding),
+            padding:  const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -116,7 +114,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                         waitDuration: AppState.toolTipDuration,
                         child: Icon(
                           fileNameStatusIconMap[status],
-                          size: _options.iconSize / 2,
+                          size: OverlayEntryAlertDialogOptions.iconSize / 2,
                         ),
                       );
                     },
@@ -131,7 +129,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
             children: <Widget>[
               Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.x,
@@ -144,7 +142,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<FileNameStatus>(
                       valueListenable: _fileNameStatus,
                       builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {

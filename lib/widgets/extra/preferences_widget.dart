@@ -69,9 +69,7 @@ class PreferencesWidget extends StatefulWidget
 
 class _PreferencesWidgetState extends State<PreferencesWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<PreferenceSectionType> _prefSection = ValueNotifier<PreferenceSectionType>(PreferenceSectionType.gui);
-
 
   ButtonSegment<PreferenceSectionType> _createSegment({required final PreferenceSectionType section})
   {
@@ -91,11 +89,11 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
   @override
   Widget build(final BuildContext context) {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -119,11 +117,11 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             },
           ),
           Padding(
-            padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+            padding: const EdgeInsets.only(top: OverlayEntryAlertDialogOptions.padding, bottom: OverlayEntryAlertDialogOptions.padding),
             child: Divider(
               color: Theme.of(context).primaryColorLight,
-              thickness: _options.borderWidth,
-              height: _options.borderWidth,
+              thickness: OverlayEntryAlertDialogOptions.borderWidth,
+              height: OverlayEntryAlertDialogOptions.borderWidth,
             ),
           ),
           Expanded(
@@ -149,11 +147,11 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+            padding: const EdgeInsets.only(top: OverlayEntryAlertDialogOptions.padding, bottom: OverlayEntryAlertDialogOptions.padding),
             child: Divider(
               color: Theme.of(context).primaryColorLight,
-              thickness: _options.borderWidth,
-              height: _options.borderWidth,
+              thickness: OverlayEntryAlertDialogOptions.borderWidth,
+              height: OverlayEntryAlertDialogOptions.borderWidth,
             ),
           ),
           Row(
@@ -162,7 +160,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
             children: <Widget>[
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(_options.padding),
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
                     icon: const Icon(
                       TablerIcons.x,
@@ -174,7 +172,7 @@ class _PreferencesWidgetState extends State<PreferencesWidget>
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(_options.padding),
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
                     icon: const Icon(
                       TablerIcons.check,

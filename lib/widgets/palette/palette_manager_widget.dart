@@ -49,7 +49,6 @@ class PaletteManagerWidget extends StatefulWidget
 
 class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
 {
-  final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final PaletteManagerOptions _options = GetIt.I.get<PreferenceManager>().paletteManagerOptions;
   final ValueNotifier<List<PaletteManagerEntryWidget>> _paletteEntries = ValueNotifier<List<PaletteManagerEntryWidget>>(<PaletteManagerEntryWidget>[]);
   final ValueNotifier<PaletteManagerEntryWidget?> _selectedWidget = ValueNotifier<PaletteManagerEntryWidget?>(null);
@@ -266,7 +265,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
         waitDuration: AppState.toolTipDuration,
         message: tooltip,
         child: Padding(
-          padding: EdgeInsets.all(_alertOptions.padding),
+          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
             child: IconButton.outlined(
               icon: Icon(icon),
             onPressed: isEnabled ? onPressedFunc : null,
@@ -280,31 +279,31 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _alertOptions.minHeight,
-        minWidth: _alertOptions.minWidth,
-        maxHeight: _alertOptions.maxHeight,
-        maxWidth: _alertOptions.maxWidth,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Column(
         children: <Widget>[
-          SizedBox(height: _alertOptions.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Text("PALETTE MANAGER", style: Theme.of(context).textTheme.titleLarge),
           Expanded(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColorDark,
-                borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
+                borderRadius: const BorderRadius.all(Radius.circular(OverlayEntryAlertDialogOptions.borderRadius)),
               ),
               child: ValueListenableBuilder<List<PaletteManagerEntryWidget>>(
                 valueListenable: _paletteEntries,
                 builder: (final BuildContext context, final List<PaletteManagerEntryWidget> pList, final Widget? child) {
                   return GridView.extent(
-                    maxCrossAxisExtent: _alertOptions.maxWidth / _options.colCount,
-                    padding: EdgeInsets.all(_alertOptions.padding),
+                    maxCrossAxisExtent: OverlayEntryAlertDialogOptions.maxWidth / _options.colCount,
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     childAspectRatio: _options.entryAspectRatio,
-                    mainAxisSpacing: _alertOptions.padding,
-                    crossAxisSpacing: _alertOptions.padding,
+                    mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
+                    crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                     children: pList,
                   );
                 },

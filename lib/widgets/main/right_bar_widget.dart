@@ -200,11 +200,10 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                   child: OverlayPortal(
                                     controller: _addLayerPortalController,
                                     overlayChildBuilder: (final BuildContext bcontext) {
-                                      final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
                                       return Stack(
                                         children: <Widget>[
                                           ModalBarrier(
-                                            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
                                             onDismiss: _closeLayerMenu,
                                           ),
                                           OverlayAddNewLayerMenu(

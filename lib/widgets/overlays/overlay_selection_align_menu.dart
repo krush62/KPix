@@ -16,8 +16,6 @@
 
  import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -60,8 +58,6 @@ class OverlaySelectionAlignMenu extends StatefulWidget
 
  class _OverlaySelectionAlignMenuState extends State<OverlaySelectionAlignMenu> with SingleTickerProviderStateMixin
  {
-   final OverlayEntrySubMenuOptions _options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-
    /// The driver of the scale animation the menu opens with.
    late AnimationController _controller;
 
@@ -75,7 +71,7 @@ class OverlaySelectionAlignMenu extends StatefulWidget
      super.initState();
      _controller = AnimationController(
        vsync: this,
-       duration: Duration(milliseconds: _options.animationLengthMs),
+       duration: const Duration(milliseconds: OverlayEntrySubMenuOptions.animationLengthMs),
      );
      // the menu is built when it is already visible, so the animation starts right away
      _controller.forward();
@@ -96,14 +92,14 @@ class OverlaySelectionAlignMenu extends StatefulWidget
    Widget _getEntry({required final String toolTipMessage, required final Function() onPressed, required final IconData icon})
    {
      return Padding(
-       padding: EdgeInsets.all(_options.buttonSpacing / 2),
+       padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing / 2),
        child: Tooltip(
          message: toolTipMessage,
          preferBelow: false,
          waitDuration: AppState.toolTipDuration,
          child: IconButton.outlined(
            constraints: const BoxConstraints(),
-           padding: EdgeInsets.all(_options.buttonSpacing),
+           padding: const EdgeInsets.all(OverlayEntrySubMenuOptions.buttonSpacing),
            onPressed: onPressed,
            icon: Icon(icon),
          ),
@@ -117,10 +113,10 @@ class OverlaySelectionAlignMenu extends StatefulWidget
    {
      return AnchoredOverlayBox(
        anchorKey: widget.anchorKey,
-       width: _options.width / 3,
-       offset: Offset(
-         _options.offsetX,
-         -(_entryCount + 1) *  (_options.offsetY + _options.buttonSpacing) - _options.buttonSpacing,
+       width: OverlayEntrySubMenuOptions.width / 3,
+       offset: const Offset(
+         OverlayEntrySubMenuOptions.offsetX,
+         -(_entryCount + 1) *  (OverlayEntrySubMenuOptions.offsetY + OverlayEntrySubMenuOptions.buttonSpacing) - OverlayEntrySubMenuOptions.buttonSpacing,
        ),
        child: Material(
          color: Colors.transparent,

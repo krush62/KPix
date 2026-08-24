@@ -16,8 +16,6 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// The default animation container for "zoom in" animation for overlays.
@@ -35,7 +33,6 @@ class KPixAnimationWidget extends StatefulWidget
 
 class _KPixAnimationWidgetState extends State<KPixAnimationWidget> with SingleTickerProviderStateMixin
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   late AnimationController animationController;
   late Animation<double> animation;
   late BoxConstraints _constraints;
@@ -54,11 +51,11 @@ class _KPixAnimationWidgetState extends State<KPixAnimationWidget> with SingleTi
     super.initState();
 
     _constraints = widget.constraints ??
-      BoxConstraints(
-        minHeight: options.minHeight,
-        minWidth: options.minWidth,
-        maxHeight: options.maxHeight,
-        maxWidth: options.maxWidth,
+      const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       );
 
     animationController = AnimationController(
@@ -80,21 +77,21 @@ class _KPixAnimationWidgetState extends State<KPixAnimationWidget> with SingleTi
     return ScaleTransition(
       scale: animation,
       child: Material(
-        elevation: options.elevation,
+        elevation: OverlayEntryAlertDialogOptions.elevation,
         shadowColor: Theme.of(context).primaryColorDark,
-        borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+        borderRadius: const BorderRadius.all(Radius.circular(OverlayEntryAlertDialogOptions.borderRadius)),
         child: Container(
           constraints: _constraints,
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor,
             border: Border.all(
               color: Theme.of(context).primaryColorLight,
-              width: options.borderWidth,
+              width: OverlayEntryAlertDialogOptions.borderWidth,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(options.borderRadius)),
+            borderRadius: const BorderRadius.all(Radius.circular(OverlayEntryAlertDialogOptions.borderRadius)),
           ),
           child: Padding(
-              padding: EdgeInsets.all(options.padding),
+              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
               child: widget.child,
           ),
         ),

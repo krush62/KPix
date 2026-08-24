@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -184,7 +183,6 @@ class ExportWidget extends StatefulWidget
 class _ExportWidgetState extends State<ExportWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<ImageExportType> _fileExportType = ValueNotifier<ImageExportType>(ImageExportType.png);
   final ValueNotifier<PaletteExportType> _paletteExportType = ValueNotifier<PaletteExportType>(PaletteExportType.kpal);
   final ValueNotifier<AnimationExportType> _animationExportType = ValueNotifier<AnimationExportType>(AnimationExportType.gif);
@@ -273,14 +271,14 @@ class _ExportWidgetState extends State<ExportWidget>
   @override
   Widget build(final BuildContext context) {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth * 2,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth * 2,
       ),
       child: Padding(
-        padding: EdgeInsets.all(_options.padding),
+        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -302,11 +300,11 @@ class _ExportWidgetState extends State<ExportWidget>
               },
             ),
             Padding(
-              padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+              padding: const EdgeInsets.only(top: OverlayEntryAlertDialogOptions.padding, bottom: OverlayEntryAlertDialogOptions.padding),
               child: Divider(
                 color: Theme.of(context).primaryColorLight,
-                thickness: _options.borderWidth,
-                height: _options.borderWidth,
+                thickness: OverlayEntryAlertDialogOptions.borderWidth,
+                height: OverlayEntryAlertDialogOptions.borderWidth,
               ),
             ),
             ValueListenableBuilder<ExportSectionType>(
@@ -332,7 +330,7 @@ class _ExportWidgetState extends State<ExportWidget>
                 return Column(
                   children: <Widget>[
                     Text(title, style: Theme.of(context).textTheme.titleLarge),
-                    SizedBox(height: _options.padding),
+                    const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -578,11 +576,11 @@ class _ExportWidgetState extends State<ExportWidget>
                             waitDuration: AppState.toolTipDuration,
                             child: IconButton.outlined(
                               constraints: const BoxConstraints(),
-                              padding: EdgeInsets.all(_options.padding),
+                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               onPressed: _changeDirectoryPressed,
-                              icon: Icon(
+                              icon: const Icon(
                                   TablerIcons.folder,
-                                  size: _options.iconSize / 2,
+                                  size: OverlayEntryAlertDialogOptions.iconSize / 2,
                               ),
                             ),
                           ),
@@ -648,7 +646,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                   waitDuration: AppState.toolTipDuration,
                                   child: Icon(
                                     fileNameStatusIconMap[status],
-                                    size: _options.iconSize / 2,
+                                    size: OverlayEntryAlertDialogOptions.iconSize / 2,
                                   ),
                                 );
                               },
@@ -666,7 +664,7 @@ class _ExportWidgetState extends State<ExportWidget>
               children: <Widget>[
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: Tooltip(
                       waitDuration: AppState.toolTipDuration,
                       message: "Close",
@@ -683,7 +681,7 @@ class _ExportWidgetState extends State<ExportWidget>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<ExportSectionType>(
                       valueListenable: _selectedSection,
                       builder: (final BuildContext context, final ExportSectionType selSection, final Widget? child) {

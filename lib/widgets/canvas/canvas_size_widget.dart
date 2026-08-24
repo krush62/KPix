@@ -58,7 +58,6 @@ class CanvasSizeWidget extends StatefulWidget
 
 class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final AppState _appState = GetIt.I.get<AppState>();
@@ -280,7 +279,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
             },
           ),
         ),
-        SizedBox(width: _options.padding),
+        const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
         Expanded(
           child: ValueListenableBuilder<int>(
             valueListenable: notifier,
@@ -338,7 +337,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         textStyle: Theme.of(context).textTheme.bodyLarge!,
                       ),
                     ),
-                    SizedBox(width: _options.padding),
+                    const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                     Expanded(
                       child: TextField(
                         focusNode: focusNode,
@@ -376,18 +375,18 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight * 1.5,
-        maxWidth: _options.maxWidth * 2,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight * 1.5,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth * 2,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Padding(
-            padding: EdgeInsets.all(_options.padding),
+            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,7 +415,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
                         textController: _textControllerHeight,
                       ),
-                      SizedBox(height: _options.padding,),
+                      const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
                       Text("Offset", style: Theme.of(context).textTheme.titleLarge),
                       _getOffsetRow(
                           title: "X",
@@ -441,8 +440,8 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: _options.padding * 2,
+                const SizedBox(
+                  width: OverlayEntryAlertDialogOptions.padding * 2,
                 ),
                 Expanded(
                   flex: 2,
@@ -505,11 +504,11 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         children: <Widget>[
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsets.all(_options.padding),
+                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               child: IconButton.outlined(
-                                icon: Icon(
+                                icon: const Icon(
                                   TablerIcons.layout_align_middle,
-                                  size: _options.iconSize,
+                                  size: OverlayEntryAlertDialogOptions.iconSize,
                                 ),
                                 onPressed: _centerH,
                               ),
@@ -517,13 +516,13 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsets.all(_options.padding),
+                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               child: IconButton.outlined(
                                 icon: Transform.rotate(
                                   angle: pi / 2,
-                                  child: Icon(
+                                  child: const Icon(
                                     TablerIcons.layout_align_middle,
-                                    size: _options.iconSize,
+                                    size: OverlayEntryAlertDialogOptions.iconSize,
                                   ),
                                 ),
                                 onPressed: _centerV,
@@ -539,18 +538,18 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
             ),
           ),
 
-          SizedBox(height: _options.padding,),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(_options.padding),
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.x,
-                      size: _options.iconSize,
+                      size: OverlayEntryAlertDialogOptions.iconSize,
                     ),
                     onPressed: () {
                       widget.dismiss();
@@ -560,11 +559,11 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(_options.padding),
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: IconButton.outlined(
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.check,
-                      size: _options.iconSize,
+                      size: OverlayEntryAlertDialogOptions.iconSize,
                     ),
                     onPressed: () {
                       widget.accept(size: CoordinateSetI(x: _width.value, y: _height.value), offset: CoordinateSetI(x: _offsetX.value, y: _offsetY.value));

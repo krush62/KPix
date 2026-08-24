@@ -39,7 +39,6 @@ class AboutScreenWidget extends StatefulWidget
 
 class _AboutScreenWidgetState extends State<AboutScreenWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final PackageInfo _pInfo = GetIt.I.get<PackageInfo>();
 
   late KPixOverlay _licenseScreen;
@@ -100,11 +99,11 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.minHeight,
-        maxWidth: _options.maxWidth,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.minHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -116,7 +115,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
           Expanded(
             flex: 3,
             child: Padding(
-              padding: EdgeInsets.only(left: _options.padding),
+              padding: const EdgeInsets.only(left: OverlayEntryAlertDialogOptions.padding),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +123,7 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                   Row(
                     children: <Widget>[
                       Text("KPix ${_pInfo.version}", style: Theme.of(context).textTheme.headlineLarge),
-                      Expanded(child: SizedBox(width: _options.padding)),
+                      const Expanded(child: SizedBox(width: OverlayEntryAlertDialogOptions.padding)),
                       ValueListenableBuilder<bool>(
                         valueListenable: GetIt.I.get<AppState>().hasUpdateNotifier,
                         builder: (final BuildContext context, final bool hasUpdate, final Widget? child)
@@ -181,17 +180,17 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
                       ],
                     ),
                   ),
-                  SizedBox(height: _options.padding,),
+                  const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       _createButton(tooltip: "Credits", icon: TablerIcons.users, onPressedFunc: _creditsPressed),
-                      SizedBox(width: _options.padding),
+                      const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                       _createButton(tooltip: "Licenses", icon: TablerIcons.license, onPressedFunc: _licensesPressed),
-                      SizedBox(width: _options.padding),
+                      const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                       _createButton(tooltip: "Controls/Shortcuts", icon: TablerIcons.keyboard, onPressedFunc: _controlsPressed),
-                      SizedBox(width: _options.padding),
+                      const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                       _createButton(tooltip: "Close", icon: TablerIcons.x, onPressedFunc: _dismissPressed),
                     ],
                   ),

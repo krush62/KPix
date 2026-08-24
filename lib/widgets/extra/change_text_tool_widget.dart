@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -39,7 +38,6 @@ class ChangeTextToolWidget extends StatefulWidget
 class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ValueNotifier<String> _text = ValueNotifier<String>("");
 
 
@@ -56,20 +54,20 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text("TEXT TOOL CONTENT", style: Theme.of(context).textTheme.titleLarge),
-          SizedBox(height: _options.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Padding(
-            padding:  EdgeInsets.all(_options.padding),
+            padding:  const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -105,7 +103,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
             children: <Widget>[
               Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.x,
@@ -118,7 +116,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(_options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<String>(
                       valueListenable: _text,
                       builder: (final BuildContext context, final String text, final Widget? child) {

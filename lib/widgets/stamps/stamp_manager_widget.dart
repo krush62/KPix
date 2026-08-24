@@ -70,7 +70,6 @@ class StampManagerWidget extends StatefulWidget
 
 class _StampManagerWidgetState extends State<StampManagerWidget>
 {
-  final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final StampManagerOptions _options = GetIt.I.get<PreferenceManager>().stampManagerOptions;
   final StampManager _stampManager = GetIt.I.get<StampManager>();
   final ValueNotifier<List<StampManagerEntryWidget>> _fileEntries = ValueNotifier<List<StampManagerEntryWidget>>(<StampManagerEntryWidget>[]);
@@ -166,7 +165,7 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
         message: tooltip,
         waitDuration: AppState.toolTipDuration,
         child: Padding(
-          padding: EdgeInsets.all(_alertOptions.padding),
+          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
           child: IconButton.outlined(
             icon: Icon(icon),
             onPressed: isEnabled ? onPressedFunc : null,
@@ -181,15 +180,15 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   {
     return KPixAnimationWidget(
       constraints: BoxConstraints(
-        minHeight: _alertOptions.minHeight,
-        minWidth: _alertOptions.minWidth,
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
         maxHeight: _options.maxHeight,
         maxWidth: _options.maxWidth,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          SizedBox(height: _alertOptions.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Center(child: Text("STAMP MANAGER", style: Theme.of(context).textTheme.titleLarge)),
           ValueListenableBuilder<StampMap>(
             valueListenable: _stampManager.stampMap,
@@ -227,22 +226,22 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
               },);
             },
           ),
-          SizedBox(height: _alertOptions.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Expanded(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColorDark,
-                borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
+                borderRadius: const BorderRadius.all(Radius.circular(OverlayEntryAlertDialogOptions.borderRadius)),
               ),
               child: ValueListenableBuilder<List<StampManagerEntryWidget>>(
                 valueListenable: _fileEntries,
                 builder: (final BuildContext context, final List<StampManagerEntryWidget> sList, final Widget? child) {
                   return GridView.extent(
                     maxCrossAxisExtent: _options.maxWidth / _options.colCount,
-                    padding: EdgeInsets.all(_alertOptions.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     childAspectRatio: _options.entryAspectRatio,
-                    mainAxisSpacing: _alertOptions.padding,
-                    crossAxisSpacing: _alertOptions.padding,
+                    mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
+                    crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                     children: sList.toList(),
                   );
                 },

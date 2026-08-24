@@ -61,7 +61,6 @@ enum ProjectViewOrder
 
 class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 {
-  final OverlayEntryAlertDialogOptions _alertOptions = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ProjectManagerOptions _options = GetIt.I.get<PreferenceManager>().projectManagerOptions;
   final List<ProjectManagerEntryWidget> _allFileEntries = <ProjectManagerEntryWidget>[];
   final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier<List<ProjectManagerEntryWidget>>(<ProjectManagerEntryWidget>[]);
@@ -257,14 +256,14 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
     return KPixAnimationWidget(
       constraints: BoxConstraints(
-        minHeight: _alertOptions.minHeight,
-        minWidth: _alertOptions.minWidth,
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
         maxHeight: _options.maxHeight,
         maxWidth: _options.maxWidth,
       ),
       child: Column(
         children: <Widget>[
-          SizedBox(height: _alertOptions.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
           SizedBox(
             height: 48,
@@ -367,12 +366,12 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
               ],
             ),
           ),
-          SizedBox(height: _alertOptions.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Expanded(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColorDark,
-                borderRadius: BorderRadius.all(Radius.circular(_alertOptions.borderRadius)),
+                borderRadius: const BorderRadius.all(Radius.circular(OverlayEntryAlertDialogOptions.borderRadius)),
               ),
               child: ValueListenableBuilder<List<ProjectManagerEntryWidget>>(
                 valueListenable: _fileEntries,
@@ -402,10 +401,10 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   {
                     return GridView.extent(
                       maxCrossAxisExtent: _options.maxWidth / _options.colCount,
-                      padding: EdgeInsets.all(_alertOptions.padding),
+                      padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                       childAspectRatio: _options.entryAspectRatio,
-                      mainAxisSpacing: _alertOptions.padding,
-                      crossAxisSpacing: _alertOptions.padding,
+                      mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
+                      crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                       children: pList.toList(),
                     );
                   }
@@ -423,7 +422,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   message: "Close",
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.x,
@@ -438,7 +437,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   message: "Import Project",
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: IconButton.outlined(
                       icon: const Icon(
                         TablerIcons.file_import,
@@ -453,7 +452,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   message: "Delete Selected Project",
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<ProjectManagerEntryWidget?>(
                       valueListenable: _selectedWidget,
                       builder: (final BuildContext context, final ProjectManagerEntryWidget? selWidget, final Widget? child) {
@@ -473,7 +472,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   message: "Load Selected Project",
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
-                    padding: EdgeInsets.all(_alertOptions.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: ValueListenableBuilder<ProjectManagerEntryWidget?>(
                       valueListenable: _selectedWidget,
                       builder: (final BuildContext context, final ProjectManagerEntryWidget? selWidget, final Widget? child) {

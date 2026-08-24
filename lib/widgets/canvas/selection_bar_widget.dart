@@ -205,11 +205,10 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                     child: OverlayPortal(
                       controller: _alignmentController,
                       overlayChildBuilder: (final BuildContext bcontext) {
-                        final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
                         return Stack(
                           children: <Widget>[
                             ModalBarrier(
-                              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
                               onDismiss: _alignDismiss,
                             ),
                             OverlaySelectionAlignMenu(

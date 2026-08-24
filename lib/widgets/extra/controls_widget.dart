@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -60,13 +59,12 @@ class _ControlsWidgetState extends State<ControlsWidget>
 
   @override
   Widget build(final BuildContext context) {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: options.minHeight,
-        minWidth: options.minWidth,
-        maxHeight: options.maxHeight * 2,
-        maxWidth: options.maxWidth * 2,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight * 2,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth * 2,
       ),
       child: Column(
         children: <Widget>[
@@ -82,7 +80,7 @@ class _ControlsWidgetState extends State<ControlsWidget>
             children: <Widget>[
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(options.padding),
+                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                   child: Tooltip(
                     message: "Close",
                     waitDuration: AppState.toolTipDuration,

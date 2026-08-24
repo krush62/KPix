@@ -99,73 +99,31 @@ class KPixOverlay
 }
 
 /// The layout values shared by all popup menus.
-///
-/// An instance holding the values from the preferences is available as
-/// `PreferenceManager.overlayEntryOptions`.
-class OverlayEntrySubMenuOptions
+abstract final class OverlayEntrySubMenuOptions
 {
-  /// The horizontal distance between a menu and its anchor.
-  final double offsetX;
-
-  /// The horizontal distance for menus that open to the left of their anchor.
-  ///
-  /// Currently not read by any menu.
-  final double offsetXLeft;
-
-  /// The vertical distance between a menu and its anchor.
-  final double offsetY;
-  final double buttonSpacing;
-  final double width;
-  final double buttonHeight;
-
-  /// The alpha value of the barrier that dims the screen behind a menu.
-  final int smokeOpacity;
-
-  /// The duration of the opening animation in milliseconds.
-  final int animationLengthMs;
-
-  OverlayEntrySubMenuOptions({
-    required this.offsetX,
-    required this.offsetXLeft,
-    required this.offsetY,
-    required this.buttonSpacing,
-    required this.width,
-    required this.buttonHeight,
-    required this.smokeOpacity,
-    required this.animationLengthMs,
-  });
+  static const double offsetX = 0.0;
+  static const double offsetXLeft = -128.0;
+  static const double offsetY = 32.0;
+  static const double buttonSpacing = 8.0;
+  static const double width = 160.0;
+  static const double buttonHeight = 24.0;
+  static const int smokeOpacity = 128;
+  static const int animationLengthMs = 150;
 }
 
 /// The layout values shared by all dialogs.
-///
-/// An instance holding the values from the preferences is available as
-/// `PreferenceManager.alertDialogOptions`.
-class OverlayEntryAlertDialogOptions
+abstract final class OverlayEntryAlertDialogOptions
 {
-  /// The alpha value of the barrier that dims the screen behind a dialog.
-  final int smokeOpacity;
-  final double minWidth;
-  final double minHeight;
-  final double maxWidth;
-  final double maxHeight;
-  final double padding;
-  final double borderWidth;
-  final double borderRadius;
-  final double iconSize;
-  final double elevation;
-
-  OverlayEntryAlertDialogOptions({
-    required this.smokeOpacity,
-    required this.minWidth,
-    required this.minHeight,
-    required this.maxWidth,
-    required this.maxHeight,
-    required this.padding,
-    required this.borderWidth,
-    required this.borderRadius,
-    required this.iconSize,
-    required this.elevation,
-  });
+  static const int smokeOpacity = 128;
+  static const double minWidth = 200.0;
+  static const double minHeight = 150.0;
+  static const double maxWidth = 600.0;
+  static const double maxHeight = 500.0;
+  static const double padding = 8.0;
+  static const double borderWidth = 2.0;
+  static const double borderRadius = 8.0;
+  static const double iconSize = 32.0;
+  static const double elevation = 8.0;
 }
 
 
@@ -181,12 +139,11 @@ class OverlayEntryAlertDialogOptions
     required final GlobalKey anchorKey,
   })
   {
-    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     return KPixOverlay(entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
           OverlayLoadMenu(anchorKey: anchorKey, onNewFile: onNewFile, onImportFile: onImportFile, onLoadFile: onLoadFile),
@@ -207,13 +164,11 @@ class OverlayEntryAlertDialogOptions
     required final GlobalKey anchorKey,
   })
   {
-    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
-
     return KPixOverlay(entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
           OverlaySaveMenu(anchorKey: anchorKey, onSaveFile: onSaveFile, onSaveAsFile: onSaveAsFile, onExportFile: onExportFile),
@@ -234,13 +189,12 @@ class OverlayEntryAlertDialogOptions
     required final GlobalKey anchorKey,
   })
   {
-    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
               onDismiss: () {onDismiss();},
             ),
             OverlayDrawingLayerMenu(onDelete: onDelete, onMergeDown: onMergeDown, onDuplicate: onDuplicate, anchorKey: anchorKey),
@@ -261,13 +215,12 @@ KPixOverlay getDrawingLayerMenuLinked({
   required final GlobalKey anchorKey,
 })
 {
-  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
           OverlayDrawingLayerMenuLinked(onDelete: onDelete, onUnlink: onUnlink, onDuplicate: onDuplicate, anchorKey: anchorKey),
@@ -287,13 +240,12 @@ KPixOverlay getDrawingLayerMenuLinked({
     required final GlobalKey anchorKey,
   })
   {
-    final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
               onDismiss: () {onDismiss();},
             ),
             OverlayReducedLayerMenu(onDelete: onDelete, onDuplicate: onDuplicate, anchorKey: anchorKey),
@@ -314,13 +266,12 @@ KPixOverlay getRasterLayerMenu({
   required final GlobalKey anchorKey,
 })
 {
-  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
             onDismiss: () {onDismiss();},
           ),
           OverlayRasterLayerMenu(anchorKey: anchorKey, onDuplicate: onDuplicate, onDelete: onDelete, onRaster: onRaster),
@@ -376,29 +327,28 @@ KPixOverlay getRasterLayerMenu({
     required final String message,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
               onDismiss: outsideCancelable ? onCancel : null,//onCancel,
             ),
             Center(
               child: KPixAnimationWidget(
-                constraints: BoxConstraints(
-                  minHeight: options.minHeight,
-                  minWidth: options.minWidth,
-                  maxHeight: options.maxHeight,
-                  maxWidth: options.maxWidth,
+                constraints: const BoxConstraints(
+                  minHeight: OverlayEntryAlertDialogOptions.minHeight,
+                  minWidth: OverlayEntryAlertDialogOptions.minWidth,
+                  maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+                  maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Center(child: Padding(
-                      padding: EdgeInsets.all(options.padding),
+                      padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                       child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
                     ),),
                     Row(
@@ -407,7 +357,7 @@ KPixOverlay getRasterLayerMenu({
                       children: <Widget>[
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsets.all(options.padding),
+                            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                             child: IconButton.outlined(
                               icon: const Icon(
                                 TablerIcons.check,
@@ -421,7 +371,7 @@ KPixOverlay getRasterLayerMenu({
                         ),
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsets.all(options.padding),
+                            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                             child: IconButton.outlined(
                               icon: const Icon(
                                 TablerIcons.x,
@@ -435,7 +385,7 @@ KPixOverlay getRasterLayerMenu({
                         ),
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsets.all(options.padding),
+                            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                             child: IconButton.outlined(
                               icon: const Icon(
                                 TablerIcons.ban,
@@ -470,29 +420,28 @@ KPixOverlay getRasterLayerMenu({
     required final String message,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
         entry: OverlayEntry(
           builder: (final BuildContext context) => Stack(
             children: <Widget>[
               ModalBarrier(
-                color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
                 onDismiss: outsideCancelable ? onNo : null,
               ),
               Center(
                 child: KPixAnimationWidget(
-                  constraints: BoxConstraints(
-                    minHeight: options.minHeight,
-                    minWidth: options.minWidth,
-                    maxHeight: options.maxHeight,
-                    maxWidth: options.maxWidth,
+                  constraints: const BoxConstraints(
+                    minHeight: OverlayEntryAlertDialogOptions.minHeight,
+                    minWidth: OverlayEntryAlertDialogOptions.minWidth,
+                    maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+                    maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Center(child: Padding(
-                        padding: EdgeInsets.all(options.padding),
+                        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                         child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
                       ),),
                       Row(
@@ -501,7 +450,7 @@ KPixOverlay getRasterLayerMenu({
                         children: <Widget>[
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsets.all(options.padding),
+                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               child: IconButton.outlined(
                                 icon: const Icon(
                                   TablerIcons.check,
@@ -515,7 +464,7 @@ KPixOverlay getRasterLayerMenu({
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsets.all(options.padding),
+                              padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                               child: IconButton.outlined(
                                 icon: const Icon(
                                   TablerIcons.x,
@@ -548,28 +497,27 @@ KPixOverlay getSingleButtonDialog({
   required final String message,
 })
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
           ),
           Center(
             child: KPixAnimationWidget(
-              constraints: BoxConstraints(
-                minHeight: options.minHeight,
-                minWidth: options.minWidth,
-                maxHeight: options.maxHeight,
-                maxWidth: options.maxWidth,
+              constraints: const BoxConstraints(
+                minHeight: OverlayEntryAlertDialogOptions.minHeight,
+                minWidth: OverlayEntryAlertDialogOptions.minWidth,
+                maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+                maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Center(child: Padding(
-                    padding: EdgeInsets.all(options.padding),
+                    padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                     child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center,),
                   ),),
                   Row(
@@ -578,7 +526,7 @@ KPixOverlay getSingleButtonDialog({
                     children: <Widget>[
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.all(options.padding),
+                          padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                           child: IconButton.outlined(
                             icon: const Icon(
                               TablerIcons.check,
@@ -634,14 +582,13 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     required final AnimationExportDataFn onAcceptAnimation,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     final ExportWidget exportWidget = ExportWidget(acceptFile: onAcceptImage, acceptPalette: onAcceptPalette, acceptAnimation: onAcceptAnimation, dismiss: onDismiss);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             if (!isDesktop(includingWeb: true)) Align(
               alignment: Alignment.topCenter,
@@ -661,13 +608,12 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     required final ImportImageFn onAcceptImage,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: ImportWidget(dismiss: onDismiss, import: onAcceptImage,),
@@ -686,14 +632,13 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     required final PaletteExportDataFn onAccept,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     final SavePaletteWidget savePaletteWidget = SavePaletteWidget(accept: onAccept, dismiss: onDismiss);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             if (!isDesktop(includingWeb: true)) Align(
               alignment: Alignment.topCenter,
@@ -717,14 +662,13 @@ KPixOverlay getAllFilesAccessDialog({required final String message})
     final Function()? callback,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     final SaveAsWidget saveAsWidget = SaveAsWidget(accept: onAccept, dismiss: onDismiss, callback: callback);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             if (!isDesktop(includingWeb: true)) Align(
               alignment: Alignment.topCenter,
@@ -749,14 +693,13 @@ KPixOverlay getChangeTextToolDialog({
   final int? maxLength,
 })
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final ChangeTextToolWidget changeTextToolWidget = ChangeTextToolWidget(dismiss: onDismiss, accept: onAccept, initialText: initialText, maxStringLength: maxLength,);
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             onDismiss: onDismiss,
           ),
           if (!isDesktop(includingWeb: true)) Align(
@@ -777,13 +720,12 @@ KPixOverlay getChangeTextToolDialog({
     /*required final CoordinateSetI canvasSize,*/
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: AboutScreenWidget(onDismiss: onDismiss),
@@ -799,13 +741,12 @@ KPixOverlay getChangeTextToolDialog({
     required final Function() onDismiss,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: LicensesWidget(onDismiss: onDismiss),
@@ -821,13 +762,12 @@ KPixOverlay getChangeTextToolDialog({
     required final Function() onDismiss,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: CreditsWidget(onDismiss: onDismiss),
@@ -843,13 +783,12 @@ KPixOverlay getControlsDialog({
   required final Function() onDismiss,
 })
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
           ),
           Center(
             child: ControlsWidget(onDismiss: onDismiss),
@@ -868,14 +807,13 @@ KPixOverlay getControlsDialog({
     required final CanvasSizeFn onAccept,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     final CanvasSizeWidget canvasSizeWidget = CanvasSizeWidget(accept: onAccept, dismiss: onDismiss);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             if (!isDesktop(includingWeb: true)) Align(
               alignment: Alignment.topCenter,
@@ -895,13 +833,12 @@ KPixOverlay getControlsDialog({
     required final Function() onAccept,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: PreferencesWidget(dismiss: onDismiss, accept: onAccept),
@@ -923,14 +860,13 @@ KPixOverlay getControlsDialog({
     required final Function() onOpen,
   })
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     final NewProjectWidget newProjectWidget = NewProjectWidget(accept: onAccept, dismiss: onDismiss, open: onOpen);
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             if (!isDesktop(includingWeb: true)) Align(
               alignment: Alignment.topCenter,
@@ -947,13 +883,12 @@ KPixOverlay getControlsDialog({
   /// An overlay holding the palette manager.
   KPixOverlay getPaletteManagerDialog({required final Function() onDismiss})
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: PaletteManagerWidget(dismiss: onDismiss,),
@@ -969,13 +904,12 @@ KPixOverlay getControlsDialog({
   /// [onSave] and [onLoad] are handed on to the [ProjectManagerWidget].
   KPixOverlay getProjectManagerDialog({required final Function() onDismiss, required final SaveKnownFileFn onSave, required final Function() onLoad})
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
                 child: ProjectManagerWidget(dismiss: onDismiss, saveKnownFileFn: onSave, fileLoad: onLoad,),
@@ -991,13 +925,12 @@ KPixOverlay getControlsDialog({
 /// [onLoad] is handed on to the [StampManagerWidget].
 KPixOverlay getStampManagerDialog({required final Function() onDismiss, required final StampEntryDataFn onLoad})
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
           ),
           Center(
             child: StampManagerWidget(dismiss: onDismiss, fileLoad: onLoad,),
@@ -1014,20 +947,19 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
   /// [KPixOverlay.hide].
   KPixOverlay getLoadingDialog({required final String message, final TextStyle? textStyle})
   {
-    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
     return KPixOverlay(
       entry: OverlayEntry(
         builder: (final BuildContext context) => Stack(
           children: <Widget>[
             ModalBarrier(
-              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
             ),
             Center(
               child: Center(
                 child: KPixAnimationWidget(
-                  constraints: BoxConstraints(
-                    maxHeight: options.maxHeight / 4.0,
-                    maxWidth: options.maxWidth / 2.0,
+                  constraints: const BoxConstraints(
+                    maxHeight: OverlayEntryAlertDialogOptions.maxHeight / 4.0,
+                    maxWidth: OverlayEntryAlertDialogOptions.maxWidth / 2.0,
                   ),
                   child: Text(
                     message,
@@ -1047,19 +979,18 @@ KPixOverlay getStampManagerDialog({required final Function() onDismiss, required
 /// [title] is shown above the colors.
 KPixOverlay getColorPickerDialog({required final Function() onDismiss, required final ColorReferenceSelectedFn onColorSelected, required final List<KPalRampData> ramps, final String title = "SELECT A COLOR"})
 {
-  final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   return KPixOverlay(
     entry: OverlayEntry(
       builder: (final BuildContext context) => Stack(
         children: <Widget>[
           ModalBarrier(
-            color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+            color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
           ),
           Center(
             child: KPixAnimationWidget(
-              constraints: BoxConstraints(
-                maxHeight: options.maxHeight,
-                maxWidth: options.maxWidth,
+              constraints: const BoxConstraints(
+                maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+                maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
               ),
               child: KPixColorPickerWidget(
                 dismiss: onDismiss,

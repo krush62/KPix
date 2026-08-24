@@ -43,7 +43,6 @@ class NewProjectWidget extends StatefulWidget
 
 class _NewProjectWidgetState extends State<NewProjectWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<int> _width = ValueNotifier<int>(64);
@@ -167,8 +166,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
             },
           ),
         ),
-        SizedBox(
-          width: _options.padding * 2,
+        const SizedBox(
+          width: OverlayEntryAlertDialogOptions.padding * 2,
         ),
         Expanded(
           child: ValueListenableBuilder<int>(
@@ -193,22 +192,22 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth * 1.2,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth * 1.2,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text("Create New Project", style: Theme.of(context).textTheme.titleLarge),
-          SizedBox(height: _options.padding / 2),
-          Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: _options.padding / 2),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
+          Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Text("Presets", style: Theme.of(context).textTheme.titleMedium),
-          SizedBox(height: _options.padding / 2),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           _getSizeRow(
               sizes: <CoordinateSetI>[
                 CoordinateSetI(x: 16, y: 16),
@@ -220,9 +219,9 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                 CoordinateSetI(x: 512, y: 512),
               ],
               title: "1:1",
-              padding: _options.padding,
+              padding: OverlayEntryAlertDialogOptions.padding,
           ),
-          SizedBox(height: _options.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           _getSizeRow(
               sizes: <CoordinateSetI>[
                 CoordinateSetI(x: 96, y: 72),
@@ -234,9 +233,9 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                 CoordinateSetI(x: 480, y: 360),
               ],
               title: "4:3",
-              padding: _options.padding,
+              padding: OverlayEntryAlertDialogOptions.padding,
           ),
-          SizedBox(height: _options.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           _getSizeRow(
               sizes: <CoordinateSetI>[
                 CoordinateSetI(x: 128, y: 72),
@@ -248,13 +247,13 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                 CoordinateSetI(x: 480, y: 270),
               ],
               title: "16:9",
-              padding: _options.padding,
+              padding: OverlayEntryAlertDialogOptions.padding,
           ),
-          SizedBox(height: _options.padding),
-          Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: _options.padding / 2),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
+          Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Text("Custom", style: Theme.of(context).textTheme.titleMedium),
-          SizedBox(height: _options.padding / 2),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.min,
@@ -272,21 +271,21 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding),
+              const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               ValueListenableBuilder<bool>(
                 valueListenable: _locked,
                 builder: (final BuildContext context, final bool locked, final Widget? child)
                 {
                   return IconButton.outlined(
-                    constraints: BoxConstraints(
-                      minHeight: _options.iconSize * 2.5,
-                      minWidth: _options.iconSize,
-                      maxHeight: _options.iconSize * 2.5,
-                      maxWidth: _options.iconSize,
+                    constraints: const BoxConstraints(
+                      minHeight: OverlayEntryAlertDialogOptions.iconSize * 2.5,
+                      minWidth: OverlayEntryAlertDialogOptions.iconSize,
+                      maxHeight: OverlayEntryAlertDialogOptions.iconSize * 2.5,
+                      maxWidth: OverlayEntryAlertDialogOptions.iconSize,
                     ),
                     icon: Icon(
                       locked ? TablerIcons.lock : TablerIcons.lock_open_2,
-                      size: _options.iconSize / 2,
+                      size: OverlayEntryAlertDialogOptions.iconSize / 2,
                     ),
                     style: ButtonStyle(
                       tapTargetSize:
@@ -327,7 +326,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                                   color: Theme.of(context).primaryColorLight,
                                   border: Border.all(
                                     color: Theme.of(context).primaryColorDark,
-                                    width: _options.borderWidth,
+                                    width: OverlayEntryAlertDialogOptions.borderWidth,
                                   ),
                                 ),
                                 width: width * scale,
@@ -343,9 +342,9 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
               ),
             ],
           ),
-          SizedBox(height: _options.padding / 2),
-          Divider(height: _options.padding / 4, thickness: _options.padding / 4, color: Theme.of(context).primaryColorLight,),
-          SizedBox(height: _options.padding),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding / 2),
+          Divider(height: OverlayEntryAlertDialogOptions.padding / 4, thickness: OverlayEntryAlertDialogOptions.padding / 4, color: Theme.of(context).primaryColorLight,),
+          const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -361,7 +360,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     },
                   ),
                 ),
-                SizedBox(width: _options.padding),
+                const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               ],
               Expanded(
                   child: IconButton.outlined(
@@ -373,7 +372,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     },
                   ),
               ),
-              SizedBox(width: _options.padding),
+              const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
               Expanded(
                 child: IconButton.outlined(
                   icon: const Icon(

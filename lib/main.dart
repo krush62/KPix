@@ -715,12 +715,11 @@ class MainWidget extends StatelessWidget
             left: ValueListenableBuilder<bool>(
               valueListenable: GetIt.I.get<AppState>().timeline.isPlaying,
               builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
-                final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
                 return Stack(
                   children: <Widget>[
                     const MainToolbarWidget(),
                     if (isPlaying) ModalBarrier(
-                      color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                      color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
                       dismissible: false,) else const SizedBox.shrink(),
                   ],
                 );
@@ -746,12 +745,11 @@ class MainWidget extends StatelessWidget
               child: ValueListenableBuilder<bool>(
                 valueListenable: GetIt.I.get<AppState>().timeline.isPlaying,
                 builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {
-                  final OverlayEntrySubMenuOptions options = GetIt.I.get<PreferenceManager>().overlayEntryOptions;
                   return Stack(
                     children: <Widget>[
                       const RightBarWidget(),
                       if (isPlaying) ModalBarrier(
-                        color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                        color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntrySubMenuOptions.smokeOpacity),
                         dismissible: false,) else const SizedBox.shrink(),
                     ],
                   );

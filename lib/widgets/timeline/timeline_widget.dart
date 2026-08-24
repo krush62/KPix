@@ -679,20 +679,19 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                         widget.timeline.selectFrameByIndex(index: i);
                         if (!isPlaying)
                         {
-                          final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
                           _frameTimeOverlay = KPixOverlay(
                             entry: OverlayEntry(
                               builder: (final BuildContext context) => Stack(
                                 children: <Widget>[
                                   ModalBarrier(
-                                    color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                    color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
                                   ),
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Padding(
-                                        padding: EdgeInsets.all(options.padding),
+                                        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                                         child: FrameTimeWidget(frame: currentFrame, onDismiss: _frameTimeOverlayDismiss, onConfirmSingle: _frameTimeOverlayConfirmSingle, onConfirmAll: _frameTimeOverlayConfirmAll,),
                                       ),
                                     ],
@@ -1121,20 +1120,19 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
                                         : null,
                                   ),
                                   onPressed: isPlaying ? null : () {
-                                    final OverlayEntryAlertDialogOptions options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
                                     _frameBlendingOverlay = KPixOverlay(
                                       entry: OverlayEntry(
                                         builder: (final BuildContext context) => Stack(
                                           children: <Widget>[
                                             ModalBarrier(
-                                              color: Theme.of(context).primaryColorDark.withAlpha(options.smokeOpacity),
+                                              color: Theme.of(context).primaryColorDark.withAlpha(OverlayEntryAlertDialogOptions.smokeOpacity),
                                             ),
                                             Row(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: <Widget>[
                                                 Padding(
-                                                  padding: EdgeInsets.all(options.padding),
+                                                  padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                                                   child: FrameBlendingWidget(onDismiss: _frameBlendingOverlayDismiss, options: widget.frameBlendingOptions,),
                                                 ),
                                               ],

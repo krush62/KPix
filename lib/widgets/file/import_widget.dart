@@ -58,7 +58,6 @@ class ImportWidget extends StatefulWidget
 
 class _ImportWidgetState extends State<ImportWidget>
 {
-  final OverlayEntryAlertDialogOptions _options = GetIt.I.get<PreferenceManager>().alertDialogOptions;
   final KPalConstraints _constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
   late ValueNotifier<int> _maxRampsNotifier;
   late ValueNotifier<int> _maxColorsPerRampNotifier;
@@ -211,20 +210,20 @@ class _ImportWidgetState extends State<ImportWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
-        minHeight: _options.minHeight,
-        minWidth: _options.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth,
+      constraints: const BoxConstraints(
+        minHeight: OverlayEntryAlertDialogOptions.minHeight,
+        minWidth: OverlayEntryAlertDialogOptions.minWidth,
+        maxHeight: OverlayEntryAlertDialogOptions.maxHeight,
+        maxWidth: OverlayEntryAlertDialogOptions.maxWidth,
       ),
       child: Padding(
-        padding: EdgeInsets.all(_options.padding),
+        padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Text("IMPORT IMAGE", style: Theme.of(context).textTheme.titleLarge),
-            SizedBox(height: _options.padding),
+            const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
             Row(
               children: <Widget>[
                 Expanded(
@@ -259,11 +258,11 @@ class _ImportWidgetState extends State<ImportWidget>
                               waitDuration: AppState.toolTipDuration,
                               child: IconButton.outlined(
                                 constraints: const BoxConstraints(),
-                                padding: EdgeInsets.all(_options.padding),
+                                padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
                                 onPressed: _chooseImagePressed,
-                                icon: Icon(
+                                icon: const Icon(
                                   TablerIcons.folder_open,
-                                  size: _options.iconSize / 2,
+                                  size: OverlayEntryAlertDialogOptions.iconSize / 2,
                                 ),
                               ),
                             ),
@@ -445,21 +444,21 @@ class _ImportWidgetState extends State<ImportWidget>
                     ],
                   ),
                 ),
-                SizedBox(width: _options.padding * 2,),
+                const SizedBox(width: OverlayEntryAlertDialogOptions.padding * 2,),
                 Expanded(
                   flex: 2,
                   child: AspectRatio(
                     aspectRatio: 1,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).primaryColorLight, width: _options.borderWidth),
-                        borderRadius: BorderRadius.circular(_options.borderRadius / 2),
+                        border: Border.all(color: Theme.of(context).primaryColorLight, width: OverlayEntryAlertDialogOptions.borderWidth),
+                        borderRadius: BorderRadius.circular(OverlayEntryAlertDialogOptions.borderRadius / 2),
                       ),
                       child: ValueListenableBuilder<ui.Image?>(
                         valueListenable: _imageNotifier,
                         builder: (final BuildContext context, final ui.Image? img, final Widget? child) {
                           return Padding(
-                            padding: EdgeInsets.all(_options.borderWidth),
+                            padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.borderWidth),
                             child: RawImage(image: img, fit: BoxFit.contain, filterQuality: FilterQuality.none,),
                           );
                         },
@@ -469,7 +468,7 @@ class _ImportWidgetState extends State<ImportWidget>
                 ),
               ],
             ),
-            SizedBox(height: _options.padding * 2,),
+            const SizedBox(height: OverlayEntryAlertDialogOptions.padding * 2,),
             Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -488,7 +487,7 @@ class _ImportWidgetState extends State<ImportWidget>
                     ),
                   ),
                 ),
-                SizedBox(width: _options.padding),
+                const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
                 Expanded(
                   child: Tooltip(
                     waitDuration: AppState.toolTipDuration,

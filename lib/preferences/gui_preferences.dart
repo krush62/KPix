@@ -45,16 +45,6 @@ const int rasterContrastDivisions = 20;
 const int opacityMin = 0;
 const int opacityMax = 100;
 
-const Map<ColorNameScheme, String> colorNameSchemeStringMap =
-<ColorNameScheme, String>{
-  ColorNameScheme.general:"General",
-  ColorNameScheme.pms:"PMS",
-  ColorNameScheme.ralClassic:"RAL Classic",
-  ColorNameScheme.ralDsp:"RAL DSP",
-  ColorNameScheme.ralComplete:"RAL Complete",
-  ColorNameScheme.dmc:"DMC",
-};
-
 
 class GuiPreferenceContent
 {
@@ -71,7 +61,7 @@ class GuiPreferenceContent
     final ThemeMode themeType = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     final int rasterSizeIndex = max(rasterSizes.indexOf(rasterSizeValue), 0);
     final int rasterContrastNormalized = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
-    final ColorNameScheme colorNameScheme = colorNameSchemeMap[colorNameSchemeValue]?? ColorNameScheme.general;
+    final ColorNameScheme colorNameScheme = ColorNameScheme.fromId(colorNameSchemeValue);
     final int toolOpacity = toolOpacityValue.clamp(opacityMin, opacityMax);
     final int selectionOpacity = selectionOpacityValue.clamp(opacityMin, opacityMax);
     final int canvasBorderOpacity = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
@@ -94,7 +84,7 @@ class GuiPreferenceContent
     themeType.value = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
     rasterSizeIndex.value = max(rasterSizes.indexOf(rasterSizeValue), 0);
     this.rasterContrast.value = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
-    colorNameScheme.value = colorNameSchemeMap[colorNameSchemeValue]?? ColorNameScheme.general;
+    colorNameScheme.value = ColorNameScheme.fromId(colorNameSchemeValue);
     canvasBorderOpacity.value = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
     selectionOpacity.value = selectionOpacityValue.clamp(opacityMin, opacityMax);
     toolOpacity.value = toolOpacityValue.clamp(opacityMin, opacityMax);
@@ -149,7 +139,7 @@ class _GuiPreferencesState extends State<GuiPreferences>
           PrefSegmentedButtonRow<ColorNameScheme>(
             label: "Color Naming",
             notifier: widget.prefs.colorNameScheme,
-            labels: colorNameSchemeStringMap,
+            labels: ColorNameScheme.getNameMap(),
             buttonTextStyle: Theme.of(context).textTheme.bodySmall,
           ),
 

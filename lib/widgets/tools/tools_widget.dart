@@ -107,10 +107,10 @@ class _ToolsWidgetState extends State<ToolsWidget>
         value: buttonData.toolType,
         enabled: !shouldBeDisabled,
         label: Tooltip(
-          message: toolList[buttonData.toolType]!.title + buttonData.toolTipExtraText,
+          message: buttonData.toolType.title + buttonData.toolTipExtraText,
           waitDuration: AppState.toolTipDuration,
           child: Icon(
-            toolList[buttonData.toolType]!.icon,
+            buttonData.toolType.icon,
             color: shouldBeDisabled ? Theme.of(context).primaryColorDark : null,
             size: _toolsWidgetOptions.iconSize,
           ),

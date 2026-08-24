@@ -25,57 +25,30 @@ import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
+// TODO this may be extracted
 enum GridType
 {
-  rectangular,
-  diagonal,
-  isometric,
-  hexagonal,
-  triangular,
-  brick,
-  onePointPerspective,
-  twoPointPerspective,
-  threePointPerspective,
+  rectangular(0, "Rectangular Grid", "REC"),
+  diagonal(1, "Diagonal Grid", "DIA"),
+  isometric(2, "Isometric Grid", "ISO"),
+  hexagonal(3, "Hexagonal Grid", "HEX"),
+  triangular(4, "Triangular Grid", "TRI"),
+  brick(5, "Bricks", "BRK"),
+  onePointPerspective(6, "1-Point Perspective", "1-Point"),
+  twoPointPerspective(7, "2-Point Perspective", "2-Point"),
+  threePointPerspective(8, "3-Point Perspective", "3-Point");
+
+  const GridType(this.id, this.name, this.label);
+  final int id;
+  final String name;
+  final String label;
+
+  static GridType fromId(final int id)
+  {
+    return GridType.values.firstWhere((final GridType gridType) => gridType.id == id,
+    );
+  }
 }
-
-const Map<int, GridType> gridValueTypeMap =
-<int, GridType>{
-  0: GridType.rectangular,
-  1: GridType.diagonal,
-  2: GridType.isometric,
-  3: GridType.hexagonal,
-  4: GridType.triangular,
-  5: GridType.brick,
-  6: GridType.onePointPerspective,
-  7: GridType.twoPointPerspective,
-  8: GridType.threePointPerspective,
-};
-
-const Map<GridType, String> gridTypeNameMap =
-<GridType, String>{
-  GridType.rectangular : "Rectangular Grid",
-  GridType.diagonal : "Diagonal Grid",
-  GridType.isometric : "Isometric Grid",
-  GridType.hexagonal : "Hexagonal Grid",
-  GridType.triangular : "Triangular Grid",
-  GridType.brick : "Bricks",
-  GridType.onePointPerspective : "1-Point Perspective",
-  GridType.twoPointPerspective : "2-Point Perspective",
-  GridType.threePointPerspective : "3-Point Perspective",
-};
-
-const Map<GridType, String> gridTypeLabelMap =
-<GridType, String>{
-  GridType.rectangular : "REC",
-  GridType.diagonal : "DIA",
-  GridType.isometric : "ISO",
-  GridType.hexagonal : "HEX",
-  GridType.triangular : "TRI",
-  GridType.brick : "BRK",
-  GridType.onePointPerspective : "1-Point",
-  GridType.twoPointPerspective : "2-Point",
-  GridType.threePointPerspective : "3-Point",
-};
 
 bool isPerspectiveGridType({required final GridType gridType})
 {
@@ -124,7 +97,7 @@ class GridLayerSettings
     required this.vanishingPoint2Default,
     required this.vanishingPoint3Default,
     required this.horizonDefault,
-    required final int gridTypeValue,}) : gridTypeDefault = gridValueTypeMap[gridTypeValue] ?? GridType.rectangular;
+    required final int gridTypeValue,}) : gridTypeDefault = GridType.fromId(gridTypeValue);
 
 }
 
@@ -213,7 +186,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         if (isPerspectiveGridType(gridType: g) == isPerspective)
                           ButtonSegment<GridType>(
                             value: g,
-                            label: Tooltip(waitDuration: AppState.toolTipDuration, message: gridTypeNameMap[g]?? g.toString(), child: Text(gridTypeLabelMap[g]?? g.toString(), style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
+                            label: Tooltip(waitDuration: AppState.toolTipDuration, message: g.name, child: Text(g.label, style: Theme.of(context).textTheme.labelSmall!.apply(color: gridType == g? Theme.of(context).primaryColor : Theme.of(context).primaryColorLight))),
                           ),
                     ],
                     selected: <GridType>{gridType},

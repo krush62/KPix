@@ -45,54 +45,34 @@ import 'package:version/version.dart';
 
 enum ToolType
 {
-  pencil,
-  shape,
-  fill,
-  select,
-  pick,
-  erase,
-  font,
-  spraycan,
-  line,
-  stamp,
-}
+  pencil("Pencil", TablerIcons.pencil),
+  shape("Shapes", TablerIcons.triangle_square_circle),
+  fill("Fill", TablerIcons.droplet),
+  select("Select", TablerIcons.border_corners),
+  pick("Color Pick", TablerIcons.color_picker),
+  erase("Eraser", TablerIcons.eraser),
+  font("Text", TablerIcons.typography),
+  spraycan("Spray Can", TablerIcons.spray),
+  line("Line", Icons.multiline_chart),
+  stamp("Stamp", TablerIcons.rubber_stamp);
 
-class Tool
-{
+  const ToolType(this.title, this.icon);
+
   final String title;
   final IconData icon;
 
-  const Tool({required this.title, required this.icon});
-
-  static bool isDrawTool({required final ToolType type})
+  bool isDrawTool()
   {
     return
-      type == ToolType.pencil ||
-      type == ToolType.shape ||
-      type == ToolType.fill ||
-      type == ToolType.font ||
-      type == ToolType.spraycan ||
-      type == ToolType.line ||
-      type == ToolType.stamp
-    ;
+      this == ToolType.pencil ||
+      this == ToolType.shape ||
+      this == ToolType.fill ||
+      this == ToolType.font ||
+      this == ToolType.spraycan ||
+      this == ToolType.line ||
+      this == ToolType.stamp;
   }
 }
-
-const Map<ToolType, Tool> toolList =
-<ToolType, Tool>{
-  ToolType.pencil: Tool(icon: TablerIcons.pencil, title: "Pencil"),
-  ToolType.shape: Tool(icon: TablerIcons.triangle_square_circle, title: "Shapes"),
-  ToolType.fill: Tool(icon: TablerIcons.droplet, title: "Fill"),
-  ToolType.select : Tool(icon: TablerIcons.border_corners, title: "Select"),
-  ToolType.pick : Tool(icon: TablerIcons.color_picker, title: "Color Pick"),
-  ToolType.erase : Tool(icon: TablerIcons.eraser, title: "Eraser"),
-  ToolType.font : Tool(icon: TablerIcons.typography, title: "Text"),
-  ToolType.spraycan : Tool(icon: TablerIcons.spray, title: "Spray Can"),
-  ToolType.line : Tool(icon: Icons.multiline_chart, title: "Line"),
-  ToolType.stamp : Tool(icon: TablerIcons.rubber_stamp, title: "Stamp"),
-};
-
-
 
 class LabColor
 {

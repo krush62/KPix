@@ -32,50 +32,55 @@ import 'package:kpix/widgets/kpal/kpal_widget.dart';
 
 enum OuterStrokeStyle
 {
-  off,
-  solid,
-  relative,
-  glow,
-  shade
-}
+  off(     0, "OFF", "No outer stroke"),
+  solid(   1, "SLD", "Solid color outer stroke"),
+  relative(2, "RLT", "Color relative outer stroke"),
+  glow(    3, "GLW", "Glowing outer stroke"),
+  shade(   4, "SHD", "Shaded outer stroke");
 
-const Map<int, OuterStrokeStyle> outerStrokeStyleValueMap = <int, OuterStrokeStyle>{
-  0:OuterStrokeStyle.off,
-  1:OuterStrokeStyle.solid,
-  2:OuterStrokeStyle.relative,
-  3:OuterStrokeStyle.glow,
-  4:OuterStrokeStyle.shade,
-};
+  const OuterStrokeStyle(this.id, this.label, this.desc);
+  final int id;
+  final String label;
+  final String desc;
+
+  static OuterStrokeStyle fromId(final int id) {
+    return OuterStrokeStyle.values.firstWhere((final OuterStrokeStyle oss) => oss.id == id);
+  }
+}
 
 enum InnerStrokeStyle
 {
-  off,
-  solid,
-  glow,
-  bevel,
-  shade
-}
+  off(0, "OFF", "No inner stroke"),
+  solid(1, "SLD", "Solid color inner stroke"),
+  bevel(2, "BVL", "Beveled inner stroke"),
+  glow(3, "GLW", "Glowing inner stroke"),
+  shade(4, "SHD", "Shaded inner stroke");
 
-const Map<int, InnerStrokeStyle> innerStrokeStyleValueMap = <int, InnerStrokeStyle>{
-  0:InnerStrokeStyle.off,
-  1:InnerStrokeStyle.solid,
-  2:InnerStrokeStyle.bevel,
-  3:InnerStrokeStyle.glow,
-  4:InnerStrokeStyle.shade,
-};
+  const InnerStrokeStyle(this.id, this.label, this.desc);
+  final int id;
+  final String label;
+  final String desc;
+
+  static InnerStrokeStyle fromId(final int id) {
+    return InnerStrokeStyle.values.firstWhere((final InnerStrokeStyle iss) => iss.id == id);
+  }
+}
 
 enum DropShadowStyle
 {
-  off,
-  solid,
-  shade
-}
+  off(0, "OFF", "No drop shadow"),
+  solid(1, "SLD", "Solid color drop shadow"),
+  shade(2, "SHD", "Shaded drop shadow");
 
-const Map<int, DropShadowStyle> dropShadowStyleValueMap = <int, DropShadowStyle>{
-  0:DropShadowStyle.off,
-  1:DropShadowStyle.solid,
-  2:DropShadowStyle.shade,
-};
+  const DropShadowStyle(this.id, this.label, this.desc);
+  final int id;
+  final String label;
+  final String desc;
+
+  static DropShadowStyle fromId(final int id) {
+    return DropShadowStyle.values.firstWhere((final DropShadowStyle dss) => dss.id == id);
+  }
+}
 
 class DrawingLayerSettingsConstraints
 {

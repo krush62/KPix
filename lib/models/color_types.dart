@@ -38,19 +38,19 @@ class IdColor
 
 enum SatCurve
 {
-  noFlat,
-  darkFlat,
-  brightFlat,
-  linear,
-}
+  noFlat(0),
+  darkFlat(1),
+  brightFlat(2),
+  linear(3);
 
-const Map<int, SatCurve> satCurveMap =
-<int, SatCurve>{
-  0:SatCurve.noFlat,
-  1:SatCurve.darkFlat,
-  2:SatCurve.brightFlat,
-  3:SatCurve.linear,
-};
+  const SatCurve(this.id);
+
+  final int id;
+
+  static SatCurve fromId(final int id) {
+    return SatCurve.values.firstWhere((final SatCurve curve) => curve.id == id);
+  }
+}
 
 class KPalRampSettings
 {
@@ -77,7 +77,7 @@ class KPalRampSettings
     satShiftExp = constraints.satShiftExpDefault;
     valueRangeMin = constraints.valueRangeMinDefault;
     valueRangeMax = constraints.valueRangeMaxDefault;
-    satCurve = satCurveMap[constraints.satCurveDefault] ?? SatCurve.noFlat;
+    satCurve = SatCurve.fromId(constraints.satCurveDefault);
   }
 
   KPalRampSettings.fromValues({

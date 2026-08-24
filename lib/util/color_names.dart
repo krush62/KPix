@@ -21,55 +21,35 @@ import 'package:kpix/util/helper.dart';
 
 enum ColorNameScheme
 {
-  general,
-  pms,
-  ralClassic,
-  ralComplete,
-  ralDsp,
-  dmc
+  general(0, "General", "general.csv"),
+  pms(1, "PMS", "pms.csv"),
+  ralClassic(2, "RAL Classic", "ral_classic.csv"),
+  ralComplete(3, "RAL Complete", "ral_complete.csv"),
+  ralDsp(4, "RAL DSP", "ral_dsp.csv"),
+  dmc(5, "DMC", "dmc.csv");
+
+  final int id;
+  final String name;
+  final String fileName;
+
+  const ColorNameScheme(this.id, this.name, this.fileName);
+
+  static Map<ColorNameScheme, String> getNameMap()
+  {
+    final Map<ColorNameScheme, String> map = <ColorNameScheme, String>{};
+    for (final ColorNameScheme scheme in ColorNameScheme.values) {
+      map[scheme] = scheme.name;
+    }
+    return map;
+  }
+
+  static ColorNameScheme fromId(final int id) {
+    return ColorNameScheme.values.firstWhere((final ColorNameScheme scheme) => scheme.id == id);
+  }
 }
 
 const String noColorName = "<UNKNOWN>";
-
-const Map<int, ColorNameScheme> colorNameSchemeMap =
-<int, ColorNameScheme>{
-  0: ColorNameScheme.general,
-  1: ColorNameScheme.pms,
-  2: ColorNameScheme.ralClassic,
-  3: ColorNameScheme.ralComplete,
-  4: ColorNameScheme.ralDsp,
-  5: ColorNameScheme.dmc,
-};
-
-const Map<ColorNameScheme, String> _colorNameFileNames =
-<ColorNameScheme, String>{
-  ColorNameScheme.general: "general.csv",
-  ColorNameScheme.pms: "pms.csv",
-  ColorNameScheme.ralClassic : "ral_classic.csv",
-  ColorNameScheme.ralComplete : "ral_complete.csv",
-  ColorNameScheme.ralDsp : "ral_dsp.csv",
-  ColorNameScheme.dmc : "dmc.csv",
-};
-
-class ColorNamesOptions{
-  final int defaultNameScheme;
-  final String defaultColorNamePath;
-
-  ColorNameScheme nameScheme = ColorNameScheme.general;
-  String colorNamePath = "color_names";
-  String colorFilename = "general.csv";
-
-  ColorNamesOptions({
-    required this.defaultNameScheme,
-    required this.defaultColorNamePath,
-  })
-  {
-    nameScheme = colorNameSchemeMap[defaultNameScheme] ?? ColorNameScheme.general;
-    colorNamePath = defaultColorNamePath;
-    colorFilename = _colorNameFileNames[nameScheme] ?? "general.csv";
-
-  }
-}
+const String colorNamePath = "color_names";
 
 class NamedColor
 {
@@ -88,7 +68,8 @@ class NamedColor
 
 class ColorNames
 {
-  final ColorNamesOptions options;
+  final String colorBasePath;
+  final ColorNameScheme scheme;
   List<NamedColor> colorList = <NamedColor>[];
   bool colorsLoaded = false;
 
@@ -104,9 +85,9 @@ class ColorNames
   }
 
 
-  ColorNames({required this.options})
+  ColorNames({this.colorBasePath = colorNamePath, required this.scheme})
   {
-    rootBundle.loadString("${options.colorNamePath}/${options.colorFilename}").then((final String value) {
+    rootBundle.loadString("$colorBasePath/${scheme.fileName}").then((final String value) {
       _processColorData(data: value);
     });
   }

@@ -18,6 +18,7 @@
 
 part of '../file_handler.dart';
 
+//original kpal uses a different id mapping
 const Map<int, SatCurve> _kpalKpixSatCurveMap =
 <int, SatCurve>{
   1:SatCurve.noFlat,

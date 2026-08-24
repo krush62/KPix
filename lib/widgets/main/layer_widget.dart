@@ -48,31 +48,6 @@ class _LayerWidgetState extends State<LayerWidget> {
       GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
-  static const Map<LayerVisibilityState, IconData> _visibilityIconMap =
-      <LayerVisibilityState, IconData>{
-    LayerVisibilityState.visible: TablerIcons.eye,
-    LayerVisibilityState.hidden: TablerIcons.eye_closed,
-  };
-
-  static const Map<LayerVisibilityState, String> _visibilityTooltipMap =
-      <LayerVisibilityState, String>{
-    LayerVisibilityState.visible: "Visible",
-    LayerVisibilityState.hidden: "Hidden",
-  };
-
-  static const Map<LayerLockState, IconData> _lockIconMap =
-      <LayerLockState, IconData>{
-    LayerLockState.unlocked: TablerIcons.lock_open_2,
-    LayerLockState.transparency: TablerIcons.lock_open,
-    LayerLockState.locked: TablerIcons.lock,
-  };
-
-  static const Map<LayerLockState, String> _lockStringMap =
-      <LayerLockState, String>{
-    LayerLockState.unlocked: "Unlocked",
-    LayerLockState.transparency: "Transparency locked",
-    LayerLockState.locked: "Locked",
-  };
 
   final GlobalKey actionsAnchorKey = GlobalKey();
   late KPixOverlay actionsMenuDrawing;
@@ -273,7 +248,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           final Widget? child,) {
                                         return Tooltip(
                                           message:
-                                              _visibilityTooltipMap[visibility]! +
+                                              visibility.desc +
                                                   _hotkeyManager.getShortcutString(
                                                       action: HotkeyAction
                                                           .layersSwitchVisibility,),
@@ -311,7 +286,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                             ),
                                             onPressed: _visibilityButtonPressed,
                                             icon: Icon(
-                                              _visibilityIconMap[visibility],
+                                              visibility.icon,
                                               size: _options.iconSize,
                                             ),
                                           ),
@@ -336,7 +311,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           final LayerLockState lock,
                                           final Widget? child,) {
                                         return Tooltip(
-                                          message: _lockStringMap[lock]! +
+                                          message: lock.desc +
                                               _hotkeyManager.getShortcutString(
                                                   action: HotkeyAction
                                                       .layersSwitchLock,),
@@ -374,7 +349,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                             ),
                                             onPressed: _lockButtonPressed,
                                             icon: Icon(
-                                              _lockIconMap[lock],
+                                              lock.icon,
                                               size: _options.iconSize,
                                             ),
                                           ),

@@ -37,6 +37,7 @@ import 'package:kpix/managers/history/history_drawing_layer_settings.dart';
 import 'package:kpix/managers/history/history_frame.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_layer_type.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_selection_state.dart';

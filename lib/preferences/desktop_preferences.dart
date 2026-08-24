@@ -20,45 +20,44 @@ import 'package:kpix/preferences/preference_gui.dart';
 
 enum CursorType
 {
-  none,
-  crossHair,
-  arrow
+  none(0, "None", SystemMouseCursors.none),
+  crossHair(1, "CrossHair", SystemMouseCursors.precise),
+  arrow(2, "Arrow", SystemMouseCursors.basic);
+
+  final int id;
+  final String name;
+  final SystemMouseCursor systemCursor;
+
+  const CursorType(this.id, this.name, this.systemCursor);
+
+  static Map<CursorType, String> getNameMap()
+  {
+    final Map<CursorType, String> map = <CursorType, String>{};
+    for (final CursorType curs in CursorType.values) {
+      map[curs] = curs.name;
+    }
+    return map;
+  }
+
+  static CursorType fromId(final int id) {
+    return CursorType.values.firstWhere((final CursorType curs) => curs.id == id);
+  }
+
 }
-
-const Map<int, CursorType> cursorTypeIndexMap =
-<int, CursorType>{
-  0:CursorType.none,
-  1:CursorType.crossHair,
-  2:CursorType.arrow,
-};
-
-const Map<CursorType, String> cursorTypeStringMap =
-<CursorType, String>{
-  CursorType.none: "None",
-  CursorType.crossHair: "CrossHair",
-  CursorType.arrow: "Arrow",
-};
-
-const Map<CursorType, SystemMouseCursor> cursorTypeCursorMap =
-<CursorType, SystemMouseCursor>{
-  CursorType.none: SystemMouseCursors.none,
-  CursorType.crossHair: SystemMouseCursors.precise,
-  CursorType.arrow: SystemMouseCursors.basic,
-};
 
 class DesktopPreferenceContent
 {
   final ValueNotifier<CursorType> cursorType;
   factory DesktopPreferenceContent({required final int cursorTypeValue})
   {
-    final CursorType cursorType = cursorTypeIndexMap[cursorTypeValue]?? CursorType.crossHair;
+    final CursorType cursorType = CursorType.fromId(cursorTypeValue);
     return DesktopPreferenceContent._(cursorType: ValueNotifier<CursorType>(cursorType));
   }
 
   DesktopPreferenceContent._({required this.cursorType});
   void update({required final int cursorTypeValue})
   {
-    cursorType.value = cursorTypeIndexMap[cursorTypeValue]?? CursorType.crossHair;
+    cursorType.value = CursorType.fromId(cursorTypeValue);
   }
 }
 
@@ -83,7 +82,7 @@ class _DesktopPreferencesState extends State<DesktopPreferences>
         PrefSegmentedButtonRow<CursorType>(
           label: "Mouse Cursor",
           notifier: widget.prefs.cursorType,
-          labels: cursorTypeStringMap,
+          labels: CursorType.getNameMap(),
         ),
       ],
     );

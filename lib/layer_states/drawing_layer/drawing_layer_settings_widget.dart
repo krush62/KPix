@@ -31,57 +31,6 @@ import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
-
-const Map<OuterStrokeStyle, String> _outerStrokeStyleButtonLabelMap =
-<OuterStrokeStyle, String>{
-  OuterStrokeStyle.off: "OFF",
-  OuterStrokeStyle.solid: "SLD",
-  OuterStrokeStyle.relative: "RLT",
-  OuterStrokeStyle.shade: "SHD",
-  OuterStrokeStyle.glow: "GLW",
-};
-
-const Map<OuterStrokeStyle, String> _outerStrokeStyleTooltipMap =
-<OuterStrokeStyle, String>{
-  OuterStrokeStyle.off: "No outer stroke",
-  OuterStrokeStyle.solid: "Solid color outer stroke",
-  OuterStrokeStyle.relative: "Color relative outer stroke",
-  OuterStrokeStyle.shade: "Shaded outer stroke",
-  OuterStrokeStyle.glow: "Glowing outer stroke",
-};
-
-const Map<InnerStrokeStyle, String> _innerStrokeStyleButtonLabelMap =
-<InnerStrokeStyle, String>{
-  InnerStrokeStyle.off: "OFF",
-  InnerStrokeStyle.solid: "SLD",
-  InnerStrokeStyle.glow: "GLW",
-  InnerStrokeStyle.shade: "SHD",
-  InnerStrokeStyle.bevel: "BVL",
-};
-
-const Map<InnerStrokeStyle, String> _innerStrokeStyleTooltipMap =
-<InnerStrokeStyle, String>{
-  InnerStrokeStyle.off: "No inner stroke",
-  InnerStrokeStyle.solid: "Solid color inner stroke",
-  InnerStrokeStyle.glow: "Glowing inner stroke",
-  InnerStrokeStyle.shade: "Shaded inner stroke",
-  InnerStrokeStyle.bevel: "Beveled inner stroke",
-};
-
-const Map<DropShadowStyle, String> _dropShadowStyleButtonLabelMap =
-<DropShadowStyle, String>{
-  DropShadowStyle.off: "OFF",
-  DropShadowStyle.solid: "SLD",
-  DropShadowStyle.shade: "SHD",
-};
-
-const Map<DropShadowStyle, String> _dropShadowStyleTooltipMap =
-<DropShadowStyle, String>{
-  DropShadowStyle.off: "No drop shadow",
-  DropShadowStyle.solid: "Solid color drop shadow",
-  DropShadowStyle.shade: "Shaded drop shadow",
-};
-
 class DrawingLayerSettingsWidget extends LayerSettingsWidget
 {
   final DrawingLayerState layer;
@@ -187,16 +136,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             builder: (final BuildContext context, final OuterStrokeStyle outerStrokeStyle, final Widget? child)
             {
               final List<ButtonSegment<OuterStrokeStyle>> outerStrokeButtons = <ButtonSegment<OuterStrokeStyle>>[];
-              for (final OuterStrokeStyle oss in outerStrokeStyleValueMap.values)
+              for (final OuterStrokeStyle oss in OuterStrokeStyle.values)
               {
                 outerStrokeButtons.add(
                   ButtonSegment<OuterStrokeStyle>(
                     value: oss,
                     label: Tooltip(
                       waitDuration: AppState.toolTipDuration,
-                      message: _outerStrokeStyleTooltipMap[oss],
+                      message: oss.desc,
                       child: Text(
-                        _outerStrokeStyleButtonLabelMap[oss]!,
+                        oss.label,
                         style: Theme.of(context).textTheme.bodySmall!.apply(color: outerStrokeStyle == oss ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
                       ),
                     ),
@@ -412,16 +361,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             builder: (final BuildContext context, final InnerStrokeStyle innerStrokeStyle, final Widget? child)
             {
               final List<ButtonSegment<InnerStrokeStyle>> innerStrokeButtons = <ButtonSegment<InnerStrokeStyle>>[];
-              for (final InnerStrokeStyle iss in innerStrokeStyleValueMap.values)
+              for (final InnerStrokeStyle iss in InnerStrokeStyle.values)
               {
                 innerStrokeButtons.add(
                   ButtonSegment<InnerStrokeStyle>(
                     value: iss,
                     label: Tooltip(
                       waitDuration: AppState.toolTipDuration,
-                      message: _innerStrokeStyleTooltipMap[iss],
+                      message: iss.desc,
                       child: Text(
-                        _innerStrokeStyleButtonLabelMap[iss]!,
+                        iss.label,
                         style: Theme.of(context).textTheme.bodySmall!.apply(color: innerStrokeStyle == iss ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
                       ),
                     ),
@@ -676,16 +625,16 @@ class _DrawingLayerSettingsWidgetState extends State<DrawingLayerSettingsWidget>
             builder: (final BuildContext context, final DropShadowStyle dropShadowStyle, final Widget? child)
             {
               final List<ButtonSegment<DropShadowStyle>> dropShadowButtons = <ButtonSegment<DropShadowStyle>>[];
-              for (final DropShadowStyle dss in dropShadowStyleValueMap.values)
+              for (final DropShadowStyle dss in DropShadowStyle.values)
               {
                 dropShadowButtons.add(
                   ButtonSegment<DropShadowStyle>(
                     value: dss,
                     label: Tooltip(
                       waitDuration: AppState.toolTipDuration,
-                      message: _dropShadowStyleTooltipMap[dss],
+                      message: dss.desc,
                       child: Text(
-                        _dropShadowStyleButtonLabelMap[dss]!,
+                        dss.label,
                         style: Theme.of(context).textTheme.bodySmall!.apply(color: dropShadowStyle == dss ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight),
                       ),
                     ),

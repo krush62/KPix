@@ -24,7 +24,6 @@ import 'dart:ui' as ui;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -34,6 +33,7 @@ import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_frame.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
+import 'package:kpix/managers/history/history_layer_type.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
 import 'package:kpix/managers/history/history_shading_layer.dart';
 import 'package:kpix/managers/history/history_state.dart';
@@ -49,7 +49,6 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 
 part 'export/palette/export_palette_adobe.dart';
 part 'export/palette/export_palette_aseprite.dart';
@@ -73,33 +72,18 @@ part 'export/project/export_project_zipped_png.dart';
 part 'export/project/export_project_texture_pack.dart';
 part 'export/project/export_project_texture_pack_animation.dart';
 
-
-
-  Map<GridType, int> gridTypeValueMap =
-  <GridType, int>{
-    GridType.rectangular: 0,
-    GridType.diagonal: 1,
-    GridType.isometric: 2,
-    GridType.hexagonal: 3,
-    GridType.triangular: 4,
-    GridType.brick: 5,
-    GridType.onePointPerspective: 6,
-    GridType.twoPointPerspective: 7,
-    GridType.threePointPerspective: 8,
-  };
-
-  List<ui.Color> _getColorList({required final List<KPalRampData> ramps})
+List<ui.Color> _getColorList({required final List<KPalRampData> ramps})
+{
+  final List<ui.Color> colorList = <ui.Color>[];
+  for (final KPalRampData ramp in ramps)
   {
-    final List<ui.Color> colorList = <ui.Color>[];
-    for (final KPalRampData ramp in ramps)
+    for (final ColorReference colRef in ramp.references)
     {
-      for (final ColorReference colRef in ramp.references)
-      {
-        colorList.add(colRef.getIdColor().color);
-      }
+      colorList.add(colRef.getIdColor().color);
     }
-    return colorList;
   }
+  return colorList;
+}
 
 int _getShadeForCoord({required final int currentLayerIndex, required final CoordinateSetI coord, required final LayerCollection layerCollection})
 {

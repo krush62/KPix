@@ -16,6 +16,7 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
@@ -61,29 +62,35 @@ class LayerWidgetOptions
 
 enum LayerVisibilityState
 {
-  visible,
-  hidden,
-}
+  visible(0, "Visible", TablerIcons.eye),
+  hidden(1, "Hidden", TablerIcons.eye_closed);
 
-const Map<int, LayerVisibilityState> layerVisibilityStateValueMap =
-<int, LayerVisibilityState>{
-  0: LayerVisibilityState.visible,
-  1: LayerVisibilityState.hidden,
-};
+  const LayerVisibilityState(this.id, this.desc, this.icon);
+
+  final int id;
+  final String desc;
+  final IconData icon;
+
+  static LayerVisibilityState fromId(final int id) {
+    return LayerVisibilityState.values.firstWhere((final LayerVisibilityState lvs) => lvs.id == id);
+  }
+}
 
 enum LayerLockState
 {
-  unlocked,
-  transparency,
-  locked,
-}
+  unlocked(0, "Unlocked", TablerIcons.lock_open_2),
+  transparency(1, "Transparency locked", TablerIcons.lock_open),
+  locked(2, "Locked", TablerIcons.lock);
 
-const Map<int, LayerLockState> layerLockStateValueMap =
-<int, LayerLockState>{
-  0: LayerLockState.unlocked,
-  1: LayerLockState.transparency,
-  2: LayerLockState.locked,
-};
+  const LayerLockState(this.id, this.desc, this.icon);
+  final int id;
+  final String desc;
+  final IconData icon;
+
+  static LayerLockState fromId(final int id) {
+    return LayerLockState.values.firstWhere((final LayerLockState lls) => lls.id == id);
+  }
+}
 
 class ColorReference
 {

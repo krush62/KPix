@@ -24,7 +24,6 @@ import 'package:kpix/util/helper.dart';
 
 void main() {
   
-  testToolType();
   testCoordinateSetI();
   testStackCol();
   testColorToString();
@@ -40,14 +39,6 @@ void main() {
   testIntToBytes();
   testAngleUtilities();
   testExtractFileName();
-}
-
-void testToolType() {
-  for (final ToolType toolType in ToolType.values) {
-    test('test existence of $toolType in map', () {
-      expect(toolList.containsKey(toolType), isTrue);
-    });
-  }
 }
 
 void testCoordinateSetI()

@@ -1251,12 +1251,7 @@ class PreferenceManager
 
   void _loadColorNames()
   {
-    final ColorNamesOptions options = ColorNamesOptions(
-        defaultNameScheme: _getValueI(PreferenceInt.ColorNames_Scheme),
-        defaultColorNamePath: _getValueS(PreferenceString.ColorNames_ColorNamePath),);
-
-    colorNames = ColorNames(options: options);
-
+    colorNames = ColorNames(scheme: ColorNameScheme.fromId(_getValueI(PreferenceInt.ColorNames_Scheme)));
   }
 
   void _loadPainterOptions()
@@ -1422,9 +1417,9 @@ class PreferenceManager
   Future<void> saveUserPrefs() async
   {
     //GUI PREFERENCES
-    if (guiPreferenceContent.colorNameScheme.value != colorNameSchemeMap[_intMap[PreferenceInt.ColorNames_Scheme]!.value])
+    if (guiPreferenceContent.colorNameScheme.value != ColorNameScheme.fromId(_intMap[PreferenceInt.ColorNames_Scheme]!.value))
     {
-      _intMap[PreferenceInt.ColorNames_Scheme]!.value = colorNameSchemeMap.keys.firstWhere((final int x) => colorNameSchemeMap[x] == guiPreferenceContent.colorNameScheme.value, orElse:() => PreferenceInt.ColorNames_Scheme.defaultValue);
+      _intMap[PreferenceInt.ColorNames_Scheme]!.value = guiPreferenceContent.colorNameScheme.value.id;
       _loadColorNames();
     }
     _intMap[PreferenceInt.Painter_CheckerBoardContrast]!.value = guiPreferenceContent.rasterContrast.value;
@@ -1469,9 +1464,9 @@ class PreferenceManager
     _doubleMap[PreferenceDouble.TouchOptions_ZoomStepDistanceMax]!.value = touchPreferenceContent.zoomStepDistance.value;
 
     //DESKTOP PREFERENCES
-    if (desktopPreferenceContent.cursorType.value != cursorTypeIndexMap[_intMap[PreferenceInt.DesktopOptions_CursorType]!.value])
+    if (desktopPreferenceContent.cursorType.value != CursorType.fromId(_intMap[PreferenceInt.DesktopOptions_CursorType]!.value))
     {
-      _intMap[PreferenceInt.DesktopOptions_CursorType]!.value = cursorTypeIndexMap.keys.firstWhere((final int x) => cursorTypeIndexMap[x] == desktopPreferenceContent.cursorType.value, orElse:() => PreferenceInt.DesktopOptions_CursorType.defaultValue);
+      _intMap[PreferenceInt.DesktopOptions_CursorType]!.value = desktopPreferenceContent.cursorType.value.id;
     }
 
     await _savePreferences();

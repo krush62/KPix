@@ -18,15 +18,6 @@
 
 part of '../file_handler.dart';
 
-const Map<int, Type> _historyLayerValueMap =
-<int, Type>{
-  1: HistoryDrawingLayer,
-  2: HistoryReferenceLayer,
-  3: HistoryGridLayer,
-  4: HistoryShadingLayer,
-  5: HistoryDitherLayer,
-};
-
 HashMap<Alignment, bool> _unPackAlignments({required final int byte})
 {
   assert(allAlignments.length == 8);
@@ -214,7 +205,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       // CURVE
       final int curveVal = reader.getUint8();
       kPalRampSettings.satCurve = guard.mapped(
-        value: satCurveMap[curveVal],
+        value: SatCurve.fromId(curveVal),
         raw: curveVal,
         fallback: SatCurve.noFlat,
         label: "Invalid sat curve for palette $i",
@@ -296,7 +287,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       // frame layer indices are positional. Hence the null fallback.
       final int layerTypeVal = reader.getUint8();
       final Type layerType = guard.mapped(
-        value: _historyLayerValueMap[layerTypeVal],
+        value: historyLayerIdToType[layerTypeVal],
         raw: layerTypeVal,
         fallback: null,
         label: "Invalid layer type for layer $i",
@@ -305,7 +296,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       // VISIBILITY STATE
       final int visibilityStateVal = reader.getUint8();
       final LayerVisibilityState visibilityState = guard.mapped(
-        value: layerVisibilityStateValueMap[visibilityStateVal],
+        value: LayerVisibilityState.fromId(visibilityStateVal),
         raw: visibilityStateVal,
         fallback: LayerVisibilityState.visible,
         label: "Invalid visibility type for layer $i",
@@ -319,7 +310,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         // LOCK STATE
         final int lockStateVal = reader.getUint8();
         final LayerLockState lockState = guard.mapped(
-          value: layerLockStateValueMap[lockStateVal],
+          value: LayerLockState.fromId(lockStateVal),
           raw: lockStateVal,
           fallback: LayerLockState.unlocked,
           label: "Invalid lock type for layer $i",
@@ -330,7 +321,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           // OUTER STROKE STYLE
           final int outerStrokeStyleVal = reader.getUint8();
           final OuterStrokeStyle outerStrokeStyle = guard.mapped(
-            value: outerStrokeStyleValueMap[outerStrokeStyleVal],
+            value: OuterStrokeStyle.fromId(outerStrokeStyleVal),
             raw: outerStrokeStyleVal,
             fallback: OuterStrokeStyle.off,
             label: "Invalid outer stroke style for layer $i",
@@ -388,7 +379,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           //INNER STROKE STYLE
           final int innerStrokeStyleVal = reader.getUint8();
           final InnerStrokeStyle innerStrokeStyle = guard.mapped(
-            value: innerStrokeStyleValueMap[innerStrokeStyleVal],
+            value: InnerStrokeStyle.fromId(innerStrokeStyleVal),
             raw: innerStrokeStyleVal,
             fallback: InnerStrokeStyle.off,
             label: "Invalid inner stroke style for layer $i",
@@ -463,7 +454,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
           // DROP SHADOW STYLE
           final int dropShadowStyleVal = reader.getUint8();
           final DropShadowStyle dropShadowStyle = guard.mapped(
-            value: dropShadowStyleValueMap[dropShadowStyleVal],
+            value: DropShadowStyle.fromId(dropShadowStyleVal),
             raw: dropShadowStyleVal,
             fallback: DropShadowStyle.off,
             label: "Invalid drop shadow style for layer $i",
@@ -676,7 +667,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //grid_type
         final int gridTypeValue = reader.getUint8();
         final GridType gridType = guard.mapped(
-          value: gridValueTypeMap[gridTypeValue],
+          value: GridType.fromId(gridTypeValue),
           raw: gridTypeValue,
           fallback: GridType.rectangular,
           label: "Invalid grid type for layer $i",
@@ -743,7 +734,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         // LOCK STATE
         final int lockStateVal = reader.getUint8();
         final LayerLockState lockState = guard.mapped(
-          value: layerLockStateValueMap[lockStateVal],
+          value: LayerLockState.fromId(lockStateVal),
           raw: lockStateVal,
           fallback: LayerLockState.unlocked,
           label: "Invalid lock type for layer $i",

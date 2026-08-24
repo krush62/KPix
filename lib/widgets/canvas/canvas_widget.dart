@@ -127,7 +127,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   late Offset _dragStartLoc;
 
   final ValueNotifier<Offset> _canvasOffset = ValueNotifier<Offset>(Offset.zero);
-  late MouseCursor _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
+  late MouseCursor _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
   late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier<MouseCursor>(_defaultMouseCursor);
   bool _mouseIsInside = false;
   final Map<int, TouchPointerStatus> _touchPointers = <int, TouchPointerStatus>{};
@@ -159,7 +159,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   void _setDefaultCursor()
   {
-    _defaultMouseCursor = cursorTypeCursorMap[_desktopPrefs.cursorType.value]!;
+    _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
     final bool isForbidden = _appState.timeline.isPlaying.value;
     if (isForbidden && _mouseCursor.value == SystemMouseCursors.none)
     {

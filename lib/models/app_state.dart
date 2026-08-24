@@ -268,7 +268,7 @@ class AppState
 
   AppState({required final String exportDir, required final String internalDir, required final String projectsDir, required this.devicePixelRatio}) : _exportDir = ValueNotifier<String>(exportDir), _internalDir = ValueNotifier<String>(internalDir), _projectsDir = ValueNotifier<String>(projectsDir), _hasUpdate = ValueNotifier<bool>(false)
   {
-    for (final ToolType toolType in toolList.keys)
+    for (final ToolType toolType in ToolType.values)
     {
       _toolMap[toolType] = false;
     }
@@ -1374,7 +1374,7 @@ class AppState
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.colorChange);
       }
 
-      if (!Tool.isDrawTool(type: _selectedTool.value))
+      if (!_selectedTool.value.isDrawTool())
       {
         setToolSelection(tool: _previousDrawTool);
       }
@@ -1410,7 +1410,7 @@ class AppState
           _toolMap[k] = shouldSelect;
         }
       }
-      if (Tool.isDrawTool(type: tool))
+      if (tool.isDrawTool())
       {
         _previousDrawTool = tool;
       }

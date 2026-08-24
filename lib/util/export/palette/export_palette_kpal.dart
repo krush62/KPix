@@ -18,15 +18,6 @@
 
 part of '../../export_functions.dart';
 
-const Map<SatCurve, int> _kpixKpalSatCurveMap =
-<SatCurve, int>{
-  SatCurve.noFlat:1,
-  SatCurve.darkFlat:0,
-  SatCurve.brightFlat:3,
-  SatCurve.linear:2,
-};
-
-
 Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampList}) async
 {
   final ByteData byteData = ByteData(_calculateKPalFileSize(rampList: rampList));
@@ -77,7 +68,7 @@ Future<Uint8List> createPaletteKPalData({required final List<KPalRampData> rampL
     //sat curve option
     byteData.setUint8(offset++, 1); //option type sat curve
     //sat curve value
-    byteData.setUint8(offset++, _kpixKpalSatCurveMap[rampData.settings.satCurve]?? 0);
+    byteData.setUint8(offset++, rampData.settings.satCurve.id);
   }
 
   //link count

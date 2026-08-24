@@ -116,7 +116,6 @@ class LineOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final LineOptions lineOptions,
   }) {
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
@@ -125,7 +124,7 @@ class LineOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ToolSliderRow<int>(
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           label: "Width",
           notifier: lineOptions.width,
           minVal: lineOptions.widthMin.toDouble(),
@@ -144,7 +143,7 @@ class LineOptions extends IToolOptions
               ),
             ),
             Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              flex: ToolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
@@ -189,7 +188,7 @@ class LineOptions extends IToolOptions
               ),
             ),
             Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              flex: ToolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
@@ -204,7 +203,7 @@ class LineOptions extends IToolOptions
                           },
                           value: segmentSorting,
                         ),
-                        SizedBox(width: toolSettingsWidgetOptions.padding),
+                        const SizedBox(width: ToolSettingsWidgetOptions.padding),
                         if (segmentSorting)
                           ValueListenableBuilder<SegmentSortStyle>(
                             valueListenable: lineOptions.segmentSortStyle,

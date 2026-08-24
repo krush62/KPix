@@ -82,7 +82,6 @@ class SelectOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final SelectOptions selectOptions,
   })
   {
@@ -92,7 +91,7 @@ class SelectOptions extends IToolOptions
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
+          padding: const EdgeInsets.only(bottom: ToolSettingsWidgetOptions.padding, top: ToolSettingsWidgetOptions.padding),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -106,7 +105,7 @@ class SelectOptions extends IToolOptions
                 ),
               ),
               Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                flex: ToolSettingsWidgetOptions.columnWidthRatio,
                 child: ValueListenableBuilder<bool>(
                   valueListenable: hotkeyManager.shiftNotifier,
                   builder: (final BuildContext _, final bool shiftPressed, final Widget? __) {
@@ -135,22 +134,22 @@ class SelectOptions extends IToolOptions
                                 selectOptions.mode.value = newMode;
 
                                 return SegmentedButton<SelectionMode>(
-                                  segments: <ButtonSegment<SelectionMode>>[
+                                  segments: const <ButtonSegment<SelectionMode>>[
                                     ButtonSegment<SelectionMode>(value: SelectionMode.replace, label: Icon(
                                       TablerIcons.repeat,
-                                      size: toolSettingsWidgetOptions.smallIconSize,
+                                      size: ToolSettingsWidgetOptions.smallIconSize,
                                     ),),
                                     ButtonSegment<SelectionMode>(value: SelectionMode.add, label: Icon(
                                       TablerIcons.plus,
-                                      size: toolSettingsWidgetOptions.smallIconSize,
+                                      size: ToolSettingsWidgetOptions.smallIconSize,
                                     ),),
                                     ButtonSegment<SelectionMode>(value: SelectionMode.subtract, label: Icon(
                                       TablerIcons.minus,
-                                      size: toolSettingsWidgetOptions.smallIconSize,
+                                      size: ToolSettingsWidgetOptions.smallIconSize,
                                     ),),
                                     ButtonSegment<SelectionMode>(value: SelectionMode.intersect, label: Icon(
                                       TablerIcons.plus_minus,
-                                      size: toolSettingsWidgetOptions.smallIconSize,
+                                      size: ToolSettingsWidgetOptions.smallIconSize,
                                     ),),
                                   ],
                                   selected: <SelectionMode>{selectOptions.mode.value},
@@ -177,13 +176,13 @@ class SelectOptions extends IToolOptions
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(bottom: toolSettingsWidgetOptions.padding, top: toolSettingsWidgetOptions.padding),
+          padding: const EdgeInsets.only(bottom: ToolSettingsWidgetOptions.padding, top: ToolSettingsWidgetOptions.padding),
           child: ToolSegmentedIconButtonRow<SelectShape>(
             iconData: shapeDataMap,
             label: "Shape",
             notifier: selectOptions.shape,
-            flex: toolSettingsWidgetOptions.columnWidthRatio,
-            iconSize: toolSettingsWidgetOptions.smallIconSize,
+            //flex: ToolSettingsWidgetOptions.columnWidthRatio,
+            iconSize: ToolSettingsWidgetOptions.smallIconSize,
           ),
         ),
 
@@ -204,7 +203,7 @@ class SelectOptions extends IToolOptions
                     ),
                   ),
                   Expanded(
-                      flex: toolSettingsWidgetOptions.columnWidthRatio,
+                      flex: ToolSettingsWidgetOptions.columnWidthRatio,
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Stack(
@@ -250,7 +249,7 @@ class SelectOptions extends IToolOptions
               child: ToolSwitchRow(
                 notifier: selectOptions.wandWholeRamp,
                 label: "Whole Ramp",
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                flex: ToolSettingsWidgetOptions.columnWidthRatio,
               ),
             );
           },

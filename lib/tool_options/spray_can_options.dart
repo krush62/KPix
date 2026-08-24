@@ -55,7 +55,6 @@ class SprayCanOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final SprayCanOptions sprayCanOptions,
   }) {
     return Column(
@@ -68,19 +67,19 @@ class SprayCanOptions extends IToolOptions
           minVal: sprayCanOptions.radiusMin.toDouble(),
           maxVal: sprayCanOptions.radiusMax.toDouble(),
           //divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ToolSliderRow<int>(
           label:  "Blob Size",
           notifier: sprayCanOptions.blobSize,
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           minVal: sprayCanOptions.blobSizeMin.toDouble(),
           maxVal: sprayCanOptions.blobSizeMax.toDouble(),
           //divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
         ),
         ToolSliderRow<int>(
           label: "Intensity",
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: sprayCanOptions.intensity,
           minVal: sprayCanOptions.intensityMin.toDouble(),
           maxVal: sprayCanOptions.intensityMax.toDouble(),

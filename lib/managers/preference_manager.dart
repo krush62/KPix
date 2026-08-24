@@ -58,16 +58,11 @@ import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/shader_widget.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 enum PreferenceDouble
 {
-  Layout_ToolsSettings_Padding(defaultValue: 8.0),
-  Layout_ToolSettings_SmallButtonSize(defaultValue: 36.0),
-  Layout_ToolSettings_SmallIconSize(defaultValue: 20),
-
   Layout_MainToolbar_DividerHeight(defaultValue: 2.0),
   Layout_MainToolbar_DividerPadding(defaultValue: 8.0),
 
@@ -231,9 +226,6 @@ enum PreferenceInt
 {
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
-
-
-  Layout_ToolSettings_ColumnWidthRatio(defaultValue: 2),
 
   Layout_MainToolbar_PaletteFlex(defaultValue: 2),
   Layout_MainToolbar_ToolSettingsFlex(defaultValue: 1),
@@ -569,7 +561,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late ToolSettingsWidgetOptions toolSettingsWidgetOptions;
   late MainToolbarWidgetOptions mainToolbarWidgetOptions;
   late ShaderWidgetOptions shaderWidgetOptions;
   late StatusBarWidgetOptions statusBarWidgetOptions;
@@ -706,11 +697,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    toolSettingsWidgetOptions = ToolSettingsWidgetOptions(
-        columnWidthRatio: _getValueI(PreferenceInt.Layout_ToolSettings_ColumnWidthRatio),
-        padding: _getValueD(PreferenceDouble.Layout_ToolsSettings_Padding),
-        smallButtonSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallButtonSize),
-        smallIconSize: _getValueD(PreferenceDouble.Layout_ToolSettings_SmallIconSize),);
     mainToolbarWidgetOptions = MainToolbarWidgetOptions(
         paletteFlex: _getValueI(PreferenceInt.Layout_MainToolbar_PaletteFlex),
         toolSettingsFlex: _getValueI(PreferenceInt.Layout_MainToolbar_ToolSettingsFlex),

@@ -59,7 +59,6 @@ class TextOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final TextOptions textOptions,
   })
   {
@@ -82,7 +81,7 @@ class TextOptions extends IToolOptions
                 ),
               ),
               Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                flex: ToolSettingsWidgetOptions.columnWidthRatio,
                 child: ValueListenableBuilder<PixelFontType?>(
                   valueListenable: textOptions.font,
                   builder: (final BuildContext context, final PixelFontType? font, final Widget? child)
@@ -110,7 +109,7 @@ class TextOptions extends IToolOptions
           child: ToolSliderRow<int>(
             label: "Scale",
             notifier: textOptions.size,
-            flex: toolSettingsWidgetOptions.columnWidthRatio,
+            flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: textOptions.sizeMin.toDouble(),
             maxVal: textOptions.sizeMax.toDouble(),
             //divisions: textOptions.sizeMax - textOptions.sizeMin,
@@ -130,7 +129,7 @@ class TextOptions extends IToolOptions
             ),
             if (isDesktop(includingWeb: true))
               Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                flex: ToolSettingsWidgetOptions.columnWidthRatio,
                 child: ValueListenableBuilder<String>(
                   valueListenable: textOptions.text,
                   builder: (final BuildContext context, final String text, final Widget? child)
@@ -148,7 +147,7 @@ class TextOptions extends IToolOptions
               )
             else
               Expanded(
-                flex: toolSettingsWidgetOptions.columnWidthRatio,
+                flex: ToolSettingsWidgetOptions.columnWidthRatio,
                 child: ValueListenableBuilder<String>(
                 valueListenable: textOptions.text,
                 builder: (final BuildContext context, final String text, final Widget? child)
@@ -156,7 +155,7 @@ class TextOptions extends IToolOptions
                     return OutlinedButton(
                       
                       child: Padding(
-                        padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
+                        padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
                         child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
                       ),
                       onPressed: () {

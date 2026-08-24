@@ -35,18 +35,12 @@ import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 
 
-class ToolSettingsWidgetOptions
+abstract final class ToolSettingsWidgetOptions
 {
-  final int columnWidthRatio;
-  final double padding;
-  final double smallButtonSize;
-  final double smallIconSize;
-
-  const ToolSettingsWidgetOptions({
-    required this.columnWidthRatio,
-    required this.padding,
-    required this.smallButtonSize,
-    required this.smallIconSize,});
+  static const int columnWidthRatio = 2;
+  static const double padding = 8.0;
+  static const double smallButtonSize = 36.0;
+  static const double smallIconSize = 20.0;
 }
 
 
@@ -64,7 +58,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
 {
   final AppState appState = GetIt.I.get<AppState>();
   final ToolOptions toolOptions = GetIt.I.get<PreferenceManager>().toolOptions;
-  final ToolSettingsWidgetOptions toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
   late KPixOverlay _stampManagerDialog;
 
   @override
@@ -103,7 +96,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: ShapeOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   shapeOptions: toolOptions.shapeOptions,),
             );
             //break;
@@ -111,7 +103,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: PencilOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   pencilOptions: toolOptions.pencilOptions,),
             );
             //break;
@@ -119,7 +110,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: FillOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   fillOptions: toolOptions.fillOptions,),
             );
             //break;
@@ -127,7 +117,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: SelectOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   selectOptions: toolOptions.selectOptions,),
             );
             //break;
@@ -135,7 +124,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: ColorPickOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   colorPickOptions: toolOptions.colorPickOptions,),
             );
             //break;
@@ -143,21 +131,18 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: EraserOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   eraserOptions: toolOptions.eraserOptions,),
             );
             //break;
           case ToolType.font:
             toolWidget = TextOptions.getWidget(
                 context: context,
-                toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                 textOptions: toolOptions.textOptions,);
             //break;
           case ToolType.spraycan:
             toolWidget = ExcludeFocus(
               child: SprayCanOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   sprayCanOptions: toolOptions.sprayCanOptions,),
             );
             //break;
@@ -165,7 +150,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
             toolWidget = ExcludeFocus(
               child: LineOptions.getWidget(
                   context: context,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   lineOptions: toolOptions.lineOptions,),
             );
             //break;
@@ -174,7 +158,6 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
               child: StampOptions.getWidget(
                   context: context,
                   showStampManager: _showStampManagerDialog,
-                  toolSettingsWidgetOptions: toolSettingsWidgetOptions,
                   stampOptions: toolOptions.stampOptions,),
             );
             //break;
@@ -185,7 +168,7 @@ class _ToolSettingsWidgetState extends State<ToolSettingsWidget>
         (
           color: Theme.of(context).primaryColor,
           child: Padding(
-            padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
+            padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
             child: SingleChildScrollView(
               child: toolWidget,
             ),

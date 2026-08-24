@@ -65,7 +65,6 @@ class StampOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final StampOptions stampOptions,
     required final Function() showStampManager,
   }) {
@@ -96,7 +95,7 @@ class StampOptions extends IToolOptions
                         if (stampData.thumbnail != null)
                         {
                           return Padding(
-                            padding: EdgeInsets.all(toolSettingsWidgetOptions.padding),
+                            padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
                             child: ValueListenableBuilder<bool>(
                               valueListenable: stampOptions.flipH,
                               builder: (final BuildContext contextH, final bool flipH, final Widget? childH) {
@@ -128,9 +127,7 @@ class StampOptions extends IToolOptions
                 ),
               ),
             ),
-            SizedBox(
-              width: toolSettingsWidgetOptions.padding,
-            ),
+            const SizedBox(width: ToolSettingsWidgetOptions.padding),
             Expanded(
               child: Column(
                 children: <Widget>[
@@ -145,7 +142,7 @@ class StampOptions extends IToolOptions
                           ),
                         ),
                       ),
-                      SizedBox(width: toolSettingsWidgetOptions.padding),
+                      const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       ValueListenableBuilder<bool>(
                         valueListenable: stampOptions.flipH,
                         builder: (final BuildContext context, final bool flipH, final Widget? child){
@@ -170,7 +167,7 @@ class StampOptions extends IToolOptions
                           ),
                         ),
                       ),
-                      SizedBox(width: toolSettingsWidgetOptions.padding),
+                      const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       ValueListenableBuilder<bool>(
                         valueListenable: stampOptions.flipV,
                         builder: (final BuildContext context, final bool flipV, final Widget? child){
@@ -192,7 +189,7 @@ class StampOptions extends IToolOptions
           child: ToolSliderRow<int>(
             label: "Scale",
             notifier: stampOptions.scale,
-            flex: toolSettingsWidgetOptions.columnWidthRatio,
+            flex: ToolSettingsWidgetOptions.columnWidthRatio,
             minVal: stampOptions.scaleMin.toDouble(),
             maxVal: stampOptions.scaleMax.toDouble(),
             //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
@@ -201,7 +198,7 @@ class StampOptions extends IToolOptions
         ToolSwitchRow(
           notifier: stampOptions.gridAlign,
           label: "Grid Align",
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ValueListenableBuilder<bool>(
           valueListenable: stampOptions.gridAlign,
@@ -220,7 +217,7 @@ class StampOptions extends IToolOptions
                     ),
                   ),
                   Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: ValueListenableBuilder<StampManagerEntryData?>(
@@ -231,9 +228,8 @@ class StampOptions extends IToolOptions
                           {
                             return ValueListenableBuilder<int>(
                               valueListenable: stampOptions.gridOffsetX,
-                              builder: (final BuildContext context, final int offsetX, final Widget? child) {
-
-
+                              builder: (final BuildContext context, final int offsetX, final Widget? child)
+                              {
                                 return KPixSlider(
                                   value: offsetX.toDouble(),
                                   max: stampData.width - 1,
@@ -278,7 +274,7 @@ class StampOptions extends IToolOptions
                     ),
                   ),
                   Expanded(
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: ValueListenableBuilder<StampManagerEntryData?>(

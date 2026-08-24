@@ -17,7 +17,6 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class FillOptions extends IToolOptions
 {
@@ -35,7 +34,6 @@ class FillOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final FillOptions fillOptions,
   })
   {

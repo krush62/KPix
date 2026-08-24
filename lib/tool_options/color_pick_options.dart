@@ -26,7 +26,6 @@ class ColorPickOptions extends IToolOptions
 
   static Widget getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final ColorPickOptions colorPickOptions,
   })
   {
@@ -36,7 +35,7 @@ class ColorPickOptions extends IToolOptions
           child: ToolSwitchRow(
             notifier: colorPickOptions.rawMode,
             label: "Raw Mode",
-            flex: toolSettingsWidgetOptions.columnWidthRatio,
+            flex: ToolSettingsWidgetOptions.columnWidthRatio,
           ),
         );
   }

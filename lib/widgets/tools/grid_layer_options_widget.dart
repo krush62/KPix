@@ -112,7 +112,6 @@ class GridLayerOptionsWidget extends StatefulWidget
 
 class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
 {
-  final ToolSettingsWidgetOptions _toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
   final GridLayerSettings _gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
   late GridType lastNormalGridType;
   late GridType lastPerspectiveGridType;
@@ -139,7 +138,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
-        padding: EdgeInsets.all(_toolSettingsWidgetOptions.padding),
+        padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
         child: SingleChildScrollView(
           child: ValueListenableBuilder<GridType>(
             valueListenable: widget.gridState.gridTypeNotifier,
@@ -218,7 +217,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.gridState.opacityNotifier,
                           builder: (final BuildContext context, final int opacity, final Widget? child) {
@@ -254,7 +253,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.gridState.brightnessNotifier,
                           builder: (final BuildContext context, final int brightness, final Widget? child) {
@@ -289,7 +288,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.gridState.intervalXNotifier,
                           builder: (final BuildContext context, final int intervalX, final Widget? child) {
@@ -325,7 +324,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.gridState.intervalYNotifier,
                           builder: (final BuildContext context, final int intervalY, final Widget? child) {
@@ -361,7 +360,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           ),
                         ),
                         Expanded(
-                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
                           child: ValueListenableBuilder<double>(
                             valueListenable: widget.gridState.horizonPositionNotifier,
                             builder: (final BuildContext context, final double horizon, final Widget? child) {
@@ -397,7 +396,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           ),
                         ),
                         Expanded(
-                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
                           child: ValueListenableBuilder<double>(
                             valueListenable: widget.gridState.vanishingPoint1Notifier,
                             builder: (final BuildContext context, final double horizon, final Widget? child) {
@@ -433,7 +432,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           ),
                         ),
                         Expanded(
-                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
                           child: ValueListenableBuilder<double>(
                             valueListenable: widget.gridState.vanishingPoint1Notifier,
                             builder: (final BuildContext context1, final double van1, final Widget? child1) {
@@ -477,7 +476,7 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           ),
                         ),
                         Expanded(
-                          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                          flex: ToolSettingsWidgetOptions.columnWidthRatio,
                           child: ValueListenableBuilder<double>(
                             valueListenable: widget.gridState.vanishingPoint3Notifier,
                             builder: (final BuildContext context, final double van3, final Widget? child) {

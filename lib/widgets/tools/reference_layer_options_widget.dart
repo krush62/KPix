@@ -92,7 +92,6 @@ class ReferenceLayerOptionsWidget extends StatefulWidget
 
 class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidget>
 {
-  final ToolSettingsWidgetOptions _toolSettingsWidgetOptions = GetIt.I.get<PreferenceManager>().toolSettingsWidgetOptions;
   final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
   final ReferenceImageManager _refManager = GetIt.I.get<ReferenceImageManager>();
 
@@ -204,7 +203,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
           ),
         ),
         Expanded(
-          flex: _toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           child: Row(
             children: <Widget>[
               Expanded(
@@ -227,7 +226,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                   },
                 ),
               ),
-              SizedBox(width: _toolSettingsWidgetOptions.padding,),
+              const SizedBox(width: ToolSettingsWidgetOptions.padding,),
               Tooltip(
                 waitDuration: AppState.toolTipDuration,
                 message: "Reset $name",
@@ -257,7 +256,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
-        padding: EdgeInsets.all(_toolSettingsWidgetOptions.padding),
+        padding: const EdgeInsets.all(ToolSettingsWidgetOptions.padding),
         child: SingleChildScrollView(
           child: ValueListenableBuilder<ReferenceImage?>(
             valueListenable: widget.referenceState.imageNotifier,
@@ -280,7 +279,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -293,8 +292,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              width: _toolSettingsWidgetOptions.padding,
+                            const SizedBox(
+                              width: ToolSettingsWidgetOptions.padding,
                             ),
                             Expanded(
                               child: Tooltip(
@@ -324,7 +323,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable:
                               widget.referenceState.opacityNotifier,
@@ -367,7 +366,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                         ),
                       ),
                       Expanded(
-                        flex: _toolSettingsWidgetOptions.columnWidthRatio,
+                        flex: ToolSettingsWidgetOptions.columnWidthRatio,
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.referenceState.zoomNotifier,
                           builder: (final BuildContext context,
@@ -406,7 +405,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           ),
                         ),
                       ),
-                      SizedBox(width: _toolSettingsWidgetOptions.padding),
+                      const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
@@ -421,7 +420,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                           ),
                         ),
                       ),
-                      SizedBox(width: _toolSettingsWidgetOptions.padding),
+                      const SizedBox(width: ToolSettingsWidgetOptions.padding),
                       Expanded(
                         child: Tooltip(
                           waitDuration: AppState.toolTipDuration,
@@ -440,7 +439,7 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                       ),
                     ],
                   ),
-                  SizedBox(height: _toolSettingsWidgetOptions.padding),
+                  const SizedBox(height: ToolSettingsWidgetOptions.padding),
                   _createSliderRow(
                     refImg: refImg,
                     notifier: widget.referenceState.brightnessNotifier,

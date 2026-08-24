@@ -43,7 +43,6 @@ class EraserOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final EraserOptions eraserOptions,
   })
   {
@@ -53,14 +52,14 @@ class EraserOptions extends IToolOptions
       children: <Widget>[
         ToolSliderRow<int>(
           label: "Size",
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.size,
           minVal: eraserOptions.sizeMin.toDouble(),
           maxVal: eraserOptions.sizeMax.toDouble(),
         ),
         ToolDropdownRow<PencilShape>(
           label: "Shape",
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.shape,
           valueMap: pencilShapeStringMap,
         ),

@@ -66,7 +66,6 @@ class PencilOptions extends IToolOptions
 
   static Column getWidget({
     required final BuildContext context,
-    required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
     required final PencilOptions pencilOptions,
   })
   {
@@ -77,7 +76,7 @@ class PencilOptions extends IToolOptions
         ToolSliderRow<int>(
           label: "Size",
           notifier: pencilOptions.size,
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
           minVal: pencilOptions.sizeMin.toDouble(),
           maxVal: pencilOptions.sizeMax.toDouble(),
           //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
@@ -86,12 +85,12 @@ class PencilOptions extends IToolOptions
           label: "Shape",
           notifier: pencilOptions.shape,
           valueMap: pencilShapeStringMap,
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ToolSwitchRow(
           notifier: pencilOptions.pixelPerfect,
           label: "Smooth",
-          flex: toolSettingsWidgetOptions.columnWidthRatio,
+          flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
       ],
     );

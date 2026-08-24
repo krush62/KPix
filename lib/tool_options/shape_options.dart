@@ -112,7 +112,6 @@ class ShapeOptions extends IToolOptions
 
   static Column getWidget(
   {   required final BuildContext context,
-      required final ToolSettingsWidgetOptions toolSettingsWidgetOptions,
       required final ShapeOptions shapeOptions,})
   {
     final HotkeyManager hotkeyManager = GetIt.I.get<HotkeyManager>();
@@ -124,7 +123,7 @@ class ShapeOptions extends IToolOptions
           label: "Test",
           notifier: shapeOptions.shape,
           iconData: shapeData,
-          iconSize: toolSettingsWidgetOptions.smallIconSize,
+          iconSize: ToolSettingsWidgetOptions.smallIconSize,
           hideLabel: true,
         ),
         Row(
@@ -139,7 +138,7 @@ class ShapeOptions extends IToolOptions
               ),
             ),
             Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              flex: ToolSettingsWidgetOptions.columnWidthRatio,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ValueListenableBuilder<bool>(
@@ -184,7 +183,7 @@ class ShapeOptions extends IToolOptions
               ),
             ),
             Expanded(
-              flex: toolSettingsWidgetOptions.columnWidthRatio,
+              flex: ToolSettingsWidgetOptions.columnWidthRatio,
               child: ValueListenableBuilder<bool>(
                 valueListenable: shapeOptions.strokeOnly,
                 builder: (final BuildContext context, final bool strokeOnly, final Widget? child){
@@ -234,7 +233,7 @@ class ShapeOptions extends IToolOptions
                   child: ToolSliderRow<int>(
                     label: "Corner Radius",
                     notifier: shapeOptions.cornerRadius,
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     minVal: shapeOptions.cornerRadiusMin.toDouble(),
                     maxVal: shapeOptions.cornerRadiusMax.toDouble(),
                   ),
@@ -246,7 +245,7 @@ class ShapeOptions extends IToolOptions
                   child: ToolSliderRow<int>(
                     notifier: shapeOptions.ellipseAngle,
                     label: "Angle",
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     minVal: shapeOptions.ellipseAngleMin.toDouble(),
                     maxVal: shapeOptions.ellipseAngleMax.toDouble(),
                     //divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
@@ -257,7 +256,7 @@ class ShapeOptions extends IToolOptions
                   child: ToolSliderRow<int>(
                     notifier: shapeOptions.cornerCount,
                     label: "Corner Count",
-                    flex: toolSettingsWidgetOptions.columnWidthRatio,
+                    flex: ToolSettingsWidgetOptions.columnWidthRatio,
                     minVal: shapeOptions.cornerCountMin.toDouble(),
                     maxVal: shapeOptions.cornerCountMax.toDouble(),
                     //divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,

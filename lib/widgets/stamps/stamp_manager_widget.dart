@@ -18,7 +18,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -49,13 +48,12 @@ class StampManager
 
 }
 
-class StampManagerOptions
+abstract final class _StampManagerOptions
 {
-  final int colCount;
-  final double entryAspectRatio;
-  final double maxWidth;
-  final double maxHeight;
-  StampManagerOptions({required this.colCount, required this.entryAspectRatio, required this.maxWidth, required this.maxHeight});
+  static const int colCount = 6;
+  static const double entryAspectRatio = 0.75;
+  static const double maxWidth = 800.0;
+  static const double maxHeight = 600.0;
 }
 
 class StampManagerWidget extends StatefulWidget
@@ -70,7 +68,6 @@ class StampManagerWidget extends StatefulWidget
 
 class _StampManagerWidgetState extends State<StampManagerWidget>
 {
-  final StampManagerOptions _options = GetIt.I.get<PreferenceManager>().stampManagerOptions;
   final StampManager _stampManager = GetIt.I.get<StampManager>();
   final ValueNotifier<List<StampManagerEntryWidget>> _fileEntries = ValueNotifier<List<StampManagerEntryWidget>>(<StampManagerEntryWidget>[]);
   final ValueNotifier<StampManagerEntryWidget?> _selectedWidget = ValueNotifier<StampManagerEntryWidget?>(null);
@@ -179,11 +176,11 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
   Widget build(final BuildContext context)
   {
     return KPixAnimationWidget(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         minHeight: OverlayEntryAlertDialogOptions.minHeight,
         minWidth: OverlayEntryAlertDialogOptions.minWidth,
-        maxHeight: _options.maxHeight,
-        maxWidth: _options.maxWidth,
+        maxHeight: _StampManagerOptions.maxHeight,
+        maxWidth: _StampManagerOptions.maxWidth,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -237,9 +234,9 @@ class _StampManagerWidgetState extends State<StampManagerWidget>
                 valueListenable: _fileEntries,
                 builder: (final BuildContext context, final List<StampManagerEntryWidget> sList, final Widget? child) {
                   return GridView.extent(
-                    maxCrossAxisExtent: _options.maxWidth / _options.colCount,
+                    maxCrossAxisExtent: _StampManagerOptions.maxWidth / _StampManagerOptions.colCount,
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    childAspectRatio: _options.entryAspectRatio,
+                    childAspectRatio: _StampManagerOptions.entryAspectRatio,
                     mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                     crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
                     children: sList.toList(),

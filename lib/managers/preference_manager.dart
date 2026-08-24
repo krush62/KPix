@@ -41,8 +41,6 @@ import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
@@ -51,11 +49,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-  Layout_StampManagerEntry_BorderWidth(defaultValue: 2.0),
-  Layout_StampManagerEntry_BorderRadius(defaultValue: 3.0),
-  Layout_StampManager_EntryAspectRatio(defaultValue: 0.75),
-  Layout_StampManager_MaxWidth(defaultValue: 800.0),
-  Layout_StampManager_MaxHeight(defaultValue: 600.0),
 
   ReferenceLayer_AspectRatioDefault(defaultValue: 0.0),
   ReferenceLayer_AspectRatioMax(defaultValue: 5.0),
@@ -158,10 +151,6 @@ enum PreferenceInt
   Layout_CanvasSize_SizeMin(defaultValue: 4),
   Layout_CanvasSize_SizeMax(defaultValue: 640),
   Layout_CanvasSize_PreviewSize(defaultValue: 300),
-
-  Layout_StampManagerEntry_LayoutFlex(defaultValue: 6),
-  Layout_StampManager_ColCount(defaultValue: 6),
-
 
   ReferenceLayer_OpacityDefault(defaultValue: 100),
   ReferenceLayer_OpacityMax(defaultValue: 100),
@@ -473,8 +462,6 @@ class PreferenceManager
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
   late CanvasSizeOptions canvasSizeOptions;
-  late StampManagerEntryOptions stampManagerEntryOptions;
-  late StampManagerOptions stampManagerOptions;
   late KPixPainterOptions kPixPainterOptions;
   late SymmetryWidgetOptions symmetryWidgetOptions;
   late FrameConstraints frameConstraints;
@@ -628,15 +615,6 @@ class PreferenceManager
         sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
         sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
         previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize),);
-    stampManagerEntryOptions = StampManagerEntryOptions(
-      borderRadius: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderRadius),
-      borderWidth: _getValueD(PreferenceDouble.Layout_StampManagerEntry_BorderWidth),
-      layoutFlex: _getValueI(PreferenceInt.Layout_StampManagerEntry_LayoutFlex),);
-    stampManagerOptions = StampManagerOptions(
-      colCount: _getValueI(PreferenceInt.Layout_StampManager_ColCount),
-      entryAspectRatio: _getValueD(PreferenceDouble.Layout_StampManager_EntryAspectRatio),
-      maxWidth: _getValueD(PreferenceDouble.Layout_StampManager_MaxWidth),
-      maxHeight: _getValueD(PreferenceDouble.Layout_StampManager_MaxHeight),);
 
     referenceLayerSettings = ReferenceLayerSettings(
       opacityDefault: _getValueI(PreferenceInt.ReferenceLayer_OpacityDefault),

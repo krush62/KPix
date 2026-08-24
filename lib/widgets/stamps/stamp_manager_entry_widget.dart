@@ -17,21 +17,13 @@
 import 'dart:collection';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 
-class StampManagerEntryOptions
+abstract final class _StampManagerEntryOptions
 {
-  final double borderWidth;
-  final double borderRadius;
-  final int layoutFlex;
-
-  StampManagerEntryOptions({
-    required this.borderWidth,
-    required this.borderRadius,
-    required this.layoutFlex,
-  });
+  static const double borderWidth = 2.0;
+  static const double borderRadius = 3.0;
+  static const int layoutFlex = 6;
 }
 
 class StampManagerEntryData
@@ -70,8 +62,6 @@ class StampManagerEntryWidget extends StatefulWidget
 
 class _StampManagerEntryWidgetState extends State<StampManagerEntryWidget>
 {
-  final StampManagerEntryOptions _options = GetIt.I.get<PreferenceManager>().stampManagerEntryOptions;
-
   void _onTap()
   {
     widget.selectedWidget.value = widget;
@@ -91,9 +81,9 @@ class _StampManagerEntryWidgetState extends State<StampManagerEntryWidget>
               color: Theme.of(context).primaryColor,
               border: Border.all(
                 color: isSelected ? Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
-                width: _options.borderWidth,
+                width: _StampManagerEntryOptions.borderWidth,
               ),
-              borderRadius: BorderRadius.all(Radius.circular(_options.borderRadius)),
+              borderRadius: const BorderRadius.all(Radius.circular(_StampManagerEntryOptions.borderRadius)),
             ),
             child: Column(
               children: <Widget>[
@@ -106,9 +96,9 @@ class _StampManagerEntryWidgetState extends State<StampManagerEntryWidget>
                   ),
                 ),
                 Expanded(
-                  flex: _options.layoutFlex,
+                  flex: _StampManagerEntryOptions.layoutFlex,
                   child: Padding(
-                    padding: EdgeInsets.all(_options.borderWidth),
+                    padding: const EdgeInsets.all(_StampManagerEntryOptions.borderWidth),
                     child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,),
                   ),
                 ),

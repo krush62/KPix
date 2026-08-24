@@ -28,7 +28,6 @@ import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
@@ -96,8 +95,7 @@ class GridLayerState extends LayerState
     vanishingPoint1Notifier.addListener(_valueChanged);
     vanishingPoint2Notifier.addListener(_valueChanged);
     vanishingPoint3Notifier.addListener(_valueChanged);
-    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+    Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
   }
 
   factory GridLayerState.from({required final GridLayerState other})

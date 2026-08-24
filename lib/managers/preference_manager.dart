@@ -18,7 +18,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
-import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/main.dart';
 import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
@@ -58,18 +57,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_LayerWidget_OuterPadding(defaultValue: 8.0),
-  Layout_LayerWidget_InnerPadding(defaultValue: 4.0),
-  Layout_LayerWidget_BorderRadius(defaultValue: 8.0),
-  Layout_LayerWidget_ButtonSizeMin(defaultValue: 24.0),
-  Layout_LayerWidget_ButtonSizeMax(defaultValue: 32.0),
-  Layout_LayerWidget_IconSize(defaultValue: 16.0),
-  Layout_LayerWidget_Height(defaultValue: 64.0),
-  Layout_LayerWidget_DragOpacity(defaultValue: 0.75),
-  Layout_LayerWidget_BorderWidth(defaultValue: 2.0),
-  Layout_LayerWidget_DragFeedbackSize(defaultValue: 64.0),
-  Layout_LayerWidget_DragTargetHeight(defaultValue: 64.0),
 
   Layout_SelectionBar_IconHeight(defaultValue: 20.0),
   Layout_SelectionBar_Padding(defaultValue: 4.0),
@@ -192,10 +179,6 @@ enum PreferenceInt
 {
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
-
-  Layout_LayerWidget_DragTargetShowDuration(defaultValue: 100),
-  Layout_LayerWidget_ThumbUpdateTimerMSec(defaultValue: 20),
-  Layout_LayerWidget_AddLayerButtonSize(defaultValue: 32),
 
   Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
@@ -519,7 +502,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late LayerWidgetOptions layerWidgetOptions;
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
   late SelectionBarWidgetOptions selectionBarWidgetOptions;
@@ -653,21 +635,6 @@ class PreferenceManager
         shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),
         isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled),);
-    layerWidgetOptions = LayerWidgetOptions(
-        outerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_OuterPadding),
-        innerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_InnerPadding),
-        borderRadius: _getValueD(PreferenceDouble.Layout_LayerWidget_BorderRadius),
-        buttonSizeMin: _getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMin),
-        buttonSizeMax: _getValueD(PreferenceDouble.Layout_LayerWidget_ButtonSizeMax),
-        iconSize: _getValueD(PreferenceDouble.Layout_LayerWidget_IconSize),
-        height: _getValueD(PreferenceDouble.Layout_LayerWidget_Height),
-        borderWidth: _getValueD(PreferenceDouble.Layout_LayerWidget_BorderWidth),
-        dragFeedbackSize: _getValueD(PreferenceDouble.Layout_LayerWidget_DragFeedbackSize),
-        dragOpacity: _getValueD(PreferenceDouble.Layout_LayerWidget_DragOpacity),
-        dragTargetHeight: _getValueD(PreferenceDouble.Layout_LayerWidget_DragTargetHeight),
-        dragTargetShowDuration: _getValueI(PreferenceInt.Layout_LayerWidget_DragTargetShowDuration),
-        thumbUpdateTimerMsec: _getValueI(PreferenceInt.Layout_LayerWidget_ThumbUpdateTimerMSec),
-        addButtonSize: _getValueI(PreferenceInt.Layout_LayerWidget_AddLayerButtonSize),);
     drawingLayerSettingsConstraints = DrawingLayerSettingsConstraints(
         darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
         darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),

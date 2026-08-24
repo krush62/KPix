@@ -25,7 +25,6 @@ import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
@@ -45,8 +44,6 @@ class LayerWidget extends StatefulWidget {
 
 class _LayerWidgetState extends State<LayerWidget> {
   final AppState _appState = GetIt.I.get<AppState>();
-  final LayerWidgetOptions _options =
-      GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
 
@@ -170,16 +167,16 @@ class _LayerWidgetState extends State<LayerWidget> {
   Widget build(final BuildContext context)
   {
     return Padding(
-      padding: EdgeInsets.only(
-          left: _options.outerPadding, right: _options.outerPadding,),
+      padding: const EdgeInsets.only(
+          left: LayerWidgetOptions.outerPadding, right: LayerWidgetOptions.outerPadding,),
       child: SizedBox(
-        height: _options.height,
+        height: LayerWidgetOptions.height,
         child: ValueListenableBuilder<bool>(
           valueListenable: widget.layerState.selectedInCurrentFrameNotifier,
           builder: (final BuildContext context, final bool isSelected,final Widget? child,)
           {
             final Widget iconButton = Padding(
-              padding: EdgeInsets.only(right: _options.innerPadding),
+              padding: const EdgeInsets.only(right: LayerWidgetOptions.innerPadding),
               child: ClipRect(
                 child: Align(
                   widthFactor: 0.5,
@@ -192,16 +189,16 @@ class _LayerWidgetState extends State<LayerWidget> {
                 Draggable<LayerState>(
                   data: widget.layerState,
                   feedback: Container(
-                    width: _options.dragFeedbackSize * 3,
-                    height: _options.dragFeedbackSize,
+                    width: LayerWidgetOptions.dragFeedbackSize * 3,
+                    height: LayerWidgetOptions.dragFeedbackSize,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withAlpha((_options.dragOpacity * 255.0).toInt()),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(_options.borderRadius),
+                      color: Theme.of(context).primaryColor.withAlpha((LayerWidgetOptions.dragOpacity * 255.0).toInt()),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(LayerWidgetOptions.borderRadius),
                       ),
                       border: Border.all(
                         color: Theme.of(context).primaryColorDark,
-                        width: _options.borderWidth,
+                        width: LayerWidgetOptions.borderWidth,
                       ),
                     ),
                   ),
@@ -210,19 +207,19 @@ class _LayerWidgetState extends State<LayerWidget> {
                 ),
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(_options.innerPadding),
+                    padding: const EdgeInsets.all(LayerWidgetOptions.innerPadding),
                     decoration: BoxDecoration(
                       color: _appState.timeline.isLayerLinked(layer: widget.layerState) ?
                         getColorForLayer(hashCode: widget.layerState.hashCode, context: context, selected: true):
                         Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(_options.borderRadius),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(LayerWidgetOptions.borderRadius),
                       ),
                       border: Border.all(
                         color: isSelected
                             ? Theme.of(context).primaryColorLight
                             : Theme.of(context).primaryColorDark,
-                        width: _options.borderWidth,
+                        width: LayerWidgetOptions.borderWidth,
                       ),
                     ),
                     child: Row(
@@ -230,8 +227,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         Padding(
-                          padding: EdgeInsets.only(
-                            right: _options.innerPadding,
+                          padding: const EdgeInsets.only(
+                            right: LayerWidgetOptions.innerPadding,
                           ),
                           child: Builder(
                             builder: (final BuildContext context) {
@@ -256,17 +253,17 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           waitDuration: AppState.toolTipDuration,
                                           child: IconButton.outlined(
                                             padding: EdgeInsets.zero,
-                                            constraints: BoxConstraints(
-                                              maxHeight: _options.buttonSizeMax,
-                                              maxWidth: _options.buttonSizeMax,
-                                              minWidth: _options.buttonSizeMin,
-                                              minHeight: _options.buttonSizeMin,
+                                            constraints: const BoxConstraints(
+                                              maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                              maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                              minWidth: LayerWidgetOptions.buttonSizeMin,
+                                              minHeight: LayerWidgetOptions.buttonSizeMin,
                                             ),
                                             style: ButtonStyle(
-                                              shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                              shape: const WidgetStatePropertyAll<OutlinedBorder?>(
                                                 RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.all(
-                                                    Radius.circular(_options.borderRadius / 2),
+                                                    Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                                   ),
                                                 ),
                                               ),
@@ -288,7 +285,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                             onPressed: _visibilityButtonPressed,
                                             icon: Icon(
                                               visibility.icon,
-                                              size: _options.iconSize,
+                                              size: LayerWidgetOptions.iconSize,
                                             ),
                                           ),
                                         );
@@ -303,7 +300,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                          (widget.layerState as RasterableLayerState)
                                             .lockState;
                                 leftColumn.children
-                                    .add(SizedBox(height: _options.innerPadding));
+                                    .add(const SizedBox(height: LayerWidgetOptions.innerPadding));
                                 leftColumn.children.add(
                                   Expanded(
                                     child: ValueListenableBuilder<LayerLockState>(
@@ -319,17 +316,17 @@ class _LayerWidgetState extends State<LayerWidget> {
                                           waitDuration: AppState.toolTipDuration,
                                           child: IconButton.outlined(
                                             padding: EdgeInsets.zero,
-                                            constraints: BoxConstraints(
-                                              maxHeight: _options.buttonSizeMax,
-                                              maxWidth: _options.buttonSizeMax,
-                                              minWidth: _options.buttonSizeMin,
-                                              minHeight: _options.buttonSizeMin,
+                                            constraints: const BoxConstraints(
+                                              maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                              maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                              minWidth: LayerWidgetOptions.buttonSizeMin,
+                                              minHeight: LayerWidgetOptions.buttonSizeMin,
                                             ),
                                             style: ButtonStyle(
-                                            shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                            shape: const WidgetStatePropertyAll<OutlinedBorder?>(
                                               RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.all(
-                                                  Radius.circular(_options.borderRadius / 2),
+                                                  Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                                 ),
                                               ),
                                             ),
@@ -351,7 +348,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                             onPressed: _lockButtonPressed,
                                             icon: Icon(
                                               lock.icon,
-                                              size: _options.iconSize,
+                                              size: LayerWidgetOptions.iconSize,
                                             ),
                                           ),
                                         );
@@ -385,7 +382,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                   Center(
                                     child: Icon(
                                       widget.layerState.icon,
-                                      size: _options.height / 2,
+                                      size: LayerWidgetOptions.height / 2,
                                       color: Theme.of(context).primaryColorLight,
                                       shadows: <Shadow>[
                                         Shadow(
@@ -401,8 +398,8 @@ class _LayerWidgetState extends State<LayerWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(
-                            left: _options.innerPadding,
+                          padding: const EdgeInsets.only(
+                            left: LayerWidgetOptions.innerPadding,
                           ),
                           child: Builder(
                             builder: (final BuildContext context) {
@@ -429,17 +426,17 @@ class _LayerWidgetState extends State<LayerWidget> {
                                               builder: (final BuildContext context, final LayerLockState lockState, final Widget? child) {
                                                 return IconButton.outlined(
                                                   padding: EdgeInsets.zero,
-                                                  constraints: BoxConstraints(
-                                                    maxHeight: _options.buttonSizeMax,
-                                                    maxWidth: _options.buttonSizeMax,
-                                                    minWidth: _options.buttonSizeMin,
-                                                    minHeight: _options.buttonSizeMin,
+                                                  constraints: const BoxConstraints(
+                                                    maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                                    maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                                    minWidth: LayerWidgetOptions.buttonSizeMin,
+                                                    minHeight: LayerWidgetOptions.buttonSizeMin,
                                                   ),
-                                                  style: ButtonStyle(
+                                                  style: const ButtonStyle(
                                                     shape: WidgetStatePropertyAll<OutlinedBorder?>(
                                                       RoundedRectangleBorder(
                                                         borderRadius: BorderRadius.all(
-                                                          Radius.circular(_options.borderRadius / 2),
+                                                          Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                                         ),
                                                       ),
                                                     ),
@@ -447,9 +444,9 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                     MaterialTapTargetSize.shrinkWrap,
                                                   ),
                                                   onPressed: lockState != LayerLockState.locked ? _actionsButtonPressed : null,
-                                                  icon: Icon(
+                                                  icon: const Icon(
                                                     TablerIcons.menu_2,
-                                                    size: _options.iconSize,
+                                                    size: LayerWidgetOptions.iconSize,
                                                   ),
                                                 );
                                               },
@@ -467,7 +464,7 @@ class _LayerWidgetState extends State<LayerWidget> {
                                   widget.layerState.runtimeType ==
                                       ShadingLayerState) {
                                 rightColumn.children
-                                    .add(SizedBox(height: _options.innerPadding));
+                                    .add(const SizedBox(height: LayerWidgetOptions.innerPadding));
 
                                 rightColumn.children.add(
                                   Expanded(
@@ -494,17 +491,17 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                   final bool hasChanges = layer is RasterableLayerState && layer.layerSettings.hasActiveSettings();
                                                   return IconButton.outlined(
                                                     padding: EdgeInsets.zero,
-                                                    constraints: BoxConstraints(
-                                                      maxHeight: _options.buttonSizeMax,
-                                                      maxWidth: _options.buttonSizeMax,
-                                                      minWidth: _options.buttonSizeMin,
-                                                      minHeight: _options.buttonSizeMin,
+                                                    constraints: const BoxConstraints(
+                                                      maxHeight: LayerWidgetOptions.buttonSizeMax,
+                                                      maxWidth: LayerWidgetOptions.buttonSizeMax,
+                                                      minWidth: LayerWidgetOptions.buttonSizeMin,
+                                                      minHeight: LayerWidgetOptions.buttonSizeMin,
                                                     ),
                                                     style: ButtonStyle(
-                                                      shape: WidgetStatePropertyAll<OutlinedBorder?>(
+                                                      shape: const WidgetStatePropertyAll<OutlinedBorder?>(
                                                         RoundedRectangleBorder(
                                                           borderRadius: BorderRadius.all(
-                                                            Radius.circular(_options.borderRadius / 2),
+                                                            Radius.circular(LayerWidgetOptions.borderRadius / 2),
                                                           ),
                                                         ),
                                                       ),
@@ -520,9 +517,9 @@ class _LayerWidgetState extends State<LayerWidget> {
                                                             .primaryColor,),
                                                     ),
                                                     onPressed: lockState != LayerLockState.locked ? _settingsButtonPressed : null,
-                                                    icon: Icon(
+                                                    icon: const Icon(
                                                       TablerIcons.settings,
-                                                      size: _options.iconSize,
+                                                      size: LayerWidgetOptions.iconSize,
                                                     ),
                                                   );
                                                 },

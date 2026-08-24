@@ -16,37 +16,20 @@
  *
  */
 
-class LayerWidgetOptions
+abstract final class LayerWidgetOptions
 {
-  final double outerPadding;
-  final double innerPadding;
-  final double borderRadius;
-  final double buttonSizeMin;
-  final double buttonSizeMax;
-  final double iconSize;
-  final double height;
-  final double dragOpacity;
-  final double borderWidth;
-  final double dragFeedbackSize;
-  final double dragTargetHeight;
-  final int dragTargetShowDuration;
-  final int thumbUpdateTimerMsec;
-  final int addButtonSize;
-
-  LayerWidgetOptions({
-    required this.outerPadding,
-    required this.innerPadding,
-    required this.borderRadius,
-    required this.buttonSizeMin,
-    required this.buttonSizeMax,
-    required this.iconSize,
-    required this.height,
-    required this.dragOpacity,
-    required this.borderWidth,
-    required this.dragFeedbackSize,
-    required this.dragTargetHeight,
-    required this.dragTargetShowDuration,
-    required this.thumbUpdateTimerMsec,
-    required this.addButtonSize,
-  });
+  static const double outerPadding = 8.0;
+  static const double innerPadding = 4.0;
+  static const double borderRadius = 8.0;
+  static const double buttonSizeMin = 24.0;
+  static const double buttonSizeMax = 32.0;
+  static const double iconSize = 16.0;
+  static const double height = 64.0;
+  static const double dragOpacity = 0.75;
+  static const double borderWidth = 2.0;
+  static const double dragFeedbackSize = 64.0;
+  static const double dragTargetHeight = 64.0;
+  static const int dragTargetShowDuration = 100;
+  static const int thumbUpdateTimerMsec = 20;
+  static const int addButtonSize = 32;
 }

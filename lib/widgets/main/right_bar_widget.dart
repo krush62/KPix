@@ -69,7 +69,6 @@ class RightBarWidget extends StatefulWidget
 class _RightBarWidgetState extends State<RightBarWidget>
 {
   final AppState _appState = GetIt.I.get<AppState>();
-  final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final BehaviorPreferenceContent _behaviorOptions = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
 
   final OverlayPortalController _addLayerPortalController = OverlayPortalController();
@@ -125,9 +124,9 @@ class _RightBarWidgetState extends State<RightBarWidget>
       widgetList.add(DragTarget<LayerState>(
         builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
           return AnimatedContainer(
-            height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
+            height: candidateItems.isEmpty ? LayerWidgetOptions.outerPadding : LayerWidgetOptions.dragTargetHeight,
             color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
-            duration: Duration(milliseconds: _layerWidgetOptions.dragTargetShowDuration),
+            duration: const Duration(milliseconds: LayerWidgetOptions.dragTargetShowDuration),
           );
         },
         onAcceptWithDetails: (final DragTargetDetails<LayerState> details) {
@@ -147,8 +146,8 @@ class _RightBarWidgetState extends State<RightBarWidget>
     widgetList.add(DragTarget<LayerState>(
       builder: (final BuildContext context, final List<LayerState?> candidateItems, final List<dynamic> rejectedItems) {
         return Divider(
-          height: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
-          thickness: candidateItems.isEmpty ? _layerWidgetOptions.outerPadding : _layerWidgetOptions.dragTargetHeight,
+          height: candidateItems.isEmpty ? LayerWidgetOptions.outerPadding : LayerWidgetOptions.dragTargetHeight,
+          thickness: candidateItems.isEmpty ? LayerWidgetOptions.outerPadding : LayerWidgetOptions.dragTargetHeight,
           color: candidateItems.isEmpty ? Theme.of(context).primaryColorDark : Theme.of(context).primaryColorLight,
         );
       },
@@ -180,7 +179,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColorDark,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(LayerWidgetOptions.borderRadius), bottomLeft: Radius.circular(LayerWidgetOptions.borderRadius)),
                   ),
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _appState.hasProjectNotifier,
@@ -191,7 +190,7 @@ class _RightBarWidgetState extends State<RightBarWidget>
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
                             Padding(
-                              padding: EdgeInsets.only(top: _layerWidgetOptions.outerPadding, left: _layerWidgetOptions.outerPadding, right: _layerWidgetOptions.outerPadding),
+                              padding: const EdgeInsets.only(top: LayerWidgetOptions.outerPadding, left: LayerWidgetOptions.outerPadding, right: LayerWidgetOptions.outerPadding),
                               child: OverlayAnchor(
                                 anchorKey: _addLayerAnchorKey,
                                 child: Tooltip(
@@ -222,9 +221,9 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                       icon: const Icon(TablerIcons.plus),
                                       style: IconButton.styleFrom(
                                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        minimumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
-                                        maximumSize: Size(_layerWidgetOptions.addButtonSize.toDouble(), _layerWidgetOptions.addButtonSize.toDouble()),
-                                        iconSize: _layerWidgetOptions.addButtonSize.toDouble() - _layerWidgetOptions.innerPadding,
+                                        minimumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                        maximumSize: Size(LayerWidgetOptions.addButtonSize.toDouble(), LayerWidgetOptions.addButtonSize.toDouble()),
+                                        iconSize: LayerWidgetOptions.addButtonSize.toDouble() - LayerWidgetOptions.innerPadding,
                                         padding: EdgeInsets.zero,
                                       ),
                                     ),
@@ -305,12 +304,12 @@ class _RightBarWidgetState extends State<RightBarWidget>
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).primaryColor,
                                   border: Border(
-                                    left: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
-                                    bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
-                                    top: BorderSide(color: Theme.of(context).primaryColorLight, width: _layerWidgetOptions.borderWidth,),
+                                    left: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
+                                    bottom: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
+                                    top: BorderSide(color: Theme.of(context).primaryColorLight, width: LayerWidgetOptions.borderWidth,),
 
                                   ),
-                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(_layerWidgetOptions.borderRadius), bottomLeft: Radius.circular(_layerWidgetOptions.borderRadius)),
+                                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(LayerWidgetOptions.borderRadius), bottomLeft: Radius.circular(LayerWidgetOptions.borderRadius)),
                                 ),
 
                                 child: Column(

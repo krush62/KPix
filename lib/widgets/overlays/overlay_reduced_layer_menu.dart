@@ -19,7 +19,6 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/overlays/overlay_anchor.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -46,7 +45,6 @@ class OverlayReducedLayerMenu extends StatefulWidget
 
 class _OverlayReducedLayerMenuState extends State<OverlayReducedLayerMenu> with SingleTickerProviderStateMixin
 {
-  final LayerWidgetOptions _layerWidgetOptions = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   /// The number of entries the menu is sized for, which has to match the number
@@ -116,7 +114,7 @@ class _OverlayReducedLayerMenuState extends State<OverlayReducedLayerMenu> with 
       height: _height,
       offset: Offset(
         -_width,
-        _layerWidgetOptions.height/2 - _height/2 - _layerWidgetOptions.innerPadding,
+        LayerWidgetOptions.height/2 - _height/2 - LayerWidgetOptions.innerPadding,
       ),
       child: Material(
         color: Colors.transparent,

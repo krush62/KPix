@@ -126,8 +126,7 @@ class ShadingLayerState extends RasterableLayerState
   void _init()
   {
     update();
-    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+    Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
 
     settings.addListener(() {
       _settingsChanged();

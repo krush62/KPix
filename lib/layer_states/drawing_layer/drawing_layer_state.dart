@@ -106,8 +106,7 @@ class DrawingLayerState extends RasterableLayerState
     _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result));
     lockState.value = lState;
     visibilityState.value = vState;
-    final LayerWidgetOptions options = GetIt.I.get<PreferenceManager>().layerWidgetOptions;
-    Timer.periodic(Duration(milliseconds: options.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
+    Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
     settings.addListener(()
     {
       _settingsChanged();

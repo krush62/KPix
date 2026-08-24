@@ -61,6 +61,7 @@ abstract final class _CanvasOptions
   static const int historyCheckPollRate = 250;
   static const double minVisibilityFactor = 0.1;
   static const int idleTimerRate = 15;
+  static const int opacityDuration = 150;
 }
 
 /// Status of the touch pointer.
@@ -198,7 +199,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
     _selectionBarAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions.opacityDuration),
+      duration: const Duration(milliseconds: _CanvasOptions.opacityDuration),
     );
     _selectionBarAnimation = CurvedAnimation(
       parent: _selectionBarAnimationController,

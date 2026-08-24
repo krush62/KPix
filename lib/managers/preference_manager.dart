@@ -39,7 +39,6 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
-import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
@@ -57,9 +56,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_SelectionBar_IconHeight(defaultValue: 20.0),
-  Layout_SelectionBar_Padding(defaultValue: 4.0),
 
   Layout_CanvasOperations_IconHeight(defaultValue: 20.0),
   Layout_CanvasOperations_ButtonHeight(defaultValue: 36.0),
@@ -179,8 +175,6 @@ enum PreferenceInt
 {
 
   Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
-
-  Layout_SelectionBar_OpacityDuration(defaultValue: 150),
 
   Layout_CanvasSize_SizeMin(defaultValue: 4),
   Layout_CanvasSize_SizeMax(defaultValue: 640),
@@ -504,7 +498,6 @@ class PreferenceManager
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
-  late SelectionBarWidgetOptions selectionBarWidgetOptions;
   late CanvasOperationsWidgetOptions canvasOperationsWidgetOptions;
   late CanvasSizeOptions canvasSizeOptions;
   late PaletteManagerEntryOptions paletteManagerEntryOptions;
@@ -662,10 +655,6 @@ class PreferenceManager
       minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
       maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
       defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),);
-    selectionBarWidgetOptions = SelectionBarWidgetOptions(
-        iconHeight: _getValueD(PreferenceDouble.Layout_SelectionBar_IconHeight,),
-        padding: _getValueD(PreferenceDouble.Layout_SelectionBar_Padding),
-        opacityDuration: _getValueI(PreferenceInt.Layout_SelectionBar_OpacityDuration),);
     canvasOperationsWidgetOptions = CanvasOperationsWidgetOptions(
         iconHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_IconHeight),
         buttonHeight: _getValueD(PreferenceDouble.Layout_CanvasOperations_ButtonHeight),

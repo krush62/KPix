@@ -28,13 +28,10 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/overlays/overlay_selection_align_menu.dart';
 
 /// Layout options for the [SelectionBarWidget].
-class SelectionBarWidgetOptions
+abstract final class _SelectionBarWidgetOptions
 {
-  final double iconHeight;
-  final double padding;
-  final int opacityDuration;
-
-  SelectionBarWidgetOptions({required this.iconHeight, required this.padding, required this.opacityDuration});
+  static const double iconHeight = 20.0;
+  static const double padding = 4.0;
 }
 
 /// Widget for all selection related operations (copy, paste, transform, ...).
@@ -49,7 +46,6 @@ class SelectionBarWidget extends StatefulWidget
 
 class _SelectionBarWidgetState extends State<SelectionBarWidget>
 {
-  final SelectionBarWidgetOptions _options = GetIt.I.get<PreferenceManager>().selectionBarWidgetOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final SelectionState _selectionState = GetIt.I.get<AppState>().selectionState;
   final AppState _appState = GetIt.I.get<AppState>();
@@ -108,13 +104,13 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
   Padding _createBarButton({required final String tooltip, required final IconData icon, required final void Function() onPressedFunc, final bool isEnabled = true})
   {
     return Padding(
-      padding: EdgeInsets.all(_options.padding),
+      padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
       child: Tooltip(
         message: tooltip,
         waitDuration: AppState.toolTipDuration,
         child: IconButton.outlined(
           onPressed: isEnabled ? onPressedFunc : null,
-          icon: Icon(icon, size: _options.iconHeight),
+          icon: Icon(icon, size: _SelectionBarWidgetOptions.iconHeight),
         ),
       ),
     );
@@ -196,7 +192,7 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                 isEnabled: !_selectionState.selection.isEmpty,
               ),
               Padding(
-                padding: EdgeInsets.all(_options.padding),
+                padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
                 child: OverlayAnchor(
                   anchorKey: _alignAnchorKey,
                   child: Tooltip(
@@ -226,9 +222,9 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                       },
                       child: IconButton.outlined(
                         onPressed: _selectionState.selection.isEmpty ? null : _alignmentController.show,
-                        icon: Icon(
+                        icon: const Icon(
                           TablerIcons.keyframe_align_center,
-                          size: _options.iconHeight,
+                          size: _SelectionBarWidgetOptions.iconHeight,
                         ),
                       ),
                     ),
@@ -236,15 +232,15 @@ class _SelectionBarWidgetState extends State<SelectionBarWidget>
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(_options.padding),
+                padding: const EdgeInsets.all(_SelectionBarWidgetOptions.padding),
                 child: Tooltip(
                   message: "Delete${_hotkeyManager.getShortcutString(action: HotkeyAction.selectionDelete)}",
                   waitDuration: AppState.toolTipDuration,
                   child: IconButton.outlined(
                     onPressed: _selectionState.selection.isEmpty ? null : _selectionState.delete,
-                    icon: Icon(
+                    icon: const Icon(
                       TablerIcons.trash,
-                      size: _options.iconHeight,
+                      size: _SelectionBarWidgetOptions.iconHeight,
                     ),
                   ),
                 ),

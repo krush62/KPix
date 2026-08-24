@@ -45,7 +45,6 @@ import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/file/project_manager_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
-import 'package:kpix/widgets/main/main_button_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/palette/palette_manager_widget.dart';
@@ -59,10 +58,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PreferenceDouble
 {
-
-  Layout_MainButton_Padding(defaultValue: 8.0),
-  Layout_MainButton_MenuIconSize(defaultValue: 16.0),
-  Layout_MainButton_DividerSize(defaultValue: 2.0),
 
   Layout_LayerWidget_OuterPadding(defaultValue: 8.0),
   Layout_LayerWidget_InnerPadding(defaultValue: 4.0),
@@ -524,7 +519,6 @@ class PreferenceManager
   final Map<PreferenceInt, _Pair<int>> _intMap = <PreferenceInt, _Pair<int>>{};
   final Map<PreferenceBool, _Pair<bool>> _boolMap = <PreferenceBool, _Pair<bool>>{};
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
-  late MainButtonWidgetOptions mainButtonWidgetOptions;
   late LayerWidgetOptions layerWidgetOptions;
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
@@ -659,10 +653,6 @@ class PreferenceManager
         shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
         onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),
         isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled),);
-    mainButtonWidgetOptions = MainButtonWidgetOptions(
-        padding: _getValueD(PreferenceDouble.Layout_MainButton_Padding),
-        menuIconSize: _getValueD(PreferenceDouble.Layout_MainButton_MenuIconSize),
-        dividerSize: _getValueD(PreferenceDouble.Layout_MainButton_DividerSize),);
     layerWidgetOptions = LayerWidgetOptions(
         outerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_OuterPadding),
         innerPadding: _getValueD(PreferenceDouble.Layout_LayerWidget_InnerPadding),

@@ -38,17 +38,11 @@ import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 
-class MainButtonWidgetOptions
+abstract final class _MainButtonWidgetOptions
 {
-  final double padding;
-  final double menuIconSize;
-  final double dividerSize;
-
-  MainButtonWidgetOptions({
-    required this.padding ,
-    required this.menuIconSize,
-    required this.dividerSize,
-  });
+  static const double padding = 8.0;
+  //static const double menuIconSize = 16.0;
+  static const double dividerSize = 2.0;
 }
 
 class MainButtonWidget extends StatefulWidget
@@ -82,7 +76,6 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _openLoadingDialog;
   final GlobalKey _loadMenuAnchorKey = GlobalKey();
   final GlobalKey _saveMenuAnchorKey = GlobalKey();
-  final MainButtonWidgetOptions _options = GetIt.I.get<PreferenceManager>().mainButtonWidgetOptions;
 
   @override
   void initState()
@@ -494,7 +487,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   @override
   Widget build(final BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(_options.padding),
+      padding: const EdgeInsets.all(_MainButtonWidgetOptions.padding),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
       ),
@@ -520,7 +513,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding,),
+              const SizedBox(width: _MainButtonWidgetOptions.padding,),
               Expanded(
                 child: OverlayAnchor(
                   anchorKey: _saveMenuAnchorKey,
@@ -537,7 +530,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding,),
+              const SizedBox(width: _MainButtonWidgetOptions.padding,),
               Expanded(
                 child: Tooltip(
                   message: "Preferences",
@@ -545,13 +538,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                   child: IconButton.outlined(
                     icon: const Icon(
                       TablerIcons.settings,
-                      //size: _options.menuIconSize,
+                      //size: _MainButtonWidgetOptions.menuIconSize,
                     ),
                     onPressed: _settingsPressed,
                   ),
                 ),
               ),
-              SizedBox(width: _options.padding,),
+              const SizedBox(width: _MainButtonWidgetOptions.padding,),
               Expanded(
                 child: Tooltip(
                   message: "About",
@@ -563,7 +556,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
                       IconButton.outlined(
                         icon: const Icon(
                           TablerIcons.question_mark,
-                          //size: _options.menuIconSize,
+                          //size: _MainButtonWidgetOptions.menuIconSize,
                         ),
                         onPressed: _questionPressed,
                       ),
@@ -591,11 +584,11 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
             ],
           ),
           Padding(
-            padding: EdgeInsets.only(top: _options.padding, bottom: _options.padding),
+            padding: const EdgeInsets.only(top: _MainButtonWidgetOptions.padding, bottom: _MainButtonWidgetOptions.padding),
             child: Divider(
               color: Theme.of(context).primaryColorDark,
-              height: _options.dividerSize,
-              thickness: _options.dividerSize,
+              height: _MainButtonWidgetOptions.dividerSize,
+              thickness: _MainButtonWidgetOptions.dividerSize,
             ),
           ),
           Row(
@@ -603,7 +596,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
             children: <Widget>[
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: _options.padding / 2.0),
+                  padding: const EdgeInsets.only(right: _MainButtonWidgetOptions.padding / 2.0),
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasUndo,
                     builder: (final BuildContext context, final bool hasUndo, final Widget? child) {
@@ -624,7 +617,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: _options.padding / 2.0),
+                  padding: const EdgeInsets.only(left: _MainButtonWidgetOptions.padding / 2.0),
                   child: ValueListenableBuilder<bool>(
                     valueListenable: _historyManager.hasRedo,
                     builder: (final BuildContext context, final bool hasRedo, final Widget? child) {

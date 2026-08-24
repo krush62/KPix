@@ -74,6 +74,10 @@ enum ToolType
   }
 }
 
+const int _fullCircle = 360;
+const int _halfCircle = 180;
+const int _byteLength = 255;
+
 class LabColor
 {
   static const double abMax = 128.0;
@@ -191,7 +195,7 @@ class KHSV
   final double v;
 
   KHSV({required this.h, required this.s, required this.v}) :
-    assert(h >= 0.0 && h <= 360.0, 'Hue must be between 0 and 360'),
+    assert(h >= 0.0 && h <= _fullCircle, 'Hue must be between 0 and $_fullCircle'),
     assert(s >= 0.0 && s <= 1.0, 'Saturation must be between 0 and 1'),
     assert(v >= 0.0 && v <= 1.0, 'Value must be between 0 and 1');
 
@@ -244,8 +248,8 @@ class KHSV
     {
       h = 60.0 * (((color.r - color.g) / delta) + 4.0);
     }
-    if (h < 0.0) h += 360.0;
-    if (h >= 360.0) h -= 360.0;
+    if (h < 0.0) h += _fullCircle;
+    if (h >= 360.0) h -= _fullCircle;
 
     return KHSV(h: h, s: s, v: v);
   }
@@ -301,7 +305,7 @@ class StackCol<T> {
 }
 
 /// Clamping the color channel values to 0-255.
-int _clampChannel(final double value) => value.clamp(0.0, 1.0) * 255 ~/ 1;
+int _clampChannel(final double value) => value.clamp(0.0, 1.0) * _byteLength ~/ 1;
 
 /// Converts color to hex string
 String colorToHexString({required final Color color, final bool withHashTag = true, final bool toUpper = false})
@@ -391,7 +395,7 @@ double calculateAngle({required final CoordinateSetI startPos, required final Co
   final int dx = endPos.x - startPos.x;
   final int dy = endPos.y - startPos.y;
   final double angle = atan2(dy, dx);
-  final double angleInDegrees = angle * (180.0 / pi);
+  final double angleInDegrees = angle * (_halfCircle / pi);
   return angleInDegrees;
 }
 
@@ -542,8 +546,8 @@ double getDeltaE00({
   double hPrime(final double ap, final double b)
   {
     if (ap == 0.0 && b == 0.0) return 0.0;
-    final double ang = atan2(b, ap) * 180.0 / pi;
-    return (ang >= 0.0) ? ang : (ang + 360.0);
+    final double ang = atan2(b, ap) * _halfCircle / pi;
+    return (ang >= 0.0) ? ang : (ang + _fullCircle);
   }
 
   final double h1p = hPrime(a1p, b1);
@@ -559,14 +563,14 @@ double getDeltaE00({
     dhp = 0.0;
   } else {
     dhp = h2p - h1p;
-    if (dhp > 180.0) {
-      dhp -= 360.0;
-    } else if (dhp < -180.0) {
-      dhp += 360.0;
+    if (dhp > _halfCircle) {
+      dhp -= _fullCircle;
+    } else if (dhp < -_halfCircle) {
+      dhp += _fullCircle;
     }
   }
 
-  final double dHp = 2.0 * sqrt(c1p * c2p) * sin((dhp * pi / 180.0) / 2.0);
+  final double dHp = 2.0 * sqrt(c1p * c2p) * sin((dhp * pi / _halfCircle) / 2.0);
 
   // 6) Means
   final double lbarp = (l1 + l2) / 2.0;
@@ -580,9 +584,9 @@ double getDeltaE00({
   else
   {
     final double hsum = h1p + h2p;
-    if ((h1p - h2p).abs() > 180.0)
+    if ((h1p - h2p).abs() > _halfCircle)
     {
-      hbarp = (hsum < 360.0) ? (hsum + 360.0) / 2.0 : (hsum - 360.0) / 2.0;
+      hbarp = (hsum < _fullCircle) ? (hsum + _fullCircle) / 2.0 : (hsum - _fullCircle) / 2.0;
     }
     else
     {
@@ -592,10 +596,10 @@ double getDeltaE00({
 
   // 7) T term
   final double T = 1.0
-      - 0.17 * cos((hbarp - 30.0) * pi / 180.0)
-      + 0.24 * cos((2.0 * hbarp) * pi / 180.0)
-      + 0.32 * cos((3.0 * hbarp + 6.0) * pi / 180.0)
-      - 0.20 * cos((4.0 * hbarp - 63.0) * pi / 180.0);
+      - 0.17 * cos((hbarp - 30.0) * pi / _halfCircle)
+      + 0.24 * cos((2.0 * hbarp) * pi / _halfCircle)
+      + 0.32 * cos((3.0 * hbarp + 6.0) * pi / _halfCircle)
+      - 0.20 * cos((4.0 * hbarp - 63.0) * pi / _halfCircle);
 
   // 8) Δθ and rc
   final double dTheta = 30.0 * exp(-pow((hbarp - 275.0) / 25.0, 2).toDouble());
@@ -608,7 +612,7 @@ double getDeltaE00({
   final double sh = 1.0 + 0.015 * cbarp * T;
 
   // 10) rt
-  final double rt = -sin(2.0 * dTheta * pi / 180.0) * rc;
+  final double rt = -sin(2.0 * dTheta * pi / _halfCircle) * rc;
 
   // 11) Final ΔE00
   final double dLterm = dLp / (kL * sl);
@@ -1006,13 +1010,13 @@ double normAngle({required final double angle})
 /// Converts an angle in degrees to radians.
 double deg2rad({required final double angle})
 {
-  return angle * (pi / 180.0);
+  return angle * (pi / _halfCircle);
 }
 
 /// Converts an angle in radians to degrees.
 double rad2deg({required final double angle})
 {
-  return angle * (180.0 / pi);
+  return angle * (_halfCircle / pi);
 }
 
 /// Returns the distance between two coordinate sets.
@@ -1385,7 +1389,7 @@ List<double> _saturationMatrix({required final double saturation})
 
 List<double> _brightnessMatrix({required final double brightness})
 {
-  final double offset = brightness * 255.0;
+  final double offset = brightness * _byteLength;
 
   return <double>[
     1, 0, 0, 0, offset,

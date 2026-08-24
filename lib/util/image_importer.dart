@@ -52,139 +52,141 @@ class ImportResult
   ImportResult({this.data, required this.message});
 }
 
+const int _fullCircle = 360;
+const int _halfCircle = 180;
+const int _byteLength = 255;
 
 
-
-  Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
+Future<ImportResult> import({required final ImportData importData, required final List<KPalRampData> currentRamps}) async
+{
+  final ByteData? imageData = await importData.scaledImage.toByteData();
+  if (imageData == null)
   {
-    final ByteData? imageData = await importData.scaledImage.toByteData();
-    if (imageData == null)
+    return ImportResult(message: "Could not convert image data!");
+  }
+  else
+  {
+    DrawingLayerState drawingLayer;
+    List<KPalRampData> ramps = <KPalRampData>[];
+    // Extracting ALL colors
+    final List<KHSV> colorList = await _extractColorsFromImage(imgBytes: imageData);
+    if (importData.createNewPalette)
     {
-      return ImportResult(message: "Could not convert image data!");
+      final List<KPalRampSettings> colorRamps = await _extractColorRamps(imgBytes: imageData, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
+      for (final KPalRampSettings colorRamp in colorRamps)
+      {
+        ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
+      }
+
+
+      drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
+      await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
+      if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
+      {
+        drawingLayer.settings.outerColorReference.value = ramps.first.references.first;
+      }
+      if (!ramps.contains(drawingLayer.settings.innerColorReference.value.ramp))
+      {
+        drawingLayer.settings.innerColorReference.value = ramps.first.references.first;
+      }
+      if (!ramps.contains(drawingLayer.settings.dropShadowColorReference.value.ramp))
+      {
+        drawingLayer.settings.dropShadowColorReference.value = ramps.first.references.first;
+      }
     }
     else
     {
-      DrawingLayerState drawingLayer;
-      List<KPalRampData> ramps = <KPalRampData>[];
-      // Extracting ALL colors
-      final List<KHSV> colorList = await _extractColorsFromImage(imgBytes: imageData);
-      if (importData.createNewPalette)
-      {
-        final List<KPalRampSettings> colorRamps = await _extractColorRamps(imgBytes: imageData, maxRamps: importData.maxRamps, maxColors: importData.maxColors);
-        for (final KPalRampSettings colorRamp in colorRamps)
-        {
-          ramps.add(KPalRampData(uuid: const Uuid().v1(), settings: colorRamp));
-        }
-
-
-        drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
-        await _removeUnusedRamps(ramps: ramps, references: drawingLayer.getData().values.toSet());
-        if (!ramps.contains(drawingLayer.settings.outerColorReference.value.ramp))
-        {
-          drawingLayer.settings.outerColorReference.value = ramps.first.references.first;
-        }
-        if (!ramps.contains(drawingLayer.settings.innerColorReference.value.ramp))
-        {
-          drawingLayer.settings.innerColorReference.value = ramps.first.references.first;
-        }
-        if (!ramps.contains(drawingLayer.settings.dropShadowColorReference.value.ramp))
-        {
-          drawingLayer.settings.dropShadowColorReference.value = ramps.first.references.first;
-        }
-      }
-      else
-      {
-        ramps = currentRamps;
-        drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
-      }
-
-      ReferenceLayerState? referenceLayer;
-      if (importData.includeReference)
-      {
-        referenceLayer = await _getReferenceLayer(img: importData.image, imgPath: importData.filePath);
-        final double targetZoomHeight = importData.scaledImage.height.toDouble() / (importData.image.height.toDouble());
-        final double targetZoomWidth = importData.scaledImage.width.toDouble() / (importData.image.width.toDouble());
-        referenceLayer.setZoomSliderFromZoomFactor(factor: (targetZoomWidth + targetZoomHeight) / 2.0);
-      }
-
-      final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.scaledImage.width, y: importData.scaledImage.height));
-      return ImportResult(message: "SUCCESS", data: importDataSet);
-
+      ramps = currentRamps;
+      drawingLayer = await _createDrawingLayer(colorList: colorList, width: importData.scaledImage.width, height: importData.scaledImage.height, ramps: ramps);
     }
+
+    ReferenceLayerState? referenceLayer;
+    if (importData.includeReference)
+    {
+      referenceLayer = await _getReferenceLayer(img: importData.image, imgPath: importData.filePath);
+      final double targetZoomHeight = importData.scaledImage.height.toDouble() / (importData.image.height.toDouble());
+      final double targetZoomWidth = importData.scaledImage.width.toDouble() / (importData.image.width.toDouble());
+      referenceLayer.setZoomSliderFromZoomFactor(factor: (targetZoomWidth + targetZoomHeight) / 2.0);
+    }
+
+    final ImportDataSet importDataSet = ImportDataSet(rampDataList: ramps, drawingLayer: drawingLayer, referenceLayer: referenceLayer, canvasSize: CoordinateSetI(x: importData.scaledImage.width, y: importData.scaledImage.height));
+    return ImportResult(message: "SUCCESS", data: importDataSet);
 
   }
 
-  Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, required final Set<ColorReference> references}) async
+}
+
+Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, required final Set<ColorReference> references}) async
+{
+  final List<bool> rampUsed = List<bool>.filled(ramps.length, false);
+
+  for (final ColorReference reference in references)
   {
-    final List<bool> rampUsed = List<bool>.filled(ramps.length, false);
-
-    for (final ColorReference reference in references)
+    for (int i = 0; i < ramps.length; i++)
     {
-      for (int i = 0; i < ramps.length; i++)
+      if (ramps[i].references.contains(reference))
       {
-        if (ramps[i].references.contains(reference))
-        {
-          rampUsed[i] = true;
-          break;
-        }
+        rampUsed[i] = true;
+        break;
       }
-    }
-
-    final List<KPalRampData> deleteRamps = <KPalRampData>[];
-    for (int i = 0; i < rampUsed.length; i++)
-    {
-      if (rampUsed[i] == false)
-      {
-         deleteRamps.add(ramps[i]);
-      }
-    }
-
-    for (final KPalRampData deleteRamp in deleteRamps)
-    {
-      ramps.remove(deleteRamp);
     }
   }
 
-  Future<ReferenceLayerState> _getReferenceLayer({required final ui.Image img, required final String imgPath}) async
+  final List<KPalRampData> deleteRamps = <KPalRampData>[];
+  for (int i = 0; i < rampUsed.length; i++)
   {
-    final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
-    final ReferenceLayerState refState = ReferenceLayerState(
-        aspectRatio: refSettings.aspectRatioDefault,
-        image: null,
-        offsetX: 0,
-        offsetY: 0,
-        opacity: refSettings.opacityDefault,
-        zoom: refSettings.zoomDefault,
-        brightness: refSettings.brightnessDefault,
-        contrast: refSettings.contrastDefault,
-        saturation: refSettings.saturationDefault,
-        warmth: refSettings.warmthDefault,
-    );
-    final ReferenceImage refImg = await GetIt.I.get<ReferenceImageManager>().addLoadedImage(path: imgPath, img: img);
-    refState.imageNotifier.value = refImg;
-    refState.thumbnail.value = refImg.image;
-    return refState;
+    if (rampUsed[i] == false)
+    {
+       deleteRamps.add(ramps[i]);
+    }
   }
 
-  Future<DrawingLayerState> _createDrawingLayer({required final List<KHSV> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+  for (final KPalRampData deleteRamp in deleteRamps)
   {
-    final HashMap<CoordinateSetI, ColorReference?> layerContent = HashMap<CoordinateSetI, ColorReference?>();
-    int row = 0;
-    int col = 0;
-    for (int i = 0; i < colorList.length; i++)
-    {
-      if (col >= width)
-      {
-        col = 0;
-        row++;
-      }
-      final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
-      final ColorReference reference = _findClosestColor(color: colorList[i], ramps: ramps);
-      layerContent[coord] = reference;
-      col++;
-    }
-    return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent, ramps: ramps);
+    ramps.remove(deleteRamp);
   }
+}
+
+Future<ReferenceLayerState> _getReferenceLayer({required final ui.Image img, required final String imgPath}) async
+{
+  final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
+  final ReferenceLayerState refState = ReferenceLayerState(
+      aspectRatio: refSettings.aspectRatioDefault,
+      image: null,
+      offsetX: 0,
+      offsetY: 0,
+      opacity: refSettings.opacityDefault,
+      zoom: refSettings.zoomDefault,
+      brightness: refSettings.brightnessDefault,
+      contrast: refSettings.contrastDefault,
+      saturation: refSettings.saturationDefault,
+      warmth: refSettings.warmthDefault,
+  );
+  final ReferenceImage refImg = await GetIt.I.get<ReferenceImageManager>().addLoadedImage(path: imgPath, img: img);
+  refState.imageNotifier.value = refImg;
+  refState.thumbnail.value = refImg.image;
+  return refState;
+}
+
+Future<DrawingLayerState> _createDrawingLayer({required final List<KHSV> colorList, required final int width, required final int height, required final List<KPalRampData> ramps}) async
+{
+  final HashMap<CoordinateSetI, ColorReference?> layerContent = HashMap<CoordinateSetI, ColorReference?>();
+  int row = 0;
+  int col = 0;
+  for (int i = 0; i < colorList.length; i++)
+  {
+    if (col >= width)
+    {
+      col = 0;
+      row++;
+    }
+    final CoordinateSetI coord = CoordinateSetI(x: col, y: row);
+    final ColorReference reference = _findClosestColor(color: colorList[i], ramps: ramps);
+    layerContent[coord] = reference;
+    col++;
+  }
+  return DrawingLayerState(size: CoordinateSetI(x: width, y: height), content: layerContent, ramps: ramps);
+}
 
 
 ColorReference _findClosestColor({required final KHSV color, required final List<KPalRampData> ramps,})
@@ -221,30 +223,30 @@ ColorReference _findClosestColor({required final KHSV color, required final List
 
 
 Future<ui.Image?> loadImage({required final String path, final Uint8List? bytes}) async
+{
+  ui.Image? image;
+  final File imageFile = File(path);
+  if (bytes == null && !await imageFile.exists())
   {
-    ui.Image? image;
-    final File imageFile = File(path);
-    if (bytes == null && !await imageFile.exists())
+    image = null;
+  }
+  else
+  {
+    try
+    {
+      final Uint8List imageBytes = bytes ?? await imageFile.readAsBytes();
+      final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      image = frame.image;
+      codec.dispose();
+    }
+    catch(_)
     {
       image = null;
     }
-    else
-    {
-      try
-      {
-        final Uint8List imageBytes = bytes ?? await imageFile.readAsBytes();
-        final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
-        final ui.FrameInfo frame = await codec.getNextFrame();
-        image = frame.image;
-        codec.dispose();
-      }
-      catch(_)
-      {
-        image = null;
-      }
-    }
-    return image;
   }
+  return image;
+}
 
 
 
@@ -267,9 +269,9 @@ Future<List<KHSV>> _extractColorsFromImage({required final ByteData imgBytes, fi
     if (a <= alphaThreshold) continue;
 
     // Inline RGB -> HSV (same math you use elsewhere)
-    final double rf = r / 255.0;
-    final double gf = g / 255.0;
-    final double bf = b / 255.0;
+    final double rf = r / _byteLength;
+    final double gf = g / _byteLength;
+    final double bf = b / _byteLength;
     double maxc = rf;
     double minc = rf;
     if (gf > maxc) maxc = gf; if (bf > maxc) maxc = bf;
@@ -298,8 +300,8 @@ Future<List<KHSV>> _extractColorsFromImage({required final ByteData imgBytes, fi
       {
         h = 60.0 * (((rf - gf) / delta) + 4.0);
       }
-      if (h < 0) h += 360.0;
-      if (h >= 360.0) h -= 360.0;
+      if (h < 0) h += _fullCircle;
+      if (h >= _fullCircle) h -= _fullCircle;
     }
     colors.add(KHSV(h: h, s: s, v: v));
   }
@@ -310,7 +312,7 @@ Future<List<KHSV>> _extractColorsFromImage({required final ByteData imgBytes, fi
 double _hueDistanceDeg({required final double h1, required final double h2})
 {
   final double d = (h1 - h2).abs();
-  return d <= 180.0 ? d : 360.0 - d;
+  return d <= _halfCircle ? d : _fullCircle - d;
 }
 
 
@@ -402,9 +404,9 @@ _QuantizeResult quantizeHSVFromRGBABytes({
     if (a < alphaThreshold) continue;
 
     // --- RGB -> HSV ---
-    final double rf = r / 255.0;
-    final double gf = g / 255.0;
-    final double bf = b / 255.0;
+    final double rf = r / _byteLength;
+    final double gf = g / _byteLength;
+    final double bf = b / _byteLength;
     final double maxc = max(rf, max(gf, bf));
     final double minc = min(rf, min(gf, bf));
     final double delta = maxc - minc;
@@ -427,25 +429,25 @@ _QuantizeResult quantizeHSVFromRGBABytes({
         hue = ((rf - gf) / delta) + 4.0;
       }
       hDeg = 60.0 * hue;
-      if (hDeg < 0) hDeg += 360.0;
-      if (hDeg >= 360.0) hDeg -= 360.0;
+      if (hDeg < 0) hDeg += _fullCircle;
+      if (hDeg >= _fullCircle) hDeg -= _fullCircle;
     }
 
     // --- Quantize to bins ---
-    final int hi = ((hDeg / 360.0) * hBins).floor().clamp(0, hBins - 1);
+    final int hi = ((hDeg / _fullCircle) * hBins).floor().clamp(0, hBins - 1);
     final int si = (s * sBins).floor().clamp(0, sBins - 1);
     final int vi = (v * vBins).floor().clamp(0, vBins - 1);
     final int idx = idxOf(hi, si, vi);
 
     counts[idx] += 1;
-    final double rad = hDeg * pi / 180.0;
+    final double rad = hDeg * pi / _halfCircle;
     sumHcos[idx] += cos(rad);
     sumHsin[idx] += sin(rad);
     sumS[idx] += s;
     sumV[idx] += v;
 
     // V histogram (0..255)
-    vHist256[(v * 255.0).clamp(0.0, 255.0).toInt()] += 1;
+    vHist256[(v * _byteLength).clamp(0.0, _byteLength).toInt()] += 1;
   }
 
   // Emit non-empty bins as weighted centroids
@@ -453,7 +455,7 @@ _QuantizeResult quantizeHSVFromRGBABytes({
   for (int i = 0; i < binsLen; i++) {
     final int w = counts[i];
     if (w == 0) continue;
-    final double h = (atan2(sumHsin[i], sumHcos[i]) * 180.0 / pi + 360.0) % 360.0;
+    final double h = (atan2(sumHsin[i], sumHcos[i]) * _halfCircle / pi + _fullCircle) % _fullCircle;
     final double s = sumS[i] / w;
     final double v = sumV[i] / w;
     bins.add(_HSVBin(KHSV(h: h, s: s, v: v), w));
@@ -469,7 +471,7 @@ double vPercentileFromHist({required final List<int> vHist256, required final in
   int acc = 0;
   for (int i = 0; i < 256; i++) {
     acc += vHist256[i];
-    if (acc > target) return i / 255.0;
+    if (acc > target) return i / _byteLength;
   }
   return 1.0;
 }
@@ -616,7 +618,7 @@ List<_WeightedCluster> kMeansOnBins({
 
 double _hsvWeightedDist2Bin({required final _HSVBin a, required final KHSV b, required final double wh, required final double ws, required final double wv})
 {
-  final double dh = _hueDistanceDeg(h1: a.hsv.h, h2: b.h) / 180.0;
+  final double dh = _hueDistanceDeg(h1: a.hsv.h, h2: b.h) / _halfCircle;
   final double ds = (a.hsv.s - b.s).abs();
   final double dv = (a.hsv.v - b.v).abs();
   return wh * dh * dh + ws * ds * ds + wv * dv * dv;
@@ -624,7 +626,7 @@ double _hsvWeightedDist2Bin({required final _HSVBin a, required final KHSV b, re
 
 double _hsvWeightedDist2Hsv({required final KHSV a, required final KHSV b, required final double wh, required final double ws, required final double wv})
 {
-  final double dh = _hueDistanceDeg(h1: a.h, h2: b.h) / 180.0;
+  final double dh = _hueDistanceDeg(h1: a.h, h2: b.h) / _halfCircle;
   final double ds = (a.s - b.s).abs();
   final double dv = (a.v - b.v).abs();
   return wh * dh * dh + ws * ds * ds + wv * dv * dv;
@@ -640,14 +642,14 @@ KHSV _weightedMeanHSV({required final List<_HSVBin> pts})
   for (final _HSVBin p in pts)
   {
     final double w = p.weight.toDouble();
-    final double rad = p.hsv.h * pi / 180.0;
+    final double rad = p.hsv.h * pi / _halfCircle;
     sx += w * cos(rad);
     sy += w * sin(rad);
     sumS += w * p.hsv.s;
     sumV += w * p.hsv.v;
     sumW += w;
   }
-  final double meanH = (atan2(sy, sx) * 180.0 / pi + 360.0) % 360.0;
+  final double meanH = (atan2(sy, sx) * _halfCircle / pi + _fullCircle) % _fullCircle;
   final double meanS = sumS / sumW;
   final double meanV = sumV / sumW;
   return KHSV(h: meanH, s: meanS, v: meanV);
@@ -659,6 +661,7 @@ KPalRampSettings _fitRampForClusterBins({
       required final List<_HSVBin> cluster,
       required final int colorCount,
 
+      //TODO These are also defined somewhere else
       final int hueShiftMin = -10,
       final int hueShiftMax = 10,
       final int satShiftMin = -20,
@@ -673,11 +676,11 @@ KPalRampSettings _fitRampForClusterBins({
     })
 {
   // --- Build V histogram for this cluster (0..255) ---
-  final List<int> vHist256 = List<int>.filled(256, 0);
+  final List<int> vHist256 = List<int>.filled(_byteLength + 1, 0);
   int total = 0;
   for (final _HSVBin p in cluster)
   {
-    final int vb = (p.hsv.v * 255.0).clamp(0.0, 255.0).toInt();
+    final int vb = (p.hsv.v * _byteLength).clamp(0.0, _byteLength).toInt();
     vHist256[vb] += p.weight;
     total += p.weight;
   }
@@ -695,7 +698,7 @@ KPalRampSettings _fitRampForClusterBins({
     if ((p.hsv.v - vMid).abs() <= vWidth / 2)
     {
       final double w = p.weight.toDouble();
-      final double rad = p.hsv.h * pi / 180.0;
+      final double rad = p.hsv.h * pi / _halfCircle;
       sx += w * cos(rad);
       sy += w * sin(rad);
       sumS += w * p.hsv.s;
@@ -706,15 +709,15 @@ KPalRampSettings _fitRampForClusterBins({
     for (final _HSVBin p in cluster)
     {
       final double w = p.weight.toDouble();
-      final double rad = p.hsv.h * pi / 180.0;
+      final double rad = p.hsv.h * pi / _halfCircle;
       sx += w * cos(rad);
       sy += w * sin(rad);
       sumS += w * p.hsv.s;
       sumW += w;
     }
   }
-  final double baseHueDeg = (atan2(sy, sx) * 180.0 / pi + 360.0) % 360.0;
-  final int baseHue = baseHueDeg.round() % 360;
+  final double baseHueDeg = (atan2(sy, sx) * _halfCircle / pi + _fullCircle) % _fullCircle;
+  final int baseHue = baseHueDeg.round() % _fullCircle;
   final double baseSatPct = (100.0 * (sumS / sumW)).clamp(0.0, 100.0);
   final int baseSat = baseSatPct.round();
 
@@ -724,8 +727,8 @@ KPalRampSettings _fitRampForClusterBins({
   {
     final double t = _normalizeToMinusOneToOne(v: p.hsv.v, vMin: vMin, vMax: vMax);
     double dh = p.hsv.h - baseHue;
-    if (dh > 180) dh -= 360;
-    if (dh < -180) dh += 360;
+    if (dh > _halfCircle) dh -= _fullCircle;
+    if (dh < -_halfCircle) dh += _fullCircle;
     final double ds = (100.0 * p.hsv.s) - baseSat;
     obs.add(_ObsWeighted(t: t, hueOffset: dh, satOffset: ds, w: p.weight.toDouble()));
   }

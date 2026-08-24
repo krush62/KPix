@@ -39,7 +39,6 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
-import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
 import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
@@ -104,16 +103,6 @@ enum PreferenceDouble
   TouchOptions_ZoomStepDistanceMin(defaultValue: 10.0),
   TouchOptions_ZoomStepDistanceMax(defaultValue: 100.0),
 
-  SymmetryWidget_DividerWidth(defaultValue: 2.0),
-  SymmetryWidget_Padding(defaultValue: 2.0),
-  SymmetryWidget_Height(defaultValue: 72.0),
-  SymmetryWidget_ButtonWidth(defaultValue: 96.0),
-  SymmetryWidget_ButtonHeight(defaultValue: 36.0),
-  SymmetryWidget_ExpandIconSize(defaultValue: 20.0),
-  SymmetryWidget_VerticalIconSize(defaultValue: 16.0),
-  SymmetryWidget_HorizontalIconSize(defaultValue: 20.0),
-  SymmetryWidget_CenterButtonIconSize(defaultValue: 24.0),
-
   FrameBlendingOptions_Opacity(defaultValue: 0.4),
   FrameBlendingOptions_OpacityMin(defaultValue: 0.1),
   FrameBlendingOptions_OpacityMax(defaultValue: 0.9),
@@ -129,8 +118,6 @@ enum PreferenceDouble
 
 enum PreferenceInt
 {
-
-  Layout_ColorChooser_SmokeOpacity(defaultValue: 128),
 
   Layout_CanvasSize_SizeMin(defaultValue: 4),
   Layout_CanvasSize_SizeMax(defaultValue: 640),
@@ -311,8 +298,6 @@ enum PreferenceInt
 
   DesktopOptions_CursorType(defaultValue: 1),
 
-  SymmetryWidget_AnimationDurationMs(defaultValue: 200),
-
   FrameBlendingOptions_FramesBefore(defaultValue: 1),
   FrameBlendingOptions_FramesAfter(defaultValue: 1),
   FrameBlendingOptions_FramesMax(defaultValue: 4),
@@ -431,7 +416,6 @@ class PreferenceManager
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
   late CanvasSizeOptions canvasSizeOptions;
   late KPixPainterOptions kPixPainterOptions;
-  late SymmetryWidgetOptions symmetryWidgetOptions;
   late FrameConstraints frameConstraints;
   late FrameBlendingOptions frameBlendingOptions;
 
@@ -628,19 +612,6 @@ class PreferenceManager
       vanishingPoint2Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint2Default),
       vanishingPoint3Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint3Default),
       gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault),
-    );
-
-    symmetryWidgetOptions = SymmetryWidgetOptions(
-      dividerWidth: _getValueD(PreferenceDouble.SymmetryWidget_DividerWidth),
-      padding: _getValueD(PreferenceDouble.SymmetryWidget_Padding),
-      height: _getValueD(PreferenceDouble.SymmetryWidget_Height),
-      animationDurationMs: _getValueI(PreferenceInt.SymmetryWidget_AnimationDurationMs),
-      buttonWidth: _getValueD(PreferenceDouble.SymmetryWidget_ButtonWidth),
-      buttonHeight: _getValueD(PreferenceDouble.SymmetryWidget_ButtonHeight),
-      expandIconSize: _getValueD(PreferenceDouble.SymmetryWidget_ExpandIconSize),
-      verticalIconSize: _getValueD(PreferenceDouble.SymmetryWidget_VerticalIconSize),
-      horizontalIconSize: _getValueD(PreferenceDouble.SymmetryWidget_HorizontalIconSize),
-      centerButtonIconSize: _getValueD(PreferenceDouble.SymmetryWidget_CenterButtonIconSize),
     );
 
     frameBlendingOptions = FrameBlendingOptions(

@@ -19,7 +19,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
@@ -47,31 +46,18 @@ class SymmetryState
 }
 
 
-class SymmetryWidgetOptions
+abstract final class _SymmetryWidgetOptions
 {
-  final double dividerWidth;
-  final double padding;
-  final double height;
-  final int animationDurationMs;
-  final double buttonWidth;
-  final double buttonHeight;
-  final double expandIconSize;
-  final double verticalIconSize;
-  final double horizontalIconSize;
-  final double centerButtonIconSize;
-
-  const SymmetryWidgetOptions({
-    required this.dividerWidth,
-    required this.padding,
-    required this.height,
-    required this.animationDurationMs,
-    required this.buttonWidth,
-    required this.buttonHeight,
-    required this.expandIconSize,
-    required this.verticalIconSize,
-    required this.horizontalIconSize,
-    required this.centerButtonIconSize,
-  });
+  static const double dividerWidth = 2.0;
+  static const double padding = 2.0;
+  static const double height = 72.0;
+  static const int animationDurationMs = 200;
+  static const double buttonWidth = 96.0;
+  static const double buttonHeight = 36.0;
+  static const double expandIconSize = 20.0;
+  //static const double verticalIconSize = 16.0;
+  //static const double horizontalIconSize = 20.0;
+  //static const double centerButtonIconSize = 24.0;
 }
 
 class SymmetryWidget extends StatefulWidget
@@ -88,14 +74,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
   final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
   late AnimationController _animationController;
   late Animation<double> _animation;
-  final SymmetryWidgetOptions _options = GetIt.I.get<PreferenceManager>().symmetryWidgetOptions;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: _options.animationDurationMs),
+      duration: const Duration(milliseconds: _SymmetryWidgetOptions.animationDurationMs),
     );
     _animation = CurvedAnimation(
       parent: _animationController,
@@ -130,7 +115,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
     return Material(
       color: Theme.of(context).primaryColor,
       child: Padding(
-        padding: EdgeInsets.only(top: _options.padding),
+        padding: const EdgeInsets.only(top: _SymmetryWidgetOptions.padding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min, // Important for Column containing SizeTransition
@@ -145,7 +130,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                   child: ColoredBox(
                     color: Theme.of(context).primaryColor,
                     child: Padding(
-                      padding: EdgeInsets.all(_options.padding),
+                      padding: const EdgeInsets.all(_SymmetryWidgetOptions.padding),
                       child: ValueListenableBuilder<bool>(
                         valueListenable: isExpanded,
                         builder: (final BuildContext context, final bool expanded, final Widget? child)
@@ -154,8 +139,8 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
                               const Spacer(),
-                              Icon(TablerIcons.flip_vertical, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
-                              Icon(expanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, color: Theme.of(context).primaryColorLight, size: _options.expandIconSize,),
+                              Icon(TablerIcons.flip_vertical, color: Theme.of(context).primaryColorLight, size: _SymmetryWidgetOptions.expandIconSize,),
+                              Icon(expanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, color: Theme.of(context).primaryColorLight, size: _SymmetryWidgetOptions.expandIconSize,),
                               const Spacer(),
                             ],
                           );
@@ -170,15 +155,15 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
               sizeFactor: _animation,
               alignment: Alignment.topCenter,
               child: Padding(
-                padding: EdgeInsets.all(_options.padding),
+                padding: const EdgeInsets.all(_SymmetryWidgetOptions.padding),
                 child: Column(
                   children: <Widget>[
                     Padding(
-                      padding: EdgeInsets.all(_options.padding),
+                      padding: const EdgeInsets.all(_SymmetryWidgetOptions.padding),
                       child: Divider(
                         color: Theme.of(context).primaryColorLight,
-                        thickness: _options.dividerWidth,
-                        height: _options.dividerWidth,
+                        thickness: _SymmetryWidgetOptions.dividerWidth,
+                        height: _SymmetryWidgetOptions.dividerWidth,
                       ),
                     ),
                     Row(
@@ -198,25 +183,25 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         onChanged: (final bool value)
                                         {widget.state.horizontalActivated.value = value;},
                                       ),
-                                      SizedBox(
-                                        width: _options.padding,
+                                      const SizedBox(
+                                        width: _SymmetryWidgetOptions.padding,
                                       ),
                                       const Spacer(),
-                                      Icon(TablerIcons.flip_vertical, size: _options.buttonHeight, color: Theme.of(context).primaryColorDark),
+                                      Icon(TablerIcons.flip_vertical, size: _SymmetryWidgetOptions.buttonHeight, color: Theme.of(context).primaryColorDark),
                                       const Spacer(),
                                       Padding(
-                                        padding:  EdgeInsets.only(right: _options.padding * 4),
+                                        padding:  const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
                                           message: "Center Horizontal Ruler",
                                           waitDuration: AppState.toolTipDuration,
                                           child: SizedBox(
-                                            width: _options.buttonWidth,
-                                            height: _options.buttonHeight,
+                                            width: _SymmetryWidgetOptions.buttonWidth,
+                                            height: _SymmetryWidgetOptions.buttonHeight,
                                             child: IconButton.outlined(
                                               onPressed: horActivated ? () {
                                                 widget.state.horizontalValue.value = GetIt.I.get<AppState>().canvasSize.x.toDouble() / 2.0;
                                               } : null,
-                                              icon: Icon(TablerIcons.layout_align_middle, size: _options.buttonHeight,),
+                                              icon: const Icon(TablerIcons.layout_align_middle, size: _SymmetryWidgetOptions.buttonHeight,),
                                             ),
                                           ),
                                         ),
@@ -224,7 +209,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                     ],
                                   ) ,
                                   Padding(
-                                    padding: EdgeInsets.only(left: _options.padding * 4, right: _options.padding * 4),
+                                    padding: const EdgeInsets.only(left: _SymmetryWidgetOptions.padding * 4, right: _SymmetryWidgetOptions.padding * 4),
                                     child: ValueListenableBuilder<double>(
                                       valueListenable: widget.state.horizontalValue,
                                       builder: (final BuildContext context, final double horVal, final Widget? child) {
@@ -247,13 +232,13 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(_options.padding * 4),
+                          padding: const EdgeInsets.all(_SymmetryWidgetOptions.padding * 4),
                           child: LimitedBox(
-                            maxHeight: _options.height,
+                            maxHeight: _SymmetryWidgetOptions.height,
                             child: VerticalDivider(
                               color: Theme.of(context).primaryColorLight,
-                              thickness: _options.dividerWidth,
-                              width: _options.dividerWidth,
+                              thickness: _SymmetryWidgetOptions.dividerWidth,
+                              width: _SymmetryWidgetOptions.dividerWidth,
                             ),
                           ),
                         ),
@@ -271,29 +256,29 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                         onChanged: (final bool value)
                                         {widget.state.verticalActivated.value = value;},
                                       ),
-                                      SizedBox(
-                                        width: _options.padding,
+                                      const SizedBox(
+                                        width: _SymmetryWidgetOptions.padding,
                                       ),
                                       const Spacer(),
                                       Column(
                                         children: <Widget>[
-                                          Icon(TablerIcons.flip_horizontal, size: _options.buttonHeight, color: Theme.of(context).primaryColorDark),
+                                          Icon(TablerIcons.flip_horizontal, size: _SymmetryWidgetOptions.buttonHeight, color: Theme.of(context).primaryColorDark),
                                         ],
                                       ),
                                       const Spacer(),
                                       Padding(
-                                        padding: EdgeInsets.only(right: _options.padding * 4),
+                                        padding: const EdgeInsets.only(right: _SymmetryWidgetOptions.padding * 4),
                                         child: Tooltip(
                                           message: "Center Vertical Ruler",
                                           waitDuration: AppState.toolTipDuration,
                                           child: SizedBox(
-                                            width: _options.buttonWidth,
-                                            height: _options.buttonHeight,
+                                            width: _SymmetryWidgetOptions.buttonWidth,
+                                            height: _SymmetryWidgetOptions.buttonHeight,
                                             child: IconButton.outlined(
                                               onPressed: vertActivated ? () {
                                                 widget.state.verticalValue.value = GetIt.I.get<AppState>().canvasSize.y.toDouble() / 2.0;
                                               } : null,
-                                              icon: Icon(TablerIcons.layout_align_center, size: _options.buttonHeight,),
+                                              icon: const Icon(TablerIcons.layout_align_center, size: _SymmetryWidgetOptions.buttonHeight,),
                                             ),
                                           ),
                                         ),
@@ -301,7 +286,7 @@ class _SymmetryWidgetState extends State<SymmetryWidget> with SingleTickerProvid
                                     ],
                                   ) ,
                                   Padding(
-                                    padding: EdgeInsets.only(left: _options.padding * 4, right: _options.padding * 4),
+                                    padding: const EdgeInsets.only(left: _SymmetryWidgetOptions.padding * 4, right: _SymmetryWidgetOptions.padding * 4),
                                     child: ValueListenableBuilder<double>(
                                       valueListenable: widget.state.verticalValue,
                                       builder: (final BuildContext context, final double horVal, final Widget? child) {

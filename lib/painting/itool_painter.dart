@@ -282,12 +282,14 @@ abstract class IToolPainter
       final double radiusX = (endPos.x - startPos.x + 1) / 2.0;
       final double radiusY = (endPos.y - startPos.y + 1) / 2.0;
 
-      for (int x = startPos.x; x <= endPos.x; x++) {
-        for (int y = startPos.y; y <= endPos.y; y++) {
+      for (int x = startPos.x; x <= endPos.x; x++)
+      {
+        for (int y = startPos.y; y <= endPos.y; y++)
+        {
           final double dx = (x + 0.5) - centerX;
           final double dy = (y + 0.5) - centerY;
-          if ((dx * dx) / (radiusX * radiusX) +
-              (dy * dy) / (radiusY * radiusY) <= 1) {
+          if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) <= 1)
+          {
             coords.add(CoordinateSetI(x: x, y: y));
           }
         }
@@ -392,9 +394,7 @@ abstract class IToolPainter
                   final int targetShading = (colRef.colorIndex + shadingVal).clamp(0, colRef.ramp.references.length - 1);
                   colRef = colRef.ramp.references[targetShading];
                 }
-
               }
-
             }
           }
 
@@ -591,11 +591,11 @@ abstract class IToolPainter
       for (final CoordinateSetI coord in coords)
       {
         final BorderCoordinateSetI bcoord = BorderCoordinateSetI(
-            coord: coord,
-            left: !coords.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)),
-            right: !coords.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)),
-            top: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)),
-            bottom: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)),
+          coord: coord,
+          left: !coords.contains(CoordinateSetI(x: coord.x - 1, y: coord.y)),
+          right: !coords.contains(CoordinateSetI(x: coord.x + 1, y: coord.y)),
+          top: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y - 1)),
+          bottom: !coords.contains(CoordinateSetI(x: coord.x, y: coord.y + 1)),
         );
 
         if (bcoord.borders.isNotEmpty)
@@ -666,41 +666,34 @@ abstract class IToolPainter
     {
       if (canvasSize.contains(coord: coord))
       {
-        if (!shaderOptions.isEnabled.value) //without shading
+        if (!shaderOptions.isEnabled.value)
         {
-          //if no selection and current pixel is different
-          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord, withSettingsPixels: true) != selectedColor) ||
-              //if selection and selection contains pixel and selection pixel is different
-              (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != selectedColor))
+          if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord, withSettingsPixels: true,) != selectedColor) ||
+              (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) !=selectedColor))
           {
-            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord: coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
+            if (_lockAllowsPaint(coord: coord, layer: currentLayer))
             {
               pixelMap[coord] = selectedColor;
             }
           }
         }
-        //with shading
         else
-          //if no selection and pixel is not null
-        if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != null) ||
-            //if selection and selection contains pixel and pixel is not null
-            (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
-          if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value)
+          final ColorReference? layerRef = _getLayerOrSelectionRef(coord: coord, currentLayer: currentLayer, selection: selection,);
+          if (layerRef != null && (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value))
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
               if (layerRef.colorIndex + 1 < layerRef.ramp.references.length)
               {
-                pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex  + 1];
+                pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex + 1];
               }
             }
             else
             {
               if (layerRef.colorIndex > 0)
               {
-                pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex  - 1];
+                pixelMap[coord] = layerRef.ramp.references[layerRef.colorIndex - 1];
               }
             }
           }
@@ -708,10 +701,14 @@ abstract class IToolPainter
       }
     }
     return pixelMap;
-
   }
 
-  ColorReference _getColorShading({required final CoordinateSetI coord, required final AppState appState, required final ColorReference inputColor, required final LayerState currentLayer})
+  ColorReference _getColorShading({
+    required final CoordinateSetI coord,
+    required final AppState appState,
+    required final ColorReference inputColor,
+    required final LayerState currentLayer,
+  })
   {
     ColorReference retColor = inputColor;
     final Frame? frame = appState.timeline.selectedFrame;
@@ -742,44 +739,83 @@ abstract class IToolPainter
     return retColor;
   }
 
-  CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions})
+  bool _lockAllowsPaint({required final CoordinateSetI coord, required final DrawingLayerState layer,})
+  {
+    return layer.lockState.value == LayerLockState.unlocked || (layer.lockState.value == LayerLockState.transparency && layer.getDataEntry(coord: coord) != null);
+  }
+
+  ColorReference? _getLayerOrSelectionRef({required final CoordinateSetI coord, required final DrawingLayerState currentLayer, required final SelectionState selection,})
+  {
+    if (selection.selection.isEmpty)
+    {
+      return currentLayer.getDataEntry(coord: coord);
+    }
+    if (selection.selection.contains(coord: coord))
+    {
+      return selection.selection.getColorReference(coord: coord);
+    }
+    return null;
+  }
+
+  ColorReference? _resolveComposedColorAtCoord({required final CoordinateSetI coord, required final Frame frame, required final int toIndex, required final bool requireVisibility,})
+  {
+    ColorReference? currentColor;
+    for (int i = frame.layerList.length - 1; i >= toIndex; i--)
+    {
+      final LayerState layer = frame.layerList.getLayer(index: i);
+      if (!requireVisibility || layer.visibilityState.value == LayerVisibilityState.visible)
+      {
+        if (layer is DrawingLayerState)
+        {
+          final ColorReference? col = layer.getDataEntry(coord: coord, withSettingsPixels: true);
+          if (col != null)
+          {
+            currentColor = col;
+          }
+        }
+        else if (currentColor != null && layer is ShadingLayerState)
+        {
+          final int? displayVal = layer.getDisplayValueAt(coord: coord);
+          if (displayVal != null)
+          {
+            final int newColorIndex = (currentColor.colorIndex + displayVal).clamp(0, currentColor.ramp.references.length - 1);
+            currentColor = currentColor.ramp.references[newColorIndex];
+          }
+        }
+      }
+    }
+    return currentColor;
+  }
+
+  CoordinateColorMap _applyColorShadingToMap({required final CoordinateColorMap pixelMap, required final LayerState currentLayer, required final bool apply,})
+  {
+    if (!apply) return pixelMap;
+    final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
+    for (final CoordinateColor entry in pixelMap.entries)
+    {
+      shadedPixelMap[entry.key] = _getColorShading(
+        coord: entry.key,
+        appState: appState,
+        inputColor: entry.value,
+        currentLayer: currentLayer,);
+    }
+    return shadedPixelMap;
+  }
+
+  CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions,})
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     final Frame? frame = appState.timeline.selectedFrame;
     if (currentLayer.lockState.value == LayerLockState.unlocked && frame != null && frame.layerList.contains(layer: currentLayer))
     {
-      for (final CoordinateSetI coord in coords)
+      final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
+      if (currentLayerPos != null && currentLayerPos >= 0)
       {
-        if (canvasSize.contains(coord: coord))
+        for (final CoordinateSetI coord in coords)
         {
-          final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
-          if (currentLayerPos != null && currentLayerPos >= 0)
+          if (canvasSize.contains(coord: coord))
           {
-            ColorReference? currentColor;
-            for (int i = frame.layerList.length - 1; i >= 0; i--)
-            {
-              final LayerState layer = frame.layerList.getLayer(index: i);
-              if (layer.visibilityState.value == LayerVisibilityState.visible)
-              {
-                if (layer is DrawingLayerState)
-                {
-                  final ColorReference? col = layer.getDataEntry(coord: coord, withSettingsPixels: true);
-                  if (col != null)
-                  {
-                    currentColor = col;
-                  }
-                }
-                else if (currentColor != null && layer is ShadingLayerState)
-                {
-                  if (layer.getDisplayValueAt(coord: coord) != null)
-                  {
-                    final int newColorIndex = (currentColor.colorIndex + layer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length - 1);
-                    currentColor = currentColor.ramp.references[newColorIndex];
-                  }
-                }
-              }
-            }
-
+            final ColorReference? currentColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: 0, requireVisibility: true,);
             if (currentColor != null)
             {
               int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
@@ -811,8 +847,15 @@ abstract class IToolPainter
     return pixelMap;
   }
 
-
-  CoordinateColorMap getStampPixelsToDraw({required final CoordinateSetI canvasSize, required final DrawingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final SelectionState selection, required final ShaderOptions shaderOptions, required final ColorReference selectedColor, final bool withShadingLayers = false})
+  CoordinateColorMap getStampPixelsToDraw({
+    required final CoordinateSetI canvasSize,
+    required final DrawingLayerState currentLayer,
+    required final HashMap<CoordinateSetI, int> stampData,
+    required final SelectionState selection,
+    required final ShaderOptions shaderOptions,
+    required final ColorReference selectedColor,
+    final bool withShadingLayers = false,
+  })
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
@@ -820,30 +863,23 @@ abstract class IToolPainter
       final CoordinateSetI coord = stampEntry.key;
       if (canvasSize.contains(coord: coord))
       {
-        if (!shaderOptions.isEnabled.value) //without shading
+        if (!shaderOptions.isEnabled.value)
         {
           final int index = (selectedColor.colorIndex + stampEntry.value).clamp(0, selectedColor.ramp.references.length - 1);
           final ColorReference drawColor = selectedColor.ramp.references[index];
-          //if no selection and current pixel is different
           if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != drawColor) ||
-              //if selection and selection contains pixel and selection pixel is different
               (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != drawColor))
           {
-            if ((currentLayer.lockState.value == LayerLockState.transparency && currentLayer.getDataEntry(coord: coord) != null) || currentLayer.lockState.value == LayerLockState.unlocked)
+            if (_lockAllowsPaint(coord: coord, layer: currentLayer))
             {
               pixelMap[coord] = drawColor;
             }
           }
         }
-        //with shading
         else
-          //if no selection and pixel is not null
-        if ((selection.selection.isEmpty && currentLayer.getDataEntry(coord: coord) != null) ||
-            //if selection and selection contains pixel and pixel is not null
-            (!selection.selection.isEmpty && selection.selection.contains(coord: coord) && selection.selection.getColorReference(coord: coord) != null))
         {
-          final ColorReference layerRef = selection.selection.isEmpty ? currentLayer.getDataEntry(coord: coord)! : selection.selection.getColorReference(coord: coord)!;
-          if (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value) //all ramps
+          final ColorReference? layerRef = _getLayerOrSelectionRef(coord: coord, currentLayer: currentLayer, selection: selection,);
+          if (layerRef != null && (layerRef.ramp.uuid == selectedColor.ramp.uuid || !shaderOptions.onlyCurrentRampEnabled.value))
           {
             if (shaderOptions.shaderDirection.value == ShaderDirection.right)
             {
@@ -859,61 +895,34 @@ abstract class IToolPainter
         }
       }
     }
-
-    if (withShadingLayers)
-    {
-      final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
-      for (final CoordinateColor entry in pixelMap.entries)
-      {
-        shadedPixelMap[entry.key] = _getColorShading(coord: entry.key, appState: appState, inputColor: entry.value, currentLayer: currentLayer);
-      }
-      return shadedPixelMap;
-    }
-    else
-    {
-      return pixelMap;
-    }
+    return _applyColorShadingToMap(pixelMap: pixelMap, currentLayer: currentLayer, apply: withShadingLayers,);
   }
 
-  CoordinateColorMap getStampPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final HashMap<CoordinateSetI, int> stampData, required final ShaderOptions shaderOptions, final bool withShadingLayers = false})
+  CoordinateColorMap getStampPixelsToDrawForShading({
+    required final CoordinateSetI canvasSize,
+    required final ShadingLayerState currentLayer,
+    required final HashMap<CoordinateSetI, int> stampData,
+    required final ShaderOptions shaderOptions,
+    final bool withShadingLayers = false,
+  })
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
     final Frame? frame = appState.timeline.selectedFrame;
     if (frame != null && frame.layerList.contains(layer: currentLayer))
     {
-      for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
+      final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
+      if (currentLayerPos != null && currentLayerPos >= 0)
       {
-        final CoordinateSetI coord = stampEntry.key;
-        if (canvasSize.contains(coord: coord))
+        for (final MapEntry<CoordinateSetI, int> stampEntry in stampData.entries)
         {
-          final int? currentLayerPos = frame.layerList.getLayerPosition(state: currentLayer);
-          if (currentLayerPos != null && currentLayerPos >= 0)
+          final CoordinateSetI coord = stampEntry.key;
+          if (canvasSize.contains(coord: coord))
           {
-            ColorReference? currentColor;
-            for (int i = frame.layerList.length - 1; i >= currentLayerPos; i--)
-            {
-              final LayerState layer = frame.layerList.getLayer(index: i);
-              if (layer is DrawingLayerState)
-              {
-                final ColorReference? col = layer.getDataEntry(coord: coord, withSettingsPixels: true);
-                if (col != null)
-                {
-                  currentColor = col;
-                }
-              }
-              else if (currentColor != null && layer is ShadingLayerState)
-              {
-                if (layer.hasCoord(coord: coord))
-                {
-                  final int newColorIndex = (currentColor.colorIndex + layer.getDisplayValueAt(coord: coord)!).clamp(0, currentColor.ramp.references.length -1);
-                  currentColor = currentColor.ramp.references[newColorIndex];
-                }
-              }
-            }
+            final ColorReference? currentColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: false,);
             if (currentColor != null)
             {
               final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-              final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value);
+              final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value,);
               if (currentLayer.runtimeType == ShadingLayerState)
               {
                 final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
@@ -922,7 +931,7 @@ abstract class IToolPainter
               else if (currentLayer is DitherLayerState)
               {
                 final int currentVal = currentLayer.getDisplayValueAt(coord: coord);
-                final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shadingAmount);
+                final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shadingAmount,);
                 if (currentVal != ditherVal)
                 {
                   final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
@@ -934,22 +943,7 @@ abstract class IToolPainter
         }
       }
     }
-
-
-
-    if (withShadingLayers)
-    {
-      final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
-      for (final CoordinateColor entry in pixelMap.entries)
-      {
-        shadedPixelMap[entry.key] = _getColorShading(coord: entry.key, appState: appState, inputColor: entry.value, currentLayer: currentLayer);
-      }
-      return shadedPixelMap;
-    }
-    else
-    {
-      return pixelMap;
-    }
+    return _applyColorShadingToMap(pixelMap: pixelMap, currentLayer: currentLayer, apply: withShadingLayers,);
   }
 
   static int getClosestPixel({required final double value, required final double pixelSize})
@@ -1111,5 +1105,4 @@ abstract class IToolPainter
     }
     return path;
   }
-
 }

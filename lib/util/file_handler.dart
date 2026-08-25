@@ -103,24 +103,17 @@ class LoadPaletteSet {
   LoadPaletteSet({required this.status, this.rampData});
 }
 
-enum FileNameStatus { available, forbidden, noRights, overwrite }
+enum FileNameStatus
+{
+  available("Available", TablerIcons.check),
+  forbidden("Invalid File Name", TablerIcons.x),
+  noRights("Insufficient Permissions", TablerIcons.ban),
+  overwrite("Overwriting Existing File", TablerIcons.exclamation_mark);
 
-//TODO create enhanced enum fo this
-const Map<FileNameStatus, String> fileNameStatusTextMap =
-    <FileNameStatus, String>{
-  FileNameStatus.available: "Available",
-  FileNameStatus.forbidden: "Invalid File Name",
-  FileNameStatus.noRights: "Insufficient Permissions",
-  FileNameStatus.overwrite: "Overwriting Existing File",
-};
-
-const Map<FileNameStatus, IconData> fileNameStatusIconMap =
-    <FileNameStatus, IconData>{
-  FileNameStatus.available: TablerIcons.check,
-  FileNameStatus.forbidden: TablerIcons.x,
-  FileNameStatus.noRights: TablerIcons.ban,
-  FileNameStatus.overwrite: TablerIcons.exclamation_mark,
-};
+  const FileNameStatus(this.label, this.icon);
+  final String label;
+  final IconData icon;
+}
 
 const int fileVersion = 4;
 const String magicNumber = "4B504958";

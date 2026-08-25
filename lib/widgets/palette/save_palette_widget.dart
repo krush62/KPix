@@ -102,10 +102,10 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                     valueListenable: _fileNameStatus,
                     builder: (final BuildContext context, final FileNameStatus status, final Widget? child) {
                       return Tooltip(
-                        message: fileNameStatusTextMap[status],
+                        message: status.label,
                         waitDuration: AppState.toolTipDuration,
                         child: Icon(
-                          fileNameStatusIconMap[status],
+                          status.icon,
                           size: OverlayEntryAlertDialogOptions.iconSize / 2,
                         ),
                       );

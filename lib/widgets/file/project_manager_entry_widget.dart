@@ -16,7 +16,7 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
 
 /// Layout options for [ProjectManagerEntryWidget].
 abstract final class _ProjectManagerEntryOptions

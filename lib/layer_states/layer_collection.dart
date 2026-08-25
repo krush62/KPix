@@ -16,6 +16,7 @@
 
 import 'dart:collection';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/dither_layer/dither_layer_state.dart';
@@ -28,8 +29,9 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';

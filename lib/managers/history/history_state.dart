@@ -28,7 +28,7 @@ import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class HistoryState
 {
@@ -192,5 +192,19 @@ class HistoryState
     }
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
+  }
+
+  static int? getRampIndex({required final String uuid, required final List<HistoryRampData> ramps})
+  {
+    int? rampIndex;
+    for (int i = 0; i < ramps.length; i++)
+    {
+      if (ramps[i].uuid == uuid)
+      {
+        rampIndex = i;
+        break;
+      }
+    }
+    return rampIndex;
   }
 }

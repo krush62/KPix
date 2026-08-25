@@ -17,8 +17,8 @@
 import 'dart:collection';
 
 import 'package:kpix/models/color_types.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
@@ -43,3 +43,19 @@ typedef CoordinateColorMapNullable = HashMap<CoordinateSetI, ColorReference?>;
 typedef CoordinateColor = MapEntry<CoordinateSetI, ColorReference>;
 typedef CoordinateColorNullable = MapEntry<CoordinateSetI, ColorReference?>;
 typedef StampMap = Map<String, List<StampManagerEntryData>>;
+
+class StackCol<T> {
+  final List<T> _list = <T>[];
+
+  void push(final T value) => _list.add(value);
+
+  T pop() => _list.removeLast();
+
+  T get peek => _list.last;
+
+  bool get isEmpty => _list.isEmpty;
+
+  bool get isNotEmpty => _list.isNotEmpty;
+
+  int get length => _list.length;
+}

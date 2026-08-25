@@ -16,8 +16,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class ColorPickPainter extends IToolPainter
 {

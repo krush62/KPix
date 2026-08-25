@@ -17,7 +17,7 @@
 import 'dart:collection';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 abstract final class _StampManagerEntryOptions
 {

@@ -25,7 +25,7 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 class SelectionPainter extends IToolPainter
@@ -162,7 +162,7 @@ class SelectionPainter extends IToolPainter
             bool isInsideCircle = false;
             if (polygonPoints.isNotEmpty)
             {
-              if (getDistance(a: point, b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
+              if (point.distanceTo(b: polygonPoints[0]) <= painterOptions.selectionPolygonCircleRadius / drawParams.pixelSize)
               {
                 isInsideCircle = true;
               }

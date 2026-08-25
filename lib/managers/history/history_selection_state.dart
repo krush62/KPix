@@ -19,7 +19,7 @@ import 'dart:collection';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/selection_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class HistorySelectionState

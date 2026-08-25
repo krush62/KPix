@@ -29,8 +29,9 @@ import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/drawing_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_shape_constraints.dart';
 
@@ -345,8 +346,8 @@ class ShapePainter extends IToolPainter
       }
       else
       {
-        final CoordinateSetI min = getMin(coordList: points);
-        final CoordinateSetI max = getMax(coordList: points);
+        final CoordinateSetI min = CoordinateSetI.getMin(coordList: points);
+        final CoordinateSetI max = CoordinateSetI.getMax(coordList: points);
         for (int x = min.x; x <= max.x; x++)
         {
           for (int y = min.y; y <= max.y; y++)

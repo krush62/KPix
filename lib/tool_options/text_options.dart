@@ -21,7 +21,7 @@ import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/tools/constraints/tool_text_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';

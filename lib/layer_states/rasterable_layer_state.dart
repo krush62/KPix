@@ -21,7 +21,7 @@ import 'package:kpix/layer_states/layer_settings.dart';
 import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class RasterImagePair

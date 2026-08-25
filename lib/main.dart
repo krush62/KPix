@@ -34,8 +34,10 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/util/update_helper.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/widgets/canvas/canvas_widget.dart';
 import 'package:kpix/widgets/controls/kpix_splitter.dart';
 import 'package:kpix/widgets/main/main_toolbar_widget.dart';
@@ -235,6 +237,22 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         break;
     }
 
+  }
+
+  /// Exits the application and clears the recovery directory.
+  void exitApplication({final int exitCode = 0})
+  {
+    clearRecoverDir().then((final void value)
+    {
+      if (Platform.isAndroid)
+      {
+        SystemNavigator.pop();
+      }
+      else
+      {
+        exit(exitCode);
+      }
+    },);
   }
 
   Future<void> _initPrefs() async

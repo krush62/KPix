@@ -15,6 +15,7 @@
  */
 
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -24,7 +25,8 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';

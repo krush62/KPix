@@ -24,7 +24,7 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_line_constraints.dart';
 import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';

@@ -17,7 +17,7 @@
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/models/color_types.dart';
-import 'package:kpix/util/color_helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 
 class RampResolver
 {

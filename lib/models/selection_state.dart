@@ -30,8 +30,8 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 

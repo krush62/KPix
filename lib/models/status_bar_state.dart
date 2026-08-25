@@ -18,7 +18,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class StatusBarState
 {

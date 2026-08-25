@@ -31,6 +31,7 @@
  */
 
 import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -50,8 +51,8 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:kpix/widgets/tools/tool_type.dart';
@@ -555,8 +556,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
         if (selectionPainter.hasNewSelection && selectionPainter.options.shape.value == SelectShape.polygon)
         {
           selectionPainter.hasNewSelection = false;
-          final CoordinateSetI min = getMin(coordList: selectionPainter.polygonPoints);
-          final CoordinateSetI max = getMax(coordList: selectionPainter.polygonPoints);
+          final CoordinateSetI min = CoordinateSetI.getMin(coordList: selectionPainter.polygonPoints);
+          final CoordinateSetI max = CoordinateSetI.getMax(coordList: selectionPainter.polygonPoints);
           final Set<CoordinateSetI> selection = <CoordinateSetI>{};
           for (int x = min.x; x <= max.x; x++)
           {

@@ -27,6 +27,7 @@ import 'package:image/image.dart' as img;
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
@@ -42,10 +43,11 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
-import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -68,9 +70,32 @@ part 'export/project/export_project_kpix.dart';
 part 'export/project/export_project_pixelorama.dart';
 part 'export/project/export_project_png.dart';
 part 'export/project/export_project_psd.dart';
-part 'export/project/export_project_zipped_png.dart';
 part 'export/project/export_project_texture_pack.dart';
 part 'export/project/export_project_texture_pack_animation.dart';
+part 'export/project/export_project_zipped_png.dart';
+
+Future<CoordinateColorMapNullable> getMergedColors({required final Frame frame, required final CoordinateSetI canvasSize}) async
+{
+  final CoordinateColorMapNullable colorData = CoordinateColorMapNullable();
+  final Iterable<RasterableLayerState> layerList = frame.layerList.getVisibleRasterLayers();
+  for (int x = 0; x < canvasSize.x; x++)
+  {
+    for (int y = 0; y < canvasSize.y; y++)
+    {
+      for (final RasterableLayerState layer in layerList)
+      {
+        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
+        final ColorReference? colAtPos = layer.rasterPixels[coord];
+        if (colAtPos != null)
+        {
+          colorData[coord] = colAtPos;
+          break;
+        }
+      }
+    }
+  }
+  return colorData;
+}
 
 List<ui.Color> _getColorList({required final List<KPalRampData> ramps})
 {

@@ -37,8 +37,9 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/line_options.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/drawing_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 
@@ -349,8 +350,8 @@ abstract class IToolPainter
     final Frame? frame = appState.timeline.selectedFrame;
     if (drawingPixels.isNotEmpty && frame != null && frame.layerList.contains(layer: currentLayer))
     {
-      final CoordinateSetI min = getMin(coordList: drawingPixels.keys.toList());
-      final CoordinateSetI max = getMax(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI min = CoordinateSetI.getMin(coordList: drawingPixels.keys.toList());
+      final CoordinateSetI max = CoordinateSetI.getMax(coordList: drawingPixels.keys.toList());
       final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
       final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
       final ByteData byteDataImg = ByteData(size.x * size.y * 4);
@@ -542,7 +543,7 @@ abstract class IToolPainter
           }
         }
 
-        final double dist = getDistance(a: endPos, b: currentPos);
+        final double dist = currentPos.distanceTo(b: endPos);
         if (dist <= shortestDist)
         {
           shortestDist = dist;

@@ -20,8 +20,11 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/helpers/format_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/typedefs.dart';
 
 void main() {
   
@@ -720,7 +723,7 @@ void testGetCoordinateNeighbors()
   group('getCoordinateNeighbors', () {
     test('returns 4 cardinal neighbors when withDiagonals = false', () {
       final CoordinateSetI pixel = CoordinateSetI(x: 5, y: 5);
-      final List<CoordinateSetI> neighbors = getCoordinateNeighbors(pixel: pixel, withDiagonals: false);
+      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: false);
 
       final List<CoordinateSetI> expected = <CoordinateSetI>[
         CoordinateSetI(x: 6, y: 5),
@@ -735,7 +738,7 @@ void testGetCoordinateNeighbors()
 
     test('returns 8 neighbors when withDiagonals = true', () {
       final CoordinateSetI pixel = CoordinateSetI(x: 5, y: 5);
-      final List<CoordinateSetI> neighbors = getCoordinateNeighbors(pixel: pixel, withDiagonals: true);
+      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: true);
 
       final List<CoordinateSetI> expected = <CoordinateSetI>[
         // cardinal
@@ -756,7 +759,7 @@ void testGetCoordinateNeighbors()
 
     test('works for negative coordinates', () {
       final CoordinateSetI pixel = CoordinateSetI(x: -2, y: -3);
-      final List<CoordinateSetI> neighbors = getCoordinateNeighbors(pixel: pixel, withDiagonals: true);
+      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: true);
 
       final List<CoordinateSetI> expected = <CoordinateSetI>[
         CoordinateSetI(x: -1, y: -3),
@@ -775,7 +778,7 @@ void testGetCoordinateNeighbors()
 
     test('works for zero coordinates', () {
       final CoordinateSetI pixel = CoordinateSetI(x: 0, y: 0);
-      final List<CoordinateSetI> neighbors = getCoordinateNeighbors(pixel: pixel, withDiagonals: false);
+      final List<CoordinateSetI> neighbors = pixel.getNeighbors(withDiagonals: false);
 
       final List<CoordinateSetI> expected = <CoordinateSetI>[
         CoordinateSetI(x: 1, y: 0),
@@ -898,31 +901,31 @@ void testAngleUtilities()
   group('getDistance', () {
     test('distance between same point → 0', () {
       final CoordinateSetI p = CoordinateSetI(x: 0, y: 0);
-      expect(getDistance(a: p, b: p), 0);
+      expect(p.distanceTo(b: p), 0);
     });
 
     test('horizontal distance', () {
       final CoordinateSetI a = CoordinateSetI(x: 0, y: 0);
       final CoordinateSetI b = CoordinateSetI(x: 5, y: 0);
-      expect(getDistance(a: a, b: b), 5);
+      expect(a.distanceTo(b: b), 5);
     });
 
     test('vertical distance', () {
       final CoordinateSetI a = CoordinateSetI(x: 0, y: 0);
       final CoordinateSetI b = CoordinateSetI(x: 0, y: 12);
-      expect(getDistance(a: a, b: b), 12);
+      expect(a.distanceTo(b: b), 12);
     });
 
     test('diagonal distance', () {
       final CoordinateSetI a = CoordinateSetI(x: 3, y: 4);
       final CoordinateSetI b = CoordinateSetI(x: 0, y: 0);
-      expect(getDistance(a: a, b: b), 5);
+      expect(a.distanceTo(b: b), 5);
     });
 
     test('negative coordinates', () {
       final CoordinateSetI a = CoordinateSetI(x: -3, y: -4);
       final CoordinateSetI b = CoordinateSetI(x: 0, y: 0);
-      expect(getDistance(a: a, b: b), 5);
+      expect(a.distanceTo(b: b), 5);
     });
   });
 }

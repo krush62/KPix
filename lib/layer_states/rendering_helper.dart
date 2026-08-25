@@ -16,7 +16,7 @@
 
 import 'dart:math';
 
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class DirtyRegion {
   final int x;

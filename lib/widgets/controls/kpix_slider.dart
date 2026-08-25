@@ -16,7 +16,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:kpix/util/color_helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 
 /// A slider with the value displayed inside the bar.
 class KPixSlider extends StatefulWidget {

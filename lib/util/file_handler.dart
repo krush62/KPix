@@ -28,8 +28,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
+import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
+import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/managers/history/history_color_reference.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
@@ -55,7 +57,9 @@ import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
 import 'package:kpix/util/export_functions.dart';
 import 'package:kpix/util/file_byte_reader.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -70,9 +74,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-part 'import/import_stamp.dart';
-part 'import/import_palette.dart';
 part 'import/import_kpix.dart';
+part 'import/import_palette.dart';
+part 'import/import_stamp.dart';
 
 class LoadFileSet {
   final String status;
@@ -101,6 +105,7 @@ class LoadPaletteSet {
 
 enum FileNameStatus { available, forbidden, noRights, overwrite }
 
+//TODO create enhanced enum fo this
 const Map<FileNameStatus, String> fileNameStatusTextMap =
     <FileNameStatus, String>{
   FileNameStatus.available: "Available",
@@ -399,16 +404,6 @@ Future<bool> deleteProject({required final String fullProjectPath}) async {
     GetIt.I.get<Logger>().w("Error deleting project.", error: e, stackTrace: s);
     return false;
   }
-}
-
-Future<bool> deleteFile({required final String path}) async {
-  final File file = File(path);
-  if (await file.exists()) {
-    await file.delete();
-  } else {
-    return false;
-  }
-  return true;
 }
 
 Future<String?> saveCurrentPalette(
@@ -749,17 +744,7 @@ FileNameStatus checkFileName(
   return FileNameStatus.forbidden;
 }
 
-bool hasWriteAccess({required final String directory}) {
-  try {
-    final File tempFile = File(
-        '$directory${Platform.pathSeparator}${DateTime.now().millisecondsSinceEpoch}.tmp',);
-    tempFile.createSync();
-    tempFile.deleteSync();
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
+
 
 Future<String> findExportDir() async {
   if (!kIsWeb) {
@@ -914,14 +899,14 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles(
     for (final File file in filesToMove) {
       final String targetPath = p.join(targetDir, p.basename(file.path));
       try {
-        await _moveFile(sourceFile: file, targetPath: targetPath);
+        await moveFile(sourceFile: file, targetPath: targetPath);
         movedFiles.add((file.path, targetPath));
       } catch (e, s) {
         logger.w("Error moving ${file.path} to $targetPath, rolling back.",
             error: e, stackTrace: s,);
         for (final (String, String) movedFile in movedFiles) {
           try {
-            await _moveFile(
+            await moveFile(
                 sourceFile: File(movedFile.$2), targetPath: movedFile.$1,);
           } catch (e2, s2) {
             logger.e("Rollback failed for ${movedFile.$2}.",
@@ -942,17 +927,6 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles(
     return ProjectDirectoryMoveResult(
         success: false,
         message: "An unexpected error occurred while moving project files!",);
-  }
-}
-
-Future<void> _moveFile(
-    {required final File sourceFile, required final String targetPath,}) async {
-  try {
-    await sourceFile.rename(targetPath);
-  } on FileSystemException {
-    //rename does not work across file systems -> copy and delete
-    await sourceFile.copy(targetPath);
-    await sourceFile.delete();
   }
 }
 
@@ -1124,4 +1098,154 @@ Future<bool> importProject(
   }
 
   return success;
+}
+
+//TODO this definitely needs some work
+Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
+{
+  if (loadFileSet.historyState != null)
+  {
+    final HistoryState state = loadFileSet.historyState!;
+
+    final List<KPalRampData> ramps = <KPalRampData>[];
+    for (final HistoryRampData hRampData in state.rampList)
+    {
+      final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
+      ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
+    }
+
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    final LinkedHashSet<HistoryLayer> layerList = state.timeline.getLayersForFrameIndex(frameIndex: 0);
+
+    for (int i = layerList.length - 1; i >= 0; i--)
+    {
+      final HistoryLayer cLayer = layerList.elementAt(i);
+      if (cLayer.visibilityState == LayerVisibilityState.visible && cLayer.runtimeType == HistoryDrawingLayer)
+      {
+        final HistoryDrawingLayer historyDrawingLayer = cLayer as HistoryDrawingLayer;
+        final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
+        for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
+        {
+          KPalRampData? ramp;
+          for (int i = 0; i < ramps.length; i++)
+          {
+            if (ramps[i].uuid == state.rampList[entry.value.rampIndex].uuid)
+            {
+              ramp = ramps[i];
+              break;
+            }
+          }
+          if (ramp != null)
+          {
+            content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
+          }
+        }
+        final DrawingLayerState drawingLayer = DrawingLayerState(size: state.canvasSize, content: content, ramps: ramps);
+        drawingLayer.doManualRaster = true;
+        while (drawingLayer.isRasterizing)
+        {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
+        if (drawingLayer.rasterImage.value != null)
+        {
+          paintImage(
+            canvas: canvas,
+            rect: ui.Rect.fromLTWH(0, 0,
+              state.canvasSize.x.toDouble(),
+              state.canvasSize.y.toDouble(),),
+            image: drawingLayer.rasterImage.value!,
+            fit: BoxFit.none,
+            alignment: Alignment.topLeft,
+            filterQuality: FilterQuality.none,);
+        }
+      }
+    }
+    return recorder.endRecording().toImage(size.x, size.y);
+  }
+  else
+  {
+    return null;
+  }
+}
+
+Future<ui.Image> getImageFromLayers({
+  required final LayerCollection layerCollection,
+  required final CoordinateSetI canvasSize,
+  required final SelectionList selection,
+  final Frame? frame,
+  final List<RasterableLayerState>? layerStack,
+  final int scalingFactor = 1,}) async
+{
+  List<RasterableLayerState> layerList;
+  if (layerStack != null)
+  {
+    layerList = layerStack;
+  }
+  else
+  {
+    layerList = List<RasterableLayerState>.empty(growable: true);
+    layerList.addAll(layerCollection.getVisibleRasterLayers());
+  }
+
+  final ui.PictureRecorder recorder = ui.PictureRecorder();
+  final Canvas canvas = Canvas(recorder);
+  for (int i = layerList.length - 1; i >= 0; i--)
+  {
+    final LayerState cLayer = layerList[i];
+    if (cLayer.visibilityState.value == LayerVisibilityState.visible && cLayer is RasterableLayerState)
+    {
+      final ui.Image? mapImage = frame != null ? cLayer.rasterImageMap.value[frame]?.raster : null;
+      final ui.Image? rasterImage = cLayer.rasterImage.value;
+      final ui.Image? previousRaster = cLayer.previousRaster;
+      final ui.Image? imageToUse = mapImage ?? (rasterImage ?? previousRaster);
+
+      if (imageToUse != null)
+      {
+        paintImage(
+          canvas: canvas,
+          rect: ui.Rect.fromLTWH(0, 0,
+            canvasSize.x.toDouble() * scalingFactor,
+            canvasSize.y.toDouble() * scalingFactor,),
+          image: imageToUse,
+          fit: BoxFit.none,
+          scale: 1.0 / scalingFactor.toDouble(),
+          alignment: Alignment.topLeft,
+          filterQuality: FilterQuality.none,);
+        if (layerStack != null && selection.hasValues() && i == layerCollection.selectedLayerIndex)
+        {
+          final Paint paint = Paint();
+          for (final MapEntry<CoordinateSetI, ColorReference?> entry in selection.selectedPixels.entries)
+          {
+            if (entry.value != null)
+            {
+              paint.color = entry.value!.getIdColor().color;
+              canvas.drawRect(Rect.fromLTWH(
+                entry.key.x.toDouble() * scalingFactor,
+                entry.key.y.toDouble() * scalingFactor,
+                scalingFactor.toDouble(),
+                scalingFactor.toDouble(),),
+                paint,);
+            }
+          }
+        }
+      }
+    }
+  }
+  return recorder.endRecording().toImage(canvasSize.x * scalingFactor, canvasSize.y * scalingFactor);
+}
+
+/// Returns true if the application is running as native desktop application.
+bool isDesktop({final bool includingWeb = false})
+{
+  if (kIsWeb && !includingWeb)
+  {
+    return false;
+  }
+  else
+  {
+    return (kIsWeb && includingWeb) || Platform.isMacOS ||
+        Platform.isLinux || Platform.isWindows;
+  }
 }

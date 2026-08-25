@@ -43,8 +43,9 @@ import 'package:kpix/painting/shape_painter.dart';
 import 'package:kpix/painting/spray_can_painter.dart';
 import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/file_handler.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:kpix/widgets/tools/tool_type.dart';
 

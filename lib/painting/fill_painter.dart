@@ -27,8 +27,8 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/fill_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class FillPainter extends IToolPainter

@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/color_helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:uuid/uuid.dart';
 

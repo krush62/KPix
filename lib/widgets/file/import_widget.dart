@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
@@ -279,7 +279,6 @@ class _ImportWidgetState extends State<ImportWidget>
                               valueListenable: _imageNotifier,
                               builder: (final BuildContext context, final ui.Image? img, final Widget? child)
                               {
-
                                 return  ValueListenableBuilder<int>(
                                   valueListenable: _scaleDownNotifier,
                                   builder: (final BuildContext context, final int scaleVal, final Widget? child) {

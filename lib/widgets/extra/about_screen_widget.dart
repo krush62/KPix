@@ -22,11 +22,11 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/kpix_theme.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helper.dart';
-import 'package:kpix/util/update_helper.dart';
+import 'package:kpix/util/helpers/update_helper.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Widget that shows information about the application.
 class AboutScreenWidget extends StatefulWidget
@@ -93,6 +93,15 @@ class _AboutScreenWidgetState extends State<AboutScreenWidget>
         ),
       ),
     );
+  }
+
+  /// Launches a URL in the default browser.
+  Future<void> launchURL({required final String url}) async
+  {
+    if (!await launchUrl(Uri.parse(url)))
+    {
+      throw Exception("Could not launch");
+    }
   }
 
   @override

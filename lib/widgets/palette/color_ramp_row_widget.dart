@@ -35,7 +35,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
-import 'package:kpix/util/color_helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/palette/color_entry_widget.dart';
 

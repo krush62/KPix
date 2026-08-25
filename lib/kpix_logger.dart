@@ -17,8 +17,8 @@
  */
 
 import 'package:flutter/foundation.dart';
+import 'package:kpix/util/helpers/system_info_helper.dart';
 import 'package:kpix/util/logging_extensions.dart';
-import 'package:kpix/util/system_info_helper.dart';
 import 'package:logger/logger.dart';
 
 class KPixLogger extends Logger {

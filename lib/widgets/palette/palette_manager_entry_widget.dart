@@ -16,7 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kpix/models/color_types.dart';
-import 'package:kpix/util/color_helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
 
 abstract final class _PaletteManagerEntryOptions
 {

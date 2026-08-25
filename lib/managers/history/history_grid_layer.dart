@@ -17,7 +17,7 @@
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/ramp_resolver.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
 
 class HistoryGridLayer extends HistoryLayer

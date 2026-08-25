@@ -24,7 +24,7 @@ import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_shading_change.dart';
 import 'package:kpix/managers/history/history_shading_layer_settings.dart';
 import 'package:kpix/managers/history/ramp_resolver.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 
 class HistoryShadingLayer extends HistoryLayer
 {

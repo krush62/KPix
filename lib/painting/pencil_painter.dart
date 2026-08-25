@@ -29,8 +29,9 @@ import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
-import 'package:kpix/util/color_helper.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/util/helpers/color_helper.dart';
+import 'package:kpix/util/helpers/drawing_helper.dart';
+import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class PencilPainter extends IToolPainter

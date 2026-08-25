@@ -46,6 +46,7 @@ import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/timeline/frame_blending_options.dart';
+import 'package:kpix/widgets/tools/tool_type.dart';
 
 class KPixPainterOptions
 {

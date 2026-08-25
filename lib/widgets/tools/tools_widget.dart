@@ -20,7 +20,7 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/models/app_state.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/tools/tool_type.dart';
 
 
 abstract final class _ToolsWidgetOptions

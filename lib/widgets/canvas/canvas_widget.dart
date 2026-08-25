@@ -54,6 +54,7 @@ import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
+import 'package:kpix/widgets/tools/tool_type.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions

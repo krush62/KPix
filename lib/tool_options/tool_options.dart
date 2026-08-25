@@ -9,7 +9,7 @@ import 'package:kpix/tool_options/shape_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
-import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/tools/tool_type.dart';
 
 
 abstract class IToolOptions{

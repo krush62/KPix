@@ -23,7 +23,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
@@ -42,37 +41,6 @@ import 'package:kpix/util/typedefs.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
-
-enum ToolType
-{
-  pencil("Pencil", TablerIcons.pencil),
-  shape("Shapes", TablerIcons.triangle_square_circle),
-  fill("Fill", TablerIcons.droplet),
-  select("Select", TablerIcons.border_corners),
-  pick("Color Pick", TablerIcons.color_picker),
-  erase("Eraser", TablerIcons.eraser),
-  font("Text", TablerIcons.typography),
-  spraycan("Spray Can", TablerIcons.spray),
-  line("Line", Icons.multiline_chart),
-  stamp("Stamp", TablerIcons.rubber_stamp);
-
-  const ToolType(this.title, this.icon);
-
-  final String title;
-  final IconData icon;
-
-  bool isDrawTool()
-  {
-    return
-      this == ToolType.pencil ||
-      this == ToolType.shape ||
-      this == ToolType.fill ||
-      this == ToolType.font ||
-      this == ToolType.spraycan ||
-      this == ToolType.line ||
-      this == ToolType.stamp;
-  }
-}
 
 const int _halfCircle = 180;
 

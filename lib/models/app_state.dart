@@ -57,6 +57,7 @@ import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
+import 'package:kpix/widgets/tools/tool_type.dart';
 import 'package:logger/logger.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';

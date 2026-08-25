@@ -18,11 +18,12 @@ import 'package:flutter/material.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/tools/constraints/tool_color_pick_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class ColorPickOptions extends IToolOptions
 {
-  final ValueNotifier<bool> rawMode = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> rawMode = ValueNotifier<bool>(ColorPickConstraints.rawModeDefault);
 
   static Widget getWidget({
     required final BuildContext context,

@@ -112,11 +112,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
     _loadingDialog.show(context: context);
     loadKPixFile(
       fileData: null,
-      constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
       path: _selectedWidget.value!.entryData.path,
-      sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
-      referenceLayerSettings: GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-      gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
     ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: _loadingDialog.hide);});

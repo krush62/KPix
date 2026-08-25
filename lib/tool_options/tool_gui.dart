@@ -182,12 +182,6 @@ class ToolDropdownRow<E> extends StatelessWidget
   }
 }
 
-class IconStringData {
-  const IconStringData({required this.name, required this.icon});
-  final String name;
-  final IconData icon;
-}
-
 class ToolSegmentedIconButtonRow<E> extends StatelessWidget {
   const ToolSegmentedIconButtonRow({
     super.key,
@@ -201,7 +195,7 @@ class ToolSegmentedIconButtonRow<E> extends StatelessWidget {
 
   final String label;
   final ValueNotifier<E> notifier;
-  final Map<E, IconStringData> iconData;
+  final Map<E, ({String label, IconData icon})> iconData;
   final int flex;
   final double iconSize;
   final bool hideLabel;
@@ -234,10 +228,10 @@ class ToolSegmentedIconButtonRow<E> extends StatelessWidget {
                 onSelectionChanged: (final Set<E> selection) =>
                 notifier.value = selection.first,
                 segments: <ButtonSegment<E>>[
-                  for (final MapEntry<E, IconStringData> entry in iconData.entries)
+                  for (final MapEntry<E, ({String label, IconData icon})> entry in iconData.entries)
                     ButtonSegment<E>(
                       value: entry.key,
-                      tooltip: entry.value.name,
+                      tooltip: entry.value.label,
                       label: Icon(
                         entry.value.icon,
                         size: iconSize,

@@ -15,100 +15,27 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/tools/constraints/tool_shape_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
-enum ShapeShape
-{
-  triangle,
-  rectangle,
-  diamond,
-  ellipse,
-  ngon,
-  star
-}
 
-const Map<ShapeShape, IconStringData> shapeData = <ShapeShape, IconStringData>{
-  ShapeShape.triangle: IconStringData(name: "Triangle", icon: TablerIcons.triangle),
-  ShapeShape.rectangle: IconStringData(name: "Rectangle", icon: TablerIcons.square),
-  ShapeShape.diamond: IconStringData(name: "Mid-Angle Rectangle", icon: TablerIcons.diamonds),
-  ShapeShape.ellipse: IconStringData(name: "Ellipse", icon: TablerIcons.circle),
-  ShapeShape.ngon: IconStringData(name: "Regular Polygon", icon: TablerIcons.pentagon),
-  ShapeShape.star: IconStringData(name: "Star", icon: TablerIcons.star),
-};
-
-const Map<int, ShapeShape> _shapeShapeIndexMap =
-<int, ShapeShape>{
-  0: ShapeShape.triangle,
-  1: ShapeShape.rectangle,
-  2: ShapeShape.diamond,
-  3: ShapeShape.ellipse,
-  4: ShapeShape.ngon,
-  5: ShapeShape.star,
-};
 
 
 class ShapeOptions extends IToolOptions
 {
-  final int shapeDefault;
-  final bool keepRatioDefault;
-  final bool strokeOnlyDefault;
-  final int strokeWidthMin;
-  final int strokeWidthMax;
-  final int strokeWidthDefault;
-  final int cornerRadiusMin;
-  final int cornerRadiusMax;
-  final int cornerRadiusDefault;
-  final int ellipseAngleMin;
-  final int ellipseAngleMax;
-  final int ellipseAngleDefault;
-  final int ellipseAngleSteps;
-  final int cornerCountMin;
-  final int cornerCountMax;
-  final int cornerCountDefault;
-
-
-  final ValueNotifier<ShapeShape> shape = ValueNotifier<ShapeShape>(ShapeShape.rectangle);
-  final ValueNotifier<bool> keepRatio = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> unmodifiedKeepRatio = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> strokeOnly = ValueNotifier<bool>(false);
-  final ValueNotifier<int> strokeWidth = ValueNotifier<int>(1);
-  final ValueNotifier<int> cornerRadius = ValueNotifier<int>(0);
-  final ValueNotifier<int> cornerCount= ValueNotifier<int>(5);
-  final ValueNotifier<int> ellipseAngle = ValueNotifier<int>(0);
-
-  ShapeOptions({
-    required this.shapeDefault,
-    required this.keepRatioDefault,
-    required this.strokeOnlyDefault,
-    required this.strokeWidthMin,
-    required this.strokeWidthMax,
-    required this.strokeWidthDefault,
-    required this.cornerRadiusMin,
-    required this.cornerRadiusMax,
-    required this.cornerRadiusDefault,
-    required this.cornerCountMin,
-    required this.cornerCountMax,
-    required this.cornerCountDefault,
-    required this.ellipseAngleMin,
-    required this.ellipseAngleMax,
-    required this.ellipseAngleDefault,
-    required this.ellipseAngleSteps,
-  }) {
-    shape.value = _shapeShapeIndexMap[shapeDefault] ?? ShapeShape.rectangle;
-    keepRatio.value = keepRatioDefault;
-    unmodifiedKeepRatio.value = keepRatioDefault;
-    strokeOnly.value = strokeOnlyDefault;
-    strokeWidth.value = strokeWidthDefault;
-    cornerRadius.value = cornerRadiusDefault;
-    cornerCount.value = cornerCountDefault;
-    ellipseAngle.value = ellipseAngleDefault;
-  }
+  final ValueNotifier<DrawingShape> shape = ValueNotifier<DrawingShape>(ToolShapeConstraints.shapeDefault);
+  final ValueNotifier<bool> keepRatio = ValueNotifier<bool>(ToolShapeConstraints.keepRatioDefault);
+  final ValueNotifier<bool> unmodifiedKeepRatio = ValueNotifier<bool>(ToolShapeConstraints.keepRatioDefault);
+  final ValueNotifier<bool> strokeOnly = ValueNotifier<bool>(ToolShapeConstraints.strokeOnlyDefault);
+  final ValueNotifier<int> strokeWidth = ValueNotifier<int>(ToolShapeConstraints.strokeWidthDefault);
+  final ValueNotifier<int> cornerRadius = ValueNotifier<int>(ToolShapeConstraints.cornerRadiusDefault);
+  final ValueNotifier<int> cornerCount= ValueNotifier<int>(ToolShapeConstraints.cornerCountDefault);
+  final ValueNotifier<int> ellipseAngle = ValueNotifier<int>(ToolShapeConstraints.ellipseAngleDefault);
 
   static Column getWidget(
   {   required final BuildContext context,
@@ -119,10 +46,10 @@ class ShapeOptions extends IToolOptions
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        ToolSegmentedIconButtonRow<ShapeShape>(
-          label: "Test",
+        ToolSegmentedIconButtonRow<DrawingShape>(
+          label: "Shape",
           notifier: shapeOptions.shape,
-          iconData: shapeData,
+          iconData: DrawingShape.getLabelIconMap(),
           iconSize: ToolSettingsWidgetOptions.smallIconSize,
           hideLabel: true,
         ),
@@ -206,8 +133,8 @@ class ShapeOptions extends IToolOptions
                           {
                             return KPixSlider(
                               value: width.toDouble(),
-                              min: shapeOptions.strokeWidthMin.toDouble(),
-                              max: shapeOptions.strokeWidthMax.toDouble(),
+                              min: ToolShapeConstraints.strokeWidthMin.toDouble(),
+                              max: ToolShapeConstraints.strokeWidthMax.toDouble(),
                               //divisions: shapeOptions.strokeWidthMax - shapeOptions.strokeWidthMin,
                               onChanged: strokeOnly ? (final double newVal) {shapeOptions.strokeWidth.value = newVal.round();} : null,
                               textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -222,20 +149,20 @@ class ShapeOptions extends IToolOptions
             ),
           ],
         ),
-        ValueListenableBuilder<ShapeShape>(
+        ValueListenableBuilder<DrawingShape>(
           valueListenable: shapeOptions.shape,
-          builder: (final BuildContext context, final ShapeShape shape, final Widget? child){
+          builder: (final BuildContext context, final DrawingShape shape, final Widget? child){
             return Stack(
               children: <Widget>[
                 Visibility(
                   //TODO this might be an option for triangle and diamond as well
-                  visible: shape == ShapeShape.rectangle,
+                  visible: shape == DrawingShape.rectangle,
                   child: ToolSliderRow<int>(
                     label: "Corner Radius",
                     notifier: shapeOptions.cornerRadius,
                     flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                    minVal: shapeOptions.cornerRadiusMin.toDouble(),
-                    maxVal: shapeOptions.cornerRadiusMax.toDouble(),
+                    minVal: ToolShapeConstraints.cornerRadiusMin.toDouble(),
+                    maxVal: ToolShapeConstraints.cornerRadiusMax.toDouble(),
                   ),
                 ),
                 Visibility(
@@ -246,19 +173,19 @@ class ShapeOptions extends IToolOptions
                     notifier: shapeOptions.ellipseAngle,
                     label: "Angle",
                     flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                    minVal: shapeOptions.ellipseAngleMin.toDouble(),
-                    maxVal: shapeOptions.ellipseAngleMax.toDouble(),
+                    minVal: ToolShapeConstraints.ellipseAngleMin.toDouble(),
+                    maxVal: ToolShapeConstraints.ellipseAngleMax.toDouble(),
                     //divisions: (shapeOptions.ellipseAngleMax - shapeOptions.ellipseAngleMin) ~/ shapeOptions.ellipseAngleSteps,
                   ),
                 ),
                 Visibility(
-                  visible: shape == ShapeShape.ngon || shape == ShapeShape.star,
+                  visible: shape == DrawingShape.ngon || shape == DrawingShape.star,
                   child: ToolSliderRow<int>(
                     notifier: shapeOptions.cornerCount,
                     label: "Corner Count",
                     flex: ToolSettingsWidgetOptions.columnWidthRatio,
-                    minVal: shapeOptions.cornerCountMin.toDouble(),
-                    maxVal: shapeOptions.cornerCountMax.toDouble(),
+                    minVal: ToolShapeConstraints.cornerCountMin.toDouble(),
+                    maxVal: ToolShapeConstraints.cornerCountMax.toDouble(),
                     //divisions: shapeOptions.cornerCountMax - shapeOptions.cornerCountMin,
                   ),
                 ),
@@ -273,7 +200,7 @@ class ShapeOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    strokeWidth.value = (originalValue + steps).clamp(strokeWidthMin, strokeWidthMax);
+    strokeWidth.value = (originalValue + steps).clamp(ToolShapeConstraints.strokeWidthMin, ToolShapeConstraints.strokeWidthMax);
   }
 
   @override

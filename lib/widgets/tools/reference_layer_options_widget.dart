@@ -21,66 +21,13 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
-
-class ReferenceLayerSettings
-{
-  final int opacityDefault;
-  final int opacityMin;
-  final int opacityMax;
-  final double aspectRatioDefault;
-  final double aspectRatioMin;
-  final double aspectRatioMax;
-  final int zoomDefault;
-  final int zoomMin;
-  final int zoomMax;
-  final double zoomCurveExponent;
-  final double brightnessDefault;
-  final double brightnessMin;
-  final double brightnessMax;
-  final double saturationDefault;
-  final double saturationMin;
-  final double saturationMax;
-  final double contrastDefault;
-  final double contrastMin;
-  final double contrastMax;
-  final double warmthDefault;
-  final double warmthMin;
-  final double warmthMax;
-
-
-
-  ReferenceLayerSettings({
-    required this.opacityDefault,
-    required this.opacityMin,
-    required this.opacityMax,
-    required this.aspectRatioDefault,
-    required this.aspectRatioMin,
-    required this.aspectRatioMax,
-    required this.zoomDefault,
-    required this.zoomMin,
-    required this.zoomMax,
-    required this.zoomCurveExponent,
-    required this.brightnessDefault,
-    required this.brightnessMin,
-    required this.brightnessMax,
-    required this.saturationDefault,
-    required this.saturationMin,
-    required this.saturationMax,
-    required this.contrastDefault,
-    required this.contrastMin,
-    required this.contrastMax,
-    required this.warmthDefault,
-    required this.warmthMin,
-    required this.warmthMax,
-  });
-}
 
 class ReferenceLayerOptionsWidget extends StatefulWidget
 {
@@ -92,7 +39,6 @@ class ReferenceLayerOptionsWidget extends StatefulWidget
 
 class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidget>
 {
-  final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
   final ReferenceImageManager _refManager = GetIt.I.get<ReferenceImageManager>();
 
   final double _resetButtonHeight = 28;
@@ -176,11 +122,11 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
       final double scalingFactor = targetAspectRatioX / referenceAspectRatioX;
       if (scalingFactor > 1)
       {
-        widget.referenceState.aspectRatioNotifier.value = (targetAspectRatioX - 1).clamp(_refSettings.aspectRatioMin, _refSettings.aspectRatioMax);
+        widget.referenceState.aspectRatioNotifier.value = (targetAspectRatioX - 1).clamp(ReferenceLayerConstraints.aspectRatioMin, ReferenceLayerConstraints.aspectRatioMax);
       }
       else
       {
-        widget.referenceState.aspectRatioNotifier.value = (-(1.0 / scalingFactor) + 1).clamp(_refSettings.aspectRatioMin, _refSettings.aspectRatioMax);
+        widget.referenceState.aspectRatioNotifier.value = (-(1.0 / scalingFactor) + 1).clamp(ReferenceLayerConstraints.aspectRatioMin, ReferenceLayerConstraints.aspectRatioMax);
       }
       final double targetZoom = canvasSize.x.toDouble() / (widget.referenceState.image!.image.width.toDouble() * widget.referenceState.aspectRatioFactorX);
       widget.referenceState.setZoomSliderFromZoomFactor(factor: targetZoom);
@@ -331,8 +277,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               final int opacity, final Widget? child,) {
                             return KPixSlider(
                               value: opacity.toDouble(),
-                              min: _refSettings.opacityMin.toDouble(),
-                              max: _refSettings.opacityMax.toDouble(),
+                              min: ReferenceLayerConstraints.opacityMin.toDouble(),
+                              max: ReferenceLayerConstraints.opacityMax.toDouble(),
                               label: "$opacity%",
                               //divisions: _refSettings.opacityMax - _refSettings.opacityMin,
                               onChanged: refImg == null ? null : (final double newVal) {
@@ -348,9 +294,9 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                   _createSliderRow(
                       refImg: refImg,
                       notifier: widget.referenceState.aspectRatioNotifier,
-                      min: _refSettings.aspectRatioMin,
-                      max: _refSettings.aspectRatioMax,
-                      defaultValue: _refSettings.aspectRatioDefault,
+                      min: ReferenceLayerConstraints.aspectRatioMin,
+                      max: ReferenceLayerConstraints.aspectRatioMax,
+                      defaultValue: ReferenceLayerConstraints.aspectRatioDefault,
                       name: "Aspect Ratio",
                   ),
                   Row(
@@ -373,8 +319,8 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                               final int zoom, final Widget? child,) {
                             return KPixSlider(
                               value: zoom.toDouble(),
-                              min: _refSettings.zoomMin.toDouble(),
-                              max: _refSettings.zoomMax.toDouble(),
+                              min: ReferenceLayerConstraints.zoomMin.toDouble(),
+                              max: ReferenceLayerConstraints.zoomMax.toDouble(),
                               //divisions: _refSettings.zoomMax - _refSettings.zoomMin,
                               onChanged: refImg == null ? null : (final double newVal) {
                                 widget.referenceState.zoomNotifier.value = newVal.round();
@@ -443,33 +389,33 @@ class _ReferenceLayerOptionsWidgetState extends State<ReferenceLayerOptionsWidge
                   _createSliderRow(
                     refImg: refImg,
                     notifier: widget.referenceState.brightnessNotifier,
-                    min: _refSettings.brightnessMin,
-                    max: _refSettings.brightnessMax,
-                    defaultValue: _refSettings.brightnessDefault,
+                    min: ReferenceLayerConstraints.brightnessMin,
+                    max: ReferenceLayerConstraints.brightnessMax,
+                    defaultValue: ReferenceLayerConstraints.brightnessDefault,
                     name: "Brightness",
                   ),
                   _createSliderRow(
                     refImg: refImg,
                     notifier: widget.referenceState.contrastNotifier,
-                    min: _refSettings.contrastMin,
-                    max: _refSettings.contrastMax,
-                    defaultValue: _refSettings.contrastDefault,
+                    min: ReferenceLayerConstraints.contrastMin,
+                    max: ReferenceLayerConstraints.contrastMax,
+                    defaultValue: ReferenceLayerConstraints.contrastDefault,
                     name: "Contrast",
                   ),
                   _createSliderRow(
                     refImg: refImg,
                     notifier: widget.referenceState.saturationNotifier,
-                    min: _refSettings.saturationMin,
-                    max: _refSettings.saturationMax,
-                    defaultValue: _refSettings.saturationDefault,
+                    min: ReferenceLayerConstraints.saturationMin,
+                    max: ReferenceLayerConstraints.saturationMax,
+                    defaultValue: ReferenceLayerConstraints.saturationDefault,
                     name: "Saturation",
                   ),
                   _createSliderRow(
                     refImg: refImg,
                     notifier: widget.referenceState.warmthNotifier,
-                    min: _refSettings.warmthMin,
-                    max: _refSettings.warmthMax,
-                    defaultValue: _refSettings.warmthDefault,
+                    min: ReferenceLayerConstraints.warmthMin,
+                    max: ReferenceLayerConstraints.warmthMax,
+                    defaultValue: ReferenceLayerConstraints.warmthDefault,
                     name: "Warmth",
                   ),
                 ],

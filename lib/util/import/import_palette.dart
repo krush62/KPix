@@ -36,7 +36,7 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromAssets() async
   {
     final ByteData bytes = await rootBundle.load(filePath);
     final Uint8List byteData = bytes.buffer.asUint8List();
-    final LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: byteData, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
+    final LoadPaletteSet palSet = await _loadKPalFile(path: filePath, fileData: byteData);
     if (palSet.rampData != null)
     {
       paletteData.add(PaletteManagerEntryData(name: extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: true, rampDataList: palSet.rampData!, path: filePath));
@@ -62,7 +62,7 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
   }
   for (final String filePath in filesWithExtension)
   {
-    final LoadPaletteSet palSet = await _loadKPalFile(path: filePath, constraints: GetIt.I.get<PreferenceManager>().kPalConstraints, fileData: null, sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints);
+    final LoadPaletteSet palSet = await _loadKPalFile(path: filePath, fileData: null);
     if (palSet.rampData != null)
     {
       paletteData.add(PaletteManagerEntryData(name: extractFilenameFromPath(path: filePath, keepExtension: false), isLocked: false, rampDataList: palSet.rampData!, path: filePath));
@@ -71,7 +71,7 @@ Future<List<PaletteManagerEntryData>> loadPalettesFromInternal() async
   return paletteData;
 }
 
-Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path, required final KPalConstraints constraints, required final KPalSliderConstraints sliderConstraints}) async
+Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required final String path}) async
 {
   fileData ??= await File(path).readAsBytes();
   final FileByteReader reader = FileByteReader(fileData);
@@ -85,28 +85,28 @@ Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required fin
   final List<KPalRampData> rampList = <KPalRampData>[];
   for (int i = 0; i < rampCount; i++)
   {
-    final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings kPalRampSettings = KPalRampSettings();
     final int nameLength = reader.getUint8();
     reader.moveOffset(nameLength);
     kPalRampSettings.colorCount = reader.getUint8();
-    if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadPaletteSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
+    if (kPalRampSettings.colorCount < KPalConstraints.colorCountMin || kPalRampSettings.colorCount > KPalConstraints.colorCountMax) return LoadPaletteSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
     kPalRampSettings.baseHue = reader.getInt16(Endian.little);
-    if (kPalRampSettings.baseHue < constraints.baseHueMin || kPalRampSettings.baseHue > constraints.baseHueMax) return LoadPaletteSet(status: "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}");
+    if (kPalRampSettings.baseHue < KPalConstraints.baseHueMin || kPalRampSettings.baseHue > KPalConstraints.baseHueMax) return LoadPaletteSet(status: "Invalid base hue value in palette $i: ${kPalRampSettings.baseHue}");
     kPalRampSettings.baseSat = reader.getInt16(Endian.little);
-    if (kPalRampSettings.baseSat < constraints.baseSatMin || kPalRampSettings.baseSat > constraints.baseSatMax) return LoadPaletteSet(status: "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}");
+    if (kPalRampSettings.baseSat < KPalConstraints.baseSatMin || kPalRampSettings.baseSat > KPalConstraints.baseSatMax) return LoadPaletteSet(status: "Invalid base sat value in palette $i: ${kPalRampSettings.baseSat}");
     kPalRampSettings.hueShift = reader.getInt8();
-    if (kPalRampSettings.hueShift < constraints.hueShiftMin || kPalRampSettings.hueShift > constraints.hueShiftMax) return LoadPaletteSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
+    if (kPalRampSettings.hueShift < KPalConstraints.hueShiftMin || kPalRampSettings.hueShift > KPalConstraints.hueShiftMax) return LoadPaletteSet(status: "Invalid hue shift value in palette $i: ${kPalRampSettings.hueShift}");
     kPalRampSettings.hueShiftExp = reader.getFloat32(Endian.little);
-    if (kPalRampSettings.hueShiftExp < (constraints.hueShiftExpMin - _floatDelta) || kPalRampSettings.hueShiftExp > (constraints.hueShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
-    kPalRampSettings.hueShiftExp = kPalRampSettings.hueShiftExp.clamp(constraints.hueShiftExpMin, constraints.hueShiftExpMax);
+    if (kPalRampSettings.hueShiftExp < (KPalConstraints.hueShiftExpMin - _floatDelta) || kPalRampSettings.hueShiftExp > (KPalConstraints.hueShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid hue shift exp value in palette $i: ${kPalRampSettings.hueShiftExp}");
+    kPalRampSettings.hueShiftExp = kPalRampSettings.hueShiftExp.clamp(KPalConstraints.hueShiftExpMin, KPalConstraints.hueShiftExpMax);
     kPalRampSettings.satShift = reader.getInt8();
-    if (kPalRampSettings.satShift < constraints.satShiftMin || kPalRampSettings.satShift > constraints.satShiftMax) return LoadPaletteSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
+    if (kPalRampSettings.satShift < KPalConstraints.satShiftMin || kPalRampSettings.satShift > KPalConstraints.satShiftMax) return LoadPaletteSet(status: "Invalid sat shift value in palette $i: ${kPalRampSettings.satShift}");
     kPalRampSettings.satShiftExp = reader.getFloat32(Endian.little);
-    if (kPalRampSettings.satShiftExp < (constraints.satShiftExpMin - _floatDelta) || kPalRampSettings.satShiftExp > (constraints.satShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
-    kPalRampSettings.satShiftExp = kPalRampSettings.satShiftExp.clamp(constraints.satShiftExpMin, constraints.satShiftExpMax);
+    if (kPalRampSettings.satShiftExp < (KPalConstraints.satShiftExpMin - _floatDelta) || kPalRampSettings.satShiftExp > (KPalConstraints.satShiftExpMax + _floatDelta)) return LoadPaletteSet(status: "Invalid sat shift exp value in palette $i: ${kPalRampSettings.satShiftExp}");
+    kPalRampSettings.satShiftExp = kPalRampSettings.satShiftExp.clamp(KPalConstraints.satShiftExpMin, KPalConstraints.satShiftExpMax);
     kPalRampSettings.valueRangeMin = reader.getUint8();
     kPalRampSettings.valueRangeMax = reader.getUint8();
-    if (kPalRampSettings.valueRangeMin < constraints.valueRangeMin || kPalRampSettings.valueRangeMax > constraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
+    if (kPalRampSettings.valueRangeMin < KPalConstraints.valueRangeMin || kPalRampSettings.valueRangeMax > KPalConstraints.valueRangeMax || kPalRampSettings.valueRangeMax < kPalRampSettings.valueRangeMin) return LoadPaletteSet(status: "Invalid value range in palette $i: ${kPalRampSettings.valueRangeMin}-${kPalRampSettings.valueRangeMax}");
 
     final List<HistoryShiftSet> shifts = <HistoryShiftSet>[];
     for (int j = 0; j < kPalRampSettings.colorCount; j++)
@@ -114,9 +114,9 @@ Future<LoadPaletteSet> _loadKPalFile({required Uint8List? fileData, required fin
       final int hueShift = reader.getInt8();
       final int satShift = reader.getInt8();
       final int valShift = reader.getInt8();
-      if (hueShift > sliderConstraints.maxHue || hueShift < sliderConstraints.minHue) return LoadPaletteSet(status: "Invalid Hue Shift in Ramp $i, color $j: $hueShift");
-      if (satShift > sliderConstraints.maxSat || satShift < sliderConstraints.minSat) return LoadPaletteSet(status: "Invalid Sat Shift in Ramp $i, color $j: $satShift");
-      if (valShift > sliderConstraints.maxVal || valShift < sliderConstraints.minVal) return LoadPaletteSet(status: "Invalid Val Shift in Ramp $i, color $j: $valShift");
+      if (hueShift > KPalSliderConstraints.maxHue || hueShift < KPalSliderConstraints.minHue) return LoadPaletteSet(status: "Invalid Hue Shift in Ramp $i, color $j: $hueShift");
+      if (satShift > KPalSliderConstraints.maxSat || satShift < KPalSliderConstraints.minSat) return LoadPaletteSet(status: "Invalid Sat Shift in Ramp $i, color $j: $satShift");
+      if (valShift > KPalSliderConstraints.maxVal || valShift < KPalSliderConstraints.minVal) return LoadPaletteSet(status: "Invalid Val Shift in Ramp $i, color $j: $valShift");
       final HistoryShiftSet shiftSet = HistoryShiftSet(hueShift: hueShift, satShift: satShift, valShift: valShift);
       shifts.add(shiftSet);
     }

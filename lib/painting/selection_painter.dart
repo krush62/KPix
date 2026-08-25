@@ -21,21 +21,20 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helper.dart';
+import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 class SelectionPainter extends IToolPainter
 {
   final CoordinateSetI selectionStart = CoordinateSetI.zero();
   final CoordinateSetI selectionEnd = CoordinateSetI.zero();
   bool hasNewSelection = false;
-  final SelectOptions options = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
-  final LineOptions _lineOptions = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
+  final SelectOptions options = GetIt.I.get<ToolOptions>().selectOptions;
+  final LineOptions _lineOptions = GetIt.I.get<ToolOptions>().lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   bool movementStarted = false;
   List<CoordinateSetI> polygonPoints = <CoordinateSetI>[];
@@ -71,7 +70,7 @@ class SelectionPainter extends IToolPainter
         if (_isStartOnCanvas)
         {
           _shouldMove = (drawingLayer.lockState.value != LayerLockState.locked && drawingLayer.visibilityState.value != LayerVisibilityState.hidden) &&
-              (movementStarted || ((options.mode.value == SelectionMode.replace || options.mode.value == SelectionMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
+              (movementStarted || ((options.mode.value == SelectMode.replace || options.mode.value == SelectMode.add) && appState.selectionState.selection.contains(coord: _normStartPos) && (options.shape.value != SelectShape.polygon || polygonPoints.isEmpty)));
           if (_shouldMove)
           {
             movementStarted = true;

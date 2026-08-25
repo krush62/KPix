@@ -16,30 +16,16 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/tools/constraints/tool_eraser_constraints.dart';
+import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class EraserOptions extends IToolOptions
 {
-  final int sizeMin;
-  final int sizeMax;
-  final int sizeDefault;
-  final int shapeDefault;
-
-  final ValueNotifier<int> size = ValueNotifier<int>(1);
-  final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(PencilShape.round);
-
-  EraserOptions({
-    required this.sizeMin,
-    required this.sizeMax,
-    required this.sizeDefault,
-    required this.shapeDefault,})
-  {
-    size.value = sizeDefault;
-    shape.value = pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
-  }
+  final ValueNotifier<int> size = ValueNotifier<int>(EraserConstraints.sizeDefault);
+  final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(EraserConstraints.shapeDefault);
 
   static Column getWidget({
     required final BuildContext context,
@@ -54,14 +40,14 @@ class EraserOptions extends IToolOptions
           label: "Size",
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.size,
-          minVal: eraserOptions.sizeMin.toDouble(),
-          maxVal: eraserOptions.sizeMax.toDouble(),
+          minVal: EraserConstraints.sizeMin.toDouble(),
+          maxVal: EraserConstraints.sizeMax.toDouble(),
         ),
         ToolDropdownRow<PencilShape>(
           label: "Shape",
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: eraserOptions.shape,
-          valueMap: pencilShapeStringMap,
+          valueMap: PencilShape.getLabelMap(),
         ),
       ],
     );
@@ -70,7 +56,7 @@ class EraserOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    size.value = (originalValue + steps).clamp(sizeMin, sizeMax);
+    size.value = (originalValue + steps).clamp(EraserConstraints.sizeMin, EraserConstraints.sizeMax);
   }
 
   @override

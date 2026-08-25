@@ -18,51 +18,14 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
-
-enum PencilShape
-{
-  round,
-  square
-}
-
-const List<PencilShape> pencilShapeList = <PencilShape>[ PencilShape.round, PencilShape.square];
-
-const Map<int, PencilShape> pencilShapeIndexMap =
-<int, PencilShape>{
-  0: PencilShape.round,
-  1: PencilShape.square,
-};
-
-const Map<PencilShape, String> pencilShapeStringMap =
-<PencilShape, String>{
-  PencilShape.round: "Round",
-  PencilShape.square: "Square",
-};
 
 class PencilOptions extends IToolOptions
 {
-  final int sizeMin;
-  final int sizeMax;
-  final int sizeDefault;
-  final int shapeDefault;
-  final bool pixelPerfectDefault;
-
-  final ValueNotifier<int> size = ValueNotifier<int>(1);
-  final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(PencilShape.round);
-  final ValueNotifier<bool> pixelPerfect = ValueNotifier<bool>(true);
-
-  PencilOptions({
-    required this.sizeMin,
-    required this.sizeMax,
-    required this.sizeDefault,
-    required this.shapeDefault,
-    required this.pixelPerfectDefault,})
-  {
-    size.value = sizeDefault;
-    shape.value = pencilShapeIndexMap[shapeDefault] ?? PencilShape.round;
-    pixelPerfect.value = pixelPerfectDefault;
-  }
+  final ValueNotifier<int> size = ValueNotifier<int>(PencilConstraints.sizeDefault);
+  final ValueNotifier<PencilShape> shape = ValueNotifier<PencilShape>(PencilConstraints.shapeDefault);
+  final ValueNotifier<bool> pixelPerfect = ValueNotifier<bool>(PencilConstraints.pixelPerfectDefault);
 
   static Column getWidget({
     required final BuildContext context,
@@ -77,14 +40,14 @@ class PencilOptions extends IToolOptions
           label: "Size",
           notifier: pencilOptions.size,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
-          minVal: pencilOptions.sizeMin.toDouble(),
-          maxVal: pencilOptions.sizeMax.toDouble(),
+          minVal: PencilConstraints.sizeMin.toDouble(),
+          maxVal: PencilConstraints.sizeMax.toDouble(),
           //divisions: pencilOptions.sizeMax - pencilOptions.sizeMin,
         ),
         ToolDropdownRow<PencilShape>(
           label: "Shape",
           notifier: pencilOptions.shape,
-          valueMap: pencilShapeStringMap,
+          valueMap: PencilShape.getLabelMap(),
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
         ToolSwitchRow(
@@ -99,7 +62,7 @@ class PencilOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    size.value = (originalValue + steps).clamp(sizeMin, sizeMax);
+    size.value = (originalValue + steps).clamp(PencilConstraints.sizeMin, PencilConstraints.sizeMax);
   }
 
   @override

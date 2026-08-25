@@ -56,6 +56,7 @@ import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/kpal/kpal_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
+import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:logger/logger.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
@@ -131,7 +132,7 @@ class AppState
   {
     if (timeline.selectedFrame != null)
     {
-      return timeline.selectedFrame!.layerList.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<PreferenceManager>().toolOptions.colorPickOptions.rawMode.value);
+      return timeline.selectedFrame!.layerList.getColorFromImageAtPosition(normPos: normPos, selectionReference: selectionState.selection.getColorReference(coord: normPos), rawMode: GetIt.I.get<ToolOptions>().colorPickOptions.rawMode.value);
     }
     else
     {
@@ -164,7 +165,7 @@ class AppState
   }
 
   final RepaintNotifier repaintNotifier = RepaintNotifier();
-  final PreferenceManager prefs = GetIt.I.get<PreferenceManager>();
+  final ToolOptions toolOptions = GetIt.I.get<ToolOptions>();
 
   final ValueNotifier<int> _zoomFactor = ValueNotifier<int>(1);
   int get zoomFactor
@@ -400,8 +401,7 @@ class AppState
 
   void deleteRamp({required final KPalRampData ramp, final bool addToHistoryStack = true})
   {
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
-    if (colorRamps.length > constraints.rampCountMin)
+    if (colorRamps.length > KPalConstraints.rampCountMin)
     {
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       rampDataList.remove(ramp);
@@ -420,7 +420,7 @@ class AppState
     }
     else
     {
-      showMessage(text: "Need at least ${constraints.rampCountMin} color ramp(s)!");
+      showMessage(text: "Need at least ${KPalConstraints.rampCountMin} color ramp(s)!");
     }
   }
 
@@ -449,22 +449,19 @@ class AppState
 
   void _setDefaultPalette()
   {
-    _colorRamps.value = KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints);
+    _colorRamps.value = KPalRampData.getDefaultPalette();
     _selectedColor.value = _colorRamps.value[0].references[0];
   }
 
   Future<KPalRampData?> addNewRamp({final bool addToHistoryStack = true}) async
   {
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
-    if (colorRamps.length < constraints.rampCountMax)
+    if (colorRamps.length < KPalConstraints.rampCountMax)
     {
       const Uuid uuid = Uuid();
       final List<KPalRampData> rampDataList = List<KPalRampData>.from(colorRamps);
       final KPalRampData newRamp = KPalRampData(
         uuid: uuid.v1(),
-        settings: KPalRampSettings(
-          constraints: prefs.kPalConstraints,
-        ),
+        settings: KPalRampSettings(),
       );
       rampDataList.add(newRamp);
       _colorRamps.value = rampDataList;
@@ -477,7 +474,7 @@ class AppState
     }
     else
     {
-      showMessage(text: "Not more than ${constraints.rampCountMax} color ramps allowed!");
+      showMessage(text: "Not more than ${KPalConstraints.rampCountMax} color ramps allowed!");
       return null;
     }
   }
@@ -1302,7 +1299,7 @@ class AppState
         _previousDrawTool = tool;
       }
       _selectedTool.value = tool;
-      _currentToolOptions = prefs.toolOptions.toolOptionMap[_selectedTool.value]!;
+      _currentToolOptions = toolOptions.toolOptionMap[_selectedTool.value]!;
     }
   }
 

@@ -19,31 +19,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/history/history_shift_set.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:uuid/uuid.dart';
 
-enum SatCurve
-{
-  noFlat(0),
-  darkFlat(1),
-  brightFlat(2),
-  linear(3);
 
-  const SatCurve(this.id);
-
-  final int id;
-
-  static SatCurve fromId(final int id) {
-    return SatCurve.values.firstWhere((final SatCurve curve) => curve.id == id);
-  }
-}
 
 class KPalRampSettings
 {
-  final KPalConstraints constraints;
   late int colorCount;
   late int baseHue;
   late int hueShift;
@@ -55,22 +39,21 @@ class KPalRampSettings
   late int valueRangeMax;
   late SatCurve satCurve;
 
-  KPalRampSettings({required this.constraints})
+  KPalRampSettings()
   {
-    colorCount = constraints.colorCountDefault;
-    baseHue = constraints.baseHueDefault;
-    baseSat = constraints.baseSatDefault;
-    hueShift = constraints.hueShiftDefault;
-    hueShiftExp = constraints.hueShiftExpDefault;
-    satShift = constraints.satShiftDefault;
-    satShiftExp = constraints.satShiftExpDefault;
-    valueRangeMin = constraints.valueRangeMinDefault;
-    valueRangeMax = constraints.valueRangeMaxDefault;
-    satCurve = SatCurve.fromId(constraints.satCurveDefault);
+    colorCount = KPalConstraints.colorCountDefault;
+    baseHue = KPalConstraints.baseHueDefault;
+    baseSat = KPalConstraints.baseSatDefault;
+    hueShift = KPalConstraints.hueShiftDefault;
+    hueShiftExp = KPalConstraints.hueShiftExpDefault;
+    satShift = KPalConstraints.satShiftDefault;
+    satShiftExp = KPalConstraints.satShiftExpDefault;
+    valueRangeMin = KPalConstraints.valueRangeMinDefault;
+    valueRangeMax = KPalConstraints.valueRangeMaxDefault;
+    satCurve = KPalConstraints.satCurveDefault;
   }
 
   KPalRampSettings.fromValues({
-    required this.constraints,
     required this.colorCount,
     required this.baseHue,
     required this.hueShift,
@@ -85,7 +68,7 @@ class KPalRampSettings
 
   factory KPalRampSettings.from({required final KPalRampSettings other})
   {
-    final KPalRampSettings newSettings = KPalRampSettings(constraints: other.constraints);
+    final KPalRampSettings newSettings = KPalRampSettings();
     newSettings.colorCount = other.colorCount;
     newSettings.baseHue = other.baseHue;
     newSettings.baseSat = other.baseSat;
@@ -123,12 +106,11 @@ class KPalRampData
     final List<HistoryShiftSet>? historyShifts,
   })
   {
-    for (int i = 0; i < settings.constraints.colorCountMax; i++)
+    for (int i = 0; i < KPalConstraints.colorCountMax; i++)
     {
-      final KPalSliderConstraints shiftConstraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
-      final ValueNotifier<int> hueNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultHue : historyShifts[i].hueShift);
-      final ValueNotifier<int> satNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultSat : historyShifts[i].satShift);
-      final ValueNotifier<int> valNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? shiftConstraints.defaultVal : historyShifts[i].valShift);
+      final ValueNotifier<int> hueNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.defaultHue : historyShifts[i].hueShift);
+      final ValueNotifier<int> satNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.defaultSat : historyShifts[i].satShift);
+      final ValueNotifier<int> valNotifier = ValueNotifier<int>((historyShifts == null || i >= historyShifts.length) ? KPalSliderConstraints.defaultVal : historyShifts[i].valShift);
       final ShiftSet shiftSet = ShiftSet(hueShiftNotifier: hueNotifier, satShiftNotifier: satNotifier, valShiftNotifier: valNotifier);
       shiftSet.hueShiftNotifier.addListener(_shiftChanged);
       shiftSet.satShiftNotifier.addListener(_shiftChanged);
@@ -186,11 +168,11 @@ class KPalRampData
 
   }
 
-  static List<KPalRampData> getDefaultPalette({required final KPalConstraints constraints})
+  static List<KPalRampData> getDefaultPalette()
   {
     final List<KPalRampData> rampList = <KPalRampData>[];
 
-    final KPalRampSettings red = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings red = KPalRampSettings();
     red.colorCount = 6;
     red.baseHue = 357;
     red.baseSat = 79;
@@ -209,7 +191,7 @@ class KPalRampData
     redShifts.add(HistoryShiftSet(hueShift: -2, satShift: -2, valShift: 1));
     redShifts.add(HistoryShiftSet(hueShift: -4, satShift: 1, valShift: 1));
 
-    final KPalRampSettings yellow = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings yellow = KPalRampSettings();
     yellow.colorCount = 5;
     yellow.baseHue = 35;
     yellow.baseSat = 75;
@@ -227,7 +209,7 @@ class KPalRampData
     yellowShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 0));
     yellowShifts.add(HistoryShiftSet(hueShift: 0, satShift: -2, valShift: -3));
 
-    final KPalRampSettings green = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings green = KPalRampSettings();
     green.colorCount = 6;
     green.baseHue = 119;
     green.baseSat = 58;
@@ -246,7 +228,7 @@ class KPalRampData
     greenShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 0));
     greenShifts.add(HistoryShiftSet(hueShift: 3, satShift: 4, valShift: -4));
 
-    final KPalRampSettings blue = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings blue = KPalRampSettings();
     blue.colorCount = 5;
     blue.baseHue = 238;
     blue.baseSat = 33;
@@ -264,7 +246,7 @@ class KPalRampData
     blueShifts.add(HistoryShiftSet(hueShift: 0, satShift: 4, valShift: 0));
     blueShifts.add(HistoryShiftSet(hueShift: 0, satShift: 2, valShift: -7));
 
-    final KPalRampSettings purple = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings purple = KPalRampSettings();
     purple.colorCount = 5;
     purple.baseHue = 338;
     purple.baseSat = 63;
@@ -282,7 +264,7 @@ class KPalRampData
     purpleShifts.add(HistoryShiftSet(hueShift: 0, satShift: 0, valShift: 0));
     purpleShifts.add(HistoryShiftSet(hueShift: 0, satShift: 6, valShift: -4));
 
-    final KPalRampSettings brown = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings brown = KPalRampSettings();
     brown.colorCount = 7;
     brown.baseHue = 10;
     brown.baseSat = 46;
@@ -304,7 +286,7 @@ class KPalRampData
 
 
 
-    final KPalRampSettings grey = KPalRampSettings(constraints: constraints);
+    final KPalRampSettings grey = KPalRampSettings();
     grey.colorCount = 7;
     grey.baseHue = 191;
     grey.baseSat = 10;
@@ -346,7 +328,6 @@ class KPalRampData
   {
     if (colorCountChanged)
     {
-      final KPalSliderConstraints shiftConstraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
       const Uuid uuid = Uuid();
       _originalColors.clear();
       shiftedColors.clear();
@@ -358,9 +339,9 @@ class KPalRampData
         shiftSet.valShiftNotifier.removeListener(_shiftChanged);
         if (resetListeners)
         {
-          shiftSet.hueShiftNotifier.value = shiftConstraints.defaultHue;
-          shiftSet.satShiftNotifier.value = shiftConstraints.defaultSat;
-          shiftSet.valShiftNotifier.value = shiftConstraints.defaultVal;
+          shiftSet.hueShiftNotifier.value = KPalSliderConstraints.defaultHue;
+          shiftSet.satShiftNotifier.value = KPalSliderConstraints.defaultSat;
+          shiftSet.valShiftNotifier.value = KPalSliderConstraints.defaultVal;
         }
         shiftSet.hueShiftNotifier.addListener(_shiftChanged);
         shiftSet.satShiftNotifier.addListener(_shiftChanged);

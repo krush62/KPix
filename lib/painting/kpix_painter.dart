@@ -45,7 +45,7 @@ import 'package:kpix/painting/stamp_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
+import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 
 class KPixPainterOptions
 {
@@ -70,52 +70,7 @@ class KPixPainterOptions
   });
 }
 
-class DrawingParameters
-{
-  final Offset offset;
-  final Canvas canvas;
-  final Paint paint;
-  final int pixelSize;
-  final CoordinateSetI canvasSize;
-  final CoordinateSetI scaledCanvasSize;
-  final Size drawingSize;
-  final CoordinateSetD? cursorPos;
-  final CoordinateSetI? cursorPosNorm;
-  final bool primaryDown;
-  final bool secondaryDown;
-  final bool stylusButtonDown;
-  final Offset primaryPressStart;
-  final ReferenceLayerState? currentReferenceLayer;
-  final GridLayerState? currentGridLayer;
-  final RasterableLayerState? currentRasterLayer;
-  final double pixelRatio;
-  final double? symmetryHorizontal;
-  final double? symmetryVertical;
-  final bool isPlaying;
-  DrawingParameters({
-    required this.offset,
-    required this.canvas,
-    required this.paint,
-    required this.pixelSize,
-    required this.canvasSize,
-    required this.drawingSize,
-    required this.cursorPos,
-    required this.cursorPosNorm,
-    required this.primaryDown,
-    required this.stylusButtonDown,
-    required this.secondaryDown,
-    required this.primaryPressStart,
-    required this.pixelRatio,
-    required final LayerState currentLayer,
-    required this.symmetryHorizontal,
-    required this.symmetryVertical,
-    required this.isPlaying,
-}) :
-    scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
-    currentRasterLayer = currentLayer is RasterableLayerState ? currentLayer : null,
-    currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
-    currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
-}
+
 
 class KPixPainter extends CustomPainter
 {
@@ -132,7 +87,7 @@ class KPixPainter extends CustomPainter
   final ValueNotifier<Offset> _primaryPressStart;
   final KPixPainterOptions _options = GetIt.I.get<PreferenceManager>().kPixPainterOptions;
   final GuiPreferenceContent _guiOptions = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
-  final FrameBlendingOptions _frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
+  final FrameBlendingOptions _frameBlendingOptions = GetIt.I.get<FrameBlendingOptions>();
   final BehaviorPreferenceContent _behaviorPreferences = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   late Color _blackSelectionAlphaColor;
   late Color _whiteSelectionAlphaColor;

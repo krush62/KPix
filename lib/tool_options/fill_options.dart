@@ -17,20 +17,12 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/tools/constraints/tool_fill_constraints.dart';
 
 class FillOptions extends IToolOptions
 {
-  final ValueNotifier<bool> fillAdjacent = ValueNotifier<bool>(true);
-  final ValueNotifier<bool> fillWholeRamp = ValueNotifier<bool>(false);
-
-  final bool fillAdjacentDefault;
-  final bool fillWholeRampDefault;
-
-  FillOptions({required this.fillAdjacentDefault, required this.fillWholeRampDefault})
-  {
-    fillAdjacent.value = fillAdjacentDefault;
-    fillWholeRamp.value = fillWholeRampDefault;
-  }
+  final ValueNotifier<bool> fillAdjacent = ValueNotifier<bool>(FillConstraints.fillAdjacentDefault);
+  final ValueNotifier<bool> fillWholeRamp = ValueNotifier<bool>(FillConstraints.fillWholeRampDefault);
 
   static Column getWidget({
     required final BuildContext context,

@@ -31,6 +31,8 @@ import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/painting/shader_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/update_helper.dart';
@@ -42,6 +44,7 @@ import 'package:kpix/widgets/main/status_bar_widget.dart';
 import 'package:kpix/widgets/main/symmetry_widget.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
+import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:kpix/widgets/timeline/timeline_widget.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -243,7 +246,14 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       final SharedPreferences sPrefs = await SharedPreferences.getInstance();
       logger.i("Initializing fonts");
       final Map<PixelFontType, KFont> fontMap = await FontManager.readFonts();
-      GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs, FontManager(kFontMap: fontMap)));
+      logger.i("Creating Tool Options");
+      GetIt.I.registerSingleton<ToolOptions>(ToolOptions(fontManager: FontManager(kFontMap: fontMap)));
+      logger.i("Creating Preferences");
+      GetIt.I.registerSingleton<PreferenceManager>(PreferenceManager(sPrefs));
+      logger.i("Creating Blending Options");
+      GetIt.I.registerSingleton<FrameBlendingOptions>(FrameBlendingOptions());
+      logger.i("Creating Shader Options");
+      GetIt.I.registerSingleton<ShaderOptions>(ShaderOptions());
       logger.i("Getting Directories");
       final String exportDirString = await findExportDir();
       logger.i("Export Dir: $exportDirString");
@@ -477,11 +487,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
     {
       final LoadFileSet lfs = await loadKPixFile(
           fileData: null,
-          constraints: preferenceManager.kPalConstraints,
           path: initialFilePath,
-          sliderConstraints: preferenceManager.kPalSliderConstraints,
-          referenceLayerSettings: preferenceManager.referenceLayerSettings,
-          gridLayerSettings: preferenceManager.gridLayerSettings,
           drawingLayerSettingsConstraints: preferenceManager.drawingLayerSettingsConstraints,
           shadingLayerSettingsConstraints: preferenceManager.shadingLayerSettingsConstraints,
       );

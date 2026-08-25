@@ -27,6 +27,7 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
@@ -36,10 +37,58 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/line_options.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
+
+class DrawingParameters
+{
+  final Offset offset;
+  final Canvas canvas;
+  final Paint paint;
+  final int pixelSize;
+  final CoordinateSetI canvasSize;
+  final CoordinateSetI scaledCanvasSize;
+  final Size drawingSize;
+  final CoordinateSetD? cursorPos;
+  final CoordinateSetI? cursorPosNorm;
+  final bool primaryDown;
+  final bool secondaryDown;
+  final bool stylusButtonDown;
+  final Offset primaryPressStart;
+  final ReferenceLayerState? currentReferenceLayer;
+  final GridLayerState? currentGridLayer;
+  final RasterableLayerState? currentRasterLayer;
+  final double pixelRatio;
+  final double? symmetryHorizontal;
+  final double? symmetryVertical;
+  final bool isPlaying;
+  DrawingParameters({
+    required this.offset,
+    required this.canvas,
+    required this.paint,
+    required this.pixelSize,
+    required this.canvasSize,
+    required this.drawingSize,
+    required this.cursorPos,
+    required this.cursorPosNorm,
+    required this.primaryDown,
+    required this.stylusButtonDown,
+    required this.secondaryDown,
+    required this.primaryPressStart,
+    required this.pixelRatio,
+    required final LayerState currentLayer,
+    required this.symmetryHorizontal,
+    required this.symmetryVertical,
+    required this.isPlaying,
+  }) :
+        scaledCanvasSize = CoordinateSetI(x: canvasSize.x * pixelSize, y: canvasSize.y * pixelSize),
+        currentRasterLayer = currentLayer is RasterableLayerState ? currentLayer : null,
+        currentReferenceLayer = currentLayer.runtimeType == ReferenceLayerState ? (currentLayer as ReferenceLayerState) : null,
+        currentGridLayer = currentLayer.runtimeType == GridLayerState ? (currentLayer as GridLayerState) : null;
+}
+
 
 class BorderCoordinateSetI
 {
@@ -153,7 +202,7 @@ class ContentRasterSet
 abstract class IToolPainter
 {
   final AppState appState = GetIt.I.get<AppState>();
-  final ShaderOptions shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final ShaderOptions shaderOptions = GetIt.I.get<ShaderOptions>();
   final GuiPreferenceContent guiPrefs = GetIt.I.get<PreferenceManager>().guiPreferenceContent;
   final KPixPainterOptions painterOptions;
   final StatusBarData statusBarData = StatusBarData();

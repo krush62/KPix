@@ -22,21 +22,16 @@ enum ShaderDirection
   right
 }
 
+abstract final class ShaderConstraints
+{
+  static const ShaderDirection shaderDirectionDefault = ShaderDirection.right;
+  static const bool onlyCurrentRampEnabledDefault = false;
+  static const bool isEnabledDefault = false;
+}
+
 class ShaderOptions
 {
-  final bool shaderDirectionDefault;
-  final bool onlyCurrentRampEnabledDefault;
-  final bool isEnabledDefault;
-
-  ValueNotifier<ShaderDirection> shaderDirection = ValueNotifier<ShaderDirection>(ShaderDirection.left);
-  ValueNotifier<bool> onlyCurrentRampEnabled = ValueNotifier<bool>(false);
-  ValueNotifier<bool> isEnabled = ValueNotifier<bool>(true);
-
-  ShaderOptions({required this.shaderDirectionDefault, required this.onlyCurrentRampEnabledDefault, required this.isEnabledDefault})
-  {
-    shaderDirection.value = shaderDirectionDefault ? ShaderDirection.right : ShaderDirection.left;
-    onlyCurrentRampEnabled.value = onlyCurrentRampEnabledDefault;
-    isEnabled.value = isEnabledDefault;
-  }
-
+  ValueNotifier<ShaderDirection> shaderDirection = ValueNotifier<ShaderDirection>(ShaderConstraints.shaderDirectionDefault);
+  ValueNotifier<bool> onlyCurrentRampEnabled = ValueNotifier<bool>(ShaderConstraints.onlyCurrentRampEnabledDefault);
+  ValueNotifier<bool> isEnabled = ValueNotifier<bool>(ShaderConstraints.isEnabledDefault);
 }

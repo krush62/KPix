@@ -17,10 +17,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/helper.dart';
-import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
 /// Layout options for the [CanvasOperationsWidget].
@@ -61,7 +60,6 @@ class CanvasOperationsWidget extends StatefulWidget
 
 class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
 {
-  final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final AppState _appState = GetIt.I.get<AppState>();
   late KPixOverlay _canvasSizeOverlay;
 
@@ -158,7 +156,7 @@ class _CanvasOperationsWidgetState extends State<CanvasOperationsWidget>
                       final (CoordinateSetI?, CoordinateSetI?) selectionSize = _appState.selectionState.selection.getBoundingBox(canvasSize: _appState.canvasSize);
                       final CoordinateSetI? topLeft = selectionSize.$1;
                       final CoordinateSetI? bottomRight = selectionSize.$2;
-                      if (topLeft != null && bottomRight != null && (bottomRight.x - topLeft.x + 1) >= _sizeOptions.sizeMin && (bottomRight.y - topLeft.y + 1) >= _sizeOptions.sizeMin)
+                      if (topLeft != null && bottomRight != null && (bottomRight.x - topLeft.x + 1) >= CanvasSizeConstraints.sizeMin && (bottomRight.y - topLeft.y + 1) >= CanvasSizeConstraints.sizeMin)
                       {
                         cropEnabled = true;
                       }

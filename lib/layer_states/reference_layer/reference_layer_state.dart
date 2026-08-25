@@ -18,19 +18,16 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 import 'package:kpix/managers/history/history_reference_layer.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
-import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 
 class ReferenceLayerState extends LayerState
 {
-  final ReferenceLayerSettings _refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
   final ValueNotifier<int> opacityNotifier;
   final ValueNotifier<double> aspectRatioNotifier;
   final ValueNotifier<int> zoomNotifier;
@@ -117,18 +114,18 @@ class ReferenceLayerState extends LayerState
 
   void setZoomSliderFromZoomFactor({required final double factor})
   {
-    setZoomSliderValue(newVal: (pow(factor, 1.0 / _refSettings.zoomCurveExponent) * _refSettings.zoomDefault).round());
+    setZoomSliderValue(newVal: (pow(factor, 1.0 / ReferenceLayerConstraints.zoomCurveExponent) * ReferenceLayerConstraints.zoomDefault).round());
   }
 
   void setZoomSliderValue({required final int newVal})
   {
-    if (newVal < _refSettings.zoomMin)
+    if (newVal < ReferenceLayerConstraints.zoomMin)
     {
-      zoomNotifier.value = _refSettings.zoomMin;
+      zoomNotifier.value = ReferenceLayerConstraints.zoomMin;
     }
-    else if (newVal > _refSettings.zoomMax)
+    else if (newVal > ReferenceLayerConstraints.zoomMax)
     {
-      zoomNotifier.value = _refSettings.zoomMax;
+      zoomNotifier.value = ReferenceLayerConstraints.zoomMax;
     }
     else
     {
@@ -158,7 +155,7 @@ class ReferenceLayerState extends LayerState
 
   double get zoomFactor
   {
-    return pow(zoomSliderValue.toDouble() / _refSettings.zoomDefault.toDouble(), _refSettings.zoomCurveExponent).toDouble();
+    return pow(zoomSliderValue.toDouble() / ReferenceLayerConstraints.zoomDefault.toDouble(), ReferenceLayerConstraints.zoomCurveExponent).toDouble();
   }
 
 

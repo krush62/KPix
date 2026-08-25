@@ -18,40 +18,16 @@
 import 'package:flutter/material.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/tools/constraints/tool_spraycan_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class SprayCanOptions extends IToolOptions
 {
-  final int radiusMin;
-  final int radiusMax;
-  final int radiusDefault;
-  final int blobSizeMin;
-  final int blobSizeMax;
-  final int blobSizeDefault;
-  final int intensityMin;
-  final int intensityMax;
-  final int intensityDefault;
 
-  final ValueNotifier<int> radius = ValueNotifier<int>(3);
-  final ValueNotifier<int> blobSize = ValueNotifier<int>(1);
-  final ValueNotifier<int> intensity = ValueNotifier<int>(8);
 
-  SprayCanOptions({
-  required this.radiusMin,
-  required this.radiusMax,
-  required this.radiusDefault,
-  required this.blobSizeMin,
-  required this.blobSizeMax,
-  required this.blobSizeDefault,
-  required this.intensityMin,
-  required this.intensityMax,
-  required this.intensityDefault,
-  })
-  {
-    radius.value = radiusDefault;
-    blobSize.value = blobSizeDefault;
-    intensity.value = intensityDefault;
-  }
+  final ValueNotifier<int> radius = ValueNotifier<int>(SpraycanConstraints.radiusDefault);
+  final ValueNotifier<int> blobSize = ValueNotifier<int>(SpraycanConstraints.blobSizeDefault);
+  final ValueNotifier<int> intensity = ValueNotifier<int>(SpraycanConstraints.intensityDefault);
 
   static Column getWidget({
     required final BuildContext context,
@@ -64,8 +40,8 @@ class SprayCanOptions extends IToolOptions
         ToolSliderRow<int>(
           label: "Radius",
           notifier: sprayCanOptions.radius,
-          minVal: sprayCanOptions.radiusMin.toDouble(),
-          maxVal: sprayCanOptions.radiusMax.toDouble(),
+          minVal: SpraycanConstraints.radiusMin.toDouble(),
+          maxVal: SpraycanConstraints.radiusMax.toDouble(),
           //divisions: sprayCanOptions.radiusMax - sprayCanOptions.radiusMin,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
         ),
@@ -73,16 +49,16 @@ class SprayCanOptions extends IToolOptions
           label:  "Blob Size",
           notifier: sprayCanOptions.blobSize,
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
-          minVal: sprayCanOptions.blobSizeMin.toDouble(),
-          maxVal: sprayCanOptions.blobSizeMax.toDouble(),
+          minVal: SpraycanConstraints.blobSizeMin.toDouble(),
+          maxVal: SpraycanConstraints.blobSizeMax.toDouble(),
           //divisions: sprayCanOptions.blobSizeMax - sprayCanOptions.blobSizeMin,
         ),
         ToolSliderRow<int>(
           label: "Intensity",
           flex: ToolSettingsWidgetOptions.columnWidthRatio,
           notifier: sprayCanOptions.intensity,
-          minVal: sprayCanOptions.intensityMin.toDouble(),
-          maxVal: sprayCanOptions.intensityMax.toDouble(),
+          minVal: SpraycanConstraints.intensityMin.toDouble(),
+          maxVal: SpraycanConstraints.intensityMax.toDouble(),
           //divisions: sprayCanOptions.intensityMax - sprayCanOptions.intensityMin,
         ),
       ],
@@ -92,7 +68,7 @@ class SprayCanOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    radius.value = (originalValue + steps).clamp(radiusMin, radiusMax);
+    radius.value = (originalValue + steps).clamp(SpraycanConstraints.radiusMin, SpraycanConstraints.radiusMax);
   }
 
   @override

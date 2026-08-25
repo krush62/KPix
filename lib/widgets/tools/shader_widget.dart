@@ -21,7 +21,6 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/shader_options.dart';
 
@@ -46,7 +45,7 @@ class ShaderWidget extends StatefulWidget {
 
 class _ShaderWidgetState extends State<ShaderWidget>
 {
-  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
 
   @override

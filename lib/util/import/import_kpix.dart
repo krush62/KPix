@@ -124,7 +124,7 @@ class _ImportGuard
 }
 
 //TODO strict parameter could be a (dev) setting
-Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final KPalConstraints constraints, required final String path, required final KPalSliderConstraints sliderConstraints, required final ReferenceLayerSettings referenceLayerSettings, required final GridLayerSettings gridLayerSettings, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
+Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final String path, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
 {
   final StringBuffer returnString = StringBuffer();
   final _ImportGuard guard = _ImportGuard(strict: strict, warnings: returnString);
@@ -143,62 +143,62 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
     final List<HistoryRampData> rampList = <HistoryRampData>[];
     for (int i = 0; i < rampCount; i++)
     {
-      final KPalRampSettings kPalRampSettings = KPalRampSettings(constraints: constraints);
+      final KPalRampSettings kPalRampSettings = KPalRampSettings();
 
       kPalRampSettings.colorCount = reader.getUint8();
-      if (kPalRampSettings.colorCount < constraints.colorCountMin || kPalRampSettings.colorCount > constraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
+      if (kPalRampSettings.colorCount < KPalConstraints.colorCountMin || kPalRampSettings.colorCount > KPalConstraints.colorCountMax) return LoadFileSet(status: "Invalid color count in palette $i: ${kPalRampSettings.colorCount}");
 
       // BASE HUE
       kPalRampSettings.baseHue = guard.ranged(
         value: reader.getInt16(),
-        min: constraints.baseHueMin,
-        max: constraints.baseHueMax,
-        fallback: constraints.baseHueMin,
+        min: KPalConstraints.baseHueMin,
+        max: KPalConstraints.baseHueMax,
+        fallback: KPalConstraints.baseHueMin,
         label: "Invalid base hue in ramp $i",
       );
 
       // BASE SAT
       kPalRampSettings.baseSat = guard.ranged(
         value: reader.getUint8(),
-        min: constraints.baseSatMin,
-        max: constraints.baseSatMax,
-        fallback: constraints.baseSatMin,
+        min: KPalConstraints.baseSatMin,
+        max: KPalConstraints.baseSatMax,
+        fallback: KPalConstraints.baseSatMin,
         label: "Invalid base sat in ramp $i",
       );
 
       // HUE SHIFT
       kPalRampSettings.hueShift = guard.ranged(
         value: reader.getInt8(),
-        min: constraints.hueShiftMin,
-        max: constraints.hueShiftMax,
-        fallback: constraints.hueShiftMin,
+        min: KPalConstraints.hueShiftMin,
+        max: KPalConstraints.hueShiftMax,
+        fallback: KPalConstraints.hueShiftMin,
         label: "Invalid hue shift value in ramp $i",
       );
 
       // HUE SHIFT EXP
       kPalRampSettings.hueShiftExp = guard.ranged(
         value: reader.getUint8().toDouble() / 100.0,
-        min: constraints.hueShiftExpMin,
-        max: constraints.hueShiftExpMax,
-        fallback: constraints.hueShiftExpMin,
+        min: KPalConstraints.hueShiftExpMin,
+        max: KPalConstraints.hueShiftExpMax,
+        fallback: KPalConstraints.hueShiftExpMin,
         label: "Invalid hue shift exp in ramp $i",
       );
 
       // SAT SHIFT
       kPalRampSettings.satShift = guard.ranged(
         value: reader.getInt8(),
-        min: constraints.satShiftMin,
-        max: constraints.satShiftMax,
-        fallback: constraints.satShiftMin,
+        min: KPalConstraints.satShiftMin,
+        max: KPalConstraints.satShiftMax,
+        fallback: KPalConstraints.satShiftMin,
         label: "Invalid sat shift in ramp $i",
       );
 
       // SAT SHIFT EXP
       kPalRampSettings.satShiftExp = guard.ranged(
         value: reader.getUint8().toDouble() / 100.0,
-        min: constraints.satShiftExpMin,
-        max: constraints.satShiftExpMax,
-        fallback: constraints.satShiftExpMin,
+        min: KPalConstraints.satShiftExpMin,
+        max: KPalConstraints.satShiftExpMax,
+        fallback: KPalConstraints.satShiftExpMin,
         label: "Invalid sat shift exp in ramp $i",
       );
 
@@ -207,24 +207,24 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
       kPalRampSettings.satCurve = guard.mapped(
         value: SatCurve.fromId(curveVal),
         raw: curveVal,
-        fallback: SatCurve.noFlat,
+        fallback: KPalConstraints.satCurveDefault,
         label: "Invalid sat curve for palette $i",
       );
 
       // VALUE RANGE MIN
       kPalRampSettings.valueRangeMin = guard.ranged(
         value: reader.getUint8(),
-        min: constraints.valueRangeMin,
-        max: constraints.valueRangeMax,
-        fallback: constraints.valueRangeMin,
+        min: KPalConstraints.valueRangeMin,
+        max: KPalConstraints.valueRangeMax,
+        fallback: KPalConstraints.valueRangeMin,
         label: "Invalid min value range in ramp $i",
       );
 
       kPalRampSettings.valueRangeMax = guard.ranged(
         value: reader.getUint8(),
         min: kPalRampSettings.valueRangeMin,
-        max: constraints.valueRangeMax,
-        fallback: constraints.valueRangeMax,
+        max: KPalConstraints.valueRangeMax,
+        fallback: KPalConstraints.valueRangeMax,
         label: "Invalid max value range in ramp $i",
       );
 
@@ -236,8 +236,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //COLOR SHIFT HUE
         final int hueShift = guard.ranged(
           value: reader.getInt8(),
-          min: sliderConstraints.minHue,
-          max: sliderConstraints.maxHue,
+          min: KPalSliderConstraints.minHue,
+          max: KPalSliderConstraints.maxHue,
           fallback: 0,
           label: "Invalid Hue Shift in Ramp $i, color $j",
         );
@@ -245,8 +245,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //COLOR SHIFT SAT
         final int satShift = guard.ranged(
           value: reader.getInt8(),
-          min: sliderConstraints.minSat,
-          max: sliderConstraints.maxSat,
+          min: KPalSliderConstraints.minSat,
+          max: KPalSliderConstraints.maxSat,
           fallback: 0,
           label: "Invalid Sat Shift in Ramp $i, color $j",
         );
@@ -254,8 +254,8 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         // COLOR SHIFT VAL
         final int valShift = guard.ranged(
           value: reader.getInt8(),
-          min: sliderConstraints.minVal,
-          max: sliderConstraints.maxVal,
+          min: KPalSliderConstraints.minVal,
+          max: KPalSliderConstraints.maxVal,
           fallback: 0,
           label: "Invalid Val Shift in Ramp $i, color $j",
         );
@@ -555,9 +555,9 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //opacity ``ubyte (1)`` // 0...100
         final int opacity = guard.ranged(
           value: reader.getUint8(),
-          min: referenceLayerSettings.opacityMin,
-          max: referenceLayerSettings.opacityMax,
-          fallback: referenceLayerSettings.opacityDefault,
+          min: ReferenceLayerConstraints.opacityMin,
+          max: ReferenceLayerConstraints.opacityMax,
+          fallback: ReferenceLayerConstraints.opacityDefault,
           label: "Opacity for reference layer is out of range",
         );
 
@@ -569,61 +569,61 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //zoom ``ushort (1)``
         final int zoom = guard.ranged(
           value: reader.getUint16(),
-          min: referenceLayerSettings.zoomMin,
-          max: referenceLayerSettings.zoomMax,
-          fallback: referenceLayerSettings.zoomDefault,
+          min: ReferenceLayerConstraints.zoomMin,
+          max: ReferenceLayerConstraints.zoomMax,
+          fallback: ReferenceLayerConstraints.zoomDefault,
           label: "Zoom for reference layer is out of range",
         );
 
         //aspect_ratio ``float (1)``
         final double aspectRatio = guard.approx(
           value: reader.getFloat32(),
-          min: referenceLayerSettings.aspectRatioMin,
-          max: referenceLayerSettings.aspectRatioMax,
-          fallback: referenceLayerSettings.aspectRatioDefault,
+          min: ReferenceLayerConstraints.aspectRatioMin,
+          max: ReferenceLayerConstraints.aspectRatioMax,
+          fallback: ReferenceLayerConstraints.aspectRatioDefault,
           label: "Aspect ratio for reference layer is out of range",
         );
 
-        double brightness = referenceLayerSettings.brightnessDefault;
-        double contrast = referenceLayerSettings.contrastDefault;
-        double saturation = referenceLayerSettings.saturationDefault;
-        double warmth = referenceLayerSettings.warmthDefault;
+        double brightness = ReferenceLayerConstraints.brightnessDefault;
+        double contrast = ReferenceLayerConstraints.contrastDefault;
+        double saturation = ReferenceLayerConstraints.saturationDefault;
+        double warmth = ReferenceLayerConstraints.warmthDefault;
 
         if (fVersion >= 4)
         {
           //brightness ``float (1)`` // -1...1
           brightness = guard.ranged(
             value: reader.getFloat32(),
-            min: referenceLayerSettings.brightnessMin,
-            max: referenceLayerSettings.brightnessMax,
-            fallback: referenceLayerSettings.brightnessDefault,
+            min: ReferenceLayerConstraints.brightnessMin,
+            max: ReferenceLayerConstraints.brightnessMax,
+            fallback: ReferenceLayerConstraints.brightnessDefault,
             label: "Brightness for reference layer is out of range",
           );
 
           //contrast ``float (1)`` // 0...2
           contrast = guard.ranged(
             value: reader.getFloat32(),
-            min: referenceLayerSettings.contrastMin,
-            max: referenceLayerSettings.contrastMax,
-            fallback: referenceLayerSettings.contrastDefault,
+            min: ReferenceLayerConstraints.contrastMin,
+            max: ReferenceLayerConstraints.contrastMax,
+            fallback: ReferenceLayerConstraints.contrastDefault,
             label: "Contrast for reference layer is out of range",
           );
 
           //saturation ``float (1)`` // 0...2
           saturation = guard.ranged(
             value: reader.getFloat32(),
-            min: referenceLayerSettings.saturationMin,
-            max: referenceLayerSettings.saturationMax,
-            fallback: referenceLayerSettings.saturationDefault,
+            min: ReferenceLayerConstraints.saturationMin,
+            max: ReferenceLayerConstraints.saturationMax,
+            fallback: ReferenceLayerConstraints.saturationDefault,
             label: "Saturation for reference layer is out of range",
           );
 
           //warmth ``float (1)`` // -1...1
           warmth = guard.ranged(
             value: reader.getFloat32(),
-            min: referenceLayerSettings.warmthMin,
-            max: referenceLayerSettings.warmthMax,
-            fallback: referenceLayerSettings.warmthDefault,
+            min: ReferenceLayerConstraints.warmthMin,
+            max: ReferenceLayerConstraints.warmthMax,
+            fallback: ReferenceLayerConstraints.warmthDefault,
             label: "Warmth for reference layer is out of range",
           );
         }
@@ -649,18 +649,18 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //opacity ``ubyte (1)`` // 0...100
         final int opacity = guard.ranged(
           value: reader.getUint8(),
-          min: gridLayerSettings.opacityMin,
-          max: gridLayerSettings.opacityMax,
-          fallback: gridLayerSettings.opacityDefault,
+          min: GridLayerConstraints.opacityMin,
+          max: GridLayerConstraints.opacityMax,
+          fallback: GridLayerConstraints.opacityDefault,
           label: "Opacity for grid layer is out of range",
         );
 
         //brightness ``ubyte (1)`` // 0...100
         final int brightness = guard.ranged(
           value:  reader.getUint8(),
-          min: gridLayerSettings.brightnessMin,
-          max: gridLayerSettings.brightnessMax,
-          fallback: gridLayerSettings.brightnessDefault,
+          min: GridLayerConstraints.brightnessMin,
+          max: GridLayerConstraints.brightnessMax,
+          fallback: GridLayerConstraints.brightnessDefault,
           label: "Brightness for grid layer is out of range",
         );
 
@@ -676,54 +676,54 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final K
         //interval_x ``ubyte (1)`` // 2...64
         final int intervalX = guard.ranged(
           value: reader.getUint8(),
-          min: gridLayerSettings.intervalXMin,
-          max: gridLayerSettings.intervalXMax,
-          fallback: gridLayerSettings.intervalXDefault,
+          min: GridLayerConstraints.intervalXMin,
+          max: GridLayerConstraints.intervalXMax,
+          fallback: GridLayerConstraints.intervalXDefault,
           label: "Interval X for grid layer is out of range",
         );
 
         //interval_y ``ubyte (1)`` // 2...64
         final int intervalY = guard.ranged(
           value: reader.getUint8(),
-          min: gridLayerSettings.intervalYMin,
-          max: gridLayerSettings.intervalYMax,
-          fallback: gridLayerSettings.intervalYDefault,
+          min: GridLayerConstraints.intervalYMin,
+          max: GridLayerConstraints.intervalYMax,
+          fallback: GridLayerConstraints.intervalYDefault,
           label: "Interval Y for grid layer is out of range",
         );
 
         //horizon_position ``float (1)``// 0...1 (vertical horizon position)
         final double horizon = guard.approx(
           value: reader.getFloat32(),
-          min: gridLayerSettings.vanishingPointMin,
-          max: gridLayerSettings.vanishingPointMax,
-          fallback: gridLayerSettings.horizonDefault,
+          min: GridLayerConstraints.vanishingPointMin,
+          max: GridLayerConstraints.vanishingPointMax,
+          fallback: GridLayerConstraints.horizonDefault,
           label: "Horizon for grid layer is out of range",
         );
 
         //vanishing_point_1 ``float (1)``// 0...1 (horizontal position of first vanishing point)
         final double vanishingPoint1 = guard.approx(
           value: reader.getFloat32(),
-          min: gridLayerSettings.vanishingPointMin,
-          max: gridLayerSettings.vanishingPointMax,
-          fallback: gridLayerSettings.vanishingPoint1Default,
+          min: GridLayerConstraints.vanishingPointMin,
+          max: GridLayerConstraints.vanishingPointMax,
+          fallback: GridLayerConstraints.vanishingPoint1Default,
           label: "Vanishing Point 1 for grid layer is out of range",
         );
 
         //vanishing_point_2 ``float (1)``// 0...1 (horizontal position of second vanishing point)
         final double vanishingPoint2 = guard.approx(
           value: reader.getFloat32(),
-          min: gridLayerSettings.vanishingPointMin,
-          max: gridLayerSettings.vanishingPointMax,
-          fallback: gridLayerSettings.vanishingPoint2Default,
+          min: GridLayerConstraints.vanishingPointMin,
+          max: GridLayerConstraints.vanishingPointMax,
+          fallback: GridLayerConstraints.vanishingPoint2Default,
           label: "Vanishing Point 2 for grid layer is out of range",
         );
 
         //vanishing_point_3 ``float (1)``// 0...1 (vertical position of third vanishing point)
         final double vanishingPoint3 = guard.approx(
           value: reader.getFloat32(),
-          min: gridLayerSettings.vanishingPointMin,
-          max: gridLayerSettings.vanishingPointMax,
-          fallback: gridLayerSettings.vanishingPoint3Default,
+          min: GridLayerConstraints.vanishingPointMin,
+          max: GridLayerConstraints.vanishingPointMax,
+          fallback: GridLayerConstraints.vanishingPoint3Default,
           label: "Vanishing Point 3 for grid layer is out of range",
         );
 

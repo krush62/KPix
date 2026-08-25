@@ -23,16 +23,12 @@ import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/tools/constraints/tool_text_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 class TextOptions extends IToolOptions
 {
-  final int fontDefault;
-  final int sizeMin;
-  final int sizeMax;
-  final int sizeDefault;
-  final String textDefault;
-  final int maxLength;
+
   final FontManager fontManager;
 
   final ValueNotifier<int> size = ValueNotifier<int>(1);
@@ -41,18 +37,12 @@ class TextOptions extends IToolOptions
 
 
   TextOptions({
-    required this.fontDefault,
-    required this.sizeMin,
-    required this.sizeMax,
-    required this.sizeDefault,
-    required this.textDefault,
-    required this.maxLength,
     required this.fontManager,
   })
   {
-    size.value = sizeDefault;
-    font.value = pixelFontIndexMap[fontDefault];
-    text.value = textDefault;
+    size.value = TextConstraints.sizeDefault;
+    font.value = pixelFontIndexMap[TextConstraints.fontIndexDefault];
+    text.value = TextConstraints.textDefault;
   }
 
   static KPixOverlay? _changeTextDialog;
@@ -110,8 +100,8 @@ class TextOptions extends IToolOptions
             label: "Scale",
             notifier: textOptions.size,
             flex: ToolSettingsWidgetOptions.columnWidthRatio,
-            minVal: textOptions.sizeMin.toDouble(),
-            maxVal: textOptions.sizeMax.toDouble(),
+            minVal: TextConstraints.sizeMin.toDouble(),
+            maxVal: TextConstraints.sizeMax.toDouble(),
             //divisions: textOptions.sizeMax - textOptions.sizeMin,
           ),
         ),
@@ -140,7 +130,7 @@ class TextOptions extends IToolOptions
                       controller: controller,
                       focusNode: hotkeyManager.textOptionsTextFocus,
                       onChanged: (final String newText) {textOptions.text.value = newText;},
-                      maxLength: textOptions.maxLength,
+                      maxLength: TextConstraints.maxLength,
                     );
                   },
                 ),
@@ -163,7 +153,7 @@ class TextOptions extends IToolOptions
                           onAccept: ({required final String newText}) {textOptions.text.value = newText; _changeTextDialog?.hide();},
                           onDismiss: () {_changeTextDialog?.hide();},
                           initialText: textOptions.text.value,
-                          maxLength: textOptions.maxLength,
+                          maxLength: TextConstraints.maxLength,
                         );
                         _changeTextDialog!.show(context: context);
                       },
@@ -180,7 +170,7 @@ class TextOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    size.value = (originalValue + steps).clamp(sizeMin, sizeMax);
+    size.value = (originalValue + steps).clamp(TextConstraints.sizeMin, TextConstraints.sizeMax);
   }
 
   @override

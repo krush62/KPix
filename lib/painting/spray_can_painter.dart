@@ -24,20 +24,19 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
 import 'package:kpix/tool_options/spray_can_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 
 class SprayCanPainter extends IToolPainter
 {
   SprayCanPainter({required super.painterOptions});
 
-  final SprayCanOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.sprayCanOptions;
+  final SprayCanOptions _options = GetIt.I.get<ToolOptions>().sprayCanOptions;
   final CoordinateColorMap _drawingPixels = HashMap<CoordinateSetI, ColorReference>();
   CoordinateSetI? _lastCursorPosNorm;
   Set<CoordinateSetI> _cursorPoints = <CoordinateSetI>{};

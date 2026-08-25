@@ -22,46 +22,18 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
+import 'package:kpix/widgets/tools/constraints/tool_stamp_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
 
 class StampOptions extends IToolOptions
 {
-  final int scaleMin;
-  final int scaleMax;
-  final int scaleDefault;
-  final bool flipHDefault;
-  final bool flipVDefault;
-  final bool gridAlignDefault;
-  final int gridOffsetDefault;
-
-
-  final ValueNotifier<int> scale = ValueNotifier<int>(1);
-  final ValueNotifier<bool> flipH = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> flipV = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> gridAlign = ValueNotifier<bool>(false);
-  final ValueNotifier<int> gridOffsetX = ValueNotifier<int>(0);
-  final ValueNotifier<int> gridOffsetY = ValueNotifier<int>(0);
-
-
-
-  StampOptions({
-    required this.scaleMin,
-    required this.scaleMax,
-    required this.scaleDefault,
-    required this.flipHDefault,
-    required this.flipVDefault,
-    required this.gridAlignDefault,
-    required this.gridOffsetDefault,
-  })
-  {
-    scale.value = scaleDefault;
-    flipH.value = flipHDefault;
-    flipV.value = flipVDefault;
-    gridAlign.value = gridAlignDefault;
-    gridOffsetX.value = gridOffsetDefault;
-    gridOffsetY.value = gridOffsetDefault;
-  }
+  final ValueNotifier<int> scale = ValueNotifier<int>(StampConstraints.scaleDefault);
+  final ValueNotifier<bool> flipH = ValueNotifier<bool>(StampConstraints.flipHDefault);
+  final ValueNotifier<bool> flipV = ValueNotifier<bool>(StampConstraints.flipVDefault);
+  final ValueNotifier<bool> gridAlign = ValueNotifier<bool>(StampConstraints.gridAlignDefault);
+  final ValueNotifier<int> gridOffsetX = ValueNotifier<int>(StampConstraints.gridOffsetDefault);
+  final ValueNotifier<int> gridOffsetY = ValueNotifier<int>(StampConstraints.gridOffsetDefault);
 
   static Column getWidget({
     required final BuildContext context,
@@ -190,8 +162,8 @@ class StampOptions extends IToolOptions
             label: "Scale",
             notifier: stampOptions.scale,
             flex: ToolSettingsWidgetOptions.columnWidthRatio,
-            minVal: stampOptions.scaleMin.toDouble(),
-            maxVal: stampOptions.scaleMax.toDouble(),
+            minVal: StampConstraints.scaleMin.toDouble(),
+            maxVal: StampConstraints.scaleMax.toDouble(),
             //divisions: stampOptions.scaleMax - stampOptions.scaleMin,
           ),
         ),
@@ -322,7 +294,7 @@ class StampOptions extends IToolOptions
   @override
   void changeSize({required final int steps, required final int originalValue})
   {
-    scale.value = (originalValue + steps).clamp(scaleMin, scaleMax);
+    scale.value = (originalValue + steps).clamp(StampConstraints.scaleMin, StampConstraints.scaleMax);
   }
 
   @override

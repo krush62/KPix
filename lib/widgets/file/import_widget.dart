@@ -18,14 +18,12 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/image_importer.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
@@ -58,7 +56,6 @@ class ImportWidget extends StatefulWidget
 
 class _ImportWidgetState extends State<ImportWidget>
 {
-  final KPalConstraints _constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
   late ValueNotifier<int> _maxRampsNotifier;
   late ValueNotifier<int> _maxColorsPerRampNotifier;
   final ValueNotifier<String?> _fileNameNotifier = ValueNotifier<String?>(null);
@@ -86,8 +83,8 @@ class _ImportWidgetState extends State<ImportWidget>
   void initState()
   {
     super.initState();
-    _maxRampsNotifier = ValueNotifier<int>(_constraints.rampCountDefault);
-    _maxColorsPerRampNotifier = ValueNotifier<int>(_constraints.colorCountDefault);
+    _maxRampsNotifier = ValueNotifier<int>(KPalConstraints.rampCountDefault);
+    _maxColorsPerRampNotifier = ValueNotifier<int>(KPalConstraints.colorCountDefault);
   }
 
 
@@ -104,17 +101,16 @@ class _ImportWidgetState extends State<ImportWidget>
     {
       loadImage(path: loadData.$1!, bytes: loadData.$2).then((final ui.Image? img)
       {
-        final CanvasSizeOptions canvasSizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
         if (img != null)
         {
-          if ((img.width ~/ _maximumScale) > canvasSizeOptions.sizeMax || (img.height ~/ _maximumScale) > canvasSizeOptions.sizeMax || img.width < canvasSizeOptions.sizeMin || img.height < canvasSizeOptions.sizeMin)
+          if ((img.width ~/ _maximumScale) > CanvasSizeConstraints.sizeMax || (img.height ~/ _maximumScale) > CanvasSizeConstraints.sizeMax || img.width < CanvasSizeConstraints.sizeMin || img.height < CanvasSizeConstraints.sizeMin)
           {
             _currentMinScale = 1;
             _currentMaxScale = 1;
             _scaleDownNotifier.value = 1;
             _fileNameNotifier.value = null;
             _imageNotifier.value = null;
-            _messageNotifier.value = "Image dimensions cannot exceed ${canvasSizeOptions.sizeMax * _maximumScale}x${canvasSizeOptions.sizeMax * _maximumScale}!";
+            _messageNotifier.value = "Image dimensions cannot exceed ${CanvasSizeConstraints.sizeMax * _maximumScale}x${CanvasSizeConstraints.sizeMax * _maximumScale}!";
           }
           else
           {
@@ -124,11 +120,11 @@ class _ImportWidgetState extends State<ImportWidget>
             {
               final int tempX = img.width ~/ i;
               final int tempY = img.height ~/ i;
-              if (minScale == null && tempX <= canvasSizeOptions.sizeMax && tempY <= canvasSizeOptions.sizeMax)
+              if (minScale == null && tempX <= CanvasSizeConstraints.sizeMax && tempY <= CanvasSizeConstraints.sizeMax)
               {
                 minScale = i;
               }
-              if (tempX >= canvasSizeOptions.sizeMin && tempY >= canvasSizeOptions.sizeMin)
+              if (tempX >= CanvasSizeConstraints.sizeMin && tempY >= CanvasSizeConstraints.sizeMin)
               {
                 maxScale = i;
               }
@@ -173,7 +169,7 @@ class _ImportWidgetState extends State<ImportWidget>
     {
       _scaleDownImage(image: _imageNotifier.value!, scale: _scaleDownNotifier.value).then((final ui.Image scaledImg)
       {
-        final ImportData data = ImportData(image: _imageNotifier.value!, scaledImage: scaledImg, filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: _constraints.maxClusters, createNewPalette: _createNewPaletteNotifier.value);
+        final ImportData data = ImportData(image: _imageNotifier.value!, scaledImage: scaledImg, filePath: _fileNameNotifier.value!, includeReference: _includeReferenceNotifier.value, maxColors: _maxColorsPerRampNotifier.value, maxRamps: _maxRampsNotifier.value, maxClusters: KPalConstraints.maxClusters, createNewPalette: _createNewPaletteNotifier.value);
         widget.import(importData: data);
       });
 
@@ -355,8 +351,8 @@ class _ImportWidgetState extends State<ImportWidget>
                                   builder: (final BuildContext context, final int maxRampValue, final Widget? child) {
                                     return KPixSlider(
                                       value: maxRampValue.toDouble(),
-                                      min: _constraints.rampCountMin.toDouble(),
-                                      max: _constraints.maxClusters.toDouble(),
+                                      min: KPalConstraints.rampCountMin.toDouble(),
+                                      max: KPalConstraints.maxClusters.toDouble(),
                                       //divisions: _constraints.maxClusters - _constraints.rampCountMin,
                                       onChanged: createNew ? (final double newValue) {
                                         _maxRampsNotifier.value = newValue.round();
@@ -390,8 +386,8 @@ class _ImportWidgetState extends State<ImportWidget>
                                     builder: (final BuildContext context, final int maxColorsValue, final Widget? child) {
                                       return KPixSlider(
                                         value: maxColorsValue.toDouble(),
-                                        min: _constraints.colorCountMin.toDouble(),
-                                        max: _constraints.colorCountMax.toDouble(),
+                                        min: KPalConstraints.colorCountMin.toDouble(),
+                                        max: KPalConstraints.colorCountMax.toDouble(),
                                         //divisions: _constraints.colorCountMax - _constraints.colorCountMin,
                                         onChanged: createNew ? (final double newValue) {
                                           _maxColorsPerRampNotifier.value = newValue.round();

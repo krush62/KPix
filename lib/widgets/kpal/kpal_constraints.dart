@@ -16,96 +16,77 @@
  *
  */
 
-class KPalConstraints
+enum SatCurve
 {
-  final int colorCountMin;
-  final int colorCountMax;
-  final int colorCountDefault;
-  final int baseHueMin;
-  final int baseHueMax;
-  final int baseHueDefault;
-  final int baseSatMin;
-  final int baseSatMax;
-  final int baseSatDefault;
-  final int hueShiftMin;
-  final int hueShiftMax;
-  final int hueShiftDefault;
-  final double hueShiftExpMin;
-  final double hueShiftExpMax;
-  final double hueShiftExpDefault;
-  final int satShiftMin;
-  final int satShiftMax;
-  final int satShiftDefault;
-  final double satShiftExpMin;
-  final double satShiftExpMax;
-  final double satShiftExpDefault;
-  final int valueRangeMin;
-  final int valueRangeMinDefault;
-  final int valueRangeMax;
-  final int valueRangeMaxDefault;
-  final int satCurveDefault;
-  final int rampCountMin;
-  final int rampCountMax;
-  final int rampCountDefault;
-  final int maxClusters;
+  noFlat(0),
+  darkFlat(1),
+  brightFlat(2),
+  linear(3);
 
-  KPalConstraints({
-    required this.colorCountMin,
-    required this.colorCountMax,
-    required this.colorCountDefault,
-    required this.baseHueMin,
-    required this.baseHueMax,
-    required this.baseHueDefault,
-    required this.baseSatMin,
-    required this.baseSatMax,
-    required this.baseSatDefault,
-    required this.hueShiftMin,
-    required this.hueShiftMax,
-    required this.hueShiftDefault,
-    required this.hueShiftExpMin,
-    required this.hueShiftExpMax,
-    required this.hueShiftExpDefault,
-    required this.satShiftMin,
-    required this.satShiftMax,
-    required this.satShiftDefault,
-    required this.satShiftExpMin,
-    required this.satShiftExpMax,
-    required this.satShiftExpDefault,
-    required this.valueRangeMin,
-    required this.valueRangeMinDefault,
-    required this.valueRangeMax,
-    required this.valueRangeMaxDefault,
-    required this.satCurveDefault,
-    required this.rampCountMin,
-    required this.rampCountMax,
-    required this.rampCountDefault,
-    required this.maxClusters,
-  });
+  const SatCurve(this.id);
+
+  final int id;
+
+  static SatCurve fromId(final int id) {
+    return SatCurve.values.firstWhere((final SatCurve curve) => curve.id == id);
+  }
 }
 
-class KPalSliderConstraints
+abstract final class KPalConstraints
 {
-  final int minHue;
-  final int minSat;
-  final int minVal;
+  static const int colorCountMin = 3;
+  static const int colorCountDefault = 7;
+  static const int colorCountMax = 15;
 
-  final int maxHue;
-  final int maxSat;
-  final int maxVal;
+  static const int baseHueMin = 0;
+  static const int baseHueDefault = 180;
+  static const int baseHueMax = 360;
 
-  final int defaultHue;
-  final int defaultSat;
-  final int defaultVal;
+  static const int baseSatMin = 0;
+  static const int baseSatDefault = 60;
+  static const int baseSatMax = 100;
 
-  KPalSliderConstraints({
-    required this.minHue,
-    required this.minSat,
-    required this.minVal,
-    required this.maxHue,
-    required this.maxSat,
-    required this.maxVal,
-    required this.defaultHue,
-    required this.defaultSat,
-    required this.defaultVal,
-  });
+  static const int hueShiftMin = -90;
+  static const int hueShiftDefault = -10;
+  static const int hueShiftMax = 90;
+
+  static const double hueShiftExpMin = 0.5;
+  static const double hueShiftExpDefault = 1.0;
+  static const double hueShiftExpMax = 2.0;
+
+  static const int satShiftMin = -25;
+  static const int satShiftDefault = -10;
+  static const int satShiftMax = 25;
+
+  static const double satShiftExpMin = 0.5;
+  static const double satShiftExpDefault = 1.0;
+  static const double satShiftExpMax = 2.0;
+
+  static const int valueRangeMin = 0;
+  static const int valueRangeMinDefault = 15;
+  static const int valueRangeMaxDefault = 95;
+  static const int valueRangeMax = 100;
+
+  static const SatCurve satCurveDefault = SatCurve.noFlat;
+
+  static const int rampCountMin = 1;
+  static const int rampCountDefault = 8;
+  static const int rampCountMax = 64;
+
+  static const int maxClusters = 16;
+}
+
+abstract final class KPalSliderConstraints
+{
+  static const int minHue = -50;
+  static const int defaultHue = 0;
+  static const int maxHue = 50;
+
+  static const int minSat = -25;
+  static const int defaultSat = 0;
+  static const int maxSat = 25;
+
+  static const int minVal = -25;
+  static const int defaultVal = 0;
+  static const int maxVal = 25;
 }

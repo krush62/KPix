@@ -32,7 +32,7 @@ import 'package:kpix/models/app_state.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
 
 class GridLayerState extends LayerState
 {

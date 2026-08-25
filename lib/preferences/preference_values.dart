@@ -107,35 +107,6 @@ class StylusPreferenceContent
     required this.stylusPollIntervalMax,
     required this.stylusPickMaxDurationMin,
     required this.stylusPickMaxDurationMax,});
-
-  void update({
-    required final int stylusLongPressDelay,
-    required final int stylusLongPressDelayMin,
-    required final int stylusLongPressDelayMax,
-    required final double stylusLongPressCancelDistance,
-    required final double stylusLongPressCancelDistanceMin,
-    required final double stylusLongPressCancelDistanceMax,
-    required final double stylusZoomStepDistance,
-    required final double stylusZoomStepDistanceMin,
-    required final double stylusZoomStepDistanceMax,
-    required final double stylusSizeStepDistance,
-    required final double stylusSizeStepDistanceMin,
-    required final double stylusSizeStepDistanceMax,
-    required final int stylusPollInterval,
-    required final int stylusPollIntervalMin,
-    required final int stylusPollIntervalMax,
-    required final int stylusPickMaxDuration,
-    required final int stylusPickMaxDurationMin,
-    required final int stylusPickMaxDurationMax,
-  })
-  {
-    this.stylusLongPressDelay.value = stylusLongPressDelay.clamp(stylusLongPressDelayMin, stylusLongPressDelayMax);
-    this.stylusLongPressCancelDistance.value = stylusLongPressCancelDistance.clamp(stylusLongPressCancelDistanceMin, stylusLongPressCancelDistanceMax);
-    this.stylusZoomStepDistance.value = stylusZoomStepDistance.clamp(stylusZoomStepDistanceMin, stylusZoomStepDistanceMax);
-    this.stylusSizeStepDistance.value = stylusSizeStepDistance.clamp(stylusSizeStepDistanceMin, stylusSizeStepDistanceMax);
-    this.stylusPollInterval.value = stylusPollInterval.clamp(stylusPollIntervalMin, stylusPollIntervalMax);
-    this.stylusPickMaxDuration.value = stylusPickMaxDuration.clamp(stylusPickMaxDurationMin, stylusPickMaxDurationMax);
-  }
 }
 
 class TouchPreferenceContent
@@ -175,19 +146,6 @@ class TouchPreferenceContent
     required this.zoomStepDistanceMin,
     required this.zoomStepDistanceMax,
   });
-
-  void update({
-    required final int singleTouchDelay,
-    required final int singleTouchDelayMin,
-    required final int singleTouchDelayMax,
-    required final double zoomStepDistance,
-    required final double zoomStepDistanceMin,
-    required final double zoomStepDistanceMax,
-  })
-  {
-    this.singleTouchDelay.value = singleTouchDelay.clamp(singleTouchDelayMin, singleTouchDelayMax);
-    this.zoomStepDistance.value = zoomStepDistance.clamp(zoomStepDistanceMin, zoomStepDistanceMax);
-  }
 }
 
 //THEME
@@ -249,16 +207,6 @@ class GuiPreferenceContent
 
   GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
 
-  void update({required final int themeTypeValue, required final int rasterSizeValue, required final int rasterContrast, required final int colorNameSchemeValue, required final int canvasBorderOpacityValue, required final int selectionOpacityValue, required final int toolOpacityValue})
-  {
-    themeType.value = themeTypeIndexMap[themeTypeValue]?? ThemeMode.system;
-    rasterSizeIndex.value = max(rasterSizes.indexOf(rasterSizeValue), 0);
-    this.rasterContrast.value = rasterContrast.clamp(rasterContrastMin, rasterContrastMax);
-    colorNameScheme.value = ColorNameScheme.fromId(colorNameSchemeValue);
-    canvasBorderOpacity.value = canvasBorderOpacityValue.clamp(opacityMin, opacityMax);
-    selectionOpacity.value = selectionOpacityValue.clamp(opacityMin, opacityMax);
-    toolOpacity.value = toolOpacityValue.clamp(opacityMin, opacityMax);
-  }
 }
 
 enum CursorType
@@ -299,10 +247,6 @@ class DesktopPreferenceContent
   }
 
   DesktopPreferenceContent._({required this.cursorType});
-  void update({required final int cursorTypeValue})
-  {
-    cursorType.value = CursorType.fromId(cursorTypeValue);
-  }
 }
 
 //UNDO STEPS
@@ -345,18 +289,5 @@ class BehaviorPreferenceContent
   }
 
   BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
-
-  void update({required final int undoSteps, required final bool selectAfterInsert, required final bool selectLayerAfterInsert, required final int undoStepsMax, required final int undoStepsMin, required final ShadingLayerSettingsConstraints shadingConstraints, required final FrameConstraints frameConstraints, required final bool showReferenceOutsideCanvas, required final bool useCustomProjectDirectory, required final String customProjectDirectory})
-  {
-    this.undoSteps.value = undoSteps.clamp(undoStepsMin, undoStepsMax);
-    selectShapeAfterInsert.value = selectAfterInsert;
-    this.selectLayerAfterInsert.value = selectLayerAfterInsert;
-    fps.value = frameConstraints.defaultFps;
-    shadingStepsMinus.value = shadingConstraints.shadingStepsDefaultDarken;
-    shadingStepsPlus.value = shadingConstraints.shadingStepsDefaultBrighten;
-    this.showReferenceOutsideCanvas.value = showReferenceOutsideCanvas;
-    this.useCustomProjectDirectory.value = useCustomProjectDirectory;
-    this.customProjectDirectory.value = customProjectDirectory;
-  }
 
 }

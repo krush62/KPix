@@ -22,11 +22,10 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/stamp_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -37,7 +36,7 @@ class StampPainter extends IToolPainter
 {
   StampPainter({required super.painterOptions});
 
-  final StampOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.stampOptions;
+  final StampOptions _options = GetIt.I.get<ToolOptions>().stampOptions;
   final StampManager _manager = GetIt.I.get<StampManager>();
   final CoordinateSetI _cursorPosNorm = CoordinateSetI.zero();
   final CoordinateSetI _gridPosNorm = CoordinateSetI.zero();

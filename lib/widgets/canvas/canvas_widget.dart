@@ -50,10 +50,10 @@ import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/selection_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
-import 'package:kpix/tool_options/select_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/canvas/selection_bar_widget.dart';
+import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 /// Layout options for [CanvasWidget].
 abstract final class _CanvasOptions
@@ -92,7 +92,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   final StylusPreferenceContent _stylusPrefs = GetIt.I.get<PreferenceManager>().stylusPreferenceContent;
   final TouchPreferenceContent _touchPrefs = GetIt.I.get<PreferenceManager>().touchPreferenceContent;
   final DesktopPreferenceContent _desktopPrefs = GetIt.I.get<PreferenceManager>().desktopPreferenceContent;
-  final ShaderOptions _shaderOptions = GetIt.I.get<PreferenceManager>().shaderOptions;
+  final ShaderOptions _shaderOptions = GetIt.I.get<ShaderOptions>();
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<CoordinateSetD?> _cursorPos = ValueNotifier<CoordinateSetD?>(null);
   final ValueNotifier<bool> _isDragging = ValueNotifier<bool>(false);

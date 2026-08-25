@@ -19,67 +19,16 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_settings.dart';
 import 'package:kpix/main.dart';
-import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/painting/kpix_painter.dart';
-import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/preferences/preference_values.dart';
-import 'package:kpix/tool_options/color_pick_options.dart';
-import 'package:kpix/tool_options/eraser_options.dart';
-import 'package:kpix/tool_options/fill_options.dart';
-import 'package:kpix/tool_options/line_options.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
-import 'package:kpix/tool_options/select_options.dart';
-import 'package:kpix/tool_options/shape_options.dart';
-import 'package:kpix/tool_options/spray_can_options.dart';
-import 'package:kpix/tool_options/stamp_options.dart';
-import 'package:kpix/tool_options/text_options.dart';
-import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_names.dart';
-import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
-import 'package:kpix/widgets/kpal/kpal_constraints.dart';
-import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
-import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
-import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 enum PreferenceDouble
 {
-
-  ReferenceLayer_AspectRatioDefault(defaultValue: 0.0),
-  ReferenceLayer_AspectRatioMax(defaultValue: 5.0),
-  ReferenceLayer_AspectRatioMin(defaultValue: -5.0),
-  ReferenceLayer_ZoomCurveExponent(defaultValue: 2.0),
-  ReferenceLayer_BrightnessDefault(defaultValue: 0.0),
-  ReferenceLayer_BrightnessMax(defaultValue: 1.0),
-  ReferenceLayer_BrightnessMin(defaultValue: -1.0),
-  ReferenceLayer_SaturationDefault(defaultValue: 1.0),
-  ReferenceLayer_SaturationMax(defaultValue: 2.0),
-  ReferenceLayer_SaturationMin(defaultValue: 0.0),
-  ReferenceLayer_ContrastDefault(defaultValue: 1.0),
-  ReferenceLayer_ContrastMax(defaultValue: 2.0),
-  ReferenceLayer_ContrastMin(defaultValue: 0.0),
-  ReferenceLayer_WarmthDefault(defaultValue: 0.0),
-  ReferenceLayer_WarmthMax(defaultValue: 1.0),
-  ReferenceLayer_WarmthMin(defaultValue: -1.0),
-
-  GridLayer_VanishingPointMin(defaultValue: -1.0),
-  GridLayer_VanishingPointMax(defaultValue: 2.0),
-  GridLayer_HorizonDefault(defaultValue: 0.5),
-  GridLayer_VanishingPoint1Default(defaultValue: 0.1),
-  GridLayer_VanishingPoint2Default(defaultValue: 0.9),
-  GridLayer_VanishingPoint3Default(defaultValue: 0.9),
-
-
-  KPal_Constraints_hueShiftExpMin(defaultValue: 0.5),
-  KPal_Constraints_hueShiftExpMax(defaultValue: 2.0),
-  KPal_Constraints_hueShiftExpDefault(defaultValue: 1.0),
-  KPal_Constraints_satShiftExpMin(defaultValue: 0.5),
-  KPal_Constraints_satShiftExpMax(defaultValue: 2.0),
-  KPal_Constraints_staShiftExpDefault(defaultValue: 1.0),
-
   Painter_CursorSize(defaultValue: 4.0),
   Painter_CursorBorderWidth(defaultValue: 2.0),
   Painter_SelectionSolidStrokeWidth(defaultValue: 2.0),
@@ -102,11 +51,6 @@ enum PreferenceDouble
   TouchOptions_ZoomStepDistance(defaultValue: 25.0),
   TouchOptions_ZoomStepDistanceMin(defaultValue: 10.0),
   TouchOptions_ZoomStepDistanceMax(defaultValue: 100.0),
-
-  FrameBlendingOptions_Opacity(defaultValue: 0.4),
-  FrameBlendingOptions_OpacityMin(defaultValue: 0.1),
-  FrameBlendingOptions_OpacityMax(defaultValue: 0.9),
-  FrameBlendingOptions_OpacityStep(defaultValue: 0.1),
   ;
 
   const PreferenceDouble({
@@ -118,123 +62,6 @@ enum PreferenceDouble
 
 enum PreferenceInt
 {
-
-  Layout_CanvasSize_SizeMin(defaultValue: 4),
-  Layout_CanvasSize_SizeMax(defaultValue: 640),
-  Layout_CanvasSize_PreviewSize(defaultValue: 300),
-
-  ReferenceLayer_OpacityDefault(defaultValue: 100),
-  ReferenceLayer_OpacityMax(defaultValue: 100),
-  ReferenceLayer_OpacityMin(defaultValue: 0),
-  ReferenceLayer_ZoomDefault(defaultValue: 1000),
-  ReferenceLayer_ZoomMax(defaultValue: 2000),
-  ReferenceLayer_ZoomMin(defaultValue: 1),
-
-  GridLayer_OpacityDefault(defaultValue: 100),
-  GridLayer_OpacityMin(defaultValue: 0),
-  GridLayer_OpacityMax(defaultValue: 100),
-  GridLayer_BrightnessDefault(defaultValue: 50),
-  GridLayer_BrightnessMin(defaultValue: 0),
-  GridLayer_BrightnessMax(defaultValue: 100),
-  GridLayer_IntervalXDefault(defaultValue: 8),
-  GridLayer_IntervalXMin(defaultValue: 2),
-  GridLayer_IntervalXMax(defaultValue: 64),
-  GridLayer_IntervalYDefault(defaultValue: 8),
-  GridLayer_IntervalYMin(defaultValue: 2),
-  GridLayer_IntervalYMax(defaultValue: 64),
-  GridLayer_GridTypeDefault(defaultValue: 0),
-
-
-
-  Tool_Pencil_SizeMin(defaultValue: 1),
-  Tool_Pencil_SizeMax(defaultValue: 32),
-  Tool_Pencil_Size(defaultValue: 1),
-  Tool_Pencil_Shape(defaultValue: 0),
-  Tool_Shape_Shape(defaultValue: 1),
-  Tool_Shape_StrokeWidthMin(defaultValue: 1),
-  Tool_Shape_StrokeWidthMax(defaultValue: 16),
-  Tool_Shape_StrokeWidth(defaultValue: 1),
-  Tool_Shape_CornerRadiusMin(defaultValue: 0),
-  Tool_Shape_CornerRadiusMax(defaultValue: 16),
-  Tool_Shape_CornerRadius(defaultValue: 0),
-  Tool_Shape_CornerCountMin(defaultValue: 5),
-  Tool_Shape_CornerCountMax(defaultValue: 9),
-  Tool_Shape_CornerCount(defaultValue: 5),
-  Tool_Shape_EllipseAngleMin(defaultValue: 0),
-  Tool_Shape_EllipseAngleMax(defaultValue: 90),
-  Tool_Shape_EllipseAngle(defaultValue: 0),
-  Tool_Shape_EllipseAngleSteps(defaultValue: 5),
-  Tool_Select_Shape(defaultValue: 0),
-  Tool_Select_Mode(defaultValue: 0),
-  Tool_Eraser_SizeMin(defaultValue: 1),
-  Tool_Eraser_SizeMax(defaultValue: 32),
-  Tool_Eraser_Size(defaultValue: 1),
-  Tool_Eraser_Shape(defaultValue: 0),
-  Tool_Text_SizeMin(defaultValue: 1),
-  Tool_Text_SizeMax(defaultValue: 8),
-  Tool_Text_Size(defaultValue: 1),
-  Tool_Text_Font(defaultValue: 0),
-  Tool_Text_MaxLength(defaultValue: 32),
-  Tool_SprayCan_RadiusMin(defaultValue: 3),
-  Tool_SprayCan_RadiusMax(defaultValue: 32),
-  Tool_SprayCan_Radius(defaultValue: 8),
-  Tool_SprayCan_BlobSizeMin(defaultValue: 1),
-  Tool_SprayCan_BlobSizeMax(defaultValue: 8),
-  Tool_SprayCan_BlobSize(defaultValue: 1),
-  Tool_SprayCan_IntensityMin(defaultValue: 1),
-  Tool_SprayCan_IntensityMax(defaultValue: 128),
-  Tool_SprayCan_Intensity(defaultValue: 8),
-  Tool_Line_WidthMin(defaultValue: 1),
-  Tool_Line_WidthMax(defaultValue: 16),
-  Tool_Line_Width(defaultValue: 1),
-  Tool_Line_BezierCalculationPoints(defaultValue: 1000),
-  Tool_Line_SegmentSortStyle(defaultValue: 1),
-  Tool_Curve_WidthMin(defaultValue: 1),
-  Tool_Curve_WidthMax(defaultValue: 16),
-  Tool_Curve_Width(defaultValue: 1),
-  Tool_Wand_Mode(defaultValue: 0),
-  Tool_Stamp_ScaleMin(defaultValue: 1),
-  Tool_Stamp_ScaleMax(defaultValue: 8),
-  Tool_Stamp_ScaleDefault(defaultValue: 1),
-  Tool_Stamp_GridOffsetDefault(defaultValue: 0),
-
-
-
-  KPal_Constraints_ColorCountMin(defaultValue: 3),
-  KPal_Constraints_ColorCountMax(defaultValue: 15),
-  KPal_Constraints_ColorCountDefault(defaultValue: 7),
-  KPal_Constraints_BaseHueMin(defaultValue: 0),
-  KPal_Constraints_BaseHueMax(defaultValue: 360),
-  KPal_Constraints_BaseHueDefault(defaultValue: 180),
-  KPal_Constraints_BaseSatMin(defaultValue: 0),
-  KPal_Constraints_BaseSatMax(defaultValue: 100),
-  KPal_Constraints_BaseSatDefault(defaultValue: 60),
-  KPal_Constraints_HueShiftMin(defaultValue: -90),
-  KPal_Constraints_HueShiftMax(defaultValue: 90),
-  KPal_Constraints_HueShiftDefault(defaultValue: -10),
-  KPal_Constraints_SatShiftMin(defaultValue: -25),
-  KPal_Constraints_SatShiftMax(defaultValue: 25),
-  KPal_Constraints_SatShiftDefault(defaultValue: -10),
-  KPal_Constraints_ValueRangeMin(defaultValue: 0),
-  KPal_Constraints_ValueRangeMinDefault(defaultValue: 15),
-  KPal_Constraints_ValueRangeMax(defaultValue: 100),
-  KPal_Constraints_ValueRangeMaxDefault(defaultValue: 95),
-  KPal_Constraints_SatCurveDefault(defaultValue: 0),
-  KPal_Constraints_RampCountMin(defaultValue: 1),
-  KPal_Constraints_RampCountMax(defaultValue: 64),
-  KPal_Constraints_RampCountDefault(defaultValue: 8),
-  KPal_Constraints_MaxClusters(defaultValue: 16),
-
-  KPalSliderConstraints_MinHue(defaultValue: -50),
-  KPalSliderConstraints_MinSat(defaultValue: -25),
-  KPalSliderConstraints_MinVal(defaultValue: -25),
-  KPalSliderConstraints_MaxHue(defaultValue: 50),
-  KPalSliderConstraints_MaxSat(defaultValue: 25),
-  KPalSliderConstraints_MaxVal(defaultValue: 25),
-  KPalSliderConstraints_DefaultHue(defaultValue: 0),
-  KPalSliderConstraints_DefaultSat(defaultValue: 0),
-  KPalSliderConstraints_DefaultVal(defaultValue: 0),
-
 
   DrawingLayerConstraints_MinDarkenBrighten(defaultValue: -5),
   DrawingLayerConstraints_DefaultDarkenBrighten(defaultValue: -1),
@@ -264,7 +91,6 @@ enum PreferenceInt
 
   Painter_CheckerBoardSize(defaultValue: 8),
   Painter_CheckerBoardContrast(defaultValue: 25),
-
   Painter_BackupImagePollingRateMs(defaultValue: 50),
 
   ColorNames_Scheme(defaultValue: 0),
@@ -298,11 +124,6 @@ enum PreferenceInt
 
   DesktopOptions_CursorType(defaultValue: 1),
 
-  FrameBlendingOptions_FramesBefore(defaultValue: 1),
-  FrameBlendingOptions_FramesAfter(defaultValue: 1),
-  FrameBlendingOptions_FramesMax(defaultValue: 4),
-  FrameBlendingOptions_FramesMin(defaultValue: 0),
-
   ;
 
 
@@ -314,25 +135,6 @@ enum PreferenceInt
 
 enum PreferenceBool
 {
-  Shader_IsEnabled(defaultValue: false),
-  Shader_DirectionRight(defaultValue: true),
-  Shader_CurrentRampOnly(defaultValue: false),
-
-  Tool_Pencil_PixelPerfect(defaultValue: true),
-  Tool_Shape_KeepAspectRatio(defaultValue: false),
-  Tool_Shape_StrokeOnly(defaultValue: false),
-  Tool_Fill_FillAdjacent(defaultValue: true),
-  Tool_Fill_FillWholeRamp(defaultValue: false),
-  Tool_Select_KeepAspectRatio(defaultValue: false),
-  Tool_Select_WandContinuous(defaultValue: true),
-  Tool_Select_WandWholeRamp(defaultValue: false),
-  Tool_Line_IntegerAspectRatio(defaultValue: false),
-  Tool_Line_SegmentSorting(defaultValue: false),
-  Tool_Wand_SelectFromWholeRamp(defaultValue: false),
-  Tool_Wand_Continuous(defaultValue: true),
-  Tool_Stamp_FlipH(defaultValue: false),
-  Tool_Stamp_FlipV(defaultValue: false),
-  Tool_Stamp_GridAlign(defaultValue: false),
 
   SelectShapeAfterInsert(defaultValue: false),
   SelectLayerAfterInsert(defaultValue: true),
@@ -341,13 +143,6 @@ enum PreferenceBool
   ProjectDirectory_UseCustom(defaultValue: false),
 
   DrawingLayerConstraints_DefaultGlowRecursive(defaultValue: true),
-
-  FrameBlendingOptions_Enabled(defaultValue: false),
-  FrameBlendingOptions_WrapBefore(defaultValue: true),
-  FrameBlendingOptions_WrapAfter(defaultValue: true),
-  FrameBlendingOptions_GradualOpacity(defaultValue: true),
-  FrameBlendingOptions_Tinting(defaultValue: false),
-  FrameBlendingOptions_ActiveLayerOnly(defaultValue: false),
 
 
   ;
@@ -359,10 +154,7 @@ enum PreferenceBool
 
 enum PreferenceString
 {
-  Tool_Text_TextDefault(defaultValue: "Text"),
-
   ColorNames_ColorNamePath(defaultValue: PreferenceManager.ASSET_PATH_COLOR_NAMES),
-
   ProjectDirectory_CustomPath(defaultValue: ""),
 
   ;
@@ -414,23 +206,10 @@ class PreferenceManager
   final Map<PreferenceString, _Pair<String>> _stringMap = <PreferenceString, _Pair<String>>{};
   late DrawingLayerSettingsConstraints drawingLayerSettingsConstraints;
   late ShadingLayerSettingsConstraints shadingLayerSettingsConstraints;
-  late CanvasSizeOptions canvasSizeOptions;
   late KPixPainterOptions kPixPainterOptions;
   late FrameConstraints frameConstraints;
-  late FrameBlendingOptions frameBlendingOptions;
-
-  late ToolOptions toolOptions;
-  late ShaderOptions shaderOptions;
-
-  late KPalConstraints kPalConstraints;
-  late KPalSliderConstraints kPalSliderConstraints;
-
-  late ReferenceLayerSettings referenceLayerSettings;
-  late GridLayerSettings gridLayerSettings;
 
   late ColorNames colorNames;
-
-  final FontManager _fontManager;
 
   late GuiPreferenceContent guiPreferenceContent;
   late BehaviorPreferenceContent behaviorPreferenceContent;
@@ -441,12 +220,10 @@ class PreferenceManager
 
 
 
-  PreferenceManager(final SharedPreferences prefs, final FontManager fontManager) : _prefs = prefs, _fontManager = fontManager
+  PreferenceManager(final SharedPreferences prefs) : _prefs = prefs
   {
     _init();
     _loadWidgetOptions();
-    _loadToolOptions();
-    _loadKPalOptions();
     _loadColorNames();
     _loadPainterOptions();
     loadPreferences();
@@ -531,10 +308,6 @@ class PreferenceManager
 
   void _loadWidgetOptions()
   {
-    shaderOptions = ShaderOptions(
-        shaderDirectionDefault: _getValueB(PreferenceBool.Shader_DirectionRight),
-        onlyCurrentRampEnabledDefault: _getValueB(PreferenceBool.Shader_CurrentRampOnly),
-        isEnabledDefault: _getValueB(PreferenceBool.Shader_IsEnabled),);
     drawingLayerSettingsConstraints = DrawingLayerSettingsConstraints(
         darkenBrightenMin: _getValueI(PreferenceInt.DrawingLayerConstraints_MinDarkenBrighten),
         darkenBrightenDefault: _getValueI(PreferenceInt.DrawingLayerConstraints_DefaultDarkenBrighten),
@@ -562,211 +335,8 @@ class PreferenceManager
       minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
       maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
       defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),);
-    canvasSizeOptions = CanvasSizeOptions(
-        sizeMin: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMin),
-        sizeMax: _getValueI(PreferenceInt.Layout_CanvasSize_SizeMax),
-        previewSize: _getValueI(PreferenceInt.Layout_CanvasSize_PreviewSize),);
-
-    referenceLayerSettings = ReferenceLayerSettings(
-      opacityDefault: _getValueI(PreferenceInt.ReferenceLayer_OpacityDefault),
-      opacityMin: _getValueI(PreferenceInt.ReferenceLayer_OpacityMin),
-      opacityMax: _getValueI(PreferenceInt.ReferenceLayer_OpacityMax),
-      zoomDefault: _getValueI(PreferenceInt.ReferenceLayer_ZoomDefault),
-      zoomMin: _getValueI(PreferenceInt.ReferenceLayer_ZoomMin),
-      zoomMax: _getValueI(PreferenceInt.ReferenceLayer_ZoomMax),
-      aspectRatioDefault: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioDefault),
-      aspectRatioMin: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMin),
-      aspectRatioMax: _getValueD(PreferenceDouble.ReferenceLayer_AspectRatioMax),
-      zoomCurveExponent: _getValueD(PreferenceDouble.ReferenceLayer_ZoomCurveExponent),
-      brightnessDefault: _getValueD(PreferenceDouble.ReferenceLayer_BrightnessDefault),
-      brightnessMin: _getValueD(PreferenceDouble.ReferenceLayer_BrightnessMin),
-      brightnessMax: _getValueD(PreferenceDouble.ReferenceLayer_BrightnessMax),
-      contrastDefault: _getValueD(PreferenceDouble.ReferenceLayer_ContrastDefault),
-      contrastMin: _getValueD(PreferenceDouble.ReferenceLayer_ContrastMin),
-      contrastMax: _getValueD(PreferenceDouble.ReferenceLayer_ContrastMax),
-      saturationDefault: _getValueD(PreferenceDouble.ReferenceLayer_SaturationDefault),
-      saturationMin: _getValueD(PreferenceDouble.ReferenceLayer_SaturationMin),
-      saturationMax: _getValueD(PreferenceDouble.ReferenceLayer_SaturationMax),
-      warmthDefault: _getValueD(PreferenceDouble.ReferenceLayer_WarmthDefault),
-      warmthMin: _getValueD(PreferenceDouble.ReferenceLayer_WarmthMin),
-      warmthMax: _getValueD(PreferenceDouble.ReferenceLayer_WarmthMax),
-    );
-
-    gridLayerSettings = GridLayerSettings(
-      opacityDefault: _getValueI(PreferenceInt.GridLayer_OpacityDefault),
-      opacityMin: _getValueI(PreferenceInt.GridLayer_OpacityMin),
-      opacityMax: _getValueI(PreferenceInt.GridLayer_OpacityMax),
-      brightnessDefault: _getValueI(PreferenceInt.GridLayer_BrightnessDefault),
-      brightnessMin: _getValueI(PreferenceInt.GridLayer_BrightnessMin),
-      brightnessMax: _getValueI(PreferenceInt.GridLayer_BrightnessMax),
-      intervalXDefault: _getValueI(PreferenceInt.GridLayer_IntervalXDefault),
-      intervalXMin: _getValueI(PreferenceInt.GridLayer_IntervalXMin),
-      intervalXMax: _getValueI(PreferenceInt.GridLayer_IntervalXMax),
-      intervalYDefault: _getValueI(PreferenceInt.GridLayer_IntervalYDefault),
-      intervalYMin: _getValueI(PreferenceInt.GridLayer_IntervalYMin),
-      intervalYMax: _getValueI(PreferenceInt.GridLayer_IntervalYMax),
-      horizonDefault: _getValueD(PreferenceDouble.GridLayer_HorizonDefault),
-      vanishingPointMin: _getValueD(PreferenceDouble.GridLayer_VanishingPointMin),
-      vanishingPointMax: _getValueD(PreferenceDouble.GridLayer_VanishingPointMax),
-      vanishingPoint1Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint1Default),
-      vanishingPoint2Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint2Default),
-      vanishingPoint3Default: _getValueD(PreferenceDouble.GridLayer_VanishingPoint3Default),
-      gridTypeValue: _getValueI(PreferenceInt.GridLayer_GridTypeDefault),
-    );
-
-    frameBlendingOptions = FrameBlendingOptions(
-      enabled: _getValueB(PreferenceBool.FrameBlendingOptions_Enabled),
-      framesBefore: _getValueI(PreferenceInt.FrameBlendingOptions_FramesBefore),
-      framesAfter: _getValueI(PreferenceInt.FrameBlendingOptions_FramesAfter),
-      opacity: _getValueD(PreferenceDouble.FrameBlendingOptions_Opacity),
-      gradualOpacity: _getValueB(PreferenceBool.FrameBlendingOptions_GradualOpacity),
-      wrapAroundBefore: _getValueB(PreferenceBool.FrameBlendingOptions_WrapBefore),
-      wrapAroundAfter: _getValueB(PreferenceBool.FrameBlendingOptions_WrapAfter),
-      frameMin: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMin),
-      frameMax: _getValueI(PreferenceInt.FrameBlendingOptions_FramesMax),
-      opacityMin: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMin),
-      opacityMax: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityMax),
-      opacityStep: _getValueD(PreferenceDouble.FrameBlendingOptions_OpacityStep),
-      tinting: _getValueB(PreferenceBool.FrameBlendingOptions_Tinting),
-      activeLayerOnly: _getValueB(PreferenceBool.FrameBlendingOptions_ActiveLayerOnly),
-    );
-
   }
 
-  void _loadToolOptions()
-  {
-    final PencilOptions pencilOptions = PencilOptions(
-        sizeMin: _getValueI(PreferenceInt.Tool_Pencil_SizeMin),
-        sizeMax: _getValueI(PreferenceInt.Tool_Pencil_SizeMax),
-        sizeDefault: _getValueI(PreferenceInt.Tool_Pencil_Size),
-        shapeDefault: _getValueI(PreferenceInt.Tool_Pencil_Shape),
-        pixelPerfectDefault: _getValueB(PreferenceBool.Tool_Pencil_PixelPerfect),);
-    final ShapeOptions shapeOptions = ShapeOptions(
-        shapeDefault: _getValueI(PreferenceInt.Tool_Shape_Shape),
-        keepRatioDefault: _getValueB(PreferenceBool.Tool_Shape_KeepAspectRatio),
-        strokeOnlyDefault: _getValueB(PreferenceBool.Tool_Shape_StrokeOnly),
-        strokeWidthMin: _getValueI(PreferenceInt.Tool_Shape_StrokeWidthMin),
-        strokeWidthMax: _getValueI(PreferenceInt.Tool_Shape_StrokeWidthMax),
-        strokeWidthDefault: _getValueI(PreferenceInt.Tool_Shape_StrokeWidth),
-        cornerRadiusMin: _getValueI(PreferenceInt.Tool_Shape_CornerRadiusMin),
-        cornerRadiusMax: _getValueI(PreferenceInt.Tool_Shape_CornerRadiusMax),
-        cornerRadiusDefault: _getValueI(PreferenceInt.Tool_Shape_CornerRadius),
-        cornerCountMin: _getValueI(PreferenceInt.Tool_Shape_CornerCountMin),
-        cornerCountMax: _getValueI(PreferenceInt.Tool_Shape_CornerCountMax),
-        cornerCountDefault: _getValueI(PreferenceInt.Tool_Shape_CornerCount),
-        ellipseAngleMin: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleMin),
-        ellipseAngleMax: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleMax),
-        ellipseAngleDefault: _getValueI(PreferenceInt.Tool_Shape_EllipseAngle),
-        ellipseAngleSteps: _getValueI(PreferenceInt.Tool_Shape_EllipseAngleSteps),);
-    final FillOptions fillOptions = FillOptions(
-        fillAdjacentDefault: _getValueB(PreferenceBool.Tool_Fill_FillAdjacent),
-        fillWholeRampDefault: _getValueB(PreferenceBool.Tool_Fill_FillWholeRamp),);
-    final SelectOptions selectOptions = SelectOptions(
-        shapeDefault: _getValueI(PreferenceInt.Tool_Select_Shape),
-        keepAspectRatioDefault: _getValueB(PreferenceBool.Tool_Select_KeepAspectRatio),
-        modeDefault: _getValueI(PreferenceInt.Tool_Select_Mode),
-        wandContinuousDefault: _getValueB(PreferenceBool.Tool_Wand_Continuous),
-        wandWholeRampDefault: _getValueB(PreferenceBool.Tool_Wand_SelectFromWholeRamp),);
-    final ColorPickOptions colorPickOptions = ColorPickOptions();
-    final EraserOptions eraserOptions = EraserOptions(
-        sizeMin: _getValueI(PreferenceInt.Tool_Eraser_SizeMin),
-        sizeMax: _getValueI(PreferenceInt.Tool_Eraser_SizeMax),
-        sizeDefault: _getValueI(PreferenceInt.Tool_Eraser_Size),
-        shapeDefault: _getValueI(PreferenceInt.Tool_Eraser_Shape),);
-    final TextOptions textOptions = TextOptions(
-        fontManager: _fontManager,
-        fontDefault: _getValueI(PreferenceInt.Tool_Text_Font),
-        sizeMin: _getValueI(PreferenceInt.Tool_Text_SizeMin),
-        sizeMax: _getValueI(PreferenceInt.Tool_Text_SizeMax),
-        sizeDefault: _getValueI(PreferenceInt.Tool_Text_Size),
-        textDefault: _getValueS(PreferenceString.Tool_Text_TextDefault),
-        maxLength: _getValueI(PreferenceInt.Tool_Text_MaxLength),);
-    final SprayCanOptions sprayCanOptions = SprayCanOptions(
-        radiusMin: _getValueI(PreferenceInt.Tool_SprayCan_RadiusMin),
-        radiusMax: _getValueI(PreferenceInt.Tool_SprayCan_RadiusMax),
-        radiusDefault: _getValueI(PreferenceInt.Tool_SprayCan_Radius),
-        blobSizeMin: _getValueI(PreferenceInt.Tool_SprayCan_BlobSizeMin),
-        blobSizeMax: _getValueI(PreferenceInt.Tool_SprayCan_BlobSizeMax),
-        blobSizeDefault: _getValueI(PreferenceInt.Tool_SprayCan_BlobSize),
-        intensityMin: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMin),
-        intensityMax: _getValueI(PreferenceInt.Tool_SprayCan_IntensityMax),
-        intensityDefault: _getValueI(PreferenceInt.Tool_SprayCan_Intensity),);
-    final LineOptions lineOptions = LineOptions(
-        segmentSortingDefault: _getValueB(PreferenceBool.Tool_Line_SegmentSorting),
-        segmentSortStyleDefault: _getValueI(PreferenceInt.Tool_Line_SegmentSortStyle),
-        widthMin: _getValueI(PreferenceInt.Tool_Line_WidthMin),
-        widthMax: _getValueI(PreferenceInt.Tool_Line_WidthMax),
-        widthDefault: _getValueI(PreferenceInt.Tool_Line_Width),
-        bezierCalculationPoints: _getValueI(PreferenceInt.Tool_Line_BezierCalculationPoints),
-        integerAspectRatioDefault: _getValueB(PreferenceBool.Tool_Line_IntegerAspectRatio),);
-    final StampOptions stampOptions = StampOptions(
-        scaleMin: _getValueI(PreferenceInt.Tool_Stamp_ScaleMin),
-        scaleMax: _getValueI(PreferenceInt.Tool_Stamp_ScaleMax),
-        scaleDefault: _getValueI(PreferenceInt.Tool_Stamp_ScaleDefault),
-        flipHDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
-        flipVDefault: _getValueB(PreferenceBool.Tool_Stamp_FlipH),
-        gridAlignDefault: _getValueB(PreferenceBool.Tool_Stamp_GridAlign),
-        gridOffsetDefault: _getValueI(PreferenceInt.Tool_Stamp_GridOffsetDefault),);
-    toolOptions = ToolOptions(
-        pencilOptions: pencilOptions,
-        shapeOptions: shapeOptions,
-        fillOptions: fillOptions,
-        selectOptions: selectOptions,
-        colorPickOptions: colorPickOptions,
-        eraserOptions: eraserOptions,
-        textOptions: textOptions,
-        sprayCanOptions: sprayCanOptions,
-        stampOptions: stampOptions,
-        lineOptions: lineOptions,);
-  }
-
-  void _loadKPalOptions()
-  {
-    kPalConstraints = KPalConstraints(
-        colorCountMin: _getValueI(PreferenceInt.KPal_Constraints_ColorCountMin),
-        colorCountMax: _getValueI(PreferenceInt.KPal_Constraints_ColorCountMax),
-        colorCountDefault: _getValueI(PreferenceInt.KPal_Constraints_ColorCountDefault),
-        baseHueMin: _getValueI(PreferenceInt.KPal_Constraints_BaseHueMin),
-        baseHueMax: _getValueI(PreferenceInt.KPal_Constraints_BaseHueMax),
-        baseHueDefault: _getValueI(PreferenceInt.KPal_Constraints_BaseHueDefault),
-        baseSatMin: _getValueI(PreferenceInt.KPal_Constraints_BaseSatMin),
-        baseSatMax: _getValueI(PreferenceInt.KPal_Constraints_BaseSatMax),
-        baseSatDefault: _getValueI(PreferenceInt.KPal_Constraints_BaseSatDefault),
-        hueShiftMin: _getValueI(PreferenceInt.KPal_Constraints_HueShiftMin),
-        hueShiftMax: _getValueI(PreferenceInt.KPal_Constraints_HueShiftMax),
-        hueShiftDefault: _getValueI(PreferenceInt.KPal_Constraints_HueShiftDefault),
-        hueShiftExpMin: _getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMin),
-        hueShiftExpMax: _getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpMax),
-        hueShiftExpDefault: _getValueD(PreferenceDouble.KPal_Constraints_hueShiftExpDefault),
-        satShiftMin: _getValueI(PreferenceInt.KPal_Constraints_SatShiftMin),
-        satShiftMax: _getValueI(PreferenceInt.KPal_Constraints_SatShiftMax),
-        satShiftDefault: _getValueI(PreferenceInt.KPal_Constraints_SatShiftDefault),
-        satShiftExpMin: _getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMin),
-        satShiftExpMax: _getValueD(PreferenceDouble.KPal_Constraints_satShiftExpMax),
-        satShiftExpDefault: _getValueD(PreferenceDouble.KPal_Constraints_staShiftExpDefault),
-        valueRangeMin: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMin),
-        valueRangeMinDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMinDefault),
-        valueRangeMax: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMax),
-        valueRangeMaxDefault: _getValueI(PreferenceInt.KPal_Constraints_ValueRangeMaxDefault),
-        satCurveDefault: _getValueI(PreferenceInt.KPal_Constraints_SatCurveDefault),
-        rampCountMin: _getValueI(PreferenceInt.KPal_Constraints_RampCountMin),
-        rampCountMax: _getValueI(PreferenceInt.KPal_Constraints_RampCountMax),
-        rampCountDefault: _getValueI(PreferenceInt.KPal_Constraints_RampCountDefault),
-        maxClusters: _getValueI(PreferenceInt.KPal_Constraints_MaxClusters),);
-
-    kPalSliderConstraints = KPalSliderConstraints(
-        minHue: _getValueI(PreferenceInt.KPalSliderConstraints_MinHue),
-        minSat: _getValueI(PreferenceInt.KPalSliderConstraints_MinSat),
-        minVal: _getValueI(PreferenceInt.KPalSliderConstraints_MinVal),
-        maxHue: _getValueI(PreferenceInt.KPalSliderConstraints_MaxHue),
-        maxSat: _getValueI(PreferenceInt.KPalSliderConstraints_MaxSat),
-        maxVal: _getValueI(PreferenceInt.KPalSliderConstraints_MaxVal),
-        defaultHue: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultHue),
-        defaultSat: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultSat),
-        defaultVal: _getValueI(PreferenceInt.KPalSliderConstraints_DefaultVal),
-    );
-
-  }
 
   void _loadColorNames()
   {
@@ -856,79 +426,6 @@ class PreferenceManager
     );
 
     desktopPreferenceContent = DesktopPreferenceContent(
-      cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType),
-    );
-  }
-
-  Future<void> updatePreferences() async
-  {
-    guiPreferenceContent.update(
-      colorNameSchemeValue: _getValueI(PreferenceInt.ColorNames_Scheme),
-      rasterContrast: _getValueI(PreferenceInt.Painter_CheckerBoardContrast),
-      rasterSizeValue: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
-      themeTypeValue: _getValueI(PreferenceInt.ThemeType),
-      canvasBorderOpacityValue: _getValueI(PreferenceInt.Opacity_CanvasBorder),
-      selectionOpacityValue: _getValueI(PreferenceInt.Opacity_Selection),
-      toolOpacityValue: _getValueI(PreferenceInt.Opacity_Tool),
-    );
-
-    shadingLayerSettingsConstraints = ShadingLayerSettingsConstraints(
-      shadingStepsMin: _getValueI(PreferenceInt.ShadingLayerConstraints_MinAmount),
-      shadingStepsDefaultBrighten: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountBrighten),
-      shadingStepsDefaultDarken: _getValueI(PreferenceInt.ShadingLayerConstraints_DefaultAmountDarken),
-      shadingStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxAmount),
-      ditherStepsMax: _getValueI(PreferenceInt.ShadingLayerConstraints_MaxDither),);
-
-    frameConstraints = FrameConstraints(
-      minFps: _getValueI(PreferenceInt.FrameConstraints_MinFps),
-      maxFps: _getValueI(PreferenceInt.FrameConstraints_MaxFps),
-      defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),
-    );
-
-    behaviorPreferenceContent.update(
-      undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
-      selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
-      selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
-      undoStepsMax: _getValueI(PreferenceInt.HistoryOptions_StepsMax),
-      undoStepsMin: _getValueI(PreferenceInt.HistoryOptions_StepsMin),
-      frameConstraints: frameConstraints,
-      shadingConstraints: shadingLayerSettingsConstraints,
-      showReferenceOutsideCanvas: _getValueB(PreferenceBool.ShowReferenceOutsideCanvas),
-      useCustomProjectDirectory: _getValueB(PreferenceBool.ProjectDirectory_UseCustom),
-      customProjectDirectory: _getValueS(PreferenceString.ProjectDirectory_CustomPath),
-    );
-
-    stylusPreferenceContent.update(
-      stylusLongPressCancelDistance: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistance),
-      stylusLongPressCancelDistanceMin: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMin),
-      stylusLongPressCancelDistanceMax: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMax),
-      stylusLongPressDelay: _getValueI(PreferenceInt.StylusOptions_LongPressDelay),
-      stylusLongPressDelayMin: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMin),
-      stylusLongPressDelayMax: _getValueI(PreferenceInt.StylusOptions_LongPressDelayMax),
-      stylusPollInterval: _getValueI(PreferenceInt.StylusOptions_PollInterval),
-      stylusPollIntervalMin: _getValueI(PreferenceInt.StylusOptions_PollIntervalMin),
-      stylusPollIntervalMax: _getValueI(PreferenceInt.StylusOptions_PollIntervalMax),
-      stylusSizeStepDistance: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistance),
-      stylusSizeStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMin),
-      stylusSizeStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_SizeStepDistanceMax),
-      stylusZoomStepDistance: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistance),
-      stylusZoomStepDistanceMin: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMin),
-      stylusZoomStepDistanceMax: _getValueD(PreferenceDouble.StylusOptions_ZoomStepDistanceMax),
-      stylusPickMaxDuration: _getValueI(PreferenceInt.StylusOptions_PickMaxDuration),
-      stylusPickMaxDurationMin: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMin),
-      stylusPickMaxDurationMax: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMax),
-    );
-
-    touchPreferenceContent.update(
-      singleTouchDelay: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelay),
-      singleTouchDelayMin: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMin),
-      singleTouchDelayMax: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMax),
-      zoomStepDistance: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistance),
-      zoomStepDistanceMin: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMin),
-      zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
-    );
-
-    desktopPreferenceContent.update(
       cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType),
     );
   }

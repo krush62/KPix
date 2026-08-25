@@ -67,7 +67,6 @@ class KPalColorCardWidget extends StatefulWidget
 
 class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
 {
-  final KPalSliderConstraints _constraints = GetIt.I.get<PreferenceManager>().kPalSliderConstraints;
   final ColorNames _colorNames = GetIt.I.get<PreferenceManager>().colorNames;
   final ValueNotifier<bool> _shouldShowSliders = ValueNotifier<bool>(false);
   late KPalVerticalSliderWidget _hueSlider;
@@ -80,9 +79,9 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
   void initState()
   {
     super.initState();
-    _hueSlider = KPalVerticalSliderWidget(name: "hue", minVal: _constraints.minHue, maxVal: _constraints.maxHue, valueNotifier: widget.shiftSet.hueShiftNotifier);
-    _satSlider = KPalVerticalSliderWidget(name: "sat", minVal: _constraints.minSat, maxVal: _constraints.maxSat, valueNotifier: widget.shiftSet.satShiftNotifier);
-    _valSlider = KPalVerticalSliderWidget(name: "val", minVal: _constraints.minVal, maxVal: _constraints.maxVal, valueNotifier: widget.shiftSet.valShiftNotifier);
+    _hueSlider = KPalVerticalSliderWidget(name: "hue", minVal: KPalSliderConstraints.minHue, maxVal: KPalSliderConstraints.maxHue, valueNotifier: widget.shiftSet.hueShiftNotifier);
+    _satSlider = KPalVerticalSliderWidget(name: "sat", minVal: KPalSliderConstraints.minSat, maxVal: KPalSliderConstraints.maxSat, valueNotifier: widget.shiftSet.satShiftNotifier);
+    _valSlider = KPalVerticalSliderWidget(name: "val", minVal: KPalSliderConstraints.minVal, maxVal: KPalSliderConstraints.maxVal, valueNotifier: widget.shiftSet.valShiftNotifier);
     _hueSlider.valueNotifier.addListener(_showSliders);
     _satSlider.valueNotifier.addListener(_showSliders);
     _valSlider.valueNotifier.addListener(_showSliders);
@@ -204,7 +203,7 @@ class _KPalColorCardWidgetState extends State<KPalColorCardWidget>
                                        return ValueListenableBuilder<int>(
                                          valueListenable: widget.shiftSet.valShiftNotifier,
                                          builder: (final BuildContext context4, final int valShift, final Widget? child4) {
-                                           final bool editIsVisible = !shouldShow && (hueShift != _constraints.defaultHue || satShift != _constraints.defaultSat || valShift != _constraints.defaultVal);
+                                           final bool editIsVisible = !shouldShow && (hueShift != KPalSliderConstraints.defaultHue || satShift != KPalSliderConstraints.defaultSat || valShift != KPalSliderConstraints.defaultVal);
                                            return AnimatedOpacity(
                                              duration: const Duration(milliseconds: _KPalColorCardWidgetOptions.editAnimationDuration),
                                              curve: Curves.easeInOut,

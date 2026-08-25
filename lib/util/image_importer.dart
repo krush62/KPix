@@ -25,14 +25,13 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/widgets/file/import_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
-import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:uuid/uuid.dart';
 
 class ImportDataSet
@@ -149,18 +148,17 @@ Future<void> _removeUnusedRamps({required final List<KPalRampData> ramps, requir
 
 Future<ReferenceLayerState> _getReferenceLayer({required final ui.Image img, required final String imgPath}) async
 {
-  final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
   final ReferenceLayerState refState = ReferenceLayerState(
-      aspectRatio: refSettings.aspectRatioDefault,
+      aspectRatio: ReferenceLayerConstraints.aspectRatioDefault,
       image: null,
       offsetX: 0,
       offsetY: 0,
-      opacity: refSettings.opacityDefault,
-      zoom: refSettings.zoomDefault,
-      brightness: refSettings.brightnessDefault,
-      contrast: refSettings.contrastDefault,
-      saturation: refSettings.saturationDefault,
-      warmth: refSettings.warmthDefault,
+      opacity: ReferenceLayerConstraints.opacityDefault,
+      zoom: ReferenceLayerConstraints.zoomDefault,
+      brightness: ReferenceLayerConstraints.brightnessDefault,
+      contrast: ReferenceLayerConstraints.contrastDefault,
+      saturation: ReferenceLayerConstraints.saturationDefault,
+      warmth: ReferenceLayerConstraints.warmthDefault,
   );
   final ReferenceImage refImg = await GetIt.I.get<ReferenceImageManager>().addLoadedImage(path: imgPath, img: img);
   refState.imageNotifier.value = refImg;
@@ -805,9 +803,7 @@ KPalRampSettings _fitRampForClusterBins({
   final int valueRangeMin = (vMin * 100).clamp(0.0, 100.0).round();
   final int valueRangeMax = (vMax * 100).clamp(0.0, 100.0).round();
 
-  final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
   return KPalRampSettings.fromValues(
-    constraints: constraints,
     colorCount: colorCount,
     baseHue: baseHue,
     hueShift: hueShift,
@@ -883,9 +879,8 @@ Future<List<KPalRampSettings>> _extractColorRamps({
     imgBytes: imgBytes,
   );
   if (q.bins.isEmpty) {
-    final KPalConstraints constraints = GetIt.I.get<PreferenceManager>().kPalConstraints;
     return <KPalRampSettings>[
-      KPalRampSettings(constraints: constraints),
+      KPalRampSettings(),
     ];
   }
 

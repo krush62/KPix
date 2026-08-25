@@ -284,7 +284,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _colorCountSliderChanged(newVal: widget.rampData.settings.constraints.colorCountDefault.toDouble());
+                                      _colorCountSliderChanged(newVal: KPalConstraints.colorCountDefault.toDouble());
                                     },
                                     child: const Text("Color Count"),
                                   ),
@@ -294,9 +294,9 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.colorCount.toDouble(),
-                                  min: widget.rampData.settings.constraints.colorCountMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.colorCountMax.toDouble(),
-                                  //divisions: widget.rampData.settings.constraints.colorCountMax - widget.rampData.settings.constraints.colorCountMin,
+                                  min: KPalConstraints.colorCountMin.toDouble(),
+                                  max: KPalConstraints.colorCountMax.toDouble(),
+                                  //divisions: KPalConstraints.colorCountMax - KPalConstraints.colorCountMin,
                                   onChanged: (final double newVal) {_colorCountSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -321,7 +321,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _baseHueSliderChanged(newVal: widget.rampData.settings.constraints.baseHueDefault.toDouble());
+                                      _baseHueSliderChanged(newVal: KPalConstraints.baseHueDefault.toDouble());
                                     },
                                     child: const Text("Base Hue"),
                                   ),
@@ -331,9 +331,9 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.baseHue.toDouble(),
-                                  min: widget.rampData.settings.constraints.baseHueMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.baseHueMax.toDouble(),
-                                  divisions: widget.rampData.settings.constraints.baseHueMax - widget.rampData.settings.constraints.baseHueMin,
+                                  min: KPalConstraints.baseHueMin.toDouble(),
+                                  max: KPalConstraints.baseHueMax.toDouble(),
+                                  divisions: KPalConstraints.baseHueMax - KPalConstraints.baseHueMin,
                                   onChanged: (final double newVal) {_baseHueSliderChanged(newVal: newVal);},
                                   isRainbow: true,
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -355,7 +355,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _hueShiftSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftDefault.toDouble());
+                                      _hueShiftSliderChanged(newVal: KPalConstraints.hueShiftDefault.toDouble());
                                     },
                                     child: const Text("Hue Shift"),
                                   ),
@@ -366,9 +366,9 @@ class _KPalRampState extends State<KPalRamp>
                                 child: KPixSlider(
                                   value: widget.rampData.settings.hueShift.toDouble(),
                                   showPlusSignForPositive: true,
-                                  min: widget.rampData.settings.constraints.hueShiftMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.hueShiftMax.toDouble(),
-                                  //divisions: widget.rampData.settings.constraints.hueShiftMax - widget.rampData.settings.constraints.hueShiftMin,
+                                  min: KPalConstraints.hueShiftMin.toDouble(),
+                                  max: KPalConstraints.hueShiftMax.toDouble(),
+                                  //divisions: KPalConstraints.hueShiftMax - KPalConstraints.hueShiftMin,
                                   onChanged: (final double newVal) {_hueShiftSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -388,7 +388,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _hueShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.hueShiftExpDefault);
+                                      _hueShiftExpSliderChanged(newVal: KPalConstraints.hueShiftExpDefault);
                                     },
                                     child: const Text("↳ Exponent"),
                                   ),
@@ -398,9 +398,9 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.hueShiftExp,
-                                  min: widget.rampData.settings.constraints.hueShiftExpMin,
-                                  max: widget.rampData.settings.constraints.hueShiftExpMax,
-                                  //divisions: (widget.rampData.settings.constraints.hueShiftExpMax * 100.0 - widget.rampData.settings.constraints.hueShiftExpMin * 100.0).round(),
+                                  min: KPalConstraints.hueShiftExpMin,
+                                  max: KPalConstraints.hueShiftExpMax,
+                                  //divisions: (KPalConstraints.hueShiftExpMax * 100.0 - KPalConstraints.hueShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_hueShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.hueShiftExp.toStringAsFixed(2),
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -426,7 +426,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _baseSatSliderChanged(newVal: widget.rampData.settings.constraints.baseSatDefault.toDouble());
+                                      _baseSatSliderChanged(newVal: KPalConstraints.baseSatDefault.toDouble());
                                     },
                                     child: const Text("Base Sat"),
                                   ),
@@ -436,9 +436,9 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.baseSat.toDouble(),
-                                  min: widget.rampData.settings.constraints.baseSatMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.baseSatMax.toDouble(),
-                                  //divisions: widget.rampData.settings.constraints.baseSatMax - widget.rampData.settings.constraints.baseSatMin,
+                                  min: KPalConstraints.baseSatMin.toDouble(),
+                                  max: KPalConstraints.baseSatMax.toDouble(),
+                                  //divisions: KPalConstraints.baseSatMax - KPalConstraints.baseSatMin,
                                   onChanged: (final double newVal) {_baseSatSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -458,7 +458,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                     onTap: ()
                                     {
-                                      _satShiftSliderChanged(newVal: widget.rampData.settings.constraints.satShiftDefault.toDouble());
+                                      _satShiftSliderChanged(newVal: KPalConstraints.satShiftDefault.toDouble());
                                     },
                                     child: const Text("Sat Shift"),
                                   ),
@@ -468,10 +468,10 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.satShift.toDouble(),
-                                  min: widget.rampData.settings.constraints.satShiftMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.satShiftMax.toDouble(),
+                                  min: KPalConstraints.satShiftMin.toDouble(),
+                                  max: KPalConstraints.satShiftMax.toDouble(),
                                   showPlusSignForPositive: true,
-                                  //divisions: widget.rampData.settings.constraints.satShiftMax - widget.rampData.settings.constraints.satShiftMin,
+                                  //divisions: KPalConstraints.satShiftMax - KPalConstraints.satShiftMin,
                                   onChanged: (final double newVal) {_satShiftSliderChanged(newVal: newVal);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),
@@ -491,7 +491,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                       onTap: ()
                                       {
-                                        _satShiftExpSliderChanged(newVal: widget.rampData.settings.constraints.satShiftExpDefault);
+                                        _satShiftExpSliderChanged(newVal: KPalConstraints.satShiftExpDefault);
                                       },
                                       child: const Text("↳ Exponent"),
                                   ),
@@ -501,9 +501,9 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixSlider(
                                   value: widget.rampData.settings.satShiftExp,
-                                  min: widget.rampData.settings.constraints.satShiftExpMin,
-                                  max: widget.rampData.settings.constraints.satShiftExpMax,
-                                  //divisions: (widget.rampData.settings.constraints.satShiftExpMax * 100.0 - widget.rampData.settings.constraints.satShiftExpMin * 100.0).round(),
+                                  min: KPalConstraints.satShiftExpMin,
+                                  max: KPalConstraints.satShiftExpMax,
+                                  //divisions: (KPalConstraints.satShiftExpMax * 100.0 - KPalConstraints.satShiftExpMin * 100.0).round(),
                                   onChanged: (final double newVal) {_satShiftExpSliderChanged(newVal: newVal);},
                                   label: widget.rampData.settings.satShiftExp.toStringAsFixed(2),
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
@@ -572,7 +572,7 @@ class _KPalRampState extends State<KPalRamp>
                                   child: GestureDetector(
                                       onTap: ()
                                       {
-                                        _valueRangeSliderChanged(newVals: RangeValues(widget.rampData.settings.constraints.valueRangeMinDefault.toDouble(), widget.rampData.settings.constraints.valueRangeMaxDefault.toDouble()));
+                                        _valueRangeSliderChanged(newVals: RangeValues(KPalConstraints.valueRangeMinDefault.toDouble(), KPalConstraints.valueRangeMaxDefault.toDouble()));
                                       },
                                       child: const Text("Value Range"),
                                   ),
@@ -582,9 +582,9 @@ class _KPalRampState extends State<KPalRamp>
                                 flex: _KPalRampWidgetOptions.rowControlFlex,
                                 child: KPixRangeSlider(
                                   values: RangeValues(widget.rampData.settings.valueRangeMin.toDouble(), widget.rampData.settings.valueRangeMax.toDouble()),
-                                  min: widget.rampData.settings.constraints.valueRangeMin.toDouble(),
-                                  max: widget.rampData.settings.constraints.valueRangeMax.toDouble(),
-                                  //divisions: widget.rampData.settings.constraints.valueRangeMax - widget.rampData.settings.constraints.valueRangeMin,
+                                  min: KPalConstraints.valueRangeMin.toDouble(),
+                                  max: KPalConstraints.valueRangeMax.toDouble(),
+                                  //divisions: KPalConstraints.valueRangeMax - KPalConstraints.valueRangeMin,
                                   onChanged: (final RangeValues newVals) {_valueRangeSliderChanged(newVals: newVals);},
                                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                                 ),

@@ -22,19 +22,18 @@ import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/eraser_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class EraserPainter extends IToolPainter
 {
-  final EraserOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.eraserOptions;
+  final EraserOptions _options = GetIt.I.get<ToolOptions>().eraserOptions;
   final CoordinateSetI _previousCursorPosNorm = CoordinateSetI.zero();
   bool _isDown = false;
   bool _hasErasedPixels = false;

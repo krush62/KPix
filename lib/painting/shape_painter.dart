@@ -26,16 +26,17 @@ import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/preferences/preference_values.dart';
 import 'package:kpix/tool_options/shape_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/tools/constraints/tool_shape_constraints.dart';
 
 class ShapePainter extends IToolPainter
 {
-  final ShapeOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.shapeOptions;
+  final ShapeOptions _options = GetIt.I.get<ToolOptions>().shapeOptions;
   final BehaviorPreferenceContent _behaviorPreferenceContent = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final CoordinateSetI _selectionStart = CoordinateSetI.zero();
@@ -270,7 +271,7 @@ class ShapePainter extends IToolPainter
     final int height = selectionEnd.y - selectionStart.y + 1;
 
     //RECTANGLE
-    if (options.shape.value == ShapeShape.rectangle)
+    if (options.shape.value == DrawingShape.rectangle)
     {
       final Set<CoordinateSetI> innerContent = <CoordinateSetI>{};
       if (options.strokeOnly.value)
@@ -318,7 +319,7 @@ class ShapePainter extends IToolPainter
       }
     }
     //ELLIPSE
-    else if (options.shape.value == ShapeShape.ellipse)
+    else if (options.shape.value == DrawingShape.ellipse)
     {
       if (options.strokeOnly.value)
       {
@@ -428,7 +429,7 @@ class ShapePainter extends IToolPainter
   static List<CoordinateSetI> _getPolygonPoints({required final ShapeOptions options, required final CoordinateSetI selectionStart, required final CoordinateSetI selectionEnd})
   {
     List<CoordinateSetI> points = <CoordinateSetI>[];
-    if (options.shape.value == ShapeShape.triangle)
+    if (options.shape.value == DrawingShape.triangle)
     {
       points = <CoordinateSetI>[
         CoordinateSetI(x: selectionStart.x + (selectionEnd.x - selectionStart.x) ~/ 2, y: selectionStart.y - 1),
@@ -436,7 +437,7 @@ class ShapePainter extends IToolPainter
         CoordinateSetI(x: selectionStart.x - 1, y: selectionEnd.y + 1),
       ];
     }
-    else if (options.shape.value == ShapeShape.diamond)
+    else if (options.shape.value == DrawingShape.diamond)
     {
       final int centerX = selectionStart.x + ((selectionEnd.x - selectionStart.x) / 2).round();
       final int centerY = selectionStart.y + ((selectionEnd.y - selectionStart.y) / 2).round();
@@ -449,10 +450,10 @@ class ShapePainter extends IToolPainter
         CoordinateSetI(x: max(selectionStart.x, selectionStart.x - 1), y: centerY),
       ];
     }
-    else if (options.shape.value == ShapeShape.star || options.shape.value == ShapeShape.ngon)
+    else if (options.shape.value == DrawingShape.star || options.shape.value == DrawingShape.ngon)
     {
       final int n = options.cornerCount.value;
-      final bool isStar = options.shape.value == ShapeShape.star;
+      final bool isStar = options.shape.value == DrawingShape.star;
 
       final double left   = min(selectionStart.x, selectionEnd.x).toDouble();
       final double top    = min(selectionStart.y, selectionEnd.y).toDouble();

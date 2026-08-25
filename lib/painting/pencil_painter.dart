@@ -24,20 +24,19 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/line_options.dart';
 import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 
 class PencilPainter extends IToolPainter
 {
-  final PencilOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.pencilOptions;
-  final LineOptions _lineOptions = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
+  final PencilOptions _options = GetIt.I.get<ToolOptions>().pencilOptions;
+  final LineOptions _lineOptions = GetIt.I.get<ToolOptions>().lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final List<CoordinateSetI> _paintPositions = <CoordinateSetI>[];
   final List<CoordinateSetI> _allPaintPositions = <CoordinateSetI>[];

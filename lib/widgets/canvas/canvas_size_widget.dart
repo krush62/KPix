@@ -21,29 +21,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
 
-
-/// Layout options for the [CanvasSizeWidget]
-class CanvasSizeOptions
-{
-  final int sizeMin;
-  final int sizeMax;
-  final int previewSize;
-
-  CanvasSizeOptions({
-    required this.sizeMin,
-    required this.sizeMax,
-    required this.previewSize,
-  });
-}
 
 /// Widget for changing the size of the canvas.
 class CanvasSizeWidget extends StatefulWidget
@@ -58,7 +44,6 @@ class CanvasSizeWidget extends StatefulWidget
 
 class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 {
-  final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<int> _width = ValueNotifier<int>(0);
@@ -142,9 +127,9 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
   void _sizeXInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null && parsedVal >= _sizeOptions.sizeMin && parsedVal <= _sizeOptions.sizeMax)
+    if (parsedVal != null && parsedVal >= CanvasSizeConstraints.sizeMin && parsedVal <= CanvasSizeConstraints.sizeMax)
     {
-      final int val = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+      final int val = parsedVal.clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
       _width.value = val;
 
     }
@@ -160,9 +145,9 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
   void _sizeYInputChanged({required final String newVal})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null && parsedVal >= _sizeOptions.sizeMin && parsedVal <= _sizeOptions.sizeMax)
+    if (parsedVal != null && parsedVal >= CanvasSizeConstraints.sizeMin && parsedVal <= CanvasSizeConstraints.sizeMax)
     {
-      final int val = parsedVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+      final int val = parsedVal.clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
       _height.value = val;
     }
     _setSize();
@@ -173,7 +158,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _calculateOffset();
     final int xExp = max(_width.value, _appState.canvasSize.x);
     final int yExp = max(_height.value, _appState.canvasSize.y);
-    _scalingFactor = _sizeOptions.previewSize / max(xExp, yExp);
+    _scalingFactor = CanvasSizeConstraints.previewSize / max(xExp, yExp);
   }
 
   void _calculateOffset()
@@ -272,8 +257,8 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
               return KPixSlider(
                 onChanged: (final double newVal) {sliderFunc(newVal: newVal);},
                 value: value.toDouble(),
-                min: _sizeOptions.sizeMin.toDouble(),
-                max: _sizeOptions.sizeMax.toDouble(),
+                min: CanvasSizeConstraints.sizeMin.toDouble(),
+                max: CanvasSizeConstraints.sizeMax.toDouble(),
                 textStyle: Theme.of(context).textTheme.bodyLarge!,
               );
             },
@@ -359,8 +344,8 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
   Positioned _getPreviewBorder({required final CoordinateSetD size, required final CoordinateSetI offset, required final CoordinateSetD canvasSize, final double width = 1.0, required final Color color})
   {
     return Positioned(
-      left: (_sizeOptions.previewSize / 2) - (size.x / 2) + (offset.x * _scalingFactor),
-      top: (_sizeOptions.previewSize / 2) - (size.y / 2) + (offset.y * _scalingFactor),
+      left: (CanvasSizeConstraints.previewSize / 2) - (size.x / 2) + (offset.x * _scalingFactor),
+      top: (CanvasSizeConstraints.previewSize / 2) - (size.y / 2) + (offset.y * _scalingFactor),
       width: canvasSize.x,
       height: canvasSize.y,
       child: DecoratedBox(
@@ -466,12 +451,12 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                                       return Stack(
                                         children: <Widget>[
                                           SizedBox(
-                                            width: _sizeOptions.previewSize.toDouble(),
-                                            height: _sizeOptions.previewSize.toDouble(),
+                                            width: CanvasSizeConstraints.previewSize.toDouble(),
+                                            height: CanvasSizeConstraints.previewSize.toDouble(),
                                           ),
                                           Positioned(
-                                            left: (_sizeOptions.previewSize / 2) - (scaledNewSize.x / 2) + (offsetX * _scalingFactor),
-                                            top: (_sizeOptions.previewSize / 2) - (scaledNewSize.y / 2) + (offsetY * _scalingFactor),
+                                            left: (CanvasSizeConstraints.previewSize / 2) - (scaledNewSize.x / 2) + (offsetX * _scalingFactor),
+                                            top: (CanvasSizeConstraints.previewSize / 2) - (scaledNewSize.y / 2) + (offsetY * _scalingFactor),
                                             width: scaledCanvasSize.x,
                                             height: scaledCanvasSize.y,
                                             child: ValueListenableBuilder<ui.Image?>(

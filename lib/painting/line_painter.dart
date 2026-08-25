@@ -21,18 +21,18 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/tool_options/line_options.dart';
-import 'package:kpix/tool_options/pencil_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/tools/constraints/tool_line_constraints.dart';
+import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
 
 class LinePainter extends IToolPainter
 {
   LinePainter({required super.painterOptions});
-  final LineOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.lineOptions;
+  final LineOptions _options = GetIt.I.get<ToolOptions>().lineOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   Set<CoordinateSetI> _contentPoints = <CoordinateSetI>{};
   Set<CoordinateSetI> _linePoints = <CoordinateSetI>{};
@@ -100,7 +100,7 @@ class LinePainter extends IToolPainter
           }
           else // CURVE
           {
-            final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(p0: _lineStartPos, p1: _lineEndPos2, p2: _lineEndPos1, numPoints: _options.bezierCalculationPoints);
+            final Set<CoordinateSetI> curvePoints = _calculateQuadraticBezierCurve(p0: _lineStartPos, p1: _lineEndPos2, p2: _lineEndPos1, numPoints: LineConstraints.bezierCalculationPoints);
             if (_options.width.value == 1)
             {
               _linePoints = curvePoints;

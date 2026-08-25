@@ -25,7 +25,6 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/reference_layer/reference_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/models/time_line_state.dart';
@@ -33,8 +32,8 @@ import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/canvas/canvas_operations_widget.dart';
-import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
-import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
+import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:logger/logger.dart';
 
 class LayerCollection with ChangeNotifier {
@@ -219,18 +218,17 @@ class LayerCollection with ChangeNotifier {
 
   ReferenceLayerState? addNewReferenceLayer({final bool select = false})
   {
-    final ReferenceLayerSettings refSettings = GetIt.I.get<PreferenceManager>().referenceLayerSettings;
     final ReferenceLayerState newLayer = ReferenceLayerState(
-        aspectRatio: refSettings.aspectRatioDefault,
+        aspectRatio: ReferenceLayerConstraints.aspectRatioDefault,
         image: null,
         offsetX: 0,
         offsetY: 0,
-        opacity: refSettings.opacityDefault,
-        zoom: refSettings.zoomDefault,
-        brightness: refSettings.brightnessDefault,
-        contrast: refSettings.contrastDefault,
-        warmth: refSettings.warmthDefault,
-        saturation: refSettings.saturationDefault,
+        opacity: ReferenceLayerConstraints.opacityDefault,
+        zoom: ReferenceLayerConstraints.zoomDefault,
+        brightness: ReferenceLayerConstraints.brightnessDefault,
+        contrast: ReferenceLayerConstraints.contrastDefault,
+        warmth: ReferenceLayerConstraints.warmthDefault,
+        saturation: ReferenceLayerConstraints.saturationDefault,
 
     );
     if (_addNewLayer(newLayer: newLayer, select: select))
@@ -271,17 +269,16 @@ class LayerCollection with ChangeNotifier {
 
   GridLayerState? addNewGridLayer({final bool select = false})
   {
-    final GridLayerSettings gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
     final GridLayerState newLayer = GridLayerState(
-      brightness: gridSettings.brightnessDefault,
-      gridType: gridSettings.gridTypeDefault,
-      intervalX: gridSettings.intervalXDefault,
-      intervalY: gridSettings.intervalYDefault,
-      opacity: gridSettings.opacityDefault,
-      horizonPosition: gridSettings.horizonDefault,
-      vanishingPoint1: gridSettings.vanishingPoint1Default,
-      vanishingPoint2: gridSettings.vanishingPoint2Default,
-      vanishingPoint3: gridSettings.vanishingPoint3Default,
+      brightness: GridLayerConstraints.brightnessDefault,
+      gridType: GridLayerConstraints.gridTypeDefault,
+      intervalX: GridLayerConstraints.intervalXDefault,
+      intervalY: GridLayerConstraints.intervalYDefault,
+      opacity: GridLayerConstraints.opacityDefault,
+      horizonPosition: GridLayerConstraints.horizonDefault,
+      vanishingPoint1: GridLayerConstraints.vanishingPoint1Default,
+      vanishingPoint2: GridLayerConstraints.vanishingPoint2Default,
+      vanishingPoint3: GridLayerConstraints.vanishingPoint3Default,
     );
 
     if (_addNewLayer(newLayer: newLayer, select: select))

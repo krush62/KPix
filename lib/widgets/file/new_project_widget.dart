@@ -20,10 +20,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
-import 'package:kpix/widgets/canvas/canvas_size_widget.dart';
+import 'package:kpix/widgets/canvas/canvas_size_constraints.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
@@ -43,7 +42,6 @@ class NewProjectWidget extends StatefulWidget
 
 class _NewProjectWidgetState extends State<NewProjectWidget>
 {
-  final CanvasSizeOptions _sizeOptions = GetIt.I.get<PreferenceManager>().canvasSizeOptions;
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<int> _width = ValueNotifier<int>(64);
   final ValueNotifier<int> _height = ValueNotifier<int>(64);
@@ -92,7 +90,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   void _sizeInputChanged({required final String newVal, required final Function({required int newVal}) changeFunc})
   {
     final int? parsedVal = int.tryParse(newVal);
-    if (parsedVal != null && parsedVal >= _sizeOptions.sizeMin && parsedVal <= _sizeOptions.sizeMax)
+    if (parsedVal != null && parsedVal >= CanvasSizeConstraints.sizeMin && parsedVal <= CanvasSizeConstraints.sizeMax)
     {
       changeFunc(newVal: parsedVal);
     }
@@ -100,26 +98,26 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
 
   void _setResolutionViaButton({required final int width, required final int height})
   {
-    _width.value = width.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
-    _height.value = height.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+    _width.value = width.clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
+    _height.value = height.clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
     _setAspectRatio();
   }
 
   void _changeWidth({required final int newVal})
   {
-    _width.value = newVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+    _width.value = newVal.clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
     if (_locked.value)
     {
-      _height.value = (_width.value / _aspectRatio).toInt().clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+      _height.value = (_width.value / _aspectRatio).toInt().clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
     }
   }
 
   void _changeHeight({required final int newVal})
   {
-    _height.value = newVal.clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+    _height.value = newVal.clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
     if (_locked.value)
     {
-      _width.value = (_height.value * _aspectRatio).toInt().clamp(_sizeOptions.sizeMin, _sizeOptions.sizeMax);
+      _width.value = (_height.value * _aspectRatio).toInt().clamp(CanvasSizeConstraints.sizeMin, CanvasSizeConstraints.sizeMax);
     }
   }
 
@@ -158,8 +156,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
               return KPixSlider(
                 value: val.toDouble(),
                 trackHeight: 32,
-                min: _sizeOptions.sizeMin.toDouble(),
-                max: _sizeOptions.sizeMax.toDouble(),
+                min: CanvasSizeConstraints.sizeMin.toDouble(),
+                max: CanvasSizeConstraints.sizeMax.toDouble(),
                 onChanged: (final double newVal) {changeFunc(newVal: newVal.toInt());},
                 textStyle: Theme.of(context).textTheme.bodyLarge!,
               );

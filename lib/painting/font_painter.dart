@@ -21,11 +21,10 @@ import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/shading_layer/shading_layer_state.dart';
 import 'package:kpix/managers/font_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/painting/itool_painter.dart';
-import 'package:kpix/painting/kpix_painter.dart';
 import 'package:kpix/painting/shader_options.dart';
 import 'package:kpix/tool_options/text_options.dart';
+import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
@@ -34,7 +33,7 @@ class FontPainter extends IToolPainter
 {
   FontPainter({required super.painterOptions});
 
-  final TextOptions _options = GetIt.I.get<PreferenceManager>().toolOptions.textOptions;
+  final TextOptions _options = GetIt.I.get<ToolOptions>().textOptions;
   final CoordinateSetI _oldCursorPos = CoordinateSetI.zero();
   final CoordinateSetD _cursorStartPos = CoordinateSetD.zero();
   int _previousSize = -1;

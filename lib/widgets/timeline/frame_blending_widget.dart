@@ -22,52 +22,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
-
-class FrameBlendingOptions
-{
-  final ValueNotifier<bool> enabled;
-  final ValueNotifier<int> framesBefore;
-  final ValueNotifier<bool> wrapAroundBefore;
-  final ValueNotifier<int> framesAfter;
-  final ValueNotifier<bool> wrapAroundAfter;
-  final ValueNotifier<double> opacity;
-  final ValueNotifier<bool> gradualOpacity;
-  final ValueNotifier<bool> tinting;
-  final ValueNotifier<bool> activeLayerOnly;
-  final int frameMax;
-  final int frameMin;
-  final double opacityMin;
-  final double opacityMax;
-  final double opacityStep;
-
-  FrameBlendingOptions({
-    required final bool enabled,
-    required final int framesBefore,
-    required final int framesAfter,
-    required final double opacity,
-    required final bool gradualOpacity,
-    required final bool wrapAroundBefore,
-    required final bool wrapAroundAfter,
-    required final bool tinting,
-    required final bool activeLayerOnly,
-    required this.frameMin,
-    required this.frameMax,
-    required this.opacityMin,
-    required this.opacityMax,
-    required this.opacityStep,})
-      :
-    enabled = ValueNotifier<bool>(enabled),
-    framesBefore = ValueNotifier<int>(framesBefore),
-    wrapAroundBefore = ValueNotifier<bool>(wrapAroundBefore),
-    framesAfter = ValueNotifier<int>(framesAfter),
-    wrapAroundAfter = ValueNotifier<bool>(wrapAroundAfter),
-    opacity = ValueNotifier<double>(opacity),
-    gradualOpacity = ValueNotifier<bool>(gradualOpacity),
-    tinting = ValueNotifier<bool>(tinting),
-    activeLayerOnly = ValueNotifier<bool>(activeLayerOnly);
-
-}
-
+import 'package:kpix/widgets/timeline/frame_blending_constraints.dart';
+import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 
 class FrameBlendingWidget extends StatefulWidget
 {
@@ -169,8 +125,8 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                 return KPixSlider(
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
                                   value: framesBefore.toDouble(),
-                                  min: widget.options.frameMin.toDouble(),
-                                  max: widget.options.frameMax.toDouble(),
+                                  min: FrameBlendingConstraints.frameOffsetMin.toDouble(),
+                                  max: FrameBlendingConstraints.frameOffsetMax.toDouble(),
                                   onChanged: enabled ? (final double newFramesBefore)
                                   {
                                     widget.options.framesBefore.value = newFramesBefore.toInt();
@@ -255,8 +211,8 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                 return KPixSlider(
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
                                   value: framesAfter.toDouble(),
-                                  min: widget.options.frameMin.toDouble(),
-                                  max: widget.options.frameMax.toDouble(),
+                                  min: FrameBlendingConstraints.frameOffsetMin.toDouble(),
+                                  max: FrameBlendingConstraints.frameOffsetMax.toDouble(),
                                   onChanged: enabled ? (final double newFramesAfter)
                                   {
                                     widget.options.framesAfter.value = newFramesAfter.toInt();
@@ -341,8 +297,8 @@ class _FrameBlendingWidgetState extends State<FrameBlendingWidget>
                                 return KPixSlider(
                                   textStyle: Theme.of(context).textTheme.bodyMedium!,
                                   value: opacity,
-                                  min: widget.options.opacityMin,
-                                  max: widget.options.opacityMax,
+                                  min: FrameBlendingConstraints.opacityMin,
+                                  max: FrameBlendingConstraints.opacityMax,
                                   decimals: 1,
                                   //divisions: ((widget.options.opacityMax - widget.options.opacityMin) / widget.options.opacityStep).toInt(),
                                   onChanged: enabled ? (final double newOpacity)

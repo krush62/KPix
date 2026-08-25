@@ -19,87 +19,18 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/grid_layer/grid_layer_state.dart';
 import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/widgets/controls/kpix_range_slider.dart';
 import 'package:kpix/widgets/controls/kpix_slider.dart';
+import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
-
-// TODO this may be extracted
-enum GridType
-{
-  rectangular(0, "Rectangular Grid", "REC"),
-  diagonal(1, "Diagonal Grid", "DIA"),
-  isometric(2, "Isometric Grid", "ISO"),
-  hexagonal(3, "Hexagonal Grid", "HEX"),
-  triangular(4, "Triangular Grid", "TRI"),
-  brick(5, "Bricks", "BRK"),
-  onePointPerspective(6, "1-Point Perspective", "1-Point"),
-  twoPointPerspective(7, "2-Point Perspective", "2-Point"),
-  threePointPerspective(8, "3-Point Perspective", "3-Point");
-
-  const GridType(this.id, this.name, this.label);
-  final int id;
-  final String name;
-  final String label;
-
-  static GridType fromId(final int id)
-  {
-    return GridType.values.firstWhere((final GridType gridType) => gridType.id == id,
-    );
-  }
-}
 
 bool isPerspectiveGridType({required final GridType gridType})
 {
   return gridType == GridType.onePointPerspective || gridType == GridType.twoPointPerspective || gridType == GridType.threePointPerspective;
 }
 
-class GridLayerSettings
-{
-  final int opacityDefault;
-  final int opacityMin;
-  final int opacityMax;
-  final int brightnessDefault;
-  final int brightnessMin;
-  final int brightnessMax;
-  final int intervalXDefault;
-  final int intervalXMin;
-  final int intervalXMax;
-  final int intervalYDefault;
-  final int intervalYMin;
-  final int intervalYMax;
-  final double vanishingPointMin;
-  final double vanishingPointMax;
-  final double horizonDefault;
-  final double vanishingPoint1Default;
-  final double vanishingPoint2Default;
-  final double vanishingPoint3Default;
-  final GridType gridTypeDefault;
 
-
-  GridLayerSettings({
-    required this.opacityDefault,
-    required this.opacityMin,
-    required this.opacityMax,
-    required this.brightnessDefault,
-    required this.brightnessMin,
-    required this.brightnessMax,
-    required this.intervalXDefault,
-    required this.intervalXMin,
-    required this.intervalXMax,
-    required this.intervalYDefault,
-    required this.intervalYMin,
-    required this.intervalYMax,
-    required this.vanishingPointMin,
-    required this.vanishingPointMax,
-    required this.vanishingPoint1Default,
-    required this.vanishingPoint2Default,
-    required this.vanishingPoint3Default,
-    required this.horizonDefault,
-    required final int gridTypeValue,}) : gridTypeDefault = GridType.fromId(gridTypeValue);
-
-}
 
 class GridLayerOptionsWidget extends StatefulWidget
 {
@@ -112,7 +43,6 @@ class GridLayerOptionsWidget extends StatefulWidget
 
 class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
 {
-  final GridLayerSettings _gridSettings = GetIt.I.get<PreferenceManager>().gridLayerSettings;
   late GridType lastNormalGridType;
   late GridType lastPerspectiveGridType;
 
@@ -224,9 +154,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                             return KPixSlider(
                               value: opacity.toDouble(),
                               label: "$opacity%",
-                              min: _gridSettings.opacityMin.toDouble(),
-                              max: _gridSettings.opacityMax.toDouble(),
-                              //divisions: _gridSettings.opacityMax - _gridSettings.opacityMin,
+                              min: GridLayerConstraints.opacityMin.toDouble(),
+                              max: GridLayerConstraints.opacityMax.toDouble(),
+                              //divisions: GridLayerConstraints.opacityMax - GridLayerConstraints.opacityMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.opacityNotifier.value = newVal.round();
                               },
@@ -259,9 +189,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           builder: (final BuildContext context, final int brightness, final Widget? child) {
                             return KPixSlider(
                               value: brightness.toDouble(),
-                              min: _gridSettings.brightnessMin.toDouble(),
-                              max: _gridSettings.brightnessMax.toDouble(),
-                              //divisions: _gridSettings.brightnessMax - _gridSettings.brightnessMin,
+                              min: GridLayerConstraints.brightnessMin.toDouble(),
+                              max: GridLayerConstraints.brightnessMax.toDouble(),
+                              //divisions: GridLayerConstraints.brightnessMax - GridLayerConstraints.brightnessMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.brightnessNotifier.value = newVal.round();
                               },
@@ -294,9 +224,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           builder: (final BuildContext context, final int intervalX, final Widget? child) {
                             return KPixSlider(
                               value: intervalX.toDouble(),
-                              min: _gridSettings.intervalXMin.toDouble(),
-                              max: _gridSettings.intervalXMax.toDouble(),
-                              //divisions: _gridSettings.intervalXMax - _gridSettings.intervalXMin,
+                              min: GridLayerConstraints.intervalXMin.toDouble(),
+                              max: GridLayerConstraints.intervalXMax.toDouble(),
+                              //divisions: GridLayerConstraints.intervalXMax - GridLayerConstraints.intervalXMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.intervalXNotifier.value = newVal.round();
                               },
@@ -330,9 +260,9 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                           builder: (final BuildContext context, final int intervalY, final Widget? child) {
                             return KPixSlider(
                               value: intervalY.toDouble(),
-                              min: _gridSettings.intervalYMin.toDouble(),
-                              max: _gridSettings.intervalYMax.toDouble(),
-                              //divisions: _gridSettings.intervalYMax - _gridSettings.intervalYMin,
+                              min: GridLayerConstraints.intervalYMin.toDouble(),
+                              max: GridLayerConstraints.intervalYMax.toDouble(),
+                              //divisions: GridLayerConstraints.intervalYMax - GridLayerConstraints.intervalYMin,
                               onChanged: (final double newVal) {
                                 widget.gridState.intervalYNotifier.value = newVal.round();
                               },
@@ -366,8 +296,8 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                             builder: (final BuildContext context, final double horizon, final Widget? child) {
                               return KPixSlider(
                                 value: horizon,
-                                min: _gridSettings.vanishingPointMin,
-                                max: _gridSettings.vanishingPointMax,
+                                min: GridLayerConstraints.vanishingPointMin,
+                                max: GridLayerConstraints.vanishingPointMax,
                                 decimals: 2,
                                 onChanged: (final double newVal) {
                                   widget.gridState.horizonPositionNotifier.value = newVal;
@@ -402,8 +332,8 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                             builder: (final BuildContext context, final double horizon, final Widget? child) {
                               return KPixSlider(
                                 value: horizon,
-                                min: _gridSettings.vanishingPointMin,
-                                max: _gridSettings.vanishingPointMax,
+                                min: GridLayerConstraints.vanishingPointMin,
+                                max: GridLayerConstraints.vanishingPointMax,
                                 decimals: 2,
                                 onChanged: (final double newVal) {
                                   widget.gridState.vanishingPoint1Notifier.value = newVal;
@@ -442,8 +372,8 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                                 {
                                    return KPixRangeSlider(
                                      values: RangeValues(van1, van2),
-                                     min: _gridSettings.vanishingPointMin,
-                                     max: _gridSettings.vanishingPointMax,
+                                     min: GridLayerConstraints.vanishingPointMin,
+                                     max: GridLayerConstraints.vanishingPointMax,
                                      textStyle: Theme.of(context).textTheme.bodyLarge!,
                                      decimals: 2,
                                      onChanged: (final RangeValues newVals)
@@ -482,8 +412,8 @@ class _GridLayerOptionsWidgetState extends State<GridLayerOptionsWidget>
                             builder: (final BuildContext context, final double van3, final Widget? child) {
                               return KPixSlider(
                                 value: van3,
-                                min: _gridSettings.vanishingPointMin,
-                                max: _gridSettings.vanishingPointMax,
+                                min: GridLayerConstraints.vanishingPointMin,
+                                max: GridLayerConstraints.vanishingPointMax,
                                 decimals: 2,
                                 onChanged: (final double newVal) {
                                   widget.gridState.vanishingPoint3Notifier.value = newVal;

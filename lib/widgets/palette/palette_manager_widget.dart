@@ -20,7 +20,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
 import 'package:kpix/util/file_handler.dart';
@@ -130,7 +129,7 @@ class _PaletteManagerWidgetState extends State<PaletteManagerWidget>
   {
     final List<PaletteManagerEntryWidget> pList = <PaletteManagerEntryWidget>[];
     //Default Palette
-    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(constraints: GetIt.I.get<PreferenceManager>().kPalConstraints), isLocked: true, path: null, name: "Default")));
+    pList.add(PaletteManagerEntryWidget(selectedWidget: _selectedWidget, entryData: PaletteManagerEntryData(rampDataList: KPalRampData.getDefaultPalette(), isLocked: true, path: null, name: "Default")));
 
     //Asset Palettes
     final List<PaletteManagerEntryData> assetPalettes = await loadPalettesFromAssets();

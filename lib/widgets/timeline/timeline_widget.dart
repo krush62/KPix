@@ -24,12 +24,12 @@ import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
-import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/layer_color_supplier.dart';
 import 'package:kpix/widgets/overlays/overlay_entries.dart';
+import 'package:kpix/widgets/timeline/frame_blending_options.dart';
 import 'package:kpix/widgets/timeline/frame_blending_widget.dart';
 import 'package:kpix/widgets/timeline/frame_time_widget.dart';
 import 'package:kpix/widgets/timeline/timeline_drag_target_widget.dart';
@@ -56,7 +56,7 @@ class TimeLineWidget extends StatefulWidget {
 
 class _TimeLineWidgetState extends State<TimeLineWidget> with SingleTickerProviderStateMixin
 {
-  final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<PreferenceManager>().frameBlendingOptions;
+  final FrameBlendingOptions frameBlendingOptions = GetIt.I.get<FrameBlendingOptions>();
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
   final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
   late AnimationController _animationController;

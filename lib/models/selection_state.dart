@@ -33,6 +33,7 @@ import 'package:kpix/tool_options/tool_options.dart';
 import 'package:kpix/util/color_helper.dart';
 import 'package:kpix/util/helper.dart';
 import 'package:kpix/util/typedefs.dart';
+import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 
 enum SelectionDirection
 {
@@ -60,7 +61,7 @@ class SelectionState with ChangeNotifier
   final SelectionList selection = SelectionList();
   CoordinateColorMapNullable? clipboard;
   final RepaintNotifier repaintNotifier;
-  final SelectOptions selectionOptions = GetIt.I.get<PreferenceManager>().toolOptions.selectOptions;
+  final SelectOptions selectionOptions = GetIt.I.get<ToolOptions>().selectOptions;
   final List<SelectionLine> selectionLines = <SelectionLine>[];
 
   SelectionState({required this.repaintNotifier})
@@ -98,7 +99,7 @@ class SelectionState with ChangeNotifier
 
   void newSelectionFromPolygon({required final Set<CoordinateSetI> points, final bool notify = true})
   {
-    if (selectionOptions.mode.value == SelectionMode.replace)
+    if (selectionOptions.mode.value == SelectMode.replace)
     {
       deselect(notify: false, addToHistoryStack: false);
     }
@@ -115,11 +116,11 @@ class SelectionState with ChangeNotifier
 
  void newSelectionFromShape({required final CoordinateSetI start, required final CoordinateSetI end, required final SelectShape selectShape, final bool notify = true, final bool addToHistoryStack = true})
   {
-    if (selectionOptions.mode.value == SelectionMode.replace)
+    if (selectionOptions.mode.value == SelectMode.replace)
     {
       deselect(notify: false, addToHistoryStack: false);
     }
-    if (selectionOptions.mode.value != SelectionMode.replace || end.x != start.x || end.y != start.y)
+    if (selectionOptions.mode.value != SelectMode.replace || end.x != start.x || end.y != start.y)
     {
       final Set<CoordinateSetI> coords = <CoordinateSetI>{};
       if (selectShape == SelectShape.rectangle)
@@ -179,17 +180,17 @@ class SelectionState with ChangeNotifier
     }
   }
 
-  void newSelectionFromWand({required final CoordinateSetI coord, required final SelectionMode mode, required final bool continuous, required final bool selectFromWholeRamp, final bool notify = true, final bool addToHistoryStack = true})
+  void newSelectionFromWand({required final CoordinateSetI coord, required final SelectMode mode, required final bool continuous, required final bool selectFromWholeRamp, final bool notify = true, final bool addToHistoryStack = true})
   {
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
-      if (selectionOptions.mode.value == SelectionMode.replace)
+      if (selectionOptions.mode.value == SelectMode.replace)
       {
         deselect(notify: false, addToHistoryStack: false);
       }
 
-      if (!selection.contains(coord: coord) || !(mode == SelectionMode.add || mode == SelectionMode.replace))
+      if (!selection.contains(coord: coord) || !(mode == SelectMode.add || mode == SelectMode.replace))
       {
         final Set<CoordinateSetI> selectData = continuous ?
         _getFloodReferences(layer: layer, start: coord, selectFromWholeRamp: selectFromWholeRamp) :
@@ -284,7 +285,7 @@ class SelectionState with ChangeNotifier
     return result;
   }
 
-  void _addPixelsWithMode({required final Set<CoordinateSetI> coords, required final SelectionMode mode})
+  void _addPixelsWithMode({required final Set<CoordinateSetI> coords, required final SelectMode mode})
   {
     final Set<CoordinateSetI> addCoords = <CoordinateSetI>{};
     final Set<CoordinateSetI> removeCoords = <CoordinateSetI>{};
@@ -293,13 +294,13 @@ class SelectionState with ChangeNotifier
     {
       switch (mode)
       {
-        case SelectionMode.replace:
-        case SelectionMode.add:
+        case SelectMode.replace:
+        case SelectMode.add:
           if (!selection.contains(coord: coord)) {
             addCoords.add(coord);
           }
           //break;
-        case SelectionMode.intersect:
+        case SelectMode.intersect:
           if (!selection.contains(coord: coord)) {
             addCoords.add(coord);
           }
@@ -308,7 +309,7 @@ class SelectionState with ChangeNotifier
             removeCoords.add(coord);
           }
           //break;
-        case SelectionMode.subtract:
+        case SelectMode.subtract:
           if (selection.contains(coord: coord)) {
             removeCoords.add(coord);
           }

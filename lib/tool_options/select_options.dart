@@ -15,70 +15,24 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
+import 'package:kpix/models/app_state.dart';
 import 'package:kpix/tool_options/tool_gui.dart';
 import 'package:kpix/tool_options/tool_options.dart';
+import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
 import 'package:kpix/widgets/tools/tool_settings_widget.dart';
 
-enum SelectShape
-{
-  rectangle,
-  ellipse,
-  polygon,
-  wand
 
-}
-
-
-
-const Map<SelectShape, IconStringData> shapeDataMap = <SelectShape, IconStringData>{
-  SelectShape.rectangle: IconStringData(name: "Rectangle", icon: TablerIcons.square),
-  SelectShape.ellipse: IconStringData(name: "Ellipse", icon: TablerIcons.circle),
-  SelectShape.polygon: IconStringData(name: "Polygon", icon: TablerIcons.polygon),
-  SelectShape.wand: IconStringData(name: "Wand", icon: TablerIcons.wand),
-};
-
-const Map<int, SelectShape> _selectShapeIndexMap =
-<int, SelectShape>{
-  0: SelectShape.rectangle,
-  1: SelectShape.ellipse,
-  2: SelectShape.polygon,
-  3: SelectShape.wand,
-};
 
 class SelectOptions extends IToolOptions
 {
-  final int shapeDefault;
-  final bool keepAspectRatioDefault;
-  final int modeDefault;
-  final bool wandContinuousDefault;
-  final bool wandWholeRampDefault;
-
-  final ValueNotifier<SelectShape> shape = ValueNotifier<SelectShape>(SelectShape.rectangle);
-  final ValueNotifier<SelectionMode> mode = ValueNotifier<SelectionMode>(SelectionMode.replace);
-  final ValueNotifier<SelectionMode> unModifiedMode = ValueNotifier<SelectionMode>(SelectionMode.replace);
-  final ValueNotifier<bool> keepAspectRatio = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> wandContinuous = ValueNotifier<bool>(true);
-  final ValueNotifier<bool> wandWholeRamp = ValueNotifier<bool>(false);
-
-  SelectOptions({
-    required this.shapeDefault,
-    required this.keepAspectRatioDefault,
-    required this.modeDefault,
-    required this.wandContinuousDefault,
-    required this.wandWholeRampDefault,
-  })
-  {
-    keepAspectRatio.value = keepAspectRatioDefault;
-    shape.value = _selectShapeIndexMap[shapeDefault] ?? SelectShape.rectangle;
-    mode.value = selectionModeIndexMap[modeDefault] ?? SelectionMode.replace;
-    unModifiedMode.value = mode.value;
-    wandContinuous.value = wandContinuousDefault;
-    wandWholeRamp.value = wandWholeRampDefault;
-  }
-
+  final ValueNotifier<SelectShape> shape = ValueNotifier<SelectShape>(SelectConstraints.shapeDefault);
+  final ValueNotifier<SelectMode> mode = ValueNotifier<SelectMode>(SelectConstraints.modeDefault);
+  final ValueNotifier<SelectMode> unModifiedMode = ValueNotifier<SelectMode>(SelectConstraints.modeDefault);
+  final ValueNotifier<bool> keepAspectRatio = ValueNotifier<bool>(SelectConstraints.keepAspectRatioDefault);
+  final ValueNotifier<bool> wandContinuous = ValueNotifier<bool>(SelectConstraints.wandContinuousDefault);
+  final ValueNotifier<bool> wandWholeRamp = ValueNotifier<bool>(SelectConstraints.wandWholeRampDefault);
 
   static Column getWidget({
     required final BuildContext context,
@@ -115,46 +69,47 @@ class SelectOptions extends IToolOptions
                         return ValueListenableBuilder<bool>(
                           valueListenable: hotkeyManager.controlNotifier,
                           builder: (final BuildContext ____, final bool controlPressed, final Widget? _____) {
-                            return ValueListenableBuilder<SelectionMode>(
+                            return ValueListenableBuilder<SelectMode>(
                               valueListenable: selectOptions.unModifiedMode,
-                              builder: (final BuildContext _____, final SelectionMode unModifiedMode, final Widget? ______) {
-                                SelectionMode newMode = unModifiedMode;
+                              builder: (final BuildContext _____, final SelectMode unModifiedMode, final Widget? ______) {
+                                SelectMode newMode = unModifiedMode;
                                 if (shiftPressed && !altPressed && !controlPressed)
                                 {
-                                  newMode = SelectionMode.add;
+                                  newMode = SelectMode.add;
                                 }
                                 else if (shiftPressed && altPressed && !controlPressed)
                                 {
-                                  newMode = SelectionMode.subtract;
+                                  newMode = SelectMode.subtract;
                                 }
                                 else if (shiftPressed && !altPressed && controlPressed)
                                 {
-                                  newMode = SelectionMode.intersect;
+                                  newMode = SelectMode.intersect;
                                 }
                                 selectOptions.mode.value = newMode;
 
-                                return SegmentedButton<SelectionMode>(
-                                  segments: const <ButtonSegment<SelectionMode>>[
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.replace, label: Icon(
-                                      TablerIcons.repeat,
-                                      size: ToolSettingsWidgetOptions.smallIconSize,
-                                    ),),
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.add, label: Icon(
-                                      TablerIcons.plus,
-                                      size: ToolSettingsWidgetOptions.smallIconSize,
-                                    ),),
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.subtract, label: Icon(
-                                      TablerIcons.minus,
-                                      size: ToolSettingsWidgetOptions.smallIconSize,
-                                    ),),
-                                    ButtonSegment<SelectionMode>(value: SelectionMode.intersect, label: Icon(
-                                      TablerIcons.plus_minus,
-                                      size: ToolSettingsWidgetOptions.smallIconSize,
-                                    ),),
-                                  ],
-                                  selected: <SelectionMode>{selectOptions.mode.value},
+                                final List<ButtonSegment<SelectMode>> segList = <ButtonSegment<SelectMode>>[];
+                                for (final SelectMode sMode in SelectMode.values)
+                                {
+                                  segList.add(
+                                      ButtonSegment<SelectMode>(
+                                        value: sMode,
+                                        label: Tooltip(
+                                          showDuration: AppState.toolTipDuration,
+                                          message: sMode.label,
+                                          child: Icon(
+                                              sMode.icon,
+                                              size: ToolSettingsWidgetOptions.smallIconSize,
+                                          ),
+                                        ),
+                                      ),
+                                  );
+                                }
+
+                                return SegmentedButton<SelectMode>(
+                                  segments: segList,
+                                  selected: <SelectMode>{selectOptions.mode.value},
                                   showSelectedIcon: false,
-                                  onSelectionChanged: (final Set<SelectionMode> modes)
+                                  onSelectionChanged: (final Set<SelectMode> modes)
                                   {
                                     if (!shiftPressed && !altPressed && !controlPressed)
                                     {
@@ -178,7 +133,7 @@ class SelectOptions extends IToolOptions
         Padding(
           padding: const EdgeInsets.only(bottom: ToolSettingsWidgetOptions.padding, top: ToolSettingsWidgetOptions.padding),
           child: ToolSegmentedIconButtonRow<SelectShape>(
-            iconData: shapeDataMap,
+            iconData: SelectShape.getLabelIconMap(),
             label: "Shape",
             notifier: selectOptions.shape,
             //flex: ToolSettingsWidgetOptions.columnWidthRatio,

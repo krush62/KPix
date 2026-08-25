@@ -63,8 +63,8 @@ import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
-import 'package:kpix/widgets/tools/grid_layer_options_widget.dart';
-import 'package:kpix/widgets/tools/reference_layer_options_widget.dart';
+import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
+import 'package:kpix/widgets/tools/constraints/reference_layer_constraints.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -263,12 +263,7 @@ void _loadFileChosen(
     loadStartCallback?.call();
     loadKPixFile(
       fileData: result.files.first.bytes,
-      constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
       path: path,
-      sliderConstraints: GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
-      referenceLayerSettings:
-          GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-      gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
       drawingLayerSettingsConstraints:
           GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints:
@@ -1086,13 +1081,7 @@ Future<bool> importProject(
       if (path.endsWith(fileExtensionKpix)) {
         final LoadFileSet loadFileSet = await loadKPixFile(
           fileData: null,
-          constraints: GetIt.I.get<PreferenceManager>().kPalConstraints,
           path: path,
-          sliderConstraints:
-              GetIt.I.get<PreferenceManager>().kPalSliderConstraints,
-          referenceLayerSettings:
-              GetIt.I.get<PreferenceManager>().referenceLayerSettings,
-          gridLayerSettings: GetIt.I.get<PreferenceManager>().gridLayerSettings,
           drawingLayerSettingsConstraints:
               GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
           shadingLayerSettingsConstraints:

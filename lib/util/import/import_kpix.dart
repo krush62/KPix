@@ -124,14 +124,20 @@ class _ImportGuard
 }
 
 //TODO strict parameter could be a (dev) setting
-Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final String path, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
+Future<LoadFileSet> loadKPixFile({required final Uint8List? fileData, required final String path, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
 {
   final StringBuffer returnString = StringBuffer();
   final _ImportGuard guard = _ImportGuard(strict: strict, warnings: returnString);
   try
   {
-    fileData ??= await File(path).readAsBytes();
-    final FileByteReader reader = FileByteReader(fileData);
+    //web has no file system, so a caller that did not bring the bytes cannot be
+    //served; reading through dart:io would fail with an unrelated message
+    if (fileData == null && kIsWeb)
+    {
+      return LoadFileSet(status: "No file data for $path");
+    }
+    final Uint8List bytes = fileData ?? await File(path).readAsBytes();
+    final FileByteReader reader = FileByteReader(bytes);
     final int mNumber = reader.getUint32();
     final int fVersion = reader.getUint8();
 

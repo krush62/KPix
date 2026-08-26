@@ -223,7 +223,9 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
   } 
   else if (kIsWeb)
   {
-    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    //web has no file system to read from afterwards, so the bytes have to come
+    //back with the pick itself
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, withData: true, initialDirectory: GetIt.I.get<AppState>().exportDir,);
   } 
   else //mobile
   {
@@ -248,7 +250,9 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
 {
   if (isDesktop(includingWeb: true))
   {
-    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+    //withData is only forced on web, where there is no path to read from later;
+    //native keeps loading from disk so a large project is not held twice
+    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], withData: kIsWeb, initialDirectory: GetIt.I.get<AppState>().exportDir,).then
       ((final FilePickerResult? result)
         {
           _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
@@ -257,7 +261,7 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
   } 
   else //mobile
   {
-    FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+    FilePicker.pickFiles(withData: kIsWeb, initialDirectory: GetIt.I.get<AppState>().exportDir,).then
       ((final FilePickerResult? result)
         {
           _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);

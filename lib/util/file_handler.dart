@@ -424,97 +424,130 @@ Future<bool> deleteProject({required final String fullProjectPath}) async
   }
 }
 
-Future<String?> saveCurrentPalette({required final String fileName, required final String directory, required final String extension,}) async
+/// Where an export ends up.
+///
+/// On web there is no file system to write to, so only the file name is known
+/// here and the browser decides where the download lands.
+String _exportTargetPath({required final String directory, required final String fileName, required final String extension})
 {
-  final String finalPath = p.join(directory, fileName);
-  final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
-  final Uint8List data = await createPaletteKPalData(rampList: rampList);
-  return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension,);
+  final String nameWithExtension = "$fileName.$extension";
+  return kIsWeb ? nameWithExtension : p.join(directory, nameWithExtension);
 }
 
-Future<String?> exportPalettePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType,}) async
+/// Writes [data] to `<directory>/<fileName>.<extension>` and returns the path it
+/// ended up at.
+///
+/// On web [directory] is ignored and the bytes are handed to the browser's
+/// download flow instead.
+Future<String> _writeDataToFile({
+  required final Uint8List data,
+  required final String directory,
+  required final String fileName,
+  required final String extension,
+}) async
 {
-  final Logger logger = GetIt.I.get<Logger>();
-  final String finalPath = p.join(saveData.directory, saveData.fileName);
-  logger.i("Exporting palette to $finalPath.");
-
-  Uint8List? data;
-
-  try
+  final String nameWithExtension = "$fileName.$extension";
+  if (!kIsWeb)
   {
-    final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
-    final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
-
-    switch (paletteType)
-    {
-      case PaletteExportType.kpal:
-        data = await createPaletteKPalData(rampList: rampList);
-      //break;
-      case PaletteExportType.png:
-        data = await getPalettePngData(ramps: rampList);
-      //break;
-      case PaletteExportType.aseprite:
-        data = await getPaletteAsepriteData(rampList: rampList);
-      //break;
-      case PaletteExportType.gimp:
-        data = await getPaletteGimpData(rampList: rampList, colorNames: colorNames,);
-      //break;
-      case PaletteExportType.paintNet:
-        data = await getPalettePaintNetData(rampList: rampList, colorNames: colorNames,);
-      //break;
-      case PaletteExportType.adobe:
-        data = await getPaletteAdobeData(rampList: rampList, colorNames: colorNames,);
-      //break;
-      case PaletteExportType.jasc:
-        data = await getPaletteJascData(rampList: rampList);
-      //break;
-      case PaletteExportType.corel:
-        data = await getPaletteCorelData(rampList: rampList, colorNames: colorNames,);
-      //break;
-      case PaletteExportType.openOffice:
-        data = await getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames,);
-      //break;
-      case PaletteExportType.json:
-        data = await getPaletteJsonData(rampList: rampList);
-      //break;
-    }
-  }
-  catch (e, s)
-  {
-    logger.w("Error creating palette data.", error: e, stackTrace: s);
-  }
-
-  if (data != null) 
-  {
-    try
-    {
-      return await _savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension,);
-    }
-    catch (e, s)
-    {
-      logger.w("Error writing palette data.", error: e, stackTrace: s);
-      return null;
-    }
+    final String path = p.join(directory, nameWithExtension);
+    await File(path).writeAsBytes(data);
+    return path;
   }
   else
   {
+    final String newPath = await FileSaver.instance.saveFile(name: fileName, bytes: data, fileExtension: extension,);
+    return "$newPath/$nameWithExtension";
+  }
+}
+
+/// Builds export data with [createData] and writes it out.
+///
+/// Returns the path the file ended up at, or null when either step failed. Both
+/// failures are logged rather than thrown, so a broken export never takes the
+/// app down with it. [what] names the kind of export in those log messages.
+Future<String?> _runExport({
+  required final String what,
+  required final String directory,
+  required final String fileName,
+  required final String extension,
+  required final Future<Uint8List?> Function() createData,
+}) async
+{
+  final Logger logger = GetIt.I.get<Logger>();
+  logger.i("Exporting $what to ${_exportTargetPath(directory: directory, fileName: fileName, extension: extension)}.");
+
+  final Uint8List? data;
+  try
+  {
+    data = await createData();
+  }
+  catch (e, s)
+  {
+    logger.w("Error creating $what data.", error: e, stackTrace: s);
+    return null;
+  }
+
+  if (data == null)
+  {
+    return null;
+  }
+
+  try
+  {
+    return await _writeDataToFile(data: data, directory: directory, fileName: fileName, extension: extension,);
+  }
+  catch (e, s)
+  {
+    logger.w("Error writing $what data.", error: e, stackTrace: s);
     return null;
   }
 }
 
-Future<String?> _savePaletteDataToFile({required final Uint8List data, required final String path, required final String extension,}) async
+Future<String?> saveCurrentPalette({required final String fileName, required final String directory, required final String extension,}) async
 {
-  final String pathWithExtension = "$path.$extension";
-  if (!kIsWeb)
+  final Uint8List data = await createPaletteKPalData(rampList: GetIt.I.get<AppState>().colorRamps);
+  return await _writeDataToFile(data: data, directory: directory, fileName: fileName, extension: extension,);
+}
+
+Future<Uint8List?> _createPaletteData({required final PaletteExportType paletteType}) async
+{
+  final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
+  final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
+
+  switch (paletteType)
   {
-    await File(pathWithExtension).writeAsBytes(data);
-    return pathWithExtension;
+    case PaletteExportType.kpal:
+      return await createPaletteKPalData(rampList: rampList);
+    case PaletteExportType.png:
+      return await getPalettePngData(ramps: rampList);
+    case PaletteExportType.aseprite:
+      return await getPaletteAsepriteData(rampList: rampList);
+    case PaletteExportType.gimp:
+      return await getPaletteGimpData(rampList: rampList, colorNames: colorNames,);
+    case PaletteExportType.paintNet:
+      return await getPalettePaintNetData(rampList: rampList, colorNames: colorNames,);
+    case PaletteExportType.adobe:
+      return await getPaletteAdobeData(rampList: rampList, colorNames: colorNames,);
+    case PaletteExportType.jasc:
+      return await getPaletteJascData(rampList: rampList);
+    case PaletteExportType.corel:
+      return await getPaletteCorelData(rampList: rampList, colorNames: colorNames,);
+    case PaletteExportType.openOffice:
+      return await getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames,);
+    case PaletteExportType.json:
+      return await getPaletteJsonData(rampList: rampList);
   }
-  else
-  {
-    final String newPath = await FileSaver.instance.saveFile(name: path, bytes: data, fileExtension: extension,);
-    return "$newPath/$pathWithExtension";
-  }
+}
+
+Future<String?> exportPalettePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType,}) async
+{
+  return await _runExport(
+    what: "palette",
+    directory: saveData.directory,
+    fileName: saveData.fileName,
+    extension: saveData.extension,
+    createData: () => _createPaletteData(paletteType: paletteType),
+  );
 }
 
 Future<String?> getDirectory({required final String startDir}) async
@@ -522,159 +555,72 @@ Future<String?> getDirectory({required final String startDir}) async
   return await FilePicker.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir,);
 }
 
+Future<Uint8List?> _createImageData({required final ImageExportData exportData, required final ImageExportType exportType,}) async
+{
+  final AppState appState = GetIt.I.get<AppState>();
+  final CoordinateSetI canvasSize = appState.canvasSize;
+  final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
+  final SelectionList selection = appState.selectionState.selection;
+  final List<KPalRampData> colorRamps = appState.colorRamps;
+
+  switch (exportType)
+  {
+    case ImageExportType.png:
+      return await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList,);
+    case ImageExportType.aseprite:
+      return await getAsepriteData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
+    case ImageExportType.photoshop:
+      return await getPsdDataRGB(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
+    case ImageExportType.gimp:
+      return await getGimpData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
+    case ImageExportType.pixelorama:
+      return await getPixeloramaData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
+    case ImageExportType.kpix:
+      return (await createKPixData(appState: appState)).buffer.asUint8List();
+    case ImageExportType.texturePack:
+      return await exportTexturePack(appState: appState);
+  }
+}
+
 Future<String?> exportImage({required final ImageExportData exportData, required final ImageExportType exportType,}) async
 {
-  final Logger logger = GetIt.I.get<Logger>();
-  final String path = !kIsWeb
-      ? p.join(
-          exportData.directory,
-          "${exportData.fileName}.${exportData.extension}",
-        )
-      : exportData.fileName;
-  logger.i("Exporting image to $path.");
-
-  Uint8List? data;
-
-  try
-  {
-    final AppState appState = GetIt.I.get<AppState>();
-    final CoordinateSetI canvasSize = appState.canvasSize;
-    final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
-    final SelectionList selection = appState.selectionState.selection;
-    final List<KPalRampData> colorRamps = appState.colorRamps;
-
-    switch (exportType)
-    {
-      case ImageExportType.png:
-        data = await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList,);
-      //break;
-      case ImageExportType.aseprite:
-        data = await getAsepriteData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
-      //break;
-      case ImageExportType.photoshop:
-        data = await getPsdDataRGB(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
-      //  break;
-      case ImageExportType.gimp:
-        data = await getGimpData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
-      //break;
-      case ImageExportType.pixelorama:
-        data = await getPixeloramaData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
-      //break;
-      case ImageExportType.kpix:
-        data = (await createKPixData(appState: appState)).buffer.asUint8List();
-      //break;
-      case ImageExportType.texturePack:
-        data = await exportTexturePack(appState: appState);
-      //break;
-    }
-  }
-  catch (e, s)
-  {
-    logger.w("Error creating image data.", error: e, stackTrace: s);
-  }
-
-  String? returnPath;
-  if (data != null) {
-    try
-    {
-      if (!kIsWeb)
-      {
-        await File(path).writeAsBytes(data);
-        returnPath = path;
-      }
-      else
-      {
-        final String newPath = await FileSaver.instance.saveFile(
-          name: path,
-          bytes: data,
-          fileExtension: exportData.extension,
-        );
-        returnPath = "$newPath/$path.${exportData.extension}";
-      }
-    }
-    catch (e, s)
-    {
-      logger.w("Error writing image data.", error: e, stackTrace: s);
-    }
-  }
-
-  return returnPath;
+  return await _runExport(
+    what: "image",
+    directory: exportData.directory,
+    fileName: exportData.fileName,
+    extension: exportData.extension,
+    createData: () => _createImageData(exportData: exportData, exportType: exportType),
+  );
 }
 
-Future<String?> exportAnimation({
-  required final AnimationExportData exportData,
-  required final AnimationExportType exportType,
-}) async
+Future<Uint8List?> _createAnimationData({required final AnimationExportData exportData, required final AnimationExportType exportType,}) async
 {
-  final Logger logger = GetIt.I.get<Logger>();
-  final String path = !kIsWeb
-      ? p.join(
-          exportData.directory,
-          "${exportData.fileName}.${exportData.extension}",
-        )
-      : exportData.fileName;
   final AppState appState = GetIt.I.get<AppState>();
 
-  logger.i("Exporting animation to $path.");
-
-  Uint8List? data;
-
-  try
+  switch (exportType)
   {
-    switch (exportType)
-    {
-      case AnimationExportType.apng:
-        data = await exportAPNG(exportData: exportData, appState: appState);
-      //break;
-      case AnimationExportType.gif:
-        data = await exportGIF(exportData: exportData, appState: appState);
-      //break;
-      case AnimationExportType.zippedPng:
-        data = await exportZippedPng(exportData: exportData, appState: appState);
-      //break;
-      //case ExportType.aseprite:
-      // TODO: Handle this case.
-      //  break;
-      //case ExportType.pixelorama:
-      // TODO: Handle this case.
-      //  break;
-      case AnimationExportType.texturePack:
-        data = await exportTexturePackAnimation(exportData: exportData, appState: appState,);
-      //break;
-    }
+    case AnimationExportType.apng:
+      return await exportAPNG(exportData: exportData, appState: appState);
+    case AnimationExportType.gif:
+      return await exportGIF(exportData: exportData, appState: appState);
+    case AnimationExportType.zippedPng:
+      return await exportZippedPng(exportData: exportData, appState: appState);
+    case AnimationExportType.texturePack:
+      return await exportTexturePackAnimation(exportData: exportData, appState: appState,);
   }
-  catch (e, s)
-  {
-    logger.w("Error creating animation data.", error: e, stackTrace: s);
-  }
-
-  String? returnPath;
-  if (data != null) {
-    try
-    {
-      if (!kIsWeb)
-      {
-        await File(path).writeAsBytes(data);
-        returnPath = path;
-      }
-      else
-      {
-        final String newPath = await FileSaver.instance.saveFile(
-          name: path,
-          bytes: data,
-          fileExtension: exportData.extension,
-        );
-        returnPath = "$newPath/$path.${exportData.extension}";
-      }
-    }
-    catch (e, s)
-    {
-      logger.w("Error writing animation data.", error: e, stackTrace: s);
-    }
-  }
-
-  return returnPath;
 }
+
+Future<String?> exportAnimation({required final AnimationExportData exportData, required final AnimationExportType exportType,}) async
+{
+  return await _runExport(
+    what: "animation",
+    directory: exportData.directory,
+    fileName: exportData.fileName,
+    extension: exportData.extension,
+    createData: () => _createAnimationData(exportData: exportData, exportType: exportType),
+  );
+}
+
 
 FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true,})
 {

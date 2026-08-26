@@ -802,7 +802,7 @@ abstract class IToolPainter
               inputColor: entry.value,
               currentLayer: currentLayer,
               layerIndex: currentIndex,
-              frame: frame
+              frame: frame,
           );
         }
       }

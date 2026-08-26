@@ -282,7 +282,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                             controller.selection = TextSelection.collapsed(offset: controller.text.length);
                             return TextField(
                               controller: controller,
-                              focusNode: hotkeyManager.projectFilterTextFocus,
+                              focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.projectFilterTextFocus),
                               onChanged: (final String newText) {_filterTextChanged(newText: newText);},
                               maxLength: _ProjectManagerOptions.maxFilterTextLength,
                             );

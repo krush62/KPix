@@ -128,7 +128,7 @@ class TextOptions extends IToolOptions
                     controller.selection = TextSelection.collapsed(offset: controller.text.length);
                     return TextField(
                       controller: controller,
-                      focusNode: hotkeyManager.textOptionsTextFocus,
+                      focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.textOptionsTextFocus),
                       onChanged: (final String newText) {textOptions.text.value = newText;},
                       maxLength: TextConstraints.maxLength,
                     );

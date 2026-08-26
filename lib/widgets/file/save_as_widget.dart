@@ -50,7 +50,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
     super.initState();
     _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
     _updateFileNameStatus();
-    _hotkeyManager.saveAsFileNameTextFocus.requestFocus();
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.saveAsFileNameTextFocus).requestFocus();
   }
 
   void _updateFileNameStatus()
@@ -92,7 +92,7 @@ class _SaveAsWidgetState extends State<SaveAsWidget>
                       controller.selection = TextSelection.collapsed(offset: controller.text.length);
                       return TextField(
                         textAlign: TextAlign.end,
-                        focusNode: _hotkeyManager.saveAsFileNameTextFocus,
+                        focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.saveAsFileNameTextFocus),
                         controller: controller,
                         onChanged: (final String value) {
                           _fileName.value = value;

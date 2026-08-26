@@ -71,24 +71,24 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
     _setSize();
     final Frame frame = _appState.timeline.selectedFrame!;
     getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: frame.layerList, selection: _appState.selectionState.selection, frame: frame).then((final ui.Image img){_image.value = img;});
-    _hotkeyManager.canvasSizeWidthTextFocus.addListener(_widthFocusChanged);
-    _hotkeyManager.canvasSizeHeightTextFocus.addListener(_heightFocusChanged);
-    _hotkeyManager.canvasSizeOffsetXTextFocus.addListener(_offsetXFocusChanged);
-    _hotkeyManager.canvasSizeOffsetYTextFocus.addListener(_offsetYFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeWidthTextFocus).addListener(_widthFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus).addListener(_heightFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus).addListener(_offsetXFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetYTextFocus).addListener(_offsetYFocusChanged);
   }
 
   @override
   void dispose() {
     super.dispose();
-    _hotkeyManager.canvasSizeWidthTextFocus.removeListener(_widthFocusChanged);
-    _hotkeyManager.canvasSizeHeightTextFocus.removeListener(_heightFocusChanged);
-    _hotkeyManager.canvasSizeOffsetXTextFocus.removeListener(_offsetXFocusChanged);
-    _hotkeyManager.canvasSizeOffsetYTextFocus.removeListener(_offsetYFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeWidthTextFocus).removeListener(_widthFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus).removeListener(_heightFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus).removeListener(_offsetXFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetYTextFocus).removeListener(_offsetYFocusChanged);
   }
 
   void _widthFocusChanged()
   {
-    if (!_hotkeyManager.canvasSizeWidthTextFocus.hasFocus)
+    if (!_hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeWidthTextFocus).hasFocus)
     {
       _textControllerWidth.text = _width.value.toString();
     }
@@ -96,7 +96,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 
   void _heightFocusChanged()
   {
-    if (!_hotkeyManager.canvasSizeHeightTextFocus.hasFocus)
+    if (!_hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus).hasFocus)
     {
       _textControllerHeight.text = _height.value.toString();
     }
@@ -104,7 +104,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 
   void _offsetXFocusChanged()
   {
-    if (!_hotkeyManager.canvasSizeOffsetXTextFocus.hasFocus)
+    if (!_hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus).hasFocus)
     {
       _textControllerOffsetX.text = _offsetX.value.toString();
     }
@@ -112,7 +112,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
 
   void _offsetYFocusChanged()
   {
-    if (!_hotkeyManager.canvasSizeOffsetYTextFocus.hasFocus)
+    if (!_hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetYTextFocus).hasFocus)
     {
       _textControllerOffsetY.text = _offsetY.value.toString();
     }
@@ -390,7 +390,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           notifier: _width,
                           sliderFunc: _sizeXSliderChanged,
                           changeFunc: _sizeXInputChanged,
-                          focusNode: _hotkeyManager.canvasSizeWidthTextFocus,
+                          focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeWidthTextFocus),
                           textController: _textControllerWidth,
                       ),
                       _getSizeRow(
@@ -398,7 +398,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         notifier: _height,
                         sliderFunc: _sizeYSliderChanged,
                         changeFunc: _sizeYInputChanged,
-                        focusNode: _hotkeyManager.canvasSizeHeightTextFocus,
+                        focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeHeightTextFocus),
                         textController: _textControllerHeight,
                       ),
                       const SizedBox(height: OverlayEntryAlertDialogOptions.padding,),
@@ -409,7 +409,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                           textController: _textControllerOffsetX,
                           minOffsetNotifier: _minOffsetX,
                           maxOffsetNotifier: _maxOffsetX,
-                          focusNode: _hotkeyManager.canvasSizeOffsetXTextFocus,
+                          focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetXTextFocus),
                           sliderFunc: _offsetXSliderChanged,
                           changeFunc: _offsetXInputChanged,
                       ),
@@ -419,7 +419,7 @@ class _CanvasSizeWidgetState extends State<CanvasSizeWidget>
                         textController: _textControllerOffsetY,
                         minOffsetNotifier: _minOffsetY,
                         maxOffsetNotifier: _maxOffsetY,
-                        focusNode: _hotkeyManager.canvasSizeOffsetYTextFocus,
+                        focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.canvasSizeOffsetYTextFocus),
                         sliderFunc: _offsetYSliderChanged,
                         changeFunc: _offsetYInputChanged,
                       ),

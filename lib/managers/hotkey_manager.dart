@@ -108,6 +108,22 @@ enum HotkeyAction
 
 }
 
+enum FocusNodeEntry
+{
+  textOptionsTextFocus,
+  canvasSizeWidthTextFocus,
+  canvasSizeHeightTextFocus,
+  canvasSizeOffsetXTextFocus,
+  canvasSizeOffsetYTextFocus,
+  newProjectWidthTextFocus,
+  newProjectHeightTextFocus,
+  exportFileNameTextFocus,
+  saveAsFileNameTextFocus,
+  savePaletteNameTextFocus,
+  changeTextToolFocus,
+  projectFilterTextFocus,
+}
+
 class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners();}}
 
 class HotkeyManager
@@ -119,20 +135,7 @@ class HotkeyManager
   final ValueNotifier<Map<SingleActivator, VoidCallback>> _callbackMap = ValueNotifier<Map<SingleActivator, VoidCallback>>(<SingleActivator, VoidCallback>{});
   Map<SingleActivator, VoidCallback> _callbackMapBackup = <SingleActivator, VoidCallback>{};
 
-  final FocusNode textOptionsTextFocus = FocusNode();
-  final FocusNode canvasSizeWidthTextFocus = FocusNode();
-  final FocusNode canvasSizeHeightTextFocus = FocusNode();
-  final FocusNode canvasSizeOffsetXTextFocus = FocusNode();
-  final FocusNode canvasSizeOffsetYTextFocus = FocusNode();
-  final FocusNode newProjectWidthTextFocus = FocusNode();
-  final FocusNode newProjectHeightTextFocus = FocusNode();
-  final FocusNode exportFileNameTextFocus = FocusNode();
-  final FocusNode saveAsFileNameTextFocus = FocusNode();
-  final FocusNode savePaletteNameTextFocus = FocusNode();
-  final FocusNode changeTextToolFocus = FocusNode();
-  final FocusNode projectFilterTextFocus = FocusNode();
-
-  List<FocusNode> _focusNodes = <FocusNode>[];
+  final Map<FocusNodeEntry, FocusNode> _focusNodes = <FocusNodeEntry, FocusNode>{};
 
   final ValueNotifier<bool> _shiftIsPressed = ValueNotifier<bool>(false);
   bool get shiftIsPressed
@@ -205,34 +208,28 @@ class HotkeyManager
       //ARROW KEY AND TAB HANDLING
       if (evt is KeyUpEvent && !_altIsPressed.value && !_controlIsPressed.value && !_shiftIsPressed.value)
       {
-        HotkeyAction? action;
-        if (evt.logicalKey == LogicalKeyboardKey.arrowLeft)
+        final Set<LogicalKeyboardKey> actionKeys = <LogicalKeyboardKey>{
+          LogicalKeyboardKey.arrowLeft,
+          LogicalKeyboardKey.arrowRight,
+          LogicalKeyboardKey.arrowUp,
+          LogicalKeyboardKey.arrowDown,
+          LogicalKeyboardKey.tab,
+        };
+
+        for (final LogicalKeyboardKey actionKey in actionKeys)
         {
-          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowLeft)];
-        }
-        else if (evt.logicalKey == LogicalKeyboardKey.arrowRight)
-        {
-          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowRight)];
-        }
-        else if (evt.logicalKey == LogicalKeyboardKey.arrowUp)
-        {
-          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowUp)];
-        }
-        else if (evt.logicalKey == LogicalKeyboardKey.arrowDown)
-        {
-          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.arrowDown)];
-        }
-        else if (evt.logicalKey == LogicalKeyboardKey.tab)
-        {
-          action = _shortCutMap[const SingleActivator(LogicalKeyboardKey.tab)];
-        }
-        if (action != null)
-        {
-          triggerShortcut(action: action);
+          if (evt.logicalKey == actionKey)
+          {
+            final HotkeyAction? action = _shortCutMap[SingleActivator(actionKey)];
+            if (action != null)
+            {
+              triggerShortcut(action: action);
+            }
+            break;
+          }
         }
       }
     }
-
   }
 
 
@@ -425,30 +422,22 @@ class HotkeyManager
 
   void _createFocusNodeListeners()
   {
-    _focusNodes = <FocusNode>[
-      textOptionsTextFocus,
-      canvasSizeWidthTextFocus,
-      canvasSizeHeightTextFocus,
-      canvasSizeOffsetXTextFocus,
-      canvasSizeOffsetYTextFocus,
-      newProjectWidthTextFocus,
-      newProjectHeightTextFocus,
-      exportFileNameTextFocus,
-      saveAsFileNameTextFocus,
-      savePaletteNameTextFocus,
-      changeTextToolFocus,
-      projectFilterTextFocus,
-    ];
-
-    for (final FocusNode fn in _focusNodes)
+    for (final FocusNodeEntry entry in FocusNodeEntry.values)
     {
+      final FocusNode fn = FocusNode();
+      _focusNodes[entry] = fn;
       fn.addListener(_checkListeners);
     }
   }
 
+  FocusNode getFocusNode({required final FocusNodeEntry id})
+  {
+    return _focusNodes[id]!;
+  }
+
   void _checkListeners()
   {
-    if (_focusNodes.where((final FocusNode node) => node.hasFocus).isNotEmpty)
+    if (_focusNodes.values.where((final FocusNode node) => node.hasFocus).isNotEmpty)
     {
       deactivateCallbacks();
     }

@@ -56,20 +56,20 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
   void initState()
   {
     super.initState();
-    _hotkeyManager.newProjectWidthTextFocus.addListener(_widthFocusChanged);
-    _hotkeyManager.newProjectHeightTextFocus.addListener(_heightFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus).addListener(_widthFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus).addListener(_heightFocusChanged);
   }
 
   @override
   void dispose() {
     super.dispose();
-    _hotkeyManager.newProjectWidthTextFocus.removeListener(_widthFocusChanged);
-    _hotkeyManager.newProjectHeightTextFocus.removeListener(_heightFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus).removeListener(_widthFocusChanged);
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus).removeListener(_heightFocusChanged);
   }
 
   void _widthFocusChanged()
   {
-    if (!_hotkeyManager.newProjectWidthTextFocus.hasFocus)
+    if (!_hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus).hasFocus)
     {
       _textWidthController.text = _width.value.toString();
     }
@@ -77,7 +77,7 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
 
   void _heightFocusChanged()
   {
-    if (!_hotkeyManager.newProjectHeightTextFocus.hasFocus)
+    if (!_hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus).hasFocus)
     {
       _textHeightController.text = _height.value.toString();
     }
@@ -263,8 +263,8 @@ class _NewProjectWidgetState extends State<NewProjectWidget>
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      _getInputRow(title: "Width", notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.newProjectWidthTextFocus, changeFunc: _changeWidth),
-                      _getInputRow(title: "Height", notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.newProjectHeightTextFocus, changeFunc: _changeHeight),
+                      _getInputRow(title: "Width", notifier: _width, controller: _textWidthController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectWidthTextFocus), changeFunc: _changeWidth),
+                      _getInputRow(title: "Height", notifier: _height, controller: _textHeightController, focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.newProjectHeightTextFocus), changeFunc: _changeHeight),
                     ],
                   ),
                 ),

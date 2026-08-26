@@ -46,7 +46,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
   {
     super.initState();
     _text.value = widget.initialText ?? "";
-    _hotkeyManager.changeTextToolFocus.requestFocus();
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.changeTextToolFocus).requestFocus();
   }
 
 
@@ -84,7 +84,7 @@ class _ChangeTextToolWidgetState extends State<ChangeTextToolWidget>
                       controller.selection = TextSelection.collapsed(offset: controller.text.length);
                       return TextField(
                         style: Theme.of(context).textTheme.titleLarge,
-                        focusNode: _hotkeyManager.changeTextToolFocus,
+                        focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.changeTextToolFocus),
                         controller: controller,
                         maxLength: widget.maxStringLength,
                         onChanged: (final String value) {

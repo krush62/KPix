@@ -84,7 +84,7 @@ class _SavePaletteWidgetState extends State<SavePaletteWidget>
                         return TextField(
                           textAlign: TextAlign.end,
                           maxLength: 16,
-                          focusNode: _hotkeyManager.savePaletteNameTextFocus,
+                          focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.savePaletteNameTextFocus),
                           controller: controller,
                           onChanged: (final String value) {
                             _fileName.value = value;

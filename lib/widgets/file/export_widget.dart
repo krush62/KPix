@@ -218,7 +218,7 @@ class _ExportWidgetState extends State<ExportWidget>
     }
     _fileName.value = _appState.projectName.value == null ? "" : _appState.projectName.value!;
     _updateFileNameStatus();
-    _hotkeyManager.exportFileNameTextFocus.requestFocus();
+    _hotkeyManager.getFocusNode(id: FocusNodeEntry.exportFileNameTextFocus).requestFocus();
   }
 
   String _getExtension({required final ExportSectionType section})
@@ -603,7 +603,7 @@ class _ExportWidgetState extends State<ExportWidget>
                                 controller.selection = TextSelection.collapsed(offset: controller.text.length);
                                 return TextField(
                                   textAlign: TextAlign.end,
-                                  focusNode: _hotkeyManager.exportFileNameTextFocus,
+                                  focusNode: _hotkeyManager.getFocusNode(id: FocusNodeEntry.exportFileNameTextFocus),
                                   controller: controller,
                                   onChanged: (final String value) {
                                     _fileName.value = value;

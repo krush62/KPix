@@ -508,6 +508,7 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
           path: initialFilePath,
           drawingLayerSettingsConstraints: preferenceManager.drawingLayerSettingsConstraints,
           shadingLayerSettingsConstraints: preferenceManager.shadingLayerSettingsConstraints,
+          frameConstraints: preferenceManager.frameConstraints,
       );
       if (lfs.path != null && lfs.historyState != null)
       {

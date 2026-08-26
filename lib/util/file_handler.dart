@@ -60,6 +60,7 @@ import 'package:kpix/util/file_byte_reader.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -285,6 +286,7 @@ void _loadFileChosen({final FilePickerResult? result, required final Function()?
       path: path,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
     ).then((final LoadFileSet loadFileSet)
     {
       fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);
@@ -1099,6 +1101,7 @@ Future<bool> importProject({required final String? path, final bool showMessages
           path: path,
           drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
           shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
         );
         final AppState appState = GetIt.I.get<AppState>();
         if (loadFileSet.historyState != null && loadFileSet.path != null)

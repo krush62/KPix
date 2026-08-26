@@ -707,26 +707,23 @@ abstract class IToolPainter
     required final CoordinateSetI coord,
     required final AppState appState,
     required final ColorReference inputColor,
+    required final Frame frame,
     required final LayerState currentLayer,
+    required final int layerIndex,
   })
   {
     ColorReference retColor = inputColor;
-    final Frame? frame = appState.timeline.selectedFrame;
-    if (frame != null && frame.layerList.contains(layer: currentLayer))
+    if (frame.layerList.contains(layer: currentLayer))
     {
       int colorShift = 0;
-      final int? currentIndex = frame.layerList.getLayerPosition(state: currentLayer);
-      if (currentIndex != null)
+      for (int i = layerIndex; i >= 0; i--)
       {
-        for (int i = currentIndex; i >= 0; i--)
+        final LayerState layer = frame.layerList.getLayer(index: i);
+        if (layer is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
         {
-          final LayerState layer = frame.layerList.getLayer(index: i);
-          if (layer is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
+          if (layer.hasCoord(coord: coord))
           {
-            if (layer.hasCoord(coord: coord))
-            {
-              colorShift = (inputColor.colorIndex + colorShift + layer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
-            }
+            colorShift = (inputColor.colorIndex + colorShift + layer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
           }
         }
       }
@@ -791,14 +788,26 @@ abstract class IToolPainter
   {
     if (!apply) return pixelMap;
     final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
-    for (final CoordinateColor entry in pixelMap.entries)
+    final Frame? frame = appState.timeline.selectedFrame;
+    if (frame != null)
     {
-      shadedPixelMap[entry.key] = _getColorShading(
-        coord: entry.key,
-        appState: appState,
-        inputColor: entry.value,
-        currentLayer: currentLayer,);
+      final int? currentIndex = frame.layerList.getLayerPosition(state: currentLayer);
+      if (currentIndex != null)
+      {
+        for (final CoordinateColor entry in pixelMap.entries)
+        {
+          shadedPixelMap[entry.key] = _getColorShading(
+              coord: entry.key,
+              appState: appState,
+              inputColor: entry.value,
+              currentLayer: currentLayer,
+              layerIndex: currentIndex,
+              frame: frame
+          );
+        }
+      }
     }
+
     return shadedPixelMap;
   }
 

@@ -675,9 +675,17 @@ KPixOverlay getLoadingDialog({required final String message, final TextStyle? te
           maxHeight: OverlayEntryAlertDialogOptions.maxHeight / 4.0,
           maxWidth: OverlayEntryAlertDialogOptions.maxWidth / 2.0,
         ),
-        child: Text(
-          message,
-          style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Text(
+              message,
+              style: textStyle ?? Theme.of(context).textTheme.headlineLarge,
+            ),
+            CircularProgressIndicator(
+              color: Theme.of(context).primaryColorLight,
+            ),
+          ],
         ),
       ),
     ),

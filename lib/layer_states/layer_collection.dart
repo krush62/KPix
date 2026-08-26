@@ -152,8 +152,10 @@ class LayerCollection with ChangeNotifier {
 
   void clear({final bool notify = true})
   {
+    final List<LayerState> removed = List<LayerState>.of(_layers);
     _layers.clear();
     _clearDependencies();
+    GetIt.I.get<AppState>().disposeUnusedLayers(candidates: removed);
     _selectedLayerIndexNotifier.value = null;
     if (notify) {
       notifyListeners();
@@ -406,6 +408,7 @@ class LayerCollection with ChangeNotifier {
       _layers.remove(deleteLayer);
       _selectedLayerIndexNotifier.value = 0;
       _rebuildDependencies();
+      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[deleteLayer]);
 
       notifyListeners();
       return true;
@@ -490,6 +493,7 @@ class LayerCollection with ChangeNotifier {
         }
       }
       _layers.remove(drawingIntoLayer);
+      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[drawingIntoLayer]);
       drawingMergeLayer.setDataAll(list: refs);
       selectLayer(newLayer: drawingMergeLayer);
       notifyListeners();
@@ -662,6 +666,9 @@ class LayerCollection with ChangeNotifier {
       _layers.insert(insertIndex, drawingLayer);
       drawingLayer.visibilityState.value = originalLayer.visibilityState.value;
       _rebuildDependencies();
+      //the rasterized layer is replaced by its flattened result; it survives only
+      //if another frame still links it
+      GetIt.I.get<AppState>().disposeUnusedLayers(candidates: <LayerState>[originalLayer]);
       _triggerNewLayerRender(layer: drawingLayer);
       notifyListeners();
     }

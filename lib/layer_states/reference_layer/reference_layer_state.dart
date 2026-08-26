@@ -84,6 +84,16 @@ class ReferenceLayerState extends LayerState
     }
   }
 
+  @override
+  void dispose()
+  {
+    markDisposed();
+    //the image belongs to the ReferenceImageManager, which hands the same
+    //instance to every layer using that path, so it must not be disposed here
+    imageNotifier.value = null;
+    thumbnail.value = null;
+  }
+
   factory ReferenceLayerState.from({required final ReferenceLayerState other})
   {
     return ReferenceLayerState(

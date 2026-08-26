@@ -97,6 +97,8 @@ class DrawingLayerState extends RasterableLayerState
     return DrawingLayerState._(data: data, settingsPixels: settingsPixels, settings: settings);
   }
 
+  late final Timer _updateTimer;
+
   DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, super.layerStack, required this.settings}) :
         _data = data,
         _settingsPixels = settingsPixels,
@@ -106,11 +108,8 @@ class DrawingLayerState extends RasterableLayerState
     _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result));
     lockState.value = lState;
     visibilityState.value = vState;
-    Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
-    settings.addListener(()
-    {
-      _settingsChanged();
-    });
+    _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
+    settings.addListener(_settingsChanged);
     _settingsChanged();
   }
 
@@ -327,6 +326,22 @@ class DrawingLayerState extends RasterableLayerState
 
   void _rasterizingDone({required final DualRasterResult rasterResult})
   {
+    if (isDisposed)
+    {
+      //the layer was dropped while this raster was running, so the images it
+      //produced have no owner and would leak if they were stored
+      final List<ui.Image?> orphans = <ui.Image?>[
+        rasterResult.externalStackImages?.raster,
+        rasterResult.externalStackImages?.thumbnail,
+      ];
+      for (final RasterImagePair pair in rasterResult.rasterImages.values)
+      {
+        orphans.add(pair.raster);
+        orphans.add(pair.thumbnail);
+      }
+      disposeImages(images: orphans);
+      return;
+    }
     isRasterizing = false;
     previousRaster?.dispose();
     previousRaster = rasterImage.value;
@@ -863,17 +878,33 @@ class DrawingLayerState extends RasterableLayerState
     return DrawingLayerSettingsWidget(layer: this);
   }
 
+  @override
   void dispose()
   {
+    markDisposed();
+    _updateTimer.cancel();
+    settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;
 
     rasterQueue.clear();
     _data.clear();
     _settingsPixels.clear();
 
-    rasterImage.value?.dispose();
-    thumbnail.value?.dispose();
-    previousRaster?.dispose();
+    final List<ui.Image?> images = <ui.Image?>[rasterImage.value, thumbnail.value, previousRaster];
+    for (final RasterImagePair pair in rasterImageMap.value.values)
+    {
+      images.add(pair.raster);
+      images.add(pair.thumbnail);
+    }
+
+    //clear the notifiers first: the layer widget shows the thumbnail, so a rebuild
+    //must not find a handle that is about to be released
+    rasterImage.value = null;
+    thumbnail.value = null;
+    previousRaster = null;
+    rasterImageMap.value = <Frame, RasterImagePair>{};
+
+    disposeImages(images: images);
   }
 
 

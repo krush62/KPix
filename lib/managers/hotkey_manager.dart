@@ -238,6 +238,15 @@ class HotkeyManager
     _notifierMap[action]?.addListener(func);
   }
 
+  /// Drops a listener registered with [addListener].
+  ///
+  /// The notifiers live as long as the manager, so a widget that does not remove
+  /// its listener keeps itself alive after it has been disposed.
+  void removeListener({required final VoidCallback func, required final HotkeyAction action})
+  {
+    _notifierMap[action]?.removeListener(func);
+  }
+
 
   String getShortcutString({required final HotkeyAction action, final bool precededNewLine = true, final bool showSquareBrackets = true})
   {

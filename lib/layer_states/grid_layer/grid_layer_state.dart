@@ -97,8 +97,23 @@ class GridLayerState extends LayerState
     vanishingPoint1Notifier.addListener(_valueChanged);
     vanishingPoint2Notifier.addListener(_valueChanged);
     vanishingPoint3Notifier.addListener(_valueChanged);
-    Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+    _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
   }
+
+  @override
+  void dispose()
+  {
+    markDisposed();
+    _updateTimer.cancel();
+    //the notifiers are owned by this layer and only listened to from here, so
+    //they go away with it once the timer no longer keeps it reachable
+    final List<ui.Image?> images = <ui.Image?>[thumbnail.value, raster];
+    thumbnail.value = null;
+    raster = null;
+    disposeImages(images: images);
+  }
+
+  late final Timer _updateTimer;
 
   factory GridLayerState.from({required final GridLayerState other})
   {
@@ -179,6 +194,12 @@ class GridLayerState extends LayerState
       isRendering = true;
       _createRaster().then((final ui.Image image)
       {
+        if (isDisposed)
+        {
+          //dropped while this raster was running: nothing owns this image now
+          disposeImages(images: <ui.Image?>[image]);
+          return;
+        }
         _rasterCreated(image: image);
       });
     }

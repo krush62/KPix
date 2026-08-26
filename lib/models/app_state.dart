@@ -802,6 +802,9 @@ class AppState
 
           timeline.setData(selectedFrameIndex: historyState.timeline.selectedFrameIndex, frames: frames, loopStartIndex: historyState.timeline.loopStart, loopEndIndex: historyState.timeline.loopEnd);
 
+          //restoring rebuilds most layers, so the replaced ones have to be dropped
+          disposeUnusedLayers(candidates: collectedLayers);
+
 
           //SELECTION
           final CoordinateColorMapNullable selectionContent = HashMap<CoordinateSetI, ColorReference?>();
@@ -1139,6 +1142,32 @@ class AppState
       {
 
         GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
+      }
+    }
+  }
+
+  /// Disposes every layer in [candidates] that no longer sits in any frame.
+  ///
+  /// Called from wherever a layer is dropped, including [LayerCollection], which
+  /// knows which layer it removed but not whether other frames still hold it.
+  ///
+  /// Layers hold a periodic timer that keeps them reachable, so dropping the last
+  /// reference is not enough; they have to be told to let go. Membership is
+  /// checked against the timeline rather than taken from the caller, because a
+  /// layer can be linked into several frames and only dies with the last one.
+  void disposeUnusedLayers({required final Iterable<LayerState> candidates})
+  {
+    final Set<LayerState> stillInUse = <LayerState>{};
+    for (final Frame frame in timeline.frames.value)
+    {
+      stillInUse.addAll(frame.layerList.getAllLayers());
+    }
+
+    for (final LayerState candidate in candidates)
+    {
+      if (!stillInUse.contains(candidate) && !candidate.isDisposed)
+      {
+        candidate.dispose();
       }
     }
   }

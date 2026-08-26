@@ -104,6 +104,7 @@ class KPixPainter extends CustomPainter
   ui.Image? _backupImage;
   final List<int> _previousRasterHashes = <int>[];
   ContentRasterSet? _lastContentRaster;
+  late final Timer _backupTimer;
 
   // status for reference layer movements
   bool _referenceImgMovementStarted = false;
@@ -137,15 +138,11 @@ class KPixPainter extends CustomPainter
         _primaryPressStart = primaryPressStart,
         super(repaint: appState.repaintNotifier)
   {
-    Timer.periodic(Duration(milliseconds: _options.backupPainterPollingRateMs), (final Timer t) {_captureTimeout();});
-    _guiOptions.selectionOpacity.addListener(() {
-      _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
-    },);
+    _backupTimer = Timer.periodic(Duration(milliseconds: _options.backupPainterPollingRateMs), (final Timer t) {_captureTimeout();});
+    _guiOptions.selectionOpacity.addListener(_selectionOpacityChanged);
     _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
 
-    _guiOptions.canvasBorderOpacity.addListener(() {
-      _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
-    },);
+    _guiOptions.canvasBorderOpacity.addListener(_canvasBorderOpacityChanged);
     _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
 
     toolPainterMap = <ToolType, IToolPainter>{
@@ -1220,4 +1217,29 @@ class KPixPainter extends CustomPainter
 
   @override
   bool shouldRepaint(final CustomPainter oldDelegate) => false;
+
+  void _selectionOpacityChanged()
+  {
+    _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
+  }
+
+  void _canvasBorderOpacityChanged()
+  {
+    _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
+  }
+
+  /// Stops the backup timer and drops the preference listeners.
+  ///
+  /// [CustomPainter] has no lifecycle of its own, so the widget that created this
+  /// painter has to call this when it is disposed. Without it the timer keeps the
+  /// painter, and everything it captured, alive for the rest of the session.
+  void dispose()
+  {
+    _backupTimer.cancel();
+    _guiOptions.selectionOpacity.removeListener(_selectionOpacityChanged);
+    _guiOptions.canvasBorderOpacity.removeListener(_canvasBorderOpacityChanged);
+    _backupImage?.dispose();
+    _backupImage = null;
+  }
+
 }

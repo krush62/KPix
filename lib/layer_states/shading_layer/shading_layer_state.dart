@@ -123,14 +123,13 @@ class ShadingLayerState extends RasterableLayerState
     }
   }
 
+  late final Timer _updateTimer;
+
   void _init()
   {
     update();
-    Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
-
-    settings.addListener(() {
-      _settingsChanged();
-    });
+    _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+    settings.addListener(_settingsChanged);
   }
 
   void _settingsChanged()
@@ -646,6 +645,21 @@ class ShadingLayerState extends RasterableLayerState
 
     createRasters().then((final DualRasterResult rasterResult)
     {
+      if (isDisposed)
+      {
+        //dropped while this raster was running: nothing owns these images now
+        final List<ui.Image?> orphans = <ui.Image?>[
+          rasterResult.externalStackImages?.raster,
+          rasterResult.externalStackImages?.thumbnail,
+        ];
+        for (final RasterImagePair pair in rasterResult.rasterImages.values)
+        {
+          orphans.add(pair.raster);
+          orphans.add(pair.thumbnail);
+        }
+        disposeImages(images: orphans);
+        return;
+      }
       if (_isUpdateScheduled) {
         _rasterCreated(rasterResult: rasterResult);
       }
@@ -755,14 +769,31 @@ class ShadingLayerState extends RasterableLayerState
     );
   }
 
+  @override
   void dispose()
   {
+    markDisposed();
+    _updateTimer.cancel();
+    settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;
     sData.clear();
     thumbnailBrightnessMap.clear();
-    rasterImage.value?.dispose();
-    thumbnail.value?.dispose();
-    previousRaster?.dispose();
+
+    final List<ui.Image?> images = <ui.Image?>[rasterImage.value, thumbnail.value, previousRaster];
+    for (final RasterImagePair pair in rasterImageMap.value.values)
+    {
+      images.add(pair.raster);
+      images.add(pair.thumbnail);
+    }
+
+    //clear the notifiers first: the layer widget shows the thumbnail, so a rebuild
+    //must not find a handle that is about to be released
+    rasterImage.value = null;
+    thumbnail.value = null;
+    previousRaster = null;
+    rasterImageMap.value = <Frame, RasterImagePair>{};
+
+    disposeImages(images: images);
   }
 
 

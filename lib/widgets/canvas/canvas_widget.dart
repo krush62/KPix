@@ -132,6 +132,12 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   bool _hasNewStylusPollValue = false;
 
+  /// Every periodic timer this state started, so [dispose] can stop all of them.
+  ///
+  /// The canvas is mounted only while a project is open, so it really is disposed
+  /// and rebuilt; a timer that outlives it keeps acting on the global app state.
+  final List<Timer> _timers = <Timer>[];
+
   late KPixPainter kPixPainter = KPixPainter(
     appState: _appState,
     offset: _canvasOffset,
@@ -168,16 +174,54 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   }
 
+  void _stylusLongPressDelayChanged()
+  {
+    _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
+  }
+
+  void _stylusPollIntervalChanged()
+  {
+    _hasNewStylusPollValue = true;
+  }
+
+  @override
+  void dispose()
+  {
+    for (final Timer timer in _timers)
+    {
+      timer.cancel();
+    }
+    _timers.clear();
+
+    _desktopPrefs.cursorType.removeListener(_setDefaultCursor);
+    _stylusPrefs.stylusLongPressDelay.removeListener(_stylusLongPressDelayChanged);
+    _stylusPrefs.stylusPollInterval.removeListener(_stylusPollIntervalChanged);
+    _hotkeyManager.removeListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
+    _shaderOptions.isEnabled.removeListener(_updateFromChange);
+    _shaderOptions.onlyCurrentRampEnabled.removeListener(_updateFromChange);
+    _shaderOptions.shaderDirection.removeListener(_updateFromChange);
+    _appState.selectedColorNotifier.removeListener(_updateFromChange);
+    _appState.timeline.isPlaying.removeListener(_setDefaultCursor);
+
+    //the global app state holds this callback, so it has to let go of it too
+    if (_appState.flushHistoryData == _flushHistoryData)
+    {
+      _appState.flushHistoryData = null;
+    }
+
+    _selectionBarAnimationController.dispose();
+    kPixPainter.dispose();
+    super.dispose();
+  }
+
   @override
   void initState()
   {
     super.initState();
-    _desktopPrefs.cursorType.addListener(() {
-      _setDefaultCursor();
-    });
-    Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);});
-    Timer.periodic(const Duration(milliseconds: _CanvasOptions.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);});
-    Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);});
+    _desktopPrefs.cursorType.addListener(_setDefaultCursor);
+    _timers.add(Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);}));
+    _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.historyCheckPollRate), (final Timer t) {_checkHistoryData(t: t);}));
+    _timers.add(Timer.periodic(const Duration(milliseconds: _CanvasOptions.idleTimerRate), (final Timer t) {_idleTimeout(t: t);}));
     _appState.flushHistoryData = _flushHistoryData;
     _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
     WidgetsBinding.instance.addPostFrameCallback((final _)
@@ -185,12 +229,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       _setOptimalZoom();
     });
 
-    _stylusPrefs.stylusLongPressDelay.addListener(() {
-      _timeoutLongPress = Duration(milliseconds: _stylusPrefs.stylusLongPressDelay.value);
-    });
-    _stylusPrefs.stylusPollInterval.addListener(() {
-      _hasNewStylusPollValue = true;
-    });
+    _stylusPrefs.stylusLongPressDelay.addListener(_stylusLongPressDelayChanged);
+    _stylusPrefs.stylusPollInterval.addListener(_stylusPollIntervalChanged);
 
     _hotkeyManager.addListener(func: _setOptimalZoom, action: HotkeyAction.panZoomOptimalZoom);
     _shaderOptions.isEnabled.addListener(_updateFromChange);
@@ -785,7 +825,8 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     if (_hasNewStylusPollValue)
     {
       t.cancel();
-      Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);});
+      _timers.remove(t);
+      _timers.add(Timer.periodic(Duration(milliseconds: _stylusPrefs.stylusPollInterval.value), (final Timer t) {_stylusBtnTimeout(t: t);}));
       _hasNewStylusPollValue = false;
     }
   }

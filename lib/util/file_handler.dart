@@ -78,26 +78,30 @@ part 'import/import_kpix.dart';
 part 'import/import_palette.dart';
 part 'import/import_stamp.dart';
 
-class LoadFileSet {
+class LoadFileSet
+{
   final String status;
   final HistoryState? historyState;
   final String? path;
   LoadFileSet({required this.status, this.historyState, this.path});
 }
 
-class LoadProjectFileSet {
+class LoadProjectFileSet
+{
   final String path;
   final DateTime lastModifiedDate;
   final ui.Image? thumbnail;
-  LoadProjectFileSet(
-      {required this.path,
-      required this.lastModifiedDate,
-      required this.thumbnail,});
+  LoadProjectFileSet({
+    required this.path,
+    required this.lastModifiedDate,
+    required this.thumbnail,
+  });
 }
 
 enum PaletteReplaceBehavior { remap, replace }
 
-class LoadPaletteSet {
+class LoadPaletteSet
+{
   final String status;
   final List<KPalRampData>? rampData;
   LoadPaletteSet({required this.status, this.rampData});
@@ -128,302 +132,321 @@ const List<String> imageExtensions = <String>["png", "jpg", "jpeg", "gif"];
 const String recoverFileName = "___recover___";
 const double _floatDelta = 0.01;
 
-Future<String?> saveKPixFile(
-    {required final String path, required final AppState appState,}) async {
-  try {
+Future<String?> saveKPixFile({
+  required final String path,
+  required final AppState appState,
+}) async
+{
+  try
+  {
     final ByteData byteData = await createKPixData(appState: appState);
-    if (!kIsWeb) {
+    if (!kIsWeb)
+    {
       await File(path).writeAsBytes(byteData.buffer.asUint8List());
       return path;
-    } else {
-      final String newPath = await FileSaver.instance.saveFile(
-        name: path,
-        bytes: byteData.buffer.asUint8List(),
-        fileExtension: fileExtensionKpix,
-      );
+    }
+    else
+    {
+      final String newPath = await FileSaver.instance.saveFile(name: path, bytes: byteData.buffer.asUint8List(), fileExtension: fileExtensionKpix,);
       return newPath;
     }
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     GetIt.I.get<Logger>().w("Error saving kpix file.", error: e, stackTrace: s);
   }
   return null;
 }
 
-Future<String?> getPathForKPixFile() async {
+Future<String?> getPathForKPixFile() async
+{
   FilePickerResult? result;
-  if (isDesktop(includingWeb: true)) {
-    result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: <String>[fileExtensionKpix],
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    );
-  } else //mobile
+  if (isDesktop(includingWeb: true))
+  {
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: GetIt.I.get<AppState>().exportDir,);
+  } 
+  else //mobile
   {
     result = await FilePicker.pickFiles(
       initialDirectory: GetIt.I.get<AppState>().exportDir,
     );
   }
-  if (result != null && result.files.isNotEmpty) {
+  if (result != null && result.files.isNotEmpty) 
+  {
     String path = result.files.first.name;
-    if (!kIsWeb && result.files.first.path != null) {
+    if (!kIsWeb && result.files.first.path != null) 
+    {
       path = result.files.first.path!;
     }
     return path;
-  } else {
+  }
+  else
+  {
     return null;
   }
 }
 
-Future<String?> getPathForKPalFile() async {
+Future<String?> getPathForKPalFile() async
+{
   FilePickerResult? result;
-  if (isDesktop(includingWeb: true)) {
-    result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: <String>[fileExtensionKpal],
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    );
-  } else //mobile
+  if (isDesktop(includingWeb: true))
+  {
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpal], initialDirectory: GetIt.I.get<AppState>().exportDir,);
+  } 
+  else //mobile
   {
     result = await FilePicker.pickFiles(
       initialDirectory: GetIt.I.get<AppState>().exportDir,
     );
   }
-  if (result != null && result.files.isNotEmpty) {
+  if (result != null && result.files.isNotEmpty) 
+  {
     String path = result.files.first.name;
-    if (!kIsWeb && result.files.first.path != null) {
+    if (!kIsWeb && result.files.first.path != null) 
+    {
       path = result.files.first.path!;
     }
     return path;
-  } else {
+  }
+  else
+  {
     return null;
   }
 }
 
-Future<(String?, Uint8List?)> getPathAndDataForImage() async {
+Future<(String?, Uint8List?)> getPathAndDataForImage() async
+{
   FilePickerResult? result;
-  if (isDesktop()) {
-    result = await FilePicker.pickFiles(
-      type: FileType.image,
-      allowedExtensions: imageExtensions,
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    );
-  } else if (kIsWeb) {
-    result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: imageExtensions,
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    );
-  } else //mobile
+  if (isDesktop())
   {
-    result = await FilePicker.pickFiles(
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    );
+    result = await FilePicker.pickFiles(type: FileType.image, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppState>().exportDir,);
+  } 
+  else if (kIsWeb)
+  {
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppState>().exportDir,);
+  } 
+  else //mobile
+  {
+    result = await FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppState>().exportDir,);
   }
-  if (result != null && result.files.isNotEmpty) {
+  if (result != null && result.files.isNotEmpty) 
+  {
     String path = result.files.first.name;
-    if (!kIsWeb && result.files.first.path != null) {
+    if (!kIsWeb && result.files.first.path != null) 
+    {
       path = result.files.first.path!;
     }
     return (path, result.files.first.bytes);
-  } else {
+  }
+  else
+  {
     return (null, null);
   }
 }
 
-void loadFilePressed({final Function()? finishCallback, final Function()? loadStartCallback}) {
-  if (isDesktop(includingWeb: true)) {
-    FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: <String>[fileExtensionKpix],
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    ).then((final FilePickerResult? result) {
-      _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
-    });
-  } else //mobile
+void loadFilePressed({final Function()? finishCallback, final Function()? loadStartCallback})
+{
+  if (isDesktop(includingWeb: true))
   {
-    FilePicker.pickFiles(
-      initialDirectory: GetIt.I.get<AppState>().exportDir,
-    ).then((final FilePickerResult? result) {
-      _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
-    });
+    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+      ((final FilePickerResult? result)
+        {
+          _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
+        }
+      );
+  } 
+  else //mobile
+  {
+    FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+      ((final FilePickerResult? result)
+        {
+          _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
+        }
+      );
   }
 }
 
-void _loadFileChosen(
-    {final FilePickerResult? result,
-    required final Function()? finishCallback,
-    required final Function()? loadStartCallback,}) {
-  if (result != null && result.files.isNotEmpty) {
+void _loadFileChosen({final FilePickerResult? result, required final Function()? finishCallback, required final Function()? loadStartCallback,})
+{
+  if (result != null && result.files.isNotEmpty) 
+  {
     String path = result.files.first.name;
-    if (!kIsWeb && result.files.first.path != null) {
+    if (!kIsWeb && result.files.first.path != null) 
+    {
       path = result.files.first.path!;
     }
     loadStartCallback?.call();
     loadKPixFile(
       fileData: result.files.first.bytes,
       path: path,
-      drawingLayerSettingsConstraints:
-          GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
-      shadingLayerSettingsConstraints:
-          GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
-    ).then((final LoadFileSet loadFileSet) {
+      drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+      shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+    ).then((final LoadFileSet loadFileSet)
+    {
       fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);
     });
   }
 }
 
-void fileLoaded(
-    {required final LoadFileSet loadFileSet,
-    required final Function()? finishCallback,}) {
-  GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(() {
+void fileLoaded({required final LoadFileSet loadFileSet, required final Function()? finishCallback,})
+{
+  GetIt.I.get<AppState>().restoreFromFile(loadFileSet: loadFileSet).whenComplete(()
+  {
     finishCallback?.call();
   });
 }
 
-Future<void> saveFilePressed(
-    {required final String fileName,
-    final Function()? finishCallback,
-    final bool forceSaveAs = false,}) async {
+Future<void> saveFilePressed({required final String fileName, final Function()? finishCallback, final bool forceSaveAs = false,}) async
+{
   final AppState appState = GetIt.I.get<AppState>();
-  if (!kIsWeb) {
-    final String finalPath =
-        p.join(appState.projectsDir, "$fileName.$fileExtensionKpix");
-    saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>())
-        .then((final String? path) {
-      if (path != null) {
-        _projectFileSaved(
-            fileName: fileName, path: path, finishCallback: finishCallback,);
-      } else if (finishCallback != null) {
+  if (!kIsWeb)
+  {
+    final String finalPath = p.join(appState.projectsDir, "$fileName.$fileExtensionKpix");
+    saveKPixFile(path: finalPath, appState: GetIt.I.get<AppState>()).then((final String? path)
+    {
+      if (path != null) 
+      {
+        _projectFileSaved(fileName: fileName, path: path,finishCallback: finishCallback,);
+      } 
+      else if (finishCallback != null) 
+      {
         finishCallback();
       }
     });
-  } else {
-    saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>())
-        .then((final String? path) {
-      if (path != null) {
+  }
+  else
+  {
+    saveKPixFile(path: fileName, appState: GetIt.I.get<AppState>()).then((final String? path)
+    {
+      if (path != null) 
+      {
         _projectFileSaved(
-            fileName: fileName, path: path, finishCallback: finishCallback,);
-      } else if (finishCallback != null) {
+          fileName: fileName,
+          path: path,
+          finishCallback: finishCallback,
+        );
+      } 
+      else if (finishCallback != null) 
+      {
         finishCallback();
       }
     });
   }
 }
 
-Future<void> _projectFileSaved(
-    {required final String fileName,
-    required final String path,
-    required final Function()? finishCallback,}) async {
+Future<void> _projectFileSaved({required final String fileName, required final String path, required final Function()? finishCallback,}) async
+{
   final AppState appState = GetIt.I.get<AppState>();
-  if (!kIsWeb) {
-    final String? pngPath = await replaceFileExtension(
-        filePath: path,
-        newExtension: thumbnailExtension,
-        inputFileMustExist: true,);
-    if (pngPath != null) {
-      try {
+  if (!kIsWeb)
+  {
+    final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension,inputFileMustExist: true,);
+    if (pngPath != null) 
+    {
+      try
+      {
         final Frame frame = appState.timeline.selectedFrame!;
-        final ui.Image img = await getImageFromLayers(
-            canvasSize: appState.canvasSize,
-            layerCollection: frame.layerList,
-            selection: appState.selectionState.selection,
-            frame: frame,);
-        final ByteData? pngBytes =
-            await img.toByteData(format: ui.ImageByteFormat.png);
+        final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layerCollection: frame.layerList, selection: appState.selectionState.selection,frame: frame,);
+        final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
         await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
-      } catch (e, s) {
-        GetIt.I
-            .get<Logger>()
-            .w("Error creating thumbnail.", error: e, stackTrace: s);
       }
-    } else {
+      catch (e, s)
+      {
+        GetIt.I.get<Logger>().w("Error creating thumbnail.", error: e, stackTrace: s);
+      }
+    }
+    else
+    {
       GetIt.I.get<Logger>().w("Creation of png path unsuccessful.");
     }
   }
 
   appState.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
-  if (finishCallback != null) {
+  if (finishCallback != null) 
+  {
     finishCallback();
   }
 }
 
-Future<bool> copyImportFile(
-    {required final String inputPath,
-    required final ui.Image image,
-    required final String targetPath,}) async {
+Future<bool> copyImportFile({required final String inputPath, required final ui.Image image,required final String targetPath,}) async
+{
   final Logger logger = GetIt.I.get<Logger>();
-  try {
-    final String? pngPath = await replaceFileExtension(
-        filePath: targetPath,
-        newExtension: thumbnailExtension,
-        inputFileMustExist: false,);
+  try
+  {
+    final String? pngPath = await replaceFileExtension(filePath: targetPath, newExtension: thumbnailExtension, inputFileMustExist: false,);
     final File projectFile = File(inputPath);
-    if (pngPath != null && await projectFile.exists()) {
-      final ByteData? pngBytes =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      if (pngBytes != null) {
+    if (pngPath != null && await projectFile.exists()) 
+    {
+      final ByteData? pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (pngBytes != null) 
+      {
         await File(pngPath).writeAsBytes(pngBytes.buffer.asUint8List());
         final File createdFile = await projectFile.copy(targetPath);
-        if (!await createdFile.exists()) {
-          logger.w(
-              "Error copying import file: Created file ${createdFile.path} does not exist.",);
+        if (!await createdFile.exists())
+        {
+          logger.w("Error copying import file: Created file ${createdFile.path} does not exist.",);
           return false;
         }
-      } else {
+      }
+      else
+      {
         return false;
       }
-    } else {
+    }
+    else
+    {
       return false;
     }
     return true;
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error copying import file.", error: e, stackTrace: s);
     return false;
   }
 }
 
-Future<bool> deleteProject({required final String fullProjectPath}) async {
-  try {
+Future<bool> deleteProject({required final String fullProjectPath}) async
+{
+  try
+  {
     final bool success = await deleteFile(path: fullProjectPath);
-    final String? pngPath = await replaceFileExtension(
-        filePath: fullProjectPath,
-        newExtension: thumbnailExtension,
-        inputFileMustExist: false,);
-    if (pngPath != null) {
+    final String? pngPath = await replaceFileExtension(filePath: fullProjectPath, newExtension: thumbnailExtension, inputFileMustExist: false,);
+    if (pngPath != null) 
+    {
       await deleteFile(path: pngPath);
     }
     return success;
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     GetIt.I.get<Logger>().w("Error deleting project.", error: e, stackTrace: s);
     return false;
   }
 }
 
-Future<String?> saveCurrentPalette(
-    {required final String fileName,
-    required final String directory,
-    required final String extension,}) async {
+Future<String?> saveCurrentPalette({required final String fileName, required final String directory, required final String extension,}) async
+{
   final String finalPath = p.join(directory, fileName);
   final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
   final Uint8List data = await createPaletteKPalData(rampList: rampList);
-  return await _savePaletteDataToFile(
-      data: data, path: finalPath, extension: extension,);
+  return await _savePaletteDataToFile(data: data, path: finalPath, extension: extension,);
 }
 
-Future<String?> exportPalettePressed(
-    {required final PaletteExportData saveData,
-    required final PaletteExportType paletteType,}) async {
+Future<String?> exportPalettePressed({required final PaletteExportData saveData, required final PaletteExportType paletteType,}) async
+{
   final Logger logger = GetIt.I.get<Logger>();
   final String finalPath = p.join(saveData.directory, saveData.fileName);
   logger.i("Exporting palette to $finalPath.");
 
   Uint8List? data;
 
-  try {
+  try
+  {
     final List<KPalRampData> rampList = GetIt.I.get<AppState>().colorRamps;
     final ColorNames colorNames = GetIt.I.get<PreferenceManager>().colorNames;
 
-    switch (paletteType) {
+    switch (paletteType)
+    {
       case PaletteExportType.kpal:
         data = await createPaletteKPalData(rampList: rampList);
       //break;
@@ -434,127 +457,108 @@ Future<String?> exportPalettePressed(
         data = await getPaletteAsepriteData(rampList: rampList);
       //break;
       case PaletteExportType.gimp:
-        data = await getPaletteGimpData(
-            rampList: rampList, colorNames: colorNames,);
+        data = await getPaletteGimpData(rampList: rampList, colorNames: colorNames,);
       //break;
       case PaletteExportType.paintNet:
-        data = await getPalettePaintNetData(
-            rampList: rampList, colorNames: colorNames,);
+        data = await getPalettePaintNetData(rampList: rampList, colorNames: colorNames,);
       //break;
       case PaletteExportType.adobe:
-        data = await getPaletteAdobeData(
-            rampList: rampList, colorNames: colorNames,);
+        data = await getPaletteAdobeData(rampList: rampList, colorNames: colorNames,);
       //break;
       case PaletteExportType.jasc:
         data = await getPaletteJascData(rampList: rampList);
       //break;
       case PaletteExportType.corel:
-        data = await getPaletteCorelData(
-            rampList: rampList, colorNames: colorNames,);
+        data = await getPaletteCorelData(rampList: rampList, colorNames: colorNames,);
       //break;
       case PaletteExportType.openOffice:
-        data = await getPaletteOpenOfficeData(
-            rampList: rampList, colorNames: colorNames,);
+        data = await getPaletteOpenOfficeData(rampList: rampList, colorNames: colorNames,);
       //break;
       case PaletteExportType.json:
         data = await getPaletteJsonData(rampList: rampList);
       //break;
     }
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error creating palette data.", error: e, stackTrace: s);
   }
 
-  if (data != null) {
-    try {
-      return await _savePaletteDataToFile(
-          data: data, path: finalPath, extension: saveData.extension,);
-    } catch (e, s) {
+  if (data != null) 
+  {
+    try
+    {
+      return await _savePaletteDataToFile(data: data, path: finalPath, extension: saveData.extension,);
+    }
+    catch (e, s)
+    {
       logger.w("Error writing palette data.", error: e, stackTrace: s);
       return null;
     }
-  } else {
+  }
+  else
+  {
     return null;
   }
 }
 
-Future<String?> _savePaletteDataToFile(
-    {required final Uint8List data,
-    required final String path,
-    required final String extension,}) async {
+Future<String?> _savePaletteDataToFile({required final Uint8List data, required final String path, required final String extension,}) async
+{
   final String pathWithExtension = "$path.$extension";
-  if (!kIsWeb) {
+  if (!kIsWeb)
+  {
     await File(pathWithExtension).writeAsBytes(data);
     return pathWithExtension;
-  } else {
-    final String newPath = await FileSaver.instance.saveFile(
-      name: path,
-      bytes: data,
-      fileExtension: extension,
-    );
+  }
+  else
+  {
+    final String newPath = await FileSaver.instance.saveFile(name: path, bytes: data, fileExtension: extension,);
     return "$newPath/$pathWithExtension";
   }
 }
 
-Future<String?> getDirectory({required final String startDir}) async {
-  return await FilePicker.getDirectoryPath(
-      dialogTitle: "Choose Directory", initialDirectory: startDir,);
+Future<String?> getDirectory({required final String startDir}) async
+{
+  return await FilePicker.getDirectoryPath(dialogTitle: "Choose Directory", initialDirectory: startDir,);
 }
 
-Future<String?> exportImage(
-    {required final ImageExportData exportData,
-    required final ImageExportType exportType,}) async {
+Future<String?> exportImage({required final ImageExportData exportData, required final ImageExportType exportType,}) async
+{
   final Logger logger = GetIt.I.get<Logger>();
   final String path = !kIsWeb
-      ? p.join(exportData.directory,
-          "${exportData.fileName}.${exportData.extension}",)
+      ? p.join(
+          exportData.directory,
+          "${exportData.fileName}.${exportData.extension}",
+        )
       : exportData.fileName;
   logger.i("Exporting image to $path.");
 
   Uint8List? data;
 
-  try {
+  try
+  {
     final AppState appState = GetIt.I.get<AppState>();
     final CoordinateSetI canvasSize = appState.canvasSize;
-    final LayerCollection layerList =
-        appState.timeline.selectedFrame!.layerList;
+    final LayerCollection layerList = appState.timeline.selectedFrame!.layerList;
     final SelectionList selection = appState.selectionState.selection;
     final List<KPalRampData> colorRamps = appState.colorRamps;
 
-    switch (exportType) {
+    switch (exportType)
+    {
       case ImageExportType.png:
-        data = await exportPNG(
-            exportData: exportData,
-            canvasSize: canvasSize,
-            selection: selection,
-            layerList: layerList,);
+        data = await exportPNG(exportData: exportData, canvasSize: canvasSize, selection: selection, layerList: layerList,);
       //break;
       case ImageExportType.aseprite:
-        data = await getAsepriteData(
-            canvasSize: canvasSize,
-            selection: selection,
-            layerCollection: layerList,
-            colorRamps: colorRamps,);
+        data = await getAsepriteData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
       //break;
       case ImageExportType.photoshop:
-        data = await getPsdDataRGB(
-            canvasSize: canvasSize,
-            selection: selection,
-            layerCollection: layerList,
-            colorRamps: colorRamps,);
+        data = await getPsdDataRGB(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
       //  break;
       case ImageExportType.gimp:
-        data = await getGimpData(
-            canvasSize: canvasSize,
-            selection: selection,
-            layerCollection: layerList,
-            colorRamps: colorRamps,);
+        data = await getGimpData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
       //break;
       case ImageExportType.pixelorama:
-        data = await getPixeloramaData(
-            canvasSize: canvasSize,
-            selection: selection,
-            layerCollection: layerList,
-            colorRamps: colorRamps,);
+        data = await getPixeloramaData(canvasSize: canvasSize, selection: selection, layerCollection: layerList, colorRamps: colorRamps,);
       //break;
       case ImageExportType.kpix:
         data = (await createKPixData(appState: appState)).buffer.asUint8List();
@@ -563,17 +567,23 @@ Future<String?> exportImage(
         data = await exportTexturePack(appState: appState);
       //break;
     }
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error creating image data.", error: e, stackTrace: s);
   }
 
   String? returnPath;
   if (data != null) {
-    try {
-      if (!kIsWeb) {
+    try
+    {
+      if (!kIsWeb)
+      {
         await File(path).writeAsBytes(data);
         returnPath = path;
-      } else {
+      }
+      else
+      {
         final String newPath = await FileSaver.instance.saveFile(
           name: path,
           bytes: data,
@@ -581,7 +591,9 @@ Future<String?> exportImage(
         );
         returnPath = "$newPath/$path.${exportData.extension}";
       }
-    } catch (e, s) {
+    }
+    catch (e, s)
+    {
       logger.w("Error writing image data.", error: e, stackTrace: s);
     }
   }
@@ -589,13 +601,17 @@ Future<String?> exportImage(
   return returnPath;
 }
 
-Future<String?> exportAnimation(
-    {required final AnimationExportData exportData,
-    required final AnimationExportType exportType,}) async {
+Future<String?> exportAnimation({
+  required final AnimationExportData exportData,
+  required final AnimationExportType exportType,
+}) async
+{
   final Logger logger = GetIt.I.get<Logger>();
   final String path = !kIsWeb
-      ? p.join(exportData.directory,
-          "${exportData.fileName}.${exportData.extension}",)
+      ? p.join(
+          exportData.directory,
+          "${exportData.fileName}.${exportData.extension}",
+        )
       : exportData.fileName;
   final AppState appState = GetIt.I.get<AppState>();
 
@@ -603,8 +619,10 @@ Future<String?> exportAnimation(
 
   Uint8List? data;
 
-  try {
-    switch (exportType) {
+  try
+  {
+    switch (exportType)
+    {
       case AnimationExportType.apng:
         data = await exportAPNG(exportData: exportData, appState: appState);
       //break;
@@ -612,8 +630,7 @@ Future<String?> exportAnimation(
         data = await exportGIF(exportData: exportData, appState: appState);
       //break;
       case AnimationExportType.zippedPng:
-        data =
-            await exportZippedPng(exportData: exportData, appState: appState);
+        data = await exportZippedPng(exportData: exportData, appState: appState);
       //break;
       //case ExportType.aseprite:
       // TODO: Handle this case.
@@ -622,21 +639,26 @@ Future<String?> exportAnimation(
       // TODO: Handle this case.
       //  break;
       case AnimationExportType.texturePack:
-        data = await exportTexturePackAnimation(
-            exportData: exportData, appState: appState,);
+        data = await exportTexturePackAnimation(exportData: exportData, appState: appState,);
       //break;
     }
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error creating animation data.", error: e, stackTrace: s);
   }
 
   String? returnPath;
   if (data != null) {
-    try {
-      if (!kIsWeb) {
+    try
+    {
+      if (!kIsWeb)
+      {
         await File(path).writeAsBytes(data);
         returnPath = path;
-      } else {
+      }
+      else
+      {
         final String newPath = await FileSaver.instance.saveFile(
           name: path,
           bytes: data,
@@ -644,7 +666,9 @@ Future<String?> exportAnimation(
         );
         returnPath = "$newPath/$path.${exportData.extension}";
       }
-    } catch (e, s) {
+    }
+    catch (e, s)
+    {
       logger.w("Error writing animation data.", error: e, stackTrace: s);
     }
   }
@@ -652,22 +676,23 @@ Future<String?> exportAnimation(
   return returnPath;
 }
 
-FileNameStatus checkFileName(
-    {required final String fileName,
-    required final String directory,
-    required final String extension,
-    final bool allowRecoverFile = true,}) {
+FileNameStatus checkFileName({required final String fileName, required final String directory, required final String extension, final bool allowRecoverFile = true,})
+{
   final Logger logger = GetIt.I.get<Logger>();
-  try {
-    if (fileName.isEmpty) {
+  try
+  {
+    if (fileName.isEmpty)
+    {
       return FileNameStatus.forbidden;
     }
 
-    if (kIsWeb) {
+    if (kIsWeb)
+    {
       return FileNameStatus.available;
     }
 
-    if (Platform.isWindows) {
+    if (Platform.isWindows)
+    {
       final List<String> reservedFilenames = <String>[
         'CON',
         'PRN',
@@ -692,14 +717,14 @@ FileNameStatus checkFileName(
         'LPT8',
         'LPT9',
       ];
-      if (fileName.endsWith(' ') ||
-          fileName.endsWith('.') ||
-          reservedFilenames.contains(fileName.toUpperCase())) {
+      if (fileName.endsWith(' ') || fileName.endsWith('.') || reservedFilenames.contains(fileName.toUpperCase()))
+      {
         return FileNameStatus.forbidden;
       }
     }
 
-    if (fileName == recoverFileName && !allowRecoverFile) {
+    if (fileName == recoverFileName && !allowRecoverFile) 
+    {
       return FileNameStatus.forbidden;
     }
 
@@ -715,46 +740,60 @@ FileNameStatus checkFileName(
       '<',
       '>',
     ];
-    for (final String char in invalidCharacters) {
-      if (fileName.contains(char)) {
+    for (final String char in invalidCharacters)
+    {
+      if (fileName.contains(char))
+      {
         return FileNameStatus.forbidden;
       }
     }
-    if (!hasWriteAccess(directory: directory)) {
+    if (!hasWriteAccess(directory: directory))
+    {
       return FileNameStatus.noRights;
     }
 
     final String fullPath = p.join(directory, "$fileName.$extension");
     final File file = File(fullPath);
-    if (file.existsSync()) {
+    if (file.existsSync())
+    {
       return FileNameStatus.overwrite;
     }
 
     return FileNameStatus.available;
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error checking file name.", error: e, stackTrace: s);
   }
   return FileNameStatus.forbidden;
 }
 
-
-
-Future<String> findExportDir() async {
-  if (!kIsWeb) {
-    if (isDesktop() || Platform.isIOS) {
+Future<String> findExportDir() async
+{
+  if (!kIsWeb)
+  {
+    if (isDesktop() || Platform.isIOS)
+    {
       final Directory? downloadDir = await getDownloadsDirectory();
-      if (downloadDir != null) {
+      if (downloadDir != null) 
+      {
         return downloadDir.path;
       }
-    } else if (Platform.isAndroid) {
+    } 
+    else if (Platform.isAndroid)
+    {
       final Directory directoryDL = Directory("/storage/emulated/0/Download/");
-      final Directory directoryDLs =
-          Directory("/storage/emulated/0/Downloads/");
-      if (await directoryDL.exists()) {
+      final Directory directoryDLs = Directory("/storage/emulated/0/Downloads/");
+      if (await directoryDL.exists())
+      {
         return directoryDL.path;
-      } else if (await directoryDLs.exists()) {
+      } 
+      else if (await directoryDLs.exists())
+      {
         return directoryDLs.path;
-      } else {
+      }
+      else
+      {
         final Directory? directory = await getExternalStorageDirectory();
         if (directory != null && await directory.exists()) {
           return directory.path;
@@ -765,8 +804,10 @@ Future<String> findExportDir() async {
   return "";
 }
 
-Future<String> findInternalDir() async {
-  if (kIsWeb) {
+Future<String> findInternalDir() async
+{
+  if (kIsWeb)
+  {
     return "";
   }
 
@@ -774,7 +815,8 @@ Future<String> findInternalDir() async {
   return internalDir.path;
 }
 
-String getDefaultProjectsDir({required final String internalDir}) {
+String getDefaultProjectsDir({required final String internalDir})
+{
   return p.join(internalDir, projectsSubDirName);
 }
 
@@ -786,34 +828,29 @@ class ProjectDirectoryResolveResult
   ProjectDirectoryResolveResult({required this.resolvedDir, required this.useCustom, required this.customValid});
 }
 
-Future<ProjectDirectoryResolveResult> resolveProjectsDir({required final String internalDir}) async {
+Future<ProjectDirectoryResolveResult> resolveProjectsDir({required final String internalDir}) async
+{
   String dirToUse = getDefaultProjectsDir(internalDir: internalDir);
   bool customValid = false;
   bool useCustomDir = false;
-  if (!kIsWeb) {
-    useCustomDir = GetIt.I
-        .get<PreferenceManager>()
-        .behaviorPreferenceContent
-        .useCustomProjectDirectory
-        .value;
-    final String customDir = GetIt.I
-        .get<PreferenceManager>()
-        .behaviorPreferenceContent
-        .customProjectDirectory
-        .value;
+  if (!kIsWeb)
+  {
+    useCustomDir = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.useCustomProjectDirectory.value;
+    final String customDir = GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.customProjectDirectory.value;
 
-
-    if (customDir.isNotEmpty) {
-      if (await Directory(customDir).exists() &&
-          hasWriteAccess(directory: customDir)) {
+    if (customDir.isNotEmpty)
+    {
+      if (await Directory(customDir).exists() && hasWriteAccess(directory: customDir))
+      {
         customValid = true;
       }
     }
 
-    if (useCustomDir) {
-      if (!customValid) {
-        GetIt.I.get<Logger>().w(
-          "Custom project directory $customDir is not accessible, falling back to the default directory.",);
+    if (useCustomDir)
+    {
+      if (!customValid)
+      {
+        GetIt.I.get<Logger>().w("Custom project directory $customDir is not accessible, falling back to the default directory.",);
       }
       else
       {
@@ -824,53 +861,66 @@ Future<ProjectDirectoryResolveResult> resolveProjectsDir({required final String 
   return ProjectDirectoryResolveResult(resolvedDir: dirToUse, useCustom: useCustomDir, customValid: customValid);
 }
 
-class ProjectDirectoryMoveResult {
+class ProjectDirectoryMoveResult
+{
   final bool success;
   final String message;
   final int projectCount;
-  ProjectDirectoryMoveResult(
-      {required this.success, required this.message, this.projectCount = 0,});
+  
+  ProjectDirectoryMoveResult({required this.success, required this.message, this.projectCount = 0,});
 }
 
-Future<ProjectDirectoryMoveResult> moveProjectFiles(
-    {required final String sourceDir, required final String targetDir,}) async {
+Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourceDir, required final String targetDir,}) async
+{
   final Logger logger = GetIt.I.get<Logger>();
   logger.i("Moving project files from $sourceDir to $targetDir.");
-  try {
+  try
+  {
     final Directory target = Directory(targetDir);
-    if (!await target.exists()) {
-      try {
+    if (!await target.exists())
+    {
+      try
+      {
         await target.create(recursive: true);
-      } catch (e, s) {
-        logger.w("Could not create target directory $targetDir.",
-            error: e, stackTrace: s,);
+      }
+      catch (e, s)
+      {
+        logger.w(
+          "Could not create target directory $targetDir.",
+          error: e,
+          stackTrace: s,
+        );
         return ProjectDirectoryMoveResult(
-            success: false,
-            message: "The directory does not exist and could not be created!",);
+          success: false,
+          message: "The directory does not exist and could not be created!",
+        );
       }
     }
-    if (!hasWriteAccess(directory: targetDir)) {
+    if (!hasWriteAccess(directory: targetDir))
+    {
       return ProjectDirectoryMoveResult(
-          success: false,
-          message: "Insufficient permissions for the directory!",);
+        success: false,
+        message: "Insufficient permissions for the directory!",
+      );
     }
 
     final List<File> filesToMove = <File>[];
     int projectCount = 0;
     final Directory source = Directory(sourceDir);
-    if (await source.exists()) {
-      await for (final FileSystemEntity entity
-          in source.list(followLinks: false)) {
-        if (entity is File && entity.path.endsWith(".$fileExtensionKpix")) {
+    if (await source.exists())
+    {
+      await for (final FileSystemEntity entity in source.list(followLinks: false))
+      {
+        if (entity is File && entity.path.endsWith(".$fileExtensionKpix"))
+        {
           filesToMove.add(entity);
           projectCount++;
-          final String? pngPath = await replaceFileExtension(
-              filePath: entity.path,
-              newExtension: thumbnailExtension,
-              inputFileMustExist: true,);
-          if (pngPath != null) {
+          final String? pngPath = await replaceFileExtension(filePath: entity.path, newExtension: thumbnailExtension, inputFileMustExist: true,);
+          if (pngPath != null) 
+          {
             final File pngFile = File(pngPath);
-            if (await pngFile.exists()) {
+            if (await pngFile.exists())
+            {
               filesToMove.add(pngFile);
             }
           }
@@ -878,119 +928,150 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles(
       }
     }
 
-    for (final File file in filesToMove) {
+    for (final File file in filesToMove)
+    {
       final String targetPath = p.join(targetDir, p.basename(file.path));
-      if (await File(targetPath).exists()) {
-        return ProjectDirectoryMoveResult(
-            success: false,
-            message:
-                "The directory already contains a file named ${p.basename(file.path)}!",);
+      if (await File(targetPath).exists())
+      {
+        return ProjectDirectoryMoveResult(success: false, message: "The directory already contains a file named ${p.basename(file.path)}!",);
       }
     }
 
     final List<(String, String)> movedFiles = <(String, String)>[];
-    for (final File file in filesToMove) {
+    for (final File file in filesToMove)
+    {
       final String targetPath = p.join(targetDir, p.basename(file.path));
-      try {
+      try
+      {
         await moveFile(sourceFile: file, targetPath: targetPath);
         movedFiles.add((file.path, targetPath));
-      } catch (e, s) {
-        logger.w("Error moving ${file.path} to $targetPath, rolling back.",
-            error: e, stackTrace: s,);
-        for (final (String, String) movedFile in movedFiles) {
-          try {
+      }
+      catch (e, s)
+      {
+        logger.w(
+          "Error moving ${file.path} to $targetPath, rolling back.",
+          error: e,
+          stackTrace: s,
+        );
+        for (final (String, String) movedFile in movedFiles)
+        {
+          try
+          {
             await moveFile(
-                sourceFile: File(movedFile.$2), targetPath: movedFile.$1,);
-          } catch (e2, s2) {
-            logger.e("Rollback failed for ${movedFile.$2}.",
-                error: e2, stackTrace: s2,);
+              sourceFile: File(movedFile.$2),
+              targetPath: movedFile.$1,
+            );
+          }
+          catch (e2, s2)
+          {
+            logger.e(
+              "Rollback failed for ${movedFile.$2}.",
+              error: e2,
+              stackTrace: s2,
+            );
           }
         }
         return ProjectDirectoryMoveResult(
-            success: false,
-            message: "Could not move file ${p.basename(file.path)}!",);
+          success: false,
+          message: "Could not move file ${p.basename(file.path)}!",
+        );
       }
     }
 
     logger.i("Moved $projectCount project file(s) to $targetDir.");
-    return ProjectDirectoryMoveResult(
-        success: true, message: "", projectCount: projectCount,);
-  } catch (e, s) {
+    return ProjectDirectoryMoveResult(success: true, message: "", projectCount: projectCount,);
+  }
+  catch (e, s)
+  {
     logger.w("Error moving project files.", error: e, stackTrace: s);
-    return ProjectDirectoryMoveResult(
-        success: false,
-        message: "An unexpected error occurred while moving project files!",);
+    return ProjectDirectoryMoveResult(success: false, message: "An unexpected error occurred while moving project files!",);
   }
 }
 
-Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async {
+Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async
+{
   final Logger logger = GetIt.I.get<Logger>();
-  logger.i(
-      "Loading projects from project directory: ${GetIt.I.get<AppState>().projectsDir}.",);
+  logger.i("Loading projects from project directory: ${GetIt.I.get<AppState>().projectsDir}.",);
 
   final List<ProjectManagerEntryData> projectData = <ProjectManagerEntryData>[];
   final Directory dir = Directory(GetIt.I.get<AppState>().projectsDir);
 
-  if (await dir.exists()) {
-    try {
-      await for (final FileSystemEntity entity
-          in dir.list(followLinks: false)) {
-        if (entity is File && entity.path.endsWith(".$fileExtensionKpix")) {
-          final String? pngPath = await replaceFileExtension(
-              filePath: entity.absolute.path,
-              newExtension: thumbnailExtension,
-              inputFileMustExist: true,);
+  if (await dir.exists())
+  {
+    try
+    {
+      await for (final FileSystemEntity entity in dir.list(followLinks: false))
+      {
+        if (entity is File && entity.path.endsWith(".$fileExtensionKpix"))
+        {
+          final String? pngPath = await replaceFileExtension(filePath: entity.absolute.path, newExtension: thumbnailExtension, inputFileMustExist: true,);
           ui.Image? thumbnail;
           if (pngPath != null) {
             final File pngFile = File(pngPath);
-            if (await pngFile.exists()) {
+            if (await pngFile.exists())
+            {
               final Uint8List imageBytes = await pngFile.readAsBytes();
               final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
               final ui.FrameInfo frame = await codec.getNextFrame();
               thumbnail = frame.image;
             }
           }
-          projectData.add(ProjectManagerEntryData(
+          projectData.add(
+            ProjectManagerEntryData(
               name: extractFilenameFromPath(
-                  path: entity.absolute.path, keepExtension: false,),
+                path: entity.absolute.path,
+                keepExtension: false,
+              ),
               path: entity.absolute.path,
               thumbnail: thumbnail,
-              dateTime: await entity.lastModified(),),);
+              dateTime: await entity.lastModified(),
+            ),
+          );
         }
       }
-    } catch (e, s) {
-      logger.w("Error loading projects from internal directory.",
-          error: e, stackTrace: s,);
     }
-  } else {
-    logger.w(
-        "Project directory ${GetIt.I.get<AppState>().projectsDir} does not exist.",);
+    catch (e, s)
+    {
+      logger.w(
+        "Error loading projects from internal directory.",
+        error: e,
+        stackTrace: s,
+      );
+    }
+  }
+  else
+  {
+    logger.w("Project directory ${GetIt.I.get<AppState>().projectsDir} does not exist.",);
   }
   return projectData;
 }
 
-void setUint64(
-    {required final ByteData bytes,
-    required final int offset,
-    required final int value,
-    final Endian endian = Endian.big,}) {
-  if (kIsWeb) {
+void setUint64({required final ByteData bytes, required final int offset, required final int value, final Endian endian = Endian.big,})
+{
+  if (kIsWeb)
+  {
     final int low = value & 0xFFFFFFFF;
     final int high = (value >> 32) & 0xFFFFFFFF;
 
-    if (endian == Endian.little) {
+    if (endian == Endian.little) 
+    {
       bytes.setUint32(offset, low, Endian.little);
       bytes.setUint32(offset + 4, high, Endian.little);
-    } else {
+    }
+    else
+    {
       bytes.setUint32(offset, high);
       bytes.setUint32(offset + 4, low);
     }
-  } else {
+  }
+  else
+  {
     bytes.setUint64(offset, value);
   }
 }
 
-Future<void> createInternalDirectories() async {
+Future<void> createInternalDirectories() async
+{
   final List<Directory> internalDirectories = <Directory>[
     Directory(p.join(GetIt.I.get<AppState>().internalDir, palettesSubDirName)),
     Directory(p.join(GetIt.I.get<AppState>().internalDir, projectsSubDirName)),
@@ -998,95 +1079,118 @@ Future<void> createInternalDirectories() async {
     Directory(p.join(GetIt.I.get<AppState>().internalDir, stampsSubDirName)),
   ];
 
-  for (final Directory dir in internalDirectories) {
+  for (final Directory dir in internalDirectories)
+  {
     final bool dirExists = await dir.exists();
-    if (!dirExists) {
+    if (!dirExists)
+    {
       await dir.create();
     }
   }
 }
 
-Future<void> clearRecoverDir() async {
-  if (!kIsWeb) {
+Future<void> clearRecoverDir() async
+{
+  if (!kIsWeb)
+  {
     final Logger logger = GetIt.I.get<Logger>();
-    try {
+    try
+    {
       final Directory recoverDir = Directory(
-          p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName),);
+        p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName),
+      );
       final List<FileSystemEntity> files = await recoverDir.list().toList();
-      for (final FileSystemEntity file in files) {
+      for (final FileSystemEntity file in files)
+      {
         await file.delete(recursive: true);
       }
-    } catch (e, s) {
+    }
+    catch (e, s)
+    {
       logger.w("Error clearing recovery directory.", error: e, stackTrace: s);
     }
   }
 }
 
-Future<String?> getRecoveryFile() async {
+Future<String?> getRecoveryFile() async
+{
   final Logger logger = GetIt.I.get<Logger>();
-  try {
+  try
+  {
     final Directory recoverDir = Directory(
-        p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName),);
+      p.join(GetIt.I.get<AppState>().internalDir, recoverSubDirName),
+    );
     final List<FileSystemEntity> files = await recoverDir.list().toList();
     if (files.length == 1) {
       logger.i("Found recovery file ${files[0].path}.");
       return files[0].path;
     }
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error getting recovery file.", error: e, stackTrace: s);
   }
   return null;
 }
 
-Future<bool> importProject(
-    {required final String? path, final bool showMessages = true,}) async {
+Future<bool> importProject({required final String? path, final bool showMessages = true,}) async
+{
   bool success = false;
   final Logger logger = GetIt.I.get<Logger>();
 
-  try {
-    if (path != null && path.isNotEmpty) {
-      if (path.endsWith(fileExtensionKpix)) {
+  try
+  {
+    if (path != null && path.isNotEmpty)
+    {
+      if (path.endsWith(fileExtensionKpix))
+      {
         final LoadFileSet loadFileSet = await loadKPixFile(
           fileData: null,
           path: path,
-          drawingLayerSettingsConstraints:
-              GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
-          shadingLayerSettingsConstraints:
-              GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+          drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
+          shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
         );
         final AppState appState = GetIt.I.get<AppState>();
-        if (loadFileSet.historyState != null && loadFileSet.path != null) {
-          final String fileName =
-              extractFilenameFromPath(path: loadFileSet.path);
+        if (loadFileSet.historyState != null && loadFileSet.path != null)
+        {
+          final String fileName = extractFilenameFromPath(path: loadFileSet.path);
           final String projectPath = p.join(appState.projectsDir, fileName);
-          if (!File(projectPath).existsSync()) {
-            final ui.Image? img = await getImageFromLoadFileSet(
-                loadFileSet: loadFileSet,
-                size: loadFileSet.historyState!.canvasSize,);
-            if (img != null) {
-              success = await copyImportFile(
-                  inputPath: loadFileSet.path!,
-                  image: img,
-                  targetPath: projectPath,);
-            } else {
-              if (showMessages) {
+          if (!File(projectPath).existsSync())
+          {
+            final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet, size: loadFileSet.historyState!.canvasSize,);
+            if (img != null)
+            {
+              success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
+            }
+            else
+            {
+              if (showMessages)
+              {
                 appState.showMessage(text: "Could not open file!");
               }
             }
-          } else {
-            if (showMessages) {
-              appState.showMessage(
-                  text: "Project with the same name already exists!",);
+          }
+          else
+          {
+            if (showMessages)
+            {
+              appState.showMessage(text: "Project with the same name already exists!",);
             }
           }
-        } else {
+        }
+        else
+        {
           if (showMessages) appState.showMessage(text: "Could not open file!");
         }
-      } else {
+      }
+      else
+      {
         GetIt.I.get<AppState>().showMessage(text: "Please select a KPix file!");
       }
     }
-  } catch (e, s) {
+  }
+  catch (e, s)
+  {
     logger.w("Error importing project.", error: e, stackTrace: s);
   }
 
@@ -1147,11 +1251,13 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
             canvas: canvas,
             rect: ui.Rect.fromLTWH(0, 0,
               state.canvasSize.x.toDouble(),
-              state.canvasSize.y.toDouble(),),
+              state.canvasSize.y.toDouble(),
+            ),
             image: drawingLayer.rasterImage.value!,
             fit: BoxFit.none,
             alignment: Alignment.topLeft,
-            filterQuality: FilterQuality.none,);
+            filterQuality: FilterQuality.none,
+          );
         }
       }
     }
@@ -1200,12 +1306,14 @@ Future<ui.Image> getImageFromLayers({
           canvas: canvas,
           rect: ui.Rect.fromLTWH(0, 0,
             canvasSize.x.toDouble() * scalingFactor,
-            canvasSize.y.toDouble() * scalingFactor,),
+            canvasSize.y.toDouble() * scalingFactor,
+          ),
           image: imageToUse,
           fit: BoxFit.none,
           scale: 1.0 / scalingFactor.toDouble(),
           alignment: Alignment.topLeft,
-          filterQuality: FilterQuality.none,);
+          filterQuality: FilterQuality.none,
+        );
         if (layerStack != null && selection.hasValues() && i == layerCollection.selectedLayerIndex)
         {
           final Paint paint = Paint();
@@ -1214,12 +1322,15 @@ Future<ui.Image> getImageFromLayers({
             if (entry.value != null)
             {
               paint.color = entry.value!.getIdColor().color;
-              canvas.drawRect(Rect.fromLTWH(
-                entry.key.x.toDouble() * scalingFactor,
-                entry.key.y.toDouble() * scalingFactor,
-                scalingFactor.toDouble(),
-                scalingFactor.toDouble(),),
-                paint,);
+              canvas.drawRect(
+                Rect.fromLTWH(
+                  entry.key.x.toDouble() * scalingFactor,
+                  entry.key.y.toDouble() * scalingFactor,
+                  scalingFactor.toDouble(),
+                  scalingFactor.toDouble(),
+                ),
+                paint,
+              );
             }
           }
         }
@@ -1238,7 +1349,6 @@ bool isDesktop({final bool includingWeb = false})
   }
   else
   {
-    return (kIsWeb && includingWeb) || Platform.isMacOS ||
-        Platform.isLinux || Platform.isWindows;
+    return (kIsWeb && includingWeb) || Platform.isMacOS || Platform.isLinux || Platform.isWindows;
   }
 }

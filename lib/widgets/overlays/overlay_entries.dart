@@ -673,7 +673,7 @@ KPixOverlay getLoadingDialog({required final String message, final TextStyle? te
       child: KPixAnimationWidget(
         constraints: const BoxConstraints(
           maxHeight: OverlayEntryAlertDialogOptions.maxHeight / 4.0,
-          maxWidth: OverlayEntryAlertDialogOptions.maxWidth / 2.0,
+          maxWidth: OverlayEntryAlertDialogOptions.maxWidth / 1.5,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

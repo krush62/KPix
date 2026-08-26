@@ -143,24 +143,19 @@ Future<Uint8List?> getPixeloramaData({required final List<KPalRampData> colorRam
 
   }
 
-  final Archive zipFile = Archive();
-  final List<int> dataBytes = utf8.encode(dataBuffer.toString());
-  zipFile.addFile(ArchiveFile("data.json", dataBytes.length, dataBytes));
-
+  final Map<String, Uint8List> files = <String, Uint8List>{
+    "data.json": Uint8List.fromList(utf8.encode(dataBuffer.toString())),
+  };
 
   const String layerDir = "image_data/frames/1";
   int layerIndex = 1;
   for (int l = layerList.length - 1; l >= 0; l--)
   {
-    final Uint8List layerData = layerList[l].buffer.asUint8List();
-    final Uint8List indexData = indexList[l].buffer.asUint8List();
-    final String layerPath = "$layerDir/layer_$layerIndex";
-    final String indexPath = "$layerDir/indices_layer_$layerIndex";
-    zipFile.addFile(ArchiveFile(layerPath, layerData.length, layerData));
-    zipFile.addFile(ArchiveFile(indexPath, indexData.length, indexData));
+    files["$layerDir/layer_$layerIndex"] = layerList[l].buffer.asUint8List();
+    files["$layerDir/indices_layer_$layerIndex"] = indexList[l].buffer.asUint8List();
     layerIndex++;
   }
 
-  return Uint8List.fromList(ZipEncoder().encode(zipFile));
+  return await _zipOffThread(files: files, debugLabel: "pixelorama-export");
 
 }

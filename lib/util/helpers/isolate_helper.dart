@@ -14,18 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-part of '../../export_functions.dart';
+/// Runs a piece of pure computation away from the UI isolate where the platform
+/// allows it.
+///
+/// Native builds hand the work to a background isolate; web builds run it inline,
+/// so callers must not rely on the UI staying responsive there.
+library;
 
-Future<Uint8List?> exportAPNG({required final AnimationExportData exportData, required final AppState appState}) async
-{
-  final List<RenderedFrame>? frames = await _renderAnimationFrames(exportData: exportData, appState: appState);
-  if (frames == null || frames.isEmpty)
-  {
-    return null;
-  }
-
-  return await runOffThread<Uint8List>(
-    debugLabel: "apng-export",
-    work: () => _encodeAnimation(frames: frames, format: _AnimationFormat.apng),
-  );
-}
+export 'isolate_helper_web.dart' if (dart.library.io) 'isolate_helper_io.dart';

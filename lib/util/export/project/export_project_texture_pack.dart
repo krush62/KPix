@@ -18,26 +18,15 @@ part of '../../export_functions.dart';
 
 Future<Uint8List?> exportTexturePack({required final AppState appState}) async
 {
-  final Archive zipFile = Archive();
-
   final CoordinateColorMapNullable colorMap = await getMergedColors(frame: appState.timeline.selectedFrame!, canvasSize: appState.canvasSize);
 
-  //create color texture
-  final Uint8List colorTexture = await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-  final List<int> colorTextureList = colorTexture.toList();
-  zipFile.addFile(ArchiveFile("color.bin", colorTextureList.length, colorTextureList));
+  final Map<String, Uint8List> files = <String, Uint8List>{
+    "color.bin": await createColorTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps),
+    "distance.bin": await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps),
+    "palette.bin": await createPaletteData(ramps: appState.colorRamps),
+  };
 
-  //create distance texture
-  final Uint8List distanceTexture = await createDistanceTexture(colorMap: colorMap, canvasSize: appState.canvasSize, ramps: appState.colorRamps);
-  final List<int> distanceTextureList = distanceTexture.toList();
-  zipFile.addFile(ArchiveFile("distance.bin", distanceTextureList.length, distanceTextureList));
-
-  //create palette data
-  final Uint8List paletteData = await createPaletteData(ramps: appState.colorRamps);
-  final List<int> paletteDataList = paletteData.toList();
-  zipFile.addFile(ArchiveFile("palette.bin", paletteDataList.length, paletteDataList));
-
-  return Uint8List.fromList(ZipEncoder().encode(zipFile));
+  return await _zipOffThread(files: files, debugLabel: "texture-pack-export");
 }
 
 

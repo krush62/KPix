@@ -48,6 +48,7 @@ import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -73,6 +74,144 @@ part 'export/project/export_project_psd.dart';
 part 'export/project/export_project_texture_pack.dart';
 part 'export/project/export_project_texture_pack_animation.dart';
 part 'export/project/export_project_zipped_png.dart';
+
+
+/// One rendered animation frame as plain data.
+///
+/// Rendering needs `dart:ui` and therefore has to happen on the UI isolate, but
+/// everything in here is copyable, so the encoding that follows can be handed to
+/// a background isolate.
+class RenderedFrame
+{
+  const RenderedFrame({
+    required this.pixels,
+    required this.width,
+    required this.height,
+    required this.durationMs,
+  });
+
+  /// Raw RGBA bytes, four per pixel.
+  final Uint8List pixels;
+  final int width;
+  final int height;
+
+  /// How long this frame is shown, in milliseconds.
+  final int durationMs;
+}
+
+/// The animated formats that [_encodeAnimation] can produce.
+enum _AnimationFormat
+{
+  gif,
+  apng,
+}
+
+/// Renders the exported frame range to raw pixels on the UI isolate.
+///
+/// Returns null when a frame could not be read back, which is what the callers
+/// report as a failed export.
+Future<List<RenderedFrame>?> _renderAnimationFrames({
+  required final AnimationExportData exportData,
+  required final AppState appState,
+}) async
+{
+  final int startFrame = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
+  final int endFrame = exportData.loopOnly ? appState.timeline.loopEndIndex.value : appState.timeline.frames.value.length - 1;
+
+  final List<RenderedFrame> renderedFrames = <RenderedFrame>[];
+  for (int i = startFrame; i <= endFrame; i++)
+  {
+    final Frame frame = appState.timeline.frames.value[i];
+    final ui.Image uiImage = await getImageFromLayers(
+      selection: appState.selectionState.selection,
+      canvasSize: appState.canvasSize,
+      layerCollection: frame.layerList,
+      scalingFactor: exportData.scaling,
+      frame: frame,
+    );
+    final ByteData? uiBytes = await uiImage.toByteData();
+    final int width = uiImage.width;
+    final int height = uiImage.height;
+    uiImage.dispose();
+
+    if (uiBytes == null)
+    {
+      return null;
+    }
+
+    renderedFrames.add(
+      RenderedFrame(
+        pixels: uiBytes.buffer.asUint8List(),
+        width: width,
+        height: height,
+        durationMs: frame.frameTime,
+      ),
+    );
+  }
+  return renderedFrames;
+}
+
+/// Assembles [frames] into an animation and encodes it.
+///
+/// Pure computation over plain data, so it can run on a background isolate. This
+/// is the expensive half of an animation export: quantizing and encoding a GIF
+/// takes seconds for anything but a tiny canvas.
+Uint8List _encodeAnimation({
+  required final List<RenderedFrame> frames,
+  required final _AnimationFormat format,
+})
+{
+  final img.Image animation = img.Image(
+    width: frames.first.width,
+    height: frames.first.height,
+    numChannels: 4,
+  );
+
+  for (int i = 0; i < frames.length; i++)
+  {
+    final RenderedFrame renderedFrame = frames[i];
+    final img.Image frame = img.Image.fromBytes(
+      width: renderedFrame.width,
+      height: renderedFrame.height,
+      bytes: renderedFrame.pixels.buffer,
+      order: img.ChannelOrder.rgba,
+      numChannels: 4,
+      frameDuration: renderedFrame.durationMs,
+    );
+
+    if (i == 0)
+    {
+      animation.frames[0] = frame;
+    }
+    else
+    {
+      animation.addFrame(frame);
+    }
+  }
+
+  return format == _AnimationFormat.gif ? img.encodeGif(animation) : img.encodePng(animation);
+}
+
+/// Zips [files] on a background isolate.
+///
+/// [files] maps the name inside the archive to its contents.
+Future<Uint8List> _zipOffThread({required final Map<String, Uint8List> files, required final String debugLabel}) async
+{
+  return await runOffThread<Uint8List>(
+    debugLabel: debugLabel,
+    work: ()
+    {
+      final Archive archive = Archive();
+      for (final MapEntry<String, Uint8List> file in files.entries)
+      {
+        final List<int> content = file.value.toList();
+        archive.addFile(ArchiveFile(file.key, content.length, content));
+      }
+      return Uint8List.fromList(ZipEncoder().encode(archive));
+    },
+  );
+}
+
 
 Future<CoordinateColorMapNullable> getMergedColors({required final Frame frame, required final CoordinateSetI canvasSize}) async
 {

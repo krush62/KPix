@@ -31,7 +31,20 @@ import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 
-enum OuterStrokeStyle
+/// A style that can be offered as one segment of a style selector.
+///
+/// Implemented by the per-section style enums so the settings widget can build
+/// their selectors with one generic builder instead of one per enum.
+abstract interface class StyleOption
+{
+  /// The short text shown on the segment.
+  String get label;
+
+  /// The tooltip explaining what the style does.
+  String get desc;
+}
+
+enum OuterStrokeStyle implements StyleOption
 {
   off(     0, "OFF", "No outer stroke"),
   solid(   1, "SLD", "Solid color outer stroke"),
@@ -41,7 +54,9 @@ enum OuterStrokeStyle
 
   const OuterStrokeStyle(this.id, this.label, this.desc);
   final int id;
+  @override
   final String label;
+  @override
   final String desc;
 
   static OuterStrokeStyle fromId(final int id) {
@@ -49,7 +64,7 @@ enum OuterStrokeStyle
   }
 }
 
-enum InnerStrokeStyle
+enum InnerStrokeStyle implements StyleOption
 {
   off(0, "OFF", "No inner stroke"),
   solid(1, "SLD", "Solid color inner stroke"),
@@ -59,7 +74,9 @@ enum InnerStrokeStyle
 
   const InnerStrokeStyle(this.id, this.label, this.desc);
   final int id;
+  @override
   final String label;
+  @override
   final String desc;
 
   static InnerStrokeStyle fromId(final int id) {
@@ -67,7 +84,7 @@ enum InnerStrokeStyle
   }
 }
 
-enum DropShadowStyle
+enum DropShadowStyle implements StyleOption
 {
   off(0, "OFF", "No drop shadow"),
   solid(1, "SLD", "Solid color drop shadow"),
@@ -75,7 +92,9 @@ enum DropShadowStyle
 
   const DropShadowStyle(this.id, this.label, this.desc);
   final int id;
+  @override
   final String label;
+  @override
   final String desc;
 
   static DropShadowStyle fromId(final int id) {

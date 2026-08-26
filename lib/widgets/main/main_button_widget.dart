@@ -70,6 +70,13 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
   late KPixOverlay _preferencesDialog;
   late KPixOverlay _saveAsDialog;
   late KPixOverlay _projectManagerDialog;
+
+  /// Run once the project manager reports that a file has been loaded.
+  ///
+  /// Set when the manager is opened on behalf of a caller that wants to know,
+  /// consumed by [_fileLoaded], and dropped again if the manager is dismissed
+  /// without loading anything.
+  Function()? _pendingLoadCallback;
   late KPixOverlay _importDialog;
   late KPixOverlay _importLoadingDialog;
   late KPixOverlay _exportLoadingDialog;
@@ -110,7 +117,7 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
         message: "There are unsaved changes, do you want to save first?",
     );
     _projectManagerDialog = getProjectManagerDialog(
-      onDismiss: _closeAllMenus,
+      onDismiss: _projectManagerDismissed,
       onSave: _saveFile,
       onLoad: _fileLoaded,
     );
@@ -230,7 +237,8 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
     }
     else
     {
-      _projectManagerDialog.show(context: context, callbackFunction: callback);
+      _pendingLoadCallback = callback;
+      _projectManagerDialog.show(context: context);
     }
   }
 
@@ -292,11 +300,16 @@ class _MainButtonWidgetState extends State<MainButtonWidget>
 
   void _fileLoaded()
   {
-    if (_projectManagerDialog.closeCallback != null)
-    {
-      _projectManagerDialog.closeCallback!();
-      _projectManagerDialog.closeCallback = null;
-    }
+    final Function()? callback = _pendingLoadCallback;
+    _pendingLoadCallback = null;
+    callback?.call();
+  }
+
+  void _projectManagerDismissed()
+  {
+    //the manager was closed without loading anything, so nobody is owed a call
+    _pendingLoadCallback = null;
+    _closeAllMenus();
   }
 
   void _savePressed()

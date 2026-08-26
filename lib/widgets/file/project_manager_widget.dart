@@ -117,8 +117,10 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
     ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: _loadingDialog.hide);});
     _closeSaveBeforeLoadWarning();
-    widget.dismiss();
+    //report the load before dismissing, so the dismiss handler can drop any
+    //pending callback without discarding one that is still owed a call
     widget.fileLoad();
+    widget.dismiss();
   }
 
   void _dismissPressed()

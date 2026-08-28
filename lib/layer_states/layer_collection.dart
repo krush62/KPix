@@ -170,6 +170,9 @@ class LayerCollection with ChangeNotifier {
       //constructor raster which ran before the layer was attached to any frame
       //(and therefore produced no image)
       layer.doManualRaster = true;
+      //shading layers above the insert position composite everything below them,
+      //so their raster no longer matches the stack the new layer is part of
+      invalidateDependents(layer: layer);
     }
   }
 
@@ -332,6 +335,9 @@ class LayerCollection with ChangeNotifier {
         selectLayer(newLayer: newLayer);
       }
       _rebuildDependencies();
+      //a new layer has no raster of its own yet; without this it only ever gets
+      //one when some other layer happens to re-raster and invalidates it
+      _triggerNewLayerRender(layer: newLayer);
       notifyListeners();
       return true;
     }

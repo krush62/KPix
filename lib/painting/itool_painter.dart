@@ -686,39 +686,6 @@ abstract class IToolPainter
     return pixelMap;
   }
 
-  ColorReference _getColorShading({
-    required final CoordinateSetI coord,
-    required final AppState appState,
-    required final ColorReference inputColor,
-    required final Frame frame,
-    required final LayerState currentLayer,
-    required final int layerIndex,
-  })
-  {
-    ColorReference retColor = inputColor;
-    if (frame.layerList.contains(layer: currentLayer))
-    {
-      int colorShift = 0;
-      for (int i = layerIndex; i >= 0; i--)
-      {
-        final LayerState layer = frame.layerList.getLayer(index: i);
-        if (layer is ShadingLayerState && layer.visibilityState.value == LayerVisibilityState.visible)
-        {
-          if (layer.hasCoord(coord: coord))
-          {
-            colorShift = (inputColor.colorIndex + colorShift + layer.getDisplayValueAt(coord: coord)!).clamp(0, inputColor.ramp.references.length - 1);
-          }
-        }
-      }
-      if (colorShift != 0)
-      {
-        retColor = inputColor.ramp.references[colorShift];
-      }
-    }
-
-    return retColor;
-  }
-
   bool _lockAllowsPaint({required final CoordinateSetI coord, required final DrawingLayerState layer,})
   {
     return layer.lockState.value == LayerLockState.unlocked || (layer.lockState.value == LayerLockState.transparency && layer.getDataEntry(coord: coord) != null);
@@ -737,7 +704,14 @@ abstract class IToolPainter
     return null;
   }
 
-  ColorReference? _resolveComposedColorAtCoord({required final CoordinateSetI coord, required final Frame frame, required final int toIndex, required final bool requireVisibility,})
+  /// The color a coord ends up with once the stack from the bottom up to
+  /// [toIndex] has been composed.
+  ///
+  /// [shiftLayer] and [layerShift] preview a pending shading change: the shift is
+  /// applied where that layer sits in the stack, so it passes through the same
+  /// clamping a real draw would. Applying it to the returned color instead would
+  /// move pixels whose ramp is already exhausted, which the draw leaves alone.
+  ColorReference? _resolveComposedColorAtCoord({required final CoordinateSetI coord, required final Frame frame, required final int toIndex, required final bool requireVisibility, final LayerState? shiftLayer, final int layerShift = 0,})
   {
     ColorReference? currentColor;
     for (int i = frame.layerList.length - 1; i >= toIndex; i--)
@@ -755,7 +729,7 @@ abstract class IToolPainter
         }
         else if (currentColor != null && layer is ShadingLayerState)
         {
-          final int? displayVal = layer.getDisplayValueAt(coord: coord);
+          final int? displayVal = layer.getDisplayValueAt(coord: coord, shift: layer == shiftLayer ? layerShift : 0,);
           if (displayVal != null)
           {
             final int newColorIndex = (currentColor.colorIndex + displayVal).clamp(0, currentColor.ramp.references.length - 1);
@@ -765,33 +739,6 @@ abstract class IToolPainter
       }
     }
     return currentColor;
-  }
-
-  CoordinateColorMap _applyColorShadingToMap({required final CoordinateColorMap pixelMap, required final LayerState currentLayer, required final bool apply,})
-  {
-    if (!apply) return pixelMap;
-    final CoordinateColorMap shadedPixelMap = HashMap<CoordinateSetI, ColorReference>();
-    final Frame? frame = appState.timeline.selectedFrame;
-    if (frame != null)
-    {
-      final int? currentIndex = frame.layerList.getLayerPosition(state: currentLayer);
-      if (currentIndex != null)
-      {
-        for (final CoordinateColor entry in pixelMap.entries)
-        {
-          shadedPixelMap[entry.key] = _getColorShading(
-              coord: entry.key,
-              appState: appState,
-              inputColor: entry.value,
-              currentLayer: currentLayer,
-              layerIndex: currentIndex,
-              frame: frame,
-          );
-        }
-      }
-    }
-
-    return shadedPixelMap;
   }
 
   CoordinateColorMap getPixelsToDrawForShading({required final CoordinateSetI canvasSize, required final ShadingLayerState currentLayer, required final Set<CoordinateSetI> coords, required final ShaderOptions shaderOptions,})
@@ -807,28 +754,28 @@ abstract class IToolPainter
         {
           if (canvasSize.contains(coord: coord))
           {
-            final ColorReference? currentColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: 0, requireVisibility: true,);
-            if (currentColor != null)
+            int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
+            final int currentVal = currentLayer.getRawValueAt(coord: coord) ?? 0;
+            if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
             {
-              int shift = shaderOptions.shaderDirection.value == ShaderDirection.right ? 1 : -1;
-              final int currentVal = currentLayer.getRawValueAt(coord: coord) ?? 0;
-              if (currentVal + shift < -currentLayer.settings.shadingStepsMinus.value || currentVal + shift > currentLayer.settings.shadingStepsPlus.value)
-              {
-                shift = 0;
-              }
+              shift = 0;
+            }
+            //stop at this layer: rasterizePixels applies everything above it, so
+            //composing past it here would apply those layers a second time
+            final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: true, shiftLayer: currentLayer, layerShift: shift,);
+            if (shiftedColor != null)
+            {
               if (currentLayer.runtimeType == ShadingLayerState)
               {
-                final int newColorIndex = (currentColor.colorIndex + shift).clamp(0, currentColor.ramp.references.length - 1);
-                pixelMap[coord] = currentColor.ramp.references[newColorIndex];
+                pixelMap[coord] = shiftedColor;
               }
               else if (currentLayer is DitherLayerState)
               {
-                final int currentVal = currentLayer.getDisplayValueAt(coord: coord);
+                final int currentDitherVal = currentLayer.getDisplayValueAt(coord: coord);
                 final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shift);
-                if (currentVal != ditherVal)
+                if (currentDitherVal != ditherVal)
                 {
-                  final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
-                  pixelMap[coord] = currentColor.ramp.references[newColorIndex];
+                  pixelMap[coord] = shiftedColor;
                 }
               }
             }
@@ -846,7 +793,6 @@ abstract class IToolPainter
     required final SelectionState selection,
     required final ShaderOptions shaderOptions,
     required final ColorReference selectedColor,
-    final bool withShadingLayers = false,
   })
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
@@ -887,7 +833,7 @@ abstract class IToolPainter
         }
       }
     }
-    return _applyColorShadingToMap(pixelMap: pixelMap, currentLayer: currentLayer, apply: withShadingLayers,);
+    return pixelMap;
   }
 
   CoordinateColorMap getStampPixelsToDrawForShading({
@@ -895,7 +841,6 @@ abstract class IToolPainter
     required final ShadingLayerState currentLayer,
     required final HashMap<CoordinateSetI, int> stampData,
     required final ShaderOptions shaderOptions,
-    final bool withShadingLayers = false,
   })
   {
     final CoordinateColorMap pixelMap = HashMap<CoordinateSetI, ColorReference>();
@@ -910,24 +855,26 @@ abstract class IToolPainter
           final CoordinateSetI coord = stampEntry.key;
           if (canvasSize.contains(coord: coord))
           {
-            final ColorReference? currentColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: false,);
-            if (currentColor != null)
+            final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
+            //the value dumpStampShading would store, so the preview and the draw
+            //cannot disagree at the ends of the ramp
+            final int currentVal = currentLayer.getRawValueAt(coord: coord) ?? 0;
+            final int targetVal = (shadingDirection + currentVal + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value,);
+            final int shadingAmount = targetVal - currentVal;
+            final ColorReference? shiftedColor = _resolveComposedColorAtCoord(coord: coord, frame: frame, toIndex: currentLayerPos, requireVisibility: false, shiftLayer: currentLayer, layerShift: shadingAmount,);
+            if (shiftedColor != null)
             {
-              final int shadingDirection = shaderOptions.shaderDirection.value == ShaderDirection.left ? -1 : 1;
-              final int shadingAmount = (shadingDirection + (stampEntry.value * shadingDirection)).clamp(-currentLayer.settings.shadingStepsMinus.value, currentLayer.settings.shadingStepsPlus.value,);
               if (currentLayer.runtimeType == ShadingLayerState)
               {
-                final int targetIndex = (currentColor.colorIndex + shadingAmount).clamp(0, currentColor.ramp.references.length - 1);
-                pixelMap[coord] = currentColor.ramp.references[targetIndex];
+                pixelMap[coord] = shiftedColor;
               }
               else if (currentLayer is DitherLayerState)
               {
-                final int currentVal = currentLayer.getDisplayValueAt(coord: coord);
+                final int currentDitherVal = currentLayer.getDisplayValueAt(coord: coord);
                 final int ditherVal = currentLayer.getDisplayValueAt(coord: coord, shift: shadingAmount,);
-                if (currentVal != ditherVal)
+                if (currentDitherVal != ditherVal)
                 {
-                  final int newColorIndex = (currentColor.colorIndex - currentVal + ditherVal).clamp(0, currentColor.ramp.references.length - 1);
-                  pixelMap[coord] = currentColor.ramp.references[newColorIndex];
+                  pixelMap[coord] = shiftedColor;
                 }
               }
             }
@@ -935,7 +882,7 @@ abstract class IToolPainter
         }
       }
     }
-    return _applyColorShadingToMap(pixelMap: pixelMap, currentLayer: currentLayer, apply: withShadingLayers,);
+    return pixelMap;
   }
 
   static int getClosestPixel({required final double value, required final double pixelSize})

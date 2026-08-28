@@ -171,11 +171,17 @@ class ShadingLayerState extends RasterableLayerState
     {
       return sData[coord]! + shift;
     }
+    //a shift on a pixel that carries no shading yet is what drawing there would
+    //store, so it has to read as that value instead of as no shading at all
+    //(DitherLayerState resolves the same case the same way)
+    else if (shift != 0)
+    {
+      return shift;
+    }
     else
     {
       return null;
     }
-
   }
 
   int? getRawValueAt({required final CoordinateSetI coord})

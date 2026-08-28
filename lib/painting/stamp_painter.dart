@@ -139,7 +139,7 @@ class StampPainter extends IToolPainter
         CoordinateColorMap cursorPixels = CoordinateColorMap();
         if (rasterLayer is DrawingLayerState)
         {
-          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!, withShadingLayers: true);
+          cursorPixels = getStampPixelsToDraw(canvasSize: drawParams.canvasSize, currentLayer: rasterLayer, stampData: mirrorStamp, selection: appState.selectionState, shaderOptions: shaderOptions, selectedColor: appState.selectedColor!);
         }
         else if (rasterLayer is ShadingLayerState)
         {

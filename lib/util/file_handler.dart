@@ -60,6 +60,7 @@ import 'package:kpix/util/file_byte_reader.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
+import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
@@ -223,7 +224,9 @@ Future<(String?, Uint8List?)> getPathAndDataForImage() async
   } 
   else if (kIsWeb)
   {
-    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, initialDirectory: GetIt.I.get<AppState>().exportDir,);
+    //web has no file system to read from afterwards, so the bytes have to come
+    //back with the pick itself
+    result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: imageExtensions, withData: true, initialDirectory: GetIt.I.get<AppState>().exportDir,);
   } 
   else //mobile
   {
@@ -248,7 +251,9 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
 {
   if (isDesktop(includingWeb: true))
   {
-    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+    //withData is only forced on web, where there is no path to read from later;
+    //native keeps loading from disk so a large project is not held twice
+    FilePicker.pickFiles(type: FileType.custom, allowedExtensions: <String>[fileExtensionKpix], withData: kIsWeb, initialDirectory: GetIt.I.get<AppState>().exportDir,).then
       ((final FilePickerResult? result)
         {
           _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
@@ -257,7 +262,7 @@ void loadFilePressed({final Function()? finishCallback, final Function()? loadSt
   } 
   else //mobile
   {
-    FilePicker.pickFiles(initialDirectory: GetIt.I.get<AppState>().exportDir,).then
+    FilePicker.pickFiles(withData: kIsWeb, initialDirectory: GetIt.I.get<AppState>().exportDir,).then
       ((final FilePickerResult? result)
         {
           _loadFileChosen(result: result, finishCallback: finishCallback, loadStartCallback: loadStartCallback);
@@ -281,6 +286,7 @@ void _loadFileChosen({final FilePickerResult? result, required final Function()?
       path: path,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
     ).then((final LoadFileSet loadFileSet)
     {
       fileLoaded(loadFileSet: loadFileSet, finishCallback: finishCallback);
@@ -1095,6 +1101,7 @@ Future<bool> importProject({required final String? path, final bool showMessages
           path: path,
           drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
           shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
         );
         final AppState appState = GetIt.I.get<AppState>();
         if (loadFileSet.historyState != null && loadFileSet.path != null)

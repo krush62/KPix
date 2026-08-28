@@ -115,6 +115,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       path: _selectedWidget.value!.entryData.path,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
+      frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
     ).then((final LoadFileSet loadFileSet){fileLoaded(loadFileSet: loadFileSet, finishCallback: _loadingDialog.hide);});
     _closeSaveBeforeLoadWarning();
     //report the load before dismissing, so the dismiss handler can drop any

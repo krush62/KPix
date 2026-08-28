@@ -18,37 +18,15 @@ part of '../../export_functions.dart';
 
 Future<Uint8List?> exportGIF({required final AnimationExportData exportData, required final AppState appState}) async
 {
-  final int startFrame = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
-  final int endFrame = exportData.loopOnly ? appState.timeline.loopEndIndex.value : appState.timeline.frames.value.length - 1;
-  final img.Image pngImg = img.Image(width: appState.canvasSize.x * exportData.scaling, height: appState.canvasSize.y * exportData.scaling, numChannels: 4);
-
-  for (int i = startFrame; i <= endFrame; i++)
+  final List<RenderedFrame>? frames = await _renderAnimationFrames(exportData: exportData, appState: appState);
+  if (frames == null || frames.isEmpty)
   {
-    final Frame frame = appState.timeline.frames.value[i];
-    final ui.Image uiImage = await getImageFromLayers(selection: appState.selectionState.selection, canvasSize: appState.canvasSize, layerCollection: frame.layerList, scalingFactor: exportData.scaling, frame: frame);
-    final ByteData? uiBytes = await uiImage.toByteData();
-    if (uiBytes == null)
-    {
-      return null;
-    }
-
-    final img.Image pngFrame = img.Image.fromBytes(
-      width: uiImage.width,
-      height: uiImage.height,
-      bytes: uiBytes.buffer,
-      order: img.ChannelOrder.rgba,
-      numChannels: 4,
-      frameDuration: appState.timeline.frames.value[i].frameTime,
-    );
-
-    if (i == 0)
-    {
-      pngImg.frames[0] = pngFrame;
-    }
-    else
-    {
-      pngImg.addFrame(pngFrame);
-    }
+    return null;
   }
-  return img.encodeGif(pngImg);
+
+  //quantizing and encoding a gif is the slow part, so it goes off the UI isolate
+  return await runOffThread<Uint8List>(
+    debugLabel: "gif-export",
+    work: () => _encodeAnimation(frames: frames, format: _AnimationFormat.gif),
+  );
 }

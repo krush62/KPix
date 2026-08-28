@@ -16,21 +16,21 @@
 
 part of '../../export_functions.dart';
 
-
 Future<Uint8List?> exportZippedPng({required final AnimationExportData exportData, required final AppState appState}) async
 {
-  final Archive zipFile = Archive();
   final int startFrame = exportData.loopOnly ? appState.timeline.loopStartIndex.value : 0;
   final int endFrame = exportData.loopOnly ? appState.timeline.loopEndIndex.value : appState.timeline.frames.value.length - 1;
+
+  //encoding each png needs dart:ui and therefore the UI isolate
+  final Map<String, Uint8List> files = <String, Uint8List>{};
   for (int i = startFrame; i <= endFrame; i++)
   {
     final Uint8List? png = await exportPNG(exportData: exportData, selection: appState.selectionState.selection, canvasSize: appState.canvasSize, layerList: appState.timeline.frames.value[i].layerList);
     if (png != null)
     {
-      final List<int> intList = png.toList();
-      final String fileName = "frame_${(i + startFrame + 1).toString().padLeft(3, "0")}.png";
-      zipFile.addFile(ArchiveFile(fileName, intList.length, intList));
+      files["frame_${(i + startFrame + 1).toString().padLeft(3, "0")}.png"] = png;
     }
   }
-  return Uint8List.fromList(ZipEncoder().encode(zipFile));
+
+  return await _zipOffThread(files: files, debugLabel: "zipped-png-export");
 }

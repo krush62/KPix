@@ -124,14 +124,45 @@ class _ImportGuard
 }
 
 //TODO strict parameter could be a (dev) setting
-Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final String path, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, final bool strict = false}) async
+/// Reads a kpix file and turns it into a restorable history state.
+///
+/// The parsing runs on a background isolate, so opening a large project does not
+/// freeze the UI. Only plain data crosses over, and the result is transferred
+/// rather than copied, so a large pixel map costs nothing to hand back.
+Future<LoadFileSet> loadKPixFile({required final Uint8List? fileData, required final String path, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, required final FrameConstraints frameConstraints, final bool strict = false}) async
+{
+  //web has no file system, so a caller that did not bring the bytes cannot be
+  //served; reading through dart:io would fail with an unrelated message
+  if (fileData == null && kIsWeb)
+  {
+    return LoadFileSet(status: "No file data for $path");
+  }
+  final Uint8List bytes = fileData ?? await File(path).readAsBytes();
+
+  return await runOffThread<LoadFileSet>(
+    debugLabel: "kpix-load",
+    work: () => _parseKPixFile(
+      bytes: bytes,
+      path: path,
+      drawingLayerSettingsConstraints: drawingLayerSettingsConstraints,
+      shadingLayerSettingsConstraints: shadingLayerSettingsConstraints,
+      frameConstraints: frameConstraints,
+      strict: strict,
+    ),
+  );
+}
+
+/// Turns the bytes of a kpix file into a history state.
+///
+/// Runs on a background isolate, so it must not reach for the service locator or
+/// anything from dart:ui: everything it needs arrives as a parameter.
+LoadFileSet _parseKPixFile({required final Uint8List bytes, required final String path, required final DrawingLayerSettingsConstraints drawingLayerSettingsConstraints, required final ShadingLayerSettingsConstraints shadingLayerSettingsConstraints, required final FrameConstraints frameConstraints, final bool strict = false})
 {
   final StringBuffer returnString = StringBuffer();
   final _ImportGuard guard = _ImportGuard(strict: strict, warnings: returnString);
   try
   {
-    fileData ??= await File(path).readAsBytes();
-    final FileByteReader reader = FileByteReader(fileData);
+    final FileByteReader reader = FileByteReader(bytes);
     final int mNumber = reader.getUint32();
     final int fVersion = reader.getUint8();
 
@@ -795,8 +826,7 @@ Future<LoadFileSet> loadKPixFile({required Uint8List? fileData, required final S
       {
         indices.add(i);
       }
-      final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
-      final HistoryFrame hFrame = HistoryFrame(fps: constraints.defaultFps, layerIndices: indices, selectedLayerIndex: 0);
+      final HistoryFrame hFrame = HistoryFrame(fps: frameConstraints.defaultFps, layerIndices: indices, selectedLayerIndex: 0);
       hTimeline = HistoryTimeline(frames: <HistoryFrame>[hFrame], loopStart: 0, loopEnd: 0, selectedFrameIndex: 0, allLayers: layerList);
     }
     else

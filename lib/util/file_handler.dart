@@ -28,7 +28,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/drawing_layer/drawing_layer_settings.dart';
-import 'package:kpix/layer_states/drawing_layer/drawing_layer_state.dart';
 import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
@@ -49,6 +48,7 @@ import 'package:kpix/managers/history/history_shift_set.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
+import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
@@ -1110,7 +1110,7 @@ Future<bool> importProject({required final String? path, final bool showMessages
           final String projectPath = p.join(appState.projectsDir, fileName);
           if (!File(projectPath).existsSync())
           {
-            final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet, size: loadFileSet.historyState!.canvasSize,);
+            final ui.Image? img = await getImageFromLoadFileSet(loadFileSet: loadFileSet);
             if (img != null)
             {
               success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
@@ -1150,88 +1150,57 @@ Future<bool> importProject({required final String? path, final bool showMessages
   return success;
 }
 
-//TODO this definitely needs some work
-Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet, required final CoordinateSetI size}) async
+/// Renders the first frame of [loadFileSet] into an image.
+///
+/// Used for the project manager thumbnail. It rebuilds the layers from the
+/// history state and hands them to [getImageFromLayers], so a thumbnail shows the
+/// same layer types a png export would.
+Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSet}) async
 {
-  if (loadFileSet.historyState != null)
-  {
-    final HistoryState state = loadFileSet.historyState!;
-
-    final List<KPalRampData> ramps = <KPalRampData>[];
-    for (final HistoryRampData hRampData in state.rampList)
-    {
-      final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
-      ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
-    }
-
-    final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(recorder);
-
-    final LinkedHashSet<HistoryLayer> layerList = state.timeline.getLayersForFrameIndex(frameIndex: 0);
-    //these exist purely to render this thumbnail and never belong to a frame, so
-    //the sweep in AppState would never see them
-    final List<DrawingLayerState> thumbnailLayers = <DrawingLayerState>[];
-
-    for (int i = layerList.length - 1; i >= 0; i--)
-    {
-      final HistoryLayer cLayer = layerList.elementAt(i);
-      if (cLayer.visibilityState == LayerVisibilityState.visible && cLayer.runtimeType == HistoryDrawingLayer)
-      {
-        final HistoryDrawingLayer historyDrawingLayer = cLayer as HistoryDrawingLayer;
-        final CoordinateColorMap content = HashMap<CoordinateSetI, ColorReference>();
-        for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in historyDrawingLayer.data.entries)
-        {
-          KPalRampData? ramp;
-          for (int i = 0; i < ramps.length; i++)
-          {
-            if (ramps[i].uuid == state.rampList[entry.value.rampIndex].uuid)
-            {
-              ramp = ramps[i];
-              break;
-            }
-          }
-          if (ramp != null)
-          {
-            content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
-          }
-        }
-        //the constructor already rasters the content, so no further request is
-        //needed; asking for one would only queue a second, identical pass
-        final DrawingLayerState drawingLayer = DrawingLayerState(size: state.canvasSize, content: content, ramps: ramps);
-        await drawingLayer.rasterizationComplete.timeout(rasterSettleTimeout, onTimeout: ()
-        {
-          GetIt.I.get<Logger>().w("Timed out rasterizing a layer for the project thumbnail.");
-        },);
-        if (drawingLayer.rasterImage.value != null)
-        {
-          paintImage(
-            canvas: canvas,
-            rect: ui.Rect.fromLTWH(0, 0,
-              state.canvasSize.x.toDouble(),
-              state.canvasSize.y.toDouble(),
-            ),
-            image: drawingLayer.rasterImage.value!,
-            fit: BoxFit.none,
-            alignment: Alignment.topLeft,
-            filterQuality: FilterQuality.none,
-          );
-        }
-        thumbnailLayers.add(drawingLayer);
-      }
-    }
-    //the recorded picture still references the layer rasters, so they are only
-    //released once the picture has been turned into an image
-    final ui.Image thumbnail = await recorder.endRecording().toImage(size.x, size.y);
-    for (final DrawingLayerState layer in thumbnailLayers)
-    {
-      layer.dispose();
-    }
-    return thumbnail;
-  }
-  else
+  final HistoryState? state = loadFileSet.historyState;
+  if (state == null)
   {
     return null;
   }
+
+  final List<KPalRampData> ramps = <KPalRampData>[];
+  for (final HistoryRampData hRampData in state.rampList)
+  {
+    final KPalRampSettings settings = KPalRampSettings.from(other: hRampData.settings);
+    ramps.add(KPalRampData(uuid: hRampData.uuid, settings: settings, historyShifts: hRampData.shiftSets));
+  }
+  final RampResolver resolver = RampResolver(liveRamps: ramps, historyRamps: state.rampList);
+
+  final List<LayerState> layers = <LayerState>[];
+  for (final HistoryLayer hLayer in state.timeline.getLayersForFrameIndex(frameIndex: 0))
+  {
+    final LayerState layer = await hLayer.toLayerState(canvasSize: state.canvasSize, ramps: resolver);
+    layer.visibilityState.value = hLayer.visibilityState;
+    layers.add(layer);
+  }
+
+  //the compositor reads the rasters straight off the layers, so they have to have
+  //settled first; only the rasterable ones are drawn, so only those are waited for
+  await Future.wait<void>(layers.whereType<RasterableLayerState>().map((final RasterableLayerState layer) => layer.rasterizationComplete))
+      .timeout(rasterSettleTimeout, onTimeout: ()
+  {
+    GetIt.I.get<Logger>().w("Timed out rasterizing layers for the project thumbnail.");
+    return <void>[];
+  },);
+
+  final ui.Image thumbnail = await getImageFromLayers(
+    canvasSize: state.canvasSize,
+    layerCollection: LayerCollection(layers: layers, selLayerIdx: 0),
+    selection: SelectionList(),
+  );
+
+  //built only for this thumbnail and never part of a frame, so the sweep in
+  //AppState would never see them; the picture is already an image by now
+  for (final LayerState layer in layers)
+  {
+    layer.dispose();
+  }
+  return thumbnail;
 }
 
 Future<ui.Image> getImageFromLayers({

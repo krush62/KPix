@@ -51,7 +51,7 @@ KPix began as a personal project designed around my own pixel art workflow. I al
 I eventually decided to polish the app and release it to the public. Because I am a strong advocate for FOSS and open distribution channels, KPix is not available on Google Play or the Apple App Store.
 
 ## AI usage statement
-I am a professional developer and frequently use AI in my daily work, but KPix is entirely human-made. This project was started way before the rise of LLMs, and I wanted to keep it that way to ensure I fully understand everything I am responsible for. To me, that is essential for being proud of my work.
+I am a professional developer and frequently use AI in my daily work, but KPix' code is entirely human-written. This project was started way before the rise of LLMs, and I wanted to keep it that way to ensure I fully understand everything I am responsible for. To me, that is essential for being proud of my work. I am using Claude for identifying errors and performing documentation tasks.
 
 ## More Information
 You might also want to read the [F.A.Q.](faq.md) or watch the (slightly outdated) [feature overview video](https://youtu.be/Vcz6QdcY5tY).

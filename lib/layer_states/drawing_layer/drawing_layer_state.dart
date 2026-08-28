@@ -105,7 +105,14 @@ class DrawingLayerState extends RasterableLayerState
         super(layerSettings: settings)
   {
     isRasterizing = true;
-    _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result));
+    _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result))
+        .catchError((final dynamic e, final dynamic s) {
+      //without this the flag stays set and anything waiting on this layer waits
+      //for good
+      GetIt.I.get<Logger>().e("Error during initial drawing layer rasterization", error: e);
+      isRasterizing = false;
+      doManualRaster = true;
+    });
     lockState.value = lState;
     visibilityState.value = vState;
     _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
@@ -180,12 +187,19 @@ class DrawingLayerState extends RasterableLayerState
         if (_isUpdateScheduled) {
           _rasterizingDone(rasterResult: rasterResult);
         }
+        else {
+          //the request was dropped while this raster ran, usually by dispose, so
+          //nothing is going to store these images
+          discardRasterResult(rasterResult: rasterResult);
+        }
       } catch (e, s) {
         GetIt.I.get<Logger>().e("Error during drawing layer rasterization", error: e, stackTrace: s);
-        isRasterizing = false;
         doManualRaster = true;
       } finally {
         _isUpdateScheduled = false;
+        //this method owns the whole raster cycle, so the flag is released here
+        //whichever way the cycle ended
+        isRasterizing = false;
 
         for (final Frame frame in frames) {
           frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
@@ -330,16 +344,7 @@ class DrawingLayerState extends RasterableLayerState
     {
       //the layer was dropped while this raster was running, so the images it
       //produced have no owner and would leak if they were stored
-      final List<ui.Image?> orphans = <ui.Image?>[
-        rasterResult.externalStackImages?.raster,
-        rasterResult.externalStackImages?.thumbnail,
-      ];
-      for (final RasterImagePair pair in rasterResult.rasterImages.values)
-      {
-        orphans.add(pair.raster);
-        orphans.add(pair.thumbnail);
-      }
-      disposeImages(images: orphans);
+      discardRasterResult(rasterResult: rasterResult);
       return;
     }
     isRasterizing = false;

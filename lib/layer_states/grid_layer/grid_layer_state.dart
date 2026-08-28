@@ -35,6 +35,7 @@ import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/grid_layer_constraints.dart';
+import 'package:logger/logger.dart';
 
 class GridLayerState extends LayerState
 {
@@ -201,6 +202,11 @@ class GridLayerState extends LayerState
           return;
         }
         _rasterCreated(image: image);
+      }).catchError((final dynamic e, final dynamic s) {
+        //isRendering also guards the start, so leaving it set would stop this
+        //layer from ever rendering again
+        GetIt.I.get<Logger>().e("Error during grid layer rasterization", error: e);
+        isRendering = false;
       });
     }
   }

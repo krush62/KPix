@@ -58,5 +58,25 @@ abstract class RasterableLayerState extends LayerState
   //used when the changed area is unknown (e.g. a dependency layer changed)
   void forceFullRender();
 
+  /// Releases the images of a raster whose result will not be stored.
+  ///
+  /// A raster can finish after the request behind it was cancelled, usually by
+  /// disposal. Nothing takes ownership of those images, so they have to be let go
+  /// here or they stay allocated for the rest of the session.
+  @protected
+  void discardRasterResult({required final DualRasterResult rasterResult})
+  {
+    final List<ui.Image?> orphans = <ui.Image?>[
+      rasterResult.externalStackImages?.raster,
+      rasterResult.externalStackImages?.thumbnail,
+    ];
+    for (final RasterImagePair pair in rasterResult.rasterImages.values)
+    {
+      orphans.add(pair.raster);
+      orphans.add(pair.thumbnail);
+    }
+    disposeImages(images: orphans);
+  }
+
 
 }

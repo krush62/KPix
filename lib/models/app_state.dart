@@ -824,24 +824,14 @@ class AppState
             _canvasSize.y = canvSize.y;
           }
 
-          bool aLayerIsRastering = false;
-          do
+          //the timeout is a backstop only: a layer that never settles would
+          //otherwise leave the restore hanging with no way out
+          await Future.wait<void>(allLayers.map((final LayerState layer) => layer.rasterizationComplete))
+              .timeout(rasterSettleTimeout, onTimeout: ()
           {
-            aLayerIsRastering = false;
-            for (final LayerState layer in allLayers)
-            {
-              if (layer is RasterableLayerState)
-              {
-                if (layer.isRasterizing)
-                {
-                  aLayerIsRastering = true;
-                  break;
-                }
-              }
-            }
-            await Future<void>.delayed(const Duration(milliseconds: 20));
-          }
-          while (aLayerIsRastering);
+            GetIt.I.get<Logger>().w("Timed out waiting for layers to finish rasterizing while restoring history.");
+            return <void>[];
+          },);
 
           timeline.layerChangeNotifier.reportChange();
           if (typeGroup == HistoryStateTypeGroup.layerFull && restoreLayerIndex != null && restoreLayerIndex >= 0 && restoreLayerIndex < allLayers.length)

@@ -42,6 +42,7 @@ import 'package:kpix/util/helpers/drawing_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_pencil_constraints.dart';
+import 'package:logger/logger.dart';
 
 class DrawingParameters
 {
@@ -321,30 +322,12 @@ abstract class IToolPainter
 
   Future<void> _waitForLayerToFinishRasterizing({required final LayerState currentLayer}) async
   {
-    const int waitingTimeMs = 25;
-    const int maxWaitingIterations = 40;
-    const int initialDelay = 150;
-
-    //TODO wait until rasterizing starts instead of static delay
-    await Future<void>.delayed(const Duration(milliseconds: initialDelay));
-
-    int iterations = 0;
-    if (currentLayer is RasterableLayerState)
+    //the layer arms its waiter when the raster is requested rather than when it
+    //starts, so there is no window here to sleep through
+    await currentLayer.rasterizationComplete.timeout(rasterSettleTimeout, onTimeout: ()
     {
-      while (currentLayer.isRasterizing && iterations < maxWaitingIterations)
-      {
-        await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
-        iterations++;
-      }
-    }
-    else if (currentLayer is GridLayerState)
-    {
-      while (currentLayer.isRendering && iterations < maxWaitingIterations)
-      {
-        await Future<void>.delayed(const Duration(milliseconds: waitingTimeMs));
-        iterations++;
-      }
-    }
+      GetIt.I.get<Logger>().w("Timed out waiting for a layer to finish rasterizing.");
+    },);
   }
 
   Future<ContentRasterSet?> rasterizePixels({required final CoordinateColorMap drawingPixels, required final LayerState currentLayer}) async

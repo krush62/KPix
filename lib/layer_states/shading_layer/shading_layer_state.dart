@@ -648,27 +648,27 @@ class ShadingLayerState extends RasterableLayerState
       if (isDisposed)
       {
         //dropped while this raster was running: nothing owns these images now
-        final List<ui.Image?> orphans = <ui.Image?>[
-          rasterResult.externalStackImages?.raster,
-          rasterResult.externalStackImages?.thumbnail,
-        ];
-        for (final RasterImagePair pair in rasterResult.rasterImages.values)
-        {
-          orphans.add(pair.raster);
-          orphans.add(pair.thumbnail);
-        }
-        disposeImages(images: orphans);
+        discardRasterResult(rasterResult: rasterResult);
         return;
       }
       if (_isUpdateScheduled) {
         _rasterCreated(rasterResult: rasterResult);
       }
+      else {
+        //the request was dropped while this raster ran, so nothing is going to
+        //store these images
+        discardRasterResult(rasterResult: rasterResult);
+      }
     }).catchError((final dynamic e, final dynamic s) {
       GetIt.I.get<Logger>().e("Error during shading layer rasterization", error: e);
-      isRasterizing = false;
-      _isUpdateScheduled = false;
       doManualRaster = true;
     }).whenComplete(() {
+      //this chain owns the whole raster cycle, so the flag is released here
+      //whichever way the cycle ended
+      isRasterizing = false;
+      _isUpdateScheduled = false;
+      settleRaster();
+
       for (final Frame frame in frames) {
         frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
       }
@@ -773,6 +773,7 @@ class ShadingLayerState extends RasterableLayerState
   void dispose()
   {
     markDisposed();
+    settleRaster();
     _updateTimer.cancel();
     settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;

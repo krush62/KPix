@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -63,8 +64,63 @@ enum LayerMenuKind
   reference
 }
 
+/// How long a caller waits for layers to finish rasterizing before giving up.
+///
+/// Nothing should ever reach this; it exists so a layer that fails to settle
+/// degrades into a warning instead of a wait that never ends.
+const Duration rasterSettleTimeout = Duration(seconds: 10);
+
 abstract class LayerState
 {
+  Completer<void>? _rasterCompleter;
+
+  /// Completes once nothing is queued or running for this layer any more.
+  ///
+  /// Already complete when the layer is idle, so awaiting it is free. It is armed
+  /// when a raster is *requested* rather than when it starts, so a caller that
+  /// asks right after requesting one does not race the timer that picks the
+  /// request up.
+  Future<void> get rasterizationComplete
+  {
+    return _rasterCompleter?.future ?? Future<void>.value();
+  }
+
+  /// Whether another raster is still owed after the current one finishes.
+  ///
+  /// Subclasses that queue work report it here so [settleRaster] knows to keep
+  /// waiters parked instead of releasing them between two cycles.
+  @protected
+  bool get hasPendingRaster
+  {
+    return false;
+  }
+
+  /// Records that a raster is owed. Safe to call repeatedly.
+  @protected
+  void requestRaster()
+  {
+    _rasterCompleter ??= Completer<void>();
+  }
+
+  /// Releases everything waiting on [rasterizationComplete], unless more work is
+  /// already queued behind the cycle that just ended.
+  @protected
+  void settleRaster()
+  {
+    //a disposed layer will never raster again, so its waiters are released even
+    //if a request was still outstanding
+    if (!isDisposed && hasPendingRaster)
+    {
+      return;
+    }
+    final Completer<void>? completer = _rasterCompleter;
+    _rasterCompleter = null;
+    if (completer != null && !completer.isCompleted)
+    {
+      completer.complete();
+    }
+  }
+
   bool _disposed = false;
 
   /// Whether [dispose] has already run.

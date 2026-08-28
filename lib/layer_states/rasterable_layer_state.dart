@@ -46,7 +46,31 @@ abstract class RasterableLayerState extends LayerState
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   final ValueNotifier<Map<Frame, RasterImagePair>> rasterImageMap = ValueNotifier<Map<Frame, RasterImagePair>>(<Frame, RasterImagePair>{});
   ui.Image? previousRaster;
-  bool doManualRaster = false;
+  bool _doManualRaster = false;
+
+  /// Whether a full re-raster has been asked for and not yet served.
+  ///
+  /// Setting this to true is how most of the app requests a raster, so it is also
+  /// where waiters get armed; see [rasterizationComplete].
+  bool get doManualRaster
+  {
+    return _doManualRaster;
+  }
+
+  set doManualRaster(final bool value)
+  {
+    _doManualRaster = value;
+    if (value)
+    {
+      requestRaster();
+    }
+  }
+
+  @override
+  bool get hasPendingRaster
+  {
+    return _doManualRaster;
+  }
   final LayerSettings layerSettings;
   List<RasterableLayerState>? layerStack;
 

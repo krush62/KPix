@@ -667,6 +667,7 @@ class ShadingLayerState extends RasterableLayerState
       //whichever way the cycle ended
       isRasterizing = false;
       _isUpdateScheduled = false;
+      settleRaster();
 
       for (final Frame frame in frames) {
         frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
@@ -772,6 +773,7 @@ class ShadingLayerState extends RasterableLayerState
   void dispose()
   {
     markDisposed();
+    settleRaster();
     _updateTimer.cancel();
     settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;

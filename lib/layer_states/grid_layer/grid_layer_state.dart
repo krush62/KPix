@@ -99,12 +99,22 @@ class GridLayerState extends LayerState
     vanishingPoint2Notifier.addListener(_valueChanged);
     vanishingPoint3Notifier.addListener(_valueChanged);
     _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+    //_shouldRender starts true as a field initialiser, which is not a statement,
+    //so the first render has to be announced here
+    requestRaster();
+  }
+
+  @override
+  bool get hasPendingRaster
+  {
+    return _shouldRender;
   }
 
   @override
   void dispose()
   {
     markDisposed();
+    settleRaster();
     _updateTimer.cancel();
     //the notifiers are owned by this layer and only listened to from here, so
     //they go away with it once the timer no longer keeps it reachable
@@ -181,11 +191,13 @@ class GridLayerState extends LayerState
   void _valueChanged()
   {
     _shouldRender = true;
+    requestRaster();
   }
 
   void manualRender()
   {
     _shouldRender = true;
+    requestRaster();
   }
 
   void _updateTimerCallback({required final Timer timer})
@@ -207,6 +219,7 @@ class GridLayerState extends LayerState
         //layer from ever rendering again
         GetIt.I.get<Logger>().e("Error during grid layer rasterization", error: e);
         isRendering = false;
+        settleRaster();
       });
     }
   }
@@ -217,6 +230,7 @@ class GridLayerState extends LayerState
     thumbnail.value = image;
     isRendering = false;
     _shouldRender = false;
+    settleRaster();
   }
 
   void addCoordListToBytes({required final Set<CoordinateSetI> coords, required final ByteData byteDataImg, required final CoordinateSetI canvasSize, required final int brightness, required final int opacity})

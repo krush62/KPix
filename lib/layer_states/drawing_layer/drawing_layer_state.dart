@@ -104,14 +104,20 @@ class DrawingLayerState extends RasterableLayerState
         _settingsPixels = settingsPixels,
         super(layerSettings: settings)
   {
+    requestRaster();
     isRasterizing = true;
-    _createRaster().then((final DualRasterResult result) => _rasterizingDone(rasterResult: result))
+    _createRaster().then((final DualRasterResult result)
+    {
+      _rasterizingDone(rasterResult: result);
+      settleRaster();
+    })
         .catchError((final dynamic e, final dynamic s) {
       //without this the flag stays set and anything waiting on this layer waits
       //for good
       GetIt.I.get<Logger>().e("Error during initial drawing layer rasterization", error: e);
       isRasterizing = false;
       doManualRaster = true;
+      settleRaster();
     });
     lockState.value = lState;
     visibilityState.value = vState;
@@ -200,6 +206,7 @@ class DrawingLayerState extends RasterableLayerState
         //this method owns the whole raster cycle, so the flag is released here
         //whichever way the cycle ended
         isRasterizing = false;
+        settleRaster();
 
         for (final Frame frame in frames) {
           frame.layerList.unlockLayerAndDependenciesFromRendering(layer: this);
@@ -665,11 +672,13 @@ class DrawingLayerState extends RasterableLayerState
     if (isRasterizing)
     {
       rasterQueue.addAll(list);
+      requestRaster();
       doManualRaster = true;
     }
     else
     {
       rasterQueue.addAll(list);
+      requestRaster();
       _trackDirtyRegions(changedCoords: list.keys);
       doManualRaster = true;
     }
@@ -684,6 +693,7 @@ class DrawingLayerState extends RasterableLayerState
     for (final CoordinateSetI coord in removeCoordList)
     {
       rasterQueue[coord] = null;
+      requestRaster();
     }
     doManualRaster = true;
   }
@@ -878,6 +888,12 @@ class DrawingLayerState extends RasterableLayerState
   }
 
   @override
+  bool get hasPendingRaster
+  {
+    return doManualRaster || rasterQueue.isNotEmpty;
+  }
+
+  @override
   LayerSettingsWidget getSettingsWidget()
   {
     return DrawingLayerSettingsWidget(layer: this);
@@ -887,6 +903,7 @@ class DrawingLayerState extends RasterableLayerState
   void dispose()
   {
     markDisposed();
+    settleRaster();
     _updateTimer.cancel();
     settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;

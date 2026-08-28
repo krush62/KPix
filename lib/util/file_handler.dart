@@ -1168,6 +1168,9 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
     final Canvas canvas = Canvas(recorder);
 
     final LinkedHashSet<HistoryLayer> layerList = state.timeline.getLayersForFrameIndex(frameIndex: 0);
+    //these exist purely to render this thumbnail and never belong to a frame, so
+    //the sweep in AppState would never see them
+    final List<DrawingLayerState> thumbnailLayers = <DrawingLayerState>[];
 
     for (int i = layerList.length - 1; i >= 0; i--)
     {
@@ -1192,12 +1195,13 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
             content[CoordinateSetI.from(other: entry.key)] = ColorReference(colorIndex: entry.value.colorIndex, ramp: ramp);
           }
         }
+        //the constructor already rasters the content, so no further request is
+        //needed; asking for one would only queue a second, identical pass
         final DrawingLayerState drawingLayer = DrawingLayerState(size: state.canvasSize, content: content, ramps: ramps);
-        drawingLayer.doManualRaster = true;
-        while (drawingLayer.isRasterizing)
+        await drawingLayer.rasterizationComplete.timeout(rasterSettleTimeout, onTimeout: ()
         {
-          await Future<void>.delayed(const Duration(milliseconds: 20));
-        }
+          GetIt.I.get<Logger>().w("Timed out rasterizing a layer for the project thumbnail.");
+        },);
         if (drawingLayer.rasterImage.value != null)
         {
           paintImage(
@@ -1212,9 +1216,17 @@ Future<ui.Image?> getImageFromLoadFileSet({required final LoadFileSet loadFileSe
             filterQuality: FilterQuality.none,
           );
         }
+        thumbnailLayers.add(drawingLayer);
       }
     }
-    return recorder.endRecording().toImage(size.x, size.y);
+    //the recorded picture still references the layer rasters, so they are only
+    //released once the picture has been turned into an image
+    final ui.Image thumbnail = await recorder.endRecording().toImage(size.x, size.y);
+    for (final DrawingLayerState layer in thumbnailLayers)
+    {
+      layer.dispose();
+    }
+    return thumbnail;
   }
   else
   {

@@ -64,6 +64,7 @@ abstract final class _CanvasOptions
   static const double minVisibilityFactor = 0.1;
   static const int idleTimerRate = 15;
   static const int opacityDuration = 150;
+  static const int optimalZoomSettleTime = 1500;
 }
 
 /// Status of the touch pointer.
@@ -123,6 +124,20 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   late Offset _dragStartLoc;
 
   final ValueNotifier<Offset> _canvasOffset = ValueNotifier<Offset>(Offset.zero);
+
+  /// Size of the drawing area, taken from layout.
+  ///
+  /// [KPixPainter.latestSize] is only written while painting, so it is not
+  /// available before the first paint and it is stale whenever the viewport has
+  /// just changed. Everything that positions the canvas uses this value instead.
+  Size _viewportSize = Size.zero;
+
+  /// Time of the currently pending optimal zoom request, `null` if there is none.
+  DateTime? _optimalZoomRequestTime;
+
+  /// Whether the pending optimal zoom request has been applied at least once.
+  bool _optimalZoomApplied = false;
+
   late MouseCursor _defaultMouseCursor = _desktopPrefs.cursorType.value.systemCursor;
   late final ValueNotifier<MouseCursor> _mouseCursor = ValueNotifier<MouseCursor>(_defaultMouseCursor);
   bool _mouseIsInside = false;
@@ -254,12 +269,44 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     _appState.repaintNotifier.repaint();
   }
 
+  /// Requests the canvas to be fitted into the viewport.
+  ///
+  /// The calculation needs a valid viewport size, which does not exist before the
+  /// first layout and which can still change right after a project was opened
+  /// (the window is maximized on desktop startup, the system bars are hidden on
+  /// mobile, ...). The request is therefore remembered and re-evaluated on every
+  /// viewport change until it settles, see [_CanvasOptions.optimalZoomSettleTime].
   void _setOptimalZoom()
   {
+    _optimalZoomRequestTime = DateTime.now();
+    _optimalZoomApplied = false;
+    _applyOptimalZoom();
+  }
+
+  /// Performs the calculation for a pending request from [_setOptimalZoom].
+  void _applyOptimalZoom()
+  {
+    if (!mounted || _optimalZoomRequestTime == null)
+    {
+      return;
+    }
+
+    //no usable layout yet, the request stays pending
+    if (_viewportSize.isEmpty || !_viewportSize.isFinite)
+    {
+      return;
+    }
+
+    if (_optimalZoomApplied && DateTime.now().difference(_optimalZoomRequestTime!).inMilliseconds > _CanvasOptions.optimalZoomSettleTime)
+    {
+      _optimalZoomRequestTime = null;
+      return;
+    }
+
     int bestZoomLevel = AppState.zoomLevelMin;
     for (int i = AppState.zoomLevelMin; i <= AppState.zoomLevelMax; i++)
     {
-      if (_appState.canvasSize.x * i / _appState.devicePixelRatio < kPixPainter.latestSize.width && _appState.canvasSize.y * i / _appState.devicePixelRatio < kPixPainter.latestSize.height)
+      if (_appState.canvasSize.x * i / _appState.devicePixelRatio < _viewportSize.width && _appState.canvasSize.y * i / _appState.devicePixelRatio < _viewportSize.height)
       {
         bestZoomLevel = i;
       }
@@ -269,8 +316,32 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
       }
     }
     _appState.setZoomLevel(val: bestZoomLevel);
-    _setOffset(newOffset: Offset((kPixPainter.latestSize.width - (_appState.canvasSize.x * _appState.zoomFactor / _appState.devicePixelRatio)) / 2, (kPixPainter.latestSize.height - (_appState.canvasSize.y * _appState.zoomFactor / _appState.devicePixelRatio)) / 2));
+    _setOffset(newOffset: Offset((_viewportSize.width - (_appState.canvasSize.x * _appState.zoomFactor / _appState.devicePixelRatio)) / 2, (_viewportSize.height - (_appState.canvasSize.y * _appState.zoomFactor / _appState.devicePixelRatio)) / 2));
+    _optimalZoomApplied = true;
     _appState.repaintNotifier.repaint();
+  }
+
+  /// Stores the size of the drawing area and re-evaluates a pending optimal zoom.
+  ///
+  /// This is called from layout, so the app state must not be touched before the
+  /// current frame has been completed.
+  void _viewportSizeChanged({required final Size size})
+  {
+    if (size == _viewportSize)
+    {
+      return;
+    }
+    _viewportSize = size;
+    if (_optimalZoomRequestTime != null)
+    {
+      WidgetsBinding.instance.addPostFrameCallback((final _) {_applyOptimalZoom();});
+    }
+  }
+
+  /// Drops a pending optimal zoom request when the user adjusts the view manually.
+  void _cancelOptimalZoom()
+  {
+    _optimalZoomRequestTime = null;
   }
 
 
@@ -330,6 +401,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   void _buttonDown({required final PointerDownEvent details})
   {
+    _cancelOptimalZoom();
     if (details.kind == PointerDeviceKind.touch)
     {
       _touchPointers[details.pointer] = TouchPointerStatus(startPos: details.localPosition, currentPos: details.localPosition);
@@ -647,6 +719,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   void _scroll({required final PointerSignalEvent ev})
   {
+    _cancelOptimalZoom();
     if (ev is PointerScrollEvent)
     {
       //ZOOM
@@ -867,10 +940,10 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
   {
     final CoordinateSetD coords = CoordinateSetD(x: newOffset.dx, y: newOffset.dy);
     final CoordinateSetD scaledCanvas = CoordinateSetD(x: _appState.canvasSize.x.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio, y: _appState.canvasSize.y.toDouble() * _appState.zoomFactor / _appState.devicePixelRatio);
-    final CoordinateSetD minVisibility = CoordinateSetD(x: kPixPainter.latestSize.width * _CanvasOptions.minVisibilityFactor, y: kPixPainter.latestSize.height * _CanvasOptions.minVisibilityFactor);
+    final CoordinateSetD minVisibility = CoordinateSetD(x: _viewportSize.width * _CanvasOptions.minVisibilityFactor, y: _viewportSize.height * _CanvasOptions.minVisibilityFactor);
 
-    coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, kPixPainter.latestSize.width - minVisibility.x);
-    coords.y = coords.y.clamp(-scaledCanvas.y + minVisibility.y, kPixPainter.latestSize.height - minVisibility.y);
+    coords.x = coords.x.clamp(-scaledCanvas.x + minVisibility.x, _viewportSize.width - minVisibility.x);
+    coords.y = coords.y.clamp(-scaledCanvas.y + minVisibility.y, _viewportSize.height - minVisibility.y);
 
     _canvasOffset.value = Offset(coords.x, coords.y);
   }
@@ -883,6 +956,7 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   void _panZoomUpdate({required final PointerPanZoomUpdateEvent event})
   {
+    _cancelOptimalZoom();
     if (!_isDragging.value)
     {
       _isDragging.value = true;
@@ -928,8 +1002,14 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
                   width: double.infinity,
                   height: double.infinity,
                   color: Theme.of(context).primaryColorDark,
-                  child: CustomPaint(
-                    painter: kPixPainter,
+                  child: LayoutBuilder(
+                    builder: (final BuildContext context, final BoxConstraints constraints)
+                    {
+                      _viewportSizeChanged(size: constraints.biggest);
+                      return CustomPaint(
+                        painter: kPixPainter,
+                      );
+                    },
                   ),
                 ),
               ),

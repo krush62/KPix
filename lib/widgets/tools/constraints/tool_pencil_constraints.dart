@@ -29,8 +29,9 @@ enum PencilShape
   static Map<PencilShape, String> getLabelMap()
   {
     final Map<PencilShape, String> map = <PencilShape, String>{};
-    for (final PencilShape shape in PencilShape.values) {
-      map[shape] = shape.name;
+    for (final PencilShape shape in PencilShape.values)
+    {
+      map[shape] = shape.label;
     }
     return map;
   }

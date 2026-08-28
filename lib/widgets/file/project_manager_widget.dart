@@ -20,7 +20,9 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/util/file_handler.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_animation_widget.dart';
@@ -35,9 +37,15 @@ abstract final class _ProjectManagerOptions
   static const double maxWidth = 800.0;
   static const double maxHeight = 600.0;
   static const int maxFilterTextLength = 16;
+  static const double busyIndicatorSize = 16.0;
+  static const double busyIndicatorStrokeWidth = 2.0;
 }
 
 /// Displays all project files and gives filter and sorting options.
+///
+/// The list itself is owned by [ProjectManager], which indexes and watches the
+/// project directory in the background. This widget only filters and sorts what
+/// the cache already holds, so opening it does not touch the file system.
 class ProjectManagerWidget extends StatefulWidget
 {
   final Function() dismiss;
@@ -60,22 +68,26 @@ enum ProjectViewOrder
 
 class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 {
-  final List<ProjectManagerEntryWidget> _allFileEntries = <ProjectManagerEntryWidget>[];
-  final ValueNotifier<List<ProjectManagerEntryWidget>> _fileEntries = ValueNotifier<List<ProjectManagerEntryWidget>>(<ProjectManagerEntryWidget>[]);
-  final ValueNotifier<ProjectManagerEntryWidget?> _selectedWidget = ValueNotifier<ProjectManagerEntryWidget?>(null);
+  final ProjectManager _projectManager = GetIt.I.get<ProjectManager>();
   final ValueNotifier<ProjectViewOrder> _projectViewOrder = ValueNotifier<ProjectViewOrder>(ProjectViewOrder.lastModifiedDesc);
-  bool _isLoading = false;
+  final ValueNotifier<String> _filterText = ValueNotifier<String>("");
+  final TextEditingController _filterController = TextEditingController();
+  late final Listenable _listListenable;
 
   late KPixOverlay _saveBeforeLoadWarningDialog;
   late KPixOverlay _deleteWarningDialog;
   late KPixOverlay _loadingDialog;
 
-  final ValueNotifier<String> _filterText = ValueNotifier<String>("");
   @override
   void initState()
   {
     super.initState();
-    _isLoading = true;
+    _listListenable = Listenable.merge(<Listenable>[
+      _projectManager.projects,
+      _projectManager.indexState,
+      _projectViewOrder,
+      _filterText,
+    ],);
     _saveBeforeLoadWarningDialog = getThreeButtonDialog(
         onYes: _saveBeforeLoadWarningYes,
         onNo: _saveBeforeLoadWarningNo,
@@ -91,10 +103,19 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       outsideCancelable: false,
     );
 
-    _createWidgetList().then((final void nothing) {
-      _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
-      _isLoading = false;
-    });
+    //keeps the cache fresh while this view is open and re-scans once now, since
+    //a directory watch can miss what other applications did to the directory
+    _projectManager.retain();
+  }
+
+  @override
+  void dispose()
+  {
+    _projectManager.release();
+    _filterController.dispose();
+    _projectViewOrder.dispose();
+    _filterText.dispose();
+    super.dispose();
   }
 
   void _closeSaveBeforeLoadWarning()
@@ -109,10 +130,16 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _saveBeforeLoadWarningNo()
   {
+    final String? selectedPath = _projectManager.selectedPath.value;
+    if (selectedPath == null)
+    {
+      _closeSaveBeforeLoadWarning();
+      return;
+    }
     _loadingDialog.show(context: context);
     loadKPixFile(
       fileData: null,
-      path: _selectedWidget.value!.entryData.path,
+      path: selectedPath,
       drawingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().drawingLayerSettingsConstraints,
       shadingLayerSettingsConstraints: GetIt.I.get<PreferenceManager>().shadingLayerSettingsConstraints,
       frameConstraints: GetIt.I.get<PreferenceManager>().frameConstraints,
@@ -148,11 +175,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _deleteWarningYes()
   {
-    if (_selectedWidget.value != null)
+    final String? selectedPath = _projectManager.selectedPath.value;
+    if (selectedPath != null)
     {
-      deleteProject(fullProjectPath: _selectedWidget.value!.entryData.path).then((final bool success) {
-        _fileDeleted(success: success);
-      });
+      //the cache drops the entry and the selection with it once the file is gone
+      deleteProject(fullProjectPath: selectedPath);
     }
     _deleteWarningDialog.hide();
   }
@@ -160,37 +187,6 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
   void _deleteWarningNo()
   {
     _deleteWarningDialog.hide();
-  }
-
-  void _fileDeleted({required final bool success})
-  {
-    if (success)
-    {
-      _isLoading = true;
-      _createWidgetList().then((final void nothing) {
-        _selectedWidget.value = null;
-        _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _createWidgetList() async
-  {
-    _allFileEntries.clear();
-    if (!kIsWeb)
-    {
-      final List<ProjectManagerEntryData> internalFiles = await loadProjectsFromInternal();
-      for (final ProjectManagerEntryData fileData in internalFiles)
-      {
-        _allFileEntries.add(ProjectManagerEntryWidget(selectedWidget: _selectedWidget, entryData: fileData));
-      }
-    }
-  }
-  void changeOrder({required final ProjectViewOrder newOrder})
-  {
-    _projectViewOrder.value = newOrder;
-    _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
   }
 
   void _importProjectPressed()
@@ -208,44 +204,117 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
 
   void _importFileCompleted({required final bool success})
   {
-    final AppState appState = GetIt.I.get<AppState>();
     if (success)
     {
-      _isLoading = true;
-      _createWidgetList().then((final void nothing) {
-        _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
-        _isLoading = false;
-      });
-      appState.showMessage(text: "Project imported successfully!");
+      //the imported file is picked up by the cache on its own
+      GetIt.I.get<AppState>().showMessage(text: "Project imported successfully!");
     }
   }
 
-  void _filterAndSort({required final String filterText, required final ProjectViewOrder order})
+  void _retryPressed()
   {
-    final List<ProjectManagerEntryWidget> fList = _allFileEntries.where((final ProjectManagerEntryWidget element) => element.entryData.name.toLowerCase().contains(filterText.toLowerCase())).toList();
-    if (order== ProjectViewOrder.lastModifiedAsc)
+    _projectManager.reindex();
+  }
+
+  /// The cached projects, reduced to what the filter allows and put in order.
+  List<ProjectManagerEntryData> _filteredAndSorted()
+  {
+    final String filterText = _filterText.value.toLowerCase();
+    final ProjectViewOrder order = _projectViewOrder.value;
+    final List<ProjectManagerEntryData> fList = _projectManager.projects.value
+        .where((final ProjectManagerEntryData element) => element.name.toLowerCase().contains(filterText))
+        .toList();
+    if (order == ProjectViewOrder.lastModifiedAsc)
     {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.dateTime.compareTo(b.entryData.dateTime));
+      fList.sort((final ProjectManagerEntryData a, final ProjectManagerEntryData b) => a.dateTime.compareTo(b.dateTime));
     }
     else if (order == ProjectViewOrder.lastModifiedDesc)
     {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.dateTime.compareTo(a.entryData.dateTime));
+      fList.sort((final ProjectManagerEntryData a, final ProjectManagerEntryData b) => b.dateTime.compareTo(a.dateTime));
     }
     else if (order == ProjectViewOrder.nameAsc)
     {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => a.entryData.name.toLowerCase().compareTo(b.entryData.name.toLowerCase()));
+      fList.sort((final ProjectManagerEntryData a, final ProjectManagerEntryData b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     }
     else if (order == ProjectViewOrder.nameDesc)
     {
-      fList.sort((final ProjectManagerEntryWidget a, final ProjectManagerEntryWidget b) => b.entryData.name.toLowerCase().compareTo(a.entryData.name.toLowerCase()));
+      fList.sort((final ProjectManagerEntryData a, final ProjectManagerEntryData b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
     }
-    _fileEntries.value = fList;
+    return fList;
   }
 
-  void _filterTextChanged({required final String newText})
+  Widget _buildContent({required final BuildContext context})
   {
-    _filterText.value = newText;
-    _filterAndSort(filterText: _filterText.value, order: _projectViewOrder.value);
+    final ProjectIndexState indexState = _projectManager.indexState.value;
+    final bool cacheIsEmpty = _projectManager.projects.value.isEmpty;
+
+    //a spinner is only shown while there is nothing to look at yet, so a
+    //background re-scan never blanks a list that is already on screen
+    if (cacheIsEmpty && indexState == ProjectIndexState.indexing)
+    {
+      return SizedBox.expand(
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColorLight,
+          ),
+        ),
+      );
+    }
+
+    if (cacheIsEmpty && indexState == ProjectIndexState.error)
+    {
+      return SizedBox.expand(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                "Could not read the project directory!",
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
+              IconButton.outlined(
+                icon: const Icon(TablerIcons.refresh),
+                onPressed: _retryPressed,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final List<ProjectManagerEntryData> pList = _filteredAndSorted();
+    if (pList.isEmpty)
+    {
+      return SizedBox.expand(
+        child: Center(
+          child: Text(
+            "No files found!",
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: _ProjectManagerOptions.maxWidth / _ProjectManagerOptions.colCount,
+        childAspectRatio: _ProjectManagerOptions.entryAspectRatio,
+        mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
+        crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
+      ),
+      itemCount: pList.length,
+      itemBuilder: (final BuildContext context, final int index) {
+        final ProjectManagerEntryData entryData = pList[index];
+        return ProjectManagerEntryWidget(
+          key: ValueKey<String>(entryData.path),
+          entryData: entryData,
+          selectedPath: _projectManager.selectedPath,
+        );
+      },
+    );
   }
 
   @override
@@ -261,7 +330,33 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
       child: Column(
         children: <Widget>[
           const SizedBox(height: OverlayEntryAlertDialogOptions.padding),
-          Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text("PROJECT MANAGER", style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(width: OverlayEntryAlertDialogOptions.padding),
+              //an unobtrusive hint that the cache is catching up, used instead of
+              //the full spinner whenever there are already entries on screen
+              SizedBox(
+                width: _ProjectManagerOptions.busyIndicatorSize,
+                height: _ProjectManagerOptions.busyIndicatorSize,
+                child: ValueListenableBuilder<ProjectIndexState>(
+                  valueListenable: _projectManager.indexState,
+                  builder: (final BuildContext context, final ProjectIndexState indexState, final Widget? child) {
+                    if (indexState != ProjectIndexState.indexing)
+                    {
+                      return const SizedBox.shrink();
+                    }
+                    return CircularProgressIndicator(
+                      color: Theme.of(context).primaryColorLight,
+                      strokeWidth: _ProjectManagerOptions.busyIndicatorStrokeWidth,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
           SizedBox(
             height: 48,
             child: Row(
@@ -277,19 +372,11 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         width: 16,
                       ),
                       Expanded(
-                        child: ValueListenableBuilder<String>(
-                          valueListenable: _filterText,
-                          builder: (final BuildContext context, final String text, final Widget? child)
-                          {
-                            final TextEditingController controller = TextEditingController(text: _filterText.value);
-                            controller.selection = TextSelection.collapsed(offset: controller.text.length);
-                            return TextField(
-                              controller: controller,
-                              focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.projectFilterTextFocus),
-                              onChanged: (final String newText) {_filterTextChanged(newText: newText);},
-                              maxLength: _ProjectManagerOptions.maxFilterTextLength,
-                            );
-                          },
+                        child: TextField(
+                          controller: _filterController,
+                          focusNode: hotkeyManager.getFocusNode(id: FocusNodeEntry.projectFilterTextFocus),
+                          onChanged: (final String newText) {_filterText.value = newText;},
+                          maxLength: _ProjectManagerOptions.maxFilterTextLength,
                         ),
                       ),
                     ],
@@ -353,7 +440,7 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                         ],
                         selected: <ProjectViewOrder>{viewOrder},
                         showSelectedIcon: false,
-                        onSelectionChanged: (final Set<ProjectViewOrder> newOrders){changeOrder(newOrder: newOrders.first);},
+                        onSelectionChanged: (final Set<ProjectViewOrder> newOrders){_projectViewOrder.value = newOrders.first;},
                       );
                     },
                   ),
@@ -370,42 +457,10 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                 color: Theme.of(context).primaryColorDark,
                 borderRadius: const BorderRadius.all(Radius.circular(OverlayEntryAlertDialogOptions.borderRadius)),
               ),
-              child: ValueListenableBuilder<List<ProjectManagerEntryWidget>>(
-                valueListenable: _fileEntries,
-                builder: (final BuildContext context, final List<ProjectManagerEntryWidget> pList, final Widget? child) {
-                  if (_isLoading)
-                  {
-                    return SizedBox.expand(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColorLight,
-                        ),
-                      ),
-                    );
-                  }
-                  else if (pList.isEmpty)
-                  {
-                    return SizedBox.expand(
-                        child: Center(
-                            child: Text(
-                              "No files found!",
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                        ),
-                    );
-                  }
-                  else
-                  {
-                    return GridView.extent(
-                      maxCrossAxisExtent: _ProjectManagerOptions.maxWidth / _ProjectManagerOptions.colCount,
-                      padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                      childAspectRatio: _ProjectManagerOptions.entryAspectRatio,
-                      mainAxisSpacing: OverlayEntryAlertDialogOptions.padding,
-                      crossAxisSpacing: OverlayEntryAlertDialogOptions.padding,
-                      children: pList.toList(),
-                    );
-                  }
-
+              child: ListenableBuilder(
+                listenable: _listListenable,
+                builder: (final BuildContext context, final Widget? child) {
+                  return _buildContent(context: context);
                 },
               ),
             ),
@@ -450,14 +505,14 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<ProjectManagerEntryWidget?>(
-                      valueListenable: _selectedWidget,
-                      builder: (final BuildContext context, final ProjectManagerEntryWidget? selWidget, final Widget? child) {
+                    child: ValueListenableBuilder<String?>(
+                      valueListenable: _projectManager.selectedPath,
+                      builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
                         return IconButton.outlined(
                           icon: const Icon(
                             TablerIcons.trash,
                           ),
-                          onPressed: (selWidget != null) ? _deleteProjectPressed : null,
+                          onPressed: (selectedPath != null) ? _deleteProjectPressed : null,
                         );
                       },
                     ),
@@ -470,14 +525,14 @@ class _ProjectManagerWidgetState extends State<ProjectManagerWidget>
                   waitDuration: AppState.toolTipDuration,
                   child: Padding(
                     padding: const EdgeInsets.all(OverlayEntryAlertDialogOptions.padding),
-                    child: ValueListenableBuilder<ProjectManagerEntryWidget?>(
-                      valueListenable: _selectedWidget,
-                      builder: (final BuildContext context, final ProjectManagerEntryWidget? selWidget, final Widget? child) {
+                    child: ValueListenableBuilder<String?>(
+                      valueListenable: _projectManager.selectedPath,
+                      builder: (final BuildContext context, final String? selectedPath, final Widget? child) {
                         return IconButton.outlined(
                           icon: const Icon(
                             TablerIcons.check,
                           ),
-                          onPressed: selWidget != null ? _loadProject : null,
+                          onPressed: selectedPath != null ? _loadProject : null,
                         );
                       },
                     ),

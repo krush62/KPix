@@ -29,6 +29,7 @@ import 'package:kpix/managers/history/history_manager.dart';
 import 'package:kpix/managers/history/history_state.dart';
 import 'package:kpix/managers/hotkey_manager.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/managers/reference_image_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/painting/shader_options.dart';
@@ -186,6 +187,10 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
   {
     WidgetsBinding.instance.removeObserver(this);
     _recoverTimer.cancel();
+    if (GetIt.I.isRegistered<ProjectManager>())
+    {
+      GetIt.I.get<ProjectManager>().dispose();
+    }
     super.dispose();
   }
 
@@ -222,7 +227,12 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
         break;
       case AppLifecycleState.resumed:
         //On all platforms, this state indicates that the application is in the default running mode for a running application that has input focus and is visible.
-        break;
+        //a frozen process does not receive file system events, and on Android the
+        //watch itself can be dropped, so the project cache is refreshed here
+        if (!kIsWeb && initialized.value && GetIt.I.isRegistered<ProjectManager>())
+        {
+          unawaited(GetIt.I.get<ProjectManager>().reindex());
+        }
       case AppLifecycleState.inactive:
         //At least one view of the application is visible, but none have input focus. The application is otherwise running normally.
         if (!kIsWeb && initialized.value)
@@ -318,6 +328,13 @@ class _KPixAppState extends State<KPixApp> with WidgetsBindingObserver
       GetIt.I.registerSingleton<ReferenceImageManager>(ReferenceImageManager());
       logger.i("Creating History Manager");
       GetIt.I.registerSingleton<HistoryManager>(HistoryManager(maxEntries: GetIt.I.get<PreferenceManager>().behaviorPreferenceContent.undoSteps.value));
+      logger.i("Creating Project Manager");
+      final ProjectManager projectManager = ProjectManager();
+      GetIt.I.registerSingleton<ProjectManager>(projectManager);
+      //indexing the project directory runs in the background, so that the cache
+      //is warm by the time the project manager is opened without holding up the
+      //start up here
+      unawaited(projectManager.start());
 
       //CREATE DIALOG OVERLAYS
       _closeWarningDialog = getThreeButtonDialog(

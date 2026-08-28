@@ -50,8 +50,10 @@ import 'package:kpix/managers/history/history_state_type.dart';
 import 'package:kpix/managers/history/history_timeline.dart';
 import 'package:kpix/managers/history/ramp_resolver.dart';
 import 'package:kpix/managers/preference_manager.dart';
+import 'package:kpix/managers/project_manager.dart';
 import 'package:kpix/models/app_state.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/models/selection_state.dart';
 import 'package:kpix/models/time_line_state.dart';
 import 'package:kpix/util/color_names.dart';
@@ -64,7 +66,6 @@ import 'package:kpix/util/helpers/isolate_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/controls/kpix_direction_widget.dart';
 import 'package:kpix/widgets/file/export_widget.dart';
-import 'package:kpix/widgets/file/project_manager_entry_widget.dart';
 import 'package:kpix/widgets/kpal/kpal_constraints.dart';
 import 'package:kpix/widgets/palette/palette_manager_entry_widget.dart';
 import 'package:kpix/widgets/stamps/stamp_manager_entry_widget.dart';
@@ -346,14 +347,21 @@ Future<void> _projectFileSaved({required final String fileName, required final S
   if (!kIsWeb)
   {
     final String? pngPath = await replaceFileExtension(filePath: path, newExtension: thumbnailExtension,inputFileMustExist: true,);
-    if (pngPath != null) 
+    if (pngPath != null)
     {
       try
       {
         final Frame frame = appState.timeline.selectedFrame!;
         final ui.Image img = await getImageFromLayers(canvasSize: appState.canvasSize, layerCollection: frame.layerList, selection: appState.selectionState.selection,frame: frame,);
-        final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
-        await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
+        try
+        {
+          final ByteData? pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+          await File(pngPath).writeAsBytes(pngBytes!.buffer.asUint8List());
+        }
+        finally
+        {
+          img.dispose();
+        }
       }
       catch (e, s)
       {
@@ -364,6 +372,8 @@ Future<void> _projectFileSaved({required final String fileName, required final S
     {
       GetIt.I.get<Logger>().w("Creation of png path unsuccessful.");
     }
+    //a watch event would pick this up too, but not before the manager is opened
+    notifyProjectFileChanged(path: path);
   }
 
   appState.fileSaved(saveName: fileName, path: path, addKPixExtension: kIsWeb);
@@ -417,9 +427,13 @@ Future<bool> deleteProject({required final String fullProjectPath}) async
   {
     final bool success = await deleteFile(path: fullProjectPath);
     final String? pngPath = await replaceFileExtension(filePath: fullProjectPath, newExtension: thumbnailExtension, inputFileMustExist: false,);
-    if (pngPath != null) 
+    if (pngPath != null)
     {
       await deleteFile(path: pngPath);
+    }
+    if (success)
+    {
+      notifyProjectFileChanged(path: fullProjectPath);
     }
     return success;
   }
@@ -940,62 +954,100 @@ Future<ProjectDirectoryMoveResult> moveProjectFiles({required final String sourc
   }
 }
 
-Future<List<ProjectManagerEntryData>> loadProjectsFromInternal() async
+/// Collects the file system state of every project in [dir].
+///
+/// This only stats files, so it holds no `dart:ui` handles and reaches nothing
+/// in the service locator: [ProjectManager] runs it on a background isolate.
+/// It does not log for the same reason, and lets errors surface to the caller.
+Future<List<ProjectFileStat>> scanProjectDirectory({required final String dir}) async
 {
-  final Logger logger = GetIt.I.get<Logger>();
-  logger.i("Loading projects from project directory: ${GetIt.I.get<AppState>().projectsDir}.",);
-
-  final List<ProjectManagerEntryData> projectData = <ProjectManagerEntryData>[];
-  final Directory dir = Directory(GetIt.I.get<AppState>().projectsDir);
-
-  if (await dir.exists())
+  final List<ProjectFileStat> stats = <ProjectFileStat>[];
+  final Directory directory = Directory(dir);
+  if (!await directory.exists())
   {
+    return stats;
+  }
+
+  await for (final FileSystemEntity entity in directory.list(followLinks: false))
+  {
+    if (entity is! File || p.extension(entity.path).toLowerCase() != ".$fileExtensionKpix")
+    {
+      continue;
+    }
+    final String kpixPath = entity.absolute.path;
+    //FileStat.stat never throws, it reports a missing file as a not found type,
+    //which is what a file deleted between listing and stating looks like here
+    final FileStat kpixStat = await FileStat.stat(kpixPath);
+    if (kpixStat.type != FileSystemEntityType.file)
+    {
+      continue;
+    }
+    final String thumbnailPath = p.setExtension(kpixPath, ".$thumbnailExtension");
+    final FileStat thumbnailStat = await FileStat.stat(thumbnailPath);
+    final bool hasThumbnail = thumbnailStat.type == FileSystemEntityType.file;
+    stats.add(
+      ProjectFileStat(
+        kpixPath: kpixPath,
+        lastModified: kpixStat.modified,
+        thumbnailPath: thumbnailPath,
+        thumbnailModified: hasThumbnail ? thumbnailStat.modified : null,
+        thumbnailSize: hasThumbnail ? thumbnailStat.size : null,
+      ),
+    );
+  }
+  return stats;
+}
+
+/// Collects the file system state of the single project at [kpixPath].
+///
+/// Returns null when the project file is gone, which is how [ProjectManager]
+/// detects a deletion.
+Future<ProjectFileStat?> statProjectFile({required final String kpixPath}) async
+{
+  final FileStat kpixStat = await FileStat.stat(kpixPath);
+  if (kpixStat.type != FileSystemEntityType.file)
+  {
+    return null;
+  }
+  final String thumbnailPath = p.setExtension(kpixPath, ".$thumbnailExtension");
+  final FileStat thumbnailStat = await FileStat.stat(thumbnailPath);
+  final bool hasThumbnail = thumbnailStat.type == FileSystemEntityType.file;
+  return ProjectFileStat(
+    kpixPath: kpixPath,
+    lastModified: kpixStat.modified,
+    thumbnailPath: thumbnailPath,
+    thumbnailModified: hasThumbnail ? thumbnailStat.modified : null,
+    thumbnailSize: hasThumbnail ? thumbnailStat.size : null,
+  );
+}
+
+/// Decodes the project thumbnail at [thumbnailPath].
+///
+/// Returns null when the file is missing or cannot be decoded. The latter
+/// happens while a sync tool is still writing it, so a failure here is expected
+/// and not worth a log entry: the cache retries a missing thumbnail on the next
+/// scan.
+Future<ui.Image?> loadThumbnail({required final String thumbnailPath}) async
+{
+  try
+  {
+    //instantiateImageCodecWithSize takes ownership of the buffer and disposes it
+    final ui.ImmutableBuffer buffer = await ui.ImmutableBuffer.fromFilePath(thumbnailPath);
+    final ui.Codec codec = await ui.instantiateImageCodecWithSize(buffer);
     try
     {
-      await for (final FileSystemEntity entity in dir.list(followLinks: false))
-      {
-        if (entity is File && entity.path.endsWith(".$fileExtensionKpix"))
-        {
-          final String? pngPath = await replaceFileExtension(filePath: entity.absolute.path, newExtension: thumbnailExtension, inputFileMustExist: true,);
-          ui.Image? thumbnail;
-          if (pngPath != null) {
-            final File pngFile = File(pngPath);
-            if (await pngFile.exists())
-            {
-              final Uint8List imageBytes = await pngFile.readAsBytes();
-              final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
-              final ui.FrameInfo frame = await codec.getNextFrame();
-              thumbnail = frame.image;
-            }
-          }
-          projectData.add(
-            ProjectManagerEntryData(
-              name: extractFilenameFromPath(
-                path: entity.absolute.path,
-                keepExtension: false,
-              ),
-              path: entity.absolute.path,
-              thumbnail: thumbnail,
-              dateTime: await entity.lastModified(),
-            ),
-          );
-        }
-      }
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      return frame.image;
     }
-    catch (e, s)
+    finally
     {
-      logger.w(
-        "Error loading projects from internal directory.",
-        error: e,
-        stackTrace: s,
-      );
+      codec.dispose();
     }
   }
-  else
+  catch (_)
   {
-    logger.w("Project directory ${GetIt.I.get<AppState>().projectsDir} does not exist.",);
+    return null;
   }
-  return projectData;
 }
 
 void setUint64({required final ByteData bytes, required final int offset, required final int value, final Endian endian = Endian.big,})
@@ -1114,6 +1166,10 @@ Future<bool> importProject({required final String? path, final bool showMessages
             if (img != null)
             {
               success = await copyImportFile(inputPath: loadFileSet.path!, image: img, targetPath: projectPath,);
+              if (success)
+              {
+                notifyProjectFileChanged(path: projectPath);
+              }
             }
             else
             {

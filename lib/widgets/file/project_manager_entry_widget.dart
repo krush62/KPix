@@ -16,6 +16,8 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kpix/models/project_manager_data.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
 
 /// Layout options for [ProjectManagerEntryWidget].
@@ -24,45 +26,31 @@ abstract final class _ProjectManagerEntryOptions
   static const double borderWidth = 2.0;
   static const double borderRadius = 3.0;
   static const int layoutFlex = 6;
+  static const double placeholderIconSize = 32.0;
 }
 
-/// Data structure for a KPix project file.
-class ProjectManagerEntryData
-{
-  final ui.Image? thumbnail;
-  final String path;
-  final String name;
-  final DateTime dateTime;
-
-  ProjectManagerEntryData({required this.dateTime, required this.path, required this.thumbnail, required this.name});
-}
-
-/// Visualization of a project file used for [ProjectManagerEntryWidget].
-class ProjectManagerEntryWidget extends StatefulWidget
+/// Visualization of a project file used for the project manager grid.
+///
+/// The selection is held as a path in [selectedPath] instead of a reference to
+/// this widget, so it survives the list being rebuilt when the cache updates.
+class ProjectManagerEntryWidget extends StatelessWidget
 {
   final ProjectManagerEntryData entryData;
-  final ValueNotifier<ProjectManagerEntryWidget?> selectedWidget;
-  const ProjectManagerEntryWidget({super.key, required this.entryData, required this.selectedWidget});
-
-  @override
-  State<ProjectManagerEntryWidget> createState() => _ProjectManagerEntryWidgetState();
-}
-
-class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
-{
+  final ValueNotifier<String?> selectedPath;
+  const ProjectManagerEntryWidget({super.key, required this.entryData, required this.selectedPath});
 
   void _onTap()
   {
-    widget.selectedWidget.value = widget;
+    selectedPath.value = entryData.path;
   }
 
   @override
   Widget build(final BuildContext context)
   {
-    return ValueListenableBuilder<ProjectManagerEntryWidget?>(
-      valueListenable: widget.selectedWidget,
-      builder: (final BuildContext context, final ProjectManagerEntryWidget? selectedWidget, final Widget? child) {
-        final bool isSelected = (selectedWidget == widget);
+    return ValueListenableBuilder<String?>(
+      valueListenable: selectedPath,
+      builder: (final BuildContext context, final String? selected, final Widget? child) {
+        final bool isSelected = selected == entryData.path;
         return GestureDetector(
           onTap: _onTap,
           child: DecoratedBox(
@@ -79,7 +67,7 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
                 Expanded(
                   child: Center(
                     child: Text(
-                      widget.entryData.name,
+                      entryData.name,
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),
@@ -88,13 +76,21 @@ class _ProjectManagerEntryWidgetState extends State<ProjectManagerEntryWidget>
                   flex: _ProjectManagerEntryOptions.layoutFlex,
                   child: Padding(
                     padding: const EdgeInsets.all(_ProjectManagerEntryOptions.borderWidth),
-                    child: RawImage(image: widget.entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,),
+                    child: entryData.thumbnail != null
+                        ? RawImage(image: entryData.thumbnail, fit: BoxFit.contain, filterQuality: ui.FilterQuality.none,)
+                        : Center(
+                            child: Icon(
+                              TablerIcons.photo_off,
+                              size: _ProjectManagerEntryOptions.placeholderIconSize,
+                              color: Theme.of(context).primaryColorLight,
+                            ),
+                          ),
                   ),
                 ),
                 Expanded(
                   child: Center(
                     child: Text(
-                      formatDateTime(dateTime: widget.entryData.dateTime),
+                      formatDateTime(dateTime: entryData.dateTime),
                       style: Theme.of(context).textTheme.titleSmall!.apply(color: Theme.of(context).primaryColorLight),
                     ),
                   ),

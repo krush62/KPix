@@ -15,7 +15,6 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ColorSet
 {
@@ -66,28 +65,27 @@ class ColorSet
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.grey,
     ),
-    textTheme: GoogleFonts.oxaniumTextTheme( TextTheme(
+    textTheme: TextTheme(
+      displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
+      displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
+      displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
 
-      displayLarge: TextStyle(fontSize: 57, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
-      displayMedium: TextStyle(fontSize: 45, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
-      displaySmall: TextStyle(fontSize: 36, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
+      headlineLarge: TextStyle(fontSize: 32, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
+      headlineMedium: TextStyle(fontSize: 28, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
+      headlineSmall: TextStyle(fontSize: 24, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
 
-      headlineLarge: TextStyle(fontSize: 32, height: 1.2, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
-      headlineMedium: TextStyle(fontSize: 28, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
-      headlineSmall: TextStyle(fontSize: 24, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w400, color: _lightColors.light),
+      titleLarge: TextStyle(fontSize: 22, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
+      titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
+      titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
 
-      titleLarge: TextStyle(fontSize: 22, height: 1.4, letterSpacing: 0.0, fontWeight: FontWeight.w600, color: _lightColors.light),
-      titleMedium: TextStyle(fontSize: 16, height: 1.4, letterSpacing: 0.15, fontWeight: FontWeight.w600, color: _lightColors.light),
-      titleSmall: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light),
+      labelLarge: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
+      labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
+      labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
 
-      labelLarge: TextStyle(fontSize: 14, height: 1.4, letterSpacing: 0.1, fontWeight: FontWeight.w600, color: _lightColors.light),
-      labelMedium: TextStyle(fontSize: 12, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light),
-      labelSmall: TextStyle(fontSize: 11, height: 1.4, letterSpacing: 0.5, fontWeight: FontWeight.w600, color: _lightColors.light),
-
-      bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: _lightColors.light),
-      bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: _lightColors.light),
-      bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: _lightColors.light),
-    ),),
+      bodyLarge: TextStyle(fontSize: 14, height: 1.5, letterSpacing: 0.15, fontWeight: FontWeight.w400, color: _lightColors.light, fontFamily: "Oxanium"),
+      bodyMedium: TextStyle(fontSize: 12, height: 1.5, letterSpacing: 0.25, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
+      bodySmall: TextStyle(fontSize: 10, height: 1.5, letterSpacing: 0.4, fontWeight: FontWeight.w600, color: _lightColors.light, fontFamily: "Oxanium"),
+    ),
 
     sliderTheme: SliderThemeData(
       activeTrackColor: _lightColors.light,
@@ -200,28 +198,26 @@ class ColorSet
 
     //fontFamily: "PixelFonts",
 
-    textTheme: GoogleFonts.oxaniumTextTheme(
-      TextTheme(
-        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: _darkColors.light),
-        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: _darkColors.light),
-        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: _darkColors.light),
+    textTheme: TextTheme(
+        displayLarge: monochromeTheme.textTheme.displayLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        displayMedium: monochromeTheme.textTheme.displayMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        displaySmall: monochromeTheme.textTheme.displaySmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
 
-        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: _darkColors.light),
-        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: _darkColors.light),
-        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: _darkColors.light),
+        headlineLarge: monochromeTheme.textTheme.headlineLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        headlineMedium: monochromeTheme.textTheme.headlineMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        headlineSmall: monochromeTheme.textTheme.headlineSmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
 
-        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: _darkColors.light),
-        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: _darkColors.light),
-        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: _darkColors.light),
+        titleLarge: monochromeTheme.textTheme.titleLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        titleMedium: monochromeTheme.textTheme.titleMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        titleSmall: monochromeTheme.textTheme.titleSmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
 
-        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: _darkColors.light),
-        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: _darkColors.light),
-        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: _darkColors.light),
+        labelLarge: monochromeTheme.textTheme.labelLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        labelMedium: monochromeTheme.textTheme.labelMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        labelSmall: monochromeTheme.textTheme.labelSmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
 
-        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light),
-        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light),
-        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light),
-      ),
+        bodyLarge: monochromeTheme.textTheme.bodyLarge!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        bodyMedium: monochromeTheme.textTheme.bodyMedium!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
+        bodySmall: monochromeTheme.textTheme.bodySmall!.copyWith(color: _darkColors.light, fontFamily: "Oxanium"),
     ),
 
     sliderTheme: SliderThemeData(

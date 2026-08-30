@@ -81,7 +81,7 @@ class FontPainter extends IToolPainter
             {
               for (int y = 0; y < currentFont.height; y++)
               {
-                final bool valAtPos = glyph.dataMatrix[x][y];
+                final bool valAtPos = glyph.getPixel(x: x, y: y);
                 if (valAtPos)
                 {
                   for (int a = 0; a < _options.size.value; a++)

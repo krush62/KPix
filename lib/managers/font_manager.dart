@@ -96,26 +96,49 @@ const Map<int, PixelFontType> pixelFontIndexMap =
 class Glyph
 {
   final int width;
-  final List<List<bool>> dataMatrix;
+  final int height;
+
+  final Uint8List _bits;
 
   factory Glyph({
     required final int width,
     required final int height,
   }) {
-    final List<List<bool>> dataMatrix =
-    List<List<bool>>.generate(width, (final int i) => List<bool>.filled(height, false), growable: false);
     return Glyph._(
       width: width,
-      dataMatrix: dataMatrix,
+      height: height,
+      //Uint8List starts zeroed, so every pixel begins unset
+      bits: Uint8List((width * height + 7) >> 3),
     );
   }
 
   Glyph._({
     required this.width,
-    required this.dataMatrix,
-  });
+    required this.height,
+    required final Uint8List bits,
+  }) : _bits = bits;
 
+  /// Whether the pixel at [x], [y] is part of the glyph.
+  bool getPixel({required final int x, required final int y})
+  {
+    final int index = x * height + y;
+    return _bits[index >> 3] & (1 << (index & 7)) != 0;
+  }
 
+  void setPixel({required final int x, required final int y, required final bool value})
+  {
+    final int index = x * height + y;
+    final int byteIndex = index >> 3;
+    final int mask = 1 << (index & 7);
+    if (value)
+    {
+      _bits[byteIndex] |= mask;
+    }
+    else
+    {
+      _bits[byteIndex] &= ~mask & 0xFF;
+    }
+  }
 }
 
 
@@ -268,19 +291,15 @@ class FontManager
                 {
                   final int addr = (b * imgWidth * 4) + (a * 4) + 3;
                   final int val = imgData.getUint8(addr);
-                  glyph.dataMatrix[a-x][b] = val > 0;
+                  glyph.setPixel(x: a - x, y: b, value: val > 0);
                 }
               }
               glyphMap[id] = glyph;
             }
             else if (id == 32)
             {
-              final Glyph glyph = Glyph(width: 1, height: imgHeight);
-              for (int b = 0; b < imgHeight; b++)
-              {
-                glyph.dataMatrix[0][b] = false;
-              }
-              glyphMap[id] = glyph;
+              //the space glyph is blank, which a freshly allocated Glyph already is
+              glyphMap[id] = Glyph(width: 1, height: imgHeight);
             }
           }
           else

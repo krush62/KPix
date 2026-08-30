@@ -20,6 +20,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kpix/managers/font_manager.dart';
 import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/file_helper.dart';
 import 'package:kpix/util/helpers/format_helper.dart';
@@ -43,6 +44,7 @@ void main() {
   testIntToBytes();
   testAngleUtilities();
   testExtractFileName();
+  testGlyph();
 }
 
 void testCoordinateSetI()
@@ -1075,6 +1077,90 @@ void testIntToBytes()
       expect(() => intToBytes(value: 0x1234, length: 3), throwsA(isA<ArgumentError>()));
       expect(() => intToBytes(value: 0x1234, length: 0), throwsA(isA<ArgumentError>()));
       expect(() => intToBytes(value: 0x1234, length: 5), throwsA(isA<ArgumentError>()));
+    });
+  });
+}
+
+void testGlyph()
+{
+  group('Glyph', () {
+    //the bundled fonts span these dimensions, plus sizes whose bit count is not
+    //a whole number of bytes
+    const List<List<int>> sizes = <List<int>>[
+      <int>[1, 10], <int>[3, 5], <int>[8, 8], <int>[14, 16], <int>[7, 13],
+    ];
+
+    test('a new glyph is entirely unset', () {
+      for (final List<int> size in sizes) {
+        final Glyph glyph = Glyph(width: size[0], height: size[1]);
+        for (int x = 0; x < glyph.width; x++) {
+          for (int y = 0; y < glyph.height; y++) {
+            expect(glyph.getPixel(x: x, y: y), isFalse, reason: "$x,$y of ${size[0]}x${size[1]}");
+          }
+        }
+      }
+    });
+
+    test('every pixel round-trips independently', () {
+      for (final List<int> size in sizes) {
+        final int w = size[0];
+        final int h = size[1];
+        //set one pixel at a time and confirm exactly that one reads back
+        for (int tx = 0; tx < w; tx++) {
+          for (int ty = 0; ty < h; ty++) {
+            final Glyph glyph = Glyph(width: w, height: h);
+            glyph.setPixel(x: tx, y: ty, value: true);
+            for (int x = 0; x < w; x++) {
+              for (int y = 0; y < h; y++) {
+                expect(glyph.getPixel(x: x, y: y), x == tx && y == ty,
+                    reason: "set $tx,$ty then read $x,$y of ${w}x$h",);
+              }
+            }
+          }
+        }
+      }
+    });
+
+    test('clearing a pixel leaves its neighbours alone', () {
+      final Glyph glyph = Glyph(width: 14, height: 16);
+      for (int x = 0; x < glyph.width; x++) {
+        for (int y = 0; y < glyph.height; y++) {
+          glyph.setPixel(x: x, y: y, value: true);
+        }
+      }
+      glyph.setPixel(x: 5, y: 9, value: false);
+      for (int x = 0; x < glyph.width; x++) {
+        for (int y = 0; y < glyph.height; y++) {
+          expect(glyph.getPixel(x: x, y: y), !(x == 5 && y == 9), reason: "$x,$y");
+        }
+      }
+    });
+
+    test('holds an arbitrary pattern', () {
+      const int w = 14;
+      const int h = 16;
+      final Glyph glyph = Glyph(width: w, height: h);
+      bool pattern(final int x, final int y) => (x * 7 + y * 3) % 3 == 0;
+      for (int x = 0; x < w; x++) {
+        for (int y = 0; y < h; y++) {
+          glyph.setPixel(x: x, y: y, value: pattern(x, y));
+        }
+      }
+      for (int x = 0; x < w; x++) {
+        for (int y = 0; y < h; y++) {
+          expect(glyph.getPixel(x: x, y: y), pattern(x, y), reason: "$x,$y");
+        }
+      }
+    });
+
+    test('setting a pixel twice is idempotent', () {
+      final Glyph glyph = Glyph(width: 8, height: 8);
+      glyph.setPixel(x: 3, y: 4, value: true);
+      glyph.setPixel(x: 3, y: 4, value: true);
+      expect(glyph.getPixel(x: 3, y: 4), isTrue);
+      glyph.setPixel(x: 3, y: 4, value: false);
+      glyph.setPixel(x: 3, y: 4, value: false);
+      expect(glyph.getPixel(x: 3, y: 4), isFalse);
     });
   });
 }

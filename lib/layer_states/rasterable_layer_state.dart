@@ -102,5 +102,50 @@ abstract class RasterableLayerState extends LayerState
     disposeImages(images: orphans);
   }
 
+  /// Every image this layer currently points at.
+  ///
+  /// Capture this before storing a new raster generation, then hand it to
+  /// [releaseSuperseded] afterwards.
+  @protected
+  List<ui.Image?> collectHeldImages()
+  {
+    final List<ui.Image?> held = <ui.Image?>[previousRaster, rasterImage.value, thumbnail.value];
+    for (final RasterImagePair pair in rasterImageMap.value.values)
+    {
+      held.add(pair.raster);
+      held.add(pair.thumbnail);
+    }
+    return held;
+  }
 
+  /// Releases everything in [outgoing] that the layer no longer points at.
+  ///
+  /// A raster generation shares handles freely - the same image is typically the
+  /// raster, the thumbnail and the entry for one frame all at once - and the next
+  /// generation carries some of them over, most notably the one that becomes
+  /// [previousRaster]. So the two generations have to be diffed; releasing the old
+  /// one wholesale would free an image still in use, and dropping it without
+  /// releasing anything strands one image per frame on every raster.
+  @protected
+  void releaseSuperseded({required final Iterable<ui.Image?> outgoing})
+  {
+    final Set<ui.Image> retained = <ui.Image>{};
+    for (final ui.Image? image in collectHeldImages())
+    {
+      if (image != null)
+      {
+        retained.add(image);
+      }
+    }
+
+    final List<ui.Image?> release = <ui.Image?>[];
+    for (final ui.Image? image in outgoing)
+    {
+      if (image != null && !retained.contains(image))
+      {
+        release.add(image);
+      }
+    }
+    disposeImages(images: release);
+  }
 }

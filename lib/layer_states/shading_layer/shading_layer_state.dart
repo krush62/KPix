@@ -593,6 +593,8 @@ class ShadingLayerState extends RasterableLayerState
 
   void _rasterCreated({required final DualRasterResult rasterResult})
   {
+    final List<ui.Image?> outgoing = collectHeldImages();
+
     thumbnail.value = rasterResult.externalStackImages != null
         ? rasterResult.externalStackImages!.thumbnail
         : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
@@ -601,6 +603,8 @@ class ShadingLayerState extends RasterableLayerState
         ? rasterResult.externalStackImages!.raster
         : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.raster : null);
     rasterImageMap.value = rasterResult.rasterImages;
+
+    releaseSuperseded(outgoing: outgoing);
 
     isRasterizing = false;
     _isUpdateScheduled = false;

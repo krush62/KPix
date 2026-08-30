@@ -349,13 +349,12 @@ class DrawingLayerState extends RasterableLayerState
   {
     if (isDisposed)
     {
-      //the layer was dropped while this raster was running, so the images it
-      //produced have no owner and would leak if they were stored
       discardRasterResult(rasterResult: rasterResult);
       return;
     }
     isRasterizing = false;
-    previousRaster?.dispose();
+    final List<ui.Image?> outgoing = collectHeldImages();
+
     previousRaster = rasterImage.value;
     rasterImage.value = rasterResult.externalStackImages != null
         ? rasterResult.externalStackImages!.raster
@@ -364,6 +363,8 @@ class DrawingLayerState extends RasterableLayerState
         ? rasterResult.externalStackImages!.thumbnail
         : (rasterResult.rasterImages.isNotEmpty ? rasterResult.rasterImages.values.first.thumbnail : null);
     rasterImageMap.value = rasterResult.rasterImages;
+
+    releaseSuperseded(outgoing: outgoing);
 
     if (layerStack == null)
     {

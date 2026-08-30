@@ -1002,74 +1002,76 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
 
   @override
   Widget build(final BuildContext context) {
-    return ValueListenableBuilder<MouseCursor>(
-      valueListenable: _mouseCursor,
-      builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
-      {
-        return Stack(
-          children: <Widget>[
-            MouseRegion(
+    return Stack(
+      children: <Widget>[
+        ValueListenableBuilder<MouseCursor>(
+          valueListenable: _mouseCursor,
+          builder: (final BuildContext context, final MouseCursor cursor, final Widget? child)
+          {
+            return MouseRegion(
               onExit: (final PointerExitEvent pee) {_onMouseExit(pee: pee);},
               cursor: cursor,
-              child: Listener(
-                onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
-                onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
-                onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
-                onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
-                onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
-                onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},
-                onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_panZoomUpdate(event: event);},
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Theme.of(context).primaryColorDark,
-                  child: LayoutBuilder(
-                    builder: (final BuildContext context, final BoxConstraints constraints)
-                    {
-                      _viewportSizeChanged(size: constraints.biggest);
-                      return RepaintBoundary(
-                        child: CustomPaint(
-                          willChange: true,
-                          painter: kPixPainter,
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              child: child,
+            );
+          },
+          child: Listener(
+            onPointerDown: (final PointerDownEvent pde) {_buttonDown(details: pde);},
+            onPointerMove: (final PointerEvent pe) {_updateLocation(details: pe);},
+            onPointerUp: (final PointerEvent pe) {_buttonUp(details: pe);},
+            onPointerHover: (final PointerHoverEvent phe) {_hover(details: phe);},
+            onPointerSignal: (final PointerSignalEvent pse) {_scroll(ev: pse);},
+            onPointerPanZoomEnd: (final PointerPanZoomEndEvent event) {_panZoomEnd(event: event);},
+            onPointerPanZoomUpdate: (final PointerPanZoomUpdateEvent event) {_panZoomUpdate(event: event);},
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Theme.of(context).primaryColorDark,
+              child: LayoutBuilder(
+                builder: (final BuildContext context, final BoxConstraints constraints)
+                {
+                  _viewportSizeChanged(size: constraints.biggest);
+                  return RepaintBoundary(
+                    child: CustomPaint(
+                      willChange: true,
+                      painter: kPixPainter,
+                    ),
+                  );
+                },
               ),
             ),
-            ValueListenableBuilder<ToolType>(
-              valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
-              builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
-                  builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
-                    final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
-                    if (shouldShow)
-                    {
-                      _selectionBarAnimationController.forward();
-                    }
-                    else
-                    {
-                      _selectionBarAnimationController.reverse();
-                    }
-                    return IgnorePointer(
-                      ignoring: !shouldShow,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: SizeTransition(
-                          sizeFactor: _selectionBarAnimation,
-                          child: const SelectionBarWidget(),
-                        ),
-                      ),
-                    );
-                  },
+          ),
+        ),
+        ValueListenableBuilder<ToolType>(
+          valueListenable: GetIt.I.get<AppState>().selectedToolNotifier,
+          builder: (final BuildContext contextS, final ToolType toolType, final Widget? childS) {
+            return ValueListenableBuilder<bool>(
+              valueListenable: GetIt.I.get<AppState>().selectionState.selection.isEmptyNotifer,
+              builder: (final BuildContext contextT, final bool hasNoSelection, final Widget? childT) {
+                final bool shouldShow = toolType == ToolType.select || !hasNoSelection;
+                if (shouldShow)
+                {
+                  _selectionBarAnimationController.forward();
+                }
+                else
+                {
+                  _selectionBarAnimationController.reverse();
+                }
+                return IgnorePointer(
+                  ignoring: !shouldShow,
+                  child: childT,
                 );
               },
-            ),
-          ],
-        );
-      },
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizeTransition(
+                  sizeFactor: _selectionBarAnimation,
+                  child: const SelectionBarWidget(),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

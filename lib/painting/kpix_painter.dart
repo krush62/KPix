@@ -147,6 +147,9 @@ class KPixPainter extends CustomPainter
     _guiOptions.canvasBorderOpacity.addListener(_canvasBorderOpacityChanged);
     _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
 
+    _guiOptions.rasterSizeIndex.addListener(_checkerboardSettingChanged);
+    _guiOptions.rasterContrast.addListener(_checkerboardSettingChanged);
+
     toolPainterMap = <ToolType, IToolPainter>{
       ToolType.select: SelectionPainter(painterOptions: _options),
       ToolType.erase: EraserPainter(painterOptions: _options),
@@ -1250,29 +1253,32 @@ class KPixPainter extends CustomPainter
   void _selectionOpacityChanged()
   {
     _setSelectionColors(percentageValue: _guiOptions.selectionOpacity.value);
+    _appState.repaintNotifier.repaint();
   }
 
   void _canvasBorderOpacityChanged()
   {
     _setCanvasBorderColor(percentageValue: _guiOptions.canvasBorderOpacity.value);
+    _appState.repaintNotifier.repaint();
   }
 
-  /// Stops the backup timer and drops the preference listeners.
-  ///
-  /// [CustomPainter] has no lifecycle of its own, so the widget that created this
-  /// painter has to call this when it is disposed. Without it the timer keeps the
-  /// painter, and everything it captured, alive for the rest of the session.
+  void _checkerboardSettingChanged()
+  {
+    _appState.repaintNotifier.repaint();
+  }
+
   void dispose()
   {
     _isDisposed = true;
     _backupTimer.cancel();
     _guiOptions.selectionOpacity.removeListener(_selectionOpacityChanged);
     _guiOptions.canvasBorderOpacity.removeListener(_canvasBorderOpacityChanged);
+    _guiOptions.rasterSizeIndex.removeListener(_checkerboardSettingChanged);
+    _guiOptions.rasterContrast.removeListener(_checkerboardSettingChanged);
     final ui.Image? backup = _backupImage;
     _backupImage = null;
     if (backup != null)
     {
-      //the widget being torn down may still be mid frame with this handle
       _retireImage(image: backup);
     }
   }

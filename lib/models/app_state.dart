@@ -174,6 +174,13 @@ class AppState
   {
     return _zoomFactor.value;
   }
+
+  /// Read only view of the zoom level, so the canvas can repaint when it changes.
+  ///
+  /// Nothing used to listen to this: zoom changes only updated a status bar
+  /// string, and the canvas happened to be repainted because that rebuild
+  /// repainted the whole tree. See [repaintNotifier].
+  ValueListenable<int> get zoomFactorNotifier => _zoomFactor;
   static const int zoomLevelMin = 1;
   static const int zoomLevelMax = 80;
 
@@ -1054,6 +1061,7 @@ class AppState
       {
         frame.layerList.onLayerVisibilityChanged(layer: layerState);
       }
+      repaintNotifier.repaint();
       GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerVisibilityChange, originLayer: layerState);
     }
   }
@@ -1128,6 +1136,7 @@ class AppState
       {
         selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
       }
+      repaintNotifier.repaint();
       if (addToHistoryStack && oldLayer != null)
       {
 
@@ -1267,6 +1276,7 @@ class AppState
     {
       frame.layerList.layerRasterDone(layer: layer);
     }
+    repaintNotifier.repaint();
   }
 
   void colorSelected({required final ColorReference? color, final bool addToHistory = true})

@@ -369,14 +369,16 @@ class _LayerWidgetState extends State<LayerWidget> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: <Widget>[
-                                ValueListenableBuilder<ui.Image?>(
-                                  valueListenable: widget.layerState.thumbnail,
-                                  builder: (final BuildContext context,
-                                      final ui.Image? img, final Widget? child,) {
-                                    return RawImage(
-                                      image: img,
-                                    );
-                                  },
+                                RepaintBoundary(
+                                  child: ValueListenableBuilder<ui.Image?>(
+                                    valueListenable: widget.layerState.thumbnail,
+                                    builder: (final BuildContext context,
+                                        final ui.Image? img, final Widget? child,) {
+                                      return RawImage(
+                                        image: img,
+                                      );
+                                    },
+                                  ),
                                 ),
                                 if (!widget.layerState.thumbnailIsContent)
                                   Center(

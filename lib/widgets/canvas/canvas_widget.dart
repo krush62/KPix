@@ -218,6 +218,17 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     _appState.selectedColorNotifier.removeListener(_updateFromChange);
     _appState.timeline.isPlaying.removeListener(_setDefaultCursor);
 
+    _appState.zoomFactorNotifier.removeListener(_updateFromChange);
+    _canvasOffset.removeListener(_updateFromChange);
+    _appState.selectedToolNotifier.removeListener(_updateFromChange);
+    _appState.timeline.isPlaying.removeListener(_updateFromChange);
+    _appState.timeline.frames.removeListener(_updateFromChange);
+    _appState.timeline.selectedFrameIndexNotifier.removeListener(_updateFromChange);
+    _appState.symmetryState.horizontalActivated.removeListener(_updateFromChange);
+    _appState.symmetryState.horizontalValue.removeListener(_updateFromChange);
+    _appState.symmetryState.verticalActivated.removeListener(_updateFromChange);
+    _appState.symmetryState.verticalValue.removeListener(_updateFromChange);
+
     //the global app state holds this callback, so it has to let go of it too
     if (_appState.flushHistoryData == _flushHistoryData)
     {
@@ -253,6 +264,16 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
     _shaderOptions.shaderDirection.addListener(_updateFromChange);
     _appState.selectedColorNotifier.addListener(_updateFromChange);
     _appState.timeline.isPlaying.addListener(_setDefaultCursor);
+    _appState.zoomFactorNotifier.addListener(_updateFromChange);
+    _canvasOffset.addListener(_updateFromChange);
+    _appState.selectedToolNotifier.addListener(_updateFromChange);
+    _appState.timeline.isPlaying.addListener(_updateFromChange);
+    _appState.timeline.frames.addListener(_updateFromChange);
+    _appState.timeline.selectedFrameIndexNotifier.addListener(_updateFromChange);
+    _appState.symmetryState.horizontalActivated.addListener(_updateFromChange);
+    _appState.symmetryState.horizontalValue.addListener(_updateFromChange);
+    _appState.symmetryState.verticalActivated.addListener(_updateFromChange);
+    _appState.symmetryState.verticalValue.addListener(_updateFromChange);
 
     _selectionBarAnimationController = AnimationController(
       vsync: this,
@@ -1006,8 +1027,11 @@ class _CanvasWidgetState extends State<CanvasWidget> with SingleTickerProviderSt
                     builder: (final BuildContext context, final BoxConstraints constraints)
                     {
                       _viewportSizeChanged(size: constraints.biggest);
-                      return CustomPaint(
-                        painter: kPixPainter,
+                      return RepaintBoundary(
+                        child: CustomPaint(
+                          willChange: true,
+                          painter: kPixPainter,
+                        ),
                       );
                     },
                   ),

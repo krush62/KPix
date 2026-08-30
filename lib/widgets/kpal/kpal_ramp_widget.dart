@@ -56,6 +56,8 @@ class _KPalRampState extends State<KPalRamp>
   final ValueNotifier<ui.Image?> _previewImage = ValueNotifier<ui.Image?>(null);
   bool _hasRenderChanges = false;
   bool _hasShiftChanges = false;
+  bool _isDisposed = false;
+  final List<ui.Image> _imagesToRetire = <ui.Image>[];
   late Timer _renderTimer;
   final String _valueToolTipMessage = "Press to reset";
 
@@ -71,11 +73,14 @@ class _KPalRampState extends State<KPalRamp>
     _renderTimer = Timer.periodic(const Duration(milliseconds: _KPalRampWidgetOptions.renderIntervalMs), (final Timer t) {_renderCheck(t: t);});
     for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
     {
-      shiftNotifier.addListener(() {
-        _hasShiftChanges = true;
-      },);
+      shiftNotifier.addListener(_shiftChanged);
     }
     _settingsChanged();
+  }
+
+  void _shiftChanged()
+  {
+    _hasShiftChanges = true;
   }
 
 
@@ -98,10 +103,71 @@ class _KPalRampState extends State<KPalRamp>
     return drawingLayers;
   }
 
+  /// Releases the layer copies made for the preview.
+  ///
+  /// Each copy started its own periodic raster timer, which keeps firing - and
+  /// keeps the copy, its pixel map and its images reachable - until the layer is
+  /// disposed.
+  void _disposeLayers({required final Iterable<RasterableLayerState> layers})
+  {
+    for (final RasterableLayerState layer in layers)
+    {
+      layer.dispose();
+    }
+  }
+
+  /// Disposes [image] once the current frame has been painted.
+  ///
+  /// The preview is shown through a [RawImage], which holds the handle until the
+  /// frame that drops it has been drawn; releasing earlier trips an assertion in
+  /// the engine.
+  void _retireImage({required final ui.Image image})
+  {
+    _imagesToRetire.add(image);
+    if (_imagesToRetire.length > 1)
+    {
+      //a flush is already scheduled and will take this one too
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
+      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
+      _imagesToRetire.clear();
+      for (final ui.Image image in images)
+      {
+        image.dispose();
+      }
+    });
+    //nothing else may be dirty, in which case no frame would ever be produced
+    WidgetsBinding.instance.scheduleFrame();
+  }
+
   @override
   void deactivate() {
     super.deactivate();
     _renderTimer.cancel();
+  }
+
+  @override
+  void dispose()
+  {
+    _isDisposed = true;
+    //idempotent; deactivate normally gets here first
+    _renderTimer.cancel();
+    for (final ValueNotifier<IdColor> shiftNotifier in widget.rampData.shiftedColors)
+    {
+      shiftNotifier.removeListener(_shiftChanged);
+    }
+    _disposeLayers(layers: _drawingLayers);
+    _drawingLayers = <RasterableLayerState>[];
+
+    final ui.Image? lastPreview = _previewImage.value;
+    _previewImage.dispose();
+    _colorCards.dispose();
+    if (lastPreview != null)
+    {
+      _retireImage(image: lastPreview);
+    }
+    super.dispose();
   }
 
   void _renderCheck({required final Timer t})
@@ -115,7 +181,17 @@ class _KPalRampState extends State<KPalRamp>
     if (_hasRenderChanges && !hasRasterizingLayers)
     {
       getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, layerStack: _drawingLayers).then((final ui.Image img) {
+        if (_isDisposed)
+        {
+          img.dispose();
+          return;
+        }
+        final ui.Image? previous = _previewImage.value;
         _previewImage.value = img;
+        if (previous != null)
+        {
+          _retireImage(image: previous);
+        }
       });
       _hasRenderChanges = false;
     }
@@ -145,6 +221,8 @@ class _KPalRampState extends State<KPalRamp>
       widget.rampData.updateColors(colorCountChanged: colorCountChanged);
       if (colorCountChanged)
       {
+        //the copies being replaced own timers and images of their own
+        _disposeLayers(layers: _drawingLayers);
         _drawingLayers = _copyLayers(originalLayers: _appState.timeline.selectedFrame!.layerList.getVisibleRasterLayers());
         final HashMap<int, int> indexMap = remapIndices(oldLength: widget.originalRampData.shiftedColors.length, newLength: widget.rampData.shiftedColors.length);
         for (final LayerState layerState in _drawingLayers)

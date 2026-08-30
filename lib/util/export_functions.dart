@@ -221,9 +221,9 @@ Future<CoordinateColorMapNullable> getMergedColors({required final Frame frame, 
   {
     for (int y = 0; y < canvasSize.y; y++)
     {
+      final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
       for (final RasterableLayerState layer in layerList)
       {
-        final CoordinateSetI coord = CoordinateSetI(x: x, y: y);
         final ColorReference? colAtPos = layer.rasterPixels[coord];
         if (colAtPos != null)
         {

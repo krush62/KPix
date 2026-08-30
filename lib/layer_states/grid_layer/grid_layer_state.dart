@@ -226,10 +226,18 @@ class GridLayerState extends LayerState
 
   void _rasterCreated({required final ui.Image image})
   {
+    final ui.Image? outgoingRaster = raster;
+    final ui.Image? outgoingThumbnail = thumbnail.value;
+
     raster = image;
     thumbnail.value = image;
     isRendering = false;
     _shouldRender = false;
+
+    disposeImages(images: <ui.Image?>[
+      if (!identical(outgoingRaster, image)) outgoingRaster,
+      if (!identical(outgoingThumbnail, image)) outgoingThumbnail,
+    ],);
     settleRaster();
   }
 

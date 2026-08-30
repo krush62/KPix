@@ -102,6 +102,8 @@ class KPixPainter extends CustomPainter
   IToolPainter? toolPainter;
   late ui.Image _checkerboardImage;
   ui.Image? _backupImage;
+  bool _isDisposed = false;
+  final List<ui.Image> _imagesToRetire = <ui.Image>[];
   final List<int> _previousRasterHashes = <int>[];
   ContentRasterSet? _lastContentRaster;
   late final Timer _backupTimer;
@@ -683,14 +685,41 @@ class KPixPainter extends CustomPainter
     return false;
   }
 
-
+  void _retireImage({required final ui.Image image})
+  {
+    _imagesToRetire.add(image);
+    if (_imagesToRetire.length > 1)
+    {
+      //a flush is already scheduled and will take this one too
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((final Duration _) {
+      final List<ui.Image> images = List<ui.Image>.of(_imagesToRetire);
+      _imagesToRetire.clear();
+      for (final ui.Image image in images)
+      {
+        image.dispose();
+      }
+    });
+    WidgetsBinding.instance.scheduleFrame();
+  }
 
   void _captureTimeout()
   {
     if (_shouldCapture())
     {
       getImageFromLayers(canvasSize: _appState.canvasSize, layerCollection: _appState.timeline.selectedFrame!.layerList, selection: _appState.selectionState.selection, frame: _appState.timeline.selectedFrame).then((final ui.Image img) {
+        if (_isDisposed)
+        {
+          img.dispose();
+          return;
+        }
+        final ui.Image? previous = _backupImage;
         _backupImage = img;
+        if (previous != null)
+        {
+          _retireImage(image: previous);
+        }
         final Frame? frame = _appState.timeline.selectedFrame;
         if (frame != null)
         {
@@ -1235,11 +1264,17 @@ class KPixPainter extends CustomPainter
   /// painter, and everything it captured, alive for the rest of the session.
   void dispose()
   {
+    _isDisposed = true;
     _backupTimer.cancel();
     _guiOptions.selectionOpacity.removeListener(_selectionOpacityChanged);
     _guiOptions.canvasBorderOpacity.removeListener(_canvasBorderOpacityChanged);
-    _backupImage?.dispose();
+    final ui.Image? backup = _backupImage;
     _backupImage = null;
+    if (backup != null)
+    {
+      //the widget being torn down may still be mid frame with this handle
+      _retireImage(image: backup);
+    }
   }
 
 }

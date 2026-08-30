@@ -40,6 +40,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/color_types.dart';
+import 'package:kpix/util/helpers/hash_helper.dart';
 
 const int _fullCircle = 360;
 const int _halfCircle = 180;
@@ -76,12 +77,11 @@ class ColorReference
   bool operator == (final Object other) =>
       identical(this, other) ||
           other is ColorReference &&
-              runtimeType == other.runtimeType &&
               ramp == other.ramp &&
               colorIndex == other.colorIndex;
 
   @override
-  int get hashCode => ramp.hashCode ^ colorIndex.hashCode;
+  int get hashCode => combineHashes(a: ramp.hashCode, b: colorIndex);
 }
 
 

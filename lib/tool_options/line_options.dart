@@ -35,11 +35,10 @@ class AngleData
   bool operator ==(final Object other) =>
       identical(this, other) ||
           other is AngleData &&
-              runtimeType == other.runtimeType &&
               angle == other.angle;
 
   @override
-  int get hashCode => x.hashCode ^ y.hashCode;
+  int get hashCode => angle.hashCode;
 
   @override
   String toString() {

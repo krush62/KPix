@@ -19,6 +19,8 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:kpix/util/helpers/hash_helper.dart';
+
 class CoordinateSetD
 {
   double x = 0;
@@ -35,12 +37,11 @@ class CoordinateSetD
   bool operator ==(final Object other) =>
       identical(this, other) ||
           other is CoordinateSetD &&
-              runtimeType == other.runtimeType &&
               x == other.x &&
               y == other.y;
 
   @override
-  int get hashCode => x.hashCode ^ y.hashCode;
+  int get hashCode => combineHashes(a: x.hashCode, b: y.hashCode);
 
   @override
   String toString() {
@@ -69,12 +70,11 @@ class CoordinateSetI
   bool operator ==(final Object other) =>
       identical(this, other) ||
           other is CoordinateSetI &&
-              runtimeType == other.runtimeType &&
               x == other.x &&
               y == other.y;
 
   @override
-  int get hashCode => x.hashCode ^ y.hashCode;
+  int get hashCode => combineHashes(a: x, b: y);
 
   @override
   String toString() {

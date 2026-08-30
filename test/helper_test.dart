@@ -73,6 +73,44 @@ void testCoordinateSetI()
       expect(c1, isNot(c3));
     });
 
+    test('hashCode separates transposed coordinates', () {
+      //an XOR of the two components maps (x,y) and (y,x) onto the same value
+      expect(CoordinateSetI(x: 1, y: 2).hashCode, isNot(CoordinateSetI(x: 2, y: 1).hashCode));
+    });
+
+    test('hashCode does not collapse the diagonal', () {
+      //an XOR of the two components sends every (n,n) to zero, which turns the
+      //diagonal of a canvas into one bucket
+      final Set<int> hashes = <int>{};
+      for (int n = 0; n < 64; n++) {
+        hashes.add(CoordinateSetI(x: n, y: n).hashCode);
+      }
+      expect(hashes.length, 64);
+    });
+
+    test('hashCode spreads a whole canvas across distinct buckets', () {
+      const int dim = 64;
+      final Set<int> hashes = <int>{};
+      for (int y = 0; y < dim; y++) {
+        for (int x = 0; x < dim; x++) {
+          hashes.add(CoordinateSetI(x: x, y: y).hashCode);
+        }
+      }
+      //every pixel of the canvas gets its own hash; the previous XOR produced
+      //1918 distinct values for these 4096 points
+      expect(hashes.length, dim * dim);
+    });
+
+    test('hashCode stays collision free for negative coordinates', () {
+      final Set<int> hashes = <int>{};
+      for (int y = -32; y < 32; y++) {
+        for (int x = -32; x < 32; x++) {
+          hashes.add(CoordinateSetI(x: x, y: y).hashCode);
+        }
+      }
+      expect(hashes.length, 64 * 64);
+    });
+
     test('toString returns correct format', () {
       final CoordinateSetI c = CoordinateSetI(x: 10, y: 20);
       expect(c.toString(), "10|20");

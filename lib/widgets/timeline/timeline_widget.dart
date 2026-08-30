@@ -18,6 +18,7 @@
 
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
@@ -195,9 +196,67 @@ class TimeLineMiniWidget extends StatefulWidget {
   State<TimeLineMiniWidget> createState() => _TimeLineMiniWidgetState();
 }
 
+class _FrameSelectedNotifier extends ValueNotifier<bool>
+{
+  final ValueListenable<int> _source;
+  final int _frameIndex;
+
+  _FrameSelectedNotifier({required final ValueListenable<int> source, required final int frameIndex})
+      : _source = source,
+        _frameIndex = frameIndex,
+        super(source.value == frameIndex)
+  {
+    _source.addListener(_sourceChanged);
+  }
+
+  void _sourceChanged()
+  {
+    value = _source.value == _frameIndex;
+  }
+
+  @override
+  void dispose()
+  {
+    _source.removeListener(_sourceChanged);
+    super.dispose();
+  }
+}
+
+class _FrameSelectionViews
+{
+  _FrameSelectionViews({required this.source});
+
+  final ValueListenable<int> source;
+  final Map<int, _FrameSelectedNotifier> _views = <int, _FrameSelectedNotifier>{};
+
+  ValueListenable<bool> forIndex({required final int index})
+  {
+    return _views.putIfAbsent(index, () => _FrameSelectedNotifier(source: source, frameIndex: index));
+  }
+
+  void dispose()
+  {
+    for (final _FrameSelectedNotifier view in _views.values)
+    {
+      view.dispose();
+    }
+    _views.clear();
+  }
+}
+
 class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
 {
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+  late final _FrameSelectionViews _frameSelection =
+      _FrameSelectionViews(source: widget.timeline.selectedFrameIndexNotifier);
+
+  @override
+  void dispose()
+  {
+    _frameSelection.dispose();
+    super.dispose();
+  }
+
   List<Widget> _createRowWidgets() {
     final List<Frame> frames = widget.timeline.frames.value;
     final List<Widget> rowWidgets = <Widget>[];
@@ -221,10 +280,9 @@ class _TimeLineMiniWidgetState extends State<TimeLineMiniWidget>
       rowWidgets.add(Expanded(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: widget.padding),
-          child: ValueListenableBuilder<int>(
-            valueListenable: widget.timeline.selectedFrameIndexNotifier,
-            builder: (final BuildContext context, final int frameIndex, final Widget? child) {
-              final bool isSelected = (i == frameIndex);
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _frameSelection.forIndex(index: i),
+            builder: (final BuildContext context, final bool isSelected, final Widget? child) {
               return InkWell(
                 onTap: () {
                   widget.timeline.selectFrameByIndex(index: i);
@@ -375,23 +433,39 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
   static late KPixOverlay _frameBlendingOverlay;
 
   final HotkeyManager _hotkeyManager = GetIt.I.get<HotkeyManager>();
+  late final _FrameSelectionViews _frameSelection =
+      _FrameSelectionViews(source: widget.timeline.selectedFrameIndexNotifier);
 
   @override
   void initState()
   {
     super.initState();
-    widget.timeline.selectedFrameIndexNotifier.addListener(() {
-      if (widget.timeline.isPlaying.value && _autoScroll.value && _horizontalScrollController.hasClients && _horizontalScrollController.positions.isNotEmpty)
-      {
-        final double scrollFactor = widget.timeline.selectedFrameIndex / widget.timeline.frames.value.length;
-        final double scrollPosition = (_horizontalScrollController.position.maxScrollExtent * scrollFactor).clamp(0, _horizontalScrollController.position.maxScrollExtent);
-        _horizontalScrollController.animateTo(
-          scrollPosition,
-          duration: (widget.timeline.selectedFrameIndex == 0) ? const Duration(milliseconds: _scrollTimeMs) : Duration(milliseconds: widget.timeline.frames.value[widget.timeline.selectedFrameIndex].fps.value),
-          curve: Curves.linear,
-        );
-      }
-    },);
+    widget.timeline.selectedFrameIndexNotifier.addListener(_followSelectedFrame);
+  }
+
+  void _followSelectedFrame()
+  {
+    if (widget.timeline.isPlaying.value && _autoScroll.value && _horizontalScrollController.hasClients && _horizontalScrollController.positions.isNotEmpty)
+    {
+      final double scrollFactor = widget.timeline.selectedFrameIndex / widget.timeline.frames.value.length;
+      final double scrollPosition = (_horizontalScrollController.position.maxScrollExtent * scrollFactor).clamp(0, _horizontalScrollController.position.maxScrollExtent);
+      _horizontalScrollController.animateTo(
+        scrollPosition,
+        duration: (widget.timeline.selectedFrameIndex == 0) ? const Duration(milliseconds: _scrollTimeMs) : Duration(milliseconds: widget.timeline.frames.value[widget.timeline.selectedFrameIndex].fps.value),
+        curve: Curves.linear,
+      );
+    }
+  }
+
+  @override
+  void dispose()
+  {
+    widget.timeline.selectedFrameIndexNotifier.removeListener(_followSelectedFrame);
+    _frameSelection.dispose();
+    _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
+    _autoScroll.dispose();
+    super.dispose();
   }
 
   List<Widget> _createMarkerWidgets({required final List<Frame> frames, required final int loopStart, required final int loopEnd})
@@ -471,10 +545,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
       final SizedBox hw = SizedBox(
         height: _cellHeight,
         width: _cellWidth,
-        child: ValueListenableBuilder<int>(
-          valueListenable: widget.timeline.selectedFrameIndexNotifier,
-          builder: (final BuildContext context, final int selectedFrameIndex, final Widget? child) {
-            final bool isSelected = (i == selectedFrameIndex);
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _frameSelection.forIndex(index: i),
+          builder: (final BuildContext context, final bool isSelected, final Widget? child) {
             return TextButton(
               onPressed: () {
                 widget.timeline.selectFrameByIndex(index: i);
@@ -545,10 +618,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
         }
 
         layerWidgets.add(
-          ValueListenableBuilder<int>(
-            valueListenable: widget.timeline.selectedFrameIndexNotifier,
-            builder: (final BuildContext context, final int selectedFrameIndex, final Widget? child) {
-              final bool frameIsSelected = (i == selectedFrameIndex);
+          ValueListenableBuilder<bool>(
+            valueListenable: _frameSelection.forIndex(index: i),
+            builder: (final BuildContext context, final bool frameIsSelected, final Widget? child) {
               return InkWell(
                 onTap: () {
                   widget.timeline.selectFrameByIndex(index: i);
@@ -664,10 +736,9 @@ class _TimelineMaxiWidgetState extends State<TimelineMaxiWidget> {
       final Widget w = ValueListenableBuilder<int>(
         valueListenable: currentFrame.fps,
         builder: (final BuildContext context, final int fps, final Widget? child) {
-          return ValueListenableBuilder<int>(
-            valueListenable: widget.timeline.selectedFrameIndexNotifier,
-            builder: (final BuildContext context, final int selectedFrameIndex, final Widget? child) {
-              final bool isSelected = (i == selectedFrameIndex);
+          return ValueListenableBuilder<bool>(
+            valueListenable: _frameSelection.forIndex(index: i),
+            builder: (final BuildContext context, final bool isSelected, final Widget? child) {
               return ValueListenableBuilder<bool>(
                 valueListenable: widget.timeline.isPlaying,
                 builder: (final BuildContext context1, final bool isPlaying, final Widget? child1) {

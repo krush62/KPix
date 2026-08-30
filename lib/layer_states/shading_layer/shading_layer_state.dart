@@ -336,6 +336,7 @@ class ShadingLayerState extends RasterableLayerState
     required final int currentIndex,
   }) async
   {
+    final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final CoordinateColorMap allColorPixels = CoordinateColorMap();
@@ -366,13 +367,13 @@ class ShadingLayerState extends RasterableLayerState
             {
               final int currentColorIndex = refCol.colorIndex;
               final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
-              allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
-              final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
+              final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+              allColorPixels[coord] = targetColor;
               final int index = (y * canvasSize.x + x) * 4;
 
               if (index >= 0 && index < byteDataImg.lengthInBytes)
               {
-                byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+                byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
               }
               break;
             }
@@ -486,6 +487,7 @@ class ShadingLayerState extends RasterableLayerState
     required final int currentIndex,
   }) async
   {
+    final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(region.width * region.height * 4);
     final ByteData byteDataImg = ByteData(region.width * region.height * 4);
 
@@ -518,7 +520,6 @@ class ShadingLayerState extends RasterableLayerState
               final int currentColorIndex = refCol.colorIndex;
               final int targetColorIndex = (currentColorIndex + valAt).clamp(0, refCol.ramp.references.length - 1);
               final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
-              final Color usageColor = targetColor.getIdColor().color;
 
               final int bufferX = x - region.x;
               final int bufferY = y - region.y;
@@ -526,7 +527,7 @@ class ShadingLayerState extends RasterableLayerState
 
               if (index >= 0 && index < byteDataImg.lengthInBytes)
               {
-                byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+                byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
                 rasterPixels[coord] = targetColor;
                 pixelRendered = true;
               }
@@ -535,9 +536,6 @@ class ShadingLayerState extends RasterableLayerState
           }
         }
 
-        //non-shaded pixels stay transparent (same as in _fullRender); the
-        //underlying layers are drawn by the canvas painter itself — baking
-        //their content into this raster would occlude later changes below
         if (!pixelRendered)
         {
           rasterPixels.remove(coord);

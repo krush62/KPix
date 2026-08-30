@@ -277,6 +277,7 @@ class DitherLayerState extends ShadingLayerState
 
   Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex}) async
   {
+    final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     final CoordinateColorMap allColorPixels = CoordinateColorMap();
@@ -305,12 +306,12 @@ class DitherLayerState extends ShadingLayerState
               final int currentColorIndex = refCol.colorIndex;
               final int ditherVal = getDisplayValueAt(coord: coord);
               final int targetColorIndex = (currentColorIndex + ditherVal).clamp(0, refCol.ramp.references.length - 1);
-              allColorPixels[coord] = refCol.ramp.references[targetColorIndex];
-              final Color usageColor = refCol.ramp.references[targetColorIndex].getIdColor().color;
+              final ColorReference targetColor = refCol.ramp.references[targetColorIndex];
+              allColorPixels[coord] = targetColor;
               final int index = (y * canvasSize.x + x) * 4;
               if (index >= 0 && index < byteDataImg.lengthInBytes)
               {
-                byteDataImg.setUint32(index, argbToRgba(argb: usageColor.toARGB32()));
+                byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: targetColor));
               }
               break;
             }

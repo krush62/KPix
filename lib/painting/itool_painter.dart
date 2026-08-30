@@ -340,6 +340,7 @@ abstract class IToolPainter
       final CoordinateSetI offset = CoordinateSetI(x: min.x, y: min.y);
       final CoordinateSetI size = CoordinateSetI(x: max.x - min.x + 1, y: max.y - min.y + 1);
       final ByteData byteDataImg = ByteData(size.x * size.y * 4);
+      final RgbaCache rgbaCache = RgbaCache();
       final int? layerPosition = frame.layerList.getLayerPosition(state: currentLayer);
 
       if (layerPosition != null)
@@ -381,11 +382,10 @@ abstract class IToolPainter
             }
           }
 
-          final Color dColor = colRef.getIdColor().color;
           final int index = ((entry.key.y - offset.y) * size.x + (entry.key.x - offset.x)) * 4;
           if (index < byteDataImg.lengthInBytes)
           {
-            byteDataImg.setUint32(index, argbToRgba(argb: dColor.toARGB32()));
+            byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: colRef));
           }
         }
       }

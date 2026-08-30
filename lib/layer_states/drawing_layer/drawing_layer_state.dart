@@ -465,16 +465,16 @@ class DrawingLayerState extends RasterableLayerState
     _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
     rasterPixels.addAll(_settingsPixels);
 
+    final RgbaCache rgbaCache = RgbaCache();
     for (final CoordinateColor entry in rasterPixels.entries)
     {
       //just to make sure
       if (canvasSize.contains(coord: entry.key))
       {
-        final Color originalColor = entry.value.getIdColor().color;
         final int index = (entry.key.y * canvasSize.x + entry.key.x) * 4;
         if (index >= 0 && index < byteDataImg.lengthInBytes)
         {
-          byteDataImg.setUint32(index, argbToRgba(argb: originalColor.toARGB32()));
+          byteDataImg.setUint32(index, rgbaCache.rgbaOf(reference: entry.value));
         }
       }
     }
@@ -574,6 +574,7 @@ class DrawingLayerState extends RasterableLayerState
   Future<ui.Image> _renderRegion({required final DirtyRegion region,required final CoordinateColorMap allPixels,}) async
   {
     final ByteData byteData = ByteData(region.width * region.height * 4);
+    final RgbaCache rgbaCache = RgbaCache();
 
     for (int y = region.y; y < region.y + region.height; y++)
     {
@@ -583,13 +584,12 @@ class DrawingLayerState extends RasterableLayerState
         final ColorReference? colorRef = allPixels[coord];
 
         if (colorRef != null) {
-          final Color color = colorRef.getIdColor().color;
           final int bufferX = x - region.x;
           final int bufferY = y - region.y;
           final int index = (bufferY * region.width + bufferX) * 4;
 
           if (index >= 0 && index < byteData.lengthInBytes) {
-            byteData.setUint32(index, argbToRgba(argb: color.toARGB32()));
+            byteData.setUint32(index, rgbaCache.rgbaOf(reference: colorRef));
           }
         }
       }

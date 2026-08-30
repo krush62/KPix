@@ -449,6 +449,17 @@ double getDeltaE00({
 }
 
 /// Converts an argb color to a rgba color.
+/// Caches the packed RGBA value of each [ColorReference] for one render pass.
+class RgbaCache
+{
+  final Map<ColorReference, int> _values = <ColorReference, int>{};
+
+  int rgbaOf({required final ColorReference reference})
+  {
+    return _values[reference] ??= argbToRgba(argb: reference.getIdColor().color.toARGB32());
+  }
+}
+
 int argbToRgba({required final int argb}) {
   final int a = (argb & 0xFF000000) >> 24; // Extract alpha component
   final int r = (argb & 0x00FF0000) >> 16; // Extract red component

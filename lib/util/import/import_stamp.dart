@@ -88,6 +88,7 @@ Future<StampManagerEntryData> _readStampFromFileData({required final Uint8List p
   final int imgHeight = decImg.height;
   final int imgWidth = decImg.width;
   final ByteData? imgData = await decImg.toByteData();
+  decImg.dispose();
   final HashMap<CoordinateSetI, int> stampMap = HashMap<CoordinateSetI, int>();
   ui.Image? thumbnail;
 
@@ -137,6 +138,7 @@ Future<StampManagerEntryData> _readStampFromFileData({required final Uint8List p
       final ui.Codec codec = await ui.instantiateImageCodec(pngBytes);
       final ui.FrameInfo frame = await codec.getNextFrame();
       thumbnail = frame.image;
+      codec.dispose();
     }
     catch(_){}
 

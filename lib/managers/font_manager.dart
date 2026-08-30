@@ -268,6 +268,7 @@ class FontManager
     final int imgHeight = decImg.height;
     final int imgWidth = decImg.width;
     final ByteData? imgData = await decImg.toByteData();
+    decImg.dispose();
     final Map<int, Glyph> glyphMap = <int, Glyph>{};
 
     if (imgData != null)
@@ -280,7 +281,7 @@ class FontManager
           final int id = int.parse(splits[0].trim());
           final int x = int.parse(splits[1].trim());
           final int width = int.parse(splits[3].trim());
-          if (x >= 0 && x < decImg.width)
+          if (x >= 0 && x < imgWidth)
           {
             if (width > 0)
             {

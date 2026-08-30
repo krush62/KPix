@@ -71,6 +71,7 @@ class ReferenceImageManager
           final ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
           final ui.FrameInfo frame = await codec.getNextFrame();
           final ui.Image image = frame.image;
+          codec.dispose();
           final ReferenceImage refImg = ReferenceImage(path: kIsWeb ? path : imageFile.absolute.path, image: image);
           _images.add(refImg);
           return refImg;

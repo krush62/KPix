@@ -94,32 +94,31 @@ RenderStrategy determineStrategy({required final List<DirtyRegion> dirtyRegions,
   return RenderStrategy.regional;
 }
 
-List<DirtyRegion> mergeOverlappingRegions({required final List<DirtyRegion> regions}) {
+List<DirtyRegion> mergeOverlappingRegions({required final List<DirtyRegion> regions})
+{
   if (regions.isEmpty) return <DirtyRegion>[];
 
-  final List<DirtyRegion> merged = List<DirtyRegion>.from(regions);
-  bool didMerge = true;
+  final List<DirtyRegion> merged = <DirtyRegion>[];
 
-  while (didMerge)
+  for (final DirtyRegion region in regions)
   {
-    didMerge = false;
-
-    for (int i = 0; i < merged.length; i++)
+    DirtyRegion current = region;
+    int i = 0;
+    while (i < merged.length)
     {
-      for (int j = i + 1; j < merged.length; j++)
+      if (current.overlaps(other: merged[i]))
       {
-        if (merged[i].overlaps(other: merged[j]))
-        {
-          final DirtyRegion newRegion = merged[i].merge(other: merged[j]);
-          merged.removeAt(j);
-          merged.removeAt(i);
-          merged.add(newRegion);
-          didMerge = true;
-          break;
-        }
+        current = current.merge(other: merged[i]);
+        merged.removeAt(i);
+        //the box just grew, so boxes already passed over may now overlap it
+        i = 0;
       }
-      if (didMerge) break;
+      else
+      {
+        i++;
+      }
     }
+    merged.add(current);
   }
 
   return merged;

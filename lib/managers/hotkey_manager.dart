@@ -208,19 +208,19 @@ class HotkeyManager
       //ARROW KEY AND TAB HANDLING
       if (evt is KeyUpEvent && !_altIsPressed.value && !_controlIsPressed.value && !_shiftIsPressed.value)
       {
-        final Set<LogicalKeyboardKey> actionKeys = <LogicalKeyboardKey>{
-          LogicalKeyboardKey.arrowLeft,
-          LogicalKeyboardKey.arrowRight,
-          LogicalKeyboardKey.arrowUp,
-          LogicalKeyboardKey.arrowDown,
-          LogicalKeyboardKey.tab,
+        const Set<SingleActivator> actionActivators = <SingleActivator>{
+          SingleActivator(LogicalKeyboardKey.arrowLeft),
+          SingleActivator(LogicalKeyboardKey.arrowRight),
+          SingleActivator(LogicalKeyboardKey.arrowUp),
+          SingleActivator(LogicalKeyboardKey.arrowDown),
+          SingleActivator(LogicalKeyboardKey.tab),
         };
 
-        for (final LogicalKeyboardKey actionKey in actionKeys)
+        for (final SingleActivator activator in actionActivators)
         {
-          if (evt.logicalKey == actionKey)
+          if (evt.logicalKey == activator.trigger)
           {
-            final HotkeyAction? action = _shortCutMap[SingleActivator(actionKey)];
+            final HotkeyAction? action = _shortCutMap[activator];
             if (action != null)
             {
               triggerShortcut(action: action);

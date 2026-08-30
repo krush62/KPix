@@ -533,16 +533,25 @@ class DrawingLayerState extends RasterableLayerState
 
     canvas.drawImage(baseImage, Offset.zero, paint);
 
+    final CoordinateColorMap allPixels = _getContentWithSelection();
+    if (frame != null)
+    {
+      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: allPixels);
+    }
+    _settingsPixels = settings.getSettingsPixels(data: allPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
+
+    allPixels.addAll(_settingsPixels);
+    //keep the compositing input for dependent (shading/dither) layers up to
+    //date; otherwise they would compose from the state of the last full render
+    rasterPixels = allPixels;
+
     for (final DirtyRegion region in mergedRegions)
     {
       final DirtyRegion clampedRegion = _clampRegion(region: region, canvasSize: canvasSize);
 
       final ui.Image regionImage = await _renderRegion(
         region: clampedRegion,
-        canvasSize: canvasSize,
-        frame: frame,
-        frameIsSelected: frameIsSelected,
-        layers: layers,
+        allPixels: allPixels,
       );
 
       canvas.drawImage(
@@ -561,26 +570,9 @@ class DrawingLayerState extends RasterableLayerState
     return result;
   }
 
-  Future<ui.Image> _renderRegion({
-    required final DirtyRegion region,
-    required final CoordinateSetI canvasSize,
-    required final Frame? frame,
-    required final bool frameIsSelected,
-    required final List<LayerState> layers,
-  }) async
+  Future<ui.Image> _renderRegion({required final DirtyRegion region,required final CoordinateColorMap allPixels,}) async
   {
     final ByteData byteData = ByteData(region.width * region.height * 4);
-    final CoordinateColorMap allPixels = _getContentWithSelection();
-    if (frame != null)
-    {
-      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: allPixels);
-    }
-    _settingsPixels = settings.getSettingsPixels(data: allPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
-
-    allPixels.addAll(_settingsPixels);
-    //keep the compositing input for dependent (shading/dither) layers up to
-    //date; otherwise they would compose from the state of the last full render
-    rasterPixels = allPixels;
 
     for (int y = region.y; y < region.y + region.height; y++)
     {

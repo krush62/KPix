@@ -1406,6 +1406,18 @@ class AppState
       l.resizeLayer(newSize: newSize, offset: offset);
     }
     _setCanvasDimensions(width: newSize.x, height: newSize.y);
+    for (final Frame frame in timeline.frames.value)
+    {
+      final LayerCollection layers = frame.layerList;
+      for (int i = 0; i < layers.length; i++)
+      {
+        final LayerState layer = layers.getLayer(index: i);
+        if (layer is GridLayerState)
+        {
+          layer.manualRender();
+        }
+      }
+    }
     rasterLayersAll();
   }
 

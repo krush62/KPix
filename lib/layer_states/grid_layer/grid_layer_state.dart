@@ -236,6 +236,7 @@ class GridLayerState extends LayerState
       if (!identical(outgoingRaster, image)) outgoingRaster,
       if (!identical(outgoingThumbnail, image)) outgoingThumbnail,
     ],);
+    GetIt.I.get<AppState>().newRasterData(layer: this);
     settleRaster();
   }
 

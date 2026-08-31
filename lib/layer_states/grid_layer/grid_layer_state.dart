@@ -25,7 +25,6 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
-import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/history/history_grid_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
@@ -98,7 +97,7 @@ class GridLayerState extends LayerState
     vanishingPoint1Notifier.addListener(_valueChanged);
     vanishingPoint2Notifier.addListener(_valueChanged);
     vanishingPoint3Notifier.addListener(_valueChanged);
-    _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {_updateTimerCallback(timer: t);});
+    startRasterPolling(scheduler: rasterScheduler);
     //_shouldRender starts true as a field initialiser, which is not a statement,
     //so the first render has to be announced here
     requestRaster();
@@ -115,7 +114,7 @@ class GridLayerState extends LayerState
   {
     markDisposed();
     settleRaster();
-    _updateTimer.cancel();
+    stopRasterPolling();
     //the notifiers are owned by this layer and only listened to from here, so
     //they go away with it once the timer no longer keeps it reachable
     final List<ui.Image?> images = <ui.Image?>[thumbnail.value, raster];
@@ -123,8 +122,6 @@ class GridLayerState extends LayerState
     raster = null;
     disposeImages(images: images);
   }
-
-  late final Timer _updateTimer;
 
   factory GridLayerState.from({required final GridLayerState other})
   {
@@ -200,7 +197,8 @@ class GridLayerState extends LayerState
     requestRaster();
   }
 
-  void _updateTimerCallback({required final Timer timer})
+  @override
+  void pollRaster()
   {
     if (_shouldRender && !isRendering)
     {

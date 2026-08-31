@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
+import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
 
@@ -70,6 +71,78 @@ enum LayerMenuKind
 /// degrades into a warning instead of a wait that never ends.
 const Duration rasterSettleTimeout = Duration(seconds: 10);
 
+/// Drives the raster polling for every layer from a single timer.
+///
+/// Each layer used to own a `Timer.periodic` whose only job was to check a flag,
+/// so a ten layer project woke the isolate around five hundred times a second
+/// even while nothing was happening. The polling itself is kept - it is what
+/// coalesces a burst of edits into one raster, and what retries a layer whose
+/// dependencies are not ready yet - but it now runs once for all layers, and only
+/// while some layer actually wants it.
+///
+/// [LayerState.requestRaster] is the single hook that records work is owed, and
+/// every path that queues work goes through it, so it is also the wake up.
+class RasterScheduler
+{
+  final Set<LayerState> _layers = <LayerState>{};
+  Timer? _timer;
+
+  /// Number of timers currently running. Exposed for tests and diagnostics.
+  int get activeTimerCount => _timer == null ? 0 : 1;
+
+  int get registeredLayerCount => _layers.length;
+
+  void register({required final LayerState layer})
+  {
+    _layers.add(layer);
+  }
+
+  void unregister({required final LayerState layer})
+  {
+    _layers.remove(layer);
+    if (_layers.isEmpty)
+    {
+      _stop();
+    }
+  }
+
+  /// Starts polling if it is not already running.
+  void wake()
+  {
+    _timer ??= Timer.periodic(
+      const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec),
+      _tick,
+    );
+  }
+
+  void _stop()
+  {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _tick(final Timer timer)
+  {
+    bool anyWants = false;
+    //a poll can dispose a layer, which unregisters it, so iterate a snapshot
+    for (final LayerState layer in _layers.toList(growable: false))
+    {
+      layer.pollRaster();
+      if (layer.wantsRasterPolling)
+      {
+        anyWants = true;
+      }
+    }
+    if (!anyWants)
+    {
+      _stop();
+    }
+  }
+}
+
+/// The one scheduler every layer polls through.
+final RasterScheduler rasterScheduler = RasterScheduler();
+
 abstract class LayerState
 {
   Completer<void>? _rasterCompleter;
@@ -95,11 +168,31 @@ abstract class LayerState
     return false;
   }
 
-  /// Records that a raster is owed. Safe to call repeatedly.
+  RasterScheduler? _scheduler;
+
+  @protected
+  void startRasterPolling({required final RasterScheduler scheduler})
+  {
+    _scheduler = scheduler;
+    scheduler.register(layer: this);
+  }
+
+  @protected
+  void stopRasterPolling()
+  {
+    _scheduler?.unregister(layer: this);
+    _scheduler = null;
+  }
+
+  void pollRaster() {}
+
+  bool get wantsRasterPolling => hasPendingRaster;
+
   @protected
   void requestRaster()
   {
     _rasterCompleter ??= Completer<void>();
+    _scheduler?.wake();
   }
 
   /// Releases everything waiting on [rasterizationComplete], unless more work is

@@ -29,7 +29,6 @@ import 'package:kpix/layer_states/layer_settings_widget.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/layer_states/rasterable_layer_state.dart';
 import 'package:kpix/layer_states/rendering_helper.dart';
-import 'package:kpix/layer_widget_options.dart';
 import 'package:kpix/managers/history/history_drawing_layer.dart';
 import 'package:kpix/managers/history/history_layer.dart';
 import 'package:kpix/managers/history/history_ramp_data.dart';
@@ -97,8 +96,6 @@ class DrawingLayerState extends RasterableLayerState
     return DrawingLayerState._(data: data, settingsPixels: settingsPixels, settings: settings);
   }
 
-  late final Timer _updateTimer;
-
   DrawingLayerState._({required final CoordinateColorMap data, required final CoordinateColorMap settingsPixels, final LayerLockState lState = LayerLockState.unlocked, final LayerVisibilityState vState = LayerVisibilityState.visible, super.layerStack, required this.settings}) :
         _data = data,
         _settingsPixels = settingsPixels,
@@ -121,7 +118,7 @@ class DrawingLayerState extends RasterableLayerState
     });
     lockState.value = lState;
     visibilityState.value = vState;
-    _updateTimer = Timer.periodic(const Duration(milliseconds: LayerWidgetOptions.thumbUpdateTimerMsec), (final Timer t) {updateTimerCallback(timer: t);});
+    startRasterPolling(scheduler: rasterScheduler);
     settings.addListener(_settingsChanged);
     _settingsChanged();
   }
@@ -167,7 +164,13 @@ class DrawingLayerState extends RasterableLayerState
     return DrawingLayerState._(data: data, settingsPixels: settingsPixels, lState: other.lockState.value, vState: other.visibilityState.value, settings: other.settings);
   }
 
-  Future<void> updateTimerCallback({required final Timer timer}) async
+  @override
+  void pollRaster()
+  {
+    unawaited(_pollRaster());
+  }
+
+  Future<void> _pollRaster() async
   {
     if (_isUpdateScheduled) {
       return;
@@ -897,7 +900,7 @@ class DrawingLayerState extends RasterableLayerState
   {
     markDisposed();
     settleRaster();
-    _updateTimer.cancel();
+    stopRasterPolling();
     settings.removeListener(_settingsChanged);
     _isUpdateScheduled = false;
 

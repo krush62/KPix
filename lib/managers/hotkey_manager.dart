@@ -126,9 +126,29 @@ enum FocusNodeEntry
 
 class HotkeyNotifier with ChangeNotifier {void actionPressed() {notifyListeners();}}
 
+abstract interface class HotkeySuppressor
+{
+  bool get isSuppressing;
+}
+
+class _TextFocusSuppressor implements HotkeySuppressor
+{
+  _TextFocusSuppressor({required final Map<FocusNodeEntry, FocusNode> focusNodes}) : _focusNodes = focusNodes;
+
+  final Map<FocusNodeEntry, FocusNode> _focusNodes;
+
+  @override
+  bool get isSuppressing
+  {
+    return _focusNodes.values.any((final FocusNode node) => node.hasFocus);
+  }
+}
+
 class HotkeyManager
 {
   bool _isActive = true;
+  final Set<Object> _suppressors = <Object>{};
+  late final _TextFocusSuppressor _textFocusSuppressor = _TextFocusSuppressor(focusNodes: _focusNodes);
   final Map<SingleActivator, HotkeyAction> _shortCutMap = <SingleActivator, HotkeyAction>{};
   final Map<HotkeyAction, HotkeyNotifier> _notifierMap = <HotkeyAction, HotkeyNotifier>{};
   final Map<HotkeyAction, VoidCallback> _actionMap = <HotkeyAction, VoidCallback>{};
@@ -190,6 +210,11 @@ class HotkeyManager
 
   void handleRawKeyboardEvent(final KeyEvent? evt)
   {
+    if (!_isActive)
+    {
+      return;
+    }
+
     if (evt != null && (evt is KeyUpEvent || evt is KeyDownEvent))
     {
       if (evt.logicalKey == LogicalKeyboardKey.shiftLeft || evt.logicalKey == LogicalKeyboardKey.shiftRight || evt.logicalKey == LogicalKeyboardKey.shift)
@@ -238,10 +263,6 @@ class HotkeyManager
     _notifierMap[action]?.addListener(func);
   }
 
-  /// Drops a listener registered with [addListener].
-  ///
-  /// The notifiers live as long as the manager, so a widget that does not remove
-  /// its listener keeps itself alive after it has been disposed.
   void removeListener({required final VoidCallback func, required final HotkeyAction action})
   {
     _notifierMap[action]?.removeListener(func);
@@ -446,34 +467,55 @@ class HotkeyManager
 
   void _checkListeners()
   {
-    if (_focusNodes.values.where((final FocusNode node) => node.hasFocus).isNotEmpty)
+    if (_textFocusSuppressor.isSuppressing)
     {
-      deactivateCallbacks();
+      deactivateCallbacks(source: _textFocusSuppressor);
     }
     else
     {
-      activateCallbacks();
+      activateCallbacks(source: _textFocusSuppressor);
     }
   }
 
-  void deactivateCallbacks()
+  /// [activateCallbacks].
+  void deactivateCallbacks({required final Object source})
   {
-    if (_isActive)
+    _suppressors.add(source);
+    _updateActiveState();
+  }
+
+  void activateCallbacks({required final Object source})
+  {
+    _suppressors.remove(source);
+    _updateActiveState();
+  }
+
+  void _updateActiveState()
+  {
+    _suppressors.removeWhere((final Object source) => source is HotkeySuppressor && !source.isSuppressing);
+
+    final bool shouldBeActive = _suppressors.isEmpty;
+    if (shouldBeActive == _isActive)
+    {
+      return;
+    }
+
+    if (shouldBeActive)
+    {
+      _callbackMap.value = _callbackMapBackup;
+      _isActive = true;
+      _shiftIsPressed.value = HardwareKeyboard.instance.isShiftPressed;
+      _controlIsPressed.value = HardwareKeyboard.instance.isControlPressed;
+      _altIsPressed.value = HardwareKeyboard.instance.isAltPressed;
+    }
+    else
     {
       _callbackMapBackup = _callbackMap.value;
       _callbackMap.value = <SingleActivator, VoidCallback>{};
       _isActive = false;
+      _shiftIsPressed.value = false;
+      _controlIsPressed.value = false;
+      _altIsPressed.value = false;
     }
   }
-
-  void activateCallbacks()
-  {
-    if (!_isActive)
-    {
-      _callbackMap.value = _callbackMapBackup;
-      _isActive = true;
-    }
-  }
-
-
 }

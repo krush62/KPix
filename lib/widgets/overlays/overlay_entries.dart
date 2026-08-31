@@ -51,7 +51,7 @@ import 'package:kpix/widgets/stamps/stamp_manager_widget.dart';
 ///
 /// While an overlay is shown the hotkey callbacks are deactivated, so typing in a
 /// dialog does not trigger tool shortcuts.
-class KPixOverlay
+class KPixOverlay implements HotkeySuppressor
 {
   /// Whether the entry is currently inserted into an [Overlay].
   bool isVisible;
@@ -59,6 +59,12 @@ class KPixOverlay
   /// The entry that is inserted into the [Overlay].
   OverlayEntry entry;
   KPixOverlay({required this.entry, this.isVisible = false});
+
+  @override
+  bool get isSuppressing
+  {
+    return isVisible;
+  }
 
   /// Inserts the entry into the [Overlay] above [context] and deactivates the
   /// hotkey callbacks.
@@ -71,7 +77,7 @@ class KPixOverlay
       Overlay.of(context).insert(entry);
       isVisible = true;
     }
-    GetIt.I.get<HotkeyManager>().deactivateCallbacks();
+    GetIt.I.get<HotkeyManager>().deactivateCallbacks(source: this);
   }
 
   /// Removes the entry from the [Overlay] and reactivates the hotkey callbacks.
@@ -81,7 +87,7 @@ class KPixOverlay
   {
     if (isVisible)
     {
-      GetIt.I.get<HotkeyManager>().activateCallbacks();
+      GetIt.I.get<HotkeyManager>().activateCallbacks(source: this);
       entry.remove();
       isVisible = false;
     }

@@ -107,6 +107,16 @@ class StylusPreferenceContent
     required this.stylusPollIntervalMax,
     required this.stylusPickMaxDurationMin,
     required this.stylusPickMaxDurationMax,});
+
+  void copyValuesFrom({required final StylusPreferenceContent other})
+  {
+    stylusLongPressDelay.value = other.stylusLongPressDelay.value;
+    stylusLongPressCancelDistance.value = other.stylusLongPressCancelDistance.value;
+    stylusZoomStepDistance.value = other.stylusZoomStepDistance.value;
+    stylusSizeStepDistance.value = other.stylusSizeStepDistance.value;
+    stylusPollInterval.value = other.stylusPollInterval.value;
+    stylusPickMaxDuration.value = other.stylusPickMaxDuration.value;
+  }
 }
 
 class TouchPreferenceContent
@@ -146,6 +156,12 @@ class TouchPreferenceContent
     required this.zoomStepDistanceMin,
     required this.zoomStepDistanceMax,
   });
+
+  void copyValuesFrom({required final TouchPreferenceContent other})
+  {
+    singleTouchDelay.value = other.singleTouchDelay.value;
+    zoomStepDistance.value = other.zoomStepDistance.value;
+  }
 }
 
 //THEME
@@ -207,6 +223,16 @@ class GuiPreferenceContent
 
   GuiPreferenceContent._({required this.themeType, required this.rasterSizeIndex, required this.rasterContrast, required this.colorNameScheme, required this.canvasBorderOpacity, required this.selectionOpacity, required this.toolOpacity});
 
+  void copyValuesFrom({required final GuiPreferenceContent other})
+  {
+    themeType.value = other.themeType.value;
+    rasterSizeIndex.value = other.rasterSizeIndex.value;
+    rasterContrast.value = other.rasterContrast.value;
+    colorNameScheme.value = other.colorNameScheme.value;
+    canvasBorderOpacity.value = other.canvasBorderOpacity.value;
+    selectionOpacity.value = other.selectionOpacity.value;
+    toolOpacity.value = other.toolOpacity.value;
+  }
 }
 
 enum CursorType
@@ -247,6 +273,11 @@ class DesktopPreferenceContent
   }
 
   DesktopPreferenceContent._({required this.cursorType});
+
+  void copyValuesFrom({required final DesktopPreferenceContent other})
+  {
+    cursorType.value = other.cursorType.value;
+  }
 }
 
 //UNDO STEPS
@@ -290,4 +321,16 @@ class BehaviorPreferenceContent
 
   BehaviorPreferenceContent._({required this.undoSteps, required this.selectShapeAfterInsert, required this.selectLayerAfterInsert, required this.undoStepsMax, required this.undoStepsMin, required this.shadingStepsMinus, required this.shadingStepsPlus, required this.shadingConstraints, required this.fps, required this.frameConstraints, required this.showReferenceOutsideCanvas, required this.useCustomProjectDirectory, required this.customProjectDirectory});
 
+  void copyValuesFrom({required final BehaviorPreferenceContent other})
+  {
+    undoSteps.value = other.undoSteps.value;
+    selectShapeAfterInsert.value = other.selectShapeAfterInsert.value;
+    selectLayerAfterInsert.value = other.selectLayerAfterInsert.value;
+    showReferenceOutsideCanvas.value = other.showReferenceOutsideCanvas.value;
+    shadingStepsMinus.value = other.shadingStepsMinus.value;
+    shadingStepsPlus.value = other.shadingStepsPlus.value;
+    fps.value = other.fps.value;
+    useCustomProjectDirectory.value = other.useCustomProjectDirectory.value;
+    customProjectDirectory.value = other.customProjectDirectory.value;
+  }
 }

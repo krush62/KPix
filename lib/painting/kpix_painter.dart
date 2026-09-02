@@ -1275,6 +1275,10 @@ class KPixPainter extends CustomPainter
     _guiOptions.canvasBorderOpacity.removeListener(_canvasBorderOpacityChanged);
     _guiOptions.rasterSizeIndex.removeListener(_checkerboardSettingChanged);
     _guiOptions.rasterContrast.removeListener(_checkerboardSettingChanged);
+    for (final IToolPainter tPainter in toolPainterMap.values)
+    {
+      tPainter.dispose();
+    }
     final ui.Image? backup = _backupImage;
     _backupImage = null;
     if (backup != null)

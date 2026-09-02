@@ -941,22 +941,22 @@ class SelectionList
   {
     final CoordinateColorMapNullable refsOld = HashMap<CoordinateSetI, ColorReference?>();
     final CoordinateColorMapNullable refsNew = HashMap<CoordinateSetI, ColorReference?>();
+    final DrawingLayerState? receivingLayer = (newLayer is DrawingLayerState && newLayer.lockState.value != LayerLockState.locked) ? newLayer : null;
     for (final CoordinateSetI key in _content.keys)
     {
       final ColorReference? curVal = _content[key];
       if (curVal != null)
       {
-        //oldLayer.setData(key, curVal);
         refsOld[key] = curVal;
       }
-      if (newLayer is DrawingLayerState)
+      if (receivingLayer != null)
       {
-        if (newLayer.lockState.value != LayerLockState.locked)
-        {
-          _content[key] = newLayer.getDataEntry(coord: key);
-          //newLayer.setData(key, null);
-          refsNew[key] = null;
-        }
+        _content[key] = receivingLayer.getDataEntry(coord: key);
+        refsNew[key] = null;
+      }
+      else
+      {
+        _content[key] = null;
       }
     }
     if (oldLayer != null && oldLayer is DrawingLayerState)

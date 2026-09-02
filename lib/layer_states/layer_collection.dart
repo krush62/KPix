@@ -542,8 +542,9 @@ class LayerCollection with ChangeNotifier {
     if (sourcePosition != null && sourcePosition != newPosition &&
         (sourcePosition + 1) != newPosition)
     {
-      final bool movingSelectedLayer = selectedLayerIndex != null &&
-          selectedLayerIndex == sourcePosition;
+      final int? selectedBefore = selectedLayerIndex;
+      final bool movingSelectedLayer = selectedBefore != null &&
+          selectedBefore == sourcePosition;
       _layers.removeAt(sourcePosition);
       if (newPosition > sourcePosition)
       {
@@ -561,11 +562,17 @@ class LayerCollection with ChangeNotifier {
         }
       }
 
-      if (!movingSelectedLayer && newPosition <= selectedLayerIndex! &&
-          sourcePosition > selectedLayerIndex!) {
-        _selectedLayerIndexNotifier.value = selectedLayerIndex! + 1;
+      if (!movingSelectedLayer && selectedBefore != null)
+      {
+        if (newPosition <= selectedBefore && sourcePosition > selectedBefore)
+        {
+          _selectedLayerIndexNotifier.value = selectedBefore + 1;
+        }
+        else if (sourcePosition < selectedBefore && newPosition > selectedBefore)
+        {
+          _selectedLayerIndexNotifier.value = selectedBefore - 1;
+        }
       }
-
 
       orderChanged = true;
     }

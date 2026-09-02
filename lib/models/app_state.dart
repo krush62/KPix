@@ -1181,6 +1181,7 @@ class AppState
   {
     if (deleteLayer != null && timeline.selectedFrame != null)
     {
+      selectionState.deselect(addToHistoryStack: false);
       if (timeline.selectedFrame!.layerList.deleteLayer(deleteLayer: deleteLayer))
       {
         if (addToHistoryStack)

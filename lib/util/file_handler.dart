@@ -1267,6 +1267,7 @@ Future<ui.Image> getImageFromLayers({
   final List<RasterableLayerState>? layerStack,
   final int scalingFactor = 1,}) async
 {
+  final List<RasterableLayerState> visibleLayers = layerCollection.getVisibleRasterLayers().toList();
   List<RasterableLayerState> layerList;
   if (layerStack != null)
   {
@@ -1275,7 +1276,17 @@ Future<ui.Image> getImageFromLayers({
   else
   {
     layerList = List<RasterableLayerState>.empty(growable: true);
-    layerList.addAll(layerCollection.getVisibleRasterLayers());
+    layerList.addAll(visibleLayers);
+  }
+
+  int selectionLayerIndex = -1;
+  if (layerStack != null && selection.hasValues() && layerStack.length == visibleLayers.length)
+  {
+    final LayerState? selectedLayer = layerCollection.getSelectedLayer();
+    if (selectedLayer is RasterableLayerState)
+    {
+      selectionLayerIndex = visibleLayers.indexOf(selectedLayer);
+    }
   }
 
   final ui.PictureRecorder recorder = ui.PictureRecorder();
@@ -1304,7 +1315,7 @@ Future<ui.Image> getImageFromLayers({
           alignment: Alignment.topLeft,
           filterQuality: FilterQuality.none,
         );
-        if (layerStack != null && selection.hasValues() && i == layerCollection.selectedLayerIndex)
+        if (i == selectionLayerIndex)
         {
           final Paint paint = Paint();
           for (final MapEntry<CoordinateSetI, ColorReference?> entry in selection.selectedPixels.entries)

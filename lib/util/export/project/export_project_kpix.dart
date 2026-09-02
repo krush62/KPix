@@ -18,6 +18,31 @@
 
 part of '../../export_functions.dart';
 
+HashMap<CoordinateSetI, HistoryColorReference> _layerDataForSaving({
+  required final HistoryDrawingLayer layer,
+  required final HistorySelectionState selection,
+  required final bool isSelectedLayer,
+  required final CoordinateSetI canvasSize,
+})
+{
+  final HashMap<CoordinateSetI, HistoryColorReference> layerData = layer.data;
+  if (!isSelectedLayer || selection.content.isEmpty)
+  {
+    return layerData;
+  }
+
+  final HashMap<CoordinateSetI, HistoryColorReference> merged = HashMap<CoordinateSetI, HistoryColorReference>.from(layerData);
+  for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in selection.content.entries)
+  {
+    final HistoryColorReference? colorRef = entry.value;
+    if (colorRef != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasSize.x && entry.key.y < canvasSize.y)
+    {
+      merged[entry.key] = colorRef;
+    }
+  }
+  return merged;
+}
+
 Future<ByteData> createKPixData({required final AppState appState}) async
 {
   final HistoryState saveData = HistoryState.fromAppState(appState: appState, identifier: HistoryStateTypeIdentifier.saveData);
@@ -161,55 +186,29 @@ Future<ByteData> createKPixData({required final AppState appState}) async
         byteData.setInt8(offset++, cLayer.settings.dropShadowDarkenBrighten);
       }
       //data count
-      int dataLength = cLayer.data.length;
-      if (currentlySelectedLayer == cLayer)
-      {
-        dataLength += saveData.selectionState.content.values.whereType<HistoryColorReference>().length;
-      }
-      byteData.setUint32(offset, dataLength);
+      final HashMap<CoordinateSetI, HistoryColorReference> layerData = _layerDataForSaving(
+        layer: cLayer,
+        selection: saveData.selectionState,
+        isSelectedLayer: currentlySelectedLayer == cLayer,
+        canvasSize: saveData.canvasSize,
+      );
+      byteData.setUint32(offset, layerData.length);
       offset+=4;
       //image data
-      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in cLayer.data.entries)
+      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in layerData.entries)
       {
+        //x
+        byteData.setUint16(offset, entry.key.x);
+        offset+=2;
+        //y
+        byteData.setUint16(offset, entry.key.y);
+        offset+=2;
 
+        //ramp index
+        byteData.setUint8(offset++, entry.value.rampIndex);
 
-        final HistoryColorReference? selectionReference = (currentlySelectedLayer == cLayer) ? saveData.selectionState.content[entry.key] : null;
-        if (selectionReference == null)
-        {
-          //x
-          byteData.setUint16(offset, entry.key.x);
-          offset+=2;
-          //y
-          byteData.setUint16(offset, entry.key.y);
-          offset+=2;
-
-          //ramp index
-          byteData.setUint8(offset++, entry.value.rampIndex);
-
-          //color index
-          byteData.setUint8(offset++, entry.value.colorIndex);
-        }
-      }
-      if (currentlySelectedLayer == cLayer) //draw selected pixels
-          {
-        for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
-        {
-          if (entry.value != null)
-          {
-            //x
-            byteData.setUint16(offset, entry.key.x);
-            offset+=2;
-            //y
-            byteData.setUint16(offset, entry.key.y);
-            offset+=2;
-
-            //ramp index
-            byteData.setUint8(offset++, entry.value!.rampIndex);
-
-            //color index
-            byteData.setUint8(offset++, entry.value!.colorIndex);
-          }
-        }
+        //color index
+        byteData.setUint8(offset++, entry.value.colorIndex);
       }
     }
     else if (cLayer.runtimeType == HistoryReferenceLayer)
@@ -471,38 +470,13 @@ int _calculateKPixFileSize({required final HistoryState saveData})
       }
       //data count
       size += 4;
-      for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in drawingLayer.data.entries)
-      {
-        final HistoryColorReference? selectionReference = (currentlySelectedLayer == cLayer) ? saveData.selectionState.content[entry.key] : null;
-        if (selectionReference == null)
-        {
-          //x
-          size += 2;
-          //y
-          size += 2;
-          //color ramp index
-          size += 1;
-          //color index
-          size += 1;
-        }
-      }
-      if (currentlySelectedLayer == cLayer)//draw selected pixels
-          {
-        for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
-        {
-          if (entry.value != null)
-          {
-            //x
-            size += 2;
-            //y
-            size += 2;
-            //color ramp index
-            size += 1;
-            //color index
-            size += 1;
-          }
-        }
-      }
+      //x (2) + y (2) + color ramp index (1) + color index (1) per pixel, counted from the very same merge the writer emits
+      size += _layerDataForSaving(
+        layer: drawingLayer,
+        selection: saveData.selectionState,
+        isSelectedLayer: currentlySelectedLayer == cLayer,
+        canvasSize: saveData.canvasSize,
+      ).length * 6;
     }
     else if (cLayer.runtimeType == HistoryReferenceLayer)
     {
@@ -564,36 +538,9 @@ int _calculateKPixFileSize({required final HistoryState saveData})
 
       //data count
       size += 4;
-      for (final MapEntry<CoordinateSetI, int> entry in cLayer.data.entries)
-      {
-        final HistoryColorReference? selectionReference = (currentlySelectedLayer == cLayer) ? saveData.selectionState.content[entry.key] : null;
-        if (selectionReference == null)
-        {
-          //x
-          size += 2;
-          //y
-          size += 2;
-          //shading
-          size += 1;
-        }
-      }
-      if (currentlySelectedLayer == cLayer) //draw selected pixels
-          {
-        for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in saveData.selectionState.content.entries)
-        {
-          if (entry.value != null)
-          {
-            //x
-            size += 2;
-            //y
-            size += 2;
-            //color ramp index
-            size += 1;
-            //color index
-            size += 1;
-          }
-        }
-      }
+      //x (2) + y (2) + shading (1) per pixel. A selection holds color references,
+      // which mean nothing on a shading layer, so the writer never merges one in here and neither does this count.
+      size += cLayer.data.length * 5;
     }
   }
 

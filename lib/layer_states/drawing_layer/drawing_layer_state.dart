@@ -375,15 +375,14 @@ class DrawingLayerState extends RasterableLayerState
     }
   }
 
-  CoordinateColorMap _getContentWithSelection()
+  CoordinateColorMap _getContentWithSelection({required final bool frameIsSelected})
   {
     final CoordinateColorMap allColorPixels = CoordinateColorMap();
     final AppState appState = GetIt.I.get<AppState>();
-    bool hasSelection = appState.timeline.getCurrentLayer() == this && appState.selectionState.selection.hasValues();
-    if (layerStack != null)
-    {
-      hasSelection = false;
-    }
+    final bool hasSelection = frameIsSelected &&
+        layerStack == null &&
+        appState.timeline.getCurrentLayer() == this &&
+        appState.selectionState.selection.hasValues();
     allColorPixels.addAll(_data);
     if (hasSelection)
     {
@@ -432,6 +431,11 @@ class DrawingLayerState extends RasterableLayerState
     else
     {
       final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      final Frame? selectedFrame = appState.timeline.selectedFrame;
+      if (selectedFrame != null && frames.length > 1 && frames.remove(selectedFrame))
+      {
+        frames.add(selectedFrame);
+      }
       for (final Frame frame in frames)
       {
         final ui.Image rasterImage = await _createRasterFromLayers(canvasSize: appState.canvasSize, frame: frame, frameIsSelected: frame == appState.timeline.selectedFrame, layers: frame.layerList.getAllLayers(), fullRenderForced: fullRenderForced, renderRegions: renderRegions);
@@ -458,7 +462,7 @@ class DrawingLayerState extends RasterableLayerState
   {
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     //NORMAL OPAQUE PIXELS
-    rasterPixels = _getContentWithSelection();
+    rasterPixels = _getContentWithSelection(frameIsSelected: frameIsSelected);
     //LAYER EFFECT PIXELS OUTSIDE THE CONTENT
     if (frame != null)
     {
@@ -537,7 +541,7 @@ class DrawingLayerState extends RasterableLayerState
 
     canvas.drawImage(baseImage, Offset.zero, paint);
 
-    final CoordinateColorMap allPixels = _getContentWithSelection();
+    final CoordinateColorMap allPixels = _getContentWithSelection(frameIsSelected: frameIsSelected);
     if (frame != null)
     {
       settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: allPixels);

@@ -69,6 +69,8 @@ class LineOptions extends IToolOptions
       (4, 1),
       (5, 1),
       (6, 1),
+      (7, 1),
+      (8, 1),
     };
     for (int i = -1; i <= 1; i+=2)
     {
@@ -77,7 +79,10 @@ class LineOptions extends IToolOptions
         for (final (int, int) ratio in ratios)
         {
           angles.add(AngleData(x: i * ratio.$1, y: j * ratio.$2));
-          angles.add(AngleData(x: i * ratio.$2, y: j * ratio.$1));
+          if (ratio.$1 != ratio.$2)
+          {
+            angles.add(AngleData(x: i * ratio.$2, y: j * ratio.$1));
+          }
         }
       }
     }

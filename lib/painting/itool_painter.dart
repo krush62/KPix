@@ -222,10 +222,14 @@ abstract class IToolPainter
 
   IToolPainter({required this.painterOptions})
   {
-    guiPrefs.toolOpacity.addListener(() {
-      _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
-    },);
+    guiPrefs.toolOpacity.addListener(_toolOpacityChanged);
     _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
+  }
+
+  void _toolOpacityChanged()
+  {
+    _setOutlineColors(percentageValue: guiPrefs.toolOpacity.value);
+    appState.repaintNotifier.repaint();
   }
 
   void _setOutlineColors({required final int percentageValue})
@@ -233,6 +237,12 @@ abstract class IToolPainter
     final int alignedValue = (percentageValue.toDouble() * 2.55).round();
     blackToolAlphaColor = Colors.black.withAlpha(alignedValue);
     whiteToolAlphaColor = Colors.white.withAlpha(alignedValue);
+  }
+
+  @mustCallSuper
+  void dispose()
+  {
+    guiPrefs.toolOpacity.removeListener(_toolOpacityChanged);
   }
 
   bool get hasHistoryData

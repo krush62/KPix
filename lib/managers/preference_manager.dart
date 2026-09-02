@@ -217,6 +217,7 @@ class PreferenceManager
   late TouchPreferenceContent touchPreferenceContent;
   late DesktopPreferenceContent desktopPreferenceContent;
 
+  bool _preferenceContentCreated = false;
 
 
 
@@ -359,7 +360,7 @@ class PreferenceManager
 
   Future<void> loadPreferences() async
   {
-    guiPreferenceContent = GuiPreferenceContent(
+    final GuiPreferenceContent guiContent = GuiPreferenceContent(
       colorNameSchemeValue: _getValueI(PreferenceInt.ColorNames_Scheme),
       rasterContrast: _getValueI(PreferenceInt.Painter_CheckerBoardContrast),
       rasterSizeValue: _getValueI(PreferenceInt.Painter_CheckerBoardSize),
@@ -382,7 +383,7 @@ class PreferenceManager
       defaultFps: _getValueI(PreferenceInt.FrameConstraints_DefaultFps),
     );
 
-    behaviorPreferenceContent = BehaviorPreferenceContent(
+    final BehaviorPreferenceContent behaviorContent = BehaviorPreferenceContent(
       undoSteps: _getValueI(PreferenceInt.HistoryOptions_Steps),
       selectAfterInsert: _getValueB(PreferenceBool.SelectShapeAfterInsert),
       selectLayerAfterInsert: _getValueB(PreferenceBool.SelectLayerAfterInsert),
@@ -395,7 +396,7 @@ class PreferenceManager
       customProjectDirectory: _getValueS(PreferenceString.ProjectDirectory_CustomPath),
     );
 
-    stylusPreferenceContent = StylusPreferenceContent(
+    final StylusPreferenceContent stylusContent = StylusPreferenceContent(
       stylusLongPressCancelDistance: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistance),
       stylusLongPressCancelDistanceMin: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMin),
       stylusLongPressCancelDistanceMax: _getValueD(PreferenceDouble.StylusOptions_LongPressCancelDistanceMax),
@@ -416,7 +417,7 @@ class PreferenceManager
       stylusPickMaxDurationMax: _getValueI(PreferenceInt.StylusOptions_PickMaxDurationMax),
     );
 
-    touchPreferenceContent = TouchPreferenceContent(
+    final TouchPreferenceContent touchContent = TouchPreferenceContent(
       singleTouchDelay: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelay),
       singleTouchDelayMin: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMin),
       singleTouchDelayMax: _getValueI(PreferenceInt.TouchOptions_SingleTouchDelayMax),
@@ -425,9 +426,27 @@ class PreferenceManager
       zoomStepDistanceMax: _getValueD(PreferenceDouble.TouchOptions_ZoomStepDistanceMax),
     );
 
-    desktopPreferenceContent = DesktopPreferenceContent(
+    final DesktopPreferenceContent desktopContent = DesktopPreferenceContent(
       cursorTypeValue: _getValueI(PreferenceInt.DesktopOptions_CursorType),
     );
+
+    if (_preferenceContentCreated)
+    {
+      guiPreferenceContent.copyValuesFrom(other: guiContent);
+      behaviorPreferenceContent.copyValuesFrom(other: behaviorContent);
+      stylusPreferenceContent.copyValuesFrom(other: stylusContent);
+      touchPreferenceContent.copyValuesFrom(other: touchContent);
+      desktopPreferenceContent.copyValuesFrom(other: desktopContent);
+    }
+    else
+    {
+      guiPreferenceContent = guiContent;
+      behaviorPreferenceContent = behaviorContent;
+      stylusPreferenceContent = stylusContent;
+      touchPreferenceContent = touchContent;
+      desktopPreferenceContent = desktopContent;
+      _preferenceContentCreated = true;
+    }
   }
 
   Future<void> saveUserPrefs() async

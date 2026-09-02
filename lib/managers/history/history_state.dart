@@ -38,9 +38,10 @@ class HistoryState
   final CoordinateSetI canvasSize;
   final HistorySelectionState selectionState;
   final HistoryTimeline timeline;
-  final int? restoreLayerIndex;
 
-  HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, this.restoreLayerIndex});
+  final Set<int> restoreLayerIndices;
+
+  HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, final Set<int>? restoreLayerIndices}) : restoreLayerIndices = restoreLayerIndices ?? const <int>{};
   static const Set<HistoryStateTypeIdentifier> _selectionAffectingTypes =
   <HistoryStateTypeIdentifier>{
     HistoryStateTypeIdentifier.selectionNew,
@@ -55,16 +56,22 @@ class HistoryState
     HistoryStateTypeIdentifier.selectionPaste,
     HistoryStateTypeIdentifier.selectionNewLayer,
     HistoryStateTypeIdentifier.selectionDelete,
+    HistoryStateTypeIdentifier.layerChange,
+    HistoryStateTypeIdentifier.layerChangeWithSelection,
   };
 
-  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final HistoryState? previousState})
+  factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final LayerState? secondOriginLayer, final HistoryState? previousState})
   {
-    int? restoreLayerIndex;
+    final Set<int> restoreLayerIndices = <int>{};
+    final Set<LayerState> originLayers = <LayerState>{
+      if (originLayer != null) originLayer,
+      if (secondOriginLayer != null) secondOriginLayer,
+    };
 
     //TYPE
     final HistoryStateType type = allStateTypeMap[identifier] ?? const HistoryStateType(compressionBehavior: HistoryStateCompressionBehavior.leave, description: "Generic", identifier: HistoryStateTypeIdentifier.generic);
 
-    if (originLayer == null && type.group == HistoryStateTypeGroup.layerFull)
+    if (originLayers.isEmpty && type.group == HistoryStateTypeGroup.layerFull)
     {
       throw Exception("LAYER STATE ADDED TO HISTORY, BUT NO LAYER SUPPLIED!!!");
     }
@@ -118,9 +125,9 @@ class HistoryState
         {
           final LayerState l = layers.getLayer(index: i);
           final bool wasAdded = originalLayerSet.add(l);
-          if (wasAdded && l == originLayer)
+          if (wasAdded && originLayers.contains(l))
           {
-            restoreLayerIndex = originalLayerSet.length - 1;
+            restoreLayerIndices.add(originalLayerSet.length - 1);
           }
         }
       }
@@ -142,7 +149,7 @@ class HistoryState
         final int identity = identityHashCode(l);
         final bool forceFullSnapshot = !hasPrevious || type.group == HistoryStateTypeGroup.full;
         final bool isNewLayer        = !previousLayerMap.containsKey(identity);
-        final bool isOriginLayer     = type.group == HistoryStateTypeGroup.layerFull && l == originLayer;
+        final bool isOriginLayer     = type.group == HistoryStateTypeGroup.layerFull && originLayers.contains(l);
 
         if (forceFullSnapshot || isNewLayer || isOriginLayer)
         {
@@ -191,7 +198,7 @@ class HistoryState
       selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
     }
 
-    return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndex: restoreLayerIndex);
+    return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndices: restoreLayerIndices);
   }
 
   static int? getRampIndex({required final String uuid, required final List<HistoryRampData> ramps})

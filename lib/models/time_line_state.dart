@@ -24,6 +24,7 @@ import 'package:kpix/layer_states/layer_collection.dart';
 import 'package:kpix/layer_states/layer_state.dart';
 import 'package:kpix/managers/preference_manager.dart';
 import 'package:kpix/models/app_state.dart';
+import 'package:kpix/models/selection_state.dart';
 
 class FrameConstraints
 {
@@ -183,7 +184,7 @@ class Timeline
       }
       if (layerToSelect != null)
       {
-        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory);
+        GetIt.I.get<AppState>().selectLayer(newLayer: layerToSelect, oldLayer: oldLayer, addToHistoryStack: addLayerSelectionToHistory && !isPlaying.value);
       }
     }
   }
@@ -192,7 +193,20 @@ class Timeline
   {
     if (loopStartIndex.value != loopEndIndex.value || isPlaying.value)
     {
+      if (!isPlaying.value)
+      {
+        _anchorFloatingSelection();
+      }
       isPlaying.value = !isPlaying.value;
+    }
+  }
+
+  void _anchorFloatingSelection()
+  {
+    final SelectionState selectionState = GetIt.I.get<AppState>().selectionState;
+    if (selectionState.selection.selectedPixels.isNotEmpty)
+    {
+      selectionState.deselect(addToHistoryStack: true);
     }
   }
 

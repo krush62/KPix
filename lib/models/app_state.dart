@@ -584,7 +584,7 @@ class AppState
       //the target state provides the data to restore
       final HistoryState? currentState = GetIt.I.get<HistoryManager>().getCurrentState();
       final HistoryStateTypeGroup typeGroup = currentState != null ? currentState.type.group : HistoryStateTypeGroup.full;
-      _restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndex: currentState?.restoreLayerIndex);
+      _restoreState(historyState: GetIt.I.get<HistoryManager>().undo(), typeGroup: typeGroup, restoreLayerIndices: currentState?.restoreLayerIndices);
     }
   }
 
@@ -595,7 +595,7 @@ class AppState
     {
       final HistoryState? switchState = GetIt.I.get<HistoryManager>().redo();
       final HistoryStateTypeGroup typeGroup = switchState != null ? switchState.type.group : HistoryStateTypeGroup.full;
-      _restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndex: switchState?.restoreLayerIndex);
+      _restoreState(historyState: switchState, typeGroup: typeGroup, restoreLayerIndices: switchState?.restoreLayerIndices);
       showMessage(text: "Redo: ${GetIt.I.get<HistoryManager>().getCurrentDescription()}");
     }
   }
@@ -717,8 +717,9 @@ class AppState
   }
 
 
-  Future<void> _restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup, final int? restoreLayerIndex}) async
+  Future<void> _restoreState({required final HistoryState? historyState, required final HistoryStateTypeGroup typeGroup, final Set<int>? restoreLayerIndices}) async
   {
+    final Set<int> restoreIndices = restoreLayerIndices ?? const <int>{};
     const String failMessage = "History restore failed!";
 
     if (historyState != null)
@@ -767,7 +768,7 @@ class AppState
           int layerCounter = 0;
           for (final HistoryLayer hLayer in allHistoryLayers)
           {
-            if (restoreLayerIndex != null && typeGroup == HistoryStateTypeGroup.layerFull && restoreLayerIndex != layerCounter && collectedLayers.length == allHistoryLayers.length)
+            if (restoreIndices.isNotEmpty && typeGroup == HistoryStateTypeGroup.layerFull && !restoreIndices.contains(layerCounter) && collectedLayers.length == allHistoryLayers.length)
             {
               final LayerState liveLayer = collectedLayers.elementAt(layerCounter);
               liveLayer.visibilityState.value = hLayer.visibilityState;
@@ -841,16 +842,16 @@ class AppState
           },);
 
           timeline.layerChangeNotifier.reportChange();
-          if (typeGroup == HistoryStateTypeGroup.layerFull && restoreLayerIndex != null && restoreLayerIndex >= 0 && restoreLayerIndex < allLayers.length)
+          final List<int> rasterIndices = restoreIndices.where((final int index) => index >= 0 && index < allLayers.length).toList();
+          final bool canRasterSelectively = typeGroup == HistoryStateTypeGroup.layerFull &&
+              rasterIndices.isNotEmpty &&
+              rasterIndices.length == restoreIndices.length &&
+              rasterIndices.every((final int index) => allLayers[index] is RasterableLayerState);
+          if (canRasterSelectively)
           {
-            final LayerState restoreLayer = allLayers[restoreLayerIndex];
-            if (restoreLayer is RasterableLayerState)
+            for (final int index in rasterIndices)
             {
-              restoreLayer.doManualRaster = true;
-            }
-            else
-            {
-              rasterLayersAll();
+              (allLayers[index] as RasterableLayerState).doManualRaster = true;
             }
           }
           else
@@ -1132,6 +1133,7 @@ class AppState
       final LayerState? previousLayer = timeline.selectedFrame!.layerList.selectLayer(newLayer: newLayer);
       timeline.layerChangeNotifier.reportChange();
       oldLayer ??= previousLayer;
+      final bool handsOverContent = oldLayer != newLayer && selectionState.selection.selectedPixels.isNotEmpty;
       if (oldLayer != newLayer)
       {
         selectionState.selection.changeLayer(oldLayer: oldLayer, newLayer: newLayer);
@@ -1139,8 +1141,12 @@ class AppState
       repaintNotifier.repaint();
       if (addToHistoryStack && oldLayer != null)
       {
-
-        GetIt.I.get<HistoryManager>().addState(appState: this, identifier: HistoryStateTypeIdentifier.layerChange);
+        GetIt.I.get<HistoryManager>().addState(
+          appState: this,
+          identifier: handsOverContent ? HistoryStateTypeIdentifier.layerChangeWithSelection : HistoryStateTypeIdentifier.layerChange,
+          originLayer: handsOverContent ? oldLayer : null,
+          secondOriginLayer: handsOverContent ? newLayer : null,
+        );
       }
     }
   }

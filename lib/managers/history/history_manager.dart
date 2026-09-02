@@ -79,7 +79,7 @@ class HistoryManager
     }
   }
 
-  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final LayerState? originLayer})
+  void addState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final bool setHasChanges = true, final LayerState? originLayer, final LayerState? secondOriginLayer})
   {
     if (!appState.timeline.isPlaying.value)
     {
@@ -91,6 +91,7 @@ class HistoryManager
           appState: appState,
           identifier: identifier,
           originLayer: originLayer,
+          secondOriginLayer: secondOriginLayer,
           previousState: identifier == HistoryStateTypeIdentifier.initial ? null : getCurrentState(),
         ),);
         _curPos++;

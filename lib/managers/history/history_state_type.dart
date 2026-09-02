@@ -23,6 +23,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateType> allStateTypeMap =
   HistoryStateTypeIdentifier.loadData: HistoryStateType(identifier: HistoryStateTypeIdentifier.loadData, description: "load data", compressionBehavior: HistoryStateCompressionBehavior.leave),
 
   HistoryStateTypeIdentifier.layerChange: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChange, description: "select layer", compressionBehavior: HistoryStateCompressionBehavior.delete),
+  HistoryStateTypeIdentifier.layerChangeWithSelection: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerChangeWithSelection, description: "select layer (move selection)", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerDelete: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDelete, description: "delete layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerMerge: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerMerge, description: "merge layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
   HistoryStateTypeIdentifier.layerDuplicate: HistoryStateType(identifier: HistoryStateTypeIdentifier.layerDuplicate, description: "duplicate layer", compressionBehavior: HistoryStateCompressionBehavior.leave),
@@ -91,6 +92,7 @@ enum HistoryStateTypeIdentifier
   loadData,
 
   layerChange,
+  layerChangeWithSelection,
   layerDelete,
   layerMerge,
   layerDuplicate,
@@ -172,6 +174,7 @@ const Map<HistoryStateTypeIdentifier, HistoryStateTypeGroup> _stateTypeGroupMap 
   HistoryStateTypeIdentifier.loadData: HistoryStateTypeGroup.full,
 
   HistoryStateTypeIdentifier.layerChange: HistoryStateTypeGroup.layerSelect, //layer select
+  HistoryStateTypeIdentifier.layerChangeWithSelection: HistoryStateTypeGroup.layerFull,
 
   HistoryStateTypeIdentifier.layerDelete: HistoryStateTypeGroup.full, //layer delete
   HistoryStateTypeIdentifier.layerMerge: HistoryStateTypeGroup.full, //layer merge

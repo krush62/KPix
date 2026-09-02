@@ -84,10 +84,10 @@ class SelectionState with ChangeNotifier
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) inverse();}, action: HotkeyAction.selectionInvert);
     hotkeyManager.addListener(func: selectAll, action: HotkeyAction.selectionSelectAll);
     hotkeyManager.addListener(func: () {if (!selection.isEmpty) deselect(addToHistoryStack: true);}, action: HotkeyAction.selectionDeselect);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: -1), withContent: true);}, action: HotkeyAction.selectionMoveUp);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 0, y: 1), withContent: true);}, action: HotkeyAction.selectionMoveDown);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: -1, y: 0), withContent: true);}, action: HotkeyAction.selectionMoveLeft);
-    hotkeyManager.addListener(func: () {_moveSelection(offset: CoordinateSetI(x: 1, y: 0), withContent: true);}, action: HotkeyAction.selectionMoveRight);
+    hotkeyManager.addListener(func: () {if (!selection.isEmpty) _moveSelection(offset: CoordinateSetI(x: 0, y: -1), withContent: true);}, action: HotkeyAction.selectionMoveUp);
+    hotkeyManager.addListener(func: () {if (!selection.isEmpty) _moveSelection(offset: CoordinateSetI(x: 0, y: 1), withContent: true);}, action: HotkeyAction.selectionMoveDown);
+    hotkeyManager.addListener(func: () {if (!selection.isEmpty) _moveSelection(offset: CoordinateSetI(x: -1, y: 0), withContent: true);}, action: HotkeyAction.selectionMoveLeft);
+    hotkeyManager.addListener(func: () {if (!selection.isEmpty) _moveSelection(offset: CoordinateSetI(x: 1, y: 0), withContent: true);}, action: HotkeyAction.selectionMoveRight);
 
   }
 
@@ -97,7 +97,7 @@ class SelectionState with ChangeNotifier
     repaintNotifier.repaint();
   }
 
-  void newSelectionFromPolygon({required final Set<CoordinateSetI> points, final bool notify = true})
+  void newSelectionFromPolygon({required final Set<CoordinateSetI> points, final bool notify = true, final bool addToHistoryStack = true})
   {
     if (selectionOptions.mode.value == SelectMode.replace)
     {
@@ -107,6 +107,13 @@ class SelectionState with ChangeNotifier
     final Set<CoordinateSetI> canvasPoints = points.where((final CoordinateSetI p) => p.x >= 0 && p.y >= 0 && p.x < _appState.canvasSize.x && p.y < _appState.canvasSize.y).toSet();
     _addPixelsWithMode(coords: canvasPoints, mode: selectionOptions.mode.value);
     createSelectionLines();
+
+    //lifts pixels out of the layer like every other way of selecting, so it has
+    //to be an undo step like them too
+    if (addToHistoryStack)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionNew, originLayer: _appState.timeline.getCurrentLayer());
+    }
 
     if (notify)
     {
@@ -817,7 +824,10 @@ class SelectionState with ChangeNotifier
   void finishMovement()
   {
     selection.resetLastOffset();
-    GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove, originLayer: _appState.timeline.getCurrentLayer());
+    if (!selection.isEmpty)
+    {
+      GetIt.I.get<HistoryManager>().addState(appState: _appState, identifier: HistoryStateTypeIdentifier.selectionMove, originLayer: _appState.timeline.getCurrentLayer());
+    }
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -911,7 +921,7 @@ class SelectionList
 {
   CoordinateColorMapNullable _content = HashMap<CoordinateSetI, ColorReference?>();
   final AppState _appState = GetIt.I.get<AppState>();
-  final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(true);
   int _revision = 0;
 
   int get revision => _revision;

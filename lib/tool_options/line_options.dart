@@ -61,19 +61,24 @@ class LineOptions extends IToolOptions
 
   LineOptions()
   {
+    const Set<(int, int)> ratios = <(int, int)>{
+      (1, 0),
+      (1, 1),
+      (2, 1),
+      (3, 1),
+      (4, 1),
+      (5, 1),
+      (6, 1),
+    };
     for (int i = -1; i <= 1; i+=2)
     {
       for (int j = -1; j <= 1; j+=2)
       {
-        angles.add(AngleData(x: i * 1, y: j * 0));
-        angles.add(AngleData(x: i * 4, y: j * 1));
-        angles.add(AngleData(x: i * 3, y: j * 1));
-        angles.add(AngleData(x: i * 2, y: j * 1));
-        angles.add(AngleData(x: i * 1, y: j * 1));
-        angles.add(AngleData(x: i * 1, y: j * 2));
-        angles.add(AngleData(x: i * 1, y: j * 3));
-        angles.add(AngleData(x: i * 1, y: j * 4));
-        angles.add(AngleData(x: i * 0, y: j * 1));
+        for (final (int, int) ratio in ratios)
+        {
+          angles.add(AngleData(x: i * ratio.$1, y: j * ratio.$2));
+          angles.add(AngleData(x: i * ratio.$2, y: j * ratio.$1));
+        }
       }
     }
   }

@@ -40,25 +40,9 @@ class HistoryState
   final HistoryTimeline timeline;
 
   final Set<int> restoreLayerIndices;
+  final int selectionRevision;
 
-  HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, final Set<int>? restoreLayerIndices}) : restoreLayerIndices = restoreLayerIndices ?? const <int>{};
-  static const Set<HistoryStateTypeIdentifier> _selectionAffectingTypes =
-  <HistoryStateTypeIdentifier>{
-    HistoryStateTypeIdentifier.selectionNew,
-    HistoryStateTypeIdentifier.selectionDeselect,
-    HistoryStateTypeIdentifier.selectionSelectAll,
-    HistoryStateTypeIdentifier.selectionInverse,
-    HistoryStateTypeIdentifier.selectionCut,
-    HistoryStateTypeIdentifier.selectionFlipH,
-    HistoryStateTypeIdentifier.selectionFlipV,
-    HistoryStateTypeIdentifier.selectionRotate,
-    HistoryStateTypeIdentifier.selectionMove,
-    HistoryStateTypeIdentifier.selectionPaste,
-    HistoryStateTypeIdentifier.selectionNewLayer,
-    HistoryStateTypeIdentifier.selectionDelete,
-    HistoryStateTypeIdentifier.layerChange,
-    HistoryStateTypeIdentifier.layerChangeWithSelection,
-  };
+  HistoryState({required this.timeline, required this.selectedColor, required this.selectionState, required this.canvasSize, required this.rampList, required this.type, this.selectionRevision = -1, final Set<int>? restoreLayerIndices}) : restoreLayerIndices = restoreLayerIndices ?? const <int>{};
 
   factory HistoryState.fromAppState({required final AppState appState, required final HistoryStateTypeIdentifier identifier, final LayerState? originLayer, final LayerState? secondOriginLayer, final HistoryState? previousState})
   {
@@ -185,11 +169,11 @@ class HistoryState
     final HistoryTimeline historyTimeline = HistoryTimeline(frames: historyFrameList, loopStart: appState.timeline.loopStartIndex.value, loopEnd: appState.timeline.loopEndIndex.value, selectedFrameIndex: appState.timeline.selectedFrameIndex, allLayers: historyLayerSet);
 
     final CoordinateSetI canvasSize = CoordinateSetI.from(other: appState.canvasSize);
-
+    final int selectionRevision = appState.selectionState.selection.revision;
     final HistorySelectionState selectionState;
     if (previousState != null &&
         type.group != HistoryStateTypeGroup.full &&
-        !_selectionAffectingTypes.contains(identifier))
+        previousState.selectionRevision == selectionRevision)
     {
       selectionState = previousState.selectionState;
     }
@@ -198,7 +182,7 @@ class HistoryState
       selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
     }
 
-    return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, restoreLayerIndices: restoreLayerIndices);
+    return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, selectionRevision: selectionRevision, restoreLayerIndices: restoreLayerIndices);
   }
 
   static int? getRampIndex({required final String uuid, required final List<HistoryRampData> ramps})

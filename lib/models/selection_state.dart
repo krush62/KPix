@@ -912,9 +912,22 @@ class SelectionList
   CoordinateColorMapNullable _content = HashMap<CoordinateSetI, ColorReference?>();
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(false);
-  CoordinateColorMapNullable get selectedPixels
+  int _revision = 0;
+
+  int get revision => _revision;
+
+  Map<CoordinateSetI, ColorReference?> get selectedPixels
   {
-    return _content;
+    return UnmodifiableMapView<CoordinateSetI, ColorReference?>(_content);
+  }
+
+  void _touch({final bool notifyEmpty = true})
+  {
+    _revision++;
+    if (notifyEmpty)
+    {
+      isEmptyNotifer.value = _content.isEmpty;
+    }
   }
 
   bool get isEmpty
@@ -955,7 +968,7 @@ class SelectionList
     {
       newLayer.setDataAll(list: refsNew);
     }
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
@@ -969,22 +982,19 @@ class SelectionList
       }
       layer.removeDataAll(removeCoordList: coords);
     }
-    if (notifyEmpty)
-    {
-      isEmptyNotifer.value = _content.isEmpty;
-    }
+    _touch(notifyEmpty: notifyEmpty);
   }
 
   void addEmpty({required final CoordinateSetI coord})
   {
     _content[coord] = null;
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})
   {
     _content[coord] = colRef;
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -995,7 +1005,7 @@ class SelectionList
   void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
     _content.addAll(list);
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -1022,7 +1032,7 @@ class SelectionList
     {
       layer.setDataAll(list: refs);
     }
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void clear({final bool notifyEmpty = true})
@@ -1041,10 +1051,7 @@ class SelectionList
       layer.setDataAll(list: refs);
     }
     _content.clear();
-    if (notifyEmpty)
-    {
-      isEmptyNotifer.value = _content.isEmpty;
-    }
+    _touch(notifyEmpty: notifyEmpty);
   }
 
   void deleteDirectly({required final CoordinateSetI coord})
@@ -1053,7 +1060,7 @@ class SelectionList
     {
       _content[coord] = null;
     }
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void delete({required final bool keepSelection})
@@ -1069,7 +1076,7 @@ class SelectionList
     {
       _content.clear();
     }
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void flipH()
@@ -1083,7 +1090,7 @@ class SelectionList
       newContent[CoordinateSetI(x: maxXcoord.x - entry.key.x + minXcoord.x , y: entry.key.y)] = entry.value;
     }
     _content = newContent;
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void flipV()
@@ -1097,7 +1104,7 @@ class SelectionList
       newContent[CoordinateSetI(x: entry.key.x, y: maxYcoord.y - entry.key.y + minYcoord.y)] = entry.value;
     }
     _content = newContent;
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void rotate90cw()
@@ -1119,7 +1126,7 @@ class SelectionList
       newContent[CoordinateSetI(x: centerCoord.y - entry.key.y + centerCoord.x, y: entry.key.x - centerCoord.x + centerCoord.y)] = entry.value;
     }
     _content = newContent;
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   bool contains({required final CoordinateSetI coord})
@@ -1183,7 +1190,7 @@ class SelectionList
         transferAll(coords: coordinateList, notifyEmpty: false);
       }
     }
-    isEmptyNotifer.value = _content.isEmpty;
+    _touch();
   }
 
   void resetLastOffset()

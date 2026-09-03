@@ -650,15 +650,11 @@ class DrawingLayerState extends RasterableLayerState
     {
       return _settingsPixels[coord];
     }
-    else if (_data.containsKey(coord))
-    {
-      return _data[coord];
-    }
-    else if (rasterQueue.isNotEmpty)
+    else if (rasterQueue.containsKey(coord))
     {
       return rasterQueue[coord];
     }
-    return null;
+    return _data[coord];
   }
 
   CoordinateColorMap getData()

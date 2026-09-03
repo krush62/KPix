@@ -34,6 +34,7 @@ import 'package:kpix/util/helpers/color_helper.dart';
 import 'package:kpix/util/helpers/geometry_helper.dart';
 import 'package:kpix/util/typedefs.dart';
 import 'package:kpix/widgets/tools/constraints/tool_select_constraints.dart';
+import 'package:logger/logger.dart';
 
 enum SelectionDirection
 {
@@ -931,13 +932,36 @@ class SelectionList
     return UnmodifiableMapView<CoordinateSetI, ColorReference?>(_content);
   }
 
-  void _touch({final bool notifyEmpty = true})
+  LayerState? _owner;
+  LayerState? get owner => _owner;
+
+  void _touch({final bool notifyEmpty = true, final bool claimOwner = false})
   {
     _revision++;
+    if (_content.isEmpty)
+    {
+      //nothing floating, nothing to misplace
+      _owner = null;
+    }
+    else if (claimOwner)
+    {
+      _owner = _appState.timeline.getCurrentLayer();
+    }
     if (notifyEmpty)
     {
       isEmptyNotifer.value = _content.isEmpty;
     }
+  }
+
+  void _checkOwnership({required final String operation})
+  {
+    if (_content.isEmpty || _owner == null || identical(_owner, _appState.timeline.getCurrentLayer()))
+    {
+      return;
+    }
+    final String message = "Selection content belongs to a layer that is no longer selected (during: $operation).";
+    GetIt.I.get<Logger>().w(message);
+    assert(false, message);
   }
 
   bool get isEmpty
@@ -978,11 +1002,12 @@ class SelectionList
     {
       newLayer.setDataAll(list: refsNew);
     }
-    _touch();
+    _touch(claimOwner: true);
   }
 
   void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
   {
+    _checkOwnership(operation: "adding to the selection");
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -992,19 +1017,19 @@ class SelectionList
       }
       layer.removeDataAll(removeCoordList: coords);
     }
-    _touch(notifyEmpty: notifyEmpty);
+    _touch(notifyEmpty: notifyEmpty, claimOwner: true);
   }
 
   void addEmpty({required final CoordinateSetI coord})
   {
     _content[coord] = null;
-    _touch();
+    _touch(claimOwner: true);
   }
 
   void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})
   {
     _content[coord] = colRef;
-    _touch();
+    _touch(claimOwner: true);
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -1015,7 +1040,7 @@ class SelectionList
   void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
     _content.addAll(list);
-    _touch();
+    _touch(claimOwner: true);
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -1025,6 +1050,7 @@ class SelectionList
 
   void removeAll({required final Set<CoordinateSetI> coords})
   {
+    _checkOwnership(operation: "removing from the selection");
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateSetI coord in coords)
     {
@@ -1047,6 +1073,7 @@ class SelectionList
 
   void clear({final bool notifyEmpty = true})
   {
+    _checkOwnership(operation: "deselecting");
     final CoordinateColorMapNullable refs = HashMap<CoordinateSetI, ColorReference?>();
     for (final CoordinateColorNullable entry in _content.entries)
     {

@@ -201,12 +201,12 @@ class Timeline
     }
   }
 
-  void _anchorFloatingSelection()
+  void _anchorFloatingSelection({final bool addToHistoryStack = true})
   {
     final SelectionState selectionState = GetIt.I.get<AppState>().selectionState;
     if (selectionState.selection.selectedPixels.isNotEmpty)
     {
-      selectionState.deselect(addToHistoryStack: true);
+      selectionState.deselect(addToHistoryStack: addToHistoryStack);
     }
   }
 
@@ -345,6 +345,7 @@ class Timeline
     }
     else
     {
+      _anchorFloatingSelection(addToHistoryStack: false);
       final FrameConstraints constraints = GetIt.I.get<PreferenceManager>().frameConstraints;
       final Frame f = Frame.empty(fps: constraints.defaultFps);
       if (method == _FrameCreationMethod.copy)

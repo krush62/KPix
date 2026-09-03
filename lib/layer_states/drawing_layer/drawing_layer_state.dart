@@ -141,14 +141,27 @@ class DrawingLayerState extends RasterableLayerState
   }
 
 
+  static CoordinateColorMap _resolvedData({required final DrawingLayerState other})
+  {
+    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>.from(other._data);
+    for (final CoordinateColorNullable entry in other.rasterQueue.entries)
+    {
+      if (entry.value == null)
+      {
+        data.remove(entry.key);
+      }
+      else
+      {
+        data[entry.key] = entry.value!;
+      }
+    }
+    return data;
+  }
+
   factory DrawingLayerState.from({required final DrawingLayerState other, final List<RasterableLayerState>? layerStack})
   {
-    final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
+    final CoordinateColorMap data = _resolvedData(other: other);
     final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
-    for (final CoordinateColor ref in other._data.entries)
-    {
-      data[ref.key] = ref.value;
-    }
     final DrawingLayerSettings newSettings = DrawingLayerSettings.fromOther(other: other.settings);
     return DrawingLayerState._(settingsPixels: settingsPixels, data: data, lState: other.lockState.value, vState: other.visibilityState.value, layerStack: layerStack, settings: newSettings);
   }
@@ -157,7 +170,7 @@ class DrawingLayerState extends RasterableLayerState
   {
     final CoordinateColorMap data = HashMap<CoordinateSetI, ColorReference>();
     final CoordinateColorMap settingsPixels = HashMap<CoordinateSetI, ColorReference>();
-    for (final CoordinateColor ref in other._data.entries)
+    for (final CoordinateColor ref in _resolvedData(other: other).entries)
     {
       data[ref.key] = (ref.value.ramp == originalRampData) ? rampData.references[ref.value.colorIndex] : ref.value;
     }

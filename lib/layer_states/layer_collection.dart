@@ -1000,6 +1000,16 @@ class LayerCollection with ChangeNotifier {
     _lastInvalidationTime.clear();
   }
 
+  void rebuildDependencies()
+  {
+    _rebuildDependencies();
+  }
+
+  bool dependsOn({required final RasterableLayerState dependent, required final RasterableLayerState dependency})
+  {
+    return _layerDependencies[dependent]?.contains(dependency) ?? false;
+  }
+
   void _rebuildDependencies()
   {
     _clearDependencies();
@@ -1008,7 +1018,7 @@ class LayerCollection with ChangeNotifier {
     {
       final LayerState layer = _layers[i];
 
-      if (layer is ShadingLayerState || layer is DitherLayerState)
+      if (layer is ShadingLayerState || layer is DitherLayerState || (layer is DrawingLayerState && layer.settings.readsLayersBelow))
       {
         for (int j = i + 1; j < _layers.length; j++)
         {

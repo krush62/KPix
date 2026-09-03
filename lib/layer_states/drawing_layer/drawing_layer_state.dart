@@ -125,14 +125,19 @@ class DrawingLayerState extends RasterableLayerState
 
   void _settingsChanged()
   {
-    if (isRasterizing)
-    {
-      forceFullRender();
-      return;
-    }
     forceFullRender();
     final AppState appState = GetIt.I.get<AppState>();
     final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+
+    for (final Frame frame in frames)
+    {
+      frame.layerList.rebuildDependencies();
+    }
+
+    if (isRasterizing)
+    {
+      return;
+    }
 
     for (final Frame frame in frames)
     {

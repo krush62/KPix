@@ -940,4 +940,11 @@ class DrawingLayerSettings extends LayerSettings {
         dropShadowStyle.value != DropShadowStyle.off;
   }
 
+  bool get readsLayersBelow
+  {
+    return outerStrokeStyle.value == OuterStrokeStyle.shade ||
+        outerStrokeStyle.value == OuterStrokeStyle.glow ||
+        dropShadowStyle.value == DropShadowStyle.shade;
+  }
+
 }

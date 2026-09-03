@@ -680,17 +680,13 @@ class DrawingLayerState extends RasterableLayerState
     }
   }
 
-  Future<void> removeDataAll({required final Set<CoordinateSetI> removeCoordList}) async
+  void removeDataAll({required final Set<CoordinateSetI> removeCoordList})
   {
-    if (isRasterizing) {
-      await Future<dynamic>.delayed(const Duration(milliseconds: 10));
-    }
-
     for (final CoordinateSetI coord in removeCoordList)
     {
       rasterQueue[coord] = null;
-      requestRaster();
     }
+    requestRaster();
     doManualRaster = true;
   }
 

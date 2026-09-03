@@ -28,7 +28,7 @@ abstract final class FrameBlendingConstraints
   static const int framesBeforeDefault = 1;
   static const int framesAfterDefault = 1;
   static const int frameOffsetMax = 4;
-  static const int frameOffsetMin = 1;
+  static const int frameOffsetMin = 0;
 
   static const double opacityMin = 0.1;
   static const double opacityDefault = 0.4;

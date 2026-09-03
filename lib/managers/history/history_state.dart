@@ -179,7 +179,7 @@ class HistoryState
     }
     else
     {
-      selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList);
+      selectionState = HistorySelectionState.fromSelectionState(sState: appState.selectionState, ramps: rampList, previous: previousState?.selectionState);
     }
 
     return HistoryState(timeline: historyTimeline, selectedColor: selectedColor, selectionState: selectionState, canvasSize: canvasSize, rampList: rampList, type: type, selectionRevision: selectionRevision, restoreLayerIndices: restoreLayerIndices);

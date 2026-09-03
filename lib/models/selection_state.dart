@@ -924,8 +924,11 @@ class SelectionList
   final AppState _appState = GetIt.I.get<AppState>();
   final ValueNotifier<bool> isEmptyNotifer = ValueNotifier<bool>(true);
   int _revision = 0;
+  int _maskRevision = 0;
 
   int get revision => _revision;
+
+  int get maskRevision => _maskRevision;
 
   Map<CoordinateSetI, ColorReference?> get selectedPixels
   {
@@ -935,9 +938,13 @@ class SelectionList
   LayerState? _owner;
   LayerState? get owner => _owner;
 
-  void _touch({final bool notifyEmpty = true, final bool claimOwner = false})
+  void _touch({final bool notifyEmpty = true, final bool claimOwner = false, final bool maskChanged = true})
   {
     _revision++;
+    if (maskChanged)
+    {
+      _maskRevision++;
+    }
     if (_content.isEmpty)
     {
       //nothing floating, nothing to misplace
@@ -1002,7 +1009,7 @@ class SelectionList
     {
       newLayer.setDataAll(list: refsNew);
     }
-    _touch(claimOwner: true);
+    _touch(claimOwner: true, maskChanged: false);
   }
 
   void transferAll({required final Set<CoordinateSetI> coords, final bool notifyEmpty = true})
@@ -1028,8 +1035,9 @@ class SelectionList
 
   void addDirectly({required final CoordinateSetI coord, required final ColorReference? colRef})
   {
+    final bool maskChanged = !_content.containsKey(coord);
     _content[coord] = colRef;
-    _touch(claimOwner: true);
+    _touch(claimOwner: true, maskChanged: maskChanged);
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -1039,8 +1047,17 @@ class SelectionList
 
   void addDirectlyAll({required final CoordinateColorMapNullable list})
   {
+    bool maskChanged = false;
+    for (final CoordinateSetI coord in list.keys)
+    {
+      if (!_content.containsKey(coord))
+      {
+        maskChanged = true;
+        break;
+      }
+    }
     _content.addAll(list);
-    _touch(claimOwner: true);
+    _touch(claimOwner: true, maskChanged: maskChanged);
     final LayerState? layer = _appState.timeline.getCurrentLayer();
     if (layer != null && layer is DrawingLayerState)
     {
@@ -1097,7 +1114,7 @@ class SelectionList
     {
       _content[coord] = null;
     }
-    _touch();
+    _touch(maskChanged: false);
   }
 
   void delete({required final bool keepSelection})
@@ -1113,7 +1130,7 @@ class SelectionList
     {
       _content.clear();
     }
-    _touch();
+    _touch(maskChanged: !keepSelection);
   }
 
   void flipH()

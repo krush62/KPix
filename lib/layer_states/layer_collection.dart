@@ -343,6 +343,23 @@ class LayerCollection with ChangeNotifier {
     }
   }
 
+  void replaceLayers({required final List<LayerState> layers, required final int selLayerIdx})
+  {
+    _layers.clear();
+    _layers.addAll(layers);
+    if (selLayerIdx >= 0 && selLayerIdx < _layers.length)
+    {
+      _selectedLayerIndexNotifier.value = selLayerIdx;
+    }
+    else
+    {
+      _selectedLayerIndexNotifier.value = _layers.isEmpty ? null : 0;
+    }
+    _rebuildDependencies();
+    updateIndividualLayerSelection();
+    notifyListeners();
+  }
+
   LayerState? selectLayer({required final LayerState newLayer})
   {
     if (_layers.contains(newLayer))

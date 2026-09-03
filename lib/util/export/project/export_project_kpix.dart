@@ -26,18 +26,17 @@ HashMap<CoordinateSetI, HistoryColorReference> _layerDataForSaving({
 })
 {
   final HashMap<CoordinateSetI, HistoryColorReference> layerData = layer.data;
-  if (!isSelectedLayer || selection.content.isEmpty)
+  if (!isSelectedLayer || selection.isEmpty)
   {
     return layerData;
   }
 
   final HashMap<CoordinateSetI, HistoryColorReference> merged = HashMap<CoordinateSetI, HistoryColorReference>.from(layerData);
-  for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in selection.content.entries)
+  for (final MapEntry<CoordinateSetI, HistoryColorReference> entry in selection.colors.entries)
   {
-    final HistoryColorReference? colorRef = entry.value;
-    if (colorRef != null && entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasSize.x && entry.key.y < canvasSize.y)
+    if (entry.key.x >= 0 && entry.key.y >= 0 && entry.key.x < canvasSize.x && entry.key.y < canvasSize.y)
     {
-      merged[entry.key] = colorRef;
+      merged[entry.key] = entry.value;
     }
   }
   return merged;

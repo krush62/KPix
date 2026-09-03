@@ -25,33 +25,57 @@ import 'package:kpix/util/typedefs.dart';
 
 class HistorySelectionState
 {
-  final HashMap<CoordinateSetI, HistoryColorReference?> content;
+  final Set<CoordinateSetI> mask;
+  final HashMap<CoordinateSetI, HistoryColorReference> colors;
+  final int maskRevision;
 
-  HistorySelectionState({required this.content});
+  HistorySelectionState({required this.mask, required this.colors, this.maskRevision = -1});
 
-  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps})
+  HistorySelectionState.empty()
+      : mask = <CoordinateSetI>{},
+        colors = HashMap<CoordinateSetI, HistoryColorReference>(),
+        maskRevision = -1;
+
+  bool get isEmpty => mask.isEmpty;
+
+  factory HistorySelectionState.fromSelectionState({required final SelectionState sState, required final List<HistoryRampData> ramps, final HistorySelectionState? previous})
   {
     final Map<String, int> rampIndexByUuid = <String, int>{
       for (int r = 0; r < ramps.length; r++) ramps[r].uuid: r,
     };
 
-    final Map<CoordinateSetI, ColorReference?> otherCnt = sState.selection.selectedPixels;
-    final HashMap<CoordinateSetI, HistoryColorReference?> cnt = HashMap<CoordinateSetI, HistoryColorReference?>();
-    for (final CoordinateColorNullable entry in otherCnt.entries)
+    final Map<CoordinateSetI, ColorReference?> live = sState.selection.selectedPixels;
+    final int maskRevision = sState.selection.maskRevision;
+
+    final Set<CoordinateSetI> mask;
+    if (previous != null && previous.maskRevision == maskRevision && previous.mask.length == live.length)
     {
-      if (entry.value != null)
+      mask = previous.mask;
+    }
+    else
+    {
+      final Set<CoordinateSetI> freshMask = <CoordinateSetI>{};
+      for (final CoordinateSetI coord in live.keys)
       {
-        final int? rampIndex = rampIndexByUuid[entry.value!.ramp.uuid];
+        freshMask.add(CoordinateSetI.from(other: coord));
+      }
+      mask = freshMask;
+    }
+
+    final HashMap<CoordinateSetI, HistoryColorReference> colors = HashMap<CoordinateSetI, HistoryColorReference>();
+    for (final CoordinateColorNullable entry in live.entries)
+    {
+      final ColorReference? colorRef = entry.value;
+      if (colorRef != null)
+      {
+        final int? rampIndex = rampIndexByUuid[colorRef.ramp.uuid];
         if (rampIndex != null)
         {
-          cnt[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: entry.value!.colorIndex, rampIndex: rampIndex);
+          colors[CoordinateSetI.from(other: entry.key)] = HistoryColorReference(colorIndex: colorRef.colorIndex, rampIndex: rampIndex);
         }
       }
-      else
-      {
-        cnt[CoordinateSetI.from(other: entry.key)] = null;
-      }
     }
-    return HistorySelectionState(content: cnt);
+
+    return HistorySelectionState(mask: mask, colors: colors, maskRevision: maskRevision);
   }
 }

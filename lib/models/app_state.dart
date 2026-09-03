@@ -795,18 +795,30 @@ class AppState
             layerCounter++;
           }
 
+          final List<Frame> liveFrames = timeline.frames.value;
+          final bool reuseFrames = liveFrames.length == historyState.timeline.frames.length;
           final List<Frame> frames = <Frame>[];
-          for (final HistoryFrame hFrame in historyState.timeline.frames)
+          for (int frameIndex = 0; frameIndex < historyState.timeline.frames.length; frameIndex++)
           {
+            final HistoryFrame hFrame = historyState.timeline.frames[frameIndex];
             final List<LayerState> layerList = <LayerState>[];
             for (final int hLayerIndex in hFrame.layerIndices)
             {
               layerList.add(allLayers[hLayerIndex]);
             }
-            final LayerCollection layerCollection = LayerCollection(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
-            final Frame frame = Frame(layerList: layerCollection, fps: hFrame.fps);
-            frames.add(frame);
-          } //end frame loop
+            if (reuseFrames)
+            {
+              final Frame frame = liveFrames[frameIndex];
+              frame.layerList.replaceLayers(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
+              frame.fps.value = hFrame.fps;
+              frames.add(frame);
+            }
+            else
+            {
+              final LayerCollection layerCollection = LayerCollection(layers: layerList, selLayerIdx: hFrame.selectedLayerIndex);
+              frames.add(Frame(layerList: layerCollection, fps: hFrame.fps));
+            }
+          }
 
           timeline.setData(selectedFrameIndex: historyState.timeline.selectedFrameIndex, frames: frames, loopStartIndex: historyState.timeline.loopStart, loopEndIndex: historyState.timeline.loopEnd);
 
@@ -816,10 +828,10 @@ class AppState
 
           //SELECTION
           final CoordinateColorMapNullable selectionContent = HashMap<CoordinateSetI, ColorReference?>();
-          for (final MapEntry<CoordinateSetI, HistoryColorReference?> entry in historyState.selectionState.content.entries)
+          for (final CoordinateSetI coord in historyState.selectionState.mask)
           {
-            final HistoryColorReference? ref = entry.value;
-            selectionContent[CoordinateSetI.from(other: entry.key)] = ref == null ? null : rampResolver.byIndex(ref: ref);
+            final HistoryColorReference? ref = historyState.selectionState.colors[coord];
+            selectionContent[CoordinateSetI.from(other: coord)] = ref == null ? null : rampResolver.byIndex(ref: ref);
           }
           selectionState.selection.delete(keepSelection: false);
           selectionState.selection.addDirectlyAll(list: selectionContent);

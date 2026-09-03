@@ -431,6 +431,7 @@ class DrawingLayerState extends RasterableLayerState
     else
     {
       final List<Frame> frames = appState.timeline.findFramesForLayer(layer: this);
+      pruneFramePixels(frames: frames);
       final Frame? selectedFrame = appState.timeline.selectedFrame;
       if (selectedFrame != null && frames.length > 1 && frames.remove(selectedFrame))
       {
@@ -462,18 +463,19 @@ class DrawingLayerState extends RasterableLayerState
   {
     final ByteData byteDataImg = ByteData(canvasSize.x * canvasSize.y * 4);
     //NORMAL OPAQUE PIXELS
-    rasterPixels = _getContentWithSelection(frameIsSelected: frameIsSelected);
+    final CoordinateColorMap framePixels = _getContentWithSelection(frameIsSelected: frameIsSelected);
+    setRasterPixels(pixels: framePixels, frame: frame);
     //LAYER EFFECT PIXELS OUTSIDE THE CONTENT
     if (frame != null)
     {
-      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: rasterPixels);
+      settingsShadingPixels[frame] = settings.getOuterShadingPixels(data: framePixels);
     }
     //LAYER EFFECT PIXELS INSIDE THE CONTENT
-    _settingsPixels = settings.getSettingsPixels(data: rasterPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
-    rasterPixels.addAll(_settingsPixels);
+    _settingsPixels = settings.getSettingsPixels(data: framePixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
+    framePixels.addAll(_settingsPixels);
 
     final RgbaCache rgbaCache = RgbaCache();
-    for (final CoordinateColor entry in rasterPixels.entries)
+    for (final CoordinateColor entry in framePixels.entries)
     {
       //just to make sure
       if (canvasSize.contains(coord: entry.key))
@@ -549,9 +551,7 @@ class DrawingLayerState extends RasterableLayerState
     _settingsPixels = settings.getSettingsPixels(data: allPixels, layerState: this, layerList: layers, frameIsSelected: frameIsSelected);
 
     allPixels.addAll(_settingsPixels);
-    //keep the compositing input for dependent (shading/dither) layers up to
-    //date; otherwise they would compose from the state of the last full render
-    rasterPixels = allPixels;
+    setRasterPixels(pixels: allPixels, frame: frame);
 
     for (final DirtyRegion region in mergedRegions)
     {

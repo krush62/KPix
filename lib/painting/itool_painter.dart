@@ -371,7 +371,7 @@ abstract class IToolPainter
               }
               else
               {
-                final ColorReference? layerColRef = currentLayer.rasterPixels[entry.key];
+                final ColorReference? layerColRef = currentLayer.pixelsForFrame(frame: frame)[entry.key];
                 if (layerColRef != null)
                 {
                   colRef = layerColRef;

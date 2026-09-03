@@ -242,7 +242,7 @@ class DitherLayerState extends ShadingLayerState
       }
       if (currentIndex != null)
       {
-        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex);
+        final RasterImagePair externalStackImages = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: layerStack!, currentIndex: currentIndex, frame: null);
         return DualRasterResult(rasterImages: rasterImages, externalStackImages: externalStackImages);
       }
       else
@@ -267,7 +267,7 @@ class DitherLayerState extends ShadingLayerState
         }
         if (frameLayerIndex != null)
         {
-          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex);
+          final RasterImagePair rasterImagePair = await _createRasterFromLayers(canvasSize: appState.canvasSize, rasterLayers: rasterLayers, currentIndex: frameLayerIndex, frame: frame);
           rasterImages[frame] = rasterImagePair;
         }
       }
@@ -275,7 +275,7 @@ class DitherLayerState extends ShadingLayerState
     }
   }
 
-  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex}) async
+  Future<RasterImagePair> _createRasterFromLayers({required final CoordinateSetI canvasSize, required final List<RasterableLayerState> rasterLayers, required final int currentIndex, required final Frame? frame}) async
   {
     final RgbaCache rgbaCache = RgbaCache();
     final ByteData byteDataThb = ByteData(canvasSize.x * canvasSize.y * 4);
@@ -299,7 +299,7 @@ class DitherLayerState extends ShadingLayerState
             ColorReference? refCol;
             if (layer.visibilityState.value == LayerVisibilityState.visible)
             {
-              refCol = layer.rasterPixels[coord];
+              refCol = layer.pixelsForFrame(frame: frame)[coord];
             }
             if (refCol != null)
             {
@@ -325,7 +325,7 @@ class DitherLayerState extends ShadingLayerState
         byteDataThb.setUint8(pixelIndex + 3, 255);
       }
     }
-    rasterPixels = allColorPixels;
+    setRasterPixels(pixels: allColorPixels, frame: frame);
 
 
 

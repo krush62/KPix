@@ -43,6 +43,34 @@ abstract class RasterableLayerState extends LayerState
   final ValueNotifier<LayerLockState> lockState = ValueNotifier<LayerLockState>(LayerLockState.unlocked);
   bool isRasterizing = false;
   CoordinateColorMap rasterPixels = CoordinateColorMap();
+  final Map<Frame, CoordinateColorMap> rasterPixelsByFrame = <Frame, CoordinateColorMap>{};
+
+  CoordinateColorMap pixelsForFrame({required final Frame? frame})
+  {
+    if (frame != null)
+    {
+      final CoordinateColorMap? framePixels = rasterPixelsByFrame[frame];
+      if (framePixels != null)
+      {
+        return framePixels;
+      }
+    }
+    return rasterPixels;
+  }
+
+  void setRasterPixels({required final CoordinateColorMap pixels, required final Frame? frame})
+  {
+    rasterPixels = pixels;
+    if (frame != null)
+    {
+      rasterPixelsByFrame[frame] = pixels;
+    }
+  }
+
+  void pruneFramePixels({required final Iterable<Frame> frames})
+  {
+    rasterPixelsByFrame.removeWhere((final Frame frame, final CoordinateColorMap pixels) => !frames.contains(frame));
+  }
   final ValueNotifier<ui.Image?> rasterImage = ValueNotifier<ui.Image?>(null);
   final ValueNotifier<Map<Frame, RasterImagePair>> rasterImageMap = ValueNotifier<Map<Frame, RasterImagePair>>(<Frame, RasterImagePair>{});
   ui.Image? previousRaster;
